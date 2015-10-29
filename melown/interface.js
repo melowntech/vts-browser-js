@@ -68,6 +68,14 @@ Melown.BrowserInterface.prototype.getSrses = function() {
     return this.map_.getSrses();
 };
 
+Melown.BrowserInterface.prototype.getReferenceFrame = function() {
+    return this.map_.getReferenceFrame();
+};
+
+Melown.BrowserInterface.prototype.pan = function(position_, dx_, dy_) {
+    return this.map_.pan(position_, dx_, dy_);
+};
+
 Melown.BrowserInterface.prototype.flyTo = function(position_, options_) {
     this.map_.getSrses();
 };

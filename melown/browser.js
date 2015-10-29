@@ -1,29 +1,10 @@
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
-window["MelownInterfaceCommand_"] = function(){};
-window["MelownShareLink_"] = false;
-Melown.HomepageUrl = "https://www.melown.com/maps/";
-
-//GOOGLE ANALYTICS STUFF
-if (window["_gaq"] ==  null) {
-    window["_gaq"] = [];
-}
-
-//---------------------------
-// PUBLIC METHODS
-//---------------------------
-
-
 /**
  * @constructor
  */
-Melown.Browser = function(config_)
+Melown.Browser = function(element_, config_)
 {
     this.params_ = {};
     this.params_.urlParams_ = this.getParamsFromURL();
-
-    Melown.InterfaceBuilder();
 
     //check Melown support (webgl)
     if (Melown.checkSupport() == false) {
@@ -32,8 +13,8 @@ Melown.Browser = function(config_)
         this.core_ = new Melown.Core('melown-engine-canvas-3d', null, this.browserConfig_, null, null, this.params_.urlParams_["screenshots"] == "1");
     }
 
-    this.autopilot_ = new Melown.Autopilot(this, this.onAutopilotFlightFinished.bind(this), this.onAutopilotUpdate.bind(this));
-    this.interface_ = new Melown.Interface(this);
+    this.autopilot_ = new Melown.Autopilot(this);
+    this.interface_ = new Melown.UI(this);
 
     if (this.core_ == null) {
         this.interface_.showNoWebGLScreen();
