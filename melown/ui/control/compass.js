@@ -20,6 +20,8 @@ Melown.UIControlCompass = function(ui_) {
 
                                 + ' </div>');
 
+
+
     /*
     //old compass
     this.setElementProperty("Melown-engine-compass-main", "onmousedown", this.onMelownCompass.bind(this));

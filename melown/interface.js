@@ -84,6 +84,9 @@ Melown.BrowserInterface.prototype.on = function(eventName_, call_) {
     this.core_.on(eventName_, call_);
 };
 
+Melown.getVersion = function() {
+    return "0.1";
+};
 
 
 

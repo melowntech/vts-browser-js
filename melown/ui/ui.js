@@ -1,3 +1,5 @@
+Melown.InstanceCounter = 0;
+
 /**
  * @constructor
  */
@@ -5,6 +7,7 @@ Melown.UI = function(browser_) {
     this.browser_ = browser_;
     this.controls_ = [];
     this.init();
+    this.instanceId_ = Melown.InstanceCounter++;
 };
 
 Melown.UI.prototype.init = function() {
