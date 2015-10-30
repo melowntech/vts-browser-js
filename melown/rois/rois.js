@@ -1,11 +1,20 @@
+'use strict'
+
+// Basic class for requesting ROI servers. It hasn't any UI. Eg. Explore Bar 
+// class has this class as ancestor.
+
+// Uses EC6 promises to handle requests
+
 /**
  * @constructor
  */
-Melown.Rois = function(browser_) {
-    this.browser_ = browser_;
+Melown.Rois = function(roiServers_) {
+    this.roiServer_ = roiServers;
+
 };
 
-Melown.Rois.prototype.tick = function() {
-    //TODO:
-};
+Melown.Rois.prototype.roisAtPosition = function(position_) {
+    // TODO request ROI server
+    // ROI gravity must be defined before implementation
+}
 
