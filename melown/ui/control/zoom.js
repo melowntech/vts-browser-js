@@ -17,34 +17,18 @@ Melown.UIControlZoom = function(ui_) {
 
      + ' </div>');
 
-    var plusElement_ = this.control_getElement("melown-zoom-plus");
-    plusElement_.on("click", this.onZoomIn, this);
+    var plus_ = this.control_.getElement("melown-zoom-plus");
+    plus_.on("click", this.onZoomIn.bind(this));
 
-    var minusElement_ = this.control_.getElement("melown-zoom-plus");
-    minusElement_.on("click", this.onZoomOut, this);
+    var minus_ = this.control_.getElement("melown-zoom-plus");
+    minus_.on("click", this.onZoomOut.bind(this));
 
 };
 
 Melown.UIControlCompass.prototype.onZoomIn = function() {
-    /*
-    //old compass
-    if (this.browser_ == null){
-        return;
-    }
-
-    setTimeout((function(){ this.browser_.zoom(-5); setTimeout((function(){ this.browser_.zoom(-10); setTimeout((function(){ this.browser_.zoom(-10); setTimeout((function(){ this.browser_.zoom(-10); setTimeout((function(){ this.browser_.zoom(-10); setTimeout((function(){ this.browser_.zoom(-10); }).bind(this),60); }).bind(this),60);}).bind(this),60); }).bind(this),60); }).bind(this),60); }).bind(this),60);
-    */
 };
 
 Melown.UIControlCompass.prototype.onZoomOut = function() {
-    /*
-    //old compass
-    if (this.browser_ == null){
-        return;
-    }
-
-    setTimeout((function(){ this.browser_.zoom(5); setTimeout((function(){ this.browser_.zoom(10); setTimeout((function(){ this.browser_.zoom(10); setTimeout((function(){ this.browser_.zoom(10); setTimeout((function(){ this.browser_.zoom(10); setTimeout((function(){ this.browser_.zoom(10); }).bind(this),60); }).bind(this),60);}).bind(this),60); }).bind(this),60); }).bind(this),60); }).bind(this),60);
-    */
 };
 
 

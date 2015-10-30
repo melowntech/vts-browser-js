@@ -1,5 +1,3 @@
-Melown.InstanceCounter = 0;
-
 /**
  * @constructor
  */
