@@ -1,8 +1,9 @@
 /**
  * @constructor
  */
-Melown.UI = function(browser_) {
+Melown.UI = function(browser_, element_) {
     this.browser_ = browser_;
+    this.element_ = element_;
     this.controls_ = [];
     this.init();
     this.instanceId_ = Melown.InstanceCounter++;
@@ -17,8 +18,10 @@ Melown.UI.prototype.init = function() {
     this.fallback_ = new Melown.UIControlFallback(this);
 };
 
-Melown.UI.prototype.addControl = function(id_) {
-    this.controls_[id_] = new Melown.UIControlHolder(this, html_);
+Melown.UI.prototype.addControl = function(id_, html_, visible_) {
+    var control_ = new Melown.UIControlHolder(this, html_, visible_);
+    this.controls_[id_] = control_;
+    return control_;
 };
 
 Melown.UI.prototype.removeControl = function(id_) {
@@ -39,10 +42,8 @@ Melown.UI.prototype.getControlDisplayState = function(id_) {
     }
 };
 
-
-//called when map is updated
 Melown.UI.prototype.tick = function() {
-    this.compassUpdate();
+    this.compass_.update();
 };
 
 

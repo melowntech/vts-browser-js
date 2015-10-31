@@ -1,6 +1,7 @@
 
 Melown.MapBrowser = function(element_, config_) {
-    return new Melown.BrowserInterface(element_, config_);
+    var interface_ = new Melown.BrowserInterface(element_, config_);
+    return interface_.core_ ? interface_ : null;
 };
 
 /**
@@ -84,13 +85,30 @@ Melown.BrowserInterface.prototype.on = function(eventName_, call_) {
     this.core_.on(eventName_, call_);
 };
 
-Melown.getVersion = function() {
+Melown.getBrowserVersion = function() {
     return "0.1";
 };
 
-
-
-
+//prevent minification
+Melown["MapBrowser"] = Melown.MapBrowser;
+Melown.BrowserInterface.prototype["setPosition"] = Melown.BrowserInterface.prototype.setPosition;
+Melown.BrowserInterface.prototype["getPosition"] = Melown.BrowserInterface.prototype.getPosition;
+Melown.BrowserInterface.prototype["setView"] = Melown.BrowserInterface.prototype.setView;
+Melown.BrowserInterface.prototype["getView"] = Melown.BrowserInterface.prototype.getView;
+Melown.BrowserInterface.prototype["getCredits"] = Melown.BrowserInterface.prototype.getCredits;
+Melown.BrowserInterface.prototype["getViews"] = Melown.BrowserInterface.prototype.getViews;
+Melown.BrowserInterface.prototype["getViewInfo"] = Melown.BrowserInterface.prototype.getViewInfo;
+Melown.BrowserInterface.prototype["getBoundLayers"] = Melown.BrowserInterface.prototype.getBoundLayers;
+Melown.BrowserInterface.prototype["getBoundLayerInfo"] = Melown.BrowserInterface.prototype.getBoundLayerInfo;
+Melown.BrowserInterface.prototype["getFreeLayers"] = Melown.BrowserInterface.prototype.getFreeLayers;
+Melown.BrowserInterface.prototype["getFreeLayerInfo"] = Melown.BrowserInterface.prototype.getFreeLayerInfo;
+Melown.BrowserInterface.prototype["getSurfaces"] = Melown.BrowserInterface.prototype.getSurfaces;
+Melown.BrowserInterface.prototype["getSurfaceInfo"] = Melown.BrowserInterface.prototype.getSurfaceInfo;
+Melown.BrowserInterface.prototype["getSrses"] = Melown.BrowserInterface.prototype.getSrses;
+Melown.BrowserInterface.prototype["getReferenceFrame"] = Melown.BrowserInterface.prototype.getReferenceFrame;
+Melown.BrowserInterface.prototype["pan"] = Melown.BrowserInterface.prototype.pan;
+Melown.BrowserInterface.prototype["flyTo"] = Melown.BrowserInterface.prototype.flyTo;
+Melown.BrowserInterface.prototype["on"] = Melown.BrowserInterface.prototype.on;
 
 
 

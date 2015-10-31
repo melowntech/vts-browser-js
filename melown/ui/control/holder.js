@@ -37,7 +37,7 @@ Melown.UIControlHolder.prototype.updateHTML = function(html_) {
     }
 };
 
-Melown.UIControlHolder.prototype.getElementById = function(id_) {
+Melown.UIControlHolder.prototype.getElement = function(id_) {
     return this.elementsById_[id_];
 };
 

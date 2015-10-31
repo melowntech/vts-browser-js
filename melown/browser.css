@@ -1,0 +1,176 @@
+
+/*
+ * LOGO
+ */
+
+.melown-map {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+/*
+ * LOGO
+ */
+
+.melown-logo {
+    font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+    font-size:11px;
+    position:fixed;right:5px;bottom:5px;
+    color:#fff;
+    text-shadow: 0 0 2px #000;
+}
+
+/*
+ * CREDITS
+ */
+
+.melown-credits {
+    position:absolute;
+    left:3px;
+    top:3px;
+    z-index: 4;
+}
+
+.melown-credits ul {
+    padding: 7px 0px;
+    margin: 0px;
+    text-align: left;
+}
+
+.melown-credits ul li {
+    color: #FFFFFF;
+    font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+    font-size: 11px;
+    display: inline;
+    list-style-type: none;
+    padding-right: 10px;
+    padding-left: 10px;
+    border-right: 1px solid rgba(255,255,255,0.3);
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-shadow: 0 0 2px #000;
+}
+
+#vadstena-engine-credits a {
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+/*
+ * FALLBACK
+ */
+
+.melown-fallback {
+    position: absolute;
+    top:0px;
+    left:0px;
+    width:100%;
+    height:100%;
+    background-color: #000000;
+    display: none;
+    font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+    color:#ddd;
+}
+
+.melown-fallback-text {
+  width: 50%;
+  left: 25%;
+  position: absolute;
+  height: 20%;
+  top: 40%;
+  text-align: center;
+}
+
+.melown-fallback-text a {
+    color: #0066FF;
+}
+
+.melown-fallback-text p {
+    padding: 3px;
+    margin: 0px;
+}
+
+/*
+ * COMPASS
+ */
+
+.melown-compass {
+    position:absolute;
+    left:21px;
+    bottom:64px;
+    cursor: move;
+    overflow: hidden;
+    width: 99px;
+    height: 99px;
+    z-index: 50;
+
+    z-index: 0;
+    max-width:120px;
+    max-height:120px;
+}
+
+.melown-compass-frame {
+    position:absolute;
+    right:0px;
+    bottom:2px;
+    width: 99px;
+    height: 99px;
+    z-index: 10;
+    -webkit-perspective:200px;
+    perspective:200px;
+    pointer-events:none;
+}
+
+.melown-compass-frame2 {
+    position:absolute;
+    right:0px;
+    bottom:1px;
+    width: 99px;
+    height: 99px;
+    z-index: 11;
+    -webkit-perspective:200px;
+    perspective:200px;
+    pointer-events:none;
+    opacity: 0.25;
+}
+
+.melown-compass-frame3 {
+    position:absolute;
+    right:0px;
+    bottom:0px;
+    width: 99px;
+    height: 99px;
+    z-index: 12;
+    -webkit-perspective:200px;
+    perspective:200px;
+    pointer-events:none;
+    opacity: 0.25;
+}
+
+/*
+ * ZOOM
+ */
+
+.melown-zoom {
+}
+
+.melown-zoom-plus {
+    position:absolute;
+    left:23px;
+    bottom:20px;
+    cursor: pointer;
+    z-index: 4;
+}
+
+.melown-zoom-minus {
+    position:absolute;
+    left:70px;
+    bottom:20px;
+    cursor: pointer;
+    z-index: 4;
+}
+
+
