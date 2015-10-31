@@ -1,6 +1,10 @@
 
 Melown.MapCore = function(element_, config_) {
-    return new Melown.CoreInterface(element_, config_);
+    if (Melown.checkSupport()) {
+        return new Melown.CoreInterface(element_, config_);
+    } else {
+        return null;
+    }
 };
 
 /**

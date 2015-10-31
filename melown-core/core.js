@@ -120,7 +120,7 @@ string getVersion()
     Returns string with Melown version
 */
 
-Melown.getVersion = function() {
+Melown.getCoreVersion = function() {
     return "1.65";
 };
 
