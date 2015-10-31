@@ -11,12 +11,12 @@ Melown.Pano = function(browser_, config_) {
 }
 
 Melown.Pano.State = {
-    Created = 'created',
-    Ready = 'ready',
-    FadingIn = 'fadingin',
-    Presenting = 'presenting',
-    FadingOut = 'fadingout',
-    Error = 'error'
+    Created : 'created',
+    Ready : 'ready',
+    FadingIn : 'fadingin',
+    Presenting : 'presenting',
+    FadingOut : 'fadingout',
+    Error : 'error'
 }
 
 // Public methods
