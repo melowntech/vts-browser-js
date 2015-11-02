@@ -26,9 +26,11 @@ Melown.UIControlZoom = function(ui_) {
 };
 
 Melown.UIControlZoom.prototype.onZoomIn = function() {
+    console.log("zoom-in");
 };
 
 Melown.UIControlZoom.prototype.onZoomOut = function() {
+    console.log("zoom-out");
 };
 
 
