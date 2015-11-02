@@ -5,7 +5,7 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.GpuTexture = function(gpu_, path_, browser_, fileSize_, direct_, repeat_, filter_)
+Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, filter_)
 {
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
@@ -21,7 +21,7 @@ Melown.GpuTexture = function(gpu_, path_, browser_, fileSize_, direct_, repeat_,
     this.image_ = null;
     this.loaded_ = false;
     this.trilinear_ = false;//true;
-    this.browser_ = browser_;
+    this.core_ = core_;
 
     if (path_ != null) {
         this.load(path_, null, null, direct_);
@@ -33,9 +33,9 @@ Melown.GpuTexture.prototype.kill = function()
 {
     this.gl_.deleteTexture(this.texture_);
 
-    if (this.browser_ != null && this.browser_.renderer_ != null) {
-        this.browser_.renderer_.statsFluxTexture_[1][0] ++;
-        this.browser_.renderer_.statsFluxTexture_[1][1] += this.size_;
+    if (this.core_ != null && this.core_.renderer_ != null) {
+        this.core_.renderer_.statsFluxTexture_[1][0] ++;
+        this.core_.renderer_.statsFluxTexture_[1][1] += this.size_;
     }
 };
 
@@ -151,11 +151,11 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
     this.size_ = image_.naturalWidth * image_.naturalHeight * 4;
     this.loaded_ = true;
 
-    if (this.browser_ != null && this.browser_.renderer_!= null) {
-        this.browser_.renderer_.dirty_ = true;
-        this.browser_.renderer_.statsCreateTextureTime_ += performance.now() - timer_;
-        this.browser_.renderer_.statsFluxTexture_[0][0] ++;
-        this.browser_.renderer_.statsFluxTexture_[0][1] += this.size_;
+    if (this.core_ != null && this.core_.renderer_!= null) {
+        this.core_.renderer_.dirty_ = true;
+        this.core_.renderer_.statsCreateTextureTime_ += performance.now() - timer_;
+        this.core_.renderer_.statsFluxTexture_[0][0] ++;
+        this.core_.renderer_.statsFluxTexture_[0][1] += this.size_;
     }
 };
 
@@ -169,7 +169,7 @@ Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
 
     this.image_.onload = (function () {
 
-        if (this.browser_ != null && this.browser_.killed_ == true) {
+        if (this.core_ != null && this.core_.killed_ == true) {
             return;
         }
 
@@ -180,7 +180,7 @@ Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
 
     this.image_.onerror = (function () {
 
-        if (this.browser_ != null && this.browser_.killed_ == true) {
+        if (this.core_ != null && this.core_.killed_ == true) {
             return;
         }
 

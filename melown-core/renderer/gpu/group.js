@@ -5,15 +5,15 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, browser_, layer_)
+Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, core_, layer_)
 {
     this.id_ = id_;
     this.bbox_ = null;
     this.origin_ = origin_ || [0,0,0];
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
-    this.renderer_ = browser_.renderer_;
-    this.browser_ = browser_;
+    this.renderer_ = core_.renderer_;
+    this.core_ = core_;
     this.layer_ = layer_;
     this.jobs_ = [];
 
@@ -458,7 +458,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_)
                         textureParams_[0] = 1/job_.lineWidth_/(texture_.width_/t[2]);
                     } else {
                         var lod_ = job_.lod_ || job_.layer_.currentLod_;
-                        var tileSize_ = job_.layer_.browser_.mapConfig_.tileSize(lod_);
+                        var tileSize_ = job_.layer_.core_.mapConfig_.tileSize(lod_);
                         var tilePixelSize_ = tileSize_ / job_.layer_.tilePixels_;
                         textureParams_[0] = 1/texture_.width_/tilePixelSize_;
                     }

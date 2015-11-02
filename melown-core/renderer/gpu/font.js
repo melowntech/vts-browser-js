@@ -5,12 +5,12 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.GpuFont = function(gpu_, browser_, font_, size_)
+Melown.GpuFont = function(gpu_, core_, font_, size_)
 {
     this.bbox_ = null;
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
-    this.browser_ = browser_;
+    this.core_ = core_;
 
     this.chars_ = [];
     this.space_ = 0;

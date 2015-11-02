@@ -7,12 +7,12 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.GpuPixelLine = function(gpu_, browser_)
+Melown.GpuPixelLine = function(gpu_, core_)
 {
     this.bbox_ = null;
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
-    this.browser_ = browser_;
+    this.core_ = core_;
 
     var timer_ = performance.now();
 
@@ -33,9 +33,9 @@ Melown.GpuPixelLine.prototype.kill = function()
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
     this.gl_.deleteBuffer(this.vertexNormalBuffer_);
 /*
-    if (this.browser_.renderer_ != null) {
-        this.browser_.renderer_.statsFluxMesh_[1][0] ++;
-        this.browser_.renderer_.statsFluxMesh_[1][1] += this.size_;
+    if (this.core_.renderer_ != null) {
+        this.core_.renderer_.statsFluxMesh_[1][0] ++;
+        this.core_.renderer_.statsFluxMesh_[1][1] += this.size_;
     }
 */
 };
@@ -199,10 +199,10 @@ Melown.GpuPixelLine.prototype.compile = function()
     this.polygons_ = this.vertexPositionBuffer_.numItems / 3;
 
 /*
-    if (this.browser_.renderer_ != null) {
-        this.browser_.renderer_.statsCreateGpuMeshTime_ += performance.now() - timer_;
-        this.browser_.renderer_.statsFluxMesh_[0][0] ++;
-        this.browser_.renderer_.statsFluxMesh_[0][1] += this.size_;
+    if (this.core_.renderer_ != null) {
+        this.core_.renderer_.statsCreateGpuMeshTime_ += performance.now() - timer_;
+        this.core_.renderer_.statsFluxMesh_[0][0] ++;
+        this.core_.renderer_.statsFluxMesh_[0][1] += this.size_;
     }
 */
 

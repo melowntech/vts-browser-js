@@ -1,5 +1,7 @@
 
 Melown.MapCore = function(element_, config_) {
+    element_ = (typeof divId_ !== "string") ? element_ : document.getElementById(divId_);
+
     if (Melown.checkSupport()) {
         return new Melown.CoreInterface(element_, config_);
     } else {
@@ -11,8 +13,7 @@ Melown.MapCore = function(element_, config_) {
  * @constructor
  */
 Melown.CoreInterface = function(element_, config_) {
-    this.browser_ = new Melown.Core(element_, config_);
-    this.core_ = this.browser_.getCore();
+    this.core_ = new Melown.Core(element_, config_);
     this.map_ = this.core_.getMap();
 };
 

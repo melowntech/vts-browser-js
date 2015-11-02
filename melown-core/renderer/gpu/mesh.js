@@ -7,12 +7,12 @@ Melown.GpuBarycentricVertexBuffer_ = null;
 /**
  * @constructor
  */
-Melown.GpuMesh = function(gpu_, meshData_, fileSize_, browser_)
+Melown.GpuMesh = function(gpu_, meshData_, fileSize_, core_)
 {
     this.bbox_ = meshData_["bbox"]; //!< bbox copy from Mesh
     this.gl_ = gpu_.gl_;
     this.fileSize_ = fileSize_; //used for stats
-    this.browser_ = browser_;
+    this.core_ = core_;
 
     var timer_ = performance.now();
 
@@ -73,10 +73,10 @@ Melown.GpuMesh = function(gpu_, meshData_, fileSize_, browser_)
         Melown.GpuBarycentricVertexBuffer_.numItems = buffer_.length / 3;
     }
 
-    if (this.browser_.renderer_ != null) {
-        this.browser_.renderer_.statsCreateGpuMeshTime_ += performance.now() - timer_;
-        this.browser_.renderer_.statsFluxMesh_[0][0] ++;
-        this.browser_.renderer_.statsFluxMesh_[0][1] += this.size_;
+    if (this.core_.renderer_ != null) {
+        this.core_.renderer_.statsCreateGpuMeshTime_ += performance.now() - timer_;
+        this.core_.renderer_.statsFluxMesh_[0][0] ++;
+        this.core_.renderer_.statsFluxMesh_[0][1] += this.size_;
     }
 
 };
@@ -87,9 +87,9 @@ Melown.GpuMesh.prototype.kill = function()
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
     this.gl_.deleteBuffer(this.vertexTextureCoordBuffer_);
 
-    if (this.browser_.renderer_ != null) {
-        this.browser_.renderer_.statsFluxMesh_[1][0] ++;
-        this.browser_.renderer_.statsFluxMesh_[1][1] += this.size_;
+    if (this.core_.renderer_ != null) {
+        this.core_.renderer_.statsFluxMesh_[1][0] ++;
+        this.core_.renderer_.statsFluxMesh_[1][1] += this.size_;
     }
 };
 

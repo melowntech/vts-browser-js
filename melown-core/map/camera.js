@@ -43,7 +43,7 @@ Melown.Map.prototype.updateCamera = function() {
 
     maxDistance_ *= Math.tan(Melown.radians(90+this.orientation_[1]*0.10));
     maxDistance_ = maxDistance_ > 9000000.0 ? 9000000.0 : maxDistance_;
-    maxDistance_ = maxDistance_ < this.browser_.browserConfig_.cameraVisibility_ ? this.browser_.browserConfig_.cameraVisibility_ : maxDistance_;
+    maxDistance_ = maxDistance_ < this.core_.coreConfig_.cameraVisibility_ ? this.core_.coreConfig_.cameraVisibility_ : maxDistance_;
 
     if (Math.abs(maxDistance_- far_) > 1.0) {
         this.camera_.setParams(this.camera_.getFov(), this.camera_.getNear(), maxDistance_);

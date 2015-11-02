@@ -1,7 +1,7 @@
 
 Melown.geodataProcessor = function(layer_, listener_) {
     this.layer_ = layer_;
-    this.browser_ = layer_.browser_;
+    this.core_ = layer_.core_;
     this.killed_ = false;
     this.listener_ = listener_;
     this.ready_ = true;
@@ -83,7 +83,7 @@ Melown.geodataProcessor.prototype.sendCommand = function(command_, data_, id_, a
     this.ready_ = false;
 
     if (id_ == null) {
-        id_ = new Melown.TileId(this.browser_, 0, 0, 0);
+        id_ = new Melown.TileId(this.core_, 0, 0, 0);
     }
 
     var worldParams_ = id_.getWorldParams();

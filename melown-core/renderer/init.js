@@ -34,7 +34,7 @@ Melown.Renderer.prototype.initHeightmap = function()
 {
     // initialize heightmap geometry
     var meshData_ = Melown.RendererGeometry.buildHeightmap(Melown.MetaNodeHMSize_);
-    this.heightmapMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.browser_);
+    this.heightmapMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
 
    // create heightmap texture
     var size_ = 64;
@@ -271,8 +271,8 @@ Melown.Renderer.prototype.initImage = function()
 Melown.Renderer.prototype.initSkydome = function()
 {
     var meshData_ = Melown.RendererGeometry.buildSkydome(32, 64);
-    this.skydomeMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.browser_);
-    this.skydomeTexture_ = new Melown.GpuTexture(this.gpu_, this.browser_.browserConfig_.skydomeTexture_, this.browser_);
+    this.skydomeMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
+    this.skydomeTexture_ = new Melown.GpuTexture(this.gpu_, this.core_.coreConfig_.skydomeTexture_, this.core_);
 };
 
 
@@ -299,7 +299,7 @@ Melown.Renderer.prototype.initBBox = function()
         [x+d*0.5,y,z]
      ];
 
-    this.lineTest_ = new Melown.GpuLine3(this.gpu_, this.browser_);
+    this.lineTest_ = new Melown.GpuLine3(this.gpu_, this.core_);
 
     var s = 20;
    // var s = 1.0;
@@ -324,15 +324,15 @@ Melown.Renderer.prototype.initBBox = function()
     this.lineTest_.compile();
 
 
-    this.font_ = new Melown.GpuFont(this.gpu_, this.browser_);
-    this.textTest_ = new Melown.GpuText(this.gpu_, this.browser_, this.font_);
+    this.font_ = new Melown.GpuFont(this.gpu_, this.core_);
+    this.textTest_ = new Melown.GpuText(this.gpu_, this.core_, this.font_);
 
     this.textTest_.addText(points_[6], [1,0,0], "ABCabc", 1000);
     this.textTest_.compile();
 
     //var placemark_ = "data:image/png;base64,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";
     var placemark_ = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAKTSURBVHjavNfPS1RBAAfwL6nbocMebDe79UMFQyG3Tit2EjatLhZkmluYGwZlJoJZUuy2BUGuSCAWFkgnCRIrfxyk3ZMtHpT+gbq8UgLrtGD43ny7vKnJLH2zu29gLnv4fj/zdnbeLEjCyQRwBsAUgI8AvtvzE4BZAM2O8xwUhwG8B0A5PUVF3OnxUP0MwCKASE4BAO7IAr/Px7v9/UzPz/OzYfCLYXAhnea9aJQlJSUq5EFOAACuytCL4TB/rK1RCMGNQwhBc32dlyMRFdGTFQDAPhl2vbOTlmVxq2FZFvt6e1VEVTaAhwB4rLZ2W+Uq4ngopCIKHQMAnJQBszMzdDpSyaQKaNIBJACwrLSUuqOqslICnugAJgGwualp00231RBC8FJbmwS80QHMAOCVjg5twI2uLgmY1gG8BsDzLS3agEh7uwS81QE8BsBDFRXaeyBQXS0Bz3QAZ+UuTiWTjssX0mn1VxDWARTKgBP1DY7OAdM0ebqxUQXs0j2IqmRIPBbbFsI0TQ4mEmp5MNt3wS0Z9nRk5L8Iy7L4YmxMLY/m6m34SIa+m5v7J2BpcYkFOwpk+VCu7wPDAFheVsZMJrPp6mtramT5cD4uJLvtywbvx+N/nQ3PR0fVR1+ec4CNiADgHr+f31ZX/9h4RwIBWd6XlyuZglgAwMTAwC/A9NSUuvrifAOuAWBNMEjLsiiE4IXWVsfffTaA/XK1K8vLJMm9v++CDXkH2IgUAE5OTPDryor6+D1uAaIAODQ4yJfj47L8lVaWJuAcAPZ0dzMei0nATTcBRwEwVFfHU/X1EtDoJuAAABZ7vSz2eiXgsJsA/4a/YwRw0E2AZxOAzzWAjfiglBvaOVkAOmyEAeC2bs7PAQBlCgrhBHN4PQAAAABJRU5ErkJggg==";
-    this.placemarkTexture_ = new Melown.GpuTexture(this.gpu_, placemark_, this.browser_, null, true);
+    this.placemarkTexture_ = new Melown.GpuTexture(this.gpu_, placemark_, this.core_, null, true);
     */
 };
 

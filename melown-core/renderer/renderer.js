@@ -12,9 +12,9 @@ Melown.StencilLineState_ = null;
 /**
  * @constructor
  */
-Melown.Renderer = function(browser_, div_, onUpdate_, keepFrameBuffer_)
+Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
 {
-    this.browser_ = browser_;
+    this.core_ = core_;
     this.progTile_ = null;
     this.progHeightmap_ = null;
     this.progSkydome_ = null;
@@ -48,14 +48,14 @@ Melown.Renderer = function(browser_, div_, onUpdate_, keepFrameBuffer_)
     this.curSize_ = [rect_.width, rect_.height]; //QSize
     this.dirty_ = true;
     this.cameraVector_ = [0,1,0];
-    this.texelSizeLimit_ = this.browser_.mapConfig_.texelSize_ * Melown.texelSizeFactor_;
+    this.texelSizeLimit_ = this.core_.mapConfig_.texelSize_ * Melown.texelSizeFactor_;
     this.gsd_ = 0.02;
     this.noForwardMovement_ = true;
-    this.heightLod_ = this.browser_.browserConfig_.heightLod_;
+    this.heightLod_ = this.core_.coreConfig_.heightLod_;
 
     this.gpu_ = new Melown.GpuDevice(div_, this.curSize_, keepFrameBuffer_);
 
-    this.camera_ = new Melown.Camera(this, this.browser_.browserConfig_.cameraFOV_, 2, this.browser_.browserConfig_.cameraVisibility_);
+    this.camera_ = new Melown.Camera(this, this.core_.coreConfig_.cameraFOV_, 2, this.core_.coreConfig_.cameraVisibility_);
 
     //reduce garbage collection
     this.drawTileMatrix_ = Melown.mat4.create();
@@ -64,7 +64,7 @@ Melown.Renderer = function(browser_, div_, onUpdate_, keepFrameBuffer_)
     this.drawTileWorldMatrix_ = Melown.mat4.create();
     this.pixelTileSizeMatrix_ = Melown.mat4.create();
 
-    //this.gpuCache_ = new Melown.GpuCache(this.gpu_, this.browser_, this.browser_.browserConfig_.gpuCacheSize_);
+    //this.gpuCache_ = new Melown.GpuCache(this.gpu_, this.core_, this.core_.coreConfig_.gpuCacheSize_);
 
     this.heightmapMesh_ = null;
     this.heightmapTexture_ = null;
@@ -74,7 +74,7 @@ Melown.Renderer = function(browser_, div_, onUpdate_, keepFrameBuffer_)
 
     this.hitmapTexture_ = null;
     this.geoHitmapTexture_ = null;
-    this.hitmapSize_ = this.browser_.browserConfig_.hitTextureSize_;
+    this.hitmapSize_ = this.core_.coreConfig_.hitTextureSize_;
     this.updateHitmap_ = true;
     this.updateGeoHitmap_ = true;
 
@@ -428,7 +428,7 @@ Melown.Renderer.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_)
 Melown.Renderer.prototype.hitTest = function(screenX_, screenY_, mode_)
 {
 
-    //this.browser_.hover(screenX_, screenY_, false, { test:true});
+    //this.core_.hover(screenX_, screenY_, false, { test:true});
     //return [0,0,0,false];
 
     this.updateHitmap_ = true;
@@ -518,8 +518,8 @@ Melown.Renderer.prototype.hitTest = function(screenX_, screenY_, mode_)
 
 
     //this.hitTestGeoLayers(screenX_, screenY_, "hover");
-    this.browser_.hover(screenX_, screenY_, false, { test:true});
-    //this.browser_.click(screenX_, screenY_, { test2:true});
+    this.core_.hover(screenX_, screenY_, false, { test:true});
+    //this.core_.click(screenX_, screenY_, { test2:true});
 
 
     return [this.lastHitPosition_[0], this.lastHitPosition_[1], this.lastHitPosition_[2], surfaceHit_];
@@ -600,7 +600,7 @@ Melown.Renderer.prototype.getBitmap = function(url_, filter_, tiled_) {
 
     var texture_ = this.bitmaps_[id_];
     if (texture_ == null) {
-        texture_ = new Melown.GpuTexture(this.gpu_, url_, this.browser_, null, null, tiled_, filter_);
+        texture_ = new Melown.GpuTexture(this.gpu_, url_, this.core_, null, null, tiled_, filter_);
         this.bitmaps_[id_] = texture_;
     }
 

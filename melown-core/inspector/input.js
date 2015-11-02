@@ -61,7 +61,7 @@ Melown.Interface.prototype.initInput = function() {
 
 Melown.Interface.prototype.onDoubleClick = function(event_, skipIgnoreMouse_)
 {
-    if (this.engine_ == null || this.autopilot_ == null || this.browser_ == null || (this.ignoreMouse_ == true && skipIgnoreMouse_ != true)) {
+    if (this.engine_ == null || this.autopilot_ == null || this.core_ == null || (this.ignoreMouse_ == true && skipIgnoreMouse_ != true)) {
         return;
     }
 
@@ -70,25 +70,25 @@ Melown.Interface.prototype.onDoubleClick = function(event_, skipIgnoreMouse_)
         return;
     }
 
-    var pos_ = this.browser_.hitTest(this.mouseX_, this.mouseY_, "all");
-    var height_ = this.browser_.getTerrainHeight(pos_[0], pos_[1])
+    var pos_ = this.core_.hitTest(this.mouseX_, this.mouseY_, "all");
+    var height_ = this.core_.getTerrainHeight(pos_[0], pos_[1])
 
-    var pos2_ = this.browser_.getPosition();
-    var rot_ = this.browser_.getOrientation();
-    var height2_ = this.browser_.getTerrainHeight(pos2_[0], pos2_[1]);
+    var pos2_ = this.core_.getPosition();
+    var rot_ = this.core_.getOrientation();
+    var height2_ = this.core_.getTerrainHeight(pos2_[0], pos2_[1]);
 
-    var ray_ = this.browser_.getCameraVector();
+    var ray_ = this.core_.getCameraVector();
     var pos3_ = ray_[0];
 
     var dx_ = pos_[0] - pos3_[0];
     var dy_ = pos_[1] - pos3_[1];
-    var dz_ = pos_[2] - pos3_[2];//(height_[0] + this.browser_.getOption("cameraHeightOffset"));
-    //var height3_ = this.browser_.getTerrainHeight(pos3_[0], pos3_[1]);
+    var dz_ = pos_[2] - pos3_[2];//(height_[0] + this.core_.getOption("cameraHeightOffset"));
+    //var height3_ = this.core_.getTerrainHeight(pos3_[0], pos3_[1]);
 
     var dist_ = Math.sqrt(dx_*dx_ + dy_*dy_ + dz_*dz_);
 
     var dist2_ = -(pos3_[2] - pos_[2]) / ray_[1][2];
-    var dist3_ = -(pos3_[2] - (height2_[0] +  this.browser_.getOption("cameraHeightOffset"))) / ray_[1][2];
+    var dist3_ = -(pos3_[2] - (height2_[0] +  this.core_.getOption("cameraHeightOffset"))) / ray_[1][2];
 
     //var dist_ = Math.sqrt(dx_*dx_ + dy_*dy_ + dz_*dz_);
 
@@ -106,7 +106,7 @@ Melown.Interface.prototype.onDoubleClick = function(event_, skipIgnoreMouse_)
     rot_[1] = rot_[1] % 360;
     rot_[2] = rot_[2] % 360;
 
-    this.autopilot_.setSource([pos2_[0], pos2_[1], pos2_[2]], [rot_[0], rot_[1], rot_[2]], null, this.browser_.getOption("cameraHeightOffset"));
+    this.autopilot_.setSource([pos2_[0], pos2_[1], pos2_[2]], [rot_[0], rot_[1], rot_[2]], null, this.core_.getOption("cameraHeightOffset"));
     this.autopilot_.setDestination([pos_[0], pos_[1], dist_], rot_, null, (pos_[2] - height_[0]), false);
     this.engine_.setAutorotate(0);
     this.engine_.flying_ = false;
@@ -146,7 +146,7 @@ Melown.Interface.prototype.onMouseDown = function(event, skipIgnoreMouse_)
             }
         }
 
-        if (this.panelVisible_ == "gis" && this.browser_ != null) {
+        if (this.panelVisible_ == "gis" && this.core_ != null) {
             this.gisMouseLeftDown();
         }
     }
@@ -180,7 +180,7 @@ Melown.Interface.prototype.onMouseUp = function(event, skipIgnoreMouse_)
         if (this.ignoreMouseUp_ != true) {
           //document.getElementById("Melown-engine-debug-text").innerHTML += ".e5.";
 
-            if (this.panelVisible_ == "gis" && this.browser_ != null) {
+            if (this.panelVisible_ == "gis" && this.core_ != null) {
                 //document.getElementById("Melown-engine-debug-text").innerHTML += ".e6.";
                 this.gisMouseLeftUp();
             }
@@ -222,13 +222,13 @@ Melown.Interface.prototype.onMouseMove = function(event, skipIgnoreMouse_)
         return;
     }
 
-    if (this.browser_ == null){
+    if (this.core_ == null){
         return;
     }
 
     if (this.compassMove_ == true) {
 
-        this.browser_.rotate(this.mouseDX_*rotateFactor_*2, this.mouseDY_*rotateFactor_*2);
+        this.core_.rotate(this.mouseDX_*rotateFactor_*2, this.mouseDY_*rotateFactor_*2);
         this.engine_.setAutorotate(0);
         this.sendWSCoords();
 
@@ -239,7 +239,7 @@ Melown.Interface.prototype.onMouseMove = function(event, skipIgnoreMouse_)
         // handle position change
         if (this.mouseLeftDown_ == true && !(this.altDown_ == true || this.ctrlDown_ == true || this.shiftDown_ == true)) {
             if (this.ignorePan_ != true) {
-                this.browser_.pan(this.mouseDX_*panFactor_, this.mouseDY_*panFactor_);
+                this.core_.pan(this.mouseDX_*panFactor_, this.mouseDY_*panFactor_);
                 this.engine_.setAutorotate(0);
                 this.sendWSCoords();
             }
@@ -247,7 +247,7 @@ Melown.Interface.prototype.onMouseMove = function(event, skipIgnoreMouse_)
 
         // handle orientation change
         if (this.mouseRightDown_ == true || (this.mouseLeftDown_ == true && (this.altDown_ == true || this.ctrlDown_ == true || this.shiftDown_ == true))) {
-            this.browser_.rotate(this.mouseDX_*rotateFactor_, this.mouseDY_*rotateFactor_);
+            this.core_.rotate(this.mouseDX_*rotateFactor_, this.mouseDY_*rotateFactor_);
             this.engine_.setAutorotate(0);
             this.sendWSCoords();
         }
@@ -297,21 +297,21 @@ Melown.Interface.prototype.onMouseWheel = function(event, skipIgnoreMouse_)
     //change camera distance
     delta_ = (delta_<0)?1:-1;
 
-    if (this.browser_ == null){
+    if (this.core_ == null){
         return;
     }
 
     this.placesMouseWheel();
 
     if (this.diagnosticMode_ == true && this.shiftDown_ == true && this.ctrlDown_ == true) {
-        this.browser_.rotate(0, 0, delta_*5);
+        this.core_.rotate(0, 0, delta_*5);
     } else if (this.diagnosticMode_ == true && this.shiftDown_ == true) {
-        this.browser_.changeFov(delta_*50*zoomFactor);
+        this.core_.changeFov(delta_*50*zoomFactor);
     } else {
-        if (this.browser_.getControlMode() == "observer") {
-            this.browser_.zoom(delta_*50*zoomFactor);
+        if (this.core_.getControlMode() == "observer") {
+            this.core_.zoom(delta_*50*zoomFactor);
         } else {
-            this.browser_.zoom(delta_*20*zoomFactor);
+            this.core_.zoom(delta_*20*zoomFactor);
         }
     }
 
@@ -391,7 +391,7 @@ Melown.Interface.prototype.onKeyUp = function(event, press_)
             }
         }
 
-        if (this.shiftDown_ == true && press_ != true && this.browser_ != null) {
+        if (this.shiftDown_ == true && press_ != true && this.core_ != null) {
 
             switch(keyCode_) {
                 case 76:
@@ -421,29 +421,29 @@ Melown.Interface.prototype.onKeyUp = function(event, press_)
 
                 switch(keyCode_) {
 
-                    case 49: this.browser_.setControlMode("manual"); done_();  break;  //key 1 pressed
-                    case 50: this.browser_.setControlMode("drone"); done_();   break;  //key 2 pressed
-                    case 51: this.browser_.setControlMode("observer"); done_(); break; //key 3 pressed
+                    case 49: this.core_.setControlMode("manual"); done_();  break;  //key 1 pressed
+                    case 50: this.core_.setControlMode("drone"); done_();   break;  //key 2 pressed
+                    case 51: this.core_.setControlMode("observer"); done_(); break; //key 3 pressed
 
                     case 48:  //key 0 pressed
-                        this.browser_.setOption("noForwardMovement" , !this.browser_.getOption("noForwardMovement"));
+                        this.core_.setOption("noForwardMovement" , !this.core_.getOption("noForwardMovement"));
                         break;
 
                     case 84:
                     case 116:
-                        var pos_ = this.browser_.hitTest(this.mouseX_, this.mouseY_, "all");
+                        var pos_ = this.core_.hitTest(this.mouseX_, this.mouseY_, "all");
                         console.log("hit pos: " + pos_[0] + " " + pos_[1] + " " + pos_[2] + " " + pos_[3] + " d " + pos_[4]); //key T pressed
-                        this.browser_.logTile(pos_);
+                        this.core_.logTile(pos_);
                         break;
 
                     case 72:
                     case 104:
                         this.drawOnlyHeightmap_ = !this.drawOnlyHeightmap_;
-                        this.browser_.setOption("drawOnlyHeightmap", this.drawOnlyHeightmap_); break;  //key H pressed
+                        this.core_.setOption("drawOnlyHeightmap", this.drawOnlyHeightmap_); break;  //key H pressed
 
                     case 80:
                     case 112:
-                        this.browser_.saveScreenshot(pos_); break;  //key P pressed
+                        this.core_.saveScreenshot(pos_); break;  //key P pressed
 
                     case 83:
                     case 115:
@@ -451,28 +451,28 @@ Melown.Interface.prototype.onKeyUp = function(event, press_)
 
                     case 66:
                     case 98:
-                        this.browser_.setOption("drawBBoxes" , !this.browser_.getOption("drawBBoxes")); break; //key B pressed
+                        this.core_.setOption("drawBBoxes" , !this.core_.getOption("drawBBoxes")); break; //key B pressed
 
                     case 87:
                     case 119:
-                        var value_ = this.browser_.getOption("drawWireframe")+1;
-                        this.browser_.setOption("drawWireframe" , value_ > 2 ? 0 : value_ ); break; //key W pressed
+                        var value_ = this.core_.getOption("drawWireframe")+1;
+                        this.core_.setOption("drawWireframe" , value_ > 2 ? 0 : value_ ); break; //key W pressed
 
                     case 70:
                     case 102:
-                        this.browser_.setOption("drawWireframe" , this.browser_.getOption("drawWireframe") != 3 ? 3 : 0 ); break; //key F pressed
+                        this.core_.setOption("drawWireframe" , this.core_.getOption("drawWireframe") != 3 ? 3 : 0 ); break; //key F pressed
 
                     case 77:
                     case 109:
-                        this.browser_.setOption("drawMaxLod" , !this.browser_.getOption("drawMaxLod")); break; //key M pressed
+                        this.core_.setOption("drawMaxLod" , !this.core_.getOption("drawMaxLod")); break; //key M pressed
 
                     case 74:
                     case 106:
-                        this.browser_.setOption("blendHeightmap" , !this.browser_.getOption("blendHeightmap")); break; //key J pressed
+                        this.core_.setOption("blendHeightmap" , !this.core_.getOption("blendHeightmap")); break; //key J pressed
 
                     case 88:
                     case 120:
-                        this.browser_.setOption("drawFog" , !this.browser_.getOption("drawFog")); break; //key X pressed
+                        this.core_.setOption("drawFog" , !this.core_.getOption("drawFog")); break; //key X pressed
 
                     case 82:
                     case 114:
@@ -484,7 +484,7 @@ Melown.Interface.prototype.onKeyUp = function(event, press_)
 
                     case 79:
                     case 111:
-                        this.browser_.setOption("ortho" , !this.browser_.getOption("ortho")); break; //key O pressed
+                        this.core_.setOption("ortho" , !this.core_.getOption("ortho")); break; //key O pressed
 
                     case 86:
                     case 118:
@@ -492,10 +492,10 @@ Melown.Interface.prototype.onKeyUp = function(event, press_)
 
                     case 90:
                     case 122:
-                        this.browser_.setOption("ignoreTexelSize" , !this.browser_.getOption("ignoreTexelSize")); break; //key Z pressed
+                        this.core_.setOption("ignoreTexelSize" , !this.core_.getOption("ignoreTexelSize")); break; //key Z pressed
 
                         /*
-                        if (this.browser_.getOption("ignoreTexelSize") != true) {
+                        if (this.core_.getOption("ignoreTexelSize") != true) {
                             //this.showPosition(true);
                             //this.ignorePan(true);
                         } else {
@@ -512,32 +512,32 @@ Melown.Interface.prototype.onKeyUp = function(event, press_)
         }
 
 
-        if (this.diagnosticMode_ == true && this.browser_.getOption("drawBBoxes") == true && this.shiftDown_ != true && press_ != true && this.browser_ != null) {
+        if (this.diagnosticMode_ == true && this.core_.getOption("drawBBoxes") == true && this.shiftDown_ != true && press_ != true && this.core_ != null) {
 
             switch(keyCode_) {
                 case 76:
                 case 108:
-                    this.browser_.setOption("drawLods" , !this.browser_.getOption("drawLods")); break; //key L pressed
+                    this.core_.setOption("drawLods" , !this.core_.getOption("drawLods")); break; //key L pressed
 
                 case 80:
                 case 112:
-                    this.browser_.setOption("drawPositions" , !this.browser_.getOption("drawPositions")); break; //key P pressed
+                    this.core_.setOption("drawPositions" , !this.core_.getOption("drawPositions")); break; //key P pressed
 
                 case 84:
                 case 116:
-                    this.browser_.setOption("drawTextureSize" , !this.browser_.getOption("drawTextureSize")); break; //key T pressed
+                    this.core_.setOption("drawTextureSize" , !this.core_.getOption("drawTextureSize")); break; //key T pressed
 
                 case 83:
                 case 115:
-                    this.browser_.setOption("drawTexelSize" , !this.browser_.getOption("drawTexelSize")); break; //key S pressed
+                    this.core_.setOption("drawTexelSize" , !this.core_.getOption("drawTexelSize")); break; //key S pressed
 
                 case 70:
                 case 102:
-                    this.browser_.setOption("drawFaceCount" , !this.browser_.getOption("drawFaceCount")); break; //key F pressed
+                    this.core_.setOption("drawFaceCount" , !this.core_.getOption("drawFaceCount")); break; //key F pressed
 
                 case 68:
                 case 100:
-                    this.browser_.setOption("drawDistance" , !this.browser_.getOption("drawDistance")); break; //key D pressed
+                    this.core_.setOption("drawDistance" , !this.core_.getOption("drawDistance")); break; //key D pressed
             }
 
         }

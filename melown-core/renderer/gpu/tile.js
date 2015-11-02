@@ -5,7 +5,7 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.GpuTile = function(gpu_, browser_, tile_)
+Melown.GpuTile = function(gpu_, core_, tile_)
 {
     this.gpu_ = gpu_;
     this.type_ = tile_.type_;
@@ -13,8 +13,8 @@ Melown.GpuTile = function(gpu_, browser_, tile_)
 
     switch(this.type_){
         case "terrain":
-            this.mesh_ = new Melown.GpuMesh(gpu_, tile_.mesh_, null, browser_);
-            this.texture_ = new Melown.GpuTexture(gpu_, null, browser_);
+            this.mesh_ = new Melown.GpuMesh(gpu_, tile_.mesh_, null, core_);
+            this.texture_ = new Melown.GpuTexture(gpu_, null, core_);
             this.texture_.createFromImage(tile_.image_, "linear");
             this.meshFileSize_ = tile_.meshFileSize_;
             this.imageFileSize_ = tile_.imageFileSize_;
@@ -85,12 +85,12 @@ Melown.GpuTile.prototype.size = function() {
 /**
  * @constructor
  */
-Melown.GpuCache = function(gpu_, browser_, size_)
+Melown.GpuCache = function(gpu_, core_, size_)
 {
     //QCache<TileId, GpuTile> cache; cache(size)
     //this.cache_ = [];
     this.gpu_ = gpu_;
-    this.browser_ = browser_;
+    this.core_ = core_;
     this.cache_ = new Melown.QCache(size_);
 };
 
@@ -112,7 +112,7 @@ Melown.GpuCache.prototype.get = function(id_, tile_)
     var gpuTile_ = this.cache_.find(id_);
     if (gpuTile_) return gpuTile_;
 
-    var gpuTile_ = new Melown.GpuTile(this.gpu_, this.browser_, tile_); // upload the tile to GPU RAM
+    var gpuTile_ = new Melown.GpuTile(this.gpu_, this.core_, tile_); // upload the tile to GPU RAM
     this.cache_.insert(id_, gpuTile_, gpuTile_.size());
 
     return gpuTile_;

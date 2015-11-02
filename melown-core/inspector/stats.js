@@ -15,7 +15,7 @@ Melown.Interface.prototype.updateStatsPanel = function() {
         this.statsElement_ = document.getElementById("Melown-engine-render-stats");
     }
 
-    var stats_ = this.browser_.getData("map-stats");
+    var stats_ = this.core_.getData("map-stats");
 
     var text2_ =
             "FPS: " + Math.round(stats_.fps_) + "<br/>" +
@@ -23,9 +23,9 @@ Melown.Interface.prototype.updateStatsPanel = function() {
             "- used: " + Math.round(stats_.gpuMemoryUsed_/(1024*1024)) + "MB<br/>" +
             "- used textures: " + Math.round(stats_.gpuMemoryTextures_/(1024*1024)) + "MB<br/>" +
             "- used meshes: " + Math.round(stats_.gpuMemoryMeshes_/(1024*1024)) + "MB<br/>" +
-            "FOV: " + Math.round(this.browser_.getOption("fov")) + " deg<br/>" +
-            "viewHeight: " + Math.round(this.browser_.getOption("viewHeight")) + " m<br/>" +
-            "distance: " + Math.round(this.browser_.renderer_.cameraDistance_) + " m<br/>" +
+            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +
+            "viewHeight: " + Math.round(this.core_.getOption("viewHeight")) + " m<br/>" +
+            "distance: " + Math.round(this.core_.renderer_.cameraDistance_) + " m<br/>" +
             "Polygons: " + (stats_.renderedPolygons_) + "<br/>";
 
     var text3_ = "Tiles: " + (stats_.drawnTiles_) +"<br/>";
@@ -39,7 +39,7 @@ Melown.Interface.prototype.updateStatsPanel = function() {
 //ADAVANCED STATS
 Melown.Interface.prototype.showStatsGraphsPanel = function() {
     this.statsGraphsVisible_ = true;
-    this.browser_.setOption("recordStats", true);
+    this.core_.setOption("recordStats", true);
     this.setElementStyle("Melown-engine-stats-graphs", "display", "block");
 };
 
@@ -57,11 +57,11 @@ Melown.Interface.prototype.switchStatsGraphsPanel = function() {
 };
 
 Melown.Interface.prototype.statsRecordingPressed = function() {
-    if (this.browser_ == null) {
+    if (this.core_ == null) {
         return;
     }
 
-    this.browser_.setOption("recordStats", !this.browser_.getOption("recordStats"));
+    this.core_.setOption("recordStats", !this.core_.getOption("recordStats"));
 
     this.updateStatsGraphsPanel();
 };
@@ -75,11 +75,11 @@ Melown.Interface.prototype.statsRefreshPressed = function() {
 };
 
 Melown.Interface.prototype.statsResetPressed = function() {
-    if (this.browser_ == null) {
+    if (this.core_ == null) {
         return;
     }
 
-    var stats_ = this.browser_.getData("statsSamples");
+    var stats_ = this.core_.getData("statsSamples");
 
     var samples_ = stats_["samples"];
     var valuesFrame_ = stats_["frame"];
@@ -163,7 +163,7 @@ Melown.Interface.prototype.statsMagnifyPressed = function() {
 
 Melown.Interface.prototype.updateStatsGraphsPanel = function() {
 
-    if (this.browser_.getOption("recordStats") == true) {
+    if (this.core_.getOption("recordStats") == true) {
         this.setElementProperty("Melown-engine-stats-rec", "innerHTML", "Recording On");
     } else {
         this.setElementProperty("Melown-engine-stats-rec", "innerHTML", "Recording Off");
@@ -207,7 +207,7 @@ Melown.Interface.prototype.onStatsMouseMove = function(event_) {
 
     this.statsCursorIndex_ = x;
 
-    if (this.browser_.getOption("recordStats") != true) {
+    if (this.core_.getOption("recordStats") != true) {
         this.updateStatsGraphs();
     }
 
@@ -221,7 +221,7 @@ Melown.Interface.prototype.onStatsMouseOut = function() {
 
 Melown.Interface.prototype.updateStatsGraphs = function() {
 
-    if (this.browser_ == null || this.statsRefresh_ == false || this.statsGraphsVisible_ == false) {
+    if (this.core_ == null || this.statsRefresh_ == false || this.statsGraphsVisible_ == false) {
         return;
     }
 
@@ -229,7 +229,7 @@ Melown.Interface.prototype.updateStatsGraphs = function() {
         this.statsCanvasRender_ = document.getElementById("Melown-engine-stats-render");
     }
 
-    var stats_ = this.browser_.getData("statsSamples");
+    var stats_ = this.core_.getData("statsSamples");
 
 
     if (this.statsCanvasRender_ != null) {

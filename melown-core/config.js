@@ -43,7 +43,11 @@ Melown.CoreConfig = function(json_)
     this.controlInertia_ = [0.80, 0.80, 0.80];
     this.controlMode_ = "observer";
 
+    this.map_ = null;
+
     if (json_ != null) {
+        this.map_ = json_["map"];
+
         if (json_["cacheSize"] != null)     this.cacheSize_ = json_["cacheSize"];
         if (json_["gpuCacheSize"] != null)  this.gpuCacheSize_ = json_["gpuCacheSize"];
         if (json_["numThreads"] != null)    this.numThreads_ = json_["numThreads"];

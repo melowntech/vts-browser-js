@@ -6,11 +6,11 @@
 /**
  * @constructor
  */
-Melown.Map = function(browser_)
+Melown.Map = function(core_)
 {
-    this.browser_ = browser_;
-    this.mapConfig_ = browser_.mapConfig_;
-    this.browserConfig_ = browser_.browserConfig_;
+    this.core_ = core_;
+    this.mapConfig_ = core_.mapConfig_;
+    this.coreConfig_ = core_.coreConfig_;
     this.killed_ = false;
     this.urlCounter_ = 0;
 
@@ -51,12 +51,12 @@ Melown.Map = function(browser_)
 
     this.loader_ = new Melown.MapLoader(this);
 
-    this.renderer_ = new Melown.Renderer(this.browser_, this.browser_.div_);
+    this.renderer_ = new Melown.Renderer(this.core_, this.core_.div_);
     this.camera_ = this.renderer_.camera_;
 
     this.stats_ = new Melown.MapStats(this);
 
-    this.mapConfig_ = this.parseConfig(browser_.mapConfig_);
+    this.mapConfig_ = this.parseConfig(core_.mapConfig_);
 
     this.initMapTrees();
 
@@ -329,8 +329,8 @@ Melown.Map.prototype.update = function() {
 
     this.stats_.end();
 
-    if (this.browser_.onUpdate_ != null) {
-        this.browser_.onUpdate_(true);
+    if (this.core_.onUpdate_ != null) {
+        this.core_.onUpdate_(true);
     }
 
     window.requestAnimFrame(this.update.bind(this));

@@ -46,7 +46,7 @@ Melown.GpuGeodata.prototype.onGeodataProcessorMessage = function(message_) {
         switch (message_["command"]) {
 
             case "beginGroup":
-                this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.tile_.browser_, this.tile_.layer_);
+                this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.tile_.core_, this.tile_.layer_);
                 this.gpuGroups_.push(this.currentGpuGroup_);
                 break;
 
@@ -63,7 +63,7 @@ Melown.GpuGeodata.prototype.onGeodataProcessorMessage = function(message_) {
 
         switch (message_) {
             case "allProcessed":
-                this.tile_.browser_.renderer_.dirty_ = true;
+                this.tile_.core_.renderer_.dirty_ = true;
                 this.ready_ = true;
                 break;
 

@@ -5,12 +5,12 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.GpuText = function(gpu_, browser_, font_, withNormals_)
+Melown.GpuText = function(gpu_, core_, font_, withNormals_)
 {
     //this.bbox_ = mesh_.bbox_; //!< bbox copy from Mesh
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
-    this.browser_ = browser_;
+    this.core_ = core_;
     this.font_ = font_;
     this.withNormals_ = withNormals_;
 
@@ -34,9 +34,9 @@ Melown.GpuText.prototype.kill = function()
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
     this.gl_.deleteBuffer(this.vertexTextureCoordBuffer_);
 
-    if (this.browser_ != null && this.browser_.renderer_ != null) {
-        this.browser_.renderer_.statsFluxMesh_[1][0] ++;
-        this.browser_.renderer_.statsFluxMesh_[1][1] += this.size_;
+    if (this.core_ != null && this.core_.renderer_ != null) {
+        this.core_.renderer_.statsFluxMesh_[1][0] ++;
+        this.core_.renderer_.statsFluxMesh_[1][1] += this.size_;
     }
 };
 
@@ -405,10 +405,10 @@ Melown.GpuText.prototype.compile = function()
     this.size_ = this.vertexPositionBuffer_.numItems * 3 * 4 + this.vertexTextureCoordBuffer_.numItems * 4 * 4;
     this.polygons_ = this.vertexPositionBuffer_.numItems / 3;
 
-    if (this.browser_ != null && this.browser_.renderer_ != null) {
-        //this.browser_.renderer_.statsCreateGpuTextTime_ += performance.now() - timer_;
-        //this.browser_.renderer_.statsFluxMesh_[0][0] ++;
-        //this.browser_.renderer_.statsFluxMesh_[0][1] += this.size_;
+    if (this.core_ != null && this.core_.renderer_ != null) {
+        //this.core_.renderer_.statsCreateGpuTextTime_ += performance.now() - timer_;
+        //this.core_.renderer_.statsFluxMesh_[0][0] ++;
+        //this.core_.renderer_.statsFluxMesh_[0][1] += this.size_;
     }
 
 

@@ -111,7 +111,7 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
 };
 
 Melown.MapTexture.prototype.buildGpuTexture = function () {
-    this.gpuTexture_ = new Melown.GpuTexture(this.map_.renderer_.gpu_, null, this.map_.browser_);
+    this.gpuTexture_ = new Melown.GpuTexture(this.map_.renderer_.gpu_, null, this.map_.core_);
     this.gpuTexture_.createFromImage(this.image_, "linear", false);
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuTexture.bind(this, true), this.gpuTexture_.size_);

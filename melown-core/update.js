@@ -6,9 +6,9 @@ Melown.Core.prototype.updateInertia = function() {
     }
 
     var hit_ = false;
-    var factorPan_ = this.browserConfig_.controlInertia_[0];
-    var factorRotate_ = this.browserConfig_.controlInertia_[1];
-    var factorZoom_ = this.browserConfig_.controlInertia_[2];
+    var factorPan_ = this.coreConfig_.controlInertia_[0];
+    var factorRotate_ = this.coreConfig_.controlInertia_[1];
+    var factorZoom_ = this.coreConfig_.controlInertia_[2];
     var renderer_ = this.renderer_;
 
     if (this.orbitDeltas_.length > 0 && this.panDeltas_.length == 0 && this.distanceDeltas_.length == 0) {
@@ -36,7 +36,7 @@ Melown.Core.prototype.updateInertia = function() {
         this.distanceDeltas_[i][0] += (1 - this.distanceDeltas_[i][0]) * (1.0 - factorZoom_);// * 0.01;
         renderer_.position_[2] *= this.distanceDeltas_[i][0];
 
-        renderer_.position_[2] = Math.min(renderer_.position_[2], this.browserConfig_.cameraVisibility_);
+        renderer_.position_[2] = Math.min(renderer_.position_[2], this.coreConfig_.cameraVisibility_);
 
         //remove zero deltas
         if (Math.abs(1 - this.distanceDeltas_[i][0]) < 0.001) {

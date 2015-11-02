@@ -1,80 +1,57 @@
-
-window["MelownMobile_"] = true;
-window["MelownScreenScaleFactor_"] = 1.0;
-Melown.mobileScaleFactor_ = 0.5;
-
 /**
  * @constructor
  */
-Melown.Core = function(divId_, mapConfig_, browserConfig_)
-{
-    this.panDeltas_ = [];
-    this.orbitDeltas_ = [];
-    this.distanceDeltas_ = [];
-    this.renderer_ = null;
-    this.mapConfig_ = null;
-    this.browserConfig_ = null;
-    this.updateCallback_ = null;
+Melown.Core = function(element_, options_) {
+    this.element_ = element_;
+    this.options_ = options_;
+    this.coreConfig_ = new Melown.CoreConfig(options_);
     this.ready_ = false;
     this.killed_ = false;
-    this.div_ = null;
-    this.keepFrameBuffer_ = null; //TODO: use browser config
-    this.currentLayer_ = null;
-    this.oldViewHeight_ = null;
     this.listeners_ = [];
     this.listenerCounter_ = 0;
 
-    this.lastPosition_ = [0,0,0];
-    this.lastOrientation_ = [0,0,0];
-    this.lastFov_ = 45.0;
+    this.map_ = null;
+    this.renderer_ = new Melown.Renderer(this, this.element_, null, false);
+    this.proj4_ = null;
 
-    //mobile
+    //platform detection
     Melown.Platform.init();
-    window["MelownMobile_"] = Melown.Platform.isMobile();
 
-    //this.logGA('WebGL', "0");
-    //this.logGA('OperatingSystem', Melown.Platform.OS);
-    //this.logGA('WebBrowser', Melown.Platform.browser + " " + Melown.Platform.version);
+    this.loadMap(this.coreConfig_.map_);
+};
 
-    /*
-    if (window["MelownMobile_"] == true) {
-        window["MelownScreenScaleFactor_"] = Melown.mobileScaleFactor_;
-        document.getElementById("Melown-engine-canvas-3d").style.width = "100%";
-        document.getElementById("Melown-engine-canvas-3d").style.height = "100%";
-    }*/
-
-    //get div element
-    if (typeof divId_ === "string") {
-        this.div_ = document.getElementById(divId_);
-    } else if (typeof divId_ === "object") {
-        this.div_ = divId_;
+Melown.Core.prototype.loadMap = function(path_) {
+    if (this.map_ != null) {
+        this.map_.kill();
+        this.map_ = null;
     }
 
-    if (this.div_ == null) {
-        //div does not exist
-        this.callListener("initialized", { "ready": false, "message": "DOM element does not exist" });
-
+    if (path_ == null) {
         return;
     }
 
-    var callLoadMap_ = (function(){
-        this.loadMap(mapConfig_, browserConfig_);
+    var onLoaded_ = (function(data_) {
+        this.map_ = new Melown.Map(data_);
     }).bind(this);
 
-    if (mapConfig_ != null) {
-        window.setTimeout(callLoadMap_, 1);
-    }
+    var onError_ = (function() {
+    }).bind(this);
+
+
+    Melown.loadJSON(path_, onLoaded_, onError_);
 };
 
-/*
-function on(string eventName, funtion listener)
+Melown.Core.prototype.getMap = function() {
+    return this.map_;
+};
 
-    Creates listener for the engine events.
-    name: name of listened event
-    listener: function which will be called when event occur. Function will be called with these parameters: function(event).
-    Returns: deregistration function for this listener
+Melown.Core.prototype.getRenderer = function() {
+    return this.renderer_;
+};
 
-* */
+Melown.Core.prototype.getProj4 = function() {
+    return this.proj4_;
+};
 
 Melown.Core.prototype.on = function(name_, listener_) {
 
