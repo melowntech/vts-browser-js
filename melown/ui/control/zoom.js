@@ -25,10 +25,10 @@ Melown.UIControlZoom = function(ui_) {
 
 };
 
-Melown.UIControlCompass.prototype.onZoomIn = function() {
+Melown.UIControlZoom.prototype.onZoomIn = function() {
 };
 
-Melown.UIControlCompass.prototype.onZoomOut = function() {
+Melown.UIControlZoom.prototype.onZoomOut = function() {
 };
 
 

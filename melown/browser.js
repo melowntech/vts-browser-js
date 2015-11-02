@@ -7,7 +7,7 @@ Melown.Browser = function(element_, config_) {
 
     this.core_ = Melown.MapCore("melown-map", config_);
 
-    if (core_ == null) {
+    if (this.core_ == null) {
         this.ui_.setControlDisplayState("fallback", true);
         return;
     }
@@ -16,6 +16,9 @@ Melown.Browser = function(element_, config_) {
     this.rois_ = new Melown.Rois(this);
 };
 
+Melown.Browser.prototype.getCore = function() {
+    return this.core_;
+};
 
 Melown.Browser.prototype.on = function(name_, listener_) {
     if (listener_ == null) {

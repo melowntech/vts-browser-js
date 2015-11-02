@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Melown.UIControlMap = function(ui_) {
+Melown.UIControlFallback = function(ui_) {
     this.ui_ = ui_;
     this.control_ = this.ui_.addControl("fallback",
       '<div id="melown-fallback"'

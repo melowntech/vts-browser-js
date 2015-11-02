@@ -13,6 +13,10 @@ Melown.BrowserInterface = function(element_, config_) {
     this.map_ = this.core_.getMap();
 };
 
+Melown.BrowserInterface.prototype.getCore = function(position_) {
+    return this.core_;
+};
+
 Melown.BrowserInterface.prototype.setPosition = function(position_) {
     this.map_.setPosition(position_);
 };

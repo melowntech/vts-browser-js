@@ -21,18 +21,15 @@ Melown.UIControlHolder = function(ui_, html_, visible_) {
 Melown.UIControlHolder.prototype.updateHTML = function(html_) {
     this.element_.innerHTML = html_;
 
-    var allElements_ = document.getElementsByTagName('*');
+    var allElements_ = this.element_.getElementsByTagName('*');
 
-    //store all elements with id to the table
+    //store all elements with id attribute to the table
     for (var i = 0, li = allElements_.length; i < li; i++) {
-        if (allElements_[i].id != null) {
-            var id_ = allElements_[i].id;
+        var id_ = allElements_[i].getAttribute("id");
 
+        if (id_ !== null) {
             //store element to the table
-            this.elementsById_ = allElements_[i];
-
-            //modify element id according to instance id
-            allElements_[i].id = this.ui_.instanceId_ + "-" + id_;
+            this.elementsById_[id_] = new Melown.UIElement(this, allElements_[i]);
         }
     }
 };

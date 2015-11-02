@@ -8,7 +8,7 @@ Melown.UIControlMap = function(ui_) {
       + ' class="melown-map">'
       + ' </div>');
 
-    var map_ = this.control_.getElement("melown-compass");
+    var map_ = this.control_.getElement("melown-map");
     map_.on("drag", this.onDrag.bind(this));
     map_.on("mousedown", this.onMouseDown.bind(this));
     map_.on("mouseup", this.onMouseUp.bind(this));
@@ -16,4 +16,19 @@ Melown.UIControlMap = function(ui_) {
     this.mouseLeft_ = false;
     this.mouseRight_ = false;
 };
+
+Melown.UIControlMap.prototype.onDrag = function() {
+
+};
+
+Melown.UIControlMap.prototype.onMouseDown = function() {
+
+};
+
+Melown.UIControlMap.prototype.onMouseUp = function() {
+
+};
+
+
+
 

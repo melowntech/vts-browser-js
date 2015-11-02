@@ -31,7 +31,7 @@ Melown.UIElement.prototype.fire = function(type_, event_) {
 };
 
 Melown.UIElement.prototype.addEvent = function(type_, function_, externalElement_) {
-    var id_ = type + "-" + Melown.Utils.stamp(function_)
+    var id_ = type_ + "-" + Melown.Utils.stamp(function_)
               + (externalElement_ ? ("-" + Melown.Utils.stamp(externalElement_)) : "");
 
     var handler_ = function(e) {
@@ -39,7 +39,7 @@ Melown.UIElement.prototype.addEvent = function(type_, function_, externalElement
     };
 
     var element_ =  externalElement_ || this.element_;
-    element_.addEventListener("on" + type_, handler, false);
+    element_.addEventListener("on" + type_, handler_, false);
 
     this.events_[type_] = this.events_[type_] || [];
     this.events_[type_][id_] = handler_;
@@ -47,7 +47,7 @@ Melown.UIElement.prototype.addEvent = function(type_, function_, externalElement
 };
 
 Melown.UIElement.prototype.removeEvent = function(type_, function_, externalElement_) {
-    var id_ = type + "-" + Melown.Utils.stamp(function_)
+    var id_ = type_ + "-" + Melown.Utils.stamp(function_)
               + (externalElement_ ? ("-" + Melown.Utils.stamp(externalElement_)) : "");
 
     var handler_ = this.events_[type_] && this.events_[type_][id_];
@@ -56,7 +56,7 @@ Melown.UIElement.prototype.removeEvent = function(type_, function_, externalElem
         delete this.events_[type_][id_];
 
         var element_ =  externalElement_ || this.element_;
-        element_.addEventListener("on" + type_, handler, false);
+        element_.addEventListener("on" + type_, handler_, false);
     }
 };
 
