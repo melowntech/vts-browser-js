@@ -91,7 +91,7 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_)
     if (skipBaseUrl_) {
         return url_;
     } else {
-        return this.core_.baseURL_ + url_;
+        return this.baseURL_ + url_;
     }
 };
 

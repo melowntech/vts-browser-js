@@ -1,6 +1,6 @@
 
 Melown.MapCore = function(element_, config_) {
-    element_ = (typeof divId_ !== "string") ? element_ : document.getElementById(divId_);
+    element_ = (typeof element_ !== "string") ? element_ : document.getElementById(element_);
 
     if (Melown.checkSupport()) {
         return new Melown.CoreInterface(element_, config_);
@@ -31,7 +31,7 @@ Melown.CoreInterface.prototype.on = function(eventName_, call_) {
 
 
 //prevent minification
-Melown["MapCore"] = Melown.Core;
+Melown["MapCore"] = Melown.MapCore;
 Melown.CoreInterface.prototype["getMap"] = Melown.CoreInterface.prototype.getMap;
 Melown.CoreInterface.prototype["getRenderer"] = Melown.CoreInterface.prototype.getRenderer;
 Melown.CoreInterface.prototype["on"] = Melown.CoreInterface.prototype.on;

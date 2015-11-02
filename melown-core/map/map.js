@@ -6,13 +6,15 @@
 /**
  * @constructor
  */
-Melown.Map = function(core_)
+Melown.Map = function(core_, mapConfig_, path_)
 {
     this.core_ = core_;
-    this.mapConfig_ = core_.mapConfig_;
+    this.mapConfig_ = mapConfig_;
     this.coreConfig_ = core_.coreConfig_;
     this.killed_ = false;
     this.urlCounter_ = 0;
+
+    this.baseURL_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
     //this.mapConfig_["view"] = { "surfaces": ["ppspace"], "boundLayers": [], "freeLayers": [] };
 
@@ -51,21 +53,19 @@ Melown.Map = function(core_)
 
     this.loader_ = new Melown.MapLoader(this);
 
-    this.renderer_ = new Melown.Renderer(this.core_, this.core_.div_);
+    this.renderer_ = this.core_.renderer_;//new Melown.Renderer(this.core_, this.core_.div_);
     this.camera_ = this.renderer_.camera_;
 
     this.stats_ = new Melown.MapStats(this);
 
-    this.mapConfig_ = this.parseConfig(core_.mapConfig_);
+    this.parseConfig(this.mapConfig_);
 
     this.initMapTrees();
 
     //this.mesh_ = new Melown.MapMesh(this);
     //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
 
-    this.proj4_ = window["_vp4_"];
-
-    window.requestAnimFrame(this.update.bind(this));
+    this.proj4_ = this.core_.getProj4();
 };
 
 Melown.Map.prototype.kill = function() {
@@ -329,9 +329,4 @@ Melown.Map.prototype.update = function() {
 
     this.stats_.end();
 
-    if (this.core_.onUpdate_ != null) {
-        this.core_.onUpdate_(true);
-    }
-
-    window.requestAnimFrame(this.update.bind(this));
 };

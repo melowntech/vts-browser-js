@@ -12,12 +12,14 @@ Melown.Core = function(element_, options_) {
 
     this.map_ = null;
     this.renderer_ = new Melown.Renderer(this, this.element_, null, false);
-    this.proj4_ = null;
+    this.proj4_ = window["_vp4_"];
 
     //platform detection
     Melown.Platform.init();
 
     this.loadMap(this.coreConfig_.map_);
+
+    window.requestAnimFrame(this.onUpdate.bind(this));
 };
 
 Melown.Core.prototype.loadMap = function(path_) {
@@ -31,7 +33,7 @@ Melown.Core.prototype.loadMap = function(path_) {
     }
 
     var onLoaded_ = (function(data_) {
-        this.map_ = new Melown.Map(data_);
+        this.map_ = new Melown.Map(this, data_, path_);
     }).bind(this);
 
     var onError_ = (function() {

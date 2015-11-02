@@ -48,7 +48,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
     this.curSize_ = [rect_.width, rect_.height]; //QSize
     this.dirty_ = true;
     this.cameraVector_ = [0,1,0];
-    this.texelSizeLimit_ = this.core_.mapConfig_.texelSize_ * Melown.texelSizeFactor_;
+    //this.texelSizeLimit_ = this.core_.mapConfig_.texelSize_ * Melown.texelSizeFactor_;
     this.gsd_ = 0.02;
     this.noForwardMovement_ = true;
     this.heightLod_ = this.core_.coreConfig_.heightLod_;
@@ -193,8 +193,8 @@ Melown.Renderer.prototype.onResize = function()
     }
 
     var rect_ = this.div_.getBoundingClientRect();
-    var factor_ = window["MelownScreenScaleFactor_"];
-    this.resizeGL(Math.floor(rect_.width*factor_), Math.floor(rect_.height*factor_));
+    //var factor_ = window["MelownScreenScaleFactor_"];
+    this.resizeGL(Math.floor(rect_.width), Math.floor(rect_.height));
 };
 
 Melown.Renderer.prototype.kill = function()
