@@ -2,16 +2,22 @@
  * A ROI instance constructor
  * @constructor
  */
-Melown.Roi = function(config_, renderer_) {
+Melown.Roi = function(config_, core_) {
     this.config_ = config_;
-    this.renderer_ = renderer_;
-
-    // runtime modules
-    this.loader_ = null;
+    this.core_ = core_;
+    
+    this.renderer_ = this.core_.renderer_;
+    this.map_ = this.core_.map_;
 
     // state properties
     this.state_ = Melown.Roi.State.Created;
+    this.develAtFinishRequested_ = false;
+    this.leaveAtFinishRequested_ = false;
+    this.enterPosition_ = null;             // filled by devel function
+    this.refPosition_ = null;               // filled from config JSON 
+    this.currendPosition_ = null;           // changing by orientation accesor etc.
 
+    // inti roi point
     this._init();
 }
 
@@ -30,12 +36,30 @@ Melown.Roi.State = {
 
 // Public methods
 
-Melown.Roi.delve = function() {
+Melown.Roi.delve = function(enterPosition_) {
+    if (this.state_ === Melown.Roi.State.Created 
+        || this.state_ === Melown.Roi.State.FadingOut) {
+        this.develAtFinishRequested_ = true;
+    } else if (this.state_ === Melown.Roi.State.FadingIn) {
+        this.leaveAtFinishRequested_ = false;
+    } else if (this.state_ !== Melown.Roi.State.Ready) {
+        return;
+    }
 
+    // TODO flight into roi position and blend with custom render
 }
 
 Melown.Roi.leave = function() {
+    if (this.state_ === Melown.Roi.State.Created 
+        || this.state_ === Melown.Roi.State.FadingOut) {
+        this.develAtFinishRequested_ = false;
+    } else if (this.state_ === Melown.Roi.State.FadingIn) {
+        this.leaveAtFinishRequested_ = true;
+    } else if (this.state_ !== Melown.Roi.State.Ready) {
+        return;
+    }
 
+    // TODO flight into roi position and blend with custom render
 }
 
 // Accessor methods
@@ -45,18 +69,32 @@ Melown.Roi.prototype.state = function() {
 }
 
 Melown.Roi.prototype.config = function() {
-
+    return this.config_;
 }
 
-Melown.Roi.observerPosition = function() {
-
+Melown.Roi.currentPosition = function(type_ = 'obj') {
+    if (type_ === 'obj') {
+        return this.currendPosition_;
+    }
+    return this.map_.convert(this.currendPosition_, type);
 }
 
 Melown.Roi.orientation = function(yaw, pitch) {
-
+    if (yaw === undefined) {
+        // TODO get current yaw and pitch
+        return [0, 0];
+    } else if (pitch === undefined) {
+        if (yaw instanceof Array && yaw.length >= 2) {
+            pitch = yaw[1]; 
+            yaw = yaw[0];
+        } else {
+            pitch = this.orientation[1];
+        }
+    }
+    // TODO set current position from given yaw and pitch
 }
 
-// Private methods
+// Protected methods
 
 Melown.Roi.prototype._init = function() {
     this._processConfig(this.config_);
