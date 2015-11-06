@@ -11,8 +11,11 @@ Melown.Core = function(element_, options_) {
     this.listenerCounter_ = 0;
 
     this.map_ = null;
+    this.mapInterface_ = null;
     this.renderer_ = new Melown.Renderer(this, this.element_, null, false);
+    this.rendererInterface_ = new Melown.RendererInterface(this.renderer_);
     this.proj4_ = window["_vp4_"];
+
 
     //platform detection
     Melown.Platform.init();
@@ -26,6 +29,7 @@ Melown.Core.prototype.loadMap = function(path_) {
     if (this.map_ != null) {
         this.map_.kill();
         this.map_ = null;
+        this.mapInterface_ = null;
     }
 
     if (path_ == null) {
@@ -34,6 +38,7 @@ Melown.Core.prototype.loadMap = function(path_) {
 
     var onLoaded_ = (function(data_) {
         this.map_ = new Melown.Map(this, data_, path_);
+        this.mapInterface_ = new Melown.MapInterface(this.map_);
     }).bind(this);
 
     var onError_ = (function() {
@@ -47,8 +52,16 @@ Melown.Core.prototype.getMap = function() {
     return this.map_;
 };
 
+Melown.Core.prototype.getMapInterface = function() {
+    return this.mapInterface_;
+};
+
 Melown.Core.prototype.getRenderer = function() {
     return this.renderer_;
+};
+
+Melown.Core.prototype.getRendererInterface = function() {
+    return this.rendererInterface_;
 };
 
 Melown.Core.prototype.getProj4 = function() {

@@ -209,6 +209,25 @@ Melown.Map.prototype.getPosition = function() {
     return [ this.navPos_[0], this.navPos_[1], this.navCameraDistance_ ];
 };
 
+Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
+    var pos2_ = pos_.slice();
+
+    var zoomFactor_ = (this.getViewHeight() * Math.tan(Melown.radians(this.camera_.getFov()))) / 800;
+
+    dx_ *= zoomFactor_;
+    dy_ *= zoomFactor_;
+
+    var yaw_ = Melown.radians(this.getOrientation()[0]);
+
+    var forward_ = [-Math.sin(yaw_), Math.cos(yaw_)];
+    var aside_ = [Math.cos(yaw_), Math.sin(yaw_)];
+
+    pos2_[1] += forward_[0]*dy_ - aside_[0]*dx_;
+    pos2_[2] += forward_[1]*dy_ - aside_[1]*dx_;
+
+    return pos2_;
+};
+
 Melown.Map.prototype.setOrientation = function(orientation_) {
     this.navCameraRotation_ = orientation_.slice();
     this.dirty_ = true;
@@ -290,6 +309,17 @@ Melown.Map.prototype.getCameraView = function(cameraViewType_) {
         case "float":
         case "look":
     }
+
+    return ["fixed",
+            this.navPos_[0],
+            this.navPos_[1],
+            this.navHeight_,
+            this.navCameraRotation_[0],
+            this.navCameraRotation_[1],
+            this.navCameraRotation_[2],
+            this.navCameraViewHeight_,
+            this.navFov_ = 45
+            ];
 };
 
 
@@ -318,7 +348,7 @@ Melown.Map.prototype.update = function() {
     this.loader_.update();
     this.renderer_.gpu_.setViewport();
 
-    //this.updateCamera();
+    this.updateCamera();
     this.renderer_.dirty_ = true;
 
     //this.cameraPosition_ = this.renderer_.cameraPosition();

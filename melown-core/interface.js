@@ -18,11 +18,11 @@ Melown.CoreInterface = function(element_, config_) {
 };
 
 Melown.CoreInterface.prototype.getMap = function() {
-    this.core_.getMap();
+    return this.core_.getMapInterface();
 };
 
 Melown.CoreInterface.prototype.getRenderer = function() {
-    this.core_.getRenderer();
+    return this.core_.getRendererInterface();
 };
 
 Melown.CoreInterface.prototype.on = function(eventName_, call_) {
