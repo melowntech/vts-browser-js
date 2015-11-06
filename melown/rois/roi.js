@@ -25,10 +25,10 @@ Melown.Roi = function(config_, core_) {
 
 Melown.Roi.Fetch = function(config_, core_, clb_) {
     var done = function(json_) {
-        if (typeof json_ === 'object' && json_ !== null && json_ !== undefined) {
-            if (typeof json_.type === 'string' 
+        if (typeof json_ === 'object' && json_ !== null) {
+            if (typeof json_['type'] === 'string' 
                 && typeof Melown.Roi.Type[json_.type] === 'function') {
-                clb_(null, new Melown.Roi.Type[json_.type](json_, core_));
+                clb_(null, new Melown.Roi.Type[json_['type']](json_, core_));
             } else {
                 var err = new Error('Downloaded configuration JSON does not contain registered ROI type');
                 console.error(err);
@@ -52,8 +52,7 @@ Melown.Roi.Fetch = function(config_, core_, clb_) {
             return;
         });
     } else if (typeof config_ !== 'object' 
-        || config_ === null 
-        || config_ === undefined) {
+        || config_ === null) {
         var err = new Error('Unknown configuration format passed to Pano browser')
         console.error(err);
         clb(err);
@@ -143,64 +142,56 @@ Melown.Roi.orientation = function(yaw, pitch) {
 
 // Protected methods
 
+/**
+ * Parent class (this class) _init method MUST be caled from overidden method. 
+ */
 Melown.Roi.prototype._init = function() {
-    // Used mostly for subclassing
-    this._loadConfig();
-}
-
-Melown.Roi.prototype._finalizeInit = function() {
-
-}
-
-Melown.Roi._deinit = function() {
-    // Used mostly for subclassing
-}
-
-// Private methods
-
-Melown.Roi.prototype._loadConfig = function() {
-    if (typeof config_ === 'string') {
-        // async load of config at URL and call processConfig again (with object)
-        // TODO - Vadstena.loadJSON should be replaced by Melown.*
-        Vadstena.loadJSON(config_, function(json_) {
-            this.config_ = json_;
-            this._processConfig();
-        }, function(error_) {
-            this.state_ = Melown.Roi.State.Error;
-            console.error('Unable to download configuration JSON');
-        });
-    } else if (typeof config_ !== 'object' 
-        || config_ === null 
-        || config_ === undefined) {
+    // Process configuration file
+    if (typeof this.config_ !== 'object' || type.config_ === null) {
         this.state_ = Melown.Roi.State.Error;
-        console.error('Unknown configuration format passed to Pano browser');
+        var err = new Error('Config passed to ROI constructor is not object');
+        console.error(err);
+        return;
     }
-
-    // it's object - just process it
     this._processConfig();
+    
+    // If processing of configuration is successfull 
+    // (configuration JSON is valid) proceed to finalize initialization
+    if (this.state_ != Melown.Roi.State.Error) {
+        this._initFinalize();
+    }
 }
 
+/**
+ * Parent class (this class) _init method MUST be caled from overidden method. 
+ */
 Melown.Roi.prototype._processConfig = function() {
-    if (this.config_.)
-}
-
-
-
-Melown.Roi.prototype._processConfig = function(config_) {
-    if (typeof config_ === 'string') {
-        // async load of config at URL and call processConfig again (with object)
-        // TODO - Vadstena.loadJSON should be replaced by Melown.*
-        Vadstena.loadJSON(config_, function(json_) {
-            this._processConfig(json_);
-        }, function(error_) {
-            this.state_ = Melown.Roi.State.Error;
-        });
-    } else if (typeof config_ !== 'object' 
-        || config_ === null 
-        || config_ === undefined) {
-        this.state_ = Melown.Roi.State.Error;
-        console.error('Unknown configuration format passed to Pano browser');
+    var err = null;
+    if (typeof this.config_['id'] !== 'string') {
+        err = new Error('Missing (or type error) ROI id in config JSON');
+    } else if (this instanceof Melown.Roi.Type[this.config_['type']]) {
+        err = new Error('ROI type in config JSON missing or is not registered');
+    } else if (!this.config_['position'] instanceof Array
+               || !this.core_.map_.positionSanity(this.config_['position'])) {
+        err = new Error('ROI position in config JSON missing or is not valid');
+    } else if (typeof this.config_['title'] !== 'string') {
+        err = new Error('Missing (or type error) ROI title in config JSON');
     }
 
-    this.config_ = config_;
+    if (err !== null) {
+        this.state_ = Melown.Roi.State.Error;
+    }
+}
+
+/**
+ * Parent class (this class) _init method MUST be caled from overidden method. 
+ */
+Melown.Roi.prototype._initFinalize = function() {
+    // Change state and go ...
+    this.state_ = Melown.Roi.State.Ready;
+
+    if (this.develAtFinishRequested_) {
+        this.develAtFinishRequested_ = false;
+        this.devel();
+    }
 }
