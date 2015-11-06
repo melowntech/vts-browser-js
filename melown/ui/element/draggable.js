@@ -1,12 +1,12 @@
 
 Melown.UIElement.prototype.setDraggableState = function(state_) {
     if (state_) {
-        this.on("mousedown", this.onDragBegin.bind(this));
+        this.on("mousedown", this.dragBeginCall_);
     } else if (this.dragable_){
-        this.off("mousedown", this.onDragBegin.bind(this));
-        this.off("mousemove", this.onDragMove.bind(this));
-        this.off("mouseup", this.onDragEnd.bind(this));
-        this.off("mouseup", this.onDragEnd.bind(this), document);
+        this.off("mousedown", this.dragBeginCall_);
+        this.off("mousemove", this.dragMoveCall_, document);
+        //this.off("mouseup", this.onDragEnd.bind(this));
+        this.off("mouseup", this.dragEndCall_, document);
         this.dragging_ = false;
     }
 
@@ -29,9 +29,12 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
         this.dragging_ = true;
         var pos_ = event_.getMousePosition();
         this.lastDragPos_ = pos_;
-        this.on("mousemove", this.onDrag.bind(this));
-        this.on("mousedup", this.onDragEnd.bind(this));
-        this.on("mousedup", this.onDragEnd.bind(this), document);
+        this.on("mousemove", this.dragMoveCall_, document);
+        this.on("mouseup", this.dragEndCall_, document);
+        //this.on("mouseup", this.onDragEnd.bind(this), document);
+
+        Melown.Utils.disableTextSelection();
+        Melown.Utils.disableImageDrag();
 
         this.fire("dragstart", {
             "clientX" : pos_[0],
@@ -48,7 +51,10 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
         "clientX" : pos_[0],
         "clientY" : pos_[1],
         "deltaX" : pos_[0] - this.lastDragPos_[0],
-        "deltaY" : pos_[1] - this.lastDragPos_[1]
+        "deltaY" : pos_[1] - this.lastDragPos_[1],
+        "left" : this.dragButtons_["left"],
+        "right" : this.dragButtons_["right"],
+        "middle" : this.dragButtons_["middle"]
         });
 
     this.lastDragPos_ = pos_;
@@ -64,9 +70,12 @@ Melown.UIElement.prototype.onDragEnd = function(event_) {
 
             this.dragging_ = false;
             var pos_ = event_.getMousePosition();
-            this.off("mousemove", this.onDragMove.bind(this));
-            this.off("mouseup", this.onDragEnd.bind(this));
-            this.off("mouseup", this.onDragEnd.bind(this), document);
+            this.off("mousemove", this.dragMoveCall_, document);
+            this.off("mouseup", this.dragEndCall_, document);
+            //this.off("mouseup", this.onDragEnd.bind(this), document);
+
+            Melown.Utils.enableTextSelection();
+            Melown.Utils.enableImageDrag();
 
             this.fire("dragend", {
                 "clientX" : pos_[0],

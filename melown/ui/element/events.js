@@ -35,11 +35,12 @@ Melown.UIElement.prototype.addEvent = function(type_, function_, externalElement
               + (externalElement_ ? ("-" + Melown.Utils.stamp(externalElement_)) : "");
 
     var handler_ = function(e) {
-        function_.call(new Melown.UIEvent(type_, this, e || window.event));
+//        function_.call(new Melown.UIEvent(type_, this, e || window.event));
+        function_(new Melown.UIEvent(type_, this, e || window.event));
     };
 
     var element_ =  externalElement_ || this.element_;
-    element_.addEventListener("on" + type_, handler_, false);
+    element_.addEventListener(this.getEventName(type_), handler_, false);
 
     this.events_[type_] = this.events_[type_] || [];
     this.events_[type_][id_] = handler_;
@@ -56,8 +57,16 @@ Melown.UIElement.prototype.removeEvent = function(type_, function_, externalElem
         delete this.events_[type_][id_];
 
         var element_ =  externalElement_ || this.element_;
-        element_.addEventListener("on" + type_, handler_, false);
+        element_.removeEventListener(this.getEventName(type_), handler_, false);
     }
 };
 
+Melown.UIElement.prototype.getEventName = function(type_) {
+//    if (type_ == "click") {
+  //      return type_;
+//    }
+    return type_;
+
+//    return "on" + type_;
+};
 

@@ -20,7 +20,7 @@ Melown.UIControlZoom = function(ui_) {
     var plus_ = this.control_.getElement("melown-zoom-plus");
     plus_.on("click", this.onZoomIn.bind(this));
 
-    var minus_ = this.control_.getElement("melown-zoom-plus");
+    var minus_ = this.control_.getElement("melown-zoom-minus");
     minus_.on("click", this.onZoomOut.bind(this));
 
 };
