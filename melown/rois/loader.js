@@ -143,8 +143,8 @@ Melown.Roi.LoadingQueue.prototype.downloading = function() {
     return this.inProgress_;
 }
 
-Melown.Roi.LoadingQueue.prototype.status = function(resourceUrl_) {
-    // TODO
+Melown.Roi.LoadingQueue.prototype.item = function(resourceUrl_) {
+    return this._pickItem(resourceUrl_, true);
 }
 
 // Private methods
@@ -177,12 +177,12 @@ Melown.Roi.LoadingQueue.prototype._cancel = function(item_) {
     // TODO
 }
 
-Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_) {
+Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
     var item_ = null;
     for var i in this.enqueued_ {
         if (this.enqueued_[i].url_ === resourceUrl_) {
             item_ = this.enqueued_[i];
-            this.enqueued_.splice(i, 1);
+            nremove_ || this.enqueued_.splice(i, 1);
             break;
         }
     }
@@ -190,7 +190,7 @@ Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_) {
         for var i in this.inProgress_ {
             if (this.inProgress_[i].url_ === resourceUrl_) {
                 item_ = this.inProgress_[i];
-                this.inProgress_.splice(i, 1);
+                nremove_ || this.inProgress_.splice(i, 1);
                 break;
             }
         }
@@ -199,7 +199,7 @@ Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_) {
         for var i in this.finished_ {
             if (this.finished_[i].url_ === resourceUrl_) {
                 item_ = this.finished_[i];
-                this.finished_.splice(i, 1);
+                nremove_ || this.finished_.splice(i, 1);
                 break;
             }
         }   

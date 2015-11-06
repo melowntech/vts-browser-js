@@ -142,6 +142,8 @@ Melown.Roi.orientation = function(yaw, pitch) {
         }
     }
     // TODO set current position from given yaw and pitch
+
+    this._update();
 }
 
 // Protected methods
@@ -210,4 +212,10 @@ Melown.Roi.prototype._initFinalize = function() {
         this.develAtFinishRequested_ = false;
         this.devel();
     }
+}
+
+// Private methods
+
+Melown.Roi.prototype._update = function() {
+
 }
