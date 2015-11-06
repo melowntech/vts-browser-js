@@ -4,9 +4,10 @@
  * Roi type.
  * @constructor
  */
-Melown.Roi = function(config_, core_) {
+Melown.Roi = function(config_, core_, options_) {
     this.config_ = config_;
     this.core_ = core_;
+    this.options_ = options_;
     
     this.renderer_ = this.core_.renderer_;
     this.map_ = this.core_.map_;
@@ -18,6 +19,9 @@ Melown.Roi = function(config_, core_) {
     this.enterPosition_ = null;             // filled by devel function
     this.refPosition_ = null;               // filled from config JSON 
     this.currendPosition_ = null;           // changing by orientation accesor etc.
+
+    // modules
+    this.loadingQueue_ = null;
 
     // inti roi point
     this._init();
@@ -146,6 +150,18 @@ Melown.Roi.orientation = function(yaw, pitch) {
  * Parent class (this class) _init method MUST be caled from overidden method. 
  */
 Melown.Roi.prototype._init = function() {
+    // Process options
+    if (typeof this.options_ === 'object' && this.options_ !== null) {
+        if (this.options_.loadingQueue_ instanceof LoadingQueue) {
+            this.loadingQueue_ = this.options_.loadingQueue_;
+        } else {
+            var opts_ = this.options_.loadingQueueOptions_;
+            this.loadingQueue_ = new Melown.Roi.LoadingQueue(opts_);    
+        }
+    } else {
+        this.loadingQueue_ = new Melown.Roi.LoadingQueue();
+    }
+
     // Process configuration file
     if (typeof this.config_ !== 'object' || type.config_ === null) {
         this.state_ = Melown.Roi.State.Error;
