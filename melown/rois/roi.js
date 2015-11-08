@@ -12,6 +12,11 @@ Melown.Roi = function(config_, core_, options_) {
     this.renderer_ = this.core_.renderer_;
     this.map_ = this.core_.map_;
 
+    // config properties
+    this.title_ = null;
+    this.id_ = null;
+    this.type_ = null;
+
     // state properties
     this.state_ = Melown.Roi.State.Created;
     this.develAtFinishRequested_ = false;
@@ -198,6 +203,11 @@ Melown.Roi.prototype._processConfig = function() {
 
     if (err !== null) {
         this.state_ = Melown.Roi.State.Error;
+        console.error(err);
+    } else {
+        this.id_ = this.config_['id'];
+        this.title_ = this.config_['title'];
+        this.type_ = this.config_['type'];
     }
 }
 
