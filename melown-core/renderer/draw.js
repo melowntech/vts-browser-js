@@ -139,6 +139,61 @@ Melown.Renderer.prototype.drawImage = function(x, y, lx, ly, texture_, color_, d
     gl_.enable(gl_.CULL_FACE);
 };
 
+Melown.Renderer.prototype.drawBillboard = function(mvp_, texture_, color_, depthTest_, transparent_) {
+    var gl_ = this.gpu_.gl_;
+
+    if (depthTest_ != true) {
+        gl_.disable(gl_.DEPTH_TEST);
+    }
+
+    if (transparent_ == true) {
+        //gl_.blendFunc(gl_.SRC_ALPHA, gl_.ONE);
+        gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
+        gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
+        gl_.enable(gl_.BLEND);
+    }
+
+    gl_.disable(gl_.CULL_FACE);
+
+    this.gpu_.useProgram(this.progImage_, "aPosition", "aTexCoord");
+    this.gpu_.bindTexture(texture_);
+
+    this.progImage_.setSampler("uSampler", 0);
+
+    var vertices_ = this.rectVerticesBuffer_;
+    gl_.bindBuffer(gl_.ARRAY_BUFFER, vertices_);
+    gl_.vertexAttribPointer(this.progImage_.getAttribute("aPosition"), vertices_.itemSize, gl_.FLOAT, false, 0, 0);
+
+    var indices_ = this.rectIndicesBuffer_;
+    gl_.bindBuffer(gl_.ELEMENT_ARRAY_BUFFER, indices_);
+
+    this.progImage_.setMat4("uProjectionMatrix", mvp_);
+
+    var x = 0, y = 0, lx = 1, ly = 1;
+
+    this.progImage_.setMat4("uData", [
+        x, y,  0, 0,
+        x + lx, y,  1, 0,
+        x + lx, y + ly, 1, 1,
+        x,  y + ly,  0, 1  ]);
+
+    this.progImage_.setVec4("uColor", (color_ != null ? color_ : [255,255,255,255]));
+    this.progImage_.setFloat("uDepth", 0);
+
+    gl_.drawElements(gl_.TRIANGLES, indices_.numItems, gl_.UNSIGNED_SHORT, 0);
+
+    if (depthTest_ != true) {
+        gl_.enable(gl_.DEPTH_TEST);
+    }
+
+    if (transparent_ == true) {
+        gl_.disable(gl_.BLEND);
+    }
+
+    gl_.enable(gl_.CULL_FACE);
+};
+
+
 //draw flat 2d image - used for debuging
 Melown.Renderer.prototype.drawFlatImage = function(x, y, lx, ly, texture_, color_, depth_) {
 

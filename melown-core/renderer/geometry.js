@@ -68,7 +68,7 @@ Melown.RendererGeometry.buildHeightmap = function(size_)
 
     var bbox_ = new Melown.BBox(0,0,0,1,1,1);
 
-    return { "bbox":bbox_, "vertices":vertices_, "uvs": uvs_};
+    return { bbox_:bbox_, vertices_:vertices_, uvs_: uvs_};
 };
 
 
@@ -112,7 +112,7 @@ Melown.RendererGeometry.buildSkydome = function(latitudeBands_, longitudeBands_)
 
     var bbox_ = new Melown.BBox(0,0,0,1,1,1);
 
-    return { "bbox":bbox_, "vertices":vertices_, "uvs": uvs_};
+    return { bbox_:bbox_, vertices_:vertices_, uvs_: uvs_};
 };
 
 Melown.RendererGeometry.makeQuad = function(lon1_, lat1_, lon2_, lat2_, vertices_, index_, uvs_, index2_) {

@@ -306,7 +306,7 @@ Melown.MapSubmesh.prototype.fileSize = function () {
 };
 
 Melown.MapSubmesh.prototype.buildGpuMesh = function () {
-    return new Melown.GpuMesh(this.map_.renderer_.gpu_, {"bbox": this.bbox_, "vertices": this.vertices_, "uvs": this.internalUVs_}, 1, this.map_.core_);
+    return new Melown.GpuMesh(this.map_.renderer_.gpu_, {bbox_: this.bbox_, vertices_: this.vertices_, uvs_: this.internalUVs_}, 1, this.map_.core_);
 };
 
 Melown.MapSubmesh.prototype.getWorldMatrix = function(geoPos_, matrix_)

@@ -7,9 +7,8 @@ Melown.GpuBarycentricVertexBuffer_ = null;
 /**
  * @constructor
  */
-Melown.GpuMesh = function(gpu_, meshData_, fileSize_, core_)
-{
-    this.bbox_ = meshData_["bbox"]; //!< bbox copy from Mesh
+Melown.GpuMesh = function(gpu_, meshData_, fileSize_, core_) {
+    this.bbox_ = meshData_.bbox_; //!< bbox copy from Mesh
     this.gl_ = gpu_.gl_;
     this.fileSize_ = fileSize_; //used for stats
     this.core_ = core_;
@@ -17,38 +16,45 @@ Melown.GpuMesh = function(gpu_, meshData_, fileSize_, core_)
     var timer_ = performance.now();
 
     var gl_ = this.gl_;
-
-    if (gl_ == null)
+    if (gl_ == null) {
         return;
+    }
 
     this.vertexPositionBuffer_ = null;
     this.vertexTextureCoordBuffer_ = null;
 
-    var vertices_ = meshData_["vertices"];
-    var tvertices_ = meshData_["uvs"];
+    var vertices_ = meshData_.vertices_;
+    var uvs_ = meshData_.uvs_;
+
+    if (!vertices_ || !uvs_) {
+        return;
+    }
+
+    var vertexSize_ = meshData_.vertexSize_ || 3;
+    var uvSize_ = meshData_.uvSize_ || 2;
 
     //create vertex buffer
     this.vertexPositionBuffer_ = gl_.createBuffer();
     gl_.bindBuffer(gl_.ARRAY_BUFFER, this.vertexPositionBuffer_);
 
     gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-    this.vertexPositionBuffer_.itemSize = 3;
-    this.vertexPositionBuffer_.numItems = vertices_.length / 3;
+    this.vertexPositionBuffer_.itemSize = vertexSize_;
+    this.vertexPositionBuffer_.numItems = vertices_.length / vertexSize_;
 
     //create texture coords buffer
     this.vertexTextureCoordBuffer_ = gl_.createBuffer();
     gl_.bindBuffer(gl_.ARRAY_BUFFER, this.vertexTextureCoordBuffer_);
 
-    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(tvertices_), gl_.STATIC_DRAW);
-    this.vertexTextureCoordBuffer_.itemSize = 2;
-    this.vertexTextureCoordBuffer_.numItems = tvertices_.length / 2;
+    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(uvs_), gl_.STATIC_DRAW);
+    this.vertexTextureCoordBuffer_.itemSize = uvSize_;
+    this.vertexTextureCoordBuffer_.numItems = uvs_.length / uvSize_;
 
-    this.size_ = this.vertexPositionBuffer_.numItems * 3 * 4 + this.vertexTextureCoordBuffer_.numItems * 2 * 4;
+    this.size_ = this.vertexPositionBuffer_.numItems * vertexSize_ * 4
+                 + this.vertexTextureCoordBuffer_.numItems * uvSize_ * 4;
     this.polygons_ = this.vertexPositionBuffer_.numItems / 3;
 
 
     if (Melown.GpuBarycentricVertexBuffer_ == null) {
-
         var buffer_ = new Array(65535*3);
 
         for (var i = 0; i < 65535*3; i+=9) {
@@ -79,11 +85,15 @@ Melown.GpuMesh = function(gpu_, meshData_, fileSize_, core_)
         this.core_.renderer_.statsFluxMesh_[0][1] += this.size_;
     }
 
+    this.valid_ = true;
 };
 
 //destructor
-Melown.GpuMesh.prototype.kill = function()
-{
+Melown.GpuMesh.prototype.kill = function() {
+    if (!this.gl_ || !this.valid_) {
+        return;
+    }
+
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
     this.gl_.deleteBuffer(this.vertexTextureCoordBuffer_);
 
@@ -94,11 +104,11 @@ Melown.GpuMesh.prototype.kill = function()
 };
 
 //! Draws the mesh, given the two vertex shader attributes locations.
-Melown.GpuMesh.prototype.draw = function(program_, attrPosition_, attrTexCoord_, attrBarycenteric_)
-{
+Melown.GpuMesh.prototype.draw = function(program_, attrPosition_, attrTexCoord_, attrBarycenteric_) {
     var gl_ = this.gl_;
-    if (gl_ == null)
+    if (gl_ == null || !this.valid_) {
         return;
+    }
 
     var vertexPositionAttribute_ = program_.getAttribute(attrPosition_);
     var textureCoordAttribute_ = program_.getAttribute(attrTexCoord_);

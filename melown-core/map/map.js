@@ -318,7 +318,7 @@ Melown.Map.prototype.getCameraView = function(cameraViewType_) {
             this.navCameraRotation_[1],
             this.navCameraRotation_[2],
             this.navCameraViewHeight_,
-            this.navFov_ = 45
+            this.navFov_ * 2
             ];
 };
 
