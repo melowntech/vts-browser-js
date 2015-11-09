@@ -218,6 +218,9 @@ Melown.Roi.prototype._initFinalize = function() {
     // Change state and go ...
     this.state_ = Melown.Roi.State.Ready;
 
+    // TODO hook up on map.position changed event (this._update method)
+
+    // Devel in if requested
     if (this.develAtFinishRequested_) {
         this.develAtFinishRequested_ = false;
         this.devel();
@@ -228,4 +231,8 @@ Melown.Roi.prototype._initFinalize = function() {
 
 Melown.Roi.prototype._draw = function() {
 
+}
+
+Melown.Roi.prototype._update = function() {
+    
 }

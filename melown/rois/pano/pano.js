@@ -13,6 +13,9 @@ Melown.Roi.Pano = function(config_, core_, options_) {
     this.tilesOnLod0_ = null;
     this.tileRelSize_ = null;
 
+    // runtime
+    this.activeTiles_ = [];
+
     this.super_ = Melown.Roi.prototype;
     Melown.Roi.call(this, config_, core_, options_);
 }
@@ -58,7 +61,6 @@ Melown.Roi.Pano.prototype.tick = function() {
 
 Melown.Roi.Pano.prototype._init = function() {
     // check browser instance
-    // load and parse configuration file
     // prepare UI
 
     this.super_._init();
@@ -126,42 +128,55 @@ Melown.Roi.Pano.prototype._initFinalize = function() {
             position_[0] += this.tileRelSize_;
         }
     }
-
-    // Prepare tile tree
-    var tile = {
-        face : Melown_Roi_Pano_Cube_Front,
-        position : Melown_Roi_Pano_Child_TopLeft,
-        lod : 1,
-        children : [],
-        resources : {
-            url : "",
-            image : null,
-            texture : null
-        }
-    }
-
-    var face = {
-        face : Melown_Roi_Pano_Cube_Front,
-        tiles : []
-    }
 }
 
 Melown.Roi.Pano.prototype._update = function() {
     this.super_.update();
 
     // calc visible area
-    // zoom
-    // prepare reasources
+    // calc zoom (lod)
+    // find visible tiles
+    var newTiles = [];
 
-    // render
-    this._draw();
+    // check if active tiles changed
+    var changed = false;
+    if (this.activeTiles_.length !== newTiles.length) {
+        changed = true;
+    }
+    if (!changed) {}
+        for var i in this.activeTiles_ {
+            if (this.activeTiles_[i] !== newTiles[i]) {
+                changed = false;
+                break;
+            }
+        }
+    }
+
+    if (!changed) {
+        return;
+    }
+
+    this.activeTiles_ = newTiles;
+    
+
+    // set dirty render flag if needed
 }
 
 Melown.Pano.prototype._draw = function() {
-    // prepare all billboards and draw them seqs.
-    this.browser_.drawBillboard(/* TODO */);
+    // TODO clear zbuffer.
 
+    this.activeTiles_.forEach(function(item_) {
+        this._drawTile(item_);
+    }.bind(this));
+}
 
+Melown.Pano.prototype._drawTile = function(tile_) {
+    if (!tile_.texture_) {
+        return;
+    }
+    // TODO calculate mvp matrix
+
+    // TODO draw billboard
 }
 
 Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_) {
