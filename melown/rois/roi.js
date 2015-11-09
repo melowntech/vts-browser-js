@@ -8,9 +8,6 @@ Melown.Roi = function(config_, core_, options_) {
     this.config_ = config_;
     this.core_ = core_;
     this.options_ = options_;
-    
-    this.renderer_ = this.core_.renderer_;
-    this.map_ = this.core_.map_;
 
     // config properties
     this.title_ = null;
@@ -23,10 +20,22 @@ Melown.Roi = function(config_, core_, options_) {
     this.leaveAtFinishRequested_ = false;
     this.enterPosition_ = null;             // filled by devel function
     this.refPosition_ = null;               // filled from config JSON 
-    this.currendPosition_ = null;           // changing by orientation accesor etc.
+    this.needsRedraw_ = false;              // dirty flag for drawing
+
+    Object.defineProperty(this, 'currentPosition_', {
+        get : function() {
+            return this.map_.getPosition();
+        }.
+        set : function(val_) {
+            this.map_.setPosition(val_);
+        }
+    });
 
     // modules
+    this.renderer_ = this.core_.renderer_;
+    this.map_ = this.core_.map_;
     this.loadingQueue_ = null;
+    this.processingQueue_ = null;
 
     // inti roi point
     this._init();
@@ -127,28 +136,11 @@ Melown.Roi.prototype.config = function() {
     return this.config_;
 }
 
-Melown.Roi.currentPosition = function(type_ = 'obj') {
-    if (type_ === 'obj') {
-        return this.currendPosition_;
+Melown.Roi.prototype.tick = function() {
+    if (this.needsRedraw_) {
+        this.needsRedraw_ = false;
+        this._draw();
     }
-    return this.map_.convert(this.currendPosition_, type);
-}
-
-Melown.Roi.orientation = function(yaw, pitch) {
-    if (yaw === undefined) {
-        // TODO get current yaw and pitch
-        return [0, 0];
-    } else if (pitch === undefined) {
-        if (yaw instanceof Array && yaw.length >= 2) {
-            pitch = yaw[1]; 
-            yaw = yaw[0];
-        } else {
-            pitch = this.orientation[1];
-        }
-    }
-    // TODO set current position from given yaw and pitch
-
-    this._update();
 }
 
 // Protected methods
@@ -159,14 +151,22 @@ Melown.Roi.orientation = function(yaw, pitch) {
 Melown.Roi.prototype._init = function() {
     // Process options
     if (typeof this.options_ === 'object' && this.options_ !== null) {
-        if (this.options_.loadingQueue_ instanceof LoadingQueue) {
+        if (this.options_.loadingQueue_ instanceof Melown.Roi.LoadingQueue) {
             this.loadingQueue_ = this.options_.loadingQueue_;
         } else {
             var opts_ = this.options_.loadingQueueOptions_;
             this.loadingQueue_ = new Melown.Roi.LoadingQueue(opts_);    
         }
+
+        if (this.options_.processingQueue_ instanceof Melown.Roi.ProcessingQueue) {
+            this.processingQueue_ = this.options_.processingQueue_;
+        } else {
+            var opts_ = this.options_.processingQueueOptions_;
+            this.processingQueue_ = new Melown.Roi.ProcessingQueue(opts_);
+        }
     } else {
         this.loadingQueue_ = new Melown.Roi.LoadingQueue();
+        this.processingQueue_ = new Melown.Roi.ProcessingQueue();
     }
 
     // Process configuration file
@@ -226,6 +226,6 @@ Melown.Roi.prototype._initFinalize = function() {
 
 // Private methods
 
-Melown.Roi.prototype._update = function() {
+Melown.Roi.prototype._draw = function() {
 
 }
