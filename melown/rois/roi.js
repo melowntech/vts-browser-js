@@ -4,9 +4,9 @@
  * Roi type.
  * @constructor
  */
-Melown.Roi = function(config_, core_, options_) {
+Melown.Roi = function(config_, browser_, options_) {
     this.config_ = config_;
-    this.core_ = core_;
+    this.browser_ = browser_;
     this.options_ = options_;
 
     // config properties
@@ -22,6 +22,9 @@ Melown.Roi = function(config_, core_, options_) {
     this.refPosition_ = null;               // filled from config JSON 
     this.needsRedraw_ = false;              // dirty flag for drawing
 
+    // binded callbacks
+    this.tickClb_ = null;
+
     Object.defineProperty(this, 'currentPosition_', {
         get : function() {
             return this.map_.getPosition();
@@ -32,6 +35,7 @@ Melown.Roi = function(config_, core_, options_) {
     });
 
     // modules
+    this.core_ = this.browser_.core_;
     this.renderer_ = this.core_.renderer_;
     this.map_ = this.core_.map_;
     this.loadingQueue_ = null;
@@ -41,12 +45,16 @@ Melown.Roi = function(config_, core_, options_) {
     this._init();
 }
 
-Melown.Roi.Fetch = function(config_, core_, clb_) {
+Melown.Roi.Fetch = function(config_, browser_, options_, clb_) {
+    if (typeof options_ === 'function') {
+        clb_ = options_;
+        options_ = null;
+    }
     var done = function(json_) {
         if (typeof json_ === 'object' && json_ !== null) {
             if (typeof json_['type'] === 'string' 
                 && typeof Melown.Roi.Type[json_['type']] === 'function') {
-                clb_(null, new Melown.Roi.Type[json_['type']](json_, core_));
+                clb_(null, new Melown.Roi.Type[json_['type']](json_, browser_, options_));
                 return;
             } else {
                 var err = new Error('Downloaded configuration JSON does not contain registered ROI type');
@@ -127,6 +135,12 @@ Melown.Roi.prototype.leave = function() {
     // TODO flight into roi position and blend with custom render
 }
 
+Melown.Roi.prototype.deinit = function() {
+    // remove tick listener
+    this.browser_.off('tick', this.tickClb_); 
+    this.tickClb_ = null;
+}
+
 // Accessor methods
 
 Melown.Roi.prototype.state = function() {
@@ -135,13 +149,6 @@ Melown.Roi.prototype.state = function() {
 
 Melown.Roi.prototype.config = function() {
     return this.config_;
-}
-
-Melown.Roi.prototype.tick = function() {
-    if (this.needsRedraw_) {
-        this.needsRedraw_ = false;
-        this._draw();
-    }
 }
 
 // Protected methods
@@ -196,6 +203,7 @@ Melown.Roi.prototype._processConfig = function() {
     } else if (!this instanceof Melown.Roi.Type[this.config_['type']]) {
         err = new Error('ROI type in config JSON missing or is not registered');
     } else if (!this.config_['position'] instanceof Array
+// TODO!! check position sanity
                ) {//|| !this.core_.map_.positionSanity(this.config_['position'])) {
         err = new Error('ROI position in config JSON missing or is not valid');
     } else if (typeof this.config_['title'] !== 'string') {
@@ -221,6 +229,12 @@ Melown.Roi.prototype._initFinalize = function() {
 
     // TODO hook up on map.position changed event (this._update method)
 
+    // hook up on browser tick method
+    this.tickClb_ = function() {
+        this._tick();
+    }.bind(this);
+    this.browser_.on('tick', this.tickClb_);
+
     // Devel in if requested
     if (this.develAtFinishRequested_) {
         this.develAtFinishRequested_ = false;
@@ -229,6 +243,15 @@ Melown.Roi.prototype._initFinalize = function() {
 }
 
 // Private methods
+
+Melown.Roi.prototype._tick = function() {
+    this.processQueue_.tick();
+
+    if (this.needsRedraw_) {
+        this.needsRedraw_ = false;
+        this._draw();
+    }
+}
 
 Melown.Roi.prototype._draw = function() {
 

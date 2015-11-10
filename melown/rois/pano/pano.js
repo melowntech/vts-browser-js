@@ -1,3 +1,9 @@
+/**
+ * Pano class - specific Roi type class for rendering panorama.
+ * @constructor
+ * @final
+ * @extends {Melown.Roi}
+ */
 Melown.Roi.Pano = function(config_, core_, options_) {
     this.cubeTree_ = [];
 
@@ -12,6 +18,7 @@ Melown.Roi.Pano = function(config_, core_, options_) {
     // claculated config properties
     this.tilesOnLod0_ = null;
     this.tileRelSize_ = null;
+    this.cubeOrientationMatrix_ = null;
 
     // runtime
     this.activeTiles_ = [];
@@ -20,20 +27,22 @@ Melown.Roi.Pano = function(config_, core_, options_) {
     Melown.Roi.call(this, config_, core_, options_);
 }
 
-Melown.Roi.Type['pano'] = Melown.Roi.Pano;
-
-// inheritance from Roi
+// Inheritance from Roi
 Melown.Roi.Pano.prototype = Object.create(Melown.Roi.prototype);
 Melown.Roi.Pano.prototype.constructor = Melown.Roi.Pano;
 
-// Cube face index constants
-Melown_Roi_Pano_Cube_Front = 0;
-Melown_Roi_Pano_Cube_Right = 1;
-Melown_Roi_Pano_Cube_Back = 2;
-Melown_Roi_Pano_Cube_Left = 3;
-Melown_Roi_Pano_Cube_Up = 4;
-Melown_Roi_Pano_Cube_Down = 5;
+// Register class to Roi type dictionary (used by Roi.Fetch function)
+Melown.Roi.Type['pano'] = Melown.Roi.Pano;
 
+// Cube face index constants
+/** @const */ Melown_Roi_Pano_Cube_Front = 0;
+/** @const */ Melown_Roi_Pano_Cube_Right = 1;
+/** @const */ Melown_Roi_Pano_Cube_Back = 2;
+/** @const */ Melown_Roi_Pano_Cube_Left = 3;
+/** @const */ Melown_Roi_Pano_Cube_Up = 4;
+/** @const */ Melown_Roi_Pano_Cube_Down = 5;
+
+// Translates face constant int to face string
 Melown.Roi.Pano.faceTitle = function(index_) {
     var title = '';
     switch (index_) {
@@ -53,11 +62,6 @@ Melown_Roi_Pano_Child_TopLeft = 0;
 Melown_Roi_Pano_Child_TopRight = 1;
 Melown_Roi_Pano_Child_BottomLeft = 2;
 Melown_Roi_Pano_Child_BottomRight = 3;
-
-Melown.Roi.Pano.prototype.tick = function() {
-    this.super_.tick.call(this);
-
-}
 
 // Protected methods
 
@@ -136,6 +140,20 @@ Melown.Roi.Pano.prototype._initFinalize = function() {
             index_[0]++;
         }
     }
+
+    // orient cube
+    this.cubeOrientationMatrix_ = Melown.mat4.create();
+    var rotateZ = Melown.rotationMatrix(2, Melown.radians(-this.cubeOrientation_[2]));
+    var rotateY = Melown.rotationMatrix(1, Melown.radians(-this.cubeOrientation_[1]));
+    var rotateX = Melown.rotationMatrix(0, Melown.radians(-this.cubeOrientation_[0]));
+    Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateZ, this.cubeOrientationMatrix_);
+    Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateY, this.cubeOrientationMatrix_);
+    Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateX, this.cubeOrientationMatrix_);
+}
+
+Melown.Roi.Pano.prototype._tick = function() {
+    this.super_._tick.call(this);
+
 }
 
 Melown.Roi.Pano.prototype._update = function() {
@@ -165,7 +183,7 @@ Melown.Roi.Pano.prototype._update = function() {
     }
 
     this.activeTiles_ = newTiles;
-    
+    this._loadActiveTiles();
 
     // set dirty render flag if needed
 }
@@ -179,7 +197,7 @@ Melown.Roi.Pano.prototype._draw = function() {
 }
 
 Melown.Roi.Pano.prototype._drawTile = function(tile_) {
-    if (!tile_.texture_) {
+    if (!tile_.texture()) {
         return;
     }
     // TODO calculate mvp matrix
@@ -200,7 +218,7 @@ Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_
     var childrenTs_ = this.tileRelSize_ / Math.pow(2, lod_);
     if (lod_ < this.lodCount_) {
         for (var i = 0; i < 4; i++) {
-            tile_.applendChild(this._prepareTile(face_, position_, newIndex_, lod_));
+            tile_.applendChild(this._prepareTile(face_, newPosition_, newIndex_, lod_));
             if (i % 2 == 0) {
                 newIndex_[1]++;
                 newPosition_[1] += childrenTs_ ;
@@ -215,13 +233,41 @@ Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_
     return tile_;
 }
 
-Melown.Roi.Pano.prototype._loadTiles = function(tiles_) {
-    for (var i in tiles_) {
-        var tile_ = tiles_[i];
-        tile_.image(this.loadingQueue_, function(err_, img_) {
-            if (err_ === null && img_ instanceof Image) {
+Melown.Roi.Pano.prototype._loadActiveTiles = function() {
+    for (var i in this.activeTiles_) {
+        var tile_ = this.activeTiles_[i];
+        if (tile_.texture() instanceof Melown.GpuTexture) {
+            continue;
+        }
 
+        var processClb_ = function(tile_) {
+            tile_.texture(this.renderer_.createTexture(tile_.image()));
+            tile_.image(null);
+        }.bind(this, tile_);
+
+        // we have an image object already - enqueue texture creation
+        if (tile_.image() instanceof Image) {
+            this.processQueue_.enqueue(processClb_);
+            continue;
+        }
+
+        // we have only tile URL - download image and enqueue texture creation
+        this.loadingQueue_.enqueue(tile_.url(), Melown.Roi.LoadingQueue.Type.Image,
+        function(tile_, processclb_, err_, image_) {
+            if (err_) {
+                return;
             }
-        }.bind(this));
+            tile_.image(image_);
+            this.processQueue_.enqueue(processClb_);
+        }.bind(this, tile_, processClb_));
+
     }
+}
+
+Melown.Roi.Pano.prototype._faceMatrix = function(face_) {
+    var mat = null;
+    switch (face_) {
+
+    }
+    return mat;
 }

@@ -19,76 +19,16 @@ Melown.Roi.Pano.Tile.prototype.url = function() {
     return this.resources_.url_;
 }
 
-Melown.Roi.Pano.Tile.prototype.onImage = function(err, image) {
-
+Melown.Roi.Pano.Tile.prototype.image = function(image_) {
+    if (image_ === undefined) {
+        return this.resources_.image_ 
+    }
+    this.resources_.image_ = image_;
 }
 
-Melown.Roi.Pano.Tile.prototype.onTexture = function(err, texture) {
-
-}
-
-Melown.Roi.Pano.Tile.prototype.image = function(queue_, clb_) {
-    if (this.resources_.image_ instanceof Image) {
-        setTimeout(clb_(null, this), 0);
-        return this.resources_.image_;
+Melown.Roi.Pano.Tile.prototype.texture = function(texture_) {
+    if (texture_ === undefined) {
+        return this.resources_.texture_ 
     }
-
-    if (!queue_ instanceof Melown.Roi.LoadingQueue) {
-        setTimeout(new Error('Image is not loaded and there is not passed queue to load'), null);
-        return null;
-    }
-
-    queue_.enqueue(this.resources_.url_, Melown.Roi.LoadingQueue.Type.Image, 
-    function(err_, image_) {
-        if (image_ instanceof Image) {
-            this.resources_.image_ = image;
-        }
-        clb(err_, image_);
-    }.bind(this));
-    return null;
-}
-
-Melown.Roi.Pano.Tile.prototype.texture_ = function(renderer_) {
-    if (typeof this.resources_.texture_ === 'object' 
-        && this.resources_.texture_ !== null) {
-        return this.resources_.texture_;
-    }
-    if (!this.resources_.image_ instanceof Image 
-        || renderer_ instanceof Melown.Core.Renderer) {
-        return null;
-    }
-
-    this.resources_.texture_ = this.renderer_.createTexture(this.resources_.image_);
-    return this.resources_.texture_;
-}
-
-/**
- * @enum {int}
- */
-Melown.Roi.Pano.Tile.ReleaseLevel = {
-    Image : 1,
-    Texture : 2,
-    Both : 3
-}
-
-Melown.Roi.Pano.Tile.prototype.release = function(level_, renderer_) {
-    if (level_ === undefined) {
-        level_ = Melown.Roi.Pano.Tile.ReleaseLevel.Both;
-    }
-
-    if (level_ & Melown.Roi.Pano.Tile.ReleaseLevel.Image) {
-        delete this.resources_.image_;
-        this.resources_.image_ = null;
-    }
-
-    if (level_ & Melown.Roi.Pano.Tile.ReleaseLevel.Texture) {
-        if (!renderer_ instanceof Melown.Core.Renderer) {
-            return;
-        }
-        if (!this.resources_.texture_ instanceof Melown.Core.GpuTexture) {
-            return;
-        }
-        renderer_.removeResource(this.resources_.texture_);
-        this.resources_.texture_ = null;
-    }
+    this.resources_.texture_ = texture_;
 }
