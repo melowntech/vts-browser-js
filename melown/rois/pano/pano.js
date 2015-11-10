@@ -159,10 +159,12 @@ Melown.Roi.Pano.prototype._tick = function() {
 Melown.Roi.Pano.prototype._update = function() {
     this.super_.update.call(this);
 
-    // calc visible area
-    // calc zoom (lod)
+    // get view projection matric
+    var vpMat_ = this.map_.getCameraInfo()['view-projection-matrix'];
+    // calc zoom (suitable lod)
+    var useLod_ = this._suitableLod(vpMat_);
     // find visible tiles
-    var newTiles = [];
+    var newTiles = this._visibleTiles(vpMat_, 0);
 
     // check if active tiles changed
     var changed = false;
@@ -178,6 +180,7 @@ Melown.Roi.Pano.prototype._update = function() {
         }
     }
 
+    // nothing change? No need to load
     if (!changed) {
         return;
     }
@@ -185,7 +188,8 @@ Melown.Roi.Pano.prototype._update = function() {
     this.activeTiles_ = newTiles;
     this._loadActiveTiles();
 
-    // set dirty render flag if needed
+    // set draw dirty flag (cube will be redraw in next tick)
+    this.needsRedraw_ = true;
 }
 
 Melown.Roi.Pano.prototype._draw = function() {
@@ -201,8 +205,18 @@ Melown.Roi.Pano.prototype._drawTile = function(tile_) {
         return;
     }
     // TODO calculate mvp matrix
+    // got:
+    //  - projection-view from map.getCamera()
+    //  - cube orientation matrix
+    //  - tile position and size
+    //  need to:
+    //  - create billboard matrix
+    //  - orientate billboard with cube matrix
+    //  - get mvp matrix
+    var mvp_ = Melown.mat4.create();
 
     // TODO draw billboard
+    this.renderer_.drawBillboard(mvp_, texture_, [0, 0, 1, 1]);
 }
 
 Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_) {
@@ -243,6 +257,7 @@ Melown.Roi.Pano.prototype._loadActiveTiles = function() {
         var processClb_ = function(tile_) {
             tile_.texture(this.renderer_.createTexture(tile_.image()));
             tile_.image(null);
+            this.setMeedsRedraw();
         }.bind(this, tile_);
 
         // we have an image object already - enqueue texture creation
@@ -261,6 +276,30 @@ Melown.Roi.Pano.prototype._loadActiveTiles = function() {
             this.processQueue_.enqueue(processClb_);
         }.bind(this, tile_, processClb_));
 
+    }
+}
+
+Melown.Roi.Pano._suitableLod = function(vpMat_) {
+    return 0;
+}
+
+Melown.Roi.Pano._visibleTiles = function(vpMat_, lod_) {
+    var tiles_ = [];
+
+    var recurs = function(tile_) {
+        if (tile_.lod_ === lod_ || tile_.childs_.length === 0) {
+            tiles_.push(tile_);
+        }
+
+        for (var i in tile_.childs_) {
+            recurs(tile_.childs_[i]);
+        }
+    };
+
+    for (var i in this.cubeTree_) {
+        for (var j in this.cubeTree_[i]) {
+            recurs(this.cubeTree_[i][j]);
+        }
     }
 }
 

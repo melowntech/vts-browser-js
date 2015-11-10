@@ -141,6 +141,10 @@ Melown.Roi.prototype.deinit = function() {
     this.tickClb_ = null;
 }
 
+Melown.Roi.prototype.setNeedRedraw = function() {
+    this.needsRedraw_ = true;
+}
+
 // Accessor methods
 
 Melown.Roi.prototype.state = function() {
@@ -254,9 +258,9 @@ Melown.Roi.prototype._tick = function() {
 }
 
 Melown.Roi.prototype._draw = function() {
-
+    // nop
 }
 
 Melown.Roi.prototype._update = function() {
-    
+    // nop   
 }
