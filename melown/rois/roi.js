@@ -25,7 +25,7 @@ Melown.Roi = function(config_, core_, options_) {
     Object.defineProperty(this, 'currentPosition_', {
         get : function() {
             return this.map_.getPosition();
-        }.
+        },
         set : function(val_) {
             this.map_.setPosition(val_);
         }
@@ -35,7 +35,7 @@ Melown.Roi = function(config_, core_, options_) {
     this.renderer_ = this.core_.renderer_;
     this.map_ = this.core_.map_;
     this.loadingQueue_ = null;
-    this.processingQueue_ = null;
+    this.processQueue_ = null;
 
     // inti roi point
     this._init();
@@ -45,8 +45,9 @@ Melown.Roi.Fetch = function(config_, core_, clb_) {
     var done = function(json_) {
         if (typeof json_ === 'object' && json_ !== null) {
             if (typeof json_['type'] === 'string' 
-                && typeof Melown.Roi.Type[json_.type] === 'function') {
+                && typeof Melown.Roi.Type[json_['type']] === 'function') {
                 clb_(null, new Melown.Roi.Type[json_['type']](json_, core_));
+                return;
             } else {
                 var err = new Error('Downloaded configuration JSON does not contain registered ROI type');
                 console.error(err);
@@ -100,7 +101,7 @@ Melown.Roi.State = {
 
 // Public methods
 
-Melown.Roi.delve = function(enterPosition_) {
+Melown.Roi.prototype.delve = function(enterPosition_) {
     if (this.state_ === Melown.Roi.State.Created 
         || this.state_ === Melown.Roi.State.FadingOut) {
         this.develAtFinishRequested_ = true;
@@ -113,7 +114,7 @@ Melown.Roi.delve = function(enterPosition_) {
     // TODO flight into roi position and blend with custom render
 }
 
-Melown.Roi.leave = function() {
+Melown.Roi.prototype.leave = function() {
     if (this.state_ === Melown.Roi.State.Created 
         || this.state_ === Melown.Roi.State.FadingOut) {
         this.develAtFinishRequested_ = false;
@@ -158,19 +159,19 @@ Melown.Roi.prototype._init = function() {
             this.loadingQueue_ = new Melown.Roi.LoadingQueue(opts_);    
         }
 
-        if (this.options_.processingQueue_ instanceof Melown.Roi.ProcessingQueue) {
-            this.processingQueue_ = this.options_.processingQueue_;
+        if (this.options_.processQueue_ instanceof Melown.Roi.ProcessQueue) {
+            this.processQueue_ = this.options_.processQueue_;
         } else {
-            var opts_ = this.options_.processingQueueOptions_;
-            this.processingQueue_ = new Melown.Roi.ProcessingQueue(opts_);
+            var opts_ = this.options_.processQueueOptions_;
+            this.processQueue_ = new Melown.Roi.ProcessQueue(opts_);
         }
     } else {
         this.loadingQueue_ = new Melown.Roi.LoadingQueue();
-        this.processingQueue_ = new Melown.Roi.ProcessingQueue();
+        this.processQueue_ = new Melown.Roi.ProcessQueue();
     }
 
     // Process configuration file
-    if (typeof this.config_ !== 'object' || type.config_ === null) {
+    if (typeof this.config_ !== 'object' || this.config_ === null) {
         this.state_ = Melown.Roi.State.Error;
         var err = new Error('Config passed to ROI constructor is not object');
         console.error(err);
@@ -192,10 +193,10 @@ Melown.Roi.prototype._processConfig = function() {
     var err = null;
     if (typeof this.config_['id'] !== 'string') {
         err = new Error('Missing (or type error) ROI id in config JSON');
-    } else if (this instanceof Melown.Roi.Type[this.config_['type']]) {
+    } else if (!this instanceof Melown.Roi.Type[this.config_['type']]) {
         err = new Error('ROI type in config JSON missing or is not registered');
     } else if (!this.config_['position'] instanceof Array
-               || !this.core_.map_.positionSanity(this.config_['position'])) {
+               ) {//|| !this.core_.map_.positionSanity(this.config_['position'])) {
         err = new Error('ROI position in config JSON missing or is not valid');
     } else if (typeof this.config_['title'] !== 'string') {
         err = new Error('Missing (or type error) ROI title in config JSON');

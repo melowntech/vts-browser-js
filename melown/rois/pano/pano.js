@@ -4,7 +4,7 @@ Melown.Roi.Pano = function(config_, core_, options_) {
     // config properties
     this.cubeOrientation_ = null;
     this.navExtents_ = null;
-    this.imageSize_ null;
+    this.imageSize_ = null;
     this.lodCount_ = null;
     this.tileSize_ = null;
     this.tileTemplate_ = null;
@@ -19,6 +19,8 @@ Melown.Roi.Pano = function(config_, core_, options_) {
     this.super_ = Melown.Roi.prototype;
     Melown.Roi.call(this, config_, core_, options_);
 }
+
+Melown.Roi.Type['pano'] = Melown.Roi.Pano;
 
 // inheritance from Roi
 Melown.Roi.Pano.prototype = Object.create(Melown.Roi.prototype);
@@ -53,7 +55,7 @@ Melown_Roi_Pano_Child_BottomLeft = 2;
 Melown_Roi_Pano_Child_BottomRight = 3;
 
 Melown.Roi.Pano.prototype.tick = function() {
-    this.super_.tick();
+    this.super_.tick.call(this);
 
 }
 
@@ -63,18 +65,18 @@ Melown.Roi.Pano.prototype._init = function() {
     // check browser instance
     // prepare UI
 
-    this.super_._init();
+    this.super_._init.call(this);
 }
 
 Melown.Roi.Pano.prototype._processConfig = function() {
-    this.super_._processConfig();
+    this.super_._processConfig.call(this);
 
     if (this.state_ === Melown.Roi.State.Error) {
         return;
     }
 
     var err = null;
-    if (typeof this.config_['pano'] !== ' object' 
+    if (typeof this.config_['pano'] !== 'object' 
         || this.config_['pano'] === null) {
         err = new Error('Missing (or type error) pano key in config JSON');
     } else if (!this.config_['pano']['orientation'] instanceof Array 
@@ -93,7 +95,7 @@ Melown.Roi.Pano.prototype._processConfig = function() {
                || this.config_['pano']['lodCount'] < 1) {
         err = new Error('Missing (or type error) pano.lodCount in config JSON');
     } else if (typeof this.config_['pano']['tileUrl'] !== 'string'
-        || !Melown.Utils.urlSanity(this.config_['pano']['tileUrl'])) {
+        ) { //|| !Melown.Utils.urlSanity(this.config_['pano']['tileUrl'])) {
         err = new Error('Missing (or type error) pano.tileUrl in config JSON');
     }
 
@@ -111,12 +113,13 @@ Melown.Roi.Pano.prototype._processConfig = function() {
 }
 
 Melown.Roi.Pano.prototype._initFinalize = function() {
-    this.super_._initFinalize();
+    this.super_._initFinalize.call(this);
 
     // Prepare tile tree
     this.tilesOnLod0_ = Math.ceil(this.imageSize_ / this.tileSize_);
     this.tileRelSize_ = this.tileSize_ / this.imageSize_; 
     this.cubeTree_ = [[], [], [], [], [], []];  // Cube array
+    var index_ = [0,0];
     for (var i = 0; i < 6; i++) {
         var position_ = [0.0, 0.0];
         var arr_ = this.cubeTree_[i];
@@ -125,13 +128,18 @@ Melown.Roi.Pano.prototype._initFinalize = function() {
                 arr_.push(this._prepareTile(i, position_, index_, 0));
                 position_[1] += this.tileRelSize_;    
             }
+
+            position_[1] = 0.0;
             position_[0] += this.tileRelSize_;
+
+            index_[1] = 0;
+            index_[0]++;
         }
     }
 }
 
 Melown.Roi.Pano.prototype._update = function() {
-    this.super_.update();
+    this.super_.update.call(this);
 
     // calc visible area
     // calc zoom (lod)
@@ -143,8 +151,8 @@ Melown.Roi.Pano.prototype._update = function() {
     if (this.activeTiles_.length !== newTiles.length) {
         changed = true;
     }
-    if (!changed) {}
-        for var i in this.activeTiles_ {
+    if (!changed) {
+        for (var i in this.activeTiles_) {
             if (this.activeTiles_[i] !== newTiles[i]) {
                 changed = false;
                 break;
@@ -162,7 +170,7 @@ Melown.Roi.Pano.prototype._update = function() {
     // set dirty render flag if needed
 }
 
-Melown.Pano.prototype._draw = function() {
+Melown.Roi.Pano.prototype._draw = function() {
     // TODO clear zbuffer.
 
     this.activeTiles_.forEach(function(item_) {
@@ -170,7 +178,7 @@ Melown.Pano.prototype._draw = function() {
     }.bind(this));
 }
 
-Melown.Pano.prototype._drawTile = function(tile_) {
+Melown.Roi.Pano.prototype._drawTile = function(tile_) {
     if (!tile_.texture_) {
         return;
     }
@@ -189,7 +197,7 @@ Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_
     var newIndex_ = [index_[0] * 2, index_[1] * 2];
     var newPosition_ = [position_[0], position_[1]];
     lod_++;
-    var childrenTs_ = this.tileRelSize_ / 2**lod_;
+    var childrenTs_ = this.tileRelSize_ / Math.pow(2, lod_);
     if (lod_ < this.lodCount_) {
         for (var i = 0; i < 4; i++) {
             tile_.applendChild(this._prepareTile(face_, position_, newIndex_, lod_));

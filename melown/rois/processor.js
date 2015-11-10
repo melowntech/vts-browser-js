@@ -45,7 +45,7 @@ Melown.Roi.ProcessQueue.prototype.denqueue = function(task_) {
         return;
     }
 
-    for var i in this.enqueued_ {
+    for (var i in this.enqueued_) {
         if (this.enqueued_[i] === task_) {
             this.enqueued_.splice(i, 1);
             break;

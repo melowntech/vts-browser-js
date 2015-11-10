@@ -105,14 +105,14 @@ Melown.Roi.LoadingQueue.prototype.dequeue = function(resourceUrl_) {
     return item_;
 }
 
-Melown.Pano.LoadingQueue.prototype.on = function(event_, action_) {
+Melown.Roi.LoadingQueue.prototype.on = function(event_, action_) {
     if (typeof action_ !== 'function'
         || (event_ !== Melown_Roi_LQ_Downloaded
             && event_ !== Melown_Roi_LQ_Failed
             && event_ !== Melown_Roi_LQ_Begin)) {
         return;
     }
-    for var i in this.listeners_[event_] {
+    for (var i in this.listeners_[event_]) {
         if (this.listeners_[event_][i] === action_) {
             this.listeners_[event_].push(action_);
         }
@@ -126,7 +126,7 @@ Melown.Roi.LoadingQueue.prototype.removeListener = function(event_, action_) {
             && event_ !== Melown_Roi_LQ_Begin)) {
         return;
     }
-    for var i in this.listeners_[event_] {
+    for (var i in this.listeners_[event_]) {
         if (this.listeners_[event_][i] === action_) {
             this.listeners_[event_].slice(i, 1);
         }
@@ -156,7 +156,7 @@ Melown.Roi.LoadingQueue.prototype._next = function() {
     }
     
     var item_ = its_[0];
-    this.
+    
     if (item_.type_ === Melown.Roi.LoadingQueue.Type.Binary) {
 
     } else if (item_.type_ === Melown.Roi.LoadingQueue.Type.JSON) {
@@ -179,7 +179,7 @@ Melown.Roi.LoadingQueue.prototype._cancel = function(item_) {
 
 Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
     var item_ = null;
-    for var i in this.enqueued_ {
+    for (var i in this.enqueued_) {
         if (this.enqueued_[i].url_ === resourceUrl_) {
             item_ = this.enqueued_[i];
             nremove_ || this.enqueued_.splice(i, 1);
@@ -187,7 +187,7 @@ Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
         }
     }
     if (item === null) {
-        for var i in this.inProgress_ {
+        for (var i in this.inProgress_) {
             if (this.inProgress_[i].url_ === resourceUrl_) {
                 item_ = this.inProgress_[i];
                 nremove_ || this.inProgress_.splice(i, 1);
@@ -196,7 +196,7 @@ Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
         }
     }
     if (item === null) {
-        for var i in this.finished_ {
+        for (var i in this.finished_) {
             if (this.finished_[i].url_ === resourceUrl_) {
                 item_ = this.finished_[i];
                 nremove_ || this.finished_.splice(i, 1);
