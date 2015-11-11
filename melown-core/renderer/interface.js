@@ -149,6 +149,14 @@ Melown.RendererInterface.prototype.drawBBox = function(options_) {
 Melown.RendererInterface.prototype.drawDebugText = function(options_) {
 };
 
+Melown.RendererInterface.prototype.getScreenCoords = function(point_, mvp_) {
+    return this.renderer_.project2(point_, mvp_);
+};
+
+Melown.RendererInterface.prototype.getScreenSize = function(point_, mvp_) {
+    return this.renderer_.curSize_.slice();
+};
+
 
 //prevent minification
 Melown.RendererInterface.prototype["clear"] = Melown.RendererInterface.prototype.clear;

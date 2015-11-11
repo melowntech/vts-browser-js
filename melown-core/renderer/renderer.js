@@ -246,9 +246,33 @@ Melown.Renderer.prototype.resizeGL = function(width_, height_, skipCanvas_, skip
     this.imageProjectionMatrix_ = m;
 };
 
+Melown.Renderer.prototype.project2 = function(point_, mvp_) {
+    var p_ = [point_[0], point_[1], point_[2], 1 ];
 
-Melown.Renderer.prototype.project = function(point_)
-{
+    //project point coords to screen
+    var p2_ = [0, 0, 0, 1];
+    p2_ = Melown.mat4.multiplyVec4(mvp_, p_);
+
+    if (p2_[3] != 0) {
+        var sp_ = [0,0,0];
+
+        //x and y are in screen pixels
+        sp_[0] = ((p2_[0]/p2_[3])+1.0)*0.5*this.curSize_[0];
+        sp_[1] = (-(p2_[1]/p2_[3])+1.0)*0.5*this.curSize_[1];
+
+        //depth in meters
+        sp_[2] = p2_[2]/p2_[3];
+        //sp_[2] = p2_[2];
+        //sp_[2] =  this.camera_.getNear() + sp_[2] ;//* (this.camera_.getFar() - this.camera_.getNear());
+
+        return sp_;
+    } else {
+        return [0, 0, 0];
+    }
+};
+
+
+Melown.Renderer.prototype.project = function(point_, mvp_) {
     //get mode-view-projection matrix
     var mvp_ = this.camera_.getMvpMatrix();
 

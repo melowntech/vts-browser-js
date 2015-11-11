@@ -30,6 +30,7 @@ Melown.Core.prototype.loadMap = function(path_) {
         this.map_.kill();
         this.map_ = null;
         this.mapInterface_ = null;
+        this.callListener("map-unloaded", {});
     }
 
     if (path_ == null) {
@@ -39,6 +40,7 @@ Melown.Core.prototype.loadMap = function(path_) {
     var onLoaded_ = (function(data_) {
         this.map_ = new Melown.Map(this, data_, path_);
         this.mapInterface_ = new Melown.MapInterface(this.map_);
+        this.callListener("map-loaded", {});
     }).bind(this);
 
     var onError_ = (function() {

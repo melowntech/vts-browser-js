@@ -65,7 +65,7 @@ Melown.MapInterface.prototype.pan = function(position_, dx_, dy_) {
     return this.map_.pan(position_, dx_, dy_);
 };
 
-Melown.MapInterface.prototype.getMapInfo = function() {
+Melown.MapInterface.prototype.getCameraInfo = function() {
     var camera_ = this.map_.camera_;
     return {
         "projection-matrix" : camera_.projection_,
