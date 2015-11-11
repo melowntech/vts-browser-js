@@ -97,7 +97,7 @@
  * COMPASS
  */
 
-.melown-compass {
+#melown-compass {
     position:absolute;
     left:21px;
     bottom:64px;
@@ -112,7 +112,7 @@
     max-height:120px;
 }
 
-.melown-compass-frame {
+#melown-compass-frame {
     position:absolute;
     right:0px;
     bottom:2px;
@@ -124,7 +124,7 @@
     pointer-events:none;
 }
 
-.melown-compass-frame2 {
+#melown-compass-frame2 {
     position:absolute;
     right:0px;
     bottom:1px;
@@ -137,7 +137,7 @@
     opacity: 0.25;
 }
 
-.melown-compass-frame3 {
+#melown-compass-frame3 {
     position:absolute;
     right:0px;
     bottom:0px;

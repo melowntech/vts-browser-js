@@ -16,6 +16,7 @@ Melown.UI.prototype.init = function() {
     this.logo_ = new Melown.UIControlLogo(this);
     this.zoom_ = new Melown.UIControlZoom(this);
     this.fallback_ = new Melown.UIControlFallback(this);
+    Melown.Utils.disableContexMenu(this.element_);
 };
 
 Melown.UI.prototype.addControl = function(id_, html_, visible_) {

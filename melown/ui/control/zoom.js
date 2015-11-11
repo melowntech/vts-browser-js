@@ -3,6 +3,7 @@
  */
 Melown.UIControlZoom = function(ui_) {
     this.ui_ = ui_;
+    this.browser_ = ui_.browser_;
     this.control_ = this.ui_.addControl("zoom",
       '<div id="melown-zoom"'
       + ' class="melown-zoom">'
@@ -26,11 +27,28 @@ Melown.UIControlZoom = function(ui_) {
 };
 
 Melown.UIControlZoom.prototype.onZoomIn = function() {
-    console.log("zoom-in");
+    this.repeat(7, 0.9, 60);
 };
 
 Melown.UIControlZoom.prototype.onZoomOut = function() {
-    console.log("zoom-out");
+    this.repeat(7, 1.1, 60);
+};
+
+Melown.UIControlZoom.prototype.repeat = function(count_, factor_, delay_) {
+    if (count_ <= 0) {
+        return;
+    }
+
+    var map_ = this.browser_.getCore().getMap();
+    if (map_ == null) {
+        return;
+    }
+
+    var pos_ = map_.getPosition();
+    pos_[7] *= factor_;
+
+    map_.setPosition(pos_);
+    setTimeout(this.repeat.bind(this, --count_, factor_, delay_), delay_);
 };
 
 

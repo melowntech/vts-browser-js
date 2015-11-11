@@ -18,7 +18,7 @@ Melown.UIEvent.prototype.getMouseButton = function() {
     return "";
 };
 
-Melown.UIEvent.prototype.getMousePosition = function() {
+Melown.UIEvent.prototype.getMousePosition = function(absolute_) {
     switch (this.type_) {
         case "mousedown":
         case "mouseup":
@@ -27,7 +27,7 @@ Melown.UIEvent.prototype.getMousePosition = function() {
         case "dragend":
         case "drag":
 
-            if (this.element_.getBoundingClientRect == null) {
+            if (this.element_.getBoundingClientRect == null || absolute_) {
                 return [ this.event_.clientX,
                          this.event_.clientY ];
             } else {
@@ -66,7 +66,7 @@ Melown.UIEvent.prototype.getDragButton = function(button_) {
 
 Melown.UIEvent.prototype.getWheelDelta = function() {
     switch (this.type_) {
-        case "wheel":
+        case "mousewheel":
 
             var delta = 0;
 

@@ -65,6 +65,14 @@ Melown.Utils.enableImageDrag = function() {
     window.removeEventListener("dragstart", Melown.Utils.preventDefault);
 };
 
+Melown.Utils.disableContexMenu = function(element_) {
+    element_.addEventListener("contextmenu", Melown.Utils.preventDefault);
+};
+
+Melown.Utils.enableContexMenu = function(element_) {
+    element_.removeEventListener("contextmenu", Melown.Utils.preventDefault);
+};
+
 Melown.Utils.getSupportedProperty = function(properties_) {
     var style_ = document.documentElement.style;
 

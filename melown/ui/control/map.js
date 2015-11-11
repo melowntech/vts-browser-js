@@ -11,20 +11,13 @@ Melown.UIControlMap = function(ui_) {
 
     this.dragCall_ = this.onDrag.bind(this);
 
-    var mapElement_ = this.control_.getElement("melown-map");
-    mapElement_.on("drag", this.onDrag.bind(this));
-    //mapElement_.on("mousedown", this.onMouseDown.bind(this));
-    //mapElement_.on("mouseup", this.onMouseUp.bind(this));
-    //mapElement_.on("click", this.onClick.bind(this));
-    mapElement_.setDraggableState(true);
-
-    this.mouseLeft_ = false;
-    this.mouseRight_ = false;
+    var map_ = this.control_.getElement("melown-map");
+    map_.on("drag", this.onDrag.bind(this));
+    map_.on("mousewheel", this.onMouseWheel.bind(this));
+    map_.setDraggableState(true);
 };
 
 Melown.UIControlMap.prototype.onDrag = function(event_) {
-    console.log("map-drag");
-
     var map_ = this.browser_.getCore().getMap();
     if (map_ == null) {
         return;
@@ -38,28 +31,30 @@ Melown.UIControlMap.prototype.onDrag = function(event_) {
         pos_ = map_.pan(pos_, delta_[0] * sensitivity_,
                               delta_[1] * sensitivity_);
     } else if (event_.getDragButton("right")) { //rotate
-        var sensitivity_ = 0.5;
-        pos_[4] += delta_[0] * sensitivity_;
-        pos_[5] += -delta_[1] * sensitivity_;
+        var sensitivity_ = 0.4;
+        pos_[4] -= delta_[0] * sensitivity_;
+        pos_[5] -= delta_[1] * sensitivity_;
     }
 
     map_.setPosition(pos_);
-
-    //console.log("delta " + JSON.stringify(delta_));
 };
 
-Melown.UIControlMap.prototype.onMouseDown = function() {
-    console.log("map-down");
+Melown.UIControlMap.prototype.onMouseWheel = function(event_) {
+    var map_ = this.browser_.getCore().getMap();
+    if (map_ == null) {
+        return;
+    }
+
+    var pos_ = map_.getPosition();
+    var delta_ = event_.getWheelDelta();
+
+    var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
+    pos_[7] *= factor_;
+
+    map_.setPosition(pos_);
 };
 
 Melown.UIControlMap.prototype.onMouseUp = function() {
     console.log("map-up");
 };
-
-Melown.UIControlMap.prototype.onClick = function() {
-    console.log("map-click");
-};
-
-
-
 

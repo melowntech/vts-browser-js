@@ -27,7 +27,7 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
 
     if (this.dragging_ != true) {
         this.dragging_ = true;
-        var pos_ = event_.getMousePosition();
+        var pos_ = event_.getMousePosition(true);
         this.lastDragPos_ = pos_;
         this.on("mousemove", this.dragMoveCall_, document);
         this.on("mouseup", this.dragEndCall_, document);
@@ -35,6 +35,7 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
 
         Melown.Utils.disableTextSelection();
         Melown.Utils.disableImageDrag();
+        //Melown.Utils.disableContexMenu();
 
         this.fire("dragstart", {
             "clientX" : pos_[0],
@@ -76,6 +77,7 @@ Melown.UIElement.prototype.onDragEnd = function(event_) {
 
             Melown.Utils.enableTextSelection();
             Melown.Utils.enableImageDrag();
+            //Melown.Utils.enableContexMenu();
 
             this.fire("dragend", {
                 "clientX" : pos_[0],
