@@ -162,7 +162,7 @@ Melown.Roi.Pano.prototype._update = function() {
     // get view projection matric
     var vpMat_ = this.map_.getCameraInfo()['view-projection-matrix'];
     // calc zoom (suitable lod)
-    var useLod_ = this._suitableLod(vpMat_);
+    var useLod_ = this._suitableLod();
     // find visible tiles
     var newTiles = this._visibleTiles(vpMat_, 0);
 
@@ -279,8 +279,28 @@ Melown.Roi.Pano.prototype._loadActiveTiles = function() {
     }
 }
 
-Melown.Roi.Pano._suitableLod = function(vpMat_) {
-    return 0;
+Melown.Roi.Pano._suitableLod = function() {
+    var loc_ = this.map_.getPosition();
+    var fov_ = loc_[8];
+    var angle_ = fov_ * 0.5;
+    var screenHeight_ = 768; // TODO get it from Core API
+    var identityTileHeight_ = this.tileRelSize_ * screenHeight_;
+    var visibleRaito_ = 1;
+    if (angle_ <= 45) {
+        visibleRaito_ = Math.tan(Melown.radians(angle_));
+    } else if (angle_ <= 90) {
+        visibleRaito_ = 1 + Math.tan(Melown.radians(45 - (angle_ - 45)));
+    }
+    var tileHeight_ = identityTileHeight_ * (1 / visibleRaito_);
+    var suitableLod_ = 0;
+    while (suitableLod_ < this.lodCount_) {
+        if (tileHeight_ <= this.tileHeight_) {
+            break;
+        }
+        tileHeight_ /= 2;
+        suitableLod_++;
+    }
+    return suitableLod_;
 }
 
 Melown.Roi.Pano._visibleTiles = function(vpMat_, lod_) {
