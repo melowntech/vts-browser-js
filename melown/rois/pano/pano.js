@@ -19,6 +19,7 @@ Melown.Roi.Pano = function(config_, core_, options_) {
     this.tilesOnLod0_ = null;
     this.tileRelSize_ = null;
     this.cubeOrientationMatrix_ = null;
+    this.faceMatrices_ = [];
 
     // runtime
     this.activeTiles_ = [];
@@ -149,6 +150,11 @@ Melown.Roi.Pano.prototype._initFinalize = function() {
     Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateZ, this.cubeOrientationMatrix_);
     Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateY, this.cubeOrientationMatrix_);
     Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateX, this.cubeOrientationMatrix_);
+
+    // prepare face matrices
+    for (var i = 0; i < 6; i++) {
+        this.faceMatrices_.push(this._faceMatrix(i));
+    }
 }
 
 Melown.Roi.Pano.prototype._tick = function() {
@@ -324,9 +330,43 @@ Melown.Roi.Pano._visibleTiles = function(vpMat_, lod_) {
 }
 
 Melown.Roi.Pano.prototype._faceMatrix = function(face_) {
-    var mat = null;
+    var pos_ = [-1, 1, 1];
+    var rot_ = [0, 0, 0];
     switch (face_) {
-
+        case Melown_Roi_Pano_Cube_Front:
+            pos_ = [-1, 1, 1];
+            rot_ = [90, 0, 0];
+            break;
+        case Melown_Roi_Pano_Cube_Right:
+            pos_ = [1, 1, 1];
+            rot_ = [90, 90, 0];
+            break;
+        case Melown_Roi_Pano_Cube_Back:
+            pos_ = [1, -1, 1];
+            rot_ = [90, 180, 0];
+            break;
+        case Melown_Roi_Pano_Cube_Left:
+            pos_ = [-1, -1, 1];
+            rot_ = [90, 270, 0];
+            break;
+        case Melown_Roi_Pano_Cube_Up:
+            pos_ = [-1, -1, 1];
+            rot_ = [0, 0, 0];
+            break;
+        case Melown_Roi_Pano_Cube_Down:
+            pos_ = [-1, 1, -1];
+            rot_ = [180, 0, 0];
+            break;
     }
-    return mat;
+    var trn_ = Melown.translationMatrix(pos_[0], pos_[1], pos_[2]);
+    var rotX_ = Melown.rotationMatrix(0, Melown.radians(-rot_[0]));
+    var rotY_ = Melown.rotationMatrix(1, Melown.radians(-rot_[1]));
+    var rotZ_ = Melown.rotationMatrix(2, Melown.radians(-rot_[2]));
+
+    var mat_ = Melown.mat4.create();
+    Melown.mat4.multiply(trn_, rotX_, mat_);
+    Melown.mat4.multiply(mat_, rotY_, mat_);
+    Melown.mat4.multiply(mat_, rotZ_, mat_);
+    Melown.mat4.multiply(mat_, Vadstena.scaleMatrix(scale_[0], scale_[1], scale_[2]), mat_);
+    return mat_;
 }
