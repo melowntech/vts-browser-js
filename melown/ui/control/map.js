@@ -32,8 +32,8 @@ Melown.UIControlMap.prototype.onDrag = function(event_) {
                               delta_[1] * sensitivity_);
     } else if (event_.getDragButton("right")) { //rotate
         var sensitivity_ = 0.4;
-        pos_[4] -= delta_[0] * sensitivity_;
-        pos_[5] -= delta_[1] * sensitivity_;
+        pos_[5] -= delta_[0] * sensitivity_;
+        pos_[6] -= delta_[1] * sensitivity_;
     }
 
     map_.setPosition(pos_);
@@ -49,7 +49,7 @@ Melown.UIControlMap.prototype.onMouseWheel = function(event_) {
     var delta_ = event_.getWheelDelta();
 
     var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
-    pos_[7] *= factor_;
+    pos_[8] *= factor_;
 
     map_.setPosition(pos_);
 };

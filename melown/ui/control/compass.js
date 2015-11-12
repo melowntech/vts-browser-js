@@ -37,7 +37,7 @@ Melown.UIControlCompass.prototype.update = function() {
     }
 
     var pos_ = map_.getPosition();
-    var value_ = "rotateX("+((pos_[5]+90)*0.7)+"deg) " + "rotateZ("+(pos_[4]-45)+"deg)";
+    var value_ = "rotateX("+((pos_[6]+90)*0.7)+"deg) " + "rotateZ("+(pos_[5]-45)+"deg)";
 
     this.image_.setStyle(Melown.Utils.TRANSFORM, value_);
     this.image2_.setStyle(Melown.Utils.TRANSFORM, value_);
@@ -54,8 +54,8 @@ Melown.UIControlCompass.prototype.onDrag = function(event_) {
     var delta_ = event_.getDragDelta();
 
     var sensitivity_ = 1.5;
-    pos_[4] -= delta_[0] * sensitivity_;
-    pos_[5] -= delta_[1] * sensitivity_;
+    pos_[5] -= delta_[0] * sensitivity_;
+    pos_[6] -= delta_[1] * sensitivity_;
 
     map_.setPosition(pos_);
 };
