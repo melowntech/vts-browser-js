@@ -13,7 +13,7 @@ Melown.Map.prototype.parseConfig = function() {
     }
 
     if (this.mapConfig_["position"] != null) {
-
+/*
         var pos_ = this.mapConfig_["position"];
         pos_[1] = 472112;
         pos_[2] = 5555728;
@@ -26,8 +26,8 @@ Melown.Map.prototype.parseConfig = function() {
         pos_[7] = 5000;
 
         pos_[8] = 90;
-
-        this.setCameraView(this.mapConfig_["position"]);
+*/
+        this.setPosition(this.mapConfig_["position"]);
     }
 
     this.setMapView(this.initialView_);

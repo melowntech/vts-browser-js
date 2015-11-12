@@ -18,19 +18,20 @@ Melown.Map = function(core_, mapConfig_, path_)
 
     //this.mapConfig_["view"] = { "surfaces": ["ppspace"], "boundLayers": [], "freeLayers": [] };
 
+    this.navMode_ = "obj";
     this.navFov_ = 45;
-    this.navPos_ = [0,0];
+    this.navCenter_ = [0,0];
     this.navHeight_ = 0;
     this.navTerrainHeight_ = 0;
     this.navTerrainHeightUnknown_ = true;
-    this.navCameraViewHeight_ = 1;
+    this.navViewExtent_ = 1;
+    this.navOrientation_ = [0,0,0];
     this.navCameraDistance_ = 0;
-    this.navCameraRotation_ = [0,0,0];
     this.navCameraPosition_ = [0,0,0];
-    this.navHeightMode_ = "fixed";
+    this.navHeightMode_ = "abs";
 
-    this.navCurrentPos_ = ["fixed", 0, 0, 0, 0, 0, 0, 0, 0];
-    this.navLastPos_ = this.navPos_.slice();
+    this.navCurrentPos_ = ["obj", 0, 0, "abs", 0,  0, 0, 0,  0, 0];
+    this.navLastPos_ = this.navCenter_.slice();
 
     this.srses_ = {};
     this.referenceFrames_ = {};
@@ -202,20 +203,126 @@ Melown.Map.prototype.tileSize = function(lod_) { //int
     }
 };
 
-Melown.Map.prototype.setPosition = function(pos_) {
-    this.navPos_ = [pos_[0], pos_[1]];
+Melown.Map.prototype.setCenter = function(pos_) {
+    this.navCenter_ = [pos_[0], pos_[1]];
     this.navTerrainHeightUnknown_ = true;
     this.dirty_ = true;
 };
 
+Melown.Map.prototype.getCenter = function() {
+    return [ this.navCenter_[0], this.navCenter_[1] ];
+};
+
+Melown.Map.prototype.setOrientation = function(orientation_) {
+    this.navOrientation_ = orientation_.slice();
+    this.dirty_ = true;
+};
+
+Melown.Map.prototype.getOrientation = function() {
+    return this.navOrientation_.slice();
+};
+
+Melown.Map.prototype.setFov = function(fov_) {
+    this.navFov_ = fov_;
+    this.dirty_ = true;
+};
+
+Melown.Map.prototype.getFov = function() {
+    return this.navFov_;
+};
+
+Melown.Map.prototype.setViewExtent = function(extent_) {
+    this.navViewExtent_ = extent_;
+    this.dirty_ = true;
+};
+
+Melown.Map.prototype.getViewExtent = function() {
+    return this.navViewExtent_;
+};
+
+Melown.Map.prototype.setHeight = function(height_) {
+    this.navHeight_ = height_;
+    this.dirty_ = true;
+};
+
+Melown.Map.prototype.getHeight = function() {
+    return this.navHeight_;
+};
+
+Melown.Map.prototype.setHeightMode = function(mode_) {
+    this.navHeightMode_ = mode_;
+    this.dirty_ = true;
+};
+
+Melown.Map.prototype.getHeightMode = function() {
+    return this.navHeightMode_;
+};
+
+Melown.Map.prototype.setCameraMode = function(mode_) {
+    this.navCameraMode_ = mode_;
+    this.dirty_ = true;
+};
+
+Melown.Map.prototype.getCameraMode = function() {
+    return this.navCameraMode_;
+};
+
+Melown.Map.prototype.checkViewChange = function(pos_) {
+    return !(Melown.isEqual(this.navCenter_[0], pos_[1], 0.0000001) &&
+             Melown.isEqual(this.navCenter_[1], pos_[2], 0.0000001) &&
+             Melown.isEqual(this.navHeight_, pos_[4], 0.001) &&
+             Melown.isEqual(this.navOrientation_[0], pos_[5], 0.001) &&
+             Melown.isEqual(this.navOrientation_[1], pos_[6], 0.001) &&
+             Melown.isEqual(this.navOrientation_[2], pos_[7], 0.001) &&
+             Melown.isEqual(this.navViewExtent_, pos_[8], 0.001) &&
+             Melown.isEqual(this.navFov_, (pos_[9] || 90) * 0.5, 0.001));
+};
+
+Melown.Map.prototype.setPosition = function(pos_, public_) {
+    pos_ = pos_.slice();
+
+    if (pos_[0] == "fixed") {
+        pos_[0] = "obj";
+        pos_[9] = pos_[8];
+        pos_[8] = pos_[7];
+        pos_[7] = pos_[6];
+        pos_[6] = pos_[5];
+        pos_[5] = pos_[4];
+        pos_[4] = pos_[3];
+        pos_[3] = "abs";
+    }
+
+    pos_[9] = (pos_[9] || 90);
+
+    var physicalPos_;
+    var publicPos_;
+
+    if (public_) {
+
+    } else {
+
+    }
+
+    this.setCameraMode(pos_[0]);
+    this.setFov((pos_[9] || 90) * 0.5);
+    this.setCenter([pos_[1], pos_[2]]);
+    this.setHeightMode(pos_[3]);
+    this.setHeight(pos_[4]);
+    this.setOrientation([pos_[5], pos_[6], pos_[7]]);
+    this.setViewExtent(pos_[8]);
+    this.navTerrainHeight_ = 0;
+
+    this.navCurrentPos_ = pos_;
+};
+
 Melown.Map.prototype.getPosition = function() {
-    return [ this.navPos_[0], this.navPos_[1], this.navCameraDistance_ ];
+    return this.navCurrentPos_.slice();
 };
 
 Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
     var pos2_ = pos_.slice();
 
-    var zoomFactor_ = (this.getViewHeight() * Math.tan(Melown.radians(this.camera_.getFov()))) / 800;
+    var zoomFactor_ = (this.getViewExtent() * Math.tan(Melown.radians(this.camera_.getFov()))) / 800;
 
     dx_ *= zoomFactor_;
     dy_ *= zoomFactor_;
@@ -230,113 +337,6 @@ Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
 
     return pos2_;
 };
-
-Melown.Map.prototype.setOrientation = function(orientation_) {
-    this.navCameraRotation_ = orientation_.slice();
-    this.dirty_ = true;
-};
-
-Melown.Map.prototype.getOrientation = function() {
-    return this.navCameraRotation_.slice();
-};
-
-Melown.Map.prototype.setFov = function(fov_) {
-    this.navFov_ = fov_;
-    this.dirty_ = true;
-};
-
-Melown.Map.prototype.getFov = function() {
-    return this.navFov_;
-};
-
-Melown.Map.prototype.setViewHeight = function(height_) {
-    this.navCameraViewHeight_ = height_;
-    this.dirty_ = true;
-};
-
-Melown.Map.prototype.getViewHeight = function() {
-    return this.navCameraViewHeight_;
-};
-
-/*
-Melown.Map.prototype.setDistance = function(distance_) {
-    this.navCameraDistance_ = distance_;
-    this.dirty_ = true;
-};
-
-Melown.Map.prototype.getDistance = function() {
-    return this.navCameraDistance_;
-};
-*/
-
-Melown.Map.prototype.setHeight = function(height_) {
-    this.navHeight_ = height_;
-    this.dirty_ = true;
-};
-
-Melown.Map.prototype.getHeight = function() {
-    return this.navHeight_;
-};
-
-Melown.Map.prototype.setHeightMode = function(height_) {
-    this.navHeight_ = height_;
-    this.dirty_ = true;
-};
-
-Melown.Map.prototype.getHeightMode = function() {
-    return this.navHeight_;
-};
-
-Melown.Map.prototype.checkViewChange = function(cameraView_) {
-    return !(Melown.isEqual(this.navPos_[0], cameraView_[1], 0.0000001) &&
-             Melown.isEqual(this.navPos_[1], cameraView_[2], 0.0000001) &&
-             Melown.isEqual(this.navHeight_, cameraView_[3], 0.001) &&
-             Melown.isEqual(this.navCameraRotation_[0], cameraView_[4], 0.001) &&
-             Melown.isEqual(this.navCameraRotation_[1], cameraView_[5], 0.001) &&
-             Melown.isEqual(this.navCameraRotation_[2], cameraView_[6], 0.001) &&
-             Melown.isEqual(this.navCameraViewHeight_, cameraView_[7], 0.001) &&
-             Melown.isEqual(this.navFov_, (cameraView_[8] || 90) * 0.5, 0.001));
-};
-
-Melown.Map.prototype.setCameraView = function(cameraView_) {
-    if (cameraView_[0] == "float") {
-        //TODO: conver public SRS pos to nav SRS pos
-        //this.proj4_
-    }
-
-    this.navMode_ = cameraView_[0];
-    this.setFov((cameraView_[8] || 90) * 0.5);
-    this.setPosition([cameraView_[1], cameraView_[2]]);
-    this.setHeight(cameraView_[3]);
-    this.setOrientation([cameraView_[4], cameraView_[5], cameraView_[6]]);
-    this.setViewHeight(cameraView_[7]);
-    //this.setDistance((cameraView_[7] * 0.5) / Math.tan(Melown.radians(this.navFov_)));
-    this.navTerrainHeight_ = 0;
-
-    this.navCurrentPos_ = cameraView_.slice();
-};
-
-Melown.Map.prototype.getCameraView = function(cameraViewType_) {
-    var view_ = [];
-
-    switch (cameraViewType_) {
-        case "fixed":
-        case "float":
-        case "look":
-    }
-
-    return ["fixed",
-            this.navPos_[0],
-            this.navPos_[1],
-            this.navHeight_,
-            this.navCameraRotation_[0],
-            this.navCameraRotation_[1],
-            this.navCameraRotation_[2],
-            this.navCameraViewHeight_,
-            this.navFov_ * 2
-            ];
-};
-
 
 Melown.Map.prototype.update = function() {
 

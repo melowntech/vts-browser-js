@@ -6,11 +6,11 @@ Melown.MapInterface = function(map_) {
 };
 
 Melown.MapInterface.prototype.setPosition = function(position_) {
-    this.map_.setCameraView(position_);
+    this.map_.setPosition(position_);
 };
 
 Melown.MapInterface.prototype.getPosition = function(type_) {
-    return this.map_.getCameraView(type_);
+    return this.map_.getPosition(type_);
 };
 
 Melown.MapInterface.prototype.setView = function(view_) {

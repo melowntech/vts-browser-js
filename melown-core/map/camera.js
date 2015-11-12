@@ -5,12 +5,12 @@ Melown.Map.prototype.updateCamera = function() {
     var position_ = [0,0,0];
 
     this.updateCameraMatrix_ = Melown.mat4.create();
-    this.navCameraRotation_[1] = Melown.clamp(this.navCameraRotation_[1], -90.0, 10.0);
+    this.navOrientation_[1] = Melown.clamp(this.navOrientation_[1], -90.0, 10.0);
     this.navCameraDistance_ = Melown.clamp(this.navCameraDistance_, 5, this.camera_.getFar());
-    Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(this.navCameraRotation_[0])), Melown.rotationMatrix(0, Melown.radians(this.navCameraRotation_[1])), this.updateCameraMatrix_);
+    Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(this.navOrientation_[0])), Melown.rotationMatrix(0, Melown.radians(this.navOrientation_[1])), this.updateCameraMatrix_);
 
     //do not divide height by 2, probably because of screen has range from -1 to 1
-    this.navCameraDistance_ = (this.navCameraViewHeight_) / Math.tan(Melown.radians(this.navFov_));
+    this.navCameraDistance_ = (this.navViewExtent_) / Math.tan(Melown.radians(this.navFov_));
 
     var orbitPos_ = [0, -this.navCameraDistance_, 0];
     Melown.mat4.multiplyVec3(this.updateCameraMatrix_, orbitPos_);
@@ -19,10 +19,10 @@ Melown.Map.prototype.updateCamera = function() {
     Melown.mat4.multiplyVec3(this.updateCameraMatrix_, this.cameraVector_);
 
     this.camera_.setPosition(orbitPos_);
-    this.camera_.setOrientation(this.navCameraRotation_);
+    this.camera_.setOrientation(this.navOrientation_);
     this.renderer_.cameraDistance_ = this.navCameraDistance_;
 
-    this.camera_.setViewHeight(this.navCameraViewHeight_);
+    this.camera_.setViewHeight(this.navViewExtent_);
     //this.camera_.setOrtho(true);
 
     this.camera_.setParams(this.navFov_, this.renderer_.camera_.getNear(), this.renderer_.camera_.getFar());
@@ -31,7 +31,7 @@ Melown.Map.prototype.updateCamera = function() {
     var height_ = 232.2;
 
     //TODO: convert nav to world
-    var worldPos_ = [this.navPos_[0], this.navPos_[1], height_];
+    var worldPos_ = [this.navCenter_[0], this.navCenter_[1], height_];
 
     this.navCameraPosition_ = worldPos_;
 
