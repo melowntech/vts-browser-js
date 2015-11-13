@@ -83,15 +83,25 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
     if (item_ === null) {
         item_ = {
             url_ : resourceUrl_,
-            type : type_,
+            type_ : type_,
             state_ : Melown.Roi.LoadingQueue.Status.Enqueued,
-            clb_ : clb_,
+            clb_ : [clb_],
             data_ : null
         }
     } else {
         if (item_.state_ === Melown.Pano.LoadingQueue.Status.Enqueued) {
             item_.type_ = type_;
-            item_.clb_ = clb_;
+
+            var insertCallback_ = true;
+            for (var i in item_.clb_) {
+                if (item_.clb_[i] === clb_) {
+                    insertCallback_ = false;
+                    break;
+                }
+            }
+            if (insertCallback_) {
+                item_.clb_ = clb_;
+            }
         }
     }
 
@@ -102,8 +112,10 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
         this.inProgress_.push(item_);
     } else if (item_.state_ === Melown.Roi.LoadingQueue.Status.Finished) {
         this.finished_.push(item_);
-        clb(null, item_);
+        clb_(null, item_);
     }
+
+    this._next();
 
     return item_;
 }
@@ -161,26 +173,32 @@ Melown.Roi.LoadingQueue.prototype.item = function(resourceUrl_) {
 // Private methods
 
 Melown.Roi.LoadingQueue.prototype._next = function() {
-    var its_ = this.queue_.splice(0, 1);
+    if (this.inProgress_.length === this.slots_) {
+        return;
+    }
+    var its_ = this.enqueued_.splice(0, 1);
     if (its_.length === 0) {
         return;
     }
     
     var item_ = its_[0];
+    this.inProgress_.push(item_);
     
     if (item_.type_ === Melown.Roi.LoadingQueue.Type.Binary) {
-
+        // TODO
+        this._finalizeItem(item_, new Error('Not implemented yet'), null);
     } else if (item_.type_ === Melown.Roi.LoadingQueue.Type.JSON) {
-
+        // TODO
+        this._finalizeItem(item_, new Error('Not implemented yet'), null);
     } else if (item_.type_ === Melown.Roi.LoadingQueue.Type.Image) {
         item_.data_ = new Image();
-        item_.data_.addEventListener('load', function(data) {
-            
+        item_.data_.addEventListener('load', function(data_) {
+            this._finalizeItem(item_, null, data_);
         }.bind(this), false);
         item_.data_.addEventListener('error', function(data) {
-            
+            this._finalizeItem(item_, null, data_);
         }.bind(this), false);
-        item_.data_.url_ = item_.url_;
+        item_.data_.src = item_.url_;
     }
 }
 
@@ -190,6 +208,7 @@ Melown.Roi.LoadingQueue.prototype._cancel = function(item_) {
 
 Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
     var item_ = null;
+    var resourceUrl_ = itemUrl_.url_;
     for (var i in this.enqueued_) {
         if (this.enqueued_[i].url_ === resourceUrl_) {
             item_ = this.enqueued_[i];
@@ -216,4 +235,27 @@ Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
         }   
     }
     return item_;
+}
+
+Melown.Roi.LoadingQueue.prototype._finalizeItem = function(item_, error_, data_) {
+    // remove from progress queue pass it to finished queue
+    this.inProgress_.splice(this.inProgress_.indexOf(item_), 1);
+    if (!error_) {
+        item_.data_ = data_;
+        while (this.finished_.length > this.finishedSlots_ - 1) {
+            this.finishedSlots_.splice(0,1);
+        }
+        this.finished_.push(item_);
+    }
+
+    // pass data to item
+    item_.data = data_;
+
+    // invoke all callbacks
+    for (var i in item_.clb_) {
+        item_.clb_[i](error_, data_);
+    }
+
+    // try to load next
+    this._next();
 }
