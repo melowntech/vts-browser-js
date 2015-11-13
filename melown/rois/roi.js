@@ -24,6 +24,7 @@ Melown.Roi = function(config_, browser_, options_) {
 
     // binded callbacks
     this.tickClb_ = null;
+    this.updateClb_ = null;
 
     Object.defineProperty(this, 'currentPosition_', {
         get : function() {
@@ -37,7 +38,12 @@ Melown.Roi = function(config_, browser_, options_) {
     // modules
     this.core_ = this.browser_.core_;
     this.renderer_ = this.core_.renderer_;
-    this.map_ = this.core_.map_;
+    Object.defineProperty(this, 'map_', {
+        get : function() {
+            return this.core_.getMap();
+        },
+        set : function(val_) {}
+    });
     this.loadingQueue_ = null;
     this.processQueue_ = null;
 
@@ -139,6 +145,9 @@ Melown.Roi.prototype.deinit = function() {
     // remove tick listener
     this.browser_.off('tick', this.tickClb_); 
     this.tickClb_ = null;
+
+    this.core_.off('map-position-changed', this.updateClb_); 
+    this.updateClb_ = null;
 }
 
 Melown.Roi.prototype.setNeedRedraw = function() {
@@ -232,6 +241,10 @@ Melown.Roi.prototype._initFinalize = function() {
     this.state_ = Melown.Roi.State.Ready;
 
     // TODO hook up on map.position changed event (this._update method)
+    this.updateClb_ = function() {
+        this._update();
+    }.bind(this);
+    this.core_.on('map-position-changed', this.updateClb_);
 
     // hook up on browser tick method
     this.tickClb_ = function() {

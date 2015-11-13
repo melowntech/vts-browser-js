@@ -163,7 +163,11 @@ Melown.Roi.Pano.prototype._tick = function() {
 }
 
 Melown.Roi.Pano.prototype._update = function() {
-    this.super_.update.call(this);
+    this.super_._update.call(this);
+
+    if (this.map_ === null) {
+        return;
+    }
 
     // get view projection matric
     var vpMat_ = this.map_.getCameraInfo()['view-projection-matrix'];
@@ -210,19 +214,20 @@ Melown.Roi.Pano.prototype._drawTile = function(tile_) {
     if (!tile_.texture()) {
         return;
     }
-    // TODO calculate mvp matrix
-    // got:
-    //  - projection-view from map.getCamera()
-    //  - cube orientation matrix
-    //  - tile position and size
-    //  need to:
-    //  - create billboard matrix
-    //  - orientate billboard with cube matrix
-    //  - get mvp matrix
-    var mvp_ = Melown.mat4.create();
 
-    // TODO draw billboard
-    this.renderer_.drawBillboard(mvp_, texture_, [0, 0, 1, 1]);
+    //  projection-view matrix from map.getCamera()
+    var pv_ = this.map_.getCameraInfo()['view-projection-matrix'];
+    //  tile (model) matrix
+    var t_ = tile_.mat_;
+    if (t_ === null) {
+        t_ = this._orientedTileMatrix(tile_);
+        tile_.mat_ = t_;
+    }
+    // multiply to mvp matrix
+    Melown.mat4.multiply(t_, pv_, t_);
+
+    // draw tile
+    this.renderer_.drawBillboard(t_, texture_, [0, 0, 1, 1]);
 }
 
 Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_) {
@@ -285,7 +290,7 @@ Melown.Roi.Pano.prototype._loadActiveTiles = function() {
     }
 }
 
-Melown.Roi.Pano._suitableLod = function() {
+Melown.Roi.Pano.prototype._suitableLod = function() {
     var loc_ = this.map_.getPosition();
     var fov_ = loc_[8];
     var angle_ = fov_ * 0.5;
@@ -309,7 +314,7 @@ Melown.Roi.Pano._suitableLod = function() {
     return suitableLod_;
 }
 
-Melown.Roi.Pano._visibleTiles = function(vpMat_, lod_) {
+Melown.Roi.Pano.prototype._visibleTiles = function(vpMat_, lod_) {
     var tiles_ = [];
 
     var recurs = function(tile_) {
@@ -327,6 +332,8 @@ Melown.Roi.Pano._visibleTiles = function(vpMat_, lod_) {
             recurs(this.cubeTree_[i][j]);
         }
     }
+
+    return tiles_;
 }
 
 Melown.Roi.Pano.prototype._faceMatrix = function(face_) {
@@ -370,4 +377,21 @@ Melown.Roi.Pano.prototype._faceMatrix = function(face_) {
     Melown.mat4.multiply(mat_, rotZ_, mat_);
     Melown.mat4.multiply(mat_, Melown.scaleMatrix(scale_[0], scale_[1], scale_[2]), mat_);
     return mat_;
+}
+
+Melown.Roi.Pano.prototype._tileMatrix = function(tile_) {
+    var t_ = this.faceMatrices_[tile_.face_];
+    var trn_ = Melown.translationMatrix(tile_.pos_[0], tile_.pos_[1], 0);
+    var s = Math.pow(2, -tile_.lod_) * this.tileRelSize_;
+    var scale_ = Melown.scaleMatrix(s, s, 1);
+    
+    Melown.mat4.multiply(t_, trn_, t_);
+    Melown.mat4.multiply(t_, scale_, t_);
+    return t_;
+}
+
+Melown.Roi.Pano.prototype._orientedTileMatrix = function(tile_) {
+    var ot_ = this._tileMatrix(tile_);
+    Melown.mat4.multiply(ot_, this.cubeOrientationMatrix_, ot_);
+    return ot_;
 }

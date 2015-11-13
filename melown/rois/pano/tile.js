@@ -3,6 +3,7 @@ Melown.Roi.Pano.Tile = function(face_, position_, index_, lod_, url_) {
     this.position_ = [position_[0], position_[1]];
     this.index_ = [index_[0], index_[1]];
     this.lod_ = lod_;
+    this.mat_ = null;
     this.children_ = [];
     this.resources_ = {
         url_ : url_,

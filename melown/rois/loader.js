@@ -41,6 +41,17 @@ Melown.Roi.LoadingQueue.Type = {
     JSON : 1,
     Image : 2
 }
+Melown.Roi.LoadingQueue.TypeCheck = function(type_) {
+    var keys_ = Object.keys(Melown.Roi.LoadingQueue.Type);
+    var valid_ = false;
+    for (var i in keys_) {
+        if (Melown.Roi.LoadingQueue.Type[keys_[i]] === type_) {
+            valid_ = true;
+            break;
+        }
+    }
+    return valid_;
+}
 
 Melown_Roi_LQ_Downloaded = 'downloaded';
 Melown_Roi_LQ_Failed = 'failed';
@@ -53,14 +64,14 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
     var clb_ = clb_ || function(){};
 
     if (typeof resourceUrl_ !== 'string' 
-        || !Melown.Utils.URLSanity(resourceUrl_)) {
+        ) {// TODO: || !Melown.Utils.URLSanity(resourceUrl_)) {
         var err = new Error('Loading Queue: URL given to enqueue is not valid URL');
         console.error(err);
         clb(err);
         return null;
     }
 
-    if (typeof Melown.Roi.LoadingQueue.Type[type_] === 'undefined') {
+    if (!Melown.Roi.LoadingQueue.TypeCheck(type_)) {
         var err = new Error('Loading Queue: Given hint type is not valid type');
         console.error(err);
         clb(err);   
@@ -73,7 +84,7 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
         item_ = {
             url_ : resourceUrl_,
             type : type_,
-            state_ : Melown.Pano.LoadingQueue.Status.Enqueued,
+            state_ : Melown.Roi.LoadingQueue.Status.Enqueued,
             clb_ : clb_,
             data_ : null
         }
@@ -85,11 +96,11 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
     }
 
     // enqueue item to proper queue
-    if (item_.state_ === Melown.Pano.LoadingQueue.Status.Enqueued) {
+    if (item_.state_ === Melown.Roi.LoadingQueue.Status.Enqueued) {
         this.enqueued_.push(item_);
-    } else if (item_.state_ === Melown.Pano.LoadingQueue.Status.Downloading) {
+    } else if (item_.state_ === Melown.Roi.LoadingQueue.Status.Downloading) {
         this.inProgress_.push(item_);
-    } else if (item_.state_ === Melown.Pano.LoadingQueue.Status.Finished) {
+    } else if (item_.state_ === Melown.Roi.LoadingQueue.Status.Finished) {
         this.finished_.push(item_);
         clb(null, item_);
     }
@@ -99,7 +110,7 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
 
 Melown.Roi.LoadingQueue.prototype.dequeue = function(resourceUrl_) {
     var item_ = this._pickItem(resourceUrl_);
-    if (item_.state_ === Melown.Pano.LoadingQueue.Status.Downloading) {
+    if (item_.state_ === Melown.Roi.LoadingQueue.Status.Downloading) {
         this._cancel(item_);
     }
     return item_;
@@ -186,7 +197,7 @@ Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
             break;
         }
     }
-    if (item === null) {
+    if (item_ === null) {
         for (var i in this.inProgress_) {
             if (this.inProgress_[i].url_ === resourceUrl_) {
                 item_ = this.inProgress_[i];
@@ -195,7 +206,7 @@ Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
             }
         }
     }
-    if (item === null) {
+    if (item_ === null) {
         for (var i in this.finished_) {
             if (this.finished_[i].url_ === resourceUrl_) {
                 item_ = this.finished_[i];
