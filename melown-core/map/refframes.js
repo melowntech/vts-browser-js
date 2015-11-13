@@ -1,9 +1,9 @@
 /**
  * @constructor
  */
-Melown.MapRefFrames = function(map_, json_)
-{
+Melown.MapRefFrames = function(map_, json_) {
     this.map_ = map_;
+    this.proj4_ = map_.core_.proj4_;
     this.valid_ = false;
     this.id_ = json_["id"] || null;
     this.description_ = json_["description"] || "";
@@ -62,7 +62,6 @@ Melown.MapRefFrames = function(map_, json_)
 };
 
 Melown.MapRefFrames.prototype.parseNode = function(nodeData_) {
-
     var node_ = {
         srs_ : nodeData_["srs"],
         partitioning_ : nodeData_["partitioning"]
@@ -88,7 +87,6 @@ Melown.MapRefFrames.prototype.parseNode = function(nodeData_) {
 };
 
 Melown.MapRefFrames.prototype.parseExtents = function(extentsData_) {
-
     if (extentsData_ == null) {
         return { ll_ : [0,0], ur_ : [1,1] };
     }
@@ -100,7 +98,6 @@ Melown.MapRefFrames.prototype.parseExtents = function(extentsData_) {
 };
 
 Melown.MapRefFrames.prototype.parseSpaceExtents = function(extentsData_) {
-
     if (extentsData_ == null) {
         return { ll_ : [0,0,0], ur_ : [1,1,1] };
     }
@@ -112,7 +109,6 @@ Melown.MapRefFrames.prototype.parseSpaceExtents = function(extentsData_) {
 };
 
 Melown.MapRefFrames.prototype.getRefFrame = function(id_) {
-
     var lod_ = id_[0];
 
     var refFrame_ = null;
@@ -150,5 +146,25 @@ Melown.MapRefFrames.prototype.getRefFrame = function(id_) {
 
     return refFrame_;
 };
+
+Melown.MapRefFrames.prototype.convertCoords = function(coords_, source_, destination_) {
+    var sourceSrs_, destinationSrs_;
+
+    switch(source_) {
+        case "public":     sourceSrs_ = this.model_.publicSrs_;     break;
+        case "physical":   sourceSrs_ = this.model_.physicalSrs_;   break;
+        case "navigation": sourceSrs_ = this.model_.navigationSrs_; break;
+    }
+
+    switch(destination_) {
+        case "public":     destinationSrs_ = this.model_.publicSrs_;     break;
+        case "physical":   destinationSrs_ = this.model_.physicalSrs_;   break;
+        case "navigation": destinationSrs_ = this.model_.navigationSrs_; break;
+    }
+
+    return sourceSrs_.convertCoordsTo(coords_, destinationSrs_);
+};
+
+
 
 

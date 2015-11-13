@@ -1,6 +1,5 @@
 
 Melown.Map.prototype.updateCamera = function() {
-
     var controlMode_ = "observer";
     var position_ = [0,0,0];
 
@@ -30,7 +29,9 @@ Melown.Map.prototype.updateCamera = function() {
     //var height_ = 227;
     var height_ = 232.2;
 
-    //TODO: convert nav to world
+    //convert public coords to physical
+    var worldPos_ = this.refframes_.convertCoords([this.navCenter_[0], this.navCenter_[1], height_], "public", "physical");
+
     var worldPos_ = [this.navCenter_[0], this.navCenter_[1], height_];
 
     this.navCameraPosition_ = worldPos_;
@@ -53,8 +54,7 @@ Melown.Map.prototype.updateCamera = function() {
     this.dirty_ = true;
 };
 
-Melown.Map.prototype.cameraHeight = function()
-{
+Melown.Map.prototype.cameraHeight = function() {
     //TODO: get camera height
     //var cameraPos_ = this.camera_.position_;
     //return (this.camera_.getPosition()[2] - this.planet_.surfaceHeight([this.position_[0] + cameraPos_[0], this.position_[1] + cameraPos_[1]])[0]);

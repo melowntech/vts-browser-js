@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapMetatile = function(metastorage_, surface_)
-{
+Melown.MapMetatile = function(metastorage_, surface_) {
     this.metastorage_= metastorage_; //this is metastorage tile
     this.map_ = metastorage_.map_;
     this.surface_ = surface_;
@@ -14,7 +13,6 @@ Melown.MapMetatile = function(metastorage_, surface_)
 };
 
 Melown.MapMetatile.prototype.kill = function(killedByCache_) {
-
     if (killedByCache_ != true && this.cacheItem_ != null) {
         this.map_.metadataCache_.remove(this.cacheItem_);
     }
@@ -36,7 +34,6 @@ Melown.MapMetatile.prototype.kill = function(killedByCache_) {
 };
 
 Melown.MapMetatile.prototype.isReady = function () {
-
     if (this.loadState_ == 2) { //loaded
         return true;
     } else {
@@ -51,7 +48,6 @@ Melown.MapMetatile.prototype.isReady = function () {
 };
 
 Melown.MapMetatile.prototype.used = function() {
-
     if (this.cacheItem_ != null) {
         this.map_.metadataCache_.updateItem(this.cacheItem_);
     }

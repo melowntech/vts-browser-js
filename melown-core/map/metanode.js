@@ -7,8 +7,7 @@
 /**
  * @constructor
  */
-Melown.MapMetanode = function(metatile_, id_, stream_)
-{
+Melown.MapMetanode = function(metatile_, id_, stream_) {
     this.metatile_ = metatile_;
     this.map_ = metatile_.map_;
     this.id_ = id_;
@@ -154,8 +153,7 @@ struct Metanode {
 };
 
 
-Melown.MapMetanode.prototype.getWorldMatrix = function(geoPos_, matrix_)
-{
+Melown.MapMetanode.prototype.getWorldMatrix = function(geoPos_, matrix_) {
     // Note: the current camera geographic position (geoPos) is not necessary
     // here, in theory, but for numerical stability (OpenGL ES is float only)
     // we get rid of the large UTM numbers in the following subtractions. The
@@ -180,7 +178,6 @@ Melown.MapMetanode.prototype.getWorldMatrix = function(geoPos_, matrix_)
 };
 
 Melown.MapMetanode.prototype.drawBBox = function(cameraPos_) {
-
     var renderer_ = this.map_.renderer_;
 
     renderer_.gpu_.useProgram(renderer_.progBBox_, "aPosition");

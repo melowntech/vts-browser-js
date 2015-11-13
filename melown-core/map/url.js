@@ -24,7 +24,6 @@ Melown.Map.prototype.msDigit = function(iy, ix) {
 };
 
 Melown.Map.prototype.processUrlFunction = function(id_, counter_, string_) {
-
     if (typeof string_ == "string") {
         if (string_.indexOf("quad") != -1) {
             var string2_ = "(function(lod,x,y){" + string_.replace("quad", "return this.quad") + "})";
@@ -69,8 +68,7 @@ Melown.Map.prototype.processUrlFunction = function(id_, counter_, string_) {
 
 };
 
-Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_)
-{
+Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
     //if (templ_.indexOf("jpg") != -1) {
        //templ_ = "{lod}-{easting}-{northing}.jpg?v=4";
        //templ_ = "{lod}-{x}-{y}.jpg?v=4";

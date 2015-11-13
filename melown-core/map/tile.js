@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapTile = function(map_, parent_, id_)
-{
+Melown.MapTile = function(map_, parent_, id_) {
     this.map_ = map_;
     this.id_ = id_;
     this.parent_ = parent_;
@@ -27,7 +26,6 @@ Melown.MapTile = function(map_, parent_, id_)
 };
 
 Melown.MapTile.prototype.kill = function() {
-
     //kill children
     for (var i = 0; i < 4; i++) {
         if (this.children_[i] != null) {
@@ -83,7 +81,6 @@ Melown.MapTile.prototype.kill = function() {
 };
 
 Melown.MapTile.prototype.validate = function() {
-
     //is tile empty?
     if (this.metastorage_ == null || this.metastorage_.getMetatile(this.surface_) == false) {
         this.kill();

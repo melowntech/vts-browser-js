@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapMesh = function(map_, tile_)
-{
+Melown.MapMesh = function(map_, tile_) {
     this.generateLines_ = true;
     this.map_ = map_;
     this.tile_ = tile_;

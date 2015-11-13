@@ -1,9 +1,9 @@
 /**
  * @constructor
  */
-Melown.MapSrs = function(map_, json_)
-{
+Melown.MapSrs = function(map_, json_) {
     this.map_ = map_;
+    this.proj4_ = map_.core_.proj4_;
     this.comment_ = json_["comment"] || null;
     this.srsDef_ = json_["srsDef"] || null;
     this.srsModifiers_ = json_["srsModifiers"] || [];
@@ -23,7 +23,6 @@ Melown.MapSrs = function(map_, json_)
 };
 
 Melown.MapSrs.prototype.parsePeriodicity = function(periodicityData_) {
-
     if (periodicityData_ == null) {
         return null;
     }
@@ -34,6 +33,11 @@ Melown.MapSrs.prototype.parsePeriodicity = function(periodicityData_) {
     };
 
     return periodicity_;
+};
+
+Melown.MapSrs.prototype.convertCoordsTo = function(coords_, srs_) {
+    var coords2_ = this.proj4_(this.srsDef_, srs_.srsDef_, coords_);
+    return coords2_;
 };
 
 

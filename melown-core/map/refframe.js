@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapRefFrame = function(map_, id_, srs_, extents_, heightRange_, partitioning_)
-{
+Melown.MapRefFrame = function(map_, id_, srs_, extents_, heightRange_, partitioning_) {
     this.map_ = map_;
     this.id_ = id_;
     this.srs_ = this.map_.getMapsSrs(srs_);

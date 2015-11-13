@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_)
-{
+Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_) {
     this.map_ = mapTree_.map_;
     this.surfaceTree_ = mapTree_.surfaceTree_;
     this.metastorageTree_ = mapTree_.metastorageTree_;
@@ -13,7 +12,6 @@ Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_)
 };
 
 Melown.MapMetanodeTracer.prototype.trace = function(tile_) {
-
     this.traceTile(this.surfaceTree_);
 };
 
@@ -95,7 +93,6 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
 };
 
 Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
-
     tile_.surface_ = null;
 
     var sequence_ = this.map_.surfaceSequence_;

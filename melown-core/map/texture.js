@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapTexture = function(map_, tile_, submeshIndex_, external_)
-{
+Melown.MapTexture = function(map_, tile_, submeshIndex_, external_) {
     this.map_ = map_;
     this.tile_ = tile_;
     this.submeshIndex_ = submeshIndex_;
@@ -45,7 +44,6 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
 };
 
 Melown.MapTexture.prototype.isReady = function() {
-
     if (this.loadState_ == 2) { //loaded
 
         if (this.gpuTexture_ == null) {

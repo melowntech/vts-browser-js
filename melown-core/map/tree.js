@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapTree = function(map_, rootId_, refFrame_, freeLayer_)
-{
+Melown.MapTree = function(map_, rootId_, refFrame_, freeLayer_) {
     this.map_ = map_;
     this.rootId_ = rootId_;
     this.refFrame_ = refFrame_;
@@ -25,7 +24,6 @@ Melown.MapTree = function(map_, rootId_, refFrame_, freeLayer_)
 };
 
 Melown.MapTree.prototype.kill = function() {
-
     this.surfaceTree_ = null;
     this.metastorageTree_ = null;
     this.surfaceTracer_ = null;
@@ -33,7 +31,6 @@ Melown.MapTree.prototype.kill = function() {
 };
 
 Melown.MapTree.prototype.init = function() {
-
     var url_ = this.map_.makeUrl(surface.metaUrl_, {lod_:result_[0], ix_:result_[1], iy_:result_[2] });
     map_.loader_.load(url_, metatile_.load_.bind(metatile_, url_));
 
@@ -44,7 +41,6 @@ Melown.MapTree.prototype.init = function() {
 };
 
 Melown.MapTree.prototype.draw = function() {
-
     this.cameraPos_ = [0,0,0];
     this.worldPos_ = [0,0,0];
     this.ndcToScreenPixel_ = this.map_.renderer_.curSize_[0] * 0.5;
@@ -126,7 +122,6 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
 };
 
 Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, pos_, lod_) {
-
     if (lod_ >= tile_.lod_) {
 
         //get height from height map
@@ -152,7 +147,6 @@ Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, pos_, lod_) {
 
 
 Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
-
     var min_ = bbox_.min_;
     var max_ = bbox_.max_;
     var tileSize_ = max_[0]-min_[0]; //get tile size

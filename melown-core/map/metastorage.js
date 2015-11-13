@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapMetastorage = function(map_, parent_, id_)
-{
+Melown.MapMetastorage = function(map_, parent_, id_) {
     this.id_ = id_;
     this.map_ = map_;
     this.parent_ = parent_;
@@ -89,8 +88,7 @@ Melown.MapMetastorage.prototype.removeChild = function(metastorageTile_) {
     }
 };
 
-Melown.FindMetastorage = function(map_, metastorageTree_, rootId_, tile_, agregation_)
-{
+Melown.FindMetastorage = function(map_, metastorageTree_, rootId_, tile_, agregation_) {
     var id_ = tile_.id_;
     var rootLod_ = rootId_[0];
     var metastorage_ = metastorageTree_;

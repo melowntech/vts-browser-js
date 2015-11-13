@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapCredit = function(map_, json_)
-{
+Melown.MapCredit = function(map_, json_) {
     this.map_ = map_;
     this.notice_ = json_["notice"] || null;
     this.copyrighted_ = json_["copyrighted"] || true;

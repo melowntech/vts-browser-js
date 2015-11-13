@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapCache = function(map_, maxCost_)
-{
+Melown.MapCache = function(map_, maxCost_) {
     this.map_ = map_;
     this.maxCost_ = (maxCost_ != null) ? maxCost_ : Number.MAX_VALUE;
     this.last_ = null;
@@ -13,7 +12,6 @@ Melown.MapCache = function(map_, maxCost_)
 };
 
 Melown.MapCache.prototype.updateItem = function(item_) {
-
     if (item_ == null) {
         return;
     }

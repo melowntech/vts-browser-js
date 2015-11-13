@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapLoader = function(map_, numThreads_)
-{
+Melown.MapLoader = function(map_, numThreads_) {
     this.map_ = map_;
 
     this.numThreads_ = numThreads_ || 1;
@@ -14,8 +13,7 @@ Melown.MapLoader = function(map_, numThreads_)
 };
 
 
-Melown.MapLoader.prototype.load = function(path_, downloadFunction_)
-{
+Melown.MapLoader.prototype.load = function(path_, downloadFunction_) {
     var index_ = this.downloading_.indexOf(path_);
 
     if (index_ != -1) {
@@ -44,8 +42,7 @@ Melown.MapLoader.prototype.load = function(path_, downloadFunction_)
 };
 
 
-Melown.MapLoader.prototype.update = function()
-{
+Melown.MapLoader.prototype.update = function() {
     if (this.pending_.length > 0) {
         if (this.usedThreads_ < this.numThreads_) {
 

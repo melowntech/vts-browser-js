@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapStats = function(map_)
-{
+Melown.MapStats = function(map_) {
     this.map_ = map_;
     this.drawnTiles_ = 0;
     this.counter_ = 0;
@@ -23,7 +22,6 @@ Melown.MapStats.prototype.begin = function() {
 };
 
 Melown.MapStats.prototype.end = function() {
-
     if (this.statsCycle_ > 100) {
         this.renderTime_ = this.renderTimeTmp_ / this.statsCycle_;
         this.fps_ = 1000 / this.renderTime_;

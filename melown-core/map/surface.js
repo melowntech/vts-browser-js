@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapSurface = function(map_, json_)
-{
+Melown.MapSurface = function(map_, json_) {
     this.map_ = map_;
     this.id_ = json_["id"] || null;
     this.metaBinaryOrder_ = json_["metaBinaryOrder"] || 1;
@@ -16,7 +15,6 @@ Melown.MapSurface = function(map_, json_)
 };
 
 Melown.MapSurface.prototype.hasTile = function(id_) {
-
     var shift_ = id_[0] - this.lodRange_[0];
 
     if (shift_ < 0) {
@@ -36,7 +34,6 @@ Melown.MapSurface.prototype.hasTile = function(id_) {
 };
 
 Melown.MapSurface.prototype.hasMetatile = function(id_) {
-
     if (id_[0] > this.lodRange_[1]) {
         return false;
     }

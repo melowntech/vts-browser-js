@@ -6,8 +6,7 @@
 /**
  * @constructor
  */
-Melown.Map = function(core_, mapConfig_, path_)
-{
+Melown.Map = function(core_, mapConfig_, path_) {
     this.core_ = core_;
     this.mapConfig_ = mapConfig_;
     this.coreConfig_ = core_.coreConfig_;
@@ -298,7 +297,8 @@ Melown.Map.prototype.setPosition = function(pos_, public_) {
     var publicPos_;
 
     if (public_) {
-
+        publicPos_ = pos_;
+        //physicalPos_ = this.core_.proj4_.
     } else {
 
     }
@@ -313,6 +313,9 @@ Melown.Map.prototype.setPosition = function(pos_, public_) {
     this.navTerrainHeight_ = 0;
 
     this.navCurrentPos_ = pos_;
+};
+
+Melown.Map.prototype.convertPositionFrame = function(pos_, sourceFrame_, destination) {
 };
 
 Melown.Map.prototype.getPosition = function() {

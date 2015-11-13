@@ -1,8 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapBoundLayer = function(map_, json_)
-{
+Melown.MapBoundLayer = function(map_, json_) {
     this.map_ = map_;
     this.id_ = json_["id"] || null;
     this.type_ = json_["type"] || "raster";
@@ -13,7 +12,6 @@ Melown.MapBoundLayer = function(map_, json_)
 };
 
 Melown.MapBoundLayer.prototype.hasTile = function(id_) {
-
     if (id_[0] < this.lodRange_[0] || id_[0] > this.lodRange_[1] ||
         id_[1] < this.tileRange_[0][0] || id_[1] > this.tileRange_[1][0] ||
         id_[2] < this.tileRange_[0][1] || id_[2] > this.tileRange_[1][1] ) {
