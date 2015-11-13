@@ -332,6 +332,7 @@ Melown.Roi.Pano._visibleTiles = function(vpMat_, lod_) {
 Melown.Roi.Pano.prototype._faceMatrix = function(face_) {
     var pos_ = [-1, 1, 1];
     var rot_ = [0, 0, 0];
+    var scale_ = [1, 1, 1];
     switch (face_) {
         case Melown_Roi_Pano_Cube_Front:
             pos_ = [-1, 1, 1];
@@ -367,6 +368,6 @@ Melown.Roi.Pano.prototype._faceMatrix = function(face_) {
     Melown.mat4.multiply(trn_, rotX_, mat_);
     Melown.mat4.multiply(mat_, rotY_, mat_);
     Melown.mat4.multiply(mat_, rotZ_, mat_);
-    Melown.mat4.multiply(mat_, Vadstena.scaleMatrix(scale_[0], scale_[1], scale_[2]), mat_);
+    Melown.mat4.multiply(mat_, Melown.scaleMatrix(scale_[0], scale_[1], scale_[2]), mat_);
     return mat_;
 }
