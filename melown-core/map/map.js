@@ -8,6 +8,7 @@
  */
 Melown.Map = function(core_, mapConfig_, path_) {
     this.core_ = core_;
+    this.proj4_ = this.core_.getProj4();
     this.mapConfig_ = mapConfig_;
     this.coreConfig_ = core_.coreConfig_;
     this.killed_ = false;
@@ -68,7 +69,6 @@ Melown.Map = function(core_, mapConfig_, path_) {
     //this.mesh_ = new Melown.MapMesh(this);
     //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
 
-    this.proj4_ = this.core_.getProj4();
 };
 
 Melown.Map.prototype.kill = function() {
@@ -288,20 +288,17 @@ Melown.Map.prototype.setPosition = function(pos_, public_) {
         pos_[6] = pos_[5];
         pos_[5] = pos_[4];
         pos_[4] = pos_[3];
-        pos_[3] = "abs";
+        pos_[3] = "fix";
     }
 
     pos_[9] = (pos_[9] || 90);
 
-    var physicalPos_;
-    var publicPos_;
-
-    if (public_) {
-        publicPos_ = pos_;
-        //physicalPos_ = this.core_.proj4_.
-    } else {
-
-    }
+    /*if (public_ === false) { //convert to puclic
+        var coords_ = this.referenceFrames_.convertCoords([pos_[1], pos_[2], pos_[4]], "physical", "public");
+        pos_[1] = coords_[0];
+        pos_[2] = coords_[1];
+        pos_[4] = coords_[2];
+    }*/
 
     this.setCameraMode(pos_[0]);
     this.setFov((pos_[9] || 90) * 0.5);
@@ -315,7 +312,20 @@ Melown.Map.prototype.setPosition = function(pos_, public_) {
     this.navCurrentPos_ = pos_;
 };
 
-Melown.Map.prototype.convertPositionFrame = function(pos_, sourceFrame_, destination) {
+Melown.Map.prototype.convertCoords = function(coords_, source_, destination_) {
+    return this.referenceFrames_.convertCoords(coords_, source_, destination_);
+};
+
+Melown.Map.prototype.getPhysicalSrs = function(coords_, source_, destination_) {
+    return this.referenceFrames_.model_.physicalSrs_;
+};
+
+Melown.Map.prototype.getPublicSrs = function() {
+    return this.referenceFrames_.model_.publicSrs_;
+};
+
+Melown.Map.prototype.getNavigationSrs = function() {
+    return this.referenceFrames_.model_.navigationSrs_;
 };
 
 Melown.Map.prototype.getPosition = function() {
@@ -326,34 +336,67 @@ Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
     var pos2_ = pos_.slice();
 
     var zoomFactor_ = (this.getViewExtent() * Math.tan(Melown.radians(this.camera_.getFov()))) / 800;
-
     dx_ *= zoomFactor_;
     dy_ *= zoomFactor_;
 
     var yaw_ = Melown.radians(this.getOrientation()[0]);
-
     var forward_ = [-Math.sin(yaw_), Math.cos(yaw_)];
     var aside_ = [Math.cos(yaw_), Math.sin(yaw_)];
 
-    pos2_[1] += forward_[0]*dy_ - aside_[0]*dx_;
-    pos2_[2] += forward_[1]*dy_ - aside_[1]*dx_;
+    var coords_ = this.getCenter();
+    var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
+
+    if (navigationSrsInfo_["proj-name"] != "longlat") {
+        pos2_[1] += forward_[0]*dy_ - aside_[0]*dx_;
+        pos2_[2] += forward_[1]*dy_ - aside_[1]*dx_;
+    } else {
+        var mx_ = forward_[0]*dy_ - aside_[0]*dx_;
+        var my_ = forward_[1]*dy_ - aside_[1]*dx_;
+
+        var azimut_ = Melown.degrees(Math.atan2(mx_, my_));
+        var distance_ = Math.sqrt(mx_*mx_ + my_*my_);
+        console.log("azimut: " + azimut_ + " distance: " + distance_);
+
+        var coords_ = this.getCenter();
+        var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
+
+        //build omerc
+        /*
+        var projString_ = "+proj=omerc +k=1.0" +
+                          " +lat_0=" + coords_[1] +
+                          " +lonc="  + coords_[0] +
+                          " +alpha=" + azimut_ +
+                          " +gamma=0 +a=" + navigationSrsInfo_["a"] +
+                          " +b=" + navigationSrsInfo_["b"] +
+                          " +x_0=0 +y_0=0";
+
+        coords_ = this.getNavigationSrs().convertCoordsFrom([0, distance_], projString_);
+        */
+
+        var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo_["a"],
+                                                       (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
+
+        var r = geod.Direct(coords_[1], coords_[0], azimut_, distance_);
+        pos2_[1] = r.lon2;
+        pos2_[2] = r.lat2;
+
+        console.log("oldpos: " + JSON.stringify(pos_));
+        console.log("newpos: " + JSON.stringify(pos2_));
+    }
 
     return pos2_;
 };
 
 Melown.Map.prototype.update = function() {
-
     if (this.killed_ == true){
         return;
     }
 
     if (this.div_ != null && this.div_.style.visibility == "hidden"){
-
         //loop heartbeat
         window.requestAnimFrame(this.update.bind(this));
         return;
     }
-
 
     if (this.checkViewChange(this.navLastPos_)) {
         this.core_.callListener("map-position-changed", {"position":this.navCurrentPos_.slice()});

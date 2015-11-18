@@ -3,7 +3,7 @@
  */
 Melown.MapRefFrames = function(map_, json_) {
     this.map_ = map_;
-    this.proj4_ = map_.core_.proj4_;
+    this.proj4_ = map_.proj4_;
     this.valid_ = false;
     this.id_ = json_["id"] || null;
     this.description_ = json_["description"] || "";

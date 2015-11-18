@@ -14,7 +14,7 @@ Melown.Core = function(element_, options_) {
     this.mapInterface_ = null;
     this.renderer_ = new Melown.Renderer(this, this.element_, null, false);
     this.rendererInterface_ = new Melown.RendererInterface(this.renderer_);
-    this.proj4_ = window["_vp4_"];
+    this.proj4_ = window["_mproj4_"];
 
 
     //platform detection

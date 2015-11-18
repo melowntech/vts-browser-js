@@ -6,6 +6,7 @@ echo "};">> ../build/geodata-worker-tmp.js
 
 # merge melown-core 
 cat utils/libs/proj4.js \
+    utils/libs/geographics-full.js \
     _nominify.js \
     utils/matrix.js \
     utils/math.js \

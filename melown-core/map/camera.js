@@ -30,9 +30,9 @@ Melown.Map.prototype.updateCamera = function() {
     var height_ = 232.2;
 
     //convert public coords to physical
-    var worldPos_ = this.refframes_.convertCoords([this.navCenter_[0], this.navCenter_[1], height_], "public", "physical");
+    var worldPos_ = this.convertCoords([this.navCenter_[0], this.navCenter_[1], height_], "navigation", "physical");
 
-    var worldPos_ = [this.navCenter_[0], this.navCenter_[1], height_];
+    //var worldPos_ = [this.navCenter_[0], this.navCenter_[1], height_];
 
     this.navCameraPosition_ = worldPos_;
 

@@ -27,7 +27,8 @@ Melown.Map.prototype.parseConfig = function() {
 
         pos_[8] = 90;
 */
-        this.setPosition(this.mapConfig_["position"]);
+
+        this.setPosition(this.mapConfig_["position"], false);
     }
 
     this.setMapView(this.initialView_);
