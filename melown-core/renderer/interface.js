@@ -48,7 +48,7 @@ Melown.RendererInterface.prototype.createTexture = function(options_) {
 
     if (source_ instanceof Image) {
         var texture_ = new Melown.GpuTexture(this.gpu_);
-        texture_.createFromImage(source_, filter, repeat_);
+        texture_.createFromImage(source_, filter_, repeat_);
         return texture_;
     }
 
@@ -124,16 +124,16 @@ Melown.RendererInterface.prototype.drawBillboard = function(options_) {
         return;
     }
 
-    if (options["texture"] == null || options["mvp"] == null) {
+    if (options_["texture"] == null || options_["mvp"] == null) {
         return;
     }
 
-    var mvp_ = options["mvp"];
-    var color_ = options["color"] || [255,255,255,255];
-    var depthTest_ = options["depth-test"] || false;
-    var blend_ = options["blend"] || false;
+    var mvp_ = options_["mvp"];
+    var color_ = options_["color"] || [255,255,255,255];
+    var depthTest_ = options_["depth-test"] || false;
+    var blend_ = options_["blend"] || false;
 
-    this.renderer_.drawBillboard(mvp_, options["texture"], color_, depthTest_, blend_);
+    this.renderer_.drawBillboard(mvp_, options_["texture"], color_, depthTest_, blend_);
 };
 
 Melown.RendererInterface.prototype.drawLinestring = function(options_) {
