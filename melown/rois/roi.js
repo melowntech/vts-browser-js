@@ -37,7 +37,7 @@ Melown.Roi = function(config_, browser_, options_) {
 
     // modules
     this.core_ = this.browser_.core_;
-    this.renderer_ = this.core_.renderer_;
+    this.renderer_ = this.core_.getRenderer();
     Object.defineProperty(this, 'map_', {
         get : function() {
             return this.core_.getMap();
@@ -78,12 +78,13 @@ Melown.Roi.Fetch = function(config_, browser_, options_, clb_) {
     if (typeof config_ === 'string') {
         // async load of config at URL and call processConfig again (with object)
         // TODO - Vadstena.loadJSON should be replaced by Melown.*
-        Vadstena.loadJSON(config_, done, function(error_) {
+        Melown.loadJSON(config_, done, function(error_) {
             var err = new Error('Unable to download configuration JSON');
             console.error(err);
             clb(err);
             return;
         });
+        return;
     } else if (typeof config_ !== 'object' 
         || config_ === null) {
         var err = new Error('Unknown configuration format passed to Pano browser')
@@ -150,7 +151,7 @@ Melown.Roi.prototype.deinit = function() {
     this.updateClb_ = null;
 }
 
-Melown.Roi.prototype.setNeedRedraw = function() {
+Melown.Roi.prototype.setNeedsRedraw = function() {
     this.needsRedraw_ = true;
 }
 

@@ -195,8 +195,8 @@ Melown.Roi.LoadingQueue.prototype._next = function() {
         item_.data_.addEventListener('load', function(data_) {
             this._finalizeItem(item_, null, data_);
         }.bind(this), false);
-        item_.data_.addEventListener('error', function(data) {
-            this._finalizeItem(item_, null, data_);
+        item_.data_.addEventListener('error', function(data_) {
+            this._finalizeItem(item_, new Error(data_), null);
         }.bind(this), false);
         item_.data_.src = item_.url_;
     }

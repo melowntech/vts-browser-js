@@ -15,7 +15,7 @@ Melown.Roi.ProcessQueue = function(options_) {
 Melown.Roi.ProcessQueue.prototype.tick = function() {
     for (var i = 0; i < this.opsPerTick_; i++) {
         if (this.enqueued_.length) {
-            var task_ = this.enqueued_[i].pop();
+            var task_ = this.enqueued_.pop();
             task_();
         } else {
             break;

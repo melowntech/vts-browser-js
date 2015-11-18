@@ -268,7 +268,7 @@ Melown.Roi.Pano.prototype._loadActiveTiles = function() {
         var processClb_ = function(tile_) {
             tile_.texture(this.renderer_.createTexture(tile_.image()));
             tile_.image(null);
-            this.setMeedsRedraw();
+            this.setNeedsRedraw();
         }.bind(this, tile_);
 
         // we have an image object already - enqueue texture creation
