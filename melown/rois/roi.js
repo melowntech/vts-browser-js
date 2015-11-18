@@ -265,10 +265,10 @@ Melown.Roi.prototype._initFinalize = function() {
 Melown.Roi.prototype._tick = function() {
     this.processQueue_.tick();
 
-    if (this.needsRedraw_) {
+    //if (this.needsRedraw_) {
         this.needsRedraw_ = false;
         this._draw();
-    }
+    //}
 }
 
 Melown.Roi.prototype._draw = function() {

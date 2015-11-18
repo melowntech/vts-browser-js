@@ -126,6 +126,7 @@ Melown.Roi.Pano.prototype._initFinalize = function() {
     this.cubeTree_ = [[], [], [], [], [], []];  // Cube array
     var index_ = [0,0];
     for (var i = 0; i < 6; i++) {
+        index_ = [0,0];
         var position_ = [0.0, 0.0];
         var arr_ = this.cubeTree_[i];
         for (var j = 0; j < this.tilesOnLod0_; j++) {
@@ -203,11 +204,34 @@ Melown.Roi.Pano.prototype._update = function() {
 }
 
 Melown.Roi.Pano.prototype._draw = function() {
-    // TODO clear zbuffer.
+    
+    if (!this.map_) {
+        return;
+    }
 
-    this.activeTiles_.forEach(function(item_) {
-        this._drawTile(item_);
-    }.bind(this));
+    var pv_ = this.map_.getCameraInfo()['view-projection-matrix'];
+    var m_ = Melown.mat4.create();
+    m_ = Melown.scaleMatrix(1000,1000,10);
+    //Melown.mat4.multiply(m_, Melown.translationMatrix(), m_)
+    var mvp_ = Melown.mat4.multiply(pv_, m_);
+
+    var opts_ = {};
+    opts_["mvp"] = mvp_;
+
+    var tex_ = null;
+    for (var i in this.activeTiles_) {
+        if (this.activeTiles_[i].texture() !== null) {
+            tex_ = this.activeTiles_[i].texture();
+            break;
+        }
+    }
+    opts_["texture"] = tex_;
+
+    this.renderer_.drawBillboard(opts_);
+
+    // this.activeTiles_.forEach(function(item_) {
+    //     this._drawTile(item_);
+    // }.bind(this));
 }
 
 Melown.Roi.Pano.prototype._drawTile = function(tile_) {
@@ -266,10 +290,10 @@ Melown.Roi.Pano.prototype._loadActiveTiles = function() {
         }
 
         var processClb_ = function(tile_) {
-            tile_.texture(this.renderer_.createTexture(tile_.image()));
+            tile_.texture(this.renderer_.createTexture({source : tile_.image()}));
             tile_.image(null);
             this.setNeedsRedraw();
-        }.bind(this, tile_);
+        };
 
         // we have an image object already - enqueue texture creation
         if (tile_.image() instanceof Image) {
@@ -284,7 +308,7 @@ Melown.Roi.Pano.prototype._loadActiveTiles = function() {
                 return;
             }
             tile_.image(image_);
-            this.processQueue_.enqueue(processClb_);
+            this.processQueue_.enqueue(processClb_.bind(this, tile_));
         }.bind(this, tile_, processClb_));
 
     }

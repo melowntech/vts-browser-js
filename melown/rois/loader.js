@@ -193,7 +193,7 @@ Melown.Roi.LoadingQueue.prototype._next = function() {
     } else if (item_.type_ === Melown.Roi.LoadingQueue.Type.Image) {
         item_.data_ = new Image();
         item_.data_.addEventListener('load', function(data_) {
-            this._finalizeItem(item_, null, data_);
+            this._finalizeItem(item_, null, item_.data_);
         }.bind(this), false);
         item_.data_.addEventListener('error', function(data_) {
             this._finalizeItem(item_, new Error(data_), null);
@@ -243,13 +243,13 @@ Melown.Roi.LoadingQueue.prototype._finalizeItem = function(item_, error_, data_)
     if (!error_) {
         item_.data_ = data_;
         while (this.finished_.length > this.finishedSlots_ - 1) {
-            this.finishedSlots_.splice(0,1);
+            this.finished_.splice(0,1);
         }
         this.finished_.push(item_);
     }
 
     // pass data to item
-    item_.data = data_;
+    item_.data_ = data_;
 
     // invoke all callbacks
     for (var i in item_.clb_) {
