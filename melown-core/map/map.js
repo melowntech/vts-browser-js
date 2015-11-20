@@ -66,6 +66,23 @@ Melown.Map = function(core_, mapConfig_, path_) {
 
     this.initMapTrees();
 
+    this.updateCoutner_ = 0;
+
+    this.heightmapOnly_ = false;
+    this.blendHeightmap_ = true;
+    this.drawBBoxes_ = false;
+    this.drawLods_ = false;
+    this.drawPositions_ = false;
+    this.drawTexelSize_ = false;
+    this.drawWireframe_ = 0;
+    this.drawFaceCount_ = false;
+    this.drawDistance_ = false;
+    this.drawMaxLod_ = false;
+    this.drawTextureSize_ = false;
+    this.drawLayers_ = true;
+    this.ignoreTexelSize_ = false;
+    this.drawFog_ = true;
+
     //this.mesh_ = new Melown.MapMesh(this);
     //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
 
@@ -89,6 +106,12 @@ Melown.Map.prototype.initMapTrees = function() {
         var id_ = [node_.id_.lod_, node_.id_.position_[0], node_.id_.position_[1]];
         this.mapTrees_.push(new Melown.MapTree(this, id_, node_.refFrame_, false));
     }
+};
+
+Melown.Map.prototype.setOption = function(key_, value_) {
+};
+
+Melown.Map.prototype.getOption = function(key_) {
 };
 
 Melown.Map.prototype.addSrs = function(id_, srs_) {

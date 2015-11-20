@@ -102,52 +102,6 @@ Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
 
     this.displayDrawTest_ = false;
 
-    //stats
-    this.updateStats_ = true;
-    this.statsElement_ = document.getElementById("Melown-engine-render-stats");
-    this.statsCycle_ = 0;
-    this.statsCycle2_ = 0;
-    this.renderedTiles_ = 0;
-    this.renderedHTiles_ = 0;
-    this.renderedPolygons_ = 0;
-    this.renderTime_ = 0;
-    this.renderTimeTmp_ = 0;
-    this.renderTimeTmp2_ = 0;
-    this.renderLODs_ = [];
-    this.renderMeshFileSize_ = 0;
-    this.renderImageFileSize_ = 0;
-    this.lastTimer_ = null;
-    this.fps_ = 0;
-    this.gpuMemoryUsed_ = 0;
-    this.gpuMemoryTextures_ = 0;
-    this.gpuMemoryMeshes_ = 0;
-
-    this.recordStats_ = false;
-    this.statsCanvasRender_ = document.getElementById("Melown-engine-stats-render");
-    this.statsCanvasCache_ = document.getElementById("Melown-engine-stats-cache");
-    this.statsTimeIndex_ = 0;
-    this.statsLastTimeIndex_ = 0;
-    this.statsTimeSamples_ = 500;
-    this.statsRenderTimes_ = new Array(this.statsTimeSamples_);
-    this.statsCreateMeshTimes_ = new Array(this.statsTimeSamples_);
-    this.statsCreateGpuMeshTimes_ = new Array(this.statsTimeSamples_);
-    this.statsCreateTextureTimes_ = new Array(this.statsTimeSamples_);
-    this.statsFrameGapTimes_ = new Array(this.statsTimeSamples_);
-    this.statsGpuMemory_ = new Array(this.statsTimeSamples_);
-    this.statsGpuMemoryUsed_ = new Array(this.statsTimeSamples_);
-    this.statsGpuMemoryTextures_ = new Array(this.statsTimeSamples_);
-    this.statsGpuMemoryMeshes_ = new Array(this.statsTimeSamples_);
-    this.statsPolygons_ = new Array(this.statsTimeSamples_);
-    this.statsLODs_ = new Array(this.statsTimeSamples_);
-    this.statsFluxTextures_ = new Array(this.statsTimeSamples_);
-    this.statsFluxMeshes_ = new Array(this.statsTimeSamples_);
-    this.statsFluxTexture_ = [[0,0],[0,0]];
-    this.statsFluxMesh_ = [[0,0],[0,0]];
-    this.statsCreateTextureTime_ = 0;
-    this.statsCreateGpuMeshTime_ = 0;
-    this.statsCreateMeshTime_ = 0;
-    this.resetStats();
-
     this.layers_ = [];
     this.layerIcons_ = [];
     this.layerPlaces_ = [];
@@ -598,26 +552,6 @@ Melown.Renderer.prototype.saveScreenshot = function()
     window.open(canvas_.toDataURL("image/jpeg"));
 };
 
-Melown.Renderer.prototype.resetStats = function() {
-    this.statsTimeIndex_ = 0;
-
-    for (var i = 0; i < this.statsTimeSamples_; i++) {
-        this.statsRenderTimes_[i] = 0;
-        this.statsCreateMeshTimes_[i] = 0;
-        this.statsCreateGpuMeshTimes_[i] = 0;
-        this.statsCreateTextureTimes_[i] = 0;
-        this.statsFrameGapTimes_[i] = 0;
-        this.statsGpuMemory_[i] = 0;
-        this.statsGpuMemoryUsed_[i] = 0;
-        this.statsGpuMemoryTextures_[i] = 0;
-        this.statsGpuMemoryMeshes_[i] = 0;
-        this.statsPolygons_[i] = 0;
-        this.statsLODs_[i] = [0,[]];
-        this.statsFluxTextures_[i] = [[0,0],[0,0]];
-        this.statsFluxMeshes_[i] = [[0,0],[0,0]];
-    }
-
-};
 
 Melown.Renderer.prototype.getBitmap = function(url_, filter_, tiled_) {
     var id_ = url_ + "*" + filter_ + "*" + tiled_;

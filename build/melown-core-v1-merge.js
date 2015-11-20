@@ -5703,11 +5703,12 @@ Melown.GpuMesh = function(gpu_, meshData_, fileSize_, core_) {
         Melown.GpuBarycentricVertexBuffer_.numItems = buffer_.length / 3;
     }
 
+    /*
     if (this.core_.renderer_ != null) {
         this.core_.renderer_.statsCreateGpuMeshTime_ += performance.now() - timer_;
         this.core_.renderer_.statsFluxMesh_[0][0] ++;
         this.core_.renderer_.statsFluxMesh_[0][1] += this.size_;
-    }
+    }*/
 
     this.valid_ = true;
 };
@@ -5721,10 +5722,11 @@ Melown.GpuMesh.prototype.kill = function() {
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
     this.gl_.deleteBuffer(this.vertexTextureCoordBuffer_);
 
+    /*
     if (this.core_.renderer_ != null) {
         this.core_.renderer_.statsFluxMesh_[1][0] ++;
         this.core_.renderer_.statsFluxMesh_[1][1] += this.size_;
-    }
+    }*/
 };
 
 //! Draws the mesh, given the two vertex shader attributes locations.
@@ -7394,10 +7396,12 @@ Melown.GpuTexture.prototype.kill = function()
 {
     this.gl_.deleteTexture(this.texture_);
 
+    /*
     if (this.core_ != null && this.core_.renderer_ != null) {
         this.core_.renderer_.statsFluxTexture_[1][0] ++;
         this.core_.renderer_.statsFluxTexture_[1][1] += this.size_;
     }
+    */
 };
 
 //! Returns GPU RAM used, in bytes.
@@ -7512,12 +7516,13 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
     this.size_ = image_.naturalWidth * image_.naturalHeight * 4;
     this.loaded_ = true;
 
+    /*
     if (this.core_ != null && this.core_.renderer_!= null) {
         this.core_.renderer_.dirty_ = true;
         this.core_.renderer_.statsCreateTextureTime_ += performance.now() - timer_;
         this.core_.renderer_.statsFluxTexture_[0][0] ++;
         this.core_.renderer_.statsFluxTexture_[0][1] += this.size_;
-    }
+    }*/
 };
 
 Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
@@ -7902,52 +7907,6 @@ Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
     this.drawFog_ = true;
 
     this.displayDrawTest_ = false;
-
-    //stats
-    this.updateStats_ = true;
-    this.statsElement_ = document.getElementById("Melown-engine-render-stats");
-    this.statsCycle_ = 0;
-    this.statsCycle2_ = 0;
-    this.renderedTiles_ = 0;
-    this.renderedHTiles_ = 0;
-    this.renderedPolygons_ = 0;
-    this.renderTime_ = 0;
-    this.renderTimeTmp_ = 0;
-    this.renderTimeTmp2_ = 0;
-    this.renderLODs_ = [];
-    this.renderMeshFileSize_ = 0;
-    this.renderImageFileSize_ = 0;
-    this.lastTimer_ = null;
-    this.fps_ = 0;
-    this.gpuMemoryUsed_ = 0;
-    this.gpuMemoryTextures_ = 0;
-    this.gpuMemoryMeshes_ = 0;
-
-    this.recordStats_ = false;
-    this.statsCanvasRender_ = document.getElementById("Melown-engine-stats-render");
-    this.statsCanvasCache_ = document.getElementById("Melown-engine-stats-cache");
-    this.statsTimeIndex_ = 0;
-    this.statsLastTimeIndex_ = 0;
-    this.statsTimeSamples_ = 500;
-    this.statsRenderTimes_ = new Array(this.statsTimeSamples_);
-    this.statsCreateMeshTimes_ = new Array(this.statsTimeSamples_);
-    this.statsCreateGpuMeshTimes_ = new Array(this.statsTimeSamples_);
-    this.statsCreateTextureTimes_ = new Array(this.statsTimeSamples_);
-    this.statsFrameGapTimes_ = new Array(this.statsTimeSamples_);
-    this.statsGpuMemory_ = new Array(this.statsTimeSamples_);
-    this.statsGpuMemoryUsed_ = new Array(this.statsTimeSamples_);
-    this.statsGpuMemoryTextures_ = new Array(this.statsTimeSamples_);
-    this.statsGpuMemoryMeshes_ = new Array(this.statsTimeSamples_);
-    this.statsPolygons_ = new Array(this.statsTimeSamples_);
-    this.statsLODs_ = new Array(this.statsTimeSamples_);
-    this.statsFluxTextures_ = new Array(this.statsTimeSamples_);
-    this.statsFluxMeshes_ = new Array(this.statsTimeSamples_);
-    this.statsFluxTexture_ = [[0,0],[0,0]];
-    this.statsFluxMesh_ = [[0,0],[0,0]];
-    this.statsCreateTextureTime_ = 0;
-    this.statsCreateGpuMeshTime_ = 0;
-    this.statsCreateMeshTime_ = 0;
-    this.resetStats();
 
     this.layers_ = [];
     this.layerIcons_ = [];
@@ -8399,26 +8358,6 @@ Melown.Renderer.prototype.saveScreenshot = function()
     window.open(canvas_.toDataURL("image/jpeg"));
 };
 
-Melown.Renderer.prototype.resetStats = function() {
-    this.statsTimeIndex_ = 0;
-
-    for (var i = 0; i < this.statsTimeSamples_; i++) {
-        this.statsRenderTimes_[i] = 0;
-        this.statsCreateMeshTimes_[i] = 0;
-        this.statsCreateGpuMeshTimes_[i] = 0;
-        this.statsCreateTextureTimes_[i] = 0;
-        this.statsFrameGapTimes_[i] = 0;
-        this.statsGpuMemory_[i] = 0;
-        this.statsGpuMemoryUsed_[i] = 0;
-        this.statsGpuMemoryTextures_[i] = 0;
-        this.statsGpuMemoryMeshes_[i] = 0;
-        this.statsPolygons_[i] = 0;
-        this.statsLODs_[i] = [0,[]];
-        this.statsFluxTextures_[i] = [[0,0],[0,0]];
-        this.statsFluxMeshes_[i] = [[0,0],[0,0]];
-    }
-
-};
 
 Melown.Renderer.prototype.getBitmap = function(url_, filter_, tiled_) {
     var id_ = url_ + "*" + filter_ + "*" + tiled_;
@@ -9780,6 +9719,23 @@ Melown.Map = function(core_, mapConfig_, path_) {
 
     this.initMapTrees();
 
+    this.updateCoutner_ = 0;
+
+    this.heightmapOnly_ = false;
+    this.blendHeightmap_ = true;
+    this.drawBBoxes_ = false;
+    this.drawLods_ = false;
+    this.drawPositions_ = false;
+    this.drawTexelSize_ = false;
+    this.drawWireframe_ = 0;
+    this.drawFaceCount_ = false;
+    this.drawDistance_ = false;
+    this.drawMaxLod_ = false;
+    this.drawTextureSize_ = false;
+    this.drawLayers_ = true;
+    this.ignoreTexelSize_ = false;
+    this.drawFog_ = true;
+
     //this.mesh_ = new Melown.MapMesh(this);
     //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
 
@@ -9803,6 +9759,12 @@ Melown.Map.prototype.initMapTrees = function() {
         var id_ = [node_.id_.lod_, node_.id_.position_[0], node_.id_.position_[1]];
         this.mapTrees_.push(new Melown.MapTree(this, id_, node_.refFrame_, false));
     }
+};
+
+Melown.Map.prototype.setOption = function(key_, value_) {
+};
+
+Melown.Map.prototype.getOption = function(key_) {
 };
 
 Melown.Map.prototype.addSrs = function(id_, srs_) {
@@ -12952,18 +12914,21 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
                 tile_.surfaceMesh_ = new Melown.MapMesh(this, tile_);
             }
 
+            if (this.drawBBoxes_ && !this.drawMeshBBox_) {
+                node_.drawBBox(cameraPos_);
+            }
+
             if (tile_.surfaceMesh_.isReady() == true) {
 
                 var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
                 for (var i = 0, li = submeshes_.length; i < li; i++) {
-                    //submeshes_[i] = ;
 
                     //TODO: check internal texture flag
 
-                    node_.drawBBox(cameraPos_);
-
-                    //submeshes_[i].drawBBox(cameraPos_);
+                    if (this.drawBBoxes_ && this.drawMeshBBox_) {
+                        submeshes_[i].drawBBox(cameraPos_);
+                    }
 
                     if (tile_.surfaceTextures_[i] == null) {
                         tile_.surfaceTextures_[i] = new Melown.MapTexture(this, tile_, i, false);
@@ -13200,6 +13165,7 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     for (var i = 0, li = this.submeshes_.length; i < li; i++) {
         this.gpuSubmeshes_[i].kill();
     }
+
     this.gpuSubmeshes_ = [];
 
     if (killedByCache_ != true && this.gpuCacheItem_ != null) {
@@ -13208,10 +13174,10 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     }
 
     this.gpuCacheItem_ = null;
+    this.loadState_ = 0;
 };
 
 Melown.MapMesh.prototype.isReady = function () {
-
     if (this.loadState_ == 2) { //loaded
 
         if (this.gpuSubmeshes_.length == 0) {
@@ -13223,13 +13189,12 @@ Melown.MapMesh.prototype.isReady = function () {
 
         return true;
     } else {
-
         if (this.loadState_ == 0) { //not loaded
             this.scheduleLoad();
         } //else load in progress
-
-        return;
     }
+
+    return false;
 };
 
 Melown.MapMesh.prototype.scheduleLoad = function() {
@@ -13308,7 +13273,6 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
 };
 
 Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
-
     var streamData_ = stream_.data_;
     var magic_ = "";
 
@@ -13330,13 +13294,11 @@ Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
 };
 
 Melown.MapMesh.prototype.addSubmesh = function(submesh_) {
-
     this.submeshes_.push(submesh_);
     this.size_ += submesh_.size_;
 };
 
 Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
-
     var size_ = 0;
     this.gpuSubmeshes_ = new Array(this.submeshes_.length);
 
@@ -13349,7 +13311,6 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
 };
 
 Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
-
     if (this.gpuSubmeshes_[index_] == null && this.submeshes_[index_] != null) {
         this.gpuSubmeshes_[index_] = this.submeshes_[index_].buildGpuMesh();
     }
@@ -13387,6 +13348,11 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
     program_.setMat4("uMV", mv_);
     program_.setMat4("uProj", proj_);
     renderer_.fogSetup(program_, "uFogDensity");
+
+    if (texture_ == null || texture_.gpuTexture_ == null) {
+        proj_ = proj_;
+        return;
+    }
 
     renderer_.gpu_.bindTexture(texture_.gpuTexture_);
 
@@ -14524,6 +14490,8 @@ Melown.MapSrs.prototype.convertCoordsFrom = function(coords_, srs_) {
  */
 Melown.MapStats = function(map_) {
     this.map_ = map_;
+    this.core_ = map_.core_;
+    this.inspector_ = map_.core_.inspector_;
     this.drawnTiles_ = 0;
     this.counter_ = 0;
     this.statsCycle_ = 0;
@@ -14531,6 +14499,55 @@ Melown.MapStats = function(map_) {
     this.renderTime_ = 0;
     this.renderTimeTmp_ = 0;
     this.renderTimeBegin_ = 0;
+
+    this.recordGraphs_ = false;
+    this.graphsTimeIndex_ = 0;
+    this.graphsLastTimeIndex_ = 0;
+    this.graphsTimeSamples_ = 500;
+    this.graphsRenderTimes_ = new Array(this.graphsTimeSamples_);
+    this.graphsCreateMeshTimes_ = new Array(this.graphsTimeSamples_);
+    this.graphsCreateGpuMeshTimes_ = new Array(this.graphsTimeSamples_);
+    this.graphsCreateTextureTimes_ = new Array(this.graphsTimeSamples_);
+    this.graphsFrameGapTimes_ = new Array(this.graphsTimeSamples_);
+    this.graphsGpuMemory_ = new Array(this.graphsTimeSamples_);
+    this.graphsGpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
+    this.graphsGpuMemoryTextures_ = new Array(this.graphsTimeSamples_);
+    this.graphsGpuMemoryMeshes_ = new Array(this.graphsTimeSamples_);
+    this.graphsPolygons_ = new Array(this.graphsTimeSamples_);
+    this.graphsLODs_ = new Array(this.graphsTimeSamples_);
+    this.graphsFluxTextures_ = new Array(this.graphsTimeSamples_);
+    this.graphsFluxMeshes_ = new Array(this.graphsTimeSamples_);
+    this.graphsFluxTexture_ = [[0,0],[0,0]];
+    this.graphsFluxMesh_ = [[0,0],[0,0]];
+    this.graphsCreateTextureTime_ = 0;
+    this.graphsCreateGpuMeshTime_ = 0;
+    this.graphsCreateMeshTime_ = 0;
+    this.resetGraphs();
+
+    this.gpuUsed_ = 0;
+    this.resourcesUsed_ = 0;
+    this.metaUsed_ = 0;
+
+};
+
+Melown.MapStats.prototype.resetGraphs = function() {
+    this.graphsTimeIndex_ = 0;
+
+    for (var i = 0; i < this.graphsTimeSamples_; i++) {
+        this.graphsRenderTimes_[i] = 0;
+        this.graphsCreateMeshTimes_[i] = 0;
+        this.graphsCreateGpuMeshTimes_[i] = 0;
+        this.graphsCreateTextureTimes_[i] = 0;
+        this.graphsFrameGapTimes_[i] = 0;
+        this.graphsGpuMemory_[i] = 0;
+        this.graphsGpuMemoryUsed_[i] = 0;
+        this.graphsGpuMemoryTextures_[i] = 0;
+        this.graphsGpuMemoryMeshes_[i] = 0;
+        this.graphsPolygons_[i] = 0;
+        this.graphsLODs_[i] = [0,[]];
+        this.graphsFluxTextures_[i] = [[0,0],[0,0]];
+        this.graphsFluxMeshes_[i] = [[0,0],[0,0]];
+    }
 };
 
 Melown.MapStats.prototype.begin = function() {
@@ -14543,11 +14560,18 @@ Melown.MapStats.prototype.begin = function() {
 };
 
 Melown.MapStats.prototype.end = function() {
-    if (this.statsCycle_ > 100) {
-        this.renderTime_ = this.renderTimeTmp_ / this.statsCycle_;
+    if ((this.statsCycle_ % 100) == 0) {
+        this.renderTime_ = this.renderTimeTmp_ / 100;
         this.fps_ = 1000 / this.renderTime_;
-        this.statsCycle_ = 0;
         this.renderTimeTmp_ = 0;
+
+        if (this.inspector_ != null) {
+            this.gpuUsed_ = this.map_.gpuCache_.totalCost_;
+            this.resourcesUsed_ = this.map_.resourcesCache_.totalCost_;
+            this.metaUsed_ = this.map_.metatileCache_.totalCost_;
+
+            this.inspector_.updateStatsPanel(this);
+        }
     }
 
     var renderTime_ = performance.now() - this.renderTimeBegin_;
@@ -15032,10 +15056,15 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
         this.tile_.validate();
     }
 
+    this.loadState_ = 0;
     this.cacheItem_ = null;
 };
 
 Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
+    if (this.gpuTexture_ != null) {
+        this.gpuTexture_.kill();
+    }
+
     this.gpuTexture_ = null;
 
     if (killedByCache_ != true && this.gpuCacheItem_ != null) {
@@ -15048,7 +15077,6 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
 
 Melown.MapTexture.prototype.isReady = function() {
     if (this.loadState_ == 2) { //loaded
-
         if (this.gpuTexture_ == null) {
             this.buildGpuTexture();
         }
@@ -15058,13 +15086,12 @@ Melown.MapTexture.prototype.isReady = function() {
 
         return true;
     } else {
-
         if (this.loadState_ == 0) { //not loaded
             this.scheduleLoad();
         } //else load in progress
-
-        return;
     }
+
+    return false;
 };
 
 Melown.MapTexture.prototype.scheduleLoad = function() {
@@ -15609,13 +15636,13 @@ Melown.Core = function(element_, options_) {
     this.killed_ = false;
     this.listeners_ = [];
     this.listenerCounter_ = 0;
+    this.inspector_ = (Melown.Inspector != null) ? (new Melown.Inspector(this)) : null;
 
     this.map_ = null;
     this.mapInterface_ = null;
     this.renderer_ = new Melown.Renderer(this, this.element_, null, false);
     this.rendererInterface_ = new Melown.RendererInterface(this.renderer_);
     this.proj4_ = window["_mproj4_"];
-
 
     //platform detection
     Melown.Platform.init();
@@ -15668,6 +15695,12 @@ Melown.Core.prototype.getRendererInterface = function() {
 
 Melown.Core.prototype.getProj4 = function() {
     return this.proj4_;
+};
+
+Melown.Core.prototype.getOption = function(key_, value_) {
+};
+
+Melown.Core.prototype.setOption = function(key_, value_) {
 };
 
 Melown.Core.prototype.on = function(name_, listener_) {

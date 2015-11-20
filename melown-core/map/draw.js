@@ -24,18 +24,21 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
                 tile_.surfaceMesh_ = new Melown.MapMesh(this, tile_);
             }
 
+            if (this.drawBBoxes_ && !this.drawMeshBBox_) {
+                node_.drawBBox(cameraPos_);
+            }
+
             if (tile_.surfaceMesh_.isReady() == true) {
 
                 var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
                 for (var i = 0, li = submeshes_.length; i < li; i++) {
-                    //submeshes_[i] = ;
 
                     //TODO: check internal texture flag
 
-                    node_.drawBBox(cameraPos_);
-
-                    //submeshes_[i].drawBBox(cameraPos_);
+                    if (this.drawBBoxes_ && this.drawMeshBBox_) {
+                        submeshes_[i].drawBBox(cameraPos_);
+                    }
 
                     if (tile_.surfaceTextures_[i] == null) {
                         tile_.surfaceTextures_[i] = new Melown.MapTexture(this, tile_, i, false);

@@ -43,6 +43,7 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     for (var i = 0, li = this.submeshes_.length; i < li; i++) {
         this.gpuSubmeshes_[i].kill();
     }
+
     this.gpuSubmeshes_ = [];
 
     if (killedByCache_ != true && this.gpuCacheItem_ != null) {
@@ -51,10 +52,10 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     }
 
     this.gpuCacheItem_ = null;
+    this.loadState_ = 0;
 };
 
 Melown.MapMesh.prototype.isReady = function () {
-
     if (this.loadState_ == 2) { //loaded
 
         if (this.gpuSubmeshes_.length == 0) {
@@ -66,13 +67,12 @@ Melown.MapMesh.prototype.isReady = function () {
 
         return true;
     } else {
-
         if (this.loadState_ == 0) { //not loaded
             this.scheduleLoad();
         } //else load in progress
-
-        return;
     }
+
+    return false;
 };
 
 Melown.MapMesh.prototype.scheduleLoad = function() {
@@ -151,7 +151,6 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
 };
 
 Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
-
     var streamData_ = stream_.data_;
     var magic_ = "";
 
@@ -173,13 +172,11 @@ Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
 };
 
 Melown.MapMesh.prototype.addSubmesh = function(submesh_) {
-
     this.submeshes_.push(submesh_);
     this.size_ += submesh_.size_;
 };
 
 Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
-
     var size_ = 0;
     this.gpuSubmeshes_ = new Array(this.submeshes_.length);
 
@@ -192,7 +189,6 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
 };
 
 Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
-
     if (this.gpuSubmeshes_[index_] == null && this.submeshes_[index_] != null) {
         this.gpuSubmeshes_[index_] = this.submeshes_[index_].buildGpuMesh();
     }
@@ -230,6 +226,11 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
     program_.setMat4("uMV", mv_);
     program_.setMat4("uProj", proj_);
     renderer_.fogSetup(program_, "uFogDensity");
+
+    if (texture_ == null || texture_.gpuTexture_ == null) {
+        proj_ = proj_;
+        return;
+    }
 
     renderer_.gpu_.bindTexture(texture_.gpuTexture_);
 

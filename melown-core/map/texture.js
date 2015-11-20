@@ -29,10 +29,15 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
         this.tile_.validate();
     }
 
+    this.loadState_ = 0;
     this.cacheItem_ = null;
 };
 
 Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
+    if (this.gpuTexture_ != null) {
+        this.gpuTexture_.kill();
+    }
+
     this.gpuTexture_ = null;
 
     if (killedByCache_ != true && this.gpuCacheItem_ != null) {
@@ -45,7 +50,6 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
 
 Melown.MapTexture.prototype.isReady = function() {
     if (this.loadState_ == 2) { //loaded
-
         if (this.gpuTexture_ == null) {
             this.buildGpuTexture();
         }
@@ -55,13 +59,12 @@ Melown.MapTexture.prototype.isReady = function() {
 
         return true;
     } else {
-
         if (this.loadState_ == 0) { //not loaded
             this.scheduleLoad();
         } //else load in progress
-
-        return;
     }
+
+    return false;
 };
 
 Melown.MapTexture.prototype.scheduleLoad = function() {

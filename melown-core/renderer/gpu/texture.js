@@ -33,10 +33,12 @@ Melown.GpuTexture.prototype.kill = function()
 {
     this.gl_.deleteTexture(this.texture_);
 
+    /*
     if (this.core_ != null && this.core_.renderer_ != null) {
         this.core_.renderer_.statsFluxTexture_[1][0] ++;
         this.core_.renderer_.statsFluxTexture_[1][1] += this.size_;
     }
+    */
 };
 
 //! Returns GPU RAM used, in bytes.
@@ -151,12 +153,13 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
     this.size_ = image_.naturalWidth * image_.naturalHeight * 4;
     this.loaded_ = true;
 
+    /*
     if (this.core_ != null && this.core_.renderer_!= null) {
         this.core_.renderer_.dirty_ = true;
         this.core_.renderer_.statsCreateTextureTime_ += performance.now() - timer_;
         this.core_.renderer_.statsFluxTexture_[0][0] ++;
         this.core_.renderer_.statsFluxTexture_[0][1] += this.size_;
-    }
+    }*/
 };
 
 Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)

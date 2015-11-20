@@ -9,13 +9,13 @@ Melown.Core = function(element_, options_) {
     this.killed_ = false;
     this.listeners_ = [];
     this.listenerCounter_ = 0;
+    this.inspector_ = (Melown.Inspector != null) ? (new Melown.Inspector(this)) : null;
 
     this.map_ = null;
     this.mapInterface_ = null;
     this.renderer_ = new Melown.Renderer(this, this.element_, null, false);
     this.rendererInterface_ = new Melown.RendererInterface(this.renderer_);
     this.proj4_ = window["_mproj4_"];
-
 
     //platform detection
     Melown.Platform.init();
@@ -68,6 +68,12 @@ Melown.Core.prototype.getRendererInterface = function() {
 
 Melown.Core.prototype.getProj4 = function() {
     return this.proj4_;
+};
+
+Melown.Core.prototype.getOption = function(key_, value_) {
+};
+
+Melown.Core.prototype.setOption = function(key_, value_) {
 };
 
 Melown.Core.prototype.on = function(name_, listener_) {
