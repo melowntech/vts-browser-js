@@ -174,7 +174,7 @@ Melown.Roi.Pano.prototype._update = function() {
     // calc zoom (suitable lod)
     var useLod_ = this._suitableLod();
     // find visible tiles
-    var newTiles = this._visibleTiles(vpMat_, 0);
+    var newTiles = this._visibleTiles(vpMat_, 1);
 
     // check if active tiles changed
     var changed = false;
@@ -341,12 +341,12 @@ Melown.Roi.Pano.prototype._visibleTiles = function(vpMat_, lod_) {
     var tiles_ = [];
 
     var recurs = function(tile_) {
-        if (tile_.lod_ === lod_ || tile_.childs_.length === 0) {
+        if (tile_.lod_ === lod_ || tile_.children_.length === 0) {
             tiles_.push(tile_);
         }
 
-        for (var i in tile_.childs_) {
-            recurs(tile_.childs_[i]);
+        for (var i in tile_.children_) {
+            recurs(tile_.children_[i]);
         }
     };
 
@@ -391,7 +391,8 @@ Melown.Roi.Pano.prototype._faceMatrix = function(face_) {
     Melown.mat4.multiply(rotY_, rot_, rot_);
     Melown.mat4.multiply(rotZ_, rot_, rot_);
     var trn_ = Melown.translationMatrix(trn_[0], trn_[1], trn_[2]);
-    Melown.mat4.multiply(rot_, trn_, trn_);            
+    Melown.mat4.multiply(rot_, trn_, trn_);    
+    Melown.mat4.multiply(this.cubeOrientationMatrix_, trn_, trn_);        
     return trn_;
 }
 
@@ -400,9 +401,7 @@ Melown.Roi.Pano.prototype._perepareTileMatrix = function(tile_) {
     Melown.mat4.identity(tile_.mat_);
 
     // 1. tile scale
-    var tscl_ = Melown.scaleMatrix(/*this.tileRelSize_ */ tile_.scale_[1]
-                                   , /*this.tileRelSize_ */ tile_.scale_[0]
-                                   , 1);
+    var tscl_ = Melown.scaleMatrix(tile_.scale_[1], tile_.scale_[0], 1);
     Melown.mat4.multiply(tscl_, tile_.mat_, tile_.mat_);
 
     // 2. trnaslate to center
@@ -417,10 +416,4 @@ Melown.Roi.Pano.prototype._perepareTileMatrix = function(tile_) {
 
     // 4. apply face matrix
     Melown.mat4.multiply(this.faceMatrices_[tile_.face_], tile_.mat_, tile_.mat_); 
-}
-
-Melown.Roi.Pano.prototype._orientedTileMatrix = function(tile_) {
-    var ot_ = this._tileMatrix(tile_);
-    Melown.mat4.multiply(this.cubeOrientationMatrix_, ot_, ot_);
-    return ot_;
 }
