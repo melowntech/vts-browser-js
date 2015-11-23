@@ -9,6 +9,7 @@ Melown.MapMesh = function(map_, tile_) {
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
     this.fileSize_ = 0;
+    this.faces_ = 0;
 
     this.cacheItem_ = null;  //store killSubmeshes
     this.gpuCacheItem_ = null; //store killGpuSubmeshes
@@ -146,6 +147,7 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
     for (var i = 0, li = this.numSubmeshes_; i < li; i++) {
         this.submeshes_[i] = new Melown.MapSubmesh(this, stream_);
         this.size_ += this.submeshes_[i].size_;
+        this.faces_ += this.submeshes_[i].faces_;
     }
 
 };
@@ -174,6 +176,7 @@ Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
 Melown.MapMesh.prototype.addSubmesh = function(submesh_) {
     this.submeshes_.push(submesh_);
     this.size_ += submesh_.size_;
+    this.faces_ += submesh_.faces_;
 };
 
 Melown.MapMesh.prototype.buildGpuSubmeshes = function() {

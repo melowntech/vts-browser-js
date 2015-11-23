@@ -202,6 +202,11 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 case 77:
                 case 109:
                     map_.drawMeshBBox_ = !map_.drawMeshBBox_; map_.dirty_ = true; break; //key M pressed
+
+                case 73:
+                case 105:
+                    map_.drawIndices_ = !map_.drawIndices_; map_.dirty_ = true; break; //key M pressed
+
             }
 
         }

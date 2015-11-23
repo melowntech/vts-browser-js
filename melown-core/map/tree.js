@@ -43,7 +43,7 @@ Melown.MapTree.prototype.init = function() {
 Melown.MapTree.prototype.draw = function() {
     this.cameraPos_ = [0,0,0];
     this.worldPos_ = [0,0,0];
-    this.ndcToScreenPixel_ = this.map_.renderer_.curSize_[0] * 0.5;
+    this.ndcToScreenPixel_ = this.map_.ndcToScreenPixel_;
 
     var refFrame_ = this.refFrame_;
     var periodicity_ = this.refFrame_.srs_.periodicity_;
@@ -83,16 +83,17 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
     var screenPixelSize_ = this.ndcToScreenPixel_ * node_.pixelSize_;
 
     if (this.map_.camera_.ortho_ == true) {
-        var pixelSize_ = (screenPixelSize_*2.0) / this.map_.camera_.getViewHeight();
+        var height_ = this.map_.camera_.getViewHeight();
+        var pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
     } else {
-        var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, false);
+        var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
     }
 
 //    var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, false);
 
-    if (node_.hasChildren() == false || pixelSize_ < 1.1) {
+    if (node_.hasChildren() == false || pixelSize_[0] < 1.1) {
 
-        this.map_.drawSurfaceTile(tile_, node_, cameraPos_);
+        this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_);
 
         return false;
     }

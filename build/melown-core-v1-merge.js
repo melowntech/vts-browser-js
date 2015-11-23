@@ -8422,7 +8422,7 @@ Melown.RendererInterface.prototype.createTexture = function(options_) {
 
     if (source_ instanceof Image) {
         var texture_ = new Melown.GpuTexture(this.gpu_);
-        texture_.createFromImage(source_, filter, repeat_);
+        texture_.createFromImage(source_, filter_, repeat_);
         return texture_;
     }
 
@@ -8498,16 +8498,16 @@ Melown.RendererInterface.prototype.drawBillboard = function(options_) {
         return;
     }
 
-    if (options["texture"] == null || options["mvp"] == null) {
+    if (options_["texture"] == null || options_["mvp"] == null) {
         return;
     }
 
-    var mvp_ = options["mvp"];
-    var color_ = options["color"] || [255,255,255,255];
-    var depthTest_ = options["depth-test"] || false;
-    var blend_ = options["blend"] || false;
+    var mvp_ = options_["mvp"];
+    var color_ = options_["color"] || [255,255,255,255];
+    var depthTest_ = options_["depth-test"] || false;
+    var blend_ = options_["blend"] || false;
 
-    this.renderer_.drawBillboard(mvp_, options["texture"], color_, depthTest_, blend_);
+    this.renderer_.drawBillboard(mvp_, options_["texture"], color_, depthTest_, blend_);
 };
 
 Melown.RendererInterface.prototype.drawLinestring = function(options_) {
@@ -12914,8 +12914,8 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
                 tile_.surfaceMesh_ = new Melown.MapMesh(this, tile_);
             }
 
-            if (this.drawBBoxes_ && !this.drawMeshBBox_) {
-                node_.drawBBox(cameraPos_);
+            if (this.drawBBoxes_) {
+                this.drawTileInfo(tile_, node_, cameraPos_);
             }
 
             if (tile_.surfaceMesh_.isReady() == true) {
@@ -12945,6 +12945,70 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
 
 
 };
+
+Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_) {
+
+    if (this.drawMeshBBox_) {
+        node_.drawBBox(cameraPos_);
+    }
+
+    //get node center
+
+    //this.core_.
+/*
+    var pos_ = this.project([min_[0] + (max_[0] - min_[0])*0.5, min_[1] + (max_[1] - min_[1])*0.5, max_[2]]);
+
+    //draw indices
+    if (this.drawIndices_ == true) {
+        var t = this.browser_.mapConfig_.getExternalId(tileId_);
+        var text_ = "" + t.ix_ + " " + t.iy_;
+        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-11), 4, text_, [0,255,255,255], pos_[2]);
+    }
+
+    //draw texture size
+    if (this.drawTextureSize_ == true && gpuTile_ != null) {
+        var text_ = "" + gpuTile_.texture_.width_ + " x " + gpuTile_.texture_.height_;
+        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-18), 4, text_, [255,255,255,255], pos_[2]);
+    }
+
+    //draw lods
+    if (this.drawLods_ == true) {
+        text_ = "" + tileId_.lod_;
+        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-4), 4, text_, [255,0,0,255], pos_[2]);
+    }
+
+    //draw positions
+    if (this.drawPositions_ == true) {
+        var p = tileId_.getWorldParams();
+        var text_ = "" + p[0].toFixed(1) + " " + p[1].toFixed(1);
+        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+3), 4, text_, [0,255,255,255], pos_[2]);
+    }
+
+    //draw face count
+    if (this.drawFaceCount_ == true && gpuTile_ != null) {
+        var text_ = "" + gpuTile_.mesh_.polygons_;
+        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+10), 4, text_, [0,255,0,255], pos_[2]);
+    }
+
+    //draw distance
+    if (this.drawDistance_ == true) {
+
+        ///if (tileId_.easting_ == "679392" && tileId_.northing_ == "5437984" && tileId_.lod_ == "15") {
+           // tileId_ = tileId_;
+        //}
+
+        var value_ = this.planet_.getMainTerrain().tilePixelSize(node_, true);
+        var text_ = "" + value_[1].toFixed(2) + " " + value_[0].toFixed(2);
+        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+17), 4, text_, [255,0,255,255], pos_[2]);
+    }
+
+    //draw texel size
+    if (this.drawTexelSize_ == true) {
+*/
+
+
+};
+
 
 
 /**

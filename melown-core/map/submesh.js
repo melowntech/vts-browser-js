@@ -11,8 +11,7 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.MapSubmesh = function(mesh_, stream_)
-{
+Melown.MapSubmesh = function(mesh_, stream_) {
     this.generateLines_ = true;
     this.map_ = mesh_.map_;
     this.vertices_ = null;
@@ -22,6 +21,7 @@ Melown.MapSubmesh = function(mesh_, stream_)
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
+    this.faces_ = 0;
 
     if (stream_ != null) {
         this.parseSubmesh(stream_);
@@ -292,6 +292,7 @@ struct FacesBlock {
     if (this.externalUVs_) this.size_ += this.externalUVs_.length;
     if (this.undulationDeltas_) this.size_ += this.undulationDeltas_.length;
     this.size_ *= 4;
+    this.faces_ = numFaces_;
 
 };
 

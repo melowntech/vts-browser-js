@@ -67,6 +67,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.initMapTrees();
 
     this.updateCoutner_ = 0;
+    this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
 
     this.heightmapOnly_ = false;
     this.blendHeightmap_ = true;

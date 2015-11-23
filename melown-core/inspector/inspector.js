@@ -9,9 +9,9 @@ Melown.Inspector = function(core_) {
     this.initGraphsPanel();
 
     //keyboard events
-    document.onkeyup = this.onKeyUp.bind(this);
-    document.onkeypress = this.onKeyPress.bind(this);
-    document.onkeydown = this.onKeyDown.bind(this);
+    document.addEventListener("keyup", this.onKeyUp.bind(this), false);
+    document.addEventListener("keypress", this.onKeyPress.bind(this), false);
+    document.addEventListener("keydown", this.onKeyDown.bind(this), false);
 };
 
 Melown.Inspector.prototype.addStyle = function(string_) {

@@ -12,8 +12,7 @@ Melown.StencilLineState_ = null;
 /**
  * @constructor
  */
-Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
-{
+Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_) {
     this.core_ = core_;
     this.progTile_ = null;
     this.progHeightmap_ = null;
