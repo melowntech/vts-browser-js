@@ -132,7 +132,8 @@ Melown.Roi.Pano.prototype._initFinalize = function() {
         for (var j = 0; j < this.tilesOnLod0_; j++) {
             for (var k = 0; k < this.tilesOnLod0_; k++) {
                 arr_.push(this._prepareTile(i, position_, index_, 0));
-                position_[1] += this.tileRelSize_;    
+                position_[1] += this.tileRelSize_;   
+                index_[1]++; 
             }
 
             position_[1] = 0.0;
@@ -144,11 +145,9 @@ Melown.Roi.Pano.prototype._initFinalize = function() {
     }
 
     // orient cube
-    this.cubeOrientationMatrix_ = Melown.mat4.create();
-    var rotateZ = Melown.rotationMatrix(2, Melown.radians(-this.cubeOrientation_[2]));
+    this.cubeOrientationMatrix_ = Melown.rotationMatrix(2, Melown.radians(-this.cubeOrientation_[2]));
     var rotateY = Melown.rotationMatrix(1, Melown.radians(-this.cubeOrientation_[1]));
     var rotateX = Melown.rotationMatrix(0, Melown.radians(-this.cubeOrientation_[0]));
-    Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateZ, this.cubeOrientationMatrix_);
     Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateY, this.cubeOrientationMatrix_);
     Melown.mat4.multiply(this.cubeOrientationMatrix_, rotateX, this.cubeOrientationMatrix_);
 
@@ -209,29 +208,9 @@ Melown.Roi.Pano.prototype._draw = function() {
         return;
     }
 
-    var pv_ = this.map_.getCameraInfo()['view-projection-matrix'];
-    var m_ = Melown.mat4.create();
-    m_ = Melown.scaleMatrix(1000,1000,10);
-    //Melown.mat4.multiply(m_, Melown.translationMatrix(), m_)
-    var mvp_ = Melown.mat4.multiply(pv_, m_);
-
-    var opts_ = {};
-    opts_["mvp"] = mvp_;
-
-    var tex_ = null;
-    for (var i in this.activeTiles_) {
-        if (this.activeTiles_[i].texture() !== null) {
-            tex_ = this.activeTiles_[i].texture();
-            break;
-        }
-    }
-    opts_["texture"] = tex_;
-
-    this.renderer_.drawBillboard(opts_);
-
-    // this.activeTiles_.forEach(function(item_) {
-    //     this._drawTile(item_);
-    // }.bind(this));
+    this.activeTiles_.forEach(function(item_) {
+        this._drawTile(item_);
+    }.bind(this));
 }
 
 Melown.Roi.Pano.prototype._drawTile = function(tile_) {
@@ -242,16 +221,25 @@ Melown.Roi.Pano.prototype._drawTile = function(tile_) {
     //  projection-view matrix from map.getCamera()
     var pv_ = this.map_.getCameraInfo()['view-projection-matrix'];
     //  tile (model) matrix
-    var t_ = tile_.mat_;
-    if (t_ === null) {
-        t_ = this._orientedTileMatrix(tile_);
-        tile_.mat_ = t_;
+    if (tile_.mat_ === null) {
+        this._perepareTileMatrix(tile_);
     }
+
+    var mvp_ = Melown.mat4.create();
+    Melown.mat4.identity(mvp_);
+
+    var scl_ = Melown.scaleMatrix(100,100,100);
+    Melown.mat4.multiply(tile_.mat_, mvp_, mvp_);
+    Melown.mat4.multiply(scl_, mvp_, mvp_);
+
     // multiply to mvp matrix
-    Melown.mat4.multiply(t_, pv_, t_);
+    Melown.mat4.multiply(pv_, mvp_, mvp_);
 
     // draw tile
-    this.renderer_.drawBillboard(t_, texture_, [0, 0, 1, 1]);
+    opts_ = {};
+    opts_["mvp"] = mvp_;
+    opts_["texture"] = tile_.texture();
+    this.renderer_.drawBillboard(opts_);
 }
 
 Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_) {
@@ -259,7 +247,18 @@ Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_
     url_ = url_.replace('{face}', Melown.Roi.Pano.faceTitle(face_));
     url_ = url_.replace('{row}', index_[0]);
     url_ = url_.replace('{column}', index_[1]);
-    var tile_ = new Melown.Roi.Pano.Tile(face_, position_, index_, lod_, url_);
+
+    // tile scale (if its not regular tile size (last tile in row/col))
+    var tileSize_ = this.tileRelSize_ / Math.pow(2, lod_);
+    var scale_ = [tileSize_, tileSize_];
+    if (position_[0] + tileSize_ > 1) {
+        scale_[0] = (position_[0] + tileSize_) - 1;
+    }
+    if (position_[1] + tileSize_ > 1) {
+        scale_[1] = (position_[1] + tileSize_) - 1;
+    }
+
+    var tile_ = new Melown.Roi.Pano.Tile(face_, position_, index_, lod_, scale_, url_);
 
     var newIndex_ = [index_[0] * 2, index_[1] * 2];
     var newPosition_ = [position_[0], position_[1]];
@@ -270,7 +269,7 @@ Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_
             tile_.applendChild(this._prepareTile(face_, newPosition_, newIndex_, lod_));
             if (i % 2 == 0) {
                 newIndex_[1]++;
-                newPosition_[1] += childrenTs_ ;
+                newPosition_[1] += childrenTs_;
             } else {
                 newIndex_[1]--;
                 newPosition_[1] -= childrenTs_;
@@ -361,61 +360,67 @@ Melown.Roi.Pano.prototype._visibleTiles = function(vpMat_, lod_) {
 }
 
 Melown.Roi.Pano.prototype._faceMatrix = function(face_) {
-    var pos_ = [-1, 1, 1];
-    var rot_ = [0, 0, 0];
-    var scale_ = [1, 1, 1];
-    switch (face_) {
-        case Melown_Roi_Pano_Cube_Front:
-            pos_ = [-1, 1, 1];
-            rot_ = [90, 0, 0];
-            break;
-        case Melown_Roi_Pano_Cube_Right:
-            pos_ = [1, 1, 1];
-            rot_ = [90, 90, 0];
-            break;
-        case Melown_Roi_Pano_Cube_Back:
-            pos_ = [1, -1, 1];
-            rot_ = [90, 180, 0];
-            break;
-        case Melown_Roi_Pano_Cube_Left:
-            pos_ = [-1, -1, 1];
-            rot_ = [90, 270, 0];
-            break;
-        case Melown_Roi_Pano_Cube_Up:
-            pos_ = [-1, -1, 1];
-            rot_ = [0, 0, 0];
-            break;
-        case Melown_Roi_Pano_Cube_Down:
-            pos_ = [-1, 1, -1];
-            rot_ = [180, 0, 0];
-            break;
+    var ang_ = [0, 0, 0];
+    var trn_ = [0, 0, 0];
+    if (face_ === Melown_Roi_Pano_Cube_Front) {
+        ang_ = [90, 180, 180];
+        trn_ = [0, 0, 0.5];
+    } else if (face_ === Melown_Roi_Pano_Cube_Down) {
+        ang_ = [0, 180, 180];
+        trn_ = [0, 0, 0.5];
+    } else if (face_ === Melown_Roi_Pano_Cube_Left) {
+        ang_ = [90, 180, -90];
+        trn_ = [0, 0, 0.5];
+    } else if (face_ === Melown_Roi_Pano_Cube_Right) {
+        ang_ = [90, 180, 90];
+        trn_ = [0, 0, 0.5];
+    } else if (face_ === Melown_Roi_Pano_Cube_Up) {
+        ang_ = [0, 0, 0];
+        trn_ = [0, 0, 0.5];
+    } else if (face_ === Melown_Roi_Pano_Cube_Back) {
+        ang_ = [-90, 0, 180];
+        trn_ = [0, 0, 0.5];
     }
-    var trn_ = Melown.translationMatrix(pos_[0], pos_[1], pos_[2]);
-    var rotX_ = Melown.rotationMatrix(0, Melown.radians(-rot_[0]));
-    var rotY_ = Melown.rotationMatrix(1, Melown.radians(-rot_[1]));
-    var rotZ_ = Melown.rotationMatrix(2, Melown.radians(-rot_[2]));
 
-    var mat_ = Melown.mat4.create();
-    Melown.mat4.multiply(trn_, rotX_, mat_);
-    Melown.mat4.multiply(mat_, rotY_, mat_);
-    Melown.mat4.multiply(mat_, rotZ_, mat_);
-    Melown.mat4.multiply(mat_, Melown.scaleMatrix(scale_[0], scale_[1], scale_[2]), mat_);
-    return mat_;
+    var rotX_ = Melown.rotationMatrix(0, Melown.radians(ang_[0]));
+    var rotY_ = Melown.rotationMatrix(1, Melown.radians(ang_[1]));
+    var rotZ_ = Melown.rotationMatrix(2, Melown.radians(ang_[2]));
+    var rot_ = Melown.mat4.create();
+    Melown.mat4.identity(rot_);
+    Melown.mat4.multiply(rotX_, rot_, rot_);
+    Melown.mat4.multiply(rotY_, rot_, rot_);
+    Melown.mat4.multiply(rotZ_, rot_, rot_);
+    var trn_ = Melown.translationMatrix(trn_[0], trn_[1], trn_[2]);
+    Melown.mat4.multiply(rot_, trn_, trn_);            
+    return trn_;
 }
 
-Melown.Roi.Pano.prototype._tileMatrix = function(tile_) {
-    var t_ = this.faceMatrices_[tile_.face_];
-    var trn_ = Melown.translationMatrix(tile_.pos_[0], tile_.pos_[1], 0);
-    var s = Math.pow(2, -tile_.lod_) * this.tileRelSize_;
-    var scale_ = Melown.scaleMatrix(s, s, 1);
-    
-    Melown.mat4.multiply(t_, trn_, t_);
-    Melown.mat4.multiply(t_, scale_, t_);
-    return t_;
+Melown.Roi.Pano.prototype._perepareTileMatrix = function(tile_) {
+    tile_.mat_ = Melown.mat4.create();
+    Melown.mat4.identity(tile_.mat_);
+
+    // 1. tile scale
+    var tscl_ = Melown.scaleMatrix(/*this.tileRelSize_ */ tile_.scale_[1]
+                                   , /*this.tileRelSize_ */ tile_.scale_[0]
+                                   , 1);
+    Melown.mat4.multiply(tscl_, tile_.mat_, tile_.mat_);
+
+    // 2. trnaslate to center
+    var ttc_ = Melown.translationMatrix(-0.5, -0.5, 0);
+    Melown.mat4.multiply(ttc_, tile_.mat_, tile_.mat_);    
+
+    // 3. position tile in face
+    var tttf_ = Melown.translationMatrix(tile_.position_[1]
+                                         , tile_.position_[0]
+                                         , 0);
+    Melown.mat4.multiply(tttf_, tile_.mat_, tile_.mat_);        
+
+    // 4. apply face matrix
+    Melown.mat4.multiply(this.faceMatrices_[tile_.face_], tile_.mat_, tile_.mat_); 
 }
 
 Melown.Roi.Pano.prototype._orientedTileMatrix = function(tile_) {
     var ot_ = this._tileMatrix(tile_);
-    Melown.mat4.multiply(ot_, this.cubeOrientationMatrix_, ot_);
+    Melown.mat4.multiply(this.cubeOrientationMatrix_, ot_, ot_);
     return ot_;
 }
