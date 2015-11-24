@@ -18,11 +18,11 @@ Melown.BrowserInterface.prototype.getCore = function(position_) {
 };
 
 Melown.BrowserInterface.prototype.setControlMode = function(mode_) {
-    this.controlMode_ = mode_;
+    this.browser_.controlMode_ = mode_;
 };
 
 Melown.BrowserInterface.prototype.getControlMode = function() {
-    return this.controlMode_;
+    return this.browser_.controlMode_;
 };
 
 Melown.BrowserInterface.prototype.setPosition = function(position_) {
