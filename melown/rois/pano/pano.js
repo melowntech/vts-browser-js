@@ -174,7 +174,8 @@ Melown.Roi.Pano.prototype._update = function() {
     // calc zoom (suitable lod)
     var useLod_ = this._suitableLod();
     // find visible tiles
-    var newTiles = this._visibleTiles(vpMat_, 1);
+    console.log(useLod_);
+    var newTiles = this._visibleTiles(vpMat_, useLod_);
 
     // check if active tiles changed
     var changed = false;
@@ -219,7 +220,8 @@ Melown.Roi.Pano.prototype._drawTile = function(tile_) {
     }
 
     //  projection-view matrix from map.getCamera()
-    var pv_ = this.map_.getCameraInfo()['view-projection-matrix'];
+    var cam_ = this.map_.getCameraInfo();
+    var pv_ = cam_['view-projection-matrix'];
     //  tile (model) matrix
     if (tile_.mat_ === null) {
         this._perepareTileMatrix(tile_);
@@ -231,6 +233,10 @@ Melown.Roi.Pano.prototype._drawTile = function(tile_) {
     var scl_ = Melown.scaleMatrix(100,100,100);
     Melown.mat4.multiply(tile_.mat_, mvp_, mvp_);
     Melown.mat4.multiply(scl_, mvp_, mvp_);
+
+    // compensate height
+    var com_ = Melown.translationMatrix(cam_['position'][2], 0, 0);
+    //Melown.mat4.multiply(com_, mvp_, mvp_);
 
     // multiply to mvp matrix
     Melown.mat4.multiply(pv_, mvp_, mvp_);
@@ -247,6 +253,11 @@ Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_
     url_ = url_.replace('{face}', Melown.Roi.Pano.faceTitle(face_));
     url_ = url_.replace('{row}', index_[0]);
     url_ = url_.replace('{column}', index_[1]);
+
+    // if tile is fully over the face box - don't create
+    if (position_[0] >= 1 || position_[1] >= 1) {
+        return null;
+    }
 
     // tile scale (if its not regular tile size (last tile in row/col))
     var tileSize_ = this.tileRelSize_ / Math.pow(2, lod_);
@@ -266,7 +277,10 @@ Melown.Roi.Pano.prototype._prepareTile = function(face_, position_, index_, lod_
     var childrenTs_ = this.tileRelSize_ / Math.pow(2, lod_);
     if (lod_ < this.lodCount_) {
         for (var i = 0; i < 4; i++) {
-            tile_.applendChild(this._prepareTile(face_, newPosition_, newIndex_, lod_));
+            var ct_ = this._prepareTile(face_, newPosition_, newIndex_, lod_);
+            if (ct_ !== null) {
+                tile_.applendChild(ct_);
+            }
             if (i % 2 == 0) {
                 newIndex_[1]++;
                 newPosition_[1] += childrenTs_;
@@ -315,7 +329,7 @@ Melown.Roi.Pano.prototype._loadActiveTiles = function() {
 
 Melown.Roi.Pano.prototype._suitableLod = function() {
     var loc_ = this.map_.getPosition();
-    var fov_ = loc_[8];
+    var fov_ = loc_[9];
     var angle_ = fov_ * 0.5;
     var screenHeight_ = 768; // TODO get it from Core API
     var identityTileHeight_ = this.tileRelSize_ * screenHeight_;
@@ -328,7 +342,7 @@ Melown.Roi.Pano.prototype._suitableLod = function() {
     var tileHeight_ = identityTileHeight_ * (1 / visibleRaito_);
     var suitableLod_ = 0;
     while (suitableLod_ < this.lodCount_) {
-        if (tileHeight_ <= this.tileHeight_) {
+        if (tileHeight_ >= this.tileSize_) {
             break;
         }
         tileHeight_ /= 2;
@@ -343,6 +357,7 @@ Melown.Roi.Pano.prototype._visibleTiles = function(vpMat_, lod_) {
     var recurs = function(tile_) {
         if (tile_.lod_ === lod_ || tile_.children_.length === 0) {
             tiles_.push(tile_);
+            return;
         }
 
         for (var i in tile_.children_) {
