@@ -83,34 +83,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_) {
     this.rectIndicesBuffer_ = null;
     this.imageProjectionMatrix_ = null;
 
-    //debug switchs
-    this.heightmapOnly_ = false;
-    this.blendHeightmap_ = true;
-    this.drawBBoxes_ = false;
-    this.drawLods_ = false;
-    this.drawPositions_ = false;
-    this.drawTexelSize_ = false;
-    this.drawWireframe_ = 0;
-    this.drawFaceCount_ = false;
-    this.drawDistance_ = false;
-    this.drawMaxLod_ = false;
-    this.drawTextureSize_ = false;
-    this.drawLayers_ = true;
-    this.ignoreTexelSize_ = false;
-    this.drawFog_ = true;
-
-    this.displayDrawTest_ = false;
-
-    this.layers_ = [];
-    this.layerIcons_ = [];
-    this.layerPlaces_ = [];
-    this.bitmaps_ = [];
     this.font_ = null;
-    this.placemarkTexture_ = null;
-    this.layerGroupVisible_ = [];
-    this.layerGroupTransform_ = [];
-    this.gpuTilesWaiting_ = [];
-    this.gpuTilesWaitingSize_ = 0;
 
     //hack for melown maps
     //this.melownHack_ = true;

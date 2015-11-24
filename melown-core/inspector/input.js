@@ -187,10 +187,6 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 case 116:
                     map_.drawTextureSize_ = !map_.drawTextureSize_; map_.dirty_ = true; break; //key T pressed
 
-                case 83:
-                case 115:
-                    map_.drawTexelSize_ = !map_.drawTexelSize_; map_.dirty_ = true; break; //key S pressed
-
                 case 70:
                 case 102:
                     map_.drawFaceCount_ = !map_.drawFaceCount_; map_.dirty_ = true; break; //key F pressed
@@ -206,6 +202,10 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 case 73:
                 case 105:
                     map_.drawIndices_ = !map_.drawIndices_; map_.dirty_ = true; break; //key M pressed
+
+                case 83:
+                case 115:
+                    map_.debugTextSize_ = (map_.debugTextSize_ == 1.0) ? 2.0 : 1.0; map_.dirty_ = true; break; //key S pressed
 
             }
 

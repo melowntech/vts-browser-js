@@ -83,6 +83,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.drawLayers_ = true;
     this.ignoreTexelSize_ = false;
     this.drawFog_ = true;
+    this.debugTextSize_ = 1.0;
 
     //this.mesh_ = new Melown.MapMesh(this);
     //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");

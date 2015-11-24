@@ -109,7 +109,7 @@ Melown.Inspector.prototype.graphsRefreshPressed = function() {
     this.graphsRefresh_ = !this.graphsRefresh_;
 
     this.updateGraphsPanel();
-    this.updateStatsGraphs();
+    this.updateGraphs();
 };
 
 Melown.Inspector.prototype.graphsResetPressed = function() {
@@ -130,7 +130,7 @@ Melown.Inspector.prototype.graphsZoomPressed = function() {
     }
 
     this.updateGraphsPanel();
-    this.updateStatsGraphs();
+    this.updateGraphs();
 };
 
 Melown.Inspector.prototype.graphsGraphPressed = function() {
@@ -142,7 +142,7 @@ Melown.Inspector.prototype.graphsGraphPressed = function() {
     }
 
     this.updateGraphsPanel();
-    this.updateStatsGraphs();
+    this.updateGraphs();
 };
 
 
@@ -164,7 +164,7 @@ Melown.Inspector.prototype.graphsMagnifyPressed = function() {
     }
 
     this.updateGraphsPanel();
-    this.updateStatsGraphs();
+    this.updateGraphs();
 };
 
 Melown.Inspector.prototype.updateGraphsPanel = function() {
@@ -214,17 +214,17 @@ Melown.Inspector.prototype.onStatsMouseMove = function(event_) {
     this.graphsCursorIndex_ = x;
 
     if (map_.stats_.recordGraphs_ != true) {
-        this.updateStatsGraphs();
+        this.updateGraphs();
     }
 };
 
 Melown.Inspector.prototype.onStatsMouseOut = function() {
     this.graphsShowCursor_ = false;
-    this.updateStatsGraphs();
+    this.updateGraphs();
 };
 
 
-Melown.Inspector.prototype.updateStatsGraphs = function(stats_) {
+Melown.Inspector.prototype.updateGraphs = function(stats_) {
     var map_ = this.core_.getMap();
 
     if (map_ == null || this.graphsRefresh_ == false || this.graphsPanelVisible_ == false) {
@@ -252,7 +252,7 @@ Melown.Inspector.prototype.updateStatsGraphs = function(stats_) {
     var totalGpuMeshes_ = 0;
     var realCount_ = 0;
 
-    var valuesFrame_ = stats_.graphsFrameGapTimes_;
+    var valuesFrame_ = stats_.graphsFrameTimes_;
     var valuesRender_ = stats_.graphsRenderTimes_;
     var valuesTextures_ = stats_.graphsCreateTextureTimes_;
     var valuesMeshes_ = stats_.graphsCreateMeshTimes_;
