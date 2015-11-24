@@ -6,6 +6,7 @@ Melown.MapStats = function(map_) {
     this.core_ = map_.core_;
     this.inspector_ = map_.core_.inspector_;
     this.drawnTiles_ = 0;
+    this.drawnFaces_ = 0;
     this.counter_ = 0;
     this.statsCycle_ = 0;
     this.fps_ = 0;
@@ -66,6 +67,7 @@ Melown.MapStats.prototype.resetGraphs = function() {
 
 Melown.MapStats.prototype.begin = function() {
     this.drawnTiles_ = 0;
+    this.drawnFaces_ = 0;
     this.counter_++;
     this.statsCycle_++;
 

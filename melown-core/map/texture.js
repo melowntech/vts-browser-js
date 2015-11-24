@@ -82,6 +82,7 @@ Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
     var image_ = new Image();
     image_.onerror = this.onLoadError.bind(this);
     image_.onload = this.onLoaded.bind(this);
+    image_.crossOrigin = "anonymous";
     image_.src = url_;
 
     this.image_ = image_;

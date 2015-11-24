@@ -4,6 +4,7 @@
 Melown.MapMesh = function(map_, tile_) {
     this.generateLines_ = true;
     this.map_ = map_;
+    this.stats_ = map_.stats_;
     this.tile_ = tile_;
 
     this.bbox_ = new Melown.BBox();
@@ -37,11 +38,12 @@ Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
         this.tile_.validate();
     }
 
+    this.loadState_ = 0;
     this.cacheItem_ = null;
 };
 
 Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
-    for (var i = 0, li = this.submeshes_.length; i < li; i++) {
+    for (var i = 0, li = this.gpuSubmeshes_.length; i < li; i++) {
         this.gpuSubmeshes_[i].kill();
     }
 
@@ -53,7 +55,6 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     }
 
     this.gpuCacheItem_ = null;
-    this.loadState_ = 0;
 };
 
 Melown.MapMesh.prototype.isReady = function () {
@@ -232,12 +233,14 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
 
     if (texture_ == null || texture_.gpuTexture_ == null) {
         proj_ = proj_;
+        texture_.isReady();
         return;
     }
 
     renderer_.gpu_.bindTexture(texture_.gpuTexture_);
 
     gpuSubmesh_.draw(program_, "aPosition", "aTexCoord", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
-
+    this.stats_.drawnFaces_ += this.faces_;
 };
+
 

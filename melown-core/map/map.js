@@ -52,7 +52,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.mapTrees_ = [];
 
     this.gpuCache_ = new Melown.MapCache(this, 380*1024*1024);
-    this.resourcesCache_ = new Melown.MapCache(this, 380*1024*1024);
+    this.resourcesCache_ = new Melown.MapCache(this, 450*1024*1024);
     this.metatileCache_ = new Melown.MapCache(this, 60*1024*1024);
 
     this.loader_ = new Melown.MapLoader(this);

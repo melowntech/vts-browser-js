@@ -70,13 +70,13 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
             "Render time: " + Math.round(stats_.renderTime_*1000) + "<br/>" +
             "- gpu used: " + Math.round(stats_.gpuUsed_/(1024*1024)) + "MB<br/>" +
             "- cpu used: " + Math.round(stats_.resourcesUsed_/(1024*1024)) + "MB<br/>" +
-            "- resources used: " + Math.round(stats_.metaUsed_/(1024*1024)) + "MB<br/>" +
+            "- meta used: " + Math.round(stats_.metaUsed_/(1024*1024)) + "MB<br/>" +
 //            "- used textures: " + Math.round(stats_.gpuMemoryTextures_/(1024*1024)) + "MB<br/>" +
 //            "- used meshes: " + Math.round(stats_.gpuMemoryMeshes_/(1024*1024)) + "MB<br/>" +
-            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +
-            "viewHeight: " + Math.round(this.core_.getOption("viewHeight")) + " m<br/>" +
-            "distance: " + Math.round(this.core_.renderer_.cameraDistance_) + " m<br/>" +
-            "Polygons: " + (stats_.renderedPolygons_) + "<br/>";
+//            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +
+//            "viewHeight: " + Math.round(this.core_.getOption("viewHeight")) + " m<br/>" +
+//            "distance: " + Math.round(this.core_.renderer_.cameraDistance_) + " m<br/>" +
+            "Polygons: " + (stats_.drawnFaces_) + "<br/>";
 
     var text3_ = "Tiles: " + (stats_.drawnTiles_) +"<br/>";
 

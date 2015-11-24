@@ -68,6 +68,12 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
     document.getElementById("melown-graphs-magnify").onclick = this.graphsMagnifyPressed.bind(this);
     document.getElementById("melown-graphs-graph").onclick = this.graphsGraphPressed.bind(this);
 
+    document.getElementById("melown-graphs-render").onmousemove = this.onGraphsMouseMove.bind(this);
+    document.getElementById("melown-graphs-render").onmouseout = this.onGraphsMouseOut.bind(this);
+    document.getElementById("melown-graphs-cache").onmousemove = this.onGraphsMouseMove.bind(this);
+    document.getElementById("melown-graphs-cache").onmouseout = this.onGraphsMouseOut.bind(this);
+
+
     this.graphsZoom_ = "max";
     this.graphsGraph_ = "Cache";
 
@@ -105,7 +111,6 @@ Melown.Inspector.prototype.graphsRecordingPressed = function() {
 };
 
 Melown.Inspector.prototype.graphsRefreshPressed = function() {
-
     this.graphsRefresh_ = !this.graphsRefresh_;
 
     this.updateGraphsPanel();
@@ -203,7 +208,7 @@ Melown.Inspector.prototype.updateGraphsPanel = function() {
     document.getElementById("melown-graphs-graph").innerHTML = "Graph: " + this.graphsGraph_;
 };
 
-Melown.Inspector.prototype.onStatsMouseMove = function(event_) {
+Melown.Inspector.prototype.onGraphsMouseMove = function(event_) {
     var x = event_.clientX - this.graphsCanvasRender_.getBoundingClientRect().left;
     this.graphsShowCursor_ = true;
 
@@ -213,12 +218,18 @@ Melown.Inspector.prototype.onStatsMouseMove = function(event_) {
 
     this.graphsCursorIndex_ = x;
 
+    var map_ = this.core_.getMap();
+
+    if (map_ == null) {
+        return;
+    }
+
     if (map_.stats_.recordGraphs_ != true) {
         this.updateGraphs();
     }
 };
 
-Melown.Inspector.prototype.onStatsMouseOut = function() {
+Melown.Inspector.prototype.onGraphsMouseOut = function() {
     this.graphsShowCursor_ = false;
     this.updateGraphs();
 };

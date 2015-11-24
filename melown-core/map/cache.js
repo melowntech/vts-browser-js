@@ -16,6 +16,10 @@ Melown.MapCache.prototype.updateItem = function(item_) {
         return;
     }
 
+    if (this.first_ == item_) {
+        return;
+    }
+
     //remove item from list
     if (item_.prev_ != null) {
         item_.prev_.next_ = item_.next_;
