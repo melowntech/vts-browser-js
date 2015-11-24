@@ -23,14 +23,14 @@ Melown.UIControlMap.prototype.onDrag = function(event_) {
         return;
     }
 
-    if (this.browser_.controlMode_ == "pannorama") {
-        return;
-    }
-
     var pos_ = map_.getPosition();
     var delta_ = event_.getDragDelta();
 
     if (event_.getDragButton("left")) { //pan
+        if (this.browser_.controlMode_ == "pannorama") {
+            return;
+        }
+
         var sensitivity_ = 0.5;
         pos_ = map_.pan(pos_, delta_[0] * sensitivity_,
                               delta_[1] * sensitivity_);
@@ -52,11 +52,11 @@ Melown.UIControlMap.prototype.onMouseWheel = function(event_) {
     var pos_ = map_.getPosition();
     var delta_ = event_.getWheelDelta();
 
-    var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
-
     if (this.browser_.controlMode_ == "pannorama") {
-        pos_[9] *= factor_;
+        var factor_ = (delta_ > 0 ? -1 : 1) * 1;
+        pos_[9] = Melown.clamp(pos_[9] + factor_, 1, 179);
     } else {
+        var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
         pos_[8] *= factor_;
     }
 

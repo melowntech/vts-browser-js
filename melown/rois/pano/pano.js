@@ -234,10 +234,6 @@ Melown.Roi.Pano.prototype._drawTile = function(tile_) {
     Melown.mat4.multiply(tile_.mat_, mvp_, mvp_);
     Melown.mat4.multiply(scl_, mvp_, mvp_);
 
-    // compensate height
-    var com_ = Melown.translationMatrix(cam_['position'][2], 0, 0);
-    //Melown.mat4.multiply(com_, mvp_, mvp_);
-
     // multiply to mvp matrix
     Melown.mat4.multiply(pv_, mvp_, mvp_);
 
@@ -342,7 +338,7 @@ Melown.Roi.Pano.prototype._suitableLod = function() {
     var tileHeight_ = identityTileHeight_ * (1 / visibleRaito_);
     var suitableLod_ = 0;
     while (suitableLod_ < this.lodCount_) {
-        if (tileHeight_ >= this.tileSize_) {
+        if (tileHeight_ <= this.tileSize_) {
             break;
         }
         tileHeight_ /= 2;
