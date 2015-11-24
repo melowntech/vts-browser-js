@@ -23,7 +23,7 @@ Melown.UIControlMap.prototype.onDrag = function(event_) {
         return;
     }
 
-    if (this.controlMode_ = "pannorama") {
+    if (this.controlMode_ == "pannorama") {
         return;
     }
 
@@ -54,7 +54,7 @@ Melown.UIControlMap.prototype.onMouseWheel = function(event_) {
 
     var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
 
-    if (this.controlMode_ = "pannorama") {
+    if (this.controlMode_ == "pannorama") {
         pos_[9] *= factor_;
     } else {
         pos_[8] *= factor_;
