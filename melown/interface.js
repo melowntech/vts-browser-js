@@ -17,6 +17,14 @@ Melown.BrowserInterface.prototype.getCore = function(position_) {
     return this.core_;
 };
 
+Melown.BrowserInterface.prototype.setControlMode = function(mode_) {
+    this.controlMode_ = mode_;
+};
+
+Melown.BrowserInterface.prototype.getControlMode = function() {
+    return this.controlMode_;
+};
+
 Melown.BrowserInterface.prototype.setPosition = function(position_) {
     this.map_.setPosition(position_);
 };
