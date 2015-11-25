@@ -1,8 +1,7 @@
 if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 
-Melown.Renderer.prototype.initShaders = function()
-{
+Melown.Renderer.prototype.initShaders = function() {
     this.progTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileVertexShader, Melown.tileFragmentShader);
     this.progWireframeTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframeFragmentShader);
     this.progWireframeTile2_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframe2FragmentShader);
@@ -30,10 +29,9 @@ Melown.Renderer.prototype.initShaders = function()
 };
 
 
-Melown.Renderer.prototype.initHeightmap = function()
-{
+Melown.Renderer.prototype.initHeightmap = function() {
     // initialize heightmap geometry
-    var meshData_ = Melown.RendererGeometry.buildHeightmap(Melown.MetaNodeHMSize_);
+    var meshData_ = Melown.RendererGeometry.buildHeightmap(5);
     this.heightmapMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
 
    // create heightmap texture
@@ -66,8 +64,7 @@ Melown.Renderer.prototype.initHeightmap = function()
 };
 
 
-Melown.Renderer.prototype.initHitmap = function()
-{
+Melown.Renderer.prototype.initHitmap = function() {
     var size_ = this.hitmapSize_;
     var data_ = new Uint8Array( size_ * size_ * 4 );
 
@@ -80,8 +77,7 @@ Melown.Renderer.prototype.initHitmap = function()
     this.geoHitmapTexture_.createFramebuffer(size_, size_);
 };
 
-Melown.Renderer.prototype.initTestMap = function()
-{
+Melown.Renderer.prototype.initTestMap = function() {
    // create red texture
     var size_ = 16;
     var data_ = new Uint8Array( size_ * size_ * 4 );
@@ -169,8 +165,7 @@ Melown.Renderer.prototype.initTestMap = function()
 
 };
 
-Melown.Renderer.prototype.initTextMap = function()
-{
+Melown.Renderer.prototype.initTextMap = function() {
     var sizeX_ = 64;
     var sizeY_ = 8;
     var data_ = new Uint8Array( sizeX_ * sizeY_ * 4 );
@@ -241,8 +236,7 @@ Melown.Renderer.prototype.initTextMap = function()
 
 
 
-Melown.Renderer.prototype.initImage = function()
-{
+Melown.Renderer.prototype.initImage = function() {
     var gl_ = this.gpu_.gl_;
 
     //create vertices buffer for rect
@@ -268,16 +262,14 @@ Melown.Renderer.prototype.initImage = function()
 };
 
 
-Melown.Renderer.prototype.initSkydome = function()
-{
+Melown.Renderer.prototype.initSkydome = function() {
     var meshData_ = Melown.RendererGeometry.buildSkydome(32, 64);
     this.skydomeMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
     this.skydomeTexture_ = new Melown.GpuTexture(this.gpu_, this.core_.coreConfig_.skydomeTexture_, this.core_);
 };
 
 
-Melown.Renderer.prototype.initBBox = function()
-{
+Melown.Renderer.prototype.initBBox = function() {
     this.bboxMesh_ = new Melown.GpuBBox(this.gpu_);
 
     if (this.displayDrawTest_ != true) {
@@ -337,8 +329,7 @@ Melown.Renderer.prototype.initBBox = function()
 };
 
 
-Melown.Renderer.prototype.initializeGL = function()
-{
+Melown.Renderer.prototype.initializeGL = function() {
     this.gpu_.init();
     this.initShaders();
     this.initHeightmap();

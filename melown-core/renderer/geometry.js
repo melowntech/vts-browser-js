@@ -30,8 +30,7 @@ Melown.RendererGeometry.setFaceUVs = function(uvs_, a, b, c, index_) {
 
 //! Procedural mesh representing a heightmap block
 //! Creates a grid of size x size vertices, all coords are [0..1].
-Melown.RendererGeometry.buildHeightmap = function(size_)
-{
+Melown.RendererGeometry.buildHeightmap = function(size_) {
     size_--;
 
     var g = Melown.RendererGeometry;
@@ -60,7 +59,7 @@ Melown.RendererGeometry.buildHeightmap = function(size_)
             index2_ += 6;
 
             g.setFaceVertices(vertices_, [x2, y2, 0], [x1, y2, 0], [x1, y1, 0], index_);
-            g.setFaceInternalUVs(vertices_, [x2, y2], [x1, y2], [x1, y1], index2_);
+            g.setFaceUVs(vertices_, [x2, y2], [x1, y2], [x1, y1], index2_);
             index_ += 9;
             index2_ += 6;
         }
@@ -72,8 +71,7 @@ Melown.RendererGeometry.buildHeightmap = function(size_)
 };
 
 
-Melown.RendererGeometry.spherePos = function(lon_, lat_)
-{
+Melown.RendererGeometry.spherePos = function(lon_, lat_) {
     lat_ *= Math.PI;
     lon_ *= 2*Math.PI;
 
@@ -87,7 +85,6 @@ Melown.RendererGeometry.spherePos = function(lon_, lat_)
 //! in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
 //! are oriented inwards.
 Melown.RendererGeometry.buildSkydome = function(latitudeBands_, longitudeBands_) {
-
     var g = Melown.RendererGeometry;
     var numFaces_ = (latitudeBands_ * longitudeBands_) * 2;
     var vertices_ = new Float32Array(numFaces_ * 3 * 3);

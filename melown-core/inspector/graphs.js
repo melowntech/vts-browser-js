@@ -76,6 +76,7 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
 
     this.graphsZoom_ = "max";
     this.graphsGraph_ = "Cache";
+    this.graphsRefresh_ = true;
 
     this.graphsPanelVisible_ = false;
 };
@@ -106,8 +107,8 @@ Melown.Inspector.prototype.graphsRecordingPressed = function() {
     }
 
     map_.stats_.recordGraphs_ = !map_.stats_.recordGraphs_;
-
     this.updateGraphsPanel();
+    this.updateGraphs(null, true);
 };
 
 Melown.Inspector.prototype.graphsRefreshPressed = function() {
@@ -125,6 +126,7 @@ Melown.Inspector.prototype.graphsResetPressed = function() {
     }
 
     map_.stats_.resetGraphs();
+    this.updateGraphs(null, true);
 };
 
 Melown.Inspector.prototype.graphsZoomPressed = function() {
@@ -225,20 +227,20 @@ Melown.Inspector.prototype.onGraphsMouseMove = function(event_) {
     }
 
     if (map_.stats_.recordGraphs_ != true) {
-        this.updateGraphs();
+        this.updateGraphs(null);
     }
 };
 
 Melown.Inspector.prototype.onGraphsMouseOut = function() {
     this.graphsShowCursor_ = false;
-    this.updateGraphs();
+    this.updateGraphs(null);
 };
 
 
-Melown.Inspector.prototype.updateGraphs = function(stats_) {
+Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
     var map_ = this.core_.getMap();
 
-    if (map_ == null || this.graphsRefresh_ == false || this.graphsPanelVisible_ == false) {
+    if (map_ == null || (this.graphsRefresh_ == false && !ignoreRefresh_) || this.graphsPanelVisible_ == false) {
         return;
     }
 
@@ -362,21 +364,21 @@ Melown.Inspector.prototype.updateGraphs = function(stats_) {
     switch (this.graphsGraph_) {
     case "Cache":
         {
-            var factorY_ = height_ / (map_.gpuCache_.maxCost_/1024/1024);
+            var factorY_ = height_ / ((map_.gpuCache_.maxCost_+map_.resourcesCache_.maxCost_+map_.metatileCache_.maxCost_));
 
-            var maxTotal_ = 0;
-            var maxUsed_ = 0;
+            var maxMetatiles_ = 0;
+            var maxResources_ = 0;
             var maxTextures_ = 0;
             var maxMeshes_ = 0;
 
-            var valuesTotal_ = stats_.graphsGpuMemory_;
-            var valuesUsed_ = stats_.graphsGpuMemoryUsed_;
+            var valuesMetatiles_ = stats_.graphsCpuMemoryMetatiles_;
+            var valuesResources_ = stats_.graphsCpuMemoryUsed_;
             var valuesTextures_ = stats_.graphsGpuMemoryTextures_;
             var valuesMeshes_ = stats_.graphsGpuMemoryMeshes_;
 
             for (var i = 0; i < samples_; i++) {
-                maxTotal_ = valuesTotal_[i] > maxTotal_ ? valuesTotal_[i] : maxTotal_;
-                maxUsed_ = valuesUsed_[i] > maxUsed_ ? valuesUsed_[i] : maxUsed_;
+                maxMetatiles_ = valuesMetatiles_[i] > maxMetatiles_ ? valuesMetatiles_[i] : maxMetatiles_;
+                maxResources_ = valuesResources_[i] > maxResources_ ? valuesResources_[i] : maxResources_;
                 maxTextures_ = valuesTextures_[i] > maxTextures_ ? valuesTextures_[i] : maxTextures_;
                 maxMeshes_ = valuesMeshes_[i] > maxMeshes_ ? valuesMeshes_[i] : maxMeshes_;
             }
@@ -385,27 +387,38 @@ Melown.Inspector.prototype.updateGraphs = function(stats_) {
                 var index_ = samplesIndex_ + i;
                 index_ %= samples_;
 
+                var value_ = valuesMetatiles_[index_] + valuesMeshes_[index_] + valuesTextures_[index_] + valuesResources_[index_];
                 ctx_.fillStyle="#000000";
-                ctx_.fillRect(i*factorX_, height_, 1, -(valuesTotal_[index_])*factorY_);
-                ctx_.fillStyle="#ff0000";
-                ctx_.fillRect(i*factorX_, height_, 1, -(valuesUsed_[index_])*factorY_);
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+                value_ -= valuesResources_[index_];
+
                 ctx_.fillStyle="#0000ff";
-                ctx_.fillRect(i*factorX_, height_, 1, -(valuesTextures_[index_])*factorY_);
-                ctx_.fillStyle="#00bb00";
-                ctx_.fillRect(i*factorX_, height_, 1, -(valuesMeshes_[index_])*factorY_);
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+                value_ -= valuesTextures_[index_];
+
+                ctx_.fillStyle="#007700";
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+                value_ -= valuesMeshes_[index_];
+
+                ctx_.fillStyle="#ff0000";
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
             }
 
             if (this.graphsShowCursor_ == true) {
                 var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
-                var str_ = '&FilledSmallSquare; Cache: ' + Math.round(valuesTotal_[index_]) +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Used: ' + Math.round(valuesUsed_[index_]) +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.round(valuesTextures_[index_]) +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.round(valuesMeshes_[index_]) +'</div>';
+                var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles_[index_] + valuesResources_[index_] + valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0055ff">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.ceil(valuesTextures_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.ceil(valuesMeshes_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(valuesMetatiles_[index_]/(1024*1024)) + "MB" +'</div>';
             } else {
-                var str_ = '&FilledSmallSquare; Cache: ' + Math.round(maxTotal_) +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Used: ' + Math.round(maxUsed_) +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.round(maxTextures_) +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.round(maxMeshes_) +'</div>';
+                var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles_ + maxResources_ + maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.ceil(maxTextures_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.ceil(maxMeshes_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(maxMetatiles_/(1024*1024)) + "MB" +'</div>';
             }
 
         }

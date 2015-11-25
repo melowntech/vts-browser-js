@@ -8,13 +8,14 @@ Melown.MapMetatile = function(metastorage_, surface_) {
     this.id_ = metastorage_.id_;
     this.nodes_ = [];
     this.loadState_ = 0;
+    this.size_ = 0;
 
     this.cacheItem_ = null;
 };
 
 Melown.MapMetatile.prototype.kill = function(killedByCache_) {
     if (killedByCache_ != true && this.cacheItem_ != null) {
-        this.map_.metadataCache_.remove(this.cacheItem_);
+        this.map_.metatileCache_.remove(this.cacheItem_);
     }
 
     this.metastorage_.removeMetatile(this);
@@ -49,7 +50,7 @@ Melown.MapMetatile.prototype.isReady = function () {
 
 Melown.MapMetatile.prototype.used = function() {
     if (this.cacheItem_ != null) {
-        this.map_.metadataCache_.updateItem(this.cacheItem_);
+        this.map_.metatileCache_.updateItem(this.cacheItem_);
     }
 
 };
@@ -90,7 +91,12 @@ Melown.MapMetatile.prototype.onLoaded = function(data_) {
         return;
     }
 
+    this.size_ += data_.byteLength * 4;
+
     this.parseMetatatile({data_:data_, index_: 0});
+
+    this.cacheItem_= this.map_.metatileCache_.insert(this.kill.bind(this, true), this.size_);
+
     this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
 };

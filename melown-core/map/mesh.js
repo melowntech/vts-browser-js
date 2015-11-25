@@ -44,6 +44,7 @@ Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
 
 Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     for (var i = 0, li = this.gpuSubmeshes_.length; i < li; i++) {
+        this.stats_.gpuMeshesUsed_ -= this.gpuSubmeshes_[i].size_;
         this.gpuSubmeshes_[i].kill();
     }
 
@@ -188,6 +189,8 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
         this.gpuSubmeshes_[i] = this.submeshes_[i].buildGpuMesh();
         size_ += this.gpuSubmeshes_[i].size_;
     }
+
+    this.stats_.gpuMeshesUsed_ += size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuSubmeshes.bind(this, true), size_);
 };

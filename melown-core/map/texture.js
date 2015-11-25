@@ -3,6 +3,7 @@
  */
 Melown.MapTexture = function(map_, tile_, submeshIndex_, external_) {
     this.map_ = map_;
+    this.stats_ = map_.stats_;
     this.tile_ = tile_;
     this.submeshIndex_ = submeshIndex_;
     this.external_ = external_ || false;
@@ -35,6 +36,7 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
 
 Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     if (this.gpuTexture_ != null) {
+        this.stats_.gpuTexturesUsed_ -= this.gpuTexture_.size_;
         this.gpuTexture_.kill();
     }
 
@@ -82,7 +84,7 @@ Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
     var image_ = new Image();
     image_.onerror = this.onLoadError.bind(this);
     image_.onload = this.onLoaded.bind(this);
-    image_.crossOrigin = "anonymous";
+    //image_.crossOrigin = "anonymous";
     image_.src = url_;
 
     this.image_ = image_;
@@ -115,6 +117,7 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
 Melown.MapTexture.prototype.buildGpuTexture = function () {
     this.gpuTexture_ = new Melown.GpuTexture(this.map_.renderer_.gpu_, null, this.map_.core_);
     this.gpuTexture_.createFromImage(this.image_, "linear", false);
+    this.stats_.gpuTexturesUsed_ += this.gpuTexture_.size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuTexture.bind(this, true), this.gpuTexture_.size_);
 };

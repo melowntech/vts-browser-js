@@ -24,8 +24,8 @@ Melown.MapStats = function(map_) {
     this.graphsCreateGpuMeshTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateTextureTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsFrameTimes_ = new Array(this.graphsTimeSamples_);
-    this.graphsGpuMemory_ = new Array(this.graphsTimeSamples_);
-    this.graphsGpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
+    this.graphsCpuMemoryMetatiles_ = new Array(this.graphsTimeSamples_);
+    this.graphsCpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryTextures_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryMeshes_ = new Array(this.graphsTimeSamples_);
     this.graphsPolygons_ = new Array(this.graphsTimeSamples_);
@@ -39,6 +39,8 @@ Melown.MapStats = function(map_) {
     this.graphsCreateMeshTime_ = 0;
     this.resetGraphs();
 
+    this.gpuMeshesUsed_ = 0;
+    this.gpuTexturesUsed_ = 0;
     this.gpuUsed_ = 0;
     this.resourcesUsed_ = 0;
     this.metaUsed_ = 0;
@@ -54,8 +56,8 @@ Melown.MapStats.prototype.resetGraphs = function() {
         this.graphsCreateGpuMeshTimes_[i] = 0;
         this.graphsCreateTextureTimes_[i] = 0;
         this.graphsFrameTimes_[i] = 0;
-        this.graphsGpuMemory_[i] = 0;
-        this.graphsGpuMemoryUsed_[i] = 0;
+        this.graphsCpuMemoryUsed_[i] = 0;
+        this.graphsCpuMemoryMetatiles_[i] = 0;
         this.graphsGpuMemoryTextures_[i] = 0;
         this.graphsGpuMemoryMeshes_[i] = 0;
         this.graphsPolygons_[i] = 0;
@@ -92,9 +94,13 @@ Melown.MapStats.prototype.end = function() {
         this.graphsCreateGpuMeshTimes_[i] = 0;
         this.graphsCreateTextureTimes_[i] = 0;
         this.graphsFrameTimes_[i] = frameTime_;
+        this.graphsCpuMemoryUsed_[i] = this.map_.resourcesCache_.totalCost_;
+        this.graphsCpuMemoryMetatiles_[i] = this.map_.metatileCache_.totalCost_;
+        this.graphsGpuMemoryTextures_[i] = this.gpuTexturesUsed_;
+        this.graphsGpuMemoryMeshes_[i] = this.gpuMeshesUsed_;
+        this.graphsPolygons_[i] = this.drawnFaces_;
 
         this.graphsTimeIndex_ = (this.graphsTimeIndex_ + 1) % this.graphsTimeSamples_;
-
         this.inspector_.updateGraphs(this);
     }
 
