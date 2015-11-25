@@ -42,6 +42,10 @@ Melown.UIElement.prototype.addEvent = function(type_, function_, externalElement
     var element_ =  externalElement_ || this.element_;
     element_.addEventListener(this.getEventName(type_), handler_, false);
 
+    if (type_ == "mousewheel") {
+        element_.addEventListener("DOMMouseScroll", handler_, false);
+    }
+
     this.events_[type_] = this.events_[type_] || [];
     this.events_[type_][id_] = handler_;
 
