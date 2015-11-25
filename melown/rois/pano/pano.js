@@ -173,8 +173,8 @@ Melown.Roi.Pano.prototype._update = function() {
     var vpMat_ = this.map_.getCameraInfo()['view-projection-matrix'];
     // calc zoom (suitable lod)
     var useLod_ = this._suitableLod();
+    console.log('Using lod: ' + useLod_);
     // find visible tiles
-    console.log(useLod_);
     var newTiles = this._visibleTiles(vpMat_, useLod_);
 
     // check if active tiles changed
@@ -204,6 +204,11 @@ Melown.Roi.Pano.prototype._update = function() {
 }
 
 Melown.Roi.Pano.prototype._draw = function() {
+    if (this.state_ !== Melown.Roi.State.FadingIn 
+        && this.state_ !== Melown.Roi.State.FadingOut
+        && this.state_ !== Melown.Roi.State.Presenting) {
+        return;
+    }
     
     if (!this.map_) {
         return;
@@ -215,7 +220,7 @@ Melown.Roi.Pano.prototype._draw = function() {
 }
 
 Melown.Roi.Pano.prototype._drawTile = function(tile_) {
-    if (!tile_.texture()) {
+    if (!tile_.texture() || this.alpha_ === 0.0) {
         return;
     }
 
@@ -241,6 +246,8 @@ Melown.Roi.Pano.prototype._drawTile = function(tile_) {
     opts_ = {};
     opts_["mvp"] = mvp_;
     opts_["texture"] = tile_.texture();
+    opts_["color"] = [255, 255, 255, this.alpha_*255];
+    opts_["blend"] = (this.alpha_ < 1.0);
     this.renderer_.drawBillboard(opts_);
 }
 

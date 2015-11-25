@@ -21,6 +21,7 @@ Melown.Roi = function(config_, browser_, options_) {
     this.enterPosition_ = null;             // filled by devel function
     this.refPosition_ = null;               // filled from config JSON 
     this.needsRedraw_ = false;              // dirty flag for drawing
+    this.alpha_ = 1.0;
 
     // binded callbacks
     this.tickClb_ = null;
@@ -36,7 +37,7 @@ Melown.Roi = function(config_, browser_, options_) {
     });
 
     // modules
-    this.core_ = this.browser_.core_;
+    this.core_ = this.browser_.getCore();
     this.renderer_ = this.core_.getRenderer();
     Object.defineProperty(this, 'map_', {
         get : function() {
@@ -120,11 +121,22 @@ Melown.Roi.prototype.delve = function(enterPosition_) {
     if (this.state_ === Melown.Roi.State.Created 
         || this.state_ === Melown.Roi.State.FadingOut) {
         this.develAtFinishRequested_ = true;
+        return;
     } else if (this.state_ === Melown.Roi.State.FadingIn) {
         this.leaveAtFinishRequested_ = false;
+        return;
     } else if (this.state_ !== Melown.Roi.State.Ready) {
         return;
     }
+
+    this.state_ = Melown.Roi.State.FadingIn;
+
+    this.enterPosition_ = this.core_.getMap().getPosition();
+
+    this.core_.getMap().setPosition(this.refPosition_);
+    this.browser_.setControlMode('pannorama');
+
+    this.state_ = Melown.Roi.State.Presenting;
 
     // TODO flight into roi position and blend with custom render
 }
@@ -133,11 +145,20 @@ Melown.Roi.prototype.leave = function() {
     if (this.state_ === Melown.Roi.State.Created 
         || this.state_ === Melown.Roi.State.FadingOut) {
         this.develAtFinishRequested_ = false;
+        return;
     } else if (this.state_ === Melown.Roi.State.FadingIn) {
         this.leaveAtFinishRequested_ = true;
-    } else if (this.state_ !== Melown.Roi.State.Ready) {
+        return;
+    } else if (this.state_ !== Melown.Roi.State.Presenting) {
         return;
     }
+
+    this.state_ = Melown.Roi.State.FadingOut;
+
+    this.core_.getMap().setPosition(this.enterPosition_);
+    this.browser_.setControlMode('observer');
+
+    this.state_ = Melown.Roi.State.Ready;
 
     // TODO flight into roi position and blend with custom render
 }
@@ -163,6 +184,26 @@ Melown.Roi.prototype.state = function() {
 
 Melown.Roi.prototype.config = function() {
     return this.config_;
+}
+
+// Public accessors
+
+Melown.Roi.prototype.alpha = function(alpha_) {
+    if (typeof alpha_ !== "number") {
+        return this.alpha_;
+    }
+    if (alpha_ < 0.0) {
+        alpha_ = 0.0;
+    }
+    if (alpha_ > 1.0) {
+        alpha_ = 1.0;
+    }
+    if (alpha_ === this.alpha_) {
+        return;
+    }
+    this.alpha_ = alpha_;
+    this._update();
+    this.setNeedsRedraw();
 }
 
 // Protected methods
@@ -231,6 +272,7 @@ Melown.Roi.prototype._processConfig = function() {
         this.id_ = this.config_['id'];
         this.title_ = this.config_['title'];
         this.type_ = this.config_['type'];
+        this.refPosition_ = this.config_['position'];
     }
 }
 
