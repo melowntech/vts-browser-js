@@ -161,10 +161,7 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
 
 Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_) {
     this.image_ = new Image();
-
-    if (direct_ != true) { //this is for firefox compatibility
-        this.image_.crossOrigin = "use-credentials";
-    }
+    this.image_.crossOrigin = Melown.isSameOrigin(url_) ? "use-credentials" : "anonymous";
 
     this.image_.onload = (function () {
 
