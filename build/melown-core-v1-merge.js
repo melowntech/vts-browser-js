@@ -4094,7 +4094,7 @@ Melown.translationMatrix3f = function(t)
 {
     return Melown.translationMatrix(t[0], t[1], t[2]);
 };
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very fileMelown.isEqual = function(value_, value2_, delta_) {    return (Math.abs(value_ - value2_) < delta_);};Melown.clamp = function(value_, min_, max_) {    if (value_ < min_) value_ = min_;    else if (value_ > max_) value_ = max_;    return value_;};Melown.radians = function(degrees_) {    return degrees_ * Math.PI / 180;};Melown.degrees = function(radians_) {    return (radians_ / Math.PI) * 180;};Melown.padNumber = function(n, width_) {  var z = '0';  if (n < 0) {      n = (-n) + '';      width_--;     //7      return n.length >= width_ ? ("-" + n) : "-" + (new Array(width_ - n.length + 1).join(z) + n);  } else {      n = n + '';      return n.length >= width_ ? n : new Array(width_ - n.length + 1).join(z) + n;  }};Melown.decodeFloat16 = function(binary) {    var exponent = (binary & 0x7C00) >> 10;        fraction = binary & 0x03FF;    return (binary >> 15 ? -1 : 1) * (        exponent ?        (            exponent === 0x1F ?            fraction ? NaN : Infinity :            Math.pow(2, exponent - 15) * (1 + fraction / 0x400)        ) :        6.103515625e-5 * (fraction / 0x400)    );};Melown.simpleFmtObj = (function obj(str, obj) {    return str.replace(/\{([_$a-zA-Z0-9][_$a-zA-Z0-9]*)\}/g, function(s, match) {        return (match in obj ? obj[match] : s);    });});Melown.simpleFmtObjOrCall = (function obj(str, obj, call) {    return str.replace(/\{([_$a-zA-Z(-9][_$a-zA-Z(-9]*)\}/g, function(s, match) {        return (match in obj ? obj[match] : call(match));    });});Melown.getABGRFromHexaCode = (function(code_) {    var result_ = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(code_);    return result_ ?        [ parseInt(result_[4], 16),          parseInt(result_[3], 16),          parseInt(result_[2], 16),          parseInt(result_[1], 16)]    : [0,0,0,255];});Melown.stringifyFunction = (function(function_) {    // Stringify the code    return '(' + function_ + ').call(self);';});Melown.loadJSON = function(path_, onLoaded_, onError_, skipEval_) {    var xhr_ = new XMLHttpRequest();    xhr_.onload  = (function()    {        var data_ = xhr_.response;        try {            var parsedData_ = skipEval_ ? data_ : eval("("+data_+")");        } catch(e) {            if (onError_ != null) {                onError_();            }            return;        }        if (onLoaded_ != null) {            onLoaded_(parsedData_);        }    }).bind(this);    xhr_.onerror  = (function()    {        if (onError_ != null) {            onError_();        }    }).bind(this);    xhr_.open('GET',  path_, true);    xhr_.send("");};Melown.loadBinary = function(path_, onLoaded_, onError_) {    var xhr_ = new XMLHttpRequest();    xhr_.onreadystatechange = (function (){        switch (xhr_.readyState)        {        case 0 : // UNINITIALIZED        case 1 : // LOADING        case 2 : // LOADED        case 3 : // INTERACTIVE        break;        case 4 : // COMPLETED                if (xhr_.status == 404)                {                    if (onError_ != null) {                        onError_();                    }                    break;                }                var abuffer_ = xhr_.response;                var data_ = new DataView(abuffer_);                if (onLoaded_ != null) {                    onLoaded_(data_);                }          break;          default:            if (onError_ != null) {                onError_();            }            break;          }       }).bind(this);    xhr_.onerror  = (function() {        if (onError_ != null) {            onError_();        }    }).bind(this);    xhr_.open('GET', path_, true);    xhr_.responseType = "arraybuffer";    xhr_.send("");};window.performance = window.performance || {};performance.now = (function() {  return performance.now       ||         performance.mozNow    ||         performance.msNow     ||         performance.oNow      ||         performance.webkitNow ||         function() { return new Date().getTime(); };})();//Provides requestAnimationFrame in a cross browser way.window.requestAnimFrame = (function() {  return window.requestAnimationFrame ||         window.webkitRequestAnimationFrame ||         window.mozRequestAnimationFrame ||         window.oRequestAnimationFrame ||         window.msRequestAnimationFrame ||         function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {           window.setTimeout(callback, 1000/60);         };})();// only implement if no native implementation is availableif (typeof Array.isArray === 'undefined') {  Array.isArray = (function(obj) {    return Object.prototype.toString.call(obj) === '[object Array]';  });}if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
+if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very fileMelown.isEqual = function(value_, value2_, delta_) {    return (Math.abs(value_ - value2_) < delta_);};Melown.clamp = function(value_, min_, max_) {    if (value_ < min_) value_ = min_;    else if (value_ > max_) value_ = max_;    return value_;};Melown.radians = function(degrees_) {    return degrees_ * Math.PI / 180;};Melown.degrees = function(radians_) {    return (radians_ / Math.PI) * 180;};Melown.padNumber = function(n, width_) {  var z = '0';  if (n < 0) {      n = (-n) + '';      width_--;     //7      return n.length >= width_ ? ("-" + n) : "-" + (new Array(width_ - n.length + 1).join(z) + n);  } else {      n = n + '';      return n.length >= width_ ? n : new Array(width_ - n.length + 1).join(z) + n;  }};Melown.decodeFloat16 = function(binary) {    var exponent = (binary & 0x7C00) >> 10;        fraction = binary & 0x03FF;    return (binary >> 15 ? -1 : 1) * (        exponent ?        (            exponent === 0x1F ?            fraction ? NaN : Infinity :            Math.pow(2, exponent - 15) * (1 + fraction / 0x400)        ) :        6.103515625e-5 * (fraction / 0x400)    );};Melown.simpleFmtObj = (function obj(str, obj) {    return str.replace(/\{([_$a-zA-Z0-9][_$a-zA-Z0-9]*)\}/g, function(s, match) {        return (match in obj ? obj[match] : s);    });});Melown.simpleFmtObjOrCall = (function obj(str, obj, call) {    return str.replace(/\{([_$a-zA-Z(-9][_$a-zA-Z(-9]*)\}/g, function(s, match) {        return (match in obj ? obj[match] : call(match));    });});Melown.getABGRFromHexaCode = (function(code_) {    var result_ = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(code_);    return result_ ?        [ parseInt(result_[4], 16),          parseInt(result_[3], 16),          parseInt(result_[2], 16),          parseInt(result_[1], 16)]    : [0,0,0,255];});Melown.stringifyFunction = (function(function_) {    // Stringify the code    return '(' + function_ + ').call(self);';});Melown.loadJSON = function(path_, onLoaded_, onError_, skipEval_) {    var xhr_ = new XMLHttpRequest();    xhr_.onload  = (function()    {        var data_ = xhr_.response;        try {            var parsedData_ = skipEval_ ? data_ : eval("("+data_+")");        } catch(e) {            if (onError_ != null) {                onError_();            }            return;        }        if (onLoaded_ != null) {            onLoaded_(parsedData_);        }    }).bind(this);    xhr_.onerror  = (function()    {        if (onError_ != null) {            onError_();        }    }).bind(this);    xhr_.open('GET',  path_, true);    xhr_.send("");};Melown.loadBinary = function(path_, onLoaded_, onError_) {    var xhr_ = new XMLHttpRequest();    xhr_.onreadystatechange = (function (){        switch (xhr_.readyState)        {        case 0 : // UNINITIALIZED        case 1 : // LOADING        case 2 : // LOADED        case 3 : // INTERACTIVE        break;        case 4 : // COMPLETED                if (xhr_.status == 404)                {                    if (onError_ != null) {                        onError_();                    }                    break;                }                var abuffer_ = xhr_.response;                var data_ = new DataView(abuffer_);                if (onLoaded_ != null) {                    onLoaded_(data_);                }          break;          default:            if (onError_ != null) {                onError_();            }            break;          }       }).bind(this);    xhr_.onerror  = (function() {        if (onError_ != null) {            onError_();        }    }).bind(this);    xhr_.open('GET', path_, true);    xhr_.responseType = "arraybuffer";    xhr_.send("");};Melown.isSameOrigin = function(url_) {    if (typeof url_ !== 'string') {        return false;    }    var docHost_ = document.location.hostname;    var parser_ = document.createElement('a');    parser_['href'] = url_;    return parser_['hostname'] === docHost_;}window.performance = window.performance || {};performance.now = (function() {  return performance.now       ||         performance.mozNow    ||         performance.msNow     ||         performance.oNow      ||         performance.webkitNow ||         function() { return new Date().getTime(); };})();//Provides requestAnimationFrame in a cross browser way.window.requestAnimFrame = (function() {  return window.requestAnimationFrame ||         window.webkitRequestAnimationFrame ||         window.mozRequestAnimationFrame ||         window.oRequestAnimationFrame ||         window.msRequestAnimationFrame ||         function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {           window.setTimeout(callback, 1000/60);         };})();// only implement if no native implementation is availableif (typeof Array.isArray === 'undefined') {  Array.isArray = (function(obj) {    return Object.prototype.toString.call(obj) === '[object Array]';  });}if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 Melown.Platform = {
 
@@ -7368,8 +7368,7 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, filter_)
-{
+Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, filter_) {
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
     this.texture_ = null;
@@ -7392,8 +7391,7 @@ Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, fi
 };
 
 //destructor
-Melown.GpuTexture.prototype.kill = function()
-{
+Melown.GpuTexture.prototype.kill = function() {
     this.gl_.deleteTexture(this.texture_);
 
     /*
@@ -7405,11 +7403,11 @@ Melown.GpuTexture.prototype.kill = function()
 };
 
 //! Returns GPU RAM used, in bytes.
-Melown.GpuTexture.prototype.size = function(){ return this.size_; };
+Melown.GpuTexture.prototype.size = function() {
+    return this.size_;
+};
 
-
-Melown.GpuTexture.prototype.createFromData = function(lx_, ly_, data_, filter_, repeat_)
-{
+Melown.GpuTexture.prototype.createFromData = function(lx_, ly_, data_, filter_, repeat_) {
     var gl_ = this.gl_;
 
     this.texture_ = gl_.createTexture();
@@ -7460,8 +7458,7 @@ Melown.GpuTexture.prototype.createFromData = function(lx_, ly_, data_, filter_, 
     this.loaded_ = true;
 };
 
-Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
-{
+Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_) {
     var gl_ = this.gl_;
 
     var timer_ = performance.now();
@@ -7525,13 +7522,9 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
     }*/
 };
 
-Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
-{
+Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_) {
     this.image_ = new Image();
-
-    if (direct_ != true) { //this is for firefox compatibility
-        this.image_.crossOrigin = "anonymous";
-    }
+    this.image_.crossOrigin = Melown.isSameOrigin(path_) ? "use-credentials" : "anonymous";
 
     this.image_.onload = (function () {
 
@@ -7559,8 +7552,7 @@ Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
     this.image_.src = path_;
 };
 
-Melown.GpuTexture.prototype.createFramebufferFromData = function(lx_, ly_, data_)
-{
+Melown.GpuTexture.prototype.createFramebufferFromData = function(lx_, ly_, data_) {
     var gl_ = this.gl_;
 
     var framebuffer_ = gl_.createFramebuffer();
@@ -7613,8 +7605,7 @@ Melown.GpuTexture.prototype.createFramebufferFromData = function(lx_, ly_, data_
     gl_.bindFramebuffer(gl_.FRAMEBUFFER, null);
 };
 
-Melown.GpuTexture.prototype.createFramebuffer = function(lx_, ly_)
-{
+Melown.GpuTexture.prototype.createFramebuffer = function(lx_, ly_) {
     if (this.texture_ == null){
         return;
     }
@@ -7655,8 +7646,7 @@ Melown.GpuTexture.prototype.createFramebuffer = function(lx_, ly_)
 };
 
 
-Melown.GpuTexture.prototype.readFramebufferPixels = function(x_, y_, lx_, ly_)
-{
+Melown.GpuTexture.prototype.readFramebufferPixels = function(x_, y_, lx_, ly_) {
     if (this.texture_ == null) {
         return;
     }
@@ -7674,6 +7664,9 @@ Melown.GpuTexture.prototype.readFramebufferPixels = function(x_, y_, lx_, ly_)
 
     return data_;
 };
+
+
+
 
 if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
@@ -7818,8 +7811,7 @@ Melown.StencilLineState_ = null;
 /**
  * @constructor
  */
-Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
-{
+Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_) {
     this.core_ = core_;
     this.progTile_ = null;
     this.progHeightmap_ = null;
@@ -7890,34 +7882,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
     this.rectIndicesBuffer_ = null;
     this.imageProjectionMatrix_ = null;
 
-    //debug switchs
-    this.heightmapOnly_ = false;
-    this.blendHeightmap_ = true;
-    this.drawBBoxes_ = false;
-    this.drawLods_ = false;
-    this.drawPositions_ = false;
-    this.drawTexelSize_ = false;
-    this.drawWireframe_ = 0;
-    this.drawFaceCount_ = false;
-    this.drawDistance_ = false;
-    this.drawMaxLod_ = false;
-    this.drawTextureSize_ = false;
-    this.drawLayers_ = true;
-    this.ignoreTexelSize_ = false;
-    this.drawFog_ = true;
-
-    this.displayDrawTest_ = false;
-
-    this.layers_ = [];
-    this.layerIcons_ = [];
-    this.layerPlaces_ = [];
-    this.bitmaps_ = [];
     this.font_ = null;
-    this.placemarkTexture_ = null;
-    this.layerGroupVisible_ = [];
-    this.layerGroupTransform_ = [];
-    this.gpuTilesWaiting_ = [];
-    this.gpuTilesWaitingSize_ = 0;
 
     //hack for melown maps
     //this.melownHack_ = true;
@@ -9201,8 +9166,7 @@ Melown.RendererGeometry.setFaceUVs = function(uvs_, a, b, c, index_) {
 
 //! Procedural mesh representing a heightmap block
 //! Creates a grid of size x size vertices, all coords are [0..1].
-Melown.RendererGeometry.buildHeightmap = function(size_)
-{
+Melown.RendererGeometry.buildHeightmap = function(size_) {
     size_--;
 
     var g = Melown.RendererGeometry;
@@ -9231,7 +9195,7 @@ Melown.RendererGeometry.buildHeightmap = function(size_)
             index2_ += 6;
 
             g.setFaceVertices(vertices_, [x2, y2, 0], [x1, y2, 0], [x1, y1, 0], index_);
-            g.setFaceInternalUVs(vertices_, [x2, y2], [x1, y2], [x1, y1], index2_);
+            g.setFaceUVs(vertices_, [x2, y2], [x1, y2], [x1, y1], index2_);
             index_ += 9;
             index2_ += 6;
         }
@@ -9243,8 +9207,7 @@ Melown.RendererGeometry.buildHeightmap = function(size_)
 };
 
 
-Melown.RendererGeometry.spherePos = function(lon_, lat_)
-{
+Melown.RendererGeometry.spherePos = function(lon_, lat_) {
     lat_ *= Math.PI;
     lon_ *= 2*Math.PI;
 
@@ -9258,7 +9221,6 @@ Melown.RendererGeometry.spherePos = function(lon_, lat_)
 //! in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
 //! are oriented inwards.
 Melown.RendererGeometry.buildSkydome = function(latitudeBands_, longitudeBands_) {
-
     var g = Melown.RendererGeometry;
     var numFaces_ = (latitudeBands_ * longitudeBands_) * 2;
     var vertices_ = new Float32Array(numFaces_ * 3 * 3);
@@ -9303,8 +9265,7 @@ Melown.RendererGeometry.makeQuad = function(lon1_, lat1_, lon2_, lat2_, vertices
 if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 
-Melown.Renderer.prototype.initShaders = function()
-{
+Melown.Renderer.prototype.initShaders = function() {
     this.progTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileVertexShader, Melown.tileFragmentShader);
     this.progWireframeTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframeFragmentShader);
     this.progWireframeTile2_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframe2FragmentShader);
@@ -9332,10 +9293,9 @@ Melown.Renderer.prototype.initShaders = function()
 };
 
 
-Melown.Renderer.prototype.initHeightmap = function()
-{
+Melown.Renderer.prototype.initHeightmap = function() {
     // initialize heightmap geometry
-    var meshData_ = Melown.RendererGeometry.buildHeightmap(Melown.MetaNodeHMSize_);
+    var meshData_ = Melown.RendererGeometry.buildHeightmap(5);
     this.heightmapMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
 
    // create heightmap texture
@@ -9368,8 +9328,7 @@ Melown.Renderer.prototype.initHeightmap = function()
 };
 
 
-Melown.Renderer.prototype.initHitmap = function()
-{
+Melown.Renderer.prototype.initHitmap = function() {
     var size_ = this.hitmapSize_;
     var data_ = new Uint8Array( size_ * size_ * 4 );
 
@@ -9382,8 +9341,7 @@ Melown.Renderer.prototype.initHitmap = function()
     this.geoHitmapTexture_.createFramebuffer(size_, size_);
 };
 
-Melown.Renderer.prototype.initTestMap = function()
-{
+Melown.Renderer.prototype.initTestMap = function() {
    // create red texture
     var size_ = 16;
     var data_ = new Uint8Array( size_ * size_ * 4 );
@@ -9471,8 +9429,7 @@ Melown.Renderer.prototype.initTestMap = function()
 
 };
 
-Melown.Renderer.prototype.initTextMap = function()
-{
+Melown.Renderer.prototype.initTextMap = function() {
     var sizeX_ = 64;
     var sizeY_ = 8;
     var data_ = new Uint8Array( sizeX_ * sizeY_ * 4 );
@@ -9543,8 +9500,7 @@ Melown.Renderer.prototype.initTextMap = function()
 
 
 
-Melown.Renderer.prototype.initImage = function()
-{
+Melown.Renderer.prototype.initImage = function() {
     var gl_ = this.gpu_.gl_;
 
     //create vertices buffer for rect
@@ -9570,16 +9526,14 @@ Melown.Renderer.prototype.initImage = function()
 };
 
 
-Melown.Renderer.prototype.initSkydome = function()
-{
+Melown.Renderer.prototype.initSkydome = function() {
     var meshData_ = Melown.RendererGeometry.buildSkydome(32, 64);
     this.skydomeMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
     this.skydomeTexture_ = new Melown.GpuTexture(this.gpu_, this.core_.coreConfig_.skydomeTexture_, this.core_);
 };
 
 
-Melown.Renderer.prototype.initBBox = function()
-{
+Melown.Renderer.prototype.initBBox = function() {
     this.bboxMesh_ = new Melown.GpuBBox(this.gpu_);
 
     if (this.displayDrawTest_ != true) {
@@ -9639,8 +9593,7 @@ Melown.Renderer.prototype.initBBox = function()
 };
 
 
-Melown.Renderer.prototype.initializeGL = function()
-{
+Melown.Renderer.prototype.initializeGL = function() {
     this.gpu_.init();
     this.initShaders();
     this.initHeightmap();
@@ -9705,7 +9658,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.mapTrees_ = [];
 
     this.gpuCache_ = new Melown.MapCache(this, 380*1024*1024);
-    this.resourcesCache_ = new Melown.MapCache(this, 380*1024*1024);
+    this.resourcesCache_ = new Melown.MapCache(this, 450*1024*1024);
     this.metatileCache_ = new Melown.MapCache(this, 60*1024*1024);
 
     this.loader_ = new Melown.MapLoader(this);
@@ -9720,6 +9673,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.initMapTrees();
 
     this.updateCoutner_ = 0;
+    this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
 
     this.heightmapOnly_ = false;
     this.blendHeightmap_ = true;
@@ -9735,6 +9689,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.drawLayers_ = true;
     this.ignoreTexelSize_ = false;
     this.drawFog_ = true;
+    this.debugTextSize_ = 1.0;
 
     //this.mesh_ = new Melown.MapMesh(this);
     //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
@@ -12481,6 +12436,10 @@ Melown.MapCache.prototype.updateItem = function(item_) {
         return;
     }
 
+    if (this.first_ == item_) {
+        return;
+    }
+
     //remove item from list
     if (item_.prev_ != null) {
         item_.prev_.next_ = item_.next_;
@@ -12649,7 +12608,7 @@ Melown.Map.prototype.updateCamera = function() {
     this.camera_.setParams(this.navFov_, this.renderer_.camera_.getNear(), this.renderer_.camera_.getFar());
 
     //var height_ = 227;
-    var height_ = 232.2;
+    var height_ = this.navHeight_;//232.2;
 
     //convert public coords to physical
     var worldPos_ = this.convertCoords([this.navCenter_[0], this.navCenter_[1], height_], "navigation", "physical");
@@ -12891,6 +12850,7 @@ Melown.MapCredit = function(map_, json_) {
 };
 
 Melown.Map.prototype.draw = function() {
+    this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
 
     //loop map trees
     for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
@@ -12904,7 +12864,7 @@ Melown.Map.prototype.draw = function() {
 
 };
 
-Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
+Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_) {
 
     if (tile_.surface_ != null) {
 
@@ -12915,7 +12875,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
             }
 
             if (this.drawBBoxes_) {
-                this.drawTileInfo(tile_, node_, cameraPos_);
+                this.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
             }
 
             if (tile_.surfaceMesh_.isReady() == true) {
@@ -12946,60 +12906,62 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
 
 };
 
-Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_) {
+Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pixelSize_) {
+    var mvp_;
 
-    if (this.drawMeshBBox_) {
+    if (!this.drawMeshBBox_) {
         node_.drawBBox(cameraPos_);
     }
 
-    //get node center
+    //get screen pos of node
+    var min_ = node_.bbox_.min_;
+    var max_ = node_.bbox_.max_;
 
-    //this.core_.
-/*
-    var pos_ = this.project([min_[0] + (max_[0] - min_[0])*0.5, min_[1] + (max_[1] - min_[1])*0.5, max_[2]]);
+    var pos_ =  this.core_.getRendererInterface().getScreenCoords(
+                    [(min_[0] + (max_[0] - min_[0])*0.5) - cameraPos_[0],
+                     (min_[1] + (max_[1] - min_[1])*0.5) - cameraPos_[1],
+                     (max_[2]) - cameraPos_[2]],
+                     this.camera_.getMvpMatrix());
 
-    //draw indices
-    if (this.drawIndices_ == true) {
-        var t = this.browser_.mapConfig_.getExternalId(tileId_);
-        var text_ = "" + t.ix_ + " " + t.iy_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-11), 4, text_, [0,255,255,255], pos_[2]);
-    }
+    pos_[2] = pos_[2] * 0.9992;
 
-    //draw texture size
-    if (this.drawTextureSize_ == true && gpuTile_ != null) {
-        var text_ = "" + gpuTile_.texture_.width_ + " x " + gpuTile_.texture_.height_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-18), 4, text_, [255,255,255,255], pos_[2]);
-    }
+    var factor_ = this.debugTextSize_;
 
     //draw lods
     if (this.drawLods_ == true) {
-        text_ = "" + tileId_.lod_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-4), 4, text_, [255,0,0,255], pos_[2]);
+        text_ = "" + tile_.id_[0];
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]-4*factor_), 4*factor_, text_, [255,0,0,255], pos_[2]);
+    }
+
+    //draw indices
+    if (this.drawIndices_ == true) {
+        var text_ = "" + tile_.id_[1] + " " + tile_.id_[2];
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]-11*factor_), 4*factor_, text_, [0,255,255,255], pos_[2]);
     }
 
     //draw positions
     if (this.drawPositions_ == true) {
-        var p = tileId_.getWorldParams();
-        var text_ = "" + p[0].toFixed(1) + " " + p[1].toFixed(1);
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+3), 4, text_, [0,255,255,255], pos_[2]);
+        var text_ = "" + min_[0].toFixed(1) + " " + min_[1].toFixed(1) + " " + min_[2].toFixed(1);
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+3*factor_), 4*factor_, text_, [0,255,255,255], pos_[2]);
     }
 
     //draw face count
-    if (this.drawFaceCount_ == true && gpuTile_ != null) {
-        var text_ = "" + gpuTile_.mesh_.polygons_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+10), 4, text_, [0,255,0,255], pos_[2]);
+    if (this.drawFaceCount_ == true && mesh_ != null) {
+        var text_ = "" + mesh_.faces_ + " - " + mesh_.submeshes_.length;
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [0,255,0,255], pos_[2]);
     }
 
     //draw distance
     if (this.drawDistance_ == true) {
+        var text_ = "" + pixelSize_[1].toFixed(2) + "  " + pixelSize_[0].toFixed(2) + "  " + node_.pixelSize_.toFixed(2);
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
+    }
 
-        ///if (tileId_.easting_ == "679392" && tileId_.northing_ == "5437984" && tileId_.lod_ == "15") {
-           // tileId_ = tileId_;
-        //}
-
-        var value_ = this.planet_.getMainTerrain().tilePixelSize(node_, true);
-        var text_ = "" + value_[1].toFixed(2) + " " + value_[0].toFixed(2);
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+17), 4, text_, [255,0,255,255], pos_[2]);
+/*
+    //draw texture size
+    if (this.drawTextureSize_ == true && gpuTile_ != null) {
+        var text_ = "" + gpuTile_.texture_.width_ + " x " + gpuTile_.texture_.height_;
+        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-18), 4, text_, [255,255,255,255], pos_[2]);
     }
 
     //draw texel size
@@ -13190,11 +13152,13 @@ Melown.Map.prototype.getSurfaceHeight = function(pos_) {
 Melown.MapMesh = function(map_, tile_) {
     this.generateLines_ = true;
     this.map_ = map_;
+    this.stats_ = map_.stats_;
     this.tile_ = tile_;
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
     this.fileSize_ = 0;
+    this.faces_ = 0;
 
     this.cacheItem_ = null;  //store killSubmeshes
     this.gpuCacheItem_ = null; //store killGpuSubmeshes
@@ -13222,11 +13186,13 @@ Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
         this.tile_.validate();
     }
 
+    this.loadState_ = 0;
     this.cacheItem_ = null;
 };
 
 Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
-    for (var i = 0, li = this.submeshes_.length; i < li; i++) {
+    for (var i = 0, li = this.gpuSubmeshes_.length; i < li; i++) {
+        this.stats_.gpuMeshesUsed_ -= this.gpuSubmeshes_[i].size_;
         this.gpuSubmeshes_[i].kill();
     }
 
@@ -13238,7 +13204,6 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     }
 
     this.gpuCacheItem_ = null;
-    this.loadState_ = 0;
 };
 
 Melown.MapMesh.prototype.isReady = function () {
@@ -13332,6 +13297,7 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
     for (var i = 0, li = this.numSubmeshes_; i < li; i++) {
         this.submeshes_[i] = new Melown.MapSubmesh(this, stream_);
         this.size_ += this.submeshes_[i].size_;
+        this.faces_ += this.submeshes_[i].faces_;
     }
 
 };
@@ -13360,6 +13326,7 @@ Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
 Melown.MapMesh.prototype.addSubmesh = function(submesh_) {
     this.submeshes_.push(submesh_);
     this.size_ += submesh_.size_;
+    this.faces_ += submesh_.faces_;
 };
 
 Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
@@ -13370,6 +13337,8 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
         this.gpuSubmeshes_[i] = this.submeshes_[i].buildGpuMesh();
         size_ += this.gpuSubmeshes_[i].size_;
     }
+
+    this.stats_.gpuMeshesUsed_ += size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuSubmeshes.bind(this, true), size_);
 };
@@ -13415,14 +13384,16 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
 
     if (texture_ == null || texture_.gpuTexture_ == null) {
         proj_ = proj_;
+        texture_.isReady();
         return;
     }
 
     renderer_.gpu_.bindTexture(texture_.gpuTexture_);
 
     gpuSubmesh_.draw(program_, "aPosition", "aTexCoord", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
-
+    this.stats_.drawnFaces_ += this.faces_;
 };
+
 
 /**
  * @constructor
@@ -13907,13 +13878,14 @@ Melown.MapMetatile = function(metastorage_, surface_) {
     this.id_ = metastorage_.id_;
     this.nodes_ = [];
     this.loadState_ = 0;
+    this.size_ = 0;
 
     this.cacheItem_ = null;
 };
 
 Melown.MapMetatile.prototype.kill = function(killedByCache_) {
     if (killedByCache_ != true && this.cacheItem_ != null) {
-        this.map_.metadataCache_.remove(this.cacheItem_);
+        this.map_.metatileCache_.remove(this.cacheItem_);
     }
 
     this.metastorage_.removeMetatile(this);
@@ -13948,7 +13920,7 @@ Melown.MapMetatile.prototype.isReady = function () {
 
 Melown.MapMetatile.prototype.used = function() {
     if (this.cacheItem_ != null) {
-        this.map_.metadataCache_.updateItem(this.cacheItem_);
+        this.map_.metatileCache_.updateItem(this.cacheItem_);
     }
 
 };
@@ -13989,7 +13961,12 @@ Melown.MapMetatile.prototype.onLoaded = function(data_) {
         return;
     }
 
+    this.size_ += data_.byteLength * 4;
+
     this.parseMetatatile({data_:data_, index_: 0});
+
+    this.cacheItem_= this.map_.metatileCache_.insert(this.kill.bind(this, true), this.size_);
+
     this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
 };
@@ -14119,13 +14096,14 @@ Melown.MapMetatile = function(metastorage_, surface_) {
     this.id_ = metastorage_.id_;
     this.nodes_ = [];
     this.loadState_ = 0;
+    this.size_ = 0;
 
     this.cacheItem_ = null;
 };
 
 Melown.MapMetatile.prototype.kill = function(killedByCache_) {
     if (killedByCache_ != true && this.cacheItem_ != null) {
-        this.map_.metadataCache_.remove(this.cacheItem_);
+        this.map_.metatileCache_.remove(this.cacheItem_);
     }
 
     this.metastorage_.removeMetatile(this);
@@ -14160,7 +14138,7 @@ Melown.MapMetatile.prototype.isReady = function () {
 
 Melown.MapMetatile.prototype.used = function() {
     if (this.cacheItem_ != null) {
-        this.map_.metadataCache_.updateItem(this.cacheItem_);
+        this.map_.metatileCache_.updateItem(this.cacheItem_);
     }
 
 };
@@ -14201,7 +14179,12 @@ Melown.MapMetatile.prototype.onLoaded = function(data_) {
         return;
     }
 
+    this.size_ += data_.byteLength * 4;
+
     this.parseMetatatile({data_:data_, index_: 0});
+
+    this.cacheItem_= this.map_.metatileCache_.insert(this.kill.bind(this, true), this.size_);
+
     this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
 };
@@ -14557,9 +14540,11 @@ Melown.MapStats = function(map_) {
     this.core_ = map_.core_;
     this.inspector_ = map_.core_.inspector_;
     this.drawnTiles_ = 0;
+    this.drawnFaces_ = 0;
     this.counter_ = 0;
     this.statsCycle_ = 0;
     this.fps_ = 0;
+    this.frameTime_ = 0;
     this.renderTime_ = 0;
     this.renderTimeTmp_ = 0;
     this.renderTimeBegin_ = 0;
@@ -14572,9 +14557,9 @@ Melown.MapStats = function(map_) {
     this.graphsCreateMeshTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateGpuMeshTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateTextureTimes_ = new Array(this.graphsTimeSamples_);
-    this.graphsFrameGapTimes_ = new Array(this.graphsTimeSamples_);
-    this.graphsGpuMemory_ = new Array(this.graphsTimeSamples_);
-    this.graphsGpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
+    this.graphsFrameTimes_ = new Array(this.graphsTimeSamples_);
+    this.graphsCpuMemoryMetatiles_ = new Array(this.graphsTimeSamples_);
+    this.graphsCpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryTextures_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryMeshes_ = new Array(this.graphsTimeSamples_);
     this.graphsPolygons_ = new Array(this.graphsTimeSamples_);
@@ -14588,6 +14573,8 @@ Melown.MapStats = function(map_) {
     this.graphsCreateMeshTime_ = 0;
     this.resetGraphs();
 
+    this.gpuMeshesUsed_ = 0;
+    this.gpuTexturesUsed_ = 0;
     this.gpuUsed_ = 0;
     this.resourcesUsed_ = 0;
     this.metaUsed_ = 0;
@@ -14602,9 +14589,9 @@ Melown.MapStats.prototype.resetGraphs = function() {
         this.graphsCreateMeshTimes_[i] = 0;
         this.graphsCreateGpuMeshTimes_[i] = 0;
         this.graphsCreateTextureTimes_[i] = 0;
-        this.graphsFrameGapTimes_[i] = 0;
-        this.graphsGpuMemory_[i] = 0;
-        this.graphsGpuMemoryUsed_[i] = 0;
+        this.graphsFrameTimes_[i] = 0;
+        this.graphsCpuMemoryUsed_[i] = 0;
+        this.graphsCpuMemoryMetatiles_[i] = 0;
         this.graphsGpuMemoryTextures_[i] = 0;
         this.graphsGpuMemoryMeshes_[i] = 0;
         this.graphsPolygons_[i] = 0;
@@ -14616,6 +14603,7 @@ Melown.MapStats.prototype.resetGraphs = function() {
 
 Melown.MapStats.prototype.begin = function() {
     this.drawnTiles_ = 0;
+    this.drawnFaces_ = 0;
     this.counter_++;
     this.statsCycle_++;
 
@@ -14624,6 +14612,33 @@ Melown.MapStats.prototype.begin = function() {
 };
 
 Melown.MapStats.prototype.end = function() {
+
+    var timer_ = performance.now();
+
+    var renderTime_ = timer_ - this.renderTimeBegin_;
+    var frameTime_ = timer_ - this.frameTime_;
+    this.frameTime_ = timer_;
+    this.renderTimeTmp_ += renderTime_;
+
+    if (this.recordGraphs_) {
+        var i = this.graphsTimeIndex_;
+
+        this.graphsRenderTimes_[i] = renderTime_;
+        this.graphsCreateMeshTimes_[i] = 0;
+        this.graphsCreateGpuMeshTimes_[i] = 0;
+        this.graphsCreateTextureTimes_[i] = 0;
+        this.graphsFrameTimes_[i] = frameTime_;
+        this.graphsCpuMemoryUsed_[i] = this.map_.resourcesCache_.totalCost_;
+        this.graphsCpuMemoryMetatiles_[i] = this.map_.metatileCache_.totalCost_;
+        this.graphsGpuMemoryTextures_[i] = this.gpuTexturesUsed_;
+        this.graphsGpuMemoryMeshes_[i] = this.gpuMeshesUsed_;
+        this.graphsPolygons_[i] = this.drawnFaces_;
+
+        this.graphsTimeIndex_ = (this.graphsTimeIndex_ + 1) % this.graphsTimeSamples_;
+        this.inspector_.updateGraphs(this);
+    }
+
+
     if ((this.statsCycle_ % 100) == 0) {
         this.renderTime_ = this.renderTimeTmp_ / 100;
         this.fps_ = 1000 / this.renderTime_;
@@ -14637,12 +14652,6 @@ Melown.MapStats.prototype.end = function() {
             this.inspector_.updateStatsPanel(this);
         }
     }
-
-    var renderTime_ = performance.now() - this.renderTimeBegin_;
-
-    this.renderTimeTmp_ += renderTime_;
-
-    var timer_ = performance.now();// Date.now();
 };
 
 
@@ -14659,8 +14668,7 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.MapSubmesh = function(mesh_, stream_)
-{
+Melown.MapSubmesh = function(mesh_, stream_) {
     this.generateLines_ = true;
     this.map_ = mesh_.map_;
     this.vertices_ = null;
@@ -14670,6 +14678,7 @@ Melown.MapSubmesh = function(mesh_, stream_)
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
+    this.faces_ = 0;
 
     if (stream_ != null) {
         this.parseSubmesh(stream_);
@@ -14940,6 +14949,7 @@ struct FacesBlock {
     if (this.externalUVs_) this.size_ += this.externalUVs_.length;
     if (this.undulationDeltas_) this.size_ += this.undulationDeltas_.length;
     this.size_ *= 4;
+    this.faces_ = numFaces_;
 
 };
 
@@ -15094,6 +15104,7 @@ Melown.MapSurface.prototype.getTexureUrl = function(id_, subId_, skipBaseUrl_) {
  */
 Melown.MapTexture = function(map_, tile_, submeshIndex_, external_) {
     this.map_ = map_;
+    this.stats_ = map_.stats_;
     this.tile_ = tile_;
     this.submeshIndex_ = submeshIndex_;
     this.external_ = external_ || false;
@@ -15126,6 +15137,7 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
 
 Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     if (this.gpuTexture_ != null) {
+        this.stats_.gpuTexturesUsed_ -= this.gpuTexture_.size_;
         this.gpuTexture_.kill();
     }
 
@@ -15173,6 +15185,7 @@ Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
     var image_ = new Image();
     image_.onerror = this.onLoadError.bind(this);
     image_.onload = this.onLoaded.bind(this);
+    image_.crossOrigin = Melown.isSameOrigin(url_) ? "use-credentials" : "anonymous";
     image_.src = url_;
 
     this.image_ = image_;
@@ -15205,6 +15218,7 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
 Melown.MapTexture.prototype.buildGpuTexture = function () {
     this.gpuTexture_ = new Melown.GpuTexture(this.map_.renderer_.gpu_, null, this.map_.core_);
     this.gpuTexture_.createFromImage(this.image_, "linear", false);
+    this.stats_.gpuTexturesUsed_ += this.gpuTexture_.size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuTexture.bind(this, true), this.gpuTexture_.size_);
 };
@@ -15338,6 +15352,7 @@ Melown.MapTile.prototype.removeChild = function(tile_) {
  */
 Melown.MapTree = function(map_, rootId_, refFrame_, freeLayer_) {
     this.map_ = map_;
+    this.camera_ = map_.camera_;
     this.rootId_ = rootId_;
     this.refFrame_ = refFrame_;
     this.freeLayer_ = freeLayer_;
@@ -15378,7 +15393,7 @@ Melown.MapTree.prototype.init = function() {
 Melown.MapTree.prototype.draw = function() {
     this.cameraPos_ = [0,0,0];
     this.worldPos_ = [0,0,0];
-    this.ndcToScreenPixel_ = this.map_.renderer_.curSize_[0] * 0.5;
+    this.ndcToScreenPixel_ = this.map_.ndcToScreenPixel_;
 
     var refFrame_ = this.refFrame_;
     var periodicity_ = this.refFrame_.srs_.periodicity_;
@@ -15410,24 +15425,25 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
 
     var cameraPos_ = this.map_.navCameraPosition_;
 
-    if (this.map_.camera_.bboxVisible(node_.bbox_, cameraPos_) != true) {
+    if (this.camera_.bboxVisible(node_.bbox_, cameraPos_) != true) {
         return false;
         //return true;
     }
 
     var screenPixelSize_ = this.ndcToScreenPixel_ * node_.pixelSize_;
 
-    if (this.map_.camera_.ortho_ == true) {
-        var pixelSize_ = (screenPixelSize_*2.0) / this.map_.camera_.getViewHeight();
+    if (this.camera_.ortho_ == true) {
+        var height_ = this.camera_.getViewHeight();
+        var pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
     } else {
-        var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, false);
+        var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
     }
 
 //    var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, false);
 
-    if (node_.hasChildren() == false || pixelSize_ < 1.1) {
+    if (node_.hasChildren() == false || pixelSize_[0] < 1.1) {
 
-        this.map_.drawSurfaceTile(tile_, node_, cameraPos_);
+        this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_);
 
         return false;
     }
@@ -15437,7 +15453,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
     //node_.drawBBox(cameraPos_);
 
 /*
-    if (this.map_.camera_.bboxVisible(node_.bbox_) != true) {
+    if (this.camera_.bboxVisible(node_.bbox_) != true) {
         return false;
     }
 */
@@ -15484,94 +15500,101 @@ Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, pos_, lod_) {
 Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
     var min_ = bbox_.min_;
     var max_ = bbox_.max_;
+    /*
     var tileSize_ = max_[0]-min_[0]; //get tile size
     var tilePos_ = [min_[0]-worldPos_[0], min_[1]-worldPos_[1], min_[2]-worldPos_[2]]; //get global pos
     var tilePos2_ = [tilePos_[0] + tileSize_, tilePos_[1], tilePos_[2]];
     var tilePos3_ = [tilePos_[0] + tileSize_, tilePos_[1] + tileSize_, tilePos_[2]];
     var tilePos4_ = [tilePos_[0], tilePos_[1] + tileSize_, tilePos_[2]];
+    */
 
-    var h1_ = min_[2];
-    var h2_ = max_[2];
+    var tilePos_ = [min_[0] - cameraPos_[0], min_[1] - cameraPos_[1]];
+    var tilePos2_ = [max_[0] - cameraPos_[0], min_[1] - cameraPos_[1]];
+    var tilePos3_ = [max_[0] - cameraPos_[0], max_[1] - cameraPos_[1]];
+    var tilePos4_ = [min_[0] - cameraPos_[0], max_[1] - cameraPos_[1]];
+
+    var h1_ = min_[2] - cameraPos_[2];
+    var h2_ = max_[2] - cameraPos_[2];
 
     var factor_ = 0;
 
     //find bbox sector
-    if (cameraPos_[1] < tilePos_[1]) { //top row
-        if (cameraPos_[0] < tilePos_[0]) { // left top corner
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], tilePos_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], tilePos_[1], h1_], returnDistance_);
+    if (0 < tilePos_[1]) { //top row
+        if (0 < tilePos_[0]) { // left top corner
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], tilePos_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], 0], returnDistance_);
             }
-        } else if (cameraPos_[0] > tilePos2_[0]) { // right top corner
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h1_], returnDistance_);
+        } else if (0 > tilePos2_[0]) { // right top corner
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], 0], returnDistance_);
             }
         } else { //top side
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos2_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos2_[1], h1_], returnDistance_);
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos2_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], 0], returnDistance_);
             }
         }
-    } else if (cameraPos_[1] > tilePos4_[1]) { //bottom row
-        if (cameraPos_[0] < tilePos4_[0]) { // left bottom corner
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h1_], returnDistance_);
+    } else if (0 > tilePos4_[1]) { //bottom row
+        if (0 < tilePos4_[0]) { // left bottom corner
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], 0], returnDistance_);
             }
-        } else if (cameraPos_[0] > tilePos3_[0]) { // right bottom corner
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h1_], returnDistance_);
+        } else if (0 > tilePos3_[0]) { // right bottom corner
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], 0], returnDistance_);
             }
         } else { //bottom side
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos3_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos3_[1], h1_], returnDistance_);
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos3_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], 0], returnDistance_);
             }
         }
     } else { //middle row
-        if (cameraPos_[0] < tilePos4_[0]) { // left side
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], cameraPos_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], cameraPos_[1], h1_], returnDistance_);
+        if (0 < tilePos4_[0]) { // left side
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], cameraPos_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, 0], returnDistance_);
             }
-        } else if (cameraPos_[0] > tilePos3_[0]) { // right side
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], cameraPos_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], cameraPos_[1], h1_], returnDistance_);
+        } else if (0 > tilePos3_[0]) { // right side
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], cameraPos_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, 0], returnDistance_);
             }
         } else { //center
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], cameraPos_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], cameraPos_[1], h1_], returnDistance_);
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([0, 0, h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([0, 0, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], cameraPos_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([0, 0, 0], returnDistance_);
             }
         }
     }
