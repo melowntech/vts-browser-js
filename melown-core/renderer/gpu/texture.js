@@ -163,7 +163,7 @@ Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
     this.image_ = new Image();
 
     if (direct_ != true) { //this is for firefox compatibility
-        //this.image_.crossOrigin = "anonymous";
+        this.image_.crossOrigin = "use-credentials";
     }
 
     this.image_.onload = (function () {

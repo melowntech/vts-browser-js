@@ -4286,6 +4286,998 @@ Melown.Platform = {
     ]
 
 };
+
+/**
+ * @constructor
+ */
+Melown.Inspector = function(core_) {
+    this.core_ = core_;
+
+    this.initStatsPanel();
+    this.initGraphsPanel();
+
+    //keyboard events
+//    document.addEventListener("keyup", this.onKeyUp.bind(this), false);
+//    document.addEventListener("keypress", this.onKeyPress.bind(this), false);
+//    document.addEventListener("keydown", this.onKeyDown.bind(this), false);
+
+    document.addEventListener("keyup", this.onKeyUp.bind(this), false);
+    document.addEventListener("keypress", this.onKeyPress.bind(this), false);
+    document.addEventListener("keydown", this.onKeyDown.bind(this), false);
+
+};
+
+Melown.Inspector.prototype.addStyle = function(string_) {
+    var style_ = document.createElement('style');
+    style_.type = 'text/css';
+    style_.innerHTML = string_;
+    document.getElementsByTagName('head')[0].appendChild(style_);
+};
+
+
+
+
+//keyboard events
+Melown.Inspector.prototype.onKeyDown = function(event_) {
+    if (typeof event_ == 'undefined') {
+        event_ = window.event;
+    }
+
+    this.altDown_ = event_.altKey;
+    this.ctrlDown_ = event_.ctrlKey;
+    this.shiftDown_ = event_.shiftKey;
+
+    this.onKeyUp(event_, true);
+};
+
+Melown.Inspector.prototype.onKeyPress = function(event_) {
+    this.onKeyUp(event_, true);
+};
+
+Melown.Inspector.prototype.preventDefault = function(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    } else {
+        e.returnValue = false;
+    }
+};
+
+Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
+    if (typeof event_ == 'undefined') {
+        event_ = window.event;
+    }
+
+    var map_ = this.core_.getMap();
+
+    if (map_ == null) {
+        return;
+    }
+
+    this.altDown_ = event_.altKey;
+    this.ctrlDown_ = event_.ctrlKey;
+    this.shiftDown_ = event_.shiftKey;
+
+    var done_ = (function(){});
+    var hit_ = false;
+
+    if (event_) {
+        var keyCode_;
+
+        if (window.event) {         // eg. IE
+            keyCode_ = window.event.keyCode;
+        } else if (event_.which) {   // eg. Firefox
+            keyCode_ = event_.which;
+        } else {
+            keyCode_ = event_.charCode;
+        }
+
+        if (this.shiftDown_ == true) {
+
+            if (this.ctrlDown_ == true) {
+
+                switch(keyCode_) {
+                    case 68:
+                    case 100:
+                        this.preventDefault(event_); break;  //key D pressed
+                }
+            }
+        }
+
+        if (this.shiftDown_ == true && press_ != true) {
+
+            switch(keyCode_) {
+                case 76:
+                case 108:
+                    /*this.showMenu(); this.toolbarItemSelected('link'); done_();*/  break;  //key L pressed
+
+                case 71:
+                case 103:
+                    /*this.showMenu(); this.toolbarItemSelected('position'); done_();*/ break; //key G pressed
+
+                case 65:
+                case 97:
+                    /*this.engine_.setAutorotate(1);*/ break;  //key A pressed
+            }
+
+            if (this.ctrlDown_ == true) {
+
+                switch(keyCode_) {
+                    case 68:
+                    case 100:
+                        this.diagnosticMode_ = true; hit_ = true; break;  //key D pressed
+                }
+
+            }
+
+            if (this.diagnosticMode_ == true) {
+
+                var blockHit_ = true;
+
+                switch(keyCode_) {
+
+                    case 68:
+                    case 100:
+                        break; //key D pressed
+
+
+                    case 49: /*this.core_.setControlMode("manual"); done_();*/  break;  //key 1 pressed
+                    case 50: /*this.core_.setControlMode("drone"); done_();*/   break;  //key 2 pressed
+                    case 51: /*this.core_.setControlMode("observer"); done_();*/ break; //key 3 pressed
+
+                    case 48:  //key 0 pressed
+                        /*this.core_.setOption("noForwardMovement" , !this.core_.getOption("noForwardMovement"));*/
+                        break;
+
+                    case 84:
+                    case 116:
+                        /*var pos_ = this.core_.hitTest(this.mouseX_, this.mouseY_, "all");
+                        console.log("hit pos: " + pos_[0] + " " + pos_[1] + " " + pos_[2] + " " + pos_[3] + " d " + pos_[4]); //key T pressed
+                        this.core_.logTile(pos_);*/
+                        break;
+
+                    case 72:
+                    case 104:
+                        map_.heightmapOnly_ = !map_.heightmapOnly_; break;  //key H pressed
+
+                    case 80:
+                    case 112:
+                        /*this.core_.saveScreenshot(pos_);*/ break;  //key P pressed
+
+                    case 83:
+                    case 115:
+                        this.switchStatsPanel(); break; //key S pressed
+
+                    case 66:
+                    case 98:
+                        map_.drawBBoxes_ = !map_.drawBBoxes_; break; //key B pressed
+
+                    case 87:
+                    case 119:
+                        var value_ = map_.drawWireframe_ + 1;
+                        map_.drawWireframe_ = value_ > 2 ? 0 : value_;
+                        break; //key W pressed
+
+                    case 70:
+                    case 102:
+                        map_.drawWireframe_ = map_.drawWireframe_ != 3 ? 3 : 0;
+                        break; //key F pressed
+
+                    case 77:
+                    case 109:
+                        map_.drawMaxLod_ = !map_.drawMaxLod_; break; //key M pressed
+
+                    case 74:
+                    case 106:
+                        map_.blendHeightmap_ = !map_.blendHeightmap_; break; //key J pressed
+
+                    case 88:
+                    case 120:
+                        map_.drawFog_ = !map_.drawFog_; hit_ = true; break; //key X pressed
+
+                    case 82:
+                    case 114:
+                        this.switchGraphsPanel(); break; //key R pressed
+
+                    case 69:
+                    case 101:
+                        /*this.showExport();*/ break; //key E pressed
+
+                    case 79:
+                    case 111:
+                        map_.camera_.setOrtho(!map_.camera_.getOrtho()); break; //key O pressed
+
+                    case 86:
+                    case 118:
+                         /*this.switchLocationsPanel();*/ break; //key V pressed
+
+                    case 90:
+                    case 122:
+                        map_.ignoreTexelSize_ = !map_.ignoreTexelSize_; break; //key Z pressed
+
+                    default:
+                        blockHit_ = false;
+                        break;
+
+                }
+
+                if (blockHit_) {
+                    hit_ = true;
+                }
+
+            }
+
+        }
+
+
+        if (this.diagnosticMode_ == true && map_.drawBBoxes_ == true && this.shiftDown_ != true && press_ != true) {
+
+             var blockHit_ = true;
+
+            switch(keyCode_) {
+                case 76:
+                case 108:
+                    map_.drawLods_ = !map_.drawLods_; break; //key L pressed
+
+                case 80:
+                case 112:
+                    map_.drawPositions_ = !map_.drawPositions_; break; //key P pressed
+
+                case 84:
+                case 116:
+                    map_.drawTextureSize_ = !map_.drawTextureSize_; break; //key T pressed
+
+                case 70:
+                case 102:
+                    map_.drawFaceCount_ = !map_.drawFaceCount_; break; //key F pressed
+
+                case 68:
+                case 100:
+                    map_.drawDistance_ = !map_.drawDistance_; break; //key D pressed
+
+                case 77:
+                case 109:
+                    map_.drawMeshBBox_ = !map_.drawMeshBBox_; break; //key M pressed
+
+                case 73:
+                case 105:
+                    map_.drawIndices_ = !map_.drawIndices_; break; //key M pressed
+
+                case 83:
+                case 115:
+                    map_.debugTextSize_ = (map_.debugTextSize_ == 1.0) ? 2.0 : 1.0; break; //key S pressed
+
+                default:
+                    blockHit_ = false;
+                    break;
+            }
+
+            if (blockHit_) {
+                hit_ = true;
+            }
+
+
+        }
+
+    }
+
+    if (hit_) {
+        map_.dirty_ = true;
+        this.preventDefault(event_);
+    }
+
+    //console.log("key" + keyCode_);
+
+};
+
+
+
+Melown.Inspector.prototype.initStatsPanel = function() {
+
+    this.addStyle(
+        "#melown-stats-panel {"
+            + "font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;"
+            + "display: none;"
+            + "padding:15px;"
+            + "width: 305px;"
+            + "font-size: 14px;"
+            + "position: absolute;"
+            + "right: 10px;"
+            + "top: 10px;"
+            + "cursor: default;"
+            + "background-color: rgba(255,255,255,0.95);"
+            + "border-radius: 5px;"
+            + "border: solid 1px #ccc;"
+            + "text-align: left;"
+            + "z-index: 4;"
+            + "padding: 10px;"
+        + "}"
+
+        + "#melown-stats-panel-info {"
+            + "margin-top: 5px;"
+        + "}"
+
+        + "#melown-stats-panel-info table {"
+            + "color:#000000;"
+            + "text-align: left;"
+            + "font-size: 12px;"
+        + "}"
+
+        + "#melown-stats-panel-info table td {"
+            + "vertical-align: top;"
+        + "}"
+    );
+
+    this.statsElement_ = document.createElement("div");
+    this.statsElement_.id = "melown-stats-panel";
+    this.statsElement_.innerHTML =
+        '<span id="melown-stats-panel-title">Render statistics</h3>'+
+        '<p id="melown-stats-panel-info"></p>';
+
+    this.core_.element_.appendChild(this.statsElement_);
+    this.statsInfoElement_ = document.getElementById("melown-stats-panel-info");
+    this.statsPanelVisible_ = false;
+};
+
+Melown.Inspector.prototype.showStatsPanel = function() {
+    this.statsElement_.style.display = "block";
+    this.statsPanelVisible_ = true;
+};
+
+Melown.Inspector.prototype.hideStatsPanel = function() {
+    this.statsElement_.style.display = "none";
+    this.statsPanelVisible_ = false;
+};
+
+Melown.Inspector.prototype.switchStatsPanel = function() {
+    if (this.statsPanelVisible_) {
+        this.hideStatsPanel();
+    } else {
+        this.showStatsPanel();
+    }
+};
+
+Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
+    var text2_ =
+            "FPS: " + Math.round(stats_.fps_) + "<br/>" +
+            "Render time: " + Math.round(stats_.renderTime_*1000) + "<br/>" +
+            "- gpu total: " + Math.round(stats_.gpuUsed_/(1024*1024)) + "MB<br/>" +
+            "- gpu textures: " + Math.round(stats_.gpuTexturesUsed_/(1024*1024)) + "MB<br/>" +
+            "- gpu meshes: " + Math.round(stats_.gpuMeshesUsed_/(1024*1024)) + "MB<br/>" +
+            "- cpu cache: " + Math.round(stats_.resourcesUsed_/(1024*1024)) + "MB<br/>" +
+            "- metailes: " + Math.round(stats_.metaUsed_/(1024*1024)) + "MB<br/>" +
+//            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +
+//            "viewHeight: " + Math.round(this.core_.getOption("viewHeight")) + " m<br/>" +
+//            "distance: " + Math.round(this.core_.renderer_.cameraDistance_) + " m<br/>" +
+            "Polygons: " + (stats_.drawnFaces_) + "<br/>";
+
+    var text3_ = "Tiles: " + (stats_.drawnTiles_) +"<br/>";
+
+    var text_ = "<table style='width:305px'><tr><td>" + text2_ + "</td><td>" + text3_ + "</td></tr></table>";
+
+    this.statsInfoElement_.innerHTML = text_;
+};
+
+
+Melown.Inspector.prototype.initGraphsPanel = function() {
+    this.addStyle( ""
+        + "#melown-graphs-panel {"
+            + "position:absolute;"
+            + "left:10px;"
+            + "top:10px;"
+            + "z-index: 4;"
+            + "background-color: #FFFFFF;"
+            + "padding: 5px;"
+            + "border-radius: 4px;"
+            + "font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;"
+            + "color:#000000;"
+            + "text-align: left;"
+            + "font-size: 12px;"
+            + "display:none;"
+        + "}"
+
+        + ".melown-graphs-canvas {"
+            + "border: solid 1px #bbb;"
+            + "image-rendering : pixelated;"
+        + "}"
+
+        + ".melown-graphs-info {"
+            + "padding: 5px 2px;"
+            + "font-size: 10px;"
+        + "}"
+
+        + ".melown-graphs-button {"
+            + "padding: 2px 5px;"
+            + "display:inline-block;"
+            + "margin-right: 4px;"
+            + "border-radius: 4px;"
+            + "cursor:pointer;"
+        + "}"
+
+        + ".melown-graphs-button:hover {"
+            + "box-shadow: 0 0 1px #0066ff;"
+        + "}"
+    );
+
+    this.graphsElement_ = document.createElement("div");
+    this.graphsElement_.id = "melown-graphs-panel";
+    this.graphsElement_.innerHTML = ""
+        + '<canvas id="melown-graphs-render" class="melown-graphs-canvas" width="500" height="100" ></canvas>'
+        + '<div id="melown-graphs-info" class="melown-graphs-info" >&FilledSmallSquare; Frame: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: 1234 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Mesh: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMesh: 1234</div>'
+        + '<canvas id="melown-graphs-cache" class="melown-graphs-canvas" width="500" height="100" ></canvas>'
+        + '<div id="melown-graphs-info2" class="melown-graphs-info" >&FilledSmallSquare; Cache: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Used: 123 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> Mesh: &nbsp 1234</div>'
+        + '<div id="melown-graphs-rec" class="melown-graphs-button" >Recording On</div>'
+        + '<div id="melown-graphs-ref" class="melown-graphs-button" >Refresh On</div>'
+        + '<div id="melown-graphs-res" class="melown-graphs-button" >Reset</div>'
+        + '<div id="melown-graphs-zoom" class="melown-graphs-button" >Scale: Max value</div>'
+        + '<div id="melown-graphs-magnify" class="melown-graphs-button" >Magnify Off</div>'
+        + '<div id="melown-graphs-graph" class="melown-graphs-button" >Graph: Cache</div>';
+
+    this.core_.element_.appendChild(this.graphsElement_);
+    this.graphsCanvasRender_ = document.getElementById("melown-graphs-render");
+    this.graphsCanvasCache_ = document.getElementById("melown-graphs-cache");
+    this.graphsCanvasRenderCtx_ = this.graphsCanvasRender_.getContext("2d");
+    this.graphsCanvasCacheCtx_ = this.graphsCanvasCache_.getContext("2d");
+
+    document.getElementById("melown-graphs-rec").onclick = this.graphsRecordingPressed.bind(this);
+
+    document.getElementById("melown-graphs-rec").onclick = this.graphsRecordingPressed.bind(this);
+    document.getElementById("melown-graphs-ref").onclick = this.graphsRefreshPressed.bind(this);
+    document.getElementById("melown-graphs-res").onclick = this.graphsResetPressed.bind(this);
+    document.getElementById("melown-graphs-zoom").onclick = this.graphsZoomPressed.bind(this);
+    document.getElementById("melown-graphs-magnify").onclick = this.graphsMagnifyPressed.bind(this);
+    document.getElementById("melown-graphs-graph").onclick = this.graphsGraphPressed.bind(this);
+
+    document.getElementById("melown-graphs-render").onmousemove = this.onGraphsMouseMove.bind(this);
+    document.getElementById("melown-graphs-render").onmouseout = this.onGraphsMouseOut.bind(this);
+    document.getElementById("melown-graphs-cache").onmousemove = this.onGraphsMouseMove.bind(this);
+    document.getElementById("melown-graphs-cache").onmouseout = this.onGraphsMouseOut.bind(this);
+
+
+    this.graphsZoom_ = "max";
+    this.graphsGraph_ = "Cache";
+    this.graphsRefresh_ = true;
+
+    this.graphsPanelVisible_ = false;
+};
+
+Melown.Inspector.prototype.showGraphsPanel = function() {
+    this.graphsElement_.style.display = "block";
+    this.graphsPanelVisible_ = true;
+};
+
+Melown.Inspector.prototype.hideGraphsPanel = function() {
+    this.graphsElement_.style.display = "none";
+    this.graphsPanelVisible_ = false;
+};
+
+Melown.Inspector.prototype.switchGraphsPanel = function() {
+    if (this.graphsPanelVisible_ == true) {
+        this.hideGraphsPanel();
+    } else {
+        this.showGraphsPanel();
+    }
+};
+
+Melown.Inspector.prototype.graphsRecordingPressed = function() {
+    var map_ = this.core_.getMap();
+
+    if (map_ == null) {
+        return;
+    }
+
+    map_.stats_.recordGraphs_ = !map_.stats_.recordGraphs_;
+    this.updateGraphsPanel();
+    this.updateGraphs(null, true);
+};
+
+Melown.Inspector.prototype.graphsRefreshPressed = function() {
+    this.graphsRefresh_ = !this.graphsRefresh_;
+
+    this.updateGraphsPanel();
+    this.updateGraphs();
+};
+
+Melown.Inspector.prototype.graphsResetPressed = function() {
+    var map_ = this.core_.getMap();
+
+    if (map_ == null) {
+        return;
+    }
+
+    map_.stats_.resetGraphs();
+    this.updateGraphs(null, true);
+};
+
+Melown.Inspector.prototype.graphsZoomPressed = function() {
+    switch (this.graphsZoom_) {
+        case "max":     this.graphsZoom_ = "120avrg"; break;
+        case "120avrg": this.graphsZoom_ = "180avrg"; break;
+        case "180avrg": this.graphsZoom_ = "max"; break;
+    }
+
+    this.updateGraphsPanel();
+    this.updateGraphs();
+};
+
+Melown.Inspector.prototype.graphsGraphPressed = function() {
+    switch (this.graphsGraph_) {
+        case "Cache":     this.graphsGraph_ = "Polygons"; break;
+        case "Polygons":  this.graphsGraph_ = "LODs"; break;
+        case "LODs":      this.graphsGraph_ = "Flux"; break;
+        case "Flux":      this.graphsGraph_ = "Cache"; break;
+    }
+
+    this.updateGraphsPanel();
+    this.updateGraphs();
+};
+
+
+Melown.Inspector.prototype.graphsMagnifyPressed = function() {
+    this.graphsMagnify_ = !this.graphsMagnify_;
+
+    if (this.graphsMagnify_ == true) {
+        this.graphsCanvasRender_.style.width = "900px";
+        this.graphsCanvasRender_.style.height = "150px";
+        this.graphsCanvasCache_.style.width = "900px";
+        this.graphsCanvasCache_.style.height = "150px";
+        document.getElementById("melown-graphs-magnify").innerHTML = "Magnify On";
+    } else {
+        this.graphsCanvasRender_.style.width = "500px";
+        this.graphsCanvasRender_.style.height = "100px";
+        this.graphsCanvasCache_.style.width = "500px";
+        this.graphsCanvasCache_.style.height = "100px";
+        document.getElementById("melown-graphs-magnify").innerHTML = "Magnify Off";
+    }
+
+    this.updateGraphsPanel();
+    this.updateGraphs();
+};
+
+Melown.Inspector.prototype.updateGraphsPanel = function() {
+    var map_ = this.core_.getMap();
+
+    if (map_ == null) {
+        return;
+    }
+
+    if (map_.stats_.recordGraphs_ == true) {
+        document.getElementById("melown-graphs-rec").innerHTML = "Recording On";
+    } else {
+        document.getElementById("melown-graphs-rec").innerHTML = "Recording Off";
+    }
+
+    if (this.graphsRefresh_ == true) {
+        document.getElementById("melown-graphs-ref").innerHTML = "Refresh On";
+    } else {
+        document.getElementById("melown-graphs-ref").innerHTML = "Refresh Off";
+    }
+
+    switch (this.graphsZoom_) {
+        case "max":
+            document.getElementById("melown-graphs-zoom").innerHTML = "Scale: Max value";
+            break;
+
+        case "120avrg":
+            document.getElementById("melown-graphs-zoom").innerHTML = "Scale: 100% Avrg";
+            break;
+
+        case "180avrg":
+            document.getElementById("melown-graphs-zoom").innerHTML = "Scale: 50% Avrg";
+            break;
+    }
+
+    document.getElementById("melown-graphs-graph").innerHTML = "Graph: " + this.graphsGraph_;
+};
+
+Melown.Inspector.prototype.onGraphsMouseMove = function(event_) {
+    var x = event_.clientX - this.graphsCanvasRender_.getBoundingClientRect().left;
+    this.graphsShowCursor_ = true;
+
+    if (this.graphsMagnify_ == true) {
+        x = Math.floor(x * 500/900);
+    }
+
+    this.graphsCursorIndex_ = x;
+
+    var map_ = this.core_.getMap();
+
+    if (map_ == null) {
+        return;
+    }
+
+    if (map_.stats_.recordGraphs_ != true) {
+        this.updateGraphs(null);
+    }
+};
+
+Melown.Inspector.prototype.onGraphsMouseOut = function() {
+    this.graphsShowCursor_ = false;
+    this.updateGraphs(null);
+};
+
+
+Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
+    var map_ = this.core_.getMap();
+
+    if (map_ == null || (this.graphsRefresh_ == false && !ignoreRefresh_) || this.graphsPanelVisible_ == false) {
+        return;
+    }
+
+    stats_ = stats_ || map_.stats_;
+
+    var width_ = this.graphsCanvasRender_.width;
+    var height_ = this.graphsCanvasRender_.height;
+    var ctx_ = this.graphsCanvasRenderCtx_;
+
+    var samples_ = stats_.graphsTimeSamples_;
+    var samplesIndex_ = stats_.graphsTimeIndex_;
+
+    var factorX_ = width_ / samples_;
+
+    ctx_.clearRect(0, 0, width_, height_);
+
+    var maxValue_ = 0;
+    var totalFrame_ = 0;
+    var totalRender_ = 0;
+    var totalTexture_ = 0;
+    var totalMeshes_ = 0;
+    var totalGpuMeshes_ = 0;
+    var realCount_ = 0;
+
+    var valuesFrame_ = stats_.graphsFrameTimes_;
+    var valuesRender_ = stats_.graphsRenderTimes_;
+    var valuesTextures_ = stats_.graphsCreateTextureTimes_;
+    var valuesMeshes_ = stats_.graphsCreateMeshTimes_;
+    var valuesGpuMeshes_ = stats_.graphsCreateGpuMeshTimes_;
+
+    for (var i = 0; i < samples_; i++) {
+        totalFrame_ += valuesFrame_[i];
+        totalRender_ += valuesRender_[i];
+        totalTexture_ += valuesTextures_[i];
+        totalMeshes_ += valuesMeshes_[i];
+        totalGpuMeshes_ += valuesGpuMeshes_[i];
+
+        var v = valuesFrame_[i];
+
+        if (v > maxValue_) {
+            maxValue_ = v;
+        }
+
+        if (v > 0) {
+            realCount_++;
+        }
+    }
+
+    if (this.graphsZoom_ == "120avrg") {
+        maxValue_ = (totalFrame_ / realCount_) * 1.0;
+    }
+
+    if (this.graphsZoom_ == "180avrg") {
+        maxValue_ = (totalFrame_ / realCount_) * 0.5;
+    }
+
+    var factorY_ = height_ / maxValue_;
+
+    for (var i = 0; i < samples_; i++) {
+        var index_ = samplesIndex_ + i;
+        index_ %= samples_;
+
+        ctx_.fillStyle="#000000";
+        ctx_.fillRect(i*factorX_, height_, 1, -(valuesFrame_[index_])*factorY_);
+        ctx_.fillStyle="#ff0000";
+        ctx_.fillRect(i*factorX_, height_, 1, -(valuesRender_[index_])*factorY_);
+
+        ctx_.fillStyle="#0000ff";
+        ctx_.fillRect(i*factorX_, height_, 1, -(valuesTextures_[index_])*factorY_);
+
+        var y = height_ -(valuesTextures_[index_])*factorY_;
+
+        ctx_.fillStyle="#007700";
+        ctx_.fillRect(i*factorX_, y, 1, -(valuesMeshes_[index_])*factorY_);
+
+        y -= (valuesMeshes_[index_])*factorY_;
+
+        ctx_.fillStyle="#00ff00";
+        ctx_.fillRect(i*factorX_, y, 1, -(valuesGpuMeshes_[index_])*factorY_);
+
+    }
+
+    if (this.graphsShowCursor_ == true) {
+        ctx_.fillStyle="#aa00aa";
+        var index_ = (this.graphsCursorIndex_) % samples_;
+        ctx_.fillRect(Math.floor(index_*factorX_)-1, 0, 1, height_);
+        ctx_.fillRect(Math.floor(index_*factorX_)+1, 0, 1, height_);
+        index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
+
+        var str_ = '&FilledSmallSquare; Frame: ' + valuesFrame_[index_].toFixed(2) +
+                   ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + valuesRender_[index_].toFixed(2) +
+                   ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + valuesTextures_[index_].toFixed(2) +
+                   ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + valuesMeshes_[index_].toFixed(2) +
+                   ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + valuesGpuMeshes_[index_].toFixed(2) + '</div>';
+    } else {
+        var str_ = '&FilledSmallSquare; Frame: ' + Math.round(totalFrame_) +
+                   ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + Math.round(totalRender_) +
+                   ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.round(totalTexture_) +
+                   ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.round(totalMeshes_) +
+                   ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + Math.round(totalGpuMeshes_) +'</div>';
+    }
+
+    document.getElementById("melown-graphs-info").innerHTML = str_;
+
+
+
+
+
+
+    var width_ = this.graphsCanvasCache_.width;
+    var height_ = this.graphsCanvasCache_.height;
+    var ctx_ = this.graphsCanvasCacheCtx_;
+
+    //var samples_ = graphs_["samples"];
+    //var samplesIndex_ = graphs_["index"];
+
+    var factorX_ = width_ / samples_;
+
+    ctx_.clearRect(0, 0, width_, height_);
+
+    switch (this.graphsGraph_) {
+    case "Cache":
+        {
+            var factorY_ = height_ / ((map_.gpuCache_.maxCost_+map_.resourcesCache_.maxCost_+map_.metatileCache_.maxCost_));
+
+            var maxMetatiles_ = 0;
+            var maxResources_ = 0;
+            var maxTextures_ = 0;
+            var maxMeshes_ = 0;
+
+            var valuesMetatiles_ = stats_.graphsCpuMemoryMetatiles_;
+            var valuesResources_ = stats_.graphsCpuMemoryUsed_;
+            var valuesTextures_ = stats_.graphsGpuMemoryTextures_;
+            var valuesMeshes_ = stats_.graphsGpuMemoryMeshes_;
+
+            for (var i = 0; i < samples_; i++) {
+                maxMetatiles_ = valuesMetatiles_[i] > maxMetatiles_ ? valuesMetatiles_[i] : maxMetatiles_;
+                maxResources_ = valuesResources_[i] > maxResources_ ? valuesResources_[i] : maxResources_;
+                maxTextures_ = valuesTextures_[i] > maxTextures_ ? valuesTextures_[i] : maxTextures_;
+                maxMeshes_ = valuesMeshes_[i] > maxMeshes_ ? valuesMeshes_[i] : maxMeshes_;
+            }
+
+            for (var i = 0; i < samples_; i++) {
+                var index_ = samplesIndex_ + i;
+                index_ %= samples_;
+
+                var value_ = valuesMetatiles_[index_] + valuesMeshes_[index_] + valuesTextures_[index_] + valuesResources_[index_];
+                ctx_.fillStyle="#000000";
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+                value_ -= valuesResources_[index_];
+
+                ctx_.fillStyle="#0000ff";
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+                value_ -= valuesTextures_[index_];
+
+                ctx_.fillStyle="#007700";
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+                value_ -= valuesMeshes_[index_];
+
+                ctx_.fillStyle="#ff0000";
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+            }
+
+            if (this.graphsShowCursor_ == true) {
+                var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
+                var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles_[index_] + valuesResources_[index_] + valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0055ff">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.ceil(valuesTextures_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.ceil(valuesMeshes_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(valuesMetatiles_[index_]/(1024*1024)) + "MB" +'</div>';
+            } else {
+                var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles_ + maxResources_ + maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.ceil(maxTextures_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.ceil(maxMeshes_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(maxMetatiles_/(1024*1024)) + "MB" +'</div>';
+            }
+
+        }
+        break;
+
+
+    case "Polygons":
+        {
+            var max_ = 0;
+            var min_ = 99999999999;
+            var total_ = 0;
+            var realCount_ = 0;
+            var values_ = stats_.graphsPolygons_;
+
+            for (var i = 0; i < samples_; i++) {
+                max_ = values_[i] > max_ ? values_[i] : max_;
+
+                if (values_[i] > 0) {
+                    min_ = values_[i] < min_ ? values_[i] : min_;
+                    total_ += values_[i];
+                    realCount_++;
+                }
+            }
+
+            var factorY_ = height_ / max_;
+
+            for (var i = 0; i < samples_; i++) {
+                var index_ = samplesIndex_ + i;
+                index_ %= samples_;
+
+                ctx_.fillStyle="#007700";
+                ctx_.fillRect(i*factorX_, height_, 1, -(values_[index_])*factorY_);
+            }
+
+            if (this.graphsShowCursor_ == true) {
+                var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
+                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Polygons: ' + Math.round(values_[index_]) +'</div>';
+            } else {
+                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Polygons Max: ' + max_ +'</div>';
+                str_ += ' &nbsp Min: ' + min_;
+                str_ += ' &nbsp Avrg: ' + Math.round(total_ / realCount_) +'</div>';
+            }
+        }
+        break;
+
+    case "LODs":
+        {
+            var max_ = 0;
+            var values_ = stats_.graphsLODs_;
+
+            for (var i = 0; i < samples_; i++) {
+                max_ = values_[i][0] > max_ ? values_[i][0] : max_;
+            }
+
+            var factorY_ = height_ / max_;
+
+            ctx_.fillStyle="#000000";
+            ctx_.fillRect(0, 0, width_, height_);
+
+            for (var i = 0; i < samples_; i++) {
+                var index_ = samplesIndex_ + i;
+                index_ %= samples_;
+
+                //ctx_.fillStyle="#000000";
+                //ctx_.fillRect(i*factorX_, height_, 1, -(values_[index_][0])*factorY_);
+
+                var y = height_;
+
+                for (var j in values_[index_][1]) {
+                    ctx_.fillStyle="hsl("+((j*23)%360)+",100%,50%)";
+                    var value_ = Math.round((values_[index_][1][j])*factorY_);
+                    ctx_.fillRect(i*factorX_, y, 1, -value_);
+                    y -= value_;
+                }
+
+            }
+
+            if (this.graphsShowCursor_ == true) {
+                var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
+
+                var str_ = "LODs:" + values_[index_][0];
+
+                for (var j in values_[index_][1]) {
+                    str_ += '<span style="color:hsl('+((j*23)%360)+',100%,50%)">&FilledSmallSquare;</span>'+j+':'+values_[index_][1][j];
+                }
+
+            } else {
+                var str_ = "LODs:" + values_[index_][0];
+            }
+
+            str_ += '</div>';
+        }
+        break;
+
+    case "Flux":
+        {
+            var maxCount_ = 0;
+            var maxSize_ = 0;
+
+            var maxTexPlusCount_ = 0;
+            var maxTexPlusSize_ = 0;
+            var maxTexMinusCount_ = 0;
+            var maxTexMinusSize_ = 0;
+
+            var maxMeshPlusCount_ = 0;
+            var maxMeshPlusSize_ = 0;
+            var maxMeshMinusCount_ = 0;
+            var maxMeshMinusSize_ = 0;
+
+            var valuesTextures_ = stats_.graphsFluxTextures_;
+            var valuesMeshes_ = stats_.graphsFluxMeshes_;
+
+            for (var i = 0; i < samples_; i++) {
+                var tmp_ = valuesTextures_[i][0][0] + valuesMeshes_[i][0][0];
+                maxCount_ = tmp_ > maxCount_ ? tmp_ : maxCount_;
+                tmp_ = valuesTextures_[i][1][0] + valuesMeshes_[i][1][0];
+                maxCount_ = tmp_ > maxCount_ ? tmp_ : maxCount_;
+
+                tmp_ = valuesTextures_[i][0][1] + valuesMeshes_[i][0][1];
+                maxSize_ = tmp_ > maxSize_ ? tmp_ : maxSize_;
+                tmp_ = valuesTextures_[i][1][1] + valuesMeshes_[i][1][1];
+                maxSize_ = tmp_ > maxSize_ ? tmp_ : maxSize_;
+
+                maxTexPlusCount_ = valuesTextures_[i][0][0] > maxTexPlusCount_ ? valuesTextures_[i][0][0] : maxTexPlusCount_;
+                maxTexPlusSize_ = valuesTextures_[i][0][1] > maxTexPlusSize_ ? valuesTextures_[i][0][1] : maxTexPlusSize_;
+                maxTexMinusCount_ = valuesTextures_[i][1][0] > maxTexMinusCount_ ? valuesTextures_[i][1][0] : maxTexMinusCount_;
+                maxTexMinusSize_ = valuesTextures_[i][1][1] ? valuesTextures_[i][1][1] : maxTexMinusSize_;
+
+                maxMeshPlusCount_ = valuesMeshes_[i][0][0] > maxMeshPlusCount_ ? valuesMeshes_[i][0][0] : maxMeshPlusCount_;
+                maxMeshPlusSize_ = valuesMeshes_[i][0][1] > maxMeshPlusSize_ ? valuesMeshes_[i][0][1] : maxMeshPlusSize_;
+                maxMeshMinusCount_ = valuesMeshes_[i][1][0] > maxMeshMinusCount_ ? valuesMeshes_[i][1][0] : maxMeshMinusCount_;
+                maxMeshMinusSize_ = valuesMeshes_[i][1][1] > maxMeshMinusSize_ ? valuesMeshes_[i][1][1] : maxMeshMinusSize_;
+            }
+
+            var factorY_ = (height_*0.25-2) / maxCount_;
+            var factorY2_ = (height_*0.25-2) / maxSize_;
+
+            var base_ = Math.floor(height_*0.25);
+            var base2_ = Math.floor(height_*0.75);
+
+            for (var i = 0; i < samples_; i++) {
+                var index_ = samplesIndex_ + i;
+                index_ %= samples_;
+
+                ctx_.fillStyle="#0000aa";
+                ctx_.fillRect(i*factorX_, base_, 1, -(valuesTextures_[index_][0][0])*factorY_);
+                ctx_.fillRect(i*factorX_, base_+1, 1, (valuesTextures_[index_][1][0])*factorY_);
+
+                ctx_.fillRect(i*factorX_, base2_, 1, -(valuesTextures_[index_][0][1])*factorY2_);
+                ctx_.fillRect(i*factorX_, base2_+1, 1, (valuesTextures_[index_][1][1])*factorY2_);
+
+                ctx_.fillStyle="#007700";
+
+                ctx_.fillRect(i*factorX_, base_-(valuesTextures_[index_][0][0])*factorY_, 1, -(valuesMeshes_[index_][0][0])*factorY_);
+                ctx_.fillRect(i*factorX_, base_+1+(valuesTextures_[index_][1][0])*factorY_, 1, (valuesMeshes_[index_][1][0])*factorY_);
+
+                ctx_.fillRect(i*factorX_, base2_-(valuesTextures_[index_][0][1])*factorY2_, 1, -(valuesMeshes_[index_][0][1])*factorY2_);
+                ctx_.fillRect(i*factorX_, base2_+1+(valuesTextures_[index_][1][0])*factorY2_, 1, (valuesMeshes_[index_][1][1])*factorY2_);
+
+                ctx_.fillStyle="#aaaaaa";
+                ctx_.fillRect(0, Math.floor(height_*0.5), width_, 1);
+                ctx_.fillStyle="#dddddd";
+                ctx_.fillRect(0, base_, width_, 1);
+                ctx_.fillRect(0, base2_, width_, 1);
+            }
+
+
+            if (this.graphsShowCursor_ == true) {
+                var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
+                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + valuesTextures_[index_][0][0] + "/" + valuesTextures_[index_][1][0];
+                str_ += ' &nbsp Size +/-: ' + (valuesTextures_[index_][0][1]/1024/1024).toFixed(2) + "/" + (valuesTextures_[index_][1][1]/1024/1024).toFixed(2);
+                str_ += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + valuesMeshes_[index_][0][0] + "/" + valuesMeshes_[index_][1][0];
+                str_ += ' &nbsp Size +/-: ' + (valuesMeshes_[index_][0][1]/1024/1024).toFixed(2) + "/" + (valuesMeshes_[index_][1][1]/1024/1024).toFixed(2);
+                str_ += '</div>';
+            } else {
+                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + maxTexPlusCount_ + "/" + maxTexMinusCount_;
+                str_ += ' &nbsp Size +/-: ' + (maxTexPlusSize_/1024/1024).toFixed(2) + "/" + (maxTexMinusSize_/1024/1024).toFixed(2);
+                str_ += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + maxMeshPlusCount_ + "/" + maxMeshMinusCount_;
+                str_ += ' &nbsp Size +/-: ' + (maxMeshPlusSize_/1024/1024).toFixed(2) + "/" + (maxMeshMinusSize_/1024/1024).toFixed(2);
+                str_ += '</div>';
+            }
+
+        }
+        break;
+
+    }
+
+    if (this.graphsShowCursor_ == true) {
+        ctx_.fillStyle="#aa00aa";
+        var index_ = (this.graphsCursorIndex_) % samples_;
+        ctx_.fillRect(Math.floor(index_*factorX_)-1, 0, 1, height_);
+        ctx_.fillRect(Math.floor(index_*factorX_)+1, 0, 1, height_);
+    }
+
+    document.getElementById("melown-graphs-info2").innerHTML = str_;
+
+};
+
+
+
 //! Holds a GPU vertex buffer.
 
 if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
@@ -7368,8 +8360,7 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, filter_)
-{
+Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, filter_) {
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
     this.texture_ = null;
@@ -7392,8 +8383,7 @@ Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, fi
 };
 
 //destructor
-Melown.GpuTexture.prototype.kill = function()
-{
+Melown.GpuTexture.prototype.kill = function() {
     this.gl_.deleteTexture(this.texture_);
 
     /*
@@ -7405,11 +8395,11 @@ Melown.GpuTexture.prototype.kill = function()
 };
 
 //! Returns GPU RAM used, in bytes.
-Melown.GpuTexture.prototype.size = function(){ return this.size_; };
+Melown.GpuTexture.prototype.size = function() {
+    return this.size_;
+};
 
-
-Melown.GpuTexture.prototype.createFromData = function(lx_, ly_, data_, filter_, repeat_)
-{
+Melown.GpuTexture.prototype.createFromData = function(lx_, ly_, data_, filter_, repeat_) {
     var gl_ = this.gl_;
 
     this.texture_ = gl_.createTexture();
@@ -7460,8 +8450,7 @@ Melown.GpuTexture.prototype.createFromData = function(lx_, ly_, data_, filter_, 
     this.loaded_ = true;
 };
 
-Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
-{
+Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_) {
     var gl_ = this.gl_;
 
     var timer_ = performance.now();
@@ -7525,12 +8514,11 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
     }*/
 };
 
-Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
-{
+Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_) {
     this.image_ = new Image();
 
     if (direct_ != true) { //this is for firefox compatibility
-        this.image_.crossOrigin = "anonymous";
+        //this.image_.crossOrigin = "anonymous";
     }
 
     this.image_.onload = (function () {
@@ -7559,8 +8547,7 @@ Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
     this.image_.src = path_;
 };
 
-Melown.GpuTexture.prototype.createFramebufferFromData = function(lx_, ly_, data_)
-{
+Melown.GpuTexture.prototype.createFramebufferFromData = function(lx_, ly_, data_) {
     var gl_ = this.gl_;
 
     var framebuffer_ = gl_.createFramebuffer();
@@ -7613,8 +8600,7 @@ Melown.GpuTexture.prototype.createFramebufferFromData = function(lx_, ly_, data_
     gl_.bindFramebuffer(gl_.FRAMEBUFFER, null);
 };
 
-Melown.GpuTexture.prototype.createFramebuffer = function(lx_, ly_)
-{
+Melown.GpuTexture.prototype.createFramebuffer = function(lx_, ly_) {
     if (this.texture_ == null){
         return;
     }
@@ -7655,8 +8641,7 @@ Melown.GpuTexture.prototype.createFramebuffer = function(lx_, ly_)
 };
 
 
-Melown.GpuTexture.prototype.readFramebufferPixels = function(x_, y_, lx_, ly_)
-{
+Melown.GpuTexture.prototype.readFramebufferPixels = function(x_, y_, lx_, ly_) {
     if (this.texture_ == null) {
         return;
     }
@@ -7674,6 +8659,9 @@ Melown.GpuTexture.prototype.readFramebufferPixels = function(x_, y_, lx_, ly_)
 
     return data_;
 };
+
+
+
 
 if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
@@ -7818,8 +8806,7 @@ Melown.StencilLineState_ = null;
 /**
  * @constructor
  */
-Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
-{
+Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_) {
     this.core_ = core_;
     this.progTile_ = null;
     this.progHeightmap_ = null;
@@ -7890,34 +8877,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_)
     this.rectIndicesBuffer_ = null;
     this.imageProjectionMatrix_ = null;
 
-    //debug switchs
-    this.heightmapOnly_ = false;
-    this.blendHeightmap_ = true;
-    this.drawBBoxes_ = false;
-    this.drawLods_ = false;
-    this.drawPositions_ = false;
-    this.drawTexelSize_ = false;
-    this.drawWireframe_ = 0;
-    this.drawFaceCount_ = false;
-    this.drawDistance_ = false;
-    this.drawMaxLod_ = false;
-    this.drawTextureSize_ = false;
-    this.drawLayers_ = true;
-    this.ignoreTexelSize_ = false;
-    this.drawFog_ = true;
-
-    this.displayDrawTest_ = false;
-
-    this.layers_ = [];
-    this.layerIcons_ = [];
-    this.layerPlaces_ = [];
-    this.bitmaps_ = [];
     this.font_ = null;
-    this.placemarkTexture_ = null;
-    this.layerGroupVisible_ = [];
-    this.layerGroupTransform_ = [];
-    this.gpuTilesWaiting_ = [];
-    this.gpuTilesWaitingSize_ = 0;
 
     //hack for melown maps
     //this.melownHack_ = true;
@@ -9201,8 +10161,7 @@ Melown.RendererGeometry.setFaceUVs = function(uvs_, a, b, c, index_) {
 
 //! Procedural mesh representing a heightmap block
 //! Creates a grid of size x size vertices, all coords are [0..1].
-Melown.RendererGeometry.buildHeightmap = function(size_)
-{
+Melown.RendererGeometry.buildHeightmap = function(size_) {
     size_--;
 
     var g = Melown.RendererGeometry;
@@ -9231,7 +10190,7 @@ Melown.RendererGeometry.buildHeightmap = function(size_)
             index2_ += 6;
 
             g.setFaceVertices(vertices_, [x2, y2, 0], [x1, y2, 0], [x1, y1, 0], index_);
-            g.setFaceInternalUVs(vertices_, [x2, y2], [x1, y2], [x1, y1], index2_);
+            g.setFaceUVs(vertices_, [x2, y2], [x1, y2], [x1, y1], index2_);
             index_ += 9;
             index2_ += 6;
         }
@@ -9243,8 +10202,7 @@ Melown.RendererGeometry.buildHeightmap = function(size_)
 };
 
 
-Melown.RendererGeometry.spherePos = function(lon_, lat_)
-{
+Melown.RendererGeometry.spherePos = function(lon_, lat_) {
     lat_ *= Math.PI;
     lon_ *= 2*Math.PI;
 
@@ -9258,7 +10216,6 @@ Melown.RendererGeometry.spherePos = function(lon_, lat_)
 //! in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
 //! are oriented inwards.
 Melown.RendererGeometry.buildSkydome = function(latitudeBands_, longitudeBands_) {
-
     var g = Melown.RendererGeometry;
     var numFaces_ = (latitudeBands_ * longitudeBands_) * 2;
     var vertices_ = new Float32Array(numFaces_ * 3 * 3);
@@ -9303,8 +10260,7 @@ Melown.RendererGeometry.makeQuad = function(lon1_, lat1_, lon2_, lat2_, vertices
 if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 
-Melown.Renderer.prototype.initShaders = function()
-{
+Melown.Renderer.prototype.initShaders = function() {
     this.progTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileVertexShader, Melown.tileFragmentShader);
     this.progWireframeTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframeFragmentShader);
     this.progWireframeTile2_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframe2FragmentShader);
@@ -9332,10 +10288,9 @@ Melown.Renderer.prototype.initShaders = function()
 };
 
 
-Melown.Renderer.prototype.initHeightmap = function()
-{
+Melown.Renderer.prototype.initHeightmap = function() {
     // initialize heightmap geometry
-    var meshData_ = Melown.RendererGeometry.buildHeightmap(Melown.MetaNodeHMSize_);
+    var meshData_ = Melown.RendererGeometry.buildHeightmap(5);
     this.heightmapMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
 
    // create heightmap texture
@@ -9368,8 +10323,7 @@ Melown.Renderer.prototype.initHeightmap = function()
 };
 
 
-Melown.Renderer.prototype.initHitmap = function()
-{
+Melown.Renderer.prototype.initHitmap = function() {
     var size_ = this.hitmapSize_;
     var data_ = new Uint8Array( size_ * size_ * 4 );
 
@@ -9382,8 +10336,7 @@ Melown.Renderer.prototype.initHitmap = function()
     this.geoHitmapTexture_.createFramebuffer(size_, size_);
 };
 
-Melown.Renderer.prototype.initTestMap = function()
-{
+Melown.Renderer.prototype.initTestMap = function() {
    // create red texture
     var size_ = 16;
     var data_ = new Uint8Array( size_ * size_ * 4 );
@@ -9471,8 +10424,7 @@ Melown.Renderer.prototype.initTestMap = function()
 
 };
 
-Melown.Renderer.prototype.initTextMap = function()
-{
+Melown.Renderer.prototype.initTextMap = function() {
     var sizeX_ = 64;
     var sizeY_ = 8;
     var data_ = new Uint8Array( sizeX_ * sizeY_ * 4 );
@@ -9543,8 +10495,7 @@ Melown.Renderer.prototype.initTextMap = function()
 
 
 
-Melown.Renderer.prototype.initImage = function()
-{
+Melown.Renderer.prototype.initImage = function() {
     var gl_ = this.gpu_.gl_;
 
     //create vertices buffer for rect
@@ -9570,16 +10521,14 @@ Melown.Renderer.prototype.initImage = function()
 };
 
 
-Melown.Renderer.prototype.initSkydome = function()
-{
+Melown.Renderer.prototype.initSkydome = function() {
     var meshData_ = Melown.RendererGeometry.buildSkydome(32, 64);
     this.skydomeMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
     this.skydomeTexture_ = new Melown.GpuTexture(this.gpu_, this.core_.coreConfig_.skydomeTexture_, this.core_);
 };
 
 
-Melown.Renderer.prototype.initBBox = function()
-{
+Melown.Renderer.prototype.initBBox = function() {
     this.bboxMesh_ = new Melown.GpuBBox(this.gpu_);
 
     if (this.displayDrawTest_ != true) {
@@ -9639,8 +10588,7 @@ Melown.Renderer.prototype.initBBox = function()
 };
 
 
-Melown.Renderer.prototype.initializeGL = function()
-{
+Melown.Renderer.prototype.initializeGL = function() {
     this.gpu_.init();
     this.initShaders();
     this.initHeightmap();
@@ -9705,7 +10653,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.mapTrees_ = [];
 
     this.gpuCache_ = new Melown.MapCache(this, 380*1024*1024);
-    this.resourcesCache_ = new Melown.MapCache(this, 380*1024*1024);
+    this.resourcesCache_ = new Melown.MapCache(this, 450*1024*1024);
     this.metatileCache_ = new Melown.MapCache(this, 60*1024*1024);
 
     this.loader_ = new Melown.MapLoader(this);
@@ -9720,6 +10668,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.initMapTrees();
 
     this.updateCoutner_ = 0;
+    this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
 
     this.heightmapOnly_ = false;
     this.blendHeightmap_ = true;
@@ -9735,6 +10684,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.drawLayers_ = true;
     this.ignoreTexelSize_ = false;
     this.drawFog_ = true;
+    this.debugTextSize_ = 1.0;
 
     //this.mesh_ = new Melown.MapMesh(this);
     //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
@@ -12481,6 +13431,10 @@ Melown.MapCache.prototype.updateItem = function(item_) {
         return;
     }
 
+    if (this.first_ == item_) {
+        return;
+    }
+
     //remove item from list
     if (item_.prev_ != null) {
         item_.prev_.next_ = item_.next_;
@@ -12649,7 +13603,7 @@ Melown.Map.prototype.updateCamera = function() {
     this.camera_.setParams(this.navFov_, this.renderer_.camera_.getNear(), this.renderer_.camera_.getFar());
 
     //var height_ = 227;
-    var height_ = 232.2;
+    var height_ = this.navHeight_;//232.2;
 
     //convert public coords to physical
     var worldPos_ = this.convertCoords([this.navCenter_[0], this.navCenter_[1], height_], "navigation", "physical");
@@ -12891,6 +13845,7 @@ Melown.MapCredit = function(map_, json_) {
 };
 
 Melown.Map.prototype.draw = function() {
+    this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
 
     //loop map trees
     for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
@@ -12904,7 +13859,7 @@ Melown.Map.prototype.draw = function() {
 
 };
 
-Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
+Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_) {
 
     if (tile_.surface_ != null) {
 
@@ -12915,7 +13870,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
             }
 
             if (this.drawBBoxes_) {
-                this.drawTileInfo(tile_, node_, cameraPos_);
+                this.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
             }
 
             if (tile_.surfaceMesh_.isReady() == true) {
@@ -12946,60 +13901,62 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_) {
 
 };
 
-Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_) {
+Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pixelSize_) {
+    var mvp_;
 
-    if (this.drawMeshBBox_) {
+    if (!this.drawMeshBBox_) {
         node_.drawBBox(cameraPos_);
     }
 
-    //get node center
+    //get screen pos of node
+    var min_ = node_.bbox_.min_;
+    var max_ = node_.bbox_.max_;
 
-    //this.core_.
-/*
-    var pos_ = this.project([min_[0] + (max_[0] - min_[0])*0.5, min_[1] + (max_[1] - min_[1])*0.5, max_[2]]);
+    var pos_ =  this.core_.getRendererInterface().getScreenCoords(
+                    [(min_[0] + (max_[0] - min_[0])*0.5) - cameraPos_[0],
+                     (min_[1] + (max_[1] - min_[1])*0.5) - cameraPos_[1],
+                     (max_[2]) - cameraPos_[2]],
+                     this.camera_.getMvpMatrix());
 
-    //draw indices
-    if (this.drawIndices_ == true) {
-        var t = this.browser_.mapConfig_.getExternalId(tileId_);
-        var text_ = "" + t.ix_ + " " + t.iy_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-11), 4, text_, [0,255,255,255], pos_[2]);
-    }
+    pos_[2] = pos_[2] * 0.9992;
 
-    //draw texture size
-    if (this.drawTextureSize_ == true && gpuTile_ != null) {
-        var text_ = "" + gpuTile_.texture_.width_ + " x " + gpuTile_.texture_.height_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-18), 4, text_, [255,255,255,255], pos_[2]);
-    }
+    var factor_ = this.debugTextSize_;
 
     //draw lods
     if (this.drawLods_ == true) {
-        text_ = "" + tileId_.lod_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-4), 4, text_, [255,0,0,255], pos_[2]);
+        text_ = "" + tile_.id_[0];
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]-4*factor_), 4*factor_, text_, [255,0,0,255], pos_[2]);
+    }
+
+    //draw indices
+    if (this.drawIndices_ == true) {
+        var text_ = "" + tile_.id_[1] + " " + tile_.id_[2];
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]-11*factor_), 4*factor_, text_, [0,255,255,255], pos_[2]);
     }
 
     //draw positions
     if (this.drawPositions_ == true) {
-        var p = tileId_.getWorldParams();
-        var text_ = "" + p[0].toFixed(1) + " " + p[1].toFixed(1);
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+3), 4, text_, [0,255,255,255], pos_[2]);
+        var text_ = "" + min_[0].toFixed(1) + " " + min_[1].toFixed(1) + " " + min_[2].toFixed(1);
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+3*factor_), 4*factor_, text_, [0,255,255,255], pos_[2]);
     }
 
     //draw face count
-    if (this.drawFaceCount_ == true && gpuTile_ != null) {
-        var text_ = "" + gpuTile_.mesh_.polygons_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+10), 4, text_, [0,255,0,255], pos_[2]);
+    if (this.drawFaceCount_ == true && mesh_ != null) {
+        var text_ = "" + mesh_.faces_ + " - " + mesh_.submeshes_.length;
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [0,255,0,255], pos_[2]);
     }
 
     //draw distance
     if (this.drawDistance_ == true) {
+        var text_ = "" + pixelSize_[1].toFixed(2) + "  " + pixelSize_[0].toFixed(2) + "  " + node_.pixelSize_.toFixed(2);
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
+    }
 
-        ///if (tileId_.easting_ == "679392" && tileId_.northing_ == "5437984" && tileId_.lod_ == "15") {
-           // tileId_ = tileId_;
-        //}
-
-        var value_ = this.planet_.getMainTerrain().tilePixelSize(node_, true);
-        var text_ = "" + value_[1].toFixed(2) + " " + value_[0].toFixed(2);
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]+17), 4, text_, [255,0,255,255], pos_[2]);
+/*
+    //draw texture size
+    if (this.drawTextureSize_ == true && gpuTile_ != null) {
+        var text_ = "" + gpuTile_.texture_.width_ + " x " + gpuTile_.texture_.height_;
+        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-18), 4, text_, [255,255,255,255], pos_[2]);
     }
 
     //draw texel size
@@ -13190,11 +14147,13 @@ Melown.Map.prototype.getSurfaceHeight = function(pos_) {
 Melown.MapMesh = function(map_, tile_) {
     this.generateLines_ = true;
     this.map_ = map_;
+    this.stats_ = map_.stats_;
     this.tile_ = tile_;
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
     this.fileSize_ = 0;
+    this.faces_ = 0;
 
     this.cacheItem_ = null;  //store killSubmeshes
     this.gpuCacheItem_ = null; //store killGpuSubmeshes
@@ -13222,11 +14181,13 @@ Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
         this.tile_.validate();
     }
 
+    this.loadState_ = 0;
     this.cacheItem_ = null;
 };
 
 Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
-    for (var i = 0, li = this.submeshes_.length; i < li; i++) {
+    for (var i = 0, li = this.gpuSubmeshes_.length; i < li; i++) {
+        this.stats_.gpuMeshesUsed_ -= this.gpuSubmeshes_[i].size_;
         this.gpuSubmeshes_[i].kill();
     }
 
@@ -13238,7 +14199,6 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     }
 
     this.gpuCacheItem_ = null;
-    this.loadState_ = 0;
 };
 
 Melown.MapMesh.prototype.isReady = function () {
@@ -13332,6 +14292,7 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
     for (var i = 0, li = this.numSubmeshes_; i < li; i++) {
         this.submeshes_[i] = new Melown.MapSubmesh(this, stream_);
         this.size_ += this.submeshes_[i].size_;
+        this.faces_ += this.submeshes_[i].faces_;
     }
 
 };
@@ -13360,6 +14321,7 @@ Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
 Melown.MapMesh.prototype.addSubmesh = function(submesh_) {
     this.submeshes_.push(submesh_);
     this.size_ += submesh_.size_;
+    this.faces_ += submesh_.faces_;
 };
 
 Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
@@ -13370,6 +14332,8 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
         this.gpuSubmeshes_[i] = this.submeshes_[i].buildGpuMesh();
         size_ += this.gpuSubmeshes_[i].size_;
     }
+
+    this.stats_.gpuMeshesUsed_ += size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuSubmeshes.bind(this, true), size_);
 };
@@ -13415,14 +14379,16 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
 
     if (texture_ == null || texture_.gpuTexture_ == null) {
         proj_ = proj_;
+        texture_.isReady();
         return;
     }
 
     renderer_.gpu_.bindTexture(texture_.gpuTexture_);
 
     gpuSubmesh_.draw(program_, "aPosition", "aTexCoord", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
-
+    this.stats_.drawnFaces_ += this.faces_;
 };
+
 
 /**
  * @constructor
@@ -13631,6 +14597,16 @@ struct Metanode {
     };
     hfloat textureArea;           // internal texture area, if coarsness control is texelSize and internal texture present
     short minHeight, maxHeight;   // navigation tile value range, undef if no navtile present !!!FIXED to short
+
+
+    char flags;                   // #0 - geometry present, #1 - navtile present #2 - applyTexelSize,
+                                  // #3 - applyPixelSize, #4,5,6,7 - ul,ur,ll,lr child exists
+    char geomExtents[];           // a packed array of 6 bit sequences, each lod+2 long, in the following order:
+                                  // minx,maxx,miny,maxy,minz,maxz, undefined if no geometry present
+    uchar internalTextureCount;   // number of internal textures in geometry
+    hfloat texelSize;             // internal texel size in physical srs units, undef unless applyTexelSize is set
+    ushort displaySize;           // desired display size, undef unless applyDisplay size is set
+    short minHeight, maxHeight;   // navigation tile value range, undef if no navtile present
 }
 */
 
@@ -13671,41 +14647,21 @@ struct Metanode {
 
     this.bbox_ = new Melown.BBox(minExtents_[0], minExtents_[1], minExtents_[2], maxExtents_[0], maxExtents_[1], maxExtents_[2]);
 
-    this.pixelSize_ = Number.POSITIVE_INFINITY;
+    this.internalTextureCount_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
 
-    if (this.flags_ & (1 << 3)) {
+    this.pixelSize_ = Melown.decodeFloat16( streamData_.getUint16(stream_.index_, true) ); stream_.index_ += 2;
+    this.displaySize_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
 
-        //if (this.flags_ & (1)) {
-            this.meshArea_ = Melown.decodeFloat16( streamData_.getUint16(stream_.index_, true) ); stream_.index_ += 2;
-        //}
-
-        //if (this.flags_ & (1<<2)) {
-            //this.textureArea_ = Melown.decodeFloat16( streamData_.getUint16(stream_.index_, true) ); stream_.index_ += 2;
-        //}
-
-        //this.pixelSize_ = this.meshArea_ / this.textureArea_;
-
-    } else {
-        this.displaySize_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    if ((this.flags_ & (1 << 2)) == 0) {
+        this.pixelSize_ = Number.POSITIVE_INFINITY;
     }
 
-    this.textureArea_ = Melown.decodeFloat16( streamData_.getUint16(stream_.index_, true) ); stream_.index_ += 2;
-
-    if (this.flags_ & (1 << 3)) {
-        if (this.textureArea_ != 0 && this.meshArea_ != 0) {
-            this.pixelSize_ = this.meshArea_ / this.textureArea_;
-        }
-    } else {
-        if (this.textureArea_ != 0 && this.displaySize_ != 0) {
-            //this.pixelSize_ = this.displaySize_ / this.textureArea_;
-        }
+    if ((this.flags_ & (1 << 3)) == 0) {
+        this.displaySize_ = 256;
     }
 
-
-    //if (this.flags_ & (1<<1)) {
-        this.minHeight_ = streamData_.getInt16(stream_.index_, true); stream_.index_ += 2;
-        this.maxHeight_ = streamData_.getInt16(stream_.index_, true); stream_.index_ += 2;
-    //}
+    this.minHeight_ = streamData_.getInt16(stream_.index_, true); stream_.index_ += 2;
+    this.maxHeight_ = streamData_.getInt16(stream_.index_, true); stream_.index_ += 2;
 
     var nodeSize2_ = stream_.index_ - lastIndex_;
 
@@ -13907,13 +14863,14 @@ Melown.MapMetatile = function(metastorage_, surface_) {
     this.id_ = metastorage_.id_;
     this.nodes_ = [];
     this.loadState_ = 0;
+    this.size_ = 0;
 
     this.cacheItem_ = null;
 };
 
 Melown.MapMetatile.prototype.kill = function(killedByCache_) {
     if (killedByCache_ != true && this.cacheItem_ != null) {
-        this.map_.metadataCache_.remove(this.cacheItem_);
+        this.map_.metatileCache_.remove(this.cacheItem_);
     }
 
     this.metastorage_.removeMetatile(this);
@@ -13948,7 +14905,7 @@ Melown.MapMetatile.prototype.isReady = function () {
 
 Melown.MapMetatile.prototype.used = function() {
     if (this.cacheItem_ != null) {
-        this.map_.metadataCache_.updateItem(this.cacheItem_);
+        this.map_.metatileCache_.updateItem(this.cacheItem_);
     }
 
 };
@@ -13989,7 +14946,12 @@ Melown.MapMetatile.prototype.onLoaded = function(data_) {
         return;
     }
 
+    this.size_ += data_.byteLength * 4;
+
     this.parseMetatatile({data_:data_, index_: 0});
+
+    this.cacheItem_= this.map_.metatileCache_.insert(this.kill.bind(this, true), this.size_);
+
     this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
 };
@@ -14119,13 +15081,14 @@ Melown.MapMetatile = function(metastorage_, surface_) {
     this.id_ = metastorage_.id_;
     this.nodes_ = [];
     this.loadState_ = 0;
+    this.size_ = 0;
 
     this.cacheItem_ = null;
 };
 
 Melown.MapMetatile.prototype.kill = function(killedByCache_) {
     if (killedByCache_ != true && this.cacheItem_ != null) {
-        this.map_.metadataCache_.remove(this.cacheItem_);
+        this.map_.metatileCache_.remove(this.cacheItem_);
     }
 
     this.metastorage_.removeMetatile(this);
@@ -14160,7 +15123,7 @@ Melown.MapMetatile.prototype.isReady = function () {
 
 Melown.MapMetatile.prototype.used = function() {
     if (this.cacheItem_ != null) {
-        this.map_.metadataCache_.updateItem(this.cacheItem_);
+        this.map_.metatileCache_.updateItem(this.cacheItem_);
     }
 
 };
@@ -14201,7 +15164,12 @@ Melown.MapMetatile.prototype.onLoaded = function(data_) {
         return;
     }
 
+    this.size_ += data_.byteLength * 4;
+
     this.parseMetatatile({data_:data_, index_: 0});
+
+    this.cacheItem_= this.map_.metatileCache_.insert(this.kill.bind(this, true), this.size_);
+
     this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
 };
@@ -14506,6 +15474,31 @@ Melown.MapSrs = function(map_, json_) {
     this.srsDef_ = json_["srsDefEllps"] || this.srsDef_;
     this.periodicity_ = this.parsePeriodicity(json_["periodicity"]);
     this.srsInfo_ = this.proj4_(this.srsDef_).info();
+    this.geoidGrid_ = null;
+
+    if (json_["geoidGrid"]) {
+        var geoidGridData_ = json_["geoidGrid"];
+
+        this.geoidGrid_ = {
+            definition_ : geoidGridData_["definition"] || null,
+            srsDefEllps_ : geoidGridData_["srsDefEllps"] || null,
+            valueRange : geoidGridData_["valueRange"] || [0,1]
+        };
+
+        if (geoidGridData_["extents"] != null) {
+            this.geoidGrid_.extents_ = {
+                ll_ : geoidGridData_["extents"]["ll"],
+                ur_ : geoidGridData_["extents"]["ur"]
+            };
+        } else {
+            this.geoidGrid_.extents_ = {
+                ll_ : [0,0],
+                ur_ : [1,1]
+            };
+        }
+
+    }
+
 
     if (this.type_ == "geographic") {
         this.spheroid_ = json_["spheroid"] || null;
@@ -14557,9 +15550,11 @@ Melown.MapStats = function(map_) {
     this.core_ = map_.core_;
     this.inspector_ = map_.core_.inspector_;
     this.drawnTiles_ = 0;
+    this.drawnFaces_ = 0;
     this.counter_ = 0;
     this.statsCycle_ = 0;
     this.fps_ = 0;
+    this.frameTime_ = 0;
     this.renderTime_ = 0;
     this.renderTimeTmp_ = 0;
     this.renderTimeBegin_ = 0;
@@ -14572,9 +15567,9 @@ Melown.MapStats = function(map_) {
     this.graphsCreateMeshTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateGpuMeshTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateTextureTimes_ = new Array(this.graphsTimeSamples_);
-    this.graphsFrameGapTimes_ = new Array(this.graphsTimeSamples_);
-    this.graphsGpuMemory_ = new Array(this.graphsTimeSamples_);
-    this.graphsGpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
+    this.graphsFrameTimes_ = new Array(this.graphsTimeSamples_);
+    this.graphsCpuMemoryMetatiles_ = new Array(this.graphsTimeSamples_);
+    this.graphsCpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryTextures_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryMeshes_ = new Array(this.graphsTimeSamples_);
     this.graphsPolygons_ = new Array(this.graphsTimeSamples_);
@@ -14588,6 +15583,8 @@ Melown.MapStats = function(map_) {
     this.graphsCreateMeshTime_ = 0;
     this.resetGraphs();
 
+    this.gpuMeshesUsed_ = 0;
+    this.gpuTexturesUsed_ = 0;
     this.gpuUsed_ = 0;
     this.resourcesUsed_ = 0;
     this.metaUsed_ = 0;
@@ -14602,9 +15599,9 @@ Melown.MapStats.prototype.resetGraphs = function() {
         this.graphsCreateMeshTimes_[i] = 0;
         this.graphsCreateGpuMeshTimes_[i] = 0;
         this.graphsCreateTextureTimes_[i] = 0;
-        this.graphsFrameGapTimes_[i] = 0;
-        this.graphsGpuMemory_[i] = 0;
-        this.graphsGpuMemoryUsed_[i] = 0;
+        this.graphsFrameTimes_[i] = 0;
+        this.graphsCpuMemoryUsed_[i] = 0;
+        this.graphsCpuMemoryMetatiles_[i] = 0;
         this.graphsGpuMemoryTextures_[i] = 0;
         this.graphsGpuMemoryMeshes_[i] = 0;
         this.graphsPolygons_[i] = 0;
@@ -14616,6 +15613,7 @@ Melown.MapStats.prototype.resetGraphs = function() {
 
 Melown.MapStats.prototype.begin = function() {
     this.drawnTiles_ = 0;
+    this.drawnFaces_ = 0;
     this.counter_++;
     this.statsCycle_++;
 
@@ -14624,6 +15622,33 @@ Melown.MapStats.prototype.begin = function() {
 };
 
 Melown.MapStats.prototype.end = function() {
+
+    var timer_ = performance.now();
+
+    var renderTime_ = timer_ - this.renderTimeBegin_;
+    var frameTime_ = timer_ - this.frameTime_;
+    this.frameTime_ = timer_;
+    this.renderTimeTmp_ += renderTime_;
+
+    if (this.recordGraphs_) {
+        var i = this.graphsTimeIndex_;
+
+        this.graphsRenderTimes_[i] = renderTime_;
+        this.graphsCreateMeshTimes_[i] = 0;
+        this.graphsCreateGpuMeshTimes_[i] = 0;
+        this.graphsCreateTextureTimes_[i] = 0;
+        this.graphsFrameTimes_[i] = frameTime_;
+        this.graphsCpuMemoryUsed_[i] = this.map_.resourcesCache_.totalCost_;
+        this.graphsCpuMemoryMetatiles_[i] = this.map_.metatileCache_.totalCost_;
+        this.graphsGpuMemoryTextures_[i] = this.gpuTexturesUsed_;
+        this.graphsGpuMemoryMeshes_[i] = this.gpuMeshesUsed_;
+        this.graphsPolygons_[i] = this.drawnFaces_;
+
+        this.graphsTimeIndex_ = (this.graphsTimeIndex_ + 1) % this.graphsTimeSamples_;
+        this.inspector_.updateGraphs(this);
+    }
+
+
     if ((this.statsCycle_ % 100) == 0) {
         this.renderTime_ = this.renderTimeTmp_ / 100;
         this.fps_ = 1000 / this.renderTime_;
@@ -14637,12 +15662,6 @@ Melown.MapStats.prototype.end = function() {
             this.inspector_.updateStatsPanel(this);
         }
     }
-
-    var renderTime_ = performance.now() - this.renderTimeBegin_;
-
-    this.renderTimeTmp_ += renderTime_;
-
-    var timer_ = performance.now();// Date.now();
 };
 
 
@@ -14659,8 +15678,7 @@ if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in v
 /**
  * @constructor
  */
-Melown.MapSubmesh = function(mesh_, stream_)
-{
+Melown.MapSubmesh = function(mesh_, stream_) {
     this.generateLines_ = true;
     this.map_ = mesh_.map_;
     this.vertices_ = null;
@@ -14670,6 +15688,7 @@ Melown.MapSubmesh = function(mesh_, stream_)
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
+    this.faces_ = 0;
 
     if (stream_ != null) {
         this.parseSubmesh(stream_);
@@ -14940,6 +15959,7 @@ struct FacesBlock {
     if (this.externalUVs_) this.size_ += this.externalUVs_.length;
     if (this.undulationDeltas_) this.size_ += this.undulationDeltas_.length;
     this.size_ *= 4;
+    this.faces_ = numFaces_;
 
 };
 
@@ -15094,6 +16114,7 @@ Melown.MapSurface.prototype.getTexureUrl = function(id_, subId_, skipBaseUrl_) {
  */
 Melown.MapTexture = function(map_, tile_, submeshIndex_, external_) {
     this.map_ = map_;
+    this.stats_ = map_.stats_;
     this.tile_ = tile_;
     this.submeshIndex_ = submeshIndex_;
     this.external_ = external_ || false;
@@ -15126,6 +16147,7 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
 
 Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     if (this.gpuTexture_ != null) {
+        this.stats_.gpuTexturesUsed_ -= this.gpuTexture_.size_;
         this.gpuTexture_.kill();
     }
 
@@ -15173,6 +16195,7 @@ Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
     var image_ = new Image();
     image_.onerror = this.onLoadError.bind(this);
     image_.onload = this.onLoaded.bind(this);
+    //image_.crossOrigin = "anonymous";
     image_.src = url_;
 
     this.image_ = image_;
@@ -15205,6 +16228,7 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
 Melown.MapTexture.prototype.buildGpuTexture = function () {
     this.gpuTexture_ = new Melown.GpuTexture(this.map_.renderer_.gpu_, null, this.map_.core_);
     this.gpuTexture_.createFromImage(this.image_, "linear", false);
+    this.stats_.gpuTexturesUsed_ += this.gpuTexture_.size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuTexture.bind(this, true), this.gpuTexture_.size_);
 };
@@ -15338,6 +16362,7 @@ Melown.MapTile.prototype.removeChild = function(tile_) {
  */
 Melown.MapTree = function(map_, rootId_, refFrame_, freeLayer_) {
     this.map_ = map_;
+    this.camera_ = map_.camera_;
     this.rootId_ = rootId_;
     this.refFrame_ = refFrame_;
     this.freeLayer_ = freeLayer_;
@@ -15378,7 +16403,7 @@ Melown.MapTree.prototype.init = function() {
 Melown.MapTree.prototype.draw = function() {
     this.cameraPos_ = [0,0,0];
     this.worldPos_ = [0,0,0];
-    this.ndcToScreenPixel_ = this.map_.renderer_.curSize_[0] * 0.5;
+    this.ndcToScreenPixel_ = this.map_.ndcToScreenPixel_;
 
     var refFrame_ = this.refFrame_;
     var periodicity_ = this.refFrame_.srs_.periodicity_;
@@ -15410,24 +16435,25 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
 
     var cameraPos_ = this.map_.navCameraPosition_;
 
-    if (this.map_.camera_.bboxVisible(node_.bbox_, cameraPos_) != true) {
+    if (this.camera_.bboxVisible(node_.bbox_, cameraPos_) != true) {
         return false;
         //return true;
     }
 
     var screenPixelSize_ = this.ndcToScreenPixel_ * node_.pixelSize_;
 
-    if (this.map_.camera_.ortho_ == true) {
-        var pixelSize_ = (screenPixelSize_*2.0) / this.map_.camera_.getViewHeight();
+    if (this.camera_.ortho_ == true) {
+        var height_ = this.camera_.getViewHeight();
+        var pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
     } else {
-        var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, false);
+        var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
     }
 
 //    var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, false);
 
-    if (node_.hasChildren() == false || pixelSize_ < 1.1) {
+    if (node_.hasChildren() == false || pixelSize_[0] < 1.1) {
 
-        this.map_.drawSurfaceTile(tile_, node_, cameraPos_);
+        this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_);
 
         return false;
     }
@@ -15437,7 +16463,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
     //node_.drawBBox(cameraPos_);
 
 /*
-    if (this.map_.camera_.bboxVisible(node_.bbox_) != true) {
+    if (this.camera_.bboxVisible(node_.bbox_) != true) {
         return false;
     }
 */
@@ -15484,94 +16510,101 @@ Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, pos_, lod_) {
 Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
     var min_ = bbox_.min_;
     var max_ = bbox_.max_;
+    /*
     var tileSize_ = max_[0]-min_[0]; //get tile size
     var tilePos_ = [min_[0]-worldPos_[0], min_[1]-worldPos_[1], min_[2]-worldPos_[2]]; //get global pos
     var tilePos2_ = [tilePos_[0] + tileSize_, tilePos_[1], tilePos_[2]];
     var tilePos3_ = [tilePos_[0] + tileSize_, tilePos_[1] + tileSize_, tilePos_[2]];
     var tilePos4_ = [tilePos_[0], tilePos_[1] + tileSize_, tilePos_[2]];
+    */
 
-    var h1_ = min_[2];
-    var h2_ = max_[2];
+    var tilePos_ = [min_[0] - cameraPos_[0], min_[1] - cameraPos_[1]];
+    var tilePos2_ = [max_[0] - cameraPos_[0], min_[1] - cameraPos_[1]];
+    var tilePos3_ = [max_[0] - cameraPos_[0], max_[1] - cameraPos_[1]];
+    var tilePos4_ = [min_[0] - cameraPos_[0], max_[1] - cameraPos_[1]];
+
+    var h1_ = min_[2] - cameraPos_[2];
+    var h2_ = max_[2] - cameraPos_[2];
 
     var factor_ = 0;
 
     //find bbox sector
-    if (cameraPos_[1] < tilePos_[1]) { //top row
-        if (cameraPos_[0] < tilePos_[0]) { // left top corner
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], tilePos_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], tilePos_[1], h1_], returnDistance_);
+    if (0 < tilePos_[1]) { //top row
+        if (0 < tilePos_[0]) { // left top corner
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], tilePos_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], 0], returnDistance_);
             }
-        } else if (cameraPos_[0] > tilePos2_[0]) { // right top corner
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h1_], returnDistance_);
+        } else if (0 > tilePos2_[0]) { // right top corner
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], 0], returnDistance_);
             }
         } else { //top side
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos2_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos2_[1], h1_], returnDistance_);
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos2_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], 0], returnDistance_);
             }
         }
-    } else if (cameraPos_[1] > tilePos4_[1]) { //bottom row
-        if (cameraPos_[0] < tilePos4_[0]) { // left bottom corner
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h1_], returnDistance_);
+    } else if (0 > tilePos4_[1]) { //bottom row
+        if (0 < tilePos4_[0]) { // left bottom corner
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], 0], returnDistance_);
             }
-        } else if (cameraPos_[0] > tilePos3_[0]) { // right bottom corner
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h1_], returnDistance_);
+        } else if (0 > tilePos3_[0]) { // right bottom corner
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], 0], returnDistance_);
             }
         } else { //bottom side
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos3_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos3_[1], h1_], returnDistance_);
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], tilePos3_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], 0], returnDistance_);
             }
         }
     } else { //middle row
-        if (cameraPos_[0] < tilePos4_[0]) { // left side
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], cameraPos_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], cameraPos_[1], h1_], returnDistance_);
+        if (0 < tilePos4_[0]) { // left side
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos_[0], cameraPos_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, 0], returnDistance_);
             }
-        } else if (cameraPos_[0] > tilePos3_[0]) { // right side
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], cameraPos_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], cameraPos_[1], h1_], returnDistance_);
+        } else if (0 > tilePos3_[0]) { // right side
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([tilePos2_[0], cameraPos_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, 0], returnDistance_);
             }
         } else { //center
-            if (cameraPos_[2] > h2_) { // hi
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], cameraPos_[1], h2_], returnDistance_);
-            } else if (cameraPos_[2] < h1_) { // low
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], cameraPos_[1], h1_], returnDistance_);
+            if (0 > h2_) { // hi
+                factor_ = this.camera_.scaleFactor([0, 0, h2_], returnDistance_);
+            } else if (0 < h1_) { // low
+                factor_ = this.camera_.scaleFactor([0, 0, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.map_.camera_.scaleFactor([cameraPos_[0], cameraPos_[1], cameraPos_[2]], returnDistance_);
+                factor_ = this.camera_.scaleFactor([0, 0, 0], returnDistance_);
             }
         }
     }
