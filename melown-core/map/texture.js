@@ -75,13 +75,9 @@ Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    var image_ = new Image();
-    image_.onerror = this.onLoadError.bind(this);
-    image_.onload = this.onLoaded.bind(this);
-    image_.crossOrigin = Melown.isSameOrigin(url_) ? "use-credentials" : "anonymous";
-    image_.src = url_;
-
-    this.image_ = image_;
+    var onerror_ = this.onLoadError.bind(this);
+    var onload_ = this.onLoaded.bind(this);
+    this.image_ = Melown.Http.imageFactory(url_, onload_, onerror_);
 
     this.loadState_ = 1;
 };

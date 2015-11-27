@@ -12,6 +12,8 @@ cat utils/libs/proj4.js \
     utils/math.js \
     utils/utils.js \
     utils/platform.js \
+    utils/url.js \
+    utils/http.js \
     inspector/inspector.js \
     inspector/input.js \
     inspector/stats.js \
