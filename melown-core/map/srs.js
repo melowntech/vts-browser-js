@@ -13,6 +13,31 @@ Melown.MapSrs = function(map_, json_) {
     this.srsDef_ = json_["srsDefEllps"] || this.srsDef_;
     this.periodicity_ = this.parsePeriodicity(json_["periodicity"]);
     this.srsInfo_ = this.proj4_(this.srsDef_).info();
+    this.geoidGrid_ = null;
+
+    if (json_["geoidGrid"]) {
+        var geoidGridData_ = json_["geoidGrid"];
+
+        this.geoidGrid_ = {
+            definition_ : geoidGridData_["definition"] || null,
+            srsDefEllps_ : geoidGridData_["srsDefEllps"] || null,
+            valueRange : geoidGridData_["valueRange"] || [0,1]
+        };
+
+        if (geoidGridData_["extents"] != null) {
+            this.geoidGrid_.extents_ = {
+                ll_ : geoidGridData_["extents"]["ll"],
+                ur_ : geoidGridData_["extents"]["ur"]
+            };
+        } else {
+            this.geoidGrid_.extents_ = {
+                ll_ : [0,0],
+                ur_ : [1,1]
+            };
+        }
+
+    }
+
 
     if (this.type_ == "geographic") {
         this.spheroid_ = json_["spheroid"] || null;

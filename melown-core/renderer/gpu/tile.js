@@ -1,12 +1,8 @@
 
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
-//! Holds the GPU data for a tile.
 /**
  * @constructor
  */
-Melown.GpuTile = function(gpu_, core_, tile_)
-{
+Melown.GpuTile = function(gpu_, core_, tile_) {
     this.gpu_ = gpu_;
     this.type_ = tile_.type_;
     this.ready_ = false;
@@ -32,7 +28,6 @@ Melown.GpuTile = function(gpu_, core_, tile_)
 };
 
 Melown.GpuTile.prototype.kill = function() {
-
     switch(this.type_){
         case "terrain":
             this.mesh_.kill();
@@ -46,7 +41,6 @@ Melown.GpuTile.prototype.kill = function() {
 };
 
 Melown.GpuTile.prototype.isReady = function() {
-
     if (this.ready_ == false) {
         switch(this.type_){
             case "geodata":
@@ -59,7 +53,6 @@ Melown.GpuTile.prototype.isReady = function() {
 };
 
 Melown.GpuTile.prototype.draw = function(mv_, mvp_, applyOrigin_) {
-
     if (this.ready_ == true) {
         switch(this.type_){
             case "geodata":
@@ -72,7 +65,6 @@ Melown.GpuTile.prototype.draw = function(mv_, mvp_, applyOrigin_) {
 };
 
 Melown.GpuTile.prototype.size = function() {
-
     switch(this.type_){
         case "terrain": return this.mesh_.size() + this.texture_.size();
         case "geodata": this.geodata_.size();
@@ -85,8 +77,7 @@ Melown.GpuTile.prototype.size = function() {
 /**
  * @constructor
  */
-Melown.GpuCache = function(gpu_, core_, size_)
-{
+Melown.GpuCache = function(gpu_, core_, size_) {
     //QCache<TileId, GpuTile> cache; cache(size)
     //this.cache_ = [];
     this.gpu_ = gpu_;
@@ -94,8 +85,7 @@ Melown.GpuCache = function(gpu_, core_, size_)
     this.cache_ = new Melown.QCache(size_);
 };
 
-Melown.GpuCache.prototype.get = function(id_, tile_)
-{
+Melown.GpuCache.prototype.get = function(id_, tile_) {
     if (tile_ == null){
         id_ = id_;
     }
@@ -118,13 +108,11 @@ Melown.GpuCache.prototype.get = function(id_, tile_)
     return gpuTile_;
 };
 
-Melown.GpuCache.prototype.size = function()
-{
+Melown.GpuCache.prototype.size = function() {
     return this.cache_.totalCost_;
 };
 
-Melown.GpuCache.prototype.reset = function()
-{
+Melown.GpuCache.prototype.reset = function() {
     return this.cache_.clear();
 };
 

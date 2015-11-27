@@ -1,11 +1,11 @@
 /**
  * @constructor
  */
-Melown.MapMesh = function(map_, tile_) {
+Melown.MapMesh = function(map_, url_) {
     this.generateLines_ = true;
     this.map_ = map_;
     this.stats_ = map_.stats_;
-    this.tile_ = tile_;
+    this.mapLoaderUrl_  = url_;
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
@@ -195,6 +195,15 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuSubmeshes.bind(this, true), size_);
 };
 
+Melown.MapMesh.prototype.getSubmeshBoundLayer = function(index_) {
+    var submesh_ = this.submeshes_[index_];
+    if (submesh_ == null || submesh_.textureLayer_ == 0) {
+        return null;
+    }
+
+    return map_.getBoundLayerByNumebr(submesh_.textureLayer_);
+};
+
 Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
     if (this.gpuSubmeshes_[index_] == null && this.submeshes_[index_] != null) {
         this.gpuSubmeshes_[index_] = this.submeshes_[index_].buildGpuMesh();
@@ -223,7 +232,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
     var renderer_ = this.map_.renderer_;
     var program_ = renderer_.progTile_;
 
-    renderer_.gpu_.useProgram(program_, "aPosition", "aTexCoord", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
+    renderer_.gpu_.useProgram(program_, "aPosition", "aTexCoord", "aTexCoord2", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
 
     var mv_ = Melown.mat4.create();
     Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_), mv_);
@@ -242,7 +251,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
 
     renderer_.gpu_.bindTexture(texture_.gpuTexture_);
 
-    gpuSubmesh_.draw(program_, "aPosition", "aTexCoord", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
+    gpuSubmesh_.draw(program_, "aPosition", "aTexCoord", "aTexCoord2", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
     this.stats_.drawnFaces_ += this.faces_;
 };
 

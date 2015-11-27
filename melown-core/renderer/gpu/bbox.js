@@ -1,12 +1,8 @@
-//! Holds a GPU vertex buffer.
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 /**
  * @constructor
  */
-Melown.GpuBBox = function(gpu_)
-{
+Melown.GpuBBox = function(gpu_) {
     this.gl_ = gpu_.gl_;
 
     var gl_ = this.gl_;
@@ -44,14 +40,12 @@ Melown.GpuBBox = function(gpu_)
 };
 
 //destructor
-Melown.GpuBBox.prototype.kill = function()
-{
+Melown.GpuBBox.prototype.kill = function() {
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
 };
 
 //! Draws the mesh, given the two vertex shader attributes locations.
-Melown.GpuBBox.prototype.draw = function(program_, attrPosition_)
-{
+Melown.GpuBBox.prototype.draw = function(program_, attrPosition_) {
     var gl_ = this.gl_;
     if (gl_ == null)
         return;

@@ -1,8 +1,5 @@
 
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
-Melown.frustumMatrix = function(left_, right_, bottom_, top_, near_, far_)
-{
+Melown.frustumMatrix = function(left_, right_, bottom_, top_, near_, far_) {
     var w = (right_ - left_);
     var h = (top_ - bottom_);
     var d = (far_ - near_);
@@ -17,15 +14,13 @@ Melown.frustumMatrix = function(left_, right_, bottom_, top_, near_, far_)
 };
 
 
-Melown.perspectiveMatrix = function(fovy_, aspect_, near_, far_)
-{
+Melown.perspectiveMatrix = function(fovy_, aspect_, near_, far_) {
     var ymax_ = near_ * Math.tan(fovy_ * Math.PI / 360.0);
     var xmax_ = ymax_ * aspect_;
     return Melown.frustumMatrix(-xmax_, xmax_, -ymax_, ymax_, near_, far_);
 };
 
-Melown.orthographicMatrix = function(vsize_, aspect_, near_, far_)
-{
+Melown.orthographicMatrix = function(vsize_, aspect_, near_, far_) {
     //vsize_ *= 0.020;
     var w = vsize_* 0.5 * aspect_;
     var h = vsize_ * 0.5;
@@ -41,8 +36,7 @@ Melown.orthographicMatrix = function(vsize_, aspect_, near_, far_)
 };
 
 
-Melown.rotationMatrix = function(axis_, angle_)
-{
+Melown.rotationMatrix = function(axis_, angle_) {
     var ca = Math.cos(angle_), sa = Math.sin(angle_);
     var m;
 
@@ -75,8 +69,7 @@ Melown.rotationMatrix = function(axis_, angle_)
 };
 
 
-Melown.scaleMatrix = function(sx, sy, sz)
-{
+Melown.scaleMatrix = function(sx, sy, sz) {
     var m = [
         sx,  0,  0, 0,
          0, sy,  0, 0,
@@ -87,14 +80,12 @@ Melown.scaleMatrix = function(sx, sy, sz)
     return m;
 };
 
-Melown.scaleMatrixf = function(s)
-{
+Melown.scaleMatrixf = function(s) {
     return Melown.scaleMatrix(s, s, s);
 };
 
 
-Melown.translationMatrix = function(tx, ty, tz)
-{
+Melown.translationMatrix = function(tx, ty, tz) {
     var m = [
         1, 0, 0, tx,
         0, 1, 0, ty,
@@ -105,12 +96,11 @@ Melown.translationMatrix = function(tx, ty, tz)
     return m;
 };
 
-Melown.translationMatrix2f = function(t)
-{
+Melown.translationMatrix2f = function(t) {
     return Melown.translationMatrix(t[0], t[1], 0);
 };
 
-Melown.translationMatrix3f = function(t)
-{
+Melown.translationMatrix3f = function(t) {
     return Melown.translationMatrix(t[0], t[1], t[2]);
 };
+

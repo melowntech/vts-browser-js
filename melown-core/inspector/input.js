@@ -14,11 +14,15 @@ Melown.Inspector.prototype.onKeyDown = function(event_) {
 };
 
 Melown.Inspector.prototype.onKeyPress = function(event_) {
-    if (this.ignoreKeyboard_ == true) {
-        return;
-    }
-
     this.onKeyUp(event_, true);
+};
+
+Melown.Inspector.prototype.preventDefault = function(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    } else {
+        e.returnValue = false;
+    }
 };
 
 Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
@@ -37,6 +41,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
     this.shiftDown_ = event_.shiftKey;
 
     var done_ = (function(){});
+    var hit_ = false;
 
     if (event_) {
         var keyCode_;
@@ -56,7 +61,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 switch(keyCode_) {
                     case 68:
                     case 100:
-                        if (event_.preventDefault) event_.preventDefault(); break;  //key D pressed
+                        this.preventDefault(event_); break;  //key D pressed
                 }
             }
         }
@@ -82,14 +87,21 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 switch(keyCode_) {
                     case 68:
                     case 100:
-                        this.diagnosticMode_ = true;   break;  //key D pressed
+                        this.diagnosticMode_ = true; hit_ = true; break;  //key D pressed
                 }
 
             }
 
             if (this.diagnosticMode_ == true) {
 
+                var blockHit_ = true;
+
                 switch(keyCode_) {
+
+                    case 68:
+                    case 100:
+                        break; //key D pressed
+
 
                     case 49: /*this.core_.setControlMode("manual"); done_();*/  break;  //key 1 pressed
                     case 50: /*this.core_.setControlMode("drone"); done_();*/   break;  //key 2 pressed
@@ -108,7 +120,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 72:
                     case 104:
-                        map_.heightmapOnly_ = !map_.heightmapOnly_; map_.dirty_ = true; break;  //key H pressed
+                        map_.heightmapOnly_ = !map_.heightmapOnly_; break;  //key H pressed
 
                     case 80:
                     case 112:
@@ -120,30 +132,30 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 66:
                     case 98:
-                        map_.drawBBoxes_ = !map_.drawBBoxes_; map_.dirty_ = true; break; //key B pressed
+                        map_.drawBBoxes_ = !map_.drawBBoxes_; break; //key B pressed
 
                     case 87:
                     case 119:
                         var value_ = map_.drawWireframe_ + 1;
                         map_.drawWireframe_ = value_ > 2 ? 0 : value_;
-                        map_.dirty_ = true; break; //key W pressed
+                        break; //key W pressed
 
                     case 70:
                     case 102:
                         map_.drawWireframe_ = map_.drawWireframe_ != 3 ? 3 : 0;
-                        map_.dirty_ = true; break; //key F pressed
+                        break; //key F pressed
 
                     case 77:
                     case 109:
-                        map_.drawMaxLod_ = !map_.drawMaxLod_; map_.dirty_ = true; break; //key M pressed
+                        map_.drawMaxLod_ = !map_.drawMaxLod_; break; //key M pressed
 
                     case 74:
                     case 106:
-                        map_.blendHeightmap_ = !map_.blendHeightmap_; map_.dirty_ = true; break; //key J pressed
+                        map_.blendHeightmap_ = !map_.blendHeightmap_; break; //key J pressed
 
                     case 88:
                     case 120:
-                        map_.drawFog_ = !map_.drawFog_; map_.dirty_ = true; break; //key X pressed
+                        map_.drawFog_ = !map_.drawFog_; hit_ = true; break; //key X pressed
 
                     case 82:
                     case 114:
@@ -163,8 +175,16 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 90:
                     case 122:
-                        map_.ignoreTexelSize_ = !map_.ignoreTexelSize_; map_.dirty_ = true; break; //key Z pressed
+                        map_.ignoreTexelSize_ = !map_.ignoreTexelSize_; break; //key Z pressed
 
+                    default:
+                        blockHit_ = false;
+                        break;
+
+                }
+
+                if (blockHit_) {
+                    hit_ = true;
                 }
 
             }
@@ -174,43 +194,58 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
         if (this.diagnosticMode_ == true && map_.drawBBoxes_ == true && this.shiftDown_ != true && press_ != true) {
 
+             var blockHit_ = true;
+
             switch(keyCode_) {
                 case 76:
                 case 108:
-                    map_.drawLods_ = !map_.drawLods_; map_.dirty_ = true; break; //key L pressed
+                    map_.drawLods_ = !map_.drawLods_; break; //key L pressed
 
                 case 80:
                 case 112:
-                    map_.drawPositions_ = !map_.drawPositions_; map_.dirty_ = true; break; //key P pressed
+                    map_.drawPositions_ = !map_.drawPositions_; break; //key P pressed
 
                 case 84:
                 case 116:
-                    map_.drawTextureSize_ = !map_.drawTextureSize_; map_.dirty_ = true; break; //key T pressed
+                    map_.drawTextureSize_ = !map_.drawTextureSize_; break; //key T pressed
 
                 case 70:
                 case 102:
-                    map_.drawFaceCount_ = !map_.drawFaceCount_; map_.dirty_ = true; break; //key F pressed
+                    map_.drawFaceCount_ = !map_.drawFaceCount_; break; //key F pressed
 
                 case 68:
                 case 100:
-                    map_.drawDistance_ = !map_.drawDistance_; map_.dirty_ = true; break; //key D pressed
+                    map_.drawDistance_ = !map_.drawDistance_; break; //key D pressed
 
                 case 77:
                 case 109:
-                    map_.drawMeshBBox_ = !map_.drawMeshBBox_; map_.dirty_ = true; break; //key M pressed
+                    map_.drawMeshBBox_ = !map_.drawMeshBBox_; break; //key M pressed
 
                 case 73:
                 case 105:
-                    map_.drawIndices_ = !map_.drawIndices_; map_.dirty_ = true; break; //key M pressed
+                    map_.drawIndices_ = !map_.drawIndices_; break; //key M pressed
 
                 case 83:
                 case 115:
-                    map_.debugTextSize_ = (map_.debugTextSize_ == 1.0) ? 2.0 : 1.0; map_.dirty_ = true; break; //key S pressed
+                    map_.debugTextSize_ = (map_.debugTextSize_ == 1.0) ? 2.0 : 1.0; break; //key S pressed
 
+                default:
+                    blockHit_ = false;
+                    break;
             }
+
+            if (blockHit_) {
+                hit_ = true;
+            }
+
 
         }
 
+    }
+
+    if (hit_) {
+        map_.dirty_ = true;
+        this.preventDefault(event_);
     }
 
     //console.log("key" + keyCode_);

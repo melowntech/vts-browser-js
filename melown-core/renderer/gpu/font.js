@@ -1,12 +1,8 @@
-//! Holds a GPU vertex buffer.
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 /**
  * @constructor
  */
-Melown.GpuFont = function(gpu_, core_, font_, size_)
-{
+Melown.GpuFont = function(gpu_, core_, font_, size_) {
     this.bbox_ = null;
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
@@ -23,13 +19,11 @@ Melown.GpuFont = function(gpu_, core_, font_, size_)
 };
 
 //destructor
-Melown.GpuFont.prototype.kill = function()
-{
+Melown.GpuFont.prototype.kill = function() {
 
 };
 
-Melown.GpuFont.prototype.generate = function(font_, size_)
-{
+Melown.GpuFont.prototype.generate = function(font_, size_) {
     if (font_ == null) {
         font_ = "Arial, 'Helvetica Neue', Helvetica, sans-serif"; //"Calibri";
     }

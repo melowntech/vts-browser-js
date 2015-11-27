@@ -91,7 +91,7 @@ Melown.GpuDevice.prototype.clear = function(clearDepth_, clearColor_, color_) {
                    (clearColor_ ? this.gl_.DEPTH_BUFFER_BIT : 0) );
 };
 
-Melown.GpuDevice.prototype.useProgram = function(program_, attrPosition_, attrTexCoord_, attrBarycentric_, attrNormal_, attrNormal2_, attrNormal3_) {
+Melown.GpuDevice.prototype.useProgram = function(program_, attrPosition_, attrTexCoord_, attrTexCoord2_, attrBarycentric_, attrNormal_, attrNormal2_, attrNormal3_) {
     if (this.currentProgram_ != program_) {
         this.gl_.useProgram(program_.program_);
         this.currentProgram_ = program_;
@@ -104,6 +104,11 @@ Melown.GpuDevice.prototype.useProgram = function(program_, attrPosition_, attrTe
         if (attrTexCoord_ != null) {
             var textureCoordAttribute_ = program_.getAttribute(attrTexCoord_);
             this.gl_.enableVertexAttribArray(textureCoordAttribute_);
+        }
+
+        if (attrTexCoord2_ != null) {
+            var textureCoordAttribute2_ = program_.getAttribute(attrTexCoord2_);
+            this.gl_.enableVertexAttribArray(textureCoordAttribute2_);
         }
 
         if (attrBarycentric_ != null) {

@@ -1,12 +1,8 @@
-//! Holds a GPU vertex buffer.
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 /**
  * @constructor
  */
-Melown.GpuText = function(gpu_, core_, font_, withNormals_)
-{
+Melown.GpuText = function(gpu_, core_, font_, withNormals_) {
     //this.bbox_ = mesh_.bbox_; //!< bbox copy from Mesh
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
@@ -25,8 +21,7 @@ Melown.GpuText = function(gpu_, core_, font_, withNormals_)
 };
 
 //destructor
-Melown.GpuText.prototype.kill = function()
-{
+Melown.GpuText.prototype.kill = function() {
     if (this.vertexPositionBuffer_ == null) {
         return;
     }
@@ -40,8 +35,7 @@ Melown.GpuText.prototype.kill = function()
     }
 };
 
-Melown.GpuText.prototype.addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index2_, textVector_)
-{
+Melown.GpuText.prototype.addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index2_, textVector_) {
     //normal to dir
     var n = [-dir_[1],dir_[0],0];
 
@@ -148,8 +142,7 @@ Melown.GpuText.prototype.addChar = function(pos_, dir_, verticalShift_, char_, f
 };
 
 
-Melown.GpuText.prototype.addText = function(pos_, dir_, text_, size_)
-{
+Melown.GpuText.prototype.addText = function(pos_, dir_, text_, size_) {
     var textVector_ = [0,1];
     var index_ = this.vertices_.length;
     var index2_ = this.tvertices_.length;
@@ -160,8 +153,7 @@ Melown.GpuText.prototype.addText = function(pos_, dir_, text_, size_)
     var s = [pos_[0], pos_[1], pos_[2]];
     var p1 = [pos_[0], pos_[1], pos_[2]];
 
-    for (var i = 0, li = text_.length; i < li; i++)
-    {
+    for (var i = 0, li = text_.length; i < li; i++) {
         var char_ = text_.charCodeAt(i);
 
         if (char_ == 10) { //new line
@@ -181,8 +173,7 @@ Melown.GpuText.prototype.addText = function(pos_, dir_, text_, size_)
 };
 
 
-Melown.GpuText.prototype.addTextOnPath = function(points_, distance_, text_, size_, textVector_)
-{
+Melown.GpuText.prototype.addTextOnPath = function(points_, distance_, text_, size_, textVector_) {
     if (textVector_ == null) {
         textVector_ = [0,1];
     }
@@ -202,8 +193,7 @@ Melown.GpuText.prototype.addTextOnPath = function(points_, distance_, text_, siz
     var p1 = [p1[0], p1[1], p1[2]];
     var l = distance_;
 
-    for (var i = 0, li = text_.length; i < li; i++)
-    {
+    for (var i = 0, li = text_.length; i < li; i++) {
         var char_ = text_.charCodeAt(i);
 
         if (char_ == 10) { //new line
@@ -243,8 +233,7 @@ Melown.GpuText.prototype.addTextOnPath = function(points_, distance_, text_, siz
 
 };
 
-Melown.GpuText.prototype.addStreetTextOnPath = function(points_, text_, size_)
-{
+Melown.GpuText.prototype.addStreetTextOnPath = function(points_, text_, size_) {
     var factor_ = size_ / this.font_.size_;
     var textLength_ = this.getTextLength(text_, factor_);
     var pathLength_ = this.getPathLength(points_);
@@ -262,18 +251,15 @@ Melown.GpuText.prototype.addStreetTextOnPath = function(points_, text_, size_)
     this.addTextOnPath(points_, shift_, text_, size_, textVector_);
 };
 
-Melown.GpuText.prototype.getFontFactor = function(size_)
-{
+Melown.GpuText.prototype.getFontFactor = function(size_) {
     return size_ / this.font_.size_;
 };
 
-Melown.GpuText.prototype.getTextLength = function(text_, factor_)
-{
+Melown.GpuText.prototype.getTextLength = function(text_, factor_) {
     var l = 0;
     var chars_ = this.font_.chars_;
 
-    for (var i = 0, li = text_.length; i < li; i++)
-    {
+    for (var i = 0, li = text_.length; i < li; i++) {
         var char_ = text_.charCodeAt(i);
 
         if (char_ == 10) { //new line
@@ -297,8 +283,7 @@ Melown.GpuText.prototype.getTextLength = function(text_, factor_)
 Melown.GpuText.prototype.getPathLength = function(points_) {
     var l = 0;
 
-    for (var i = 0, li = points_.length-1; i < li; i++)
-    {
+    for (var i = 0, li = points_.length-1; i < li; i++) {
         var p1 = points_[i];
         var p2 = points_[i+1];
         var dir_ = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
@@ -309,14 +294,12 @@ Melown.GpuText.prototype.getPathLength = function(points_) {
     return l;
 };
 
-Melown.GpuText.prototype.getPathPositionAndDirection = function(points_, distance_)
-{
+Melown.GpuText.prototype.getPathPositionAndDirection = function(points_, distance_) {
     var l = 0;
     var p1 = [0,0,0];
     var dir_ = [1,0,0];
 
-    for (var i = 0, li = points_.length-1; i < li; i++)
-    {
+    for (var i = 0, li = points_.length-1; i < li; i++) {
         p1 = points_[i];
         var p2 = points_[i+1];
         dir_ = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
@@ -324,7 +307,6 @@ Melown.GpuText.prototype.getPathPositionAndDirection = function(points_, distanc
         var ll = Melown.vec3.length(dir_);
 
         if ((l + ll) > distance_) {
-
             var factor_ = (distance_ - l) / (ll);
             var p = [p1[0] + dir_[0] * factor_,
                      p1[1] + dir_[1] * factor_,
@@ -341,8 +323,7 @@ Melown.GpuText.prototype.getPathPositionAndDirection = function(points_, distanc
     return [p1, dir_];
 };
 
-Melown.GpuText.prototype.getPathTextVector = function(points_, shift_, text_, factor_)
-{
+Melown.GpuText.prototype.getPathTextVector = function(points_, shift_, text_, factor_) {
     var l = 0;
     var p1 = [0,0,0];
     var dir_ = [1,0,0];
@@ -350,8 +331,7 @@ Melown.GpuText.prototype.getPathTextVector = function(points_, shift_, text_, fa
     var textStart_ = shift_;
     var textEnd_ = shift_ + this.getTextLength(text_, factor_);
 
-    for (var i = 0, li = points_.length-1; i < li; i++)
-    {
+    for (var i = 0, li = points_.length-1; i < li; i++) {
         p1 = points_[i];
         var p2 = points_[i+1];
         dir_ = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
@@ -374,8 +354,7 @@ Melown.GpuText.prototype.getPathTextVector = function(points_, shift_, text_, fa
     return textDir_;
 };
 
-Melown.GpuText.prototype.compile = function()
-{
+Melown.GpuText.prototype.compile = function() {
     var gl_ = this.gl_;
     if (gl_ == null)
         return;
@@ -411,7 +390,6 @@ Melown.GpuText.prototype.compile = function()
         //this.core_.renderer_.statsFluxMesh_[0][1] += this.size_;
     }
 
-
     if (this.withNormals_ == true) {
         this.normals_ = [];
     }
@@ -419,8 +397,7 @@ Melown.GpuText.prototype.compile = function()
 };
 
 //! Draws the mesh, given the two vertex shader attributes locations.
-Melown.GpuText.prototype.draw = function(program_, attrPosition_, attrTexCoord_)
-{
+Melown.GpuText.prototype.draw = function(program_, attrPosition_, attrTexCoord_) {
     var gl_ = this.gl_;
     if (gl_ == null)
         return;
