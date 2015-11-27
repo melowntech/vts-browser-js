@@ -1,11 +1,8 @@
 
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
 /**
  * @constructor
  */
-Melown.Camera = function(parent_, fov_, near_, far_)
-{
+Melown.Camera = function(parent_, fov_, near_, far_) {
     this.parent_ = parent_;
     this.position_ = /*(position_ != null) ? position_ :*/ [0,0,0];
     this.orientation_ = /*(orientation_ != null) ? orientation_ :*/ [0,0,0]; // {yaw, pitch, roll}
@@ -63,7 +60,6 @@ Melown.Camera.prototype.setParams = function(fov_, near_, far_) {
 };
 
 Melown.Camera.prototype.clone = function(newFov_) {
-
     var camera_ = new Melown.Camera(this. parent_, (newFov_ != null) ? newFov_ : this.getFov(), this.getNear(), this.getFar());
 
     camera_.setPosition(this.getPosition());
@@ -142,7 +138,6 @@ Melown.Camera.prototype.distance = function(worldPos_) {
 
 //! Returns true if the box intersects the camera frustum.
 Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
-
     if (this.dirty_) this.update();
 
     var min_ = bbox_.min_;

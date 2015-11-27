@@ -1,9 +1,5 @@
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
-
-
-Melown.Renderer.prototype.drawSkydome = function()
-{
+Melown.Renderer.prototype.drawSkydome = function() {
     this.gpu_.gl_.disable(this.gpu_.gl_.CULL_FACE);
 
     ///progSkydome.use();
@@ -39,8 +35,7 @@ Melown.Renderer.prototype.drawSkydome = function()
     this.renderedPolygons_ += this.skydomeMesh_.getPolygons();
 };
 
-Melown.Renderer.prototype.drawBall = function(position_, size_)
-{
+Melown.Renderer.prototype.drawBall = function(position_, size_) {
     var gl_ = this.gpu_.gl_;
 
     gl_.disable(gl_.CULL_FACE);
@@ -84,7 +79,6 @@ Melown.Renderer.prototype.drawBall = function(position_, size_)
 
 //draw 2d image - used for debuging
 Melown.Renderer.prototype.drawImage = function(x, y, lx, ly, texture_, color_, depth_, depthTest_, transparent_) {
-
     if (texture_ == null || this.imageProjectionMatrix_ == null) {
         return;
     }
@@ -196,7 +190,6 @@ Melown.Renderer.prototype.drawBillboard = function(mvp_, texture_, color_, depth
 
 //draw flat 2d image - used for debuging
 Melown.Renderer.prototype.drawFlatImage = function(x, y, lx, ly, texture_, color_, depth_) {
-
     if (texture_ == null || this.imageProjectionMatrix_ == null) {
         return;
     }
@@ -228,7 +221,6 @@ Melown.Renderer.prototype.drawFlatImage = function(x, y, lx, ly, texture_, color
 
 //draw 2d text - used for debuging
 Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_) {
-
     if (this.imageProjectionMatrix_ == null) {
         return;
     }
@@ -267,9 +259,7 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
     var lx_ = x;
 
     for (var i = 0, li = text_.length; i < li; i++) {
-
         var char_ = text_.charAt(i);
-
         var charPos_ = this.textTable_[char_];
 
         this.progImage_.setMat4("uData", [
@@ -305,8 +295,7 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
 
 };
 
-Melown.Renderer.prototype.fogSetup = function(program_, fogDensity_)
-{
+Melown.Renderer.prototype.fogSetup = function(program_, fogDensity_) {
     // the fog equation is: exp(-density*distance), this gives the fraction
     // of the original color that is still visible at some distance
 
@@ -329,8 +318,7 @@ Melown.Renderer.prototype.fogSetup = function(program_, fogDensity_)
     program_.setFloat(fogDensity_, density_);
 };
 
-Melown.Renderer.prototype.paintGL = function()
-{
+Melown.Renderer.prototype.paintGL = function() {
     this.gpu_.clear(true, false);
 
     //this.updateCamera();

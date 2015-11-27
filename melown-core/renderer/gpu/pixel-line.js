@@ -1,14 +1,8 @@
-//! Holds a GPU vertex buffer.
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
-//3D Line, line width is defined in pixels
 
 /**
  * @constructor
  */
-Melown.GpuPixelLine = function(gpu_, core_)
-{
+Melown.GpuPixelLine = function(gpu_, core_) {
     this.bbox_ = null;
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
@@ -28,8 +22,7 @@ Melown.GpuPixelLine = function(gpu_, core_)
 };
 
 //destructor
-Melown.GpuPixelLine.prototype.kill = function()
-{
+Melown.GpuPixelLine.prototype.kill = function() {
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
     this.gl_.deleteBuffer(this.vertexNormalBuffer_);
 /*
@@ -41,8 +34,7 @@ Melown.GpuPixelLine.prototype.kill = function()
 };
 
 //add line to vertices buffer
-Melown.GpuPixelLine.prototype.addLine = function(p1, p2, size_)
-{
+Melown.GpuPixelLine.prototype.addLine = function(p1, p2, size_) {
     //get direction vector
     var v = [p2[0] - p1[0], p2[1] - p1[1], 0];
 
@@ -114,10 +106,7 @@ Melown.GpuPixelLine.prototype.addLine = function(p1, p2, size_)
 };
 
 //add circle to vertices buffer
-Melown.GpuPixelLine.prototype.addCircle = function(p1, size_, sides_)
-{
-    //return;
-
+Melown.GpuPixelLine.prototype.addCircle = function(p1, size_, sides_) {
     size_ *= 0.5;
 
     var i;
@@ -175,8 +164,7 @@ Melown.GpuPixelLine.prototype.addCircle = function(p1, size_, sides_)
 };
 
 //compile content of vertices buffer into gpu buffer
-Melown.GpuPixelLine.prototype.compile = function()
-{
+Melown.GpuPixelLine.prototype.compile = function() {
     var gl_ = this.gl_;
 
     //create vertex buffer
@@ -209,8 +197,7 @@ Melown.GpuPixelLine.prototype.compile = function()
 };
 
 //! Draws the mesh, given the two vertex shader attributes locations.
-Melown.GpuPixelLine.prototype.draw = function(program_, attrPosition_, attrNormal_, attrTexCoord_, attrBarycenteric_)
-{
+Melown.GpuPixelLine.prototype.draw = function(program_, attrPosition_, attrNormal_, attrTexCoord_, attrBarycenteric_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.vertexPositionBuffer_ == null || this.vertexNormalBuffer_ == null){
         return;

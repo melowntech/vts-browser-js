@@ -1,6 +1,4 @@
 
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
 // glMatrix v0.9.5
 Melown.glMatrixArrayType2 = /*typeof Float32Array != "undefined" ? Float32Array : typeof WebGLFloatArray != "undefined" ? WebGLFloatArray :*/ Array;
 

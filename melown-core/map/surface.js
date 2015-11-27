@@ -62,19 +62,19 @@ Melown.MapSurface.prototype.hasMetatile = function(id_) {
 };
 
 Melown.MapSurface.prototype.getMetaUrl = function(id_, skipBaseUrl_) {
-    this.map_.makeUrl(this.metaUrl_, id_, null, skipBaseUrl_);
+    return this.map_.makeUrl(this.metaUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
 };
 
 Melown.MapSurface.prototype.getNavUrl = function(id_, skipBaseUrl_) {
-    this.map_.makeUrl(this.navUrl_, id_, null, skipBaseUrl_);
+    return this.map_.makeUrl(this.navUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
 };
 
 Melown.MapSurface.prototype.getMeshUrl = function(id_, skipBaseUrl_) {
-    this.map_.makeUrl(this.meshUrl_, id_, null, skipBaseUrl_);
+    return this.map_.makeUrl(this.meshUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
 };
 
 Melown.MapSurface.prototype.getTexureUrl = function(id_, subId_, skipBaseUrl_) {
-    this.map_.makeUrl(this.textureUrl_, id_, subId_, skipBaseUrl_);
+    return this.map_.makeUrl(this.textureUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, subId_, skipBaseUrl_);
 };
 
 

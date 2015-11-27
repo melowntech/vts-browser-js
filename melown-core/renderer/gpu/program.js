@@ -13,16 +13,11 @@ Melown.GpuProgram = function(gpu_, vertex_, fragment_) {
 };
 
 
-Melown.GpuProgram.prototype.createShader = function(source_, vertexShader_)
-{
-    if (!source_) {
-        return null;
-    }
-
+Melown.GpuProgram.prototype.createShader = function(source_, vertexShader_) {
     var gl_ = this.gl_;
 
-    if (gl_ == null) {
-        return;
+    if (!source_ || !gl_) {
+        return null;
     }
 
     var shader_;
@@ -45,8 +40,7 @@ Melown.GpuProgram.prototype.createShader = function(source_, vertexShader_)
 };
 
 
-Melown.GpuProgram.prototype.createProgram = function(vertex_, fragment_)
-{
+Melown.GpuProgram.prototype.createProgram = function(vertex_, fragment_) {
     var gl_ = this.gl_;
     if (gl_ == null) return;
 
@@ -67,8 +61,7 @@ Melown.GpuProgram.prototype.createProgram = function(vertex_, fragment_)
     this.program_ = program_;
 };
 
-Melown.GpuProgram.prototype.setSampler = function(name_, index_)
-{
+Melown.GpuProgram.prototype.setSampler = function(name_, index_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
@@ -78,8 +71,7 @@ Melown.GpuProgram.prototype.setSampler = function(name_, index_)
     }
 };
 
-Melown.GpuProgram.prototype.setMat4 = function(name_, m_)
-{
+Melown.GpuProgram.prototype.setMat4 = function(name_, m_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
@@ -89,8 +81,7 @@ Melown.GpuProgram.prototype.setMat4 = function(name_, m_)
     }
 };
 
-Melown.GpuProgram.prototype.setVec2 = function(name_, m_)
-{
+Melown.GpuProgram.prototype.setVec2 = function(name_, m_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
@@ -100,8 +91,7 @@ Melown.GpuProgram.prototype.setVec2 = function(name_, m_)
     }
 };
 
-Melown.GpuProgram.prototype.setVec4 = function(name_, m_)
-{
+Melown.GpuProgram.prototype.setVec4 = function(name_, m_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
@@ -111,8 +101,7 @@ Melown.GpuProgram.prototype.setVec4 = function(name_, m_)
     }
 };
 
-Melown.GpuProgram.prototype.setFloat = function(name_, value_)
-{
+Melown.GpuProgram.prototype.setFloat = function(name_, value_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
@@ -122,8 +111,7 @@ Melown.GpuProgram.prototype.setFloat = function(name_, value_)
     }
 };
 
-Melown.GpuProgram.prototype.setFloatArray = function(name_, array_)
-{
+Melown.GpuProgram.prototype.setFloatArray = function(name_, array_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
@@ -134,8 +122,7 @@ Melown.GpuProgram.prototype.setFloatArray = function(name_, array_)
 };
 
 
-Melown.GpuProgram.prototype.getAttribute = function(name_)
-{
+Melown.GpuProgram.prototype.getAttribute = function(name_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
@@ -148,8 +135,7 @@ Melown.GpuProgram.prototype.getAttribute = function(name_)
     }
 };
 
-Melown.GpuProgram.prototype.getUniform = function(name_)
-{
+Melown.GpuProgram.prototype.getUniform = function(name_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
@@ -161,3 +147,5 @@ Melown.GpuProgram.prototype.getUniform = function(name_)
         return this.uniformLocationCache_[name_];
     }
 };
+
+

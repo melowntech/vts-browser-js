@@ -1,5 +1,4 @@
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
+Melown.GpuBarycentricBuffer_ = null;
 
 Melown.Renderer.prototype.initShaders = function() {
     this.progTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileVertexShader, Melown.tileFragmentShader);
@@ -328,6 +327,31 @@ Melown.Renderer.prototype.initBBox = function() {
     */
 };
 
+Melown.Renderer.prototype.initBaricentricBuffer = function() {
+    var buffer_ = new Array(65535*3);
+
+    for (var i = 0; i < 65535*3; i+=9) {
+        buffer_[i] = 1.0;
+        buffer_[i+1] = 0;
+        buffer_[i+2] = 0;
+
+        buffer_[i+3] = 0;
+        buffer_[i+4] = 1.0;
+        buffer_[i+5] = 0;
+
+        buffer_[i+6] = 0;
+        buffer_[i+7] = 0;
+        buffer_[i+8] = 1.0;
+    }
+
+    var gl_ = this.gpu_.gl_;
+    Melown.GpuBarycentricBuffer_ = gl_.createBuffer();
+    gl_.bindBuffer(gl_.ARRAY_BUFFER, Melown.GpuBarycentricBuffer_);
+
+    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(buffer_), gl_.STATIC_DRAW);
+    Melown.GpuBarycentricBuffer_.itemSize = 3;
+    Melown.GpuBarycentricBuffer_.numItems = buffer_.length / 3;
+};
 
 Melown.Renderer.prototype.initializeGL = function() {
     this.gpu_.init();
@@ -339,4 +363,5 @@ Melown.Renderer.prototype.initializeGL = function() {
     this.initImage();
     this.initTestMap();
     this.initBBox();
+    this.initBaricentricBuffer();
 };

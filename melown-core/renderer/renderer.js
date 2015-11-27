@@ -1,6 +1,4 @@
 
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
 //! maximum allowed projected texel size (affects LOD selection, i.e., display
 //! quality, and also control constraints)
 Melown.resolutionThreshold_ = 1.1;

@@ -179,3 +179,4 @@ Melown.RendererInterface.prototype["drawJobs"] = Melown.RendererInterface.protot
 
 Melown["getVersion"] = Melown.getVersion;
 Melown["checkSupport"] = Melown.checkSupport;
+
