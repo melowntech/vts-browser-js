@@ -1,15 +1,13 @@
 /**
  * @constructor
  */
-Melown.MapTexture = function(map_, tile_, submeshIndex_, external_) {
+Melown.MapTexture = function(map_, path_) {
     this.map_ = map_;
     this.stats_ = map_.stats_;
-    this.tile_ = tile_;
-    this.submeshIndex_ = submeshIndex_;
-    this.external_ = external_ || false;
     this.image_ = null;
     this.gpuTexture_ = null;
     this.loadState_ = 0;
+    this.mapLoaderUrl_ = path_;
 
     this.cacheItem_ = null; //store killImage
     this.gpuCacheItem_ = null; //store killGpuTexture
@@ -70,10 +68,6 @@ Melown.MapTexture.prototype.isReady = function() {
 };
 
 Melown.MapTexture.prototype.scheduleLoad = function() {
-    if (this.mapLoaderUrl_ == null) {
-        this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.surface_.textureUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] }, this.submeshIndex_);
-    }
-
     this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this));
 };
 

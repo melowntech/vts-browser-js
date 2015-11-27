@@ -1,12 +1,8 @@
-//! Holds a GPU vertex buffer.
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 /**
  * @constructor
  */
-Melown.GpuPolygon = function(gpu_, core_)
-{
+Melown.GpuPolygon = function(gpu_, core_) {
     this.bbox_ = null;
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
@@ -26,8 +22,7 @@ Melown.GpuPolygon = function(gpu_, core_)
 };
 
 //destructor
-Melown.GpuPolygon.prototype.kill = function()
-{
+Melown.GpuPolygon.prototype.kill = function() {
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
     this.gl_.deleteBuffer(this.vertexNormalBuffer_);
 /*
@@ -39,8 +34,7 @@ Melown.GpuPolygon.prototype.kill = function()
 };
 
 //add face
-Melown.GpuPolygon.prototype.addFace = function(p1, p2, p3, n)
-{
+Melown.GpuPolygon.prototype.addFace = function(p1, p2, p3, n) {
     var index_ = this.vertices_.length;
 
     if (n == null) {
@@ -73,8 +67,7 @@ Melown.GpuPolygon.prototype.addFace = function(p1, p2, p3, n)
 };
 
 //add quad
-Melown.GpuPolygon.prototype.addQuad = function(p1, p2, p3, p4, n)
-{
+Melown.GpuPolygon.prototype.addQuad = function(p1, p2, p3, p4, n) {
     var index_ = this.vertices_.length;
 
     if (n == null) {
@@ -175,8 +168,7 @@ Melown.GpuPolygon.prototype.addWall = function(points_, points2_, closed_) {
 
 
 //compile content of vertices buffer into gpu buffer
-Melown.GpuPolygon.prototype.compile = function()
-{
+Melown.GpuPolygon.prototype.compile = function() {
     var gl_ = this.gl_;
 
     //create vertex buffer
@@ -209,8 +201,7 @@ Melown.GpuPolygon.prototype.compile = function()
 };
 
 //! Draws the mesh, given the two vertex shader attributes locations.
-Melown.GpuPolygon.prototype.draw = function(program_, attrPosition_, attrNormal_, attrTexCoord_, attrBarycenteric_)
-{
+Melown.GpuPolygon.prototype.draw = function(program_, attrPosition_, attrNormal_, attrTexCoord_, attrBarycenteric_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.vertexPositionBuffer_ == null || this.vertexNormalBuffer_ == null){
         return;

@@ -1,7 +1,4 @@
 
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
-//! Holds a texture in GPU memory.
 /**
  * @constructor
  */

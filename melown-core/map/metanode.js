@@ -49,22 +49,27 @@ Melown.MapMetanode.prototype.parseExtentBits = function(extentBytes_, extentBits
     return value_;
 };
 
+Melown.MapMetanode.prototype.hasGeometry = function() {
+    return ((this.flags_ & 1) != 0);
+};
+
+Melown.MapMetanode.prototype.hasNavtile = function() {
+    return ((this.flags_ & (1 << 1)) != 0);
+};
+
+Melown.MapMetanode.prototype.usedTexelSize = function() {
+    return ((this.flags_ & (1 << 2)) != 0);
+};
+
+Melown.MapMetanode.prototype.usedDisplaySize = function() {
+    return ((this.flags_ & (1 << 3)) != 0);
+};
+
+
 Melown.MapMetanode.prototype.parseMetanode = function(stream_) {
 
 /*
 struct Metanode {
-    char flags;                   // #0 - geometry present, #1 - navtile present, #2 - internal texture present
-                                  // #3 - coarseness control (0 - displaySize / 1 - texelSize), #4,5,6,7 - ul,ur,ll,lr child exists
-    char geomExtents[];           // a packed array of 6 bit sequences, each lod+2 long, in the following order:
-                                  // minx,maxx,miny,maxy,minz,maxz, undefined if no geometry present
-    union {
-       ushort displaySize;        // desired display size, if coarsness control is displaySize
-       hfloat meshArea;           // meshArea, if coarseness control is texelSize and geometry present
-    };
-    hfloat textureArea;           // internal texture area, if coarsness control is texelSize and internal texture present
-    short minHeight, maxHeight;   // navigation tile value range, undef if no navtile present !!!FIXED to short
-
-
     char flags;                   // #0 - geometry present, #1 - navtile present #2 - applyTexelSize,
                                   // #3 - applyPixelSize, #4,5,6,7 - ul,ur,ll,lr child exists
     char geomExtents[];           // a packed array of 6 bit sequences, each lod+2 long, in the following order:

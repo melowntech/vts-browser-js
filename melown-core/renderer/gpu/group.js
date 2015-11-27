@@ -1,12 +1,8 @@
-//! Holds a GPU vertex buffer.
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 /**
  * @constructor
  */
-Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, core_, layer_)
-{
+Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, core_, layer_) {
     this.id_ = id_;
     this.bbox_ = null;
     this.origin_ = origin_ || [0,0,0];
@@ -26,8 +22,7 @@ Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, core_, layer_)
 };
 
 //destructor
-Melown.GpuGroup.prototype.kill = function()
-{
+Melown.GpuGroup.prototype.kill = function() {
     for (var i = 0, li = this.jobs_.length; i < li; i++) {
 
         switch(this.jobs_[i].type_) {
@@ -53,24 +48,19 @@ Melown.GpuGroup.prototype.kill = function()
                 this.gl_.deleteBuffer(this.jobs_[i].vertexTexcoordBuffer_);
                 this.gl_.deleteBuffer(this.jobs_[i].vertexOriginBuffer_);
                 break;
-
         }
-
     }
 };
 
-Melown.GpuGroup.prototype.size = function()
-{
+Melown.GpuGroup.prototype.size = function() {
     return this.size_;
 };
 
-Melown.GpuGroup.prototype.getZbufferOffset = function(params_)
-{
+Melown.GpuGroup.prototype.getZbufferOffset = function(params_) {
     return this.size_;
 };
 
-Melown.GpuGroup.prototype.addLineJob = function(data_)
-{
+Melown.GpuGroup.prototype.addLineJob = function(data_) {
     var gl_ = this.gl_;
 
     var vertices_ = data_["vertexBuffer"];
@@ -108,8 +98,7 @@ Melown.GpuGroup.prototype.addLineJob = function(data_)
     this.polygons_ += job_.vertexPositionBuffer_.numItems / 3;
 };
 
-Melown.GpuGroup.prototype.addExtentedLineJob = function(data_)
-{
+Melown.GpuGroup.prototype.addExtentedLineJob = function(data_) {
     var gl_ = this.gl_;
 
     var vertices_ = data_["vertexBuffer"];
@@ -175,8 +164,7 @@ Melown.GpuGroup.prototype.addExtentedLineJob = function(data_)
     this.polygons_ += job_.vertexPositionBuffer_.numItems / 3;
 };
 
-Melown.GpuGroup.prototype.addLineLabelJob = function(data_)
-{
+Melown.GpuGroup.prototype.addLineLabelJob = function(data_) {
     var gl_ = this.gl_;
 
     var vertices_ = data_["vertexBuffer"];
@@ -222,8 +210,7 @@ Melown.GpuGroup.prototype.addLineLabelJob = function(data_)
     this.polygons_ += job_.vertexPositionBuffer_.numItems / 3;
 };
 
-Melown.GpuGroup.prototype.addIconJob = function(data_, label_)
-{
+Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     var gl_ = this.gl_;
 
     var vertices_ = data_["vertexBuffer"];
@@ -290,8 +277,7 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_)
 };
 
 
-Melown.GpuGroup.prototype.addRenderJob = function(data_)
-{
+Melown.GpuGroup.prototype.addRenderJob = function(data_) {
     switch(data_["type"]) {
         case "flat-line":  this.addLineJob(data_); break;
         case "flat-tline": this.addExtentedLineJob(data_); break;
@@ -303,8 +289,7 @@ Melown.GpuGroup.prototype.addRenderJob = function(data_)
     }
 };
 
-Melown.GpuGroup.prototype.draw = function(mv_, mvp_, applyOrigin_)
-{
+Melown.GpuGroup.prototype.draw = function(mv_, mvp_, applyOrigin_) {
     if (this.id_ != null) {
         if (this.renderer_.layerGroupVisible_[this.id_] === false) {
             return;
@@ -370,8 +355,7 @@ Melown.GpuGroup.prototype.draw = function(mv_, mvp_, applyOrigin_)
     }
 };
 
-Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_)
-{
+Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
     var mv_ = job_.mv_;
     var mvp_ = job_.mvp_;
 
@@ -581,7 +565,6 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_)
             gl_.drawArrays(gl_.TRIANGLES, 0, job_.vertexPositionBuffer_.numItems);
 
             break;
-
     }
 
 };

@@ -81,16 +81,27 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
         //return true;
     }
 
-    var screenPixelSize_ = this.ndcToScreenPixel_ * node_.pixelSize_;
+    var pixelSize_;
 
-    if (this.camera_.ortho_ == true) {
-        var height_ = this.camera_.getViewHeight();
-        var pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
+    if (node_.hasGeometry()) {
+        var screenPixelSize_ = Number.POSITIVE_INFINITY;
+
+        if (node_.usedTexelSize()) {
+            screenPixelSize_ = this.ndcToScreenPixel_ * node_.pixelSize_;
+        } else if (node_.usedDisplaySize()) {
+            screenPixelSize_ = this.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / node_.displaySize_);
+        }
+
+        if (this.camera_.ortho_ == true) {
+            var height_ = this.camera_.getViewHeight();
+            pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
+        } else {
+            pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
+        }
     } else {
-        var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
+        pixelSize_ = [Number.POSITIVE_INFINITY, 99999];
     }
 
-//    var pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, false);
 
     if (node_.hasChildren() == false || pixelSize_[0] < 1.1) {
 
