@@ -29,14 +29,14 @@ Melown.Roi.Type['photo'] = Melown.Roi.Photo;
 
 // Protected methods
 
-Melown.Roi.Pano.prototype._init = function() {
+Melown.Roi.Photo.prototype._init = function() {
     // check browser instance
     // prepare UI
 
     this.super_._init.call(this);
 }
 
-Melown.Roi.Pano.prototype._processConfig = function() {
+Melown.Roi.Photo.prototype._processConfig = function() {
     this.super_._processConfig.call(this);
 
     if (this.state_ === Melown.Roi.State.Error) {
@@ -68,7 +68,7 @@ Melown.Roi.Pano.prototype._processConfig = function() {
     }
 }
 
-Melown.Roi.Pano.prototype._initFinalize = function() {
+Melown.Roi.Photo.prototype._initFinalize = function() {
     this.super_._initFinalize.call(this);
 
     // orient photo
@@ -81,12 +81,12 @@ Melown.Roi.Pano.prototype._initFinalize = function() {
     Melown.mat4.multiply(this.orientationMatrix_, rotateX, this.orientationMatrix_);
 }
 
-Melown.Roi.Pano.prototype._tick = function() {
+Melown.Roi.Photo.prototype._tick = function() {
     this.super_._tick.call(this);
 
 }
 
-Melown.Roi.Pano.prototype._update = function() {
+Melown.Roi.Photo.prototype._update = function() {
     this.super_._update.call(this);
 
     // TODO
@@ -95,7 +95,7 @@ Melown.Roi.Pano.prototype._update = function() {
     this.needsRedraw_ = true;
 }
 
-Melown.Roi.Pano.prototype._draw = function() {
+Melown.Roi.Photo.prototype._draw = function() {
     
     if (!this.map_) {
         return;

@@ -66,13 +66,13 @@ Melown.Roi.Fetch = function(config_, browser_, options_, clb_) {
             } else {
                 var err = new Error('Downloaded configuration JSON does not contain registered ROI type');
                 console.error(err);
-                clb(err);
+                clb_(err);
                 return;
             }
         }
         var err = new Error('Downloaded configuration is not JSON object');
         console.error(err);
-        clb(err);
+        clb_(err);
         return;
     }
 

@@ -191,15 +191,21 @@ Melown.Roi.LoadingQueue.prototype._next = function() {
         // TODO
         this._finalizeItem(item_, new Error('Not implemented yet'), null);
     } else if (item_.type_ === Melown.Roi.LoadingQueue.Type.Image) {
-        item_.data_ = new Image();
-        item_.data_.addEventListener('load', function(data_) {
+        item_.data_ = Melown.Http.imageFactory(item_.url_, function(data_) {
             this._finalizeItem(item_, null, item_.data_);
-        }.bind(this), false);
-        item_.data_.addEventListener('error', function(data_) {
+        }.bind(this), function(data_) {
             this._finalizeItem(item_, new Error(data_), null);
-        }.bind(this), false);
-        //item_.data_.crossOrigin = "anonymous";
-        item_.data_.src = item_.url_;
+        }.bind(this));
+
+        // item_.data_ = new Image();
+        // item_.data_.addEventListener('load', function(data_) {
+        //     this._finalizeItem(item_, null, item_.data_);
+        // }.bind(this), false);
+        // item_.data_.addEventListener('error', function(data_) {
+        //     this._finalizeItem(item_, new Error(data_), null);
+        // }.bind(this), false);
+        // //item_.data_.crossOrigin = "anonymous";
+        // item_.data_.src = item_.url_;
     }
 }
 
