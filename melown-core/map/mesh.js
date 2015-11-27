@@ -195,16 +195,7 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuSubmeshes.bind(this, true), size_);
 };
 
-Melown.MapMesh.prototype.getSubmeshBoundLayer = function(index_) {
-    var submesh_ = this.submeshes_[index_];
-    if (submesh_ == null || submesh_.textureLayer_ == 0) {
-        return null;
-    }
-
-    return map_.getBoundLayerByNumebr(submesh_.textureLayer_);
-};
-
-Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
+Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, type_, alpha_) {
     if (this.gpuSubmeshes_[index_] == null && this.submeshes_[index_] != null) {
         this.gpuSubmeshes_[index_] = this.submeshes_[index_].buildGpuMesh();
     }
@@ -230,28 +221,62 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_) {
 */
 
     var renderer_ = this.map_.renderer_;
-    var program_ = renderer_.progTile_;
+    var program_ = null;
 
-    renderer_.gpu_.useProgram(program_, "aPosition", "aTexCoord", "aTexCoord2", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
+    var texcoordsAttr_ = null;
+    var texcoords2Attr_ = null;
+
+    switch(type_) {
+        case "internal":
+            program_ = renderer_.progTile_;
+            texcoordsAttr_ = "aTexCoord";
+            break;
+
+        case "external":
+        case "external-nofog":
+            program_ = renderer_.progTile2_;
+            texcoords2Attr_ = "aTexCoord2";
+            break;
+
+        case "fog":
+            program_ = renderer_.progFogTile_;
+            break;
+    }
+
+
+    renderer_.gpu_.useProgram(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, renderer_.drawWireframe_ == true ? "aBarycentric" : null);
 
     var mv_ = Melown.mat4.create();
     Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_), mv_);
-
     var proj_ = renderer_.camera_.getProjectionMatrix();
 
     program_.setMat4("uMV", mv_);
     program_.setMat4("uProj", proj_);
-    renderer_.fogSetup(program_, "uFogDensity");
 
-    if (texture_ == null || texture_.gpuTexture_ == null) {
-        proj_ = proj_;
-        texture_.isReady();
+    switch(type_) {
+        case "internal":
+        case "fog":
+            renderer_.fogSetup(program_, "uFogDensity");
+            break;
+
+        case "external":
+            program_.setFloat("uAlpha", 1);
+            program_.setFloat("uFogDensity", 0);
+            break;
+
+        case "external-nofog":
+            program_.setFloat("uAlpha", alpha_);
+            renderer_.fogSetup(program_, "uFogDensity");
+            break;
+    }
+
+    if (texture_ != null && texture_.gpuTexture_ != null) {
+        renderer_.gpu_.bindTexture(texture_.gpuTexture_);
+    } else if (type_ != "fog") {
         return;
     }
 
-    renderer_.gpu_.bindTexture(texture_.gpuTexture_);
-
-    gpuSubmesh_.draw(program_, "aPosition", "aTexCoord", "aTexCoord2", renderer_.drawWireframe_ == true ? "aBarycentric" : null);
+    gpuSubmesh_.draw(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, renderer_.drawWireframe_ == true ? "aBarycentric" : null);
     this.stats_.drawnFaces_ += this.faces_;
 };
 

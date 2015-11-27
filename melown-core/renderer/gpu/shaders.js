@@ -326,6 +326,53 @@ Melown.tileFragmentShader = "precision mediump float;\n"+
         "gl_FragColor = mix(fogColor, texture2D(uSampler, vTexCoord), vFogFactor);\n"+
     "}";
 
+//textured tile mesh
+Melown.tile2VertexShader =
+    "attribute vec3 aPosition;\n"+
+    "attribute vec2 aTexCoord2;\n"+
+    "uniform mat4 uMV, uProj;\n"+
+    "uniform float uFogDensity;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying float vFogFactor;\n"+
+    "void main() {\n"+
+        "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
+        "gl_Position = uProj * camSpacePos;\n"+
+        "float camDist = length(camSpacePos.xyz);\n"+
+        "vFogFactor = exp(uFogDensity * camDist);\n"+
+        "vTexCoord = aTexCoord2;\n"+
+    "}";
+
+Melown.tile2FragmentShader = "precision mediump float;\n"+
+    "uniform sampler2D uSampler;\n"+
+    "uniform float uAlpha;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying float vFogFactor;\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+        "gl_FragColor = mix(fogColor, texture2D(uSampler, vTexCoord), vFogFactor);\n"+
+        "gl_FragColor[3] = uAlpha;\n"+
+    "}";
+
+//fog only tile mesh
+Melown.fogTileVertexShader =
+    "attribute vec3 aPosition;\n"+
+    "uniform mat4 uMV, uProj;\n"+
+    "uniform float uFogDensity;\n"+
+    "varying float vFogFactor;\n"+
+    "void main() {\n"+
+        "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
+        "gl_Position = uProj * camSpacePos;\n"+
+        "float camDist = length(camSpacePos.xyz);\n"+
+        "vFogFactor = exp(uFogDensity * camDist);\n"+
+    "}";
+
+Melown.fogTileFragmentShader = "precision mediump float;\n"+
+    "varying float vFogFactor;\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+        "gl_FragColor = vec4(fogColor.xyz, vFogFactor);\n"+
+    "}";
+
 
 //flat shade tile mesh
 Melown.tileFlatShadeVertexShader =

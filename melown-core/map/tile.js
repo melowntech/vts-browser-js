@@ -5,7 +5,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.map_ = map_;
     this.id_ = id_;
     this.parent_ = parent_;
-    this.viewCoutner_ = 0;
+    this.viewCoutner_ = map_.viewCounter_;
 
     this.metanode_ = null;  //[metanode, cacheItem]
     this.metastorage_ = null; //link to metatile storage
@@ -17,8 +17,10 @@ Melown.MapTile = function(map_, parent_, id_) {
 
     this.empty_ = true;
 
-    this.updateBounds_ = false;
-    this.boundTextures_ = {};
+    this.updateBounds_ = true;
+    this.transparentBounds_ = false;
+    this.boundLayers_ = [];
+    this.boundTextures_ = [];
 
     this.heightMap_ = null;
 
@@ -51,9 +53,9 @@ Melown.MapTile.prototype.kill = function() {
         this.heightMap_.kill();
     }
 
-    for (var key in this.layerTextures_) {
-        if (this.layerTextures_[key_] != null) {
-            this.layerTextures_[key_].kill();
+    for (var key in this.boundTextures_) {
+        if (this.boundTextures_[key_] != null) {
+            this.boundTextures_[key_].kill();
         }
     }
 
@@ -65,8 +67,10 @@ Melown.MapTile.prototype.kill = function() {
     this.surfaceTextures_ = [];
     this.surfaceGeodata_ = null;
 
-    this.layerIndex_ = null;
-    this.layerTextures_ = [];
+    this.updateBounds_ = true;
+    this.transparentBounds_ = false;
+    this.boundLayers_ = {};
+    this.boundTextures_ = {};
 
     this.heightMap_ = null;
 

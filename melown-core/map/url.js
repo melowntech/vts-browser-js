@@ -23,6 +23,24 @@ Melown.Map.prototype.msDigit = function(iy, ix) {
     return (((iy & 3) << 1) + (ix & 1));
 };
 
+Melown.Map.prototype.hex = function(v, n) {
+    var s = v.toString(16);
+    while (s.length < 8) {
+        s = "0" + s;
+    }
+    return s;
+};
+
+Melown.Map.prototype.ppx = function(lod_, ix) {
+    return this.hex(ix << (28 - lod_), 7);
+
+};
+
+Melown.Map.prototype.ppy = function(lod_, iy) {
+    return this.hex((1 << 28) - ((iy + 1) << (28 - lod_)), 7);
+};
+
+
 Melown.Map.prototype.processUrlFunction = function(id_, counter_, string_) {
     if (typeof string_ == "string") {
         if (string_.indexOf("quad") != -1) {
@@ -58,6 +76,28 @@ Melown.Map.prototype.processUrlFunction = function(id_, counter_, string_) {
 
             return string_;
 
+        } else if (string_.indexOf("ppx") != -1) {
+
+            var string2_ = "(function(lod,x){" + string_.replace("ppx", "return this.ppx") + "})";
+
+            try {
+                var fc_ = eval(string2_).bind(this);
+                return fc_(id_.lod_, id_.ix_);
+            } catch(e) {
+                return string_;
+            }
+
+        } else if (string_.indexOf("ppy") != -1) {
+
+            var string2_ = "(function(lod,y){" + string_.replace("ppy", "return this.ppy") + "})";
+
+            try {
+                var fc_ = eval(string2_).bind(this);
+                return fc_(id_.lod_, id_.iy_);
+            } catch(e) {
+                return string_;
+            }
+
         } else {
             return string_;
         }
@@ -85,6 +125,8 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
                                            this.processUrlFunction.bind(this, id_, this.urlCounter_));
 
     this.urlCounter_++;
+
+    skipBaseUrl_ = (url_.indexOf("://") != -1);
 
     if (skipBaseUrl_) {
         return url_;

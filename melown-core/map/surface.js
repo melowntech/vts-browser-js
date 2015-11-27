@@ -12,6 +12,7 @@ Melown.MapSurface = function(map_, json_) {
     this.textureUrl_ = json_["textureUrl"] || "";
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
+    this.textureLayer_ = json_["textureLayer"] || null;
 };
 
 Melown.MapSurface.prototype.hasTile = function(id_) {

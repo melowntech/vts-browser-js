@@ -141,7 +141,7 @@ struct VerticesBlock {
         if (externalUVs_ != null) {
             var uvindex_ = i * 2;
             externalUVs_[uvindex_] = data_.getUint16(index_, true) * uvfactor_; index_ += 2;
-            externalUVs_[uvindex_+1] = data_.getUint16(index_, true) * uvfactor_; index_ += 2;
+            externalUVs_[uvindex_+1] = (65535 - data_.getUint16(index_, true)) * uvfactor_; index_ += 2;
         }
 
         if (undulationDeltas_ != null) {

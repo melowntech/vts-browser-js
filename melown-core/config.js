@@ -2,8 +2,7 @@
 /**
  * @constructor
  */
-Melown.CoreConfig = function(json_)
-{
+Melown.CoreConfig = function(json_) {
     this.cacheSize_ = (1024*1024*1024);
     this.gpuCacheSize_ = (420*1024*1024);
     this.numThreads_ = 4;

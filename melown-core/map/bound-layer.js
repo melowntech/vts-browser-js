@@ -9,12 +9,23 @@ Melown.MapBoundLayer = function(map_, json_) {
     this.tileSize_ = json_["tileSize"] || [256,256];
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.credits_ = json_["credits"] || [];
+    this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
+    this.currentAlpha_ = 1.0;
 };
 
 Melown.MapBoundLayer.prototype.hasTile = function(id_) {
+    var shift_ = id_[0] - this.lodRange_[0];
+
+    if (shift_ < 0) {
+        return false;
+    }
+
+    var x = id_[1] >> shift_;
+    var y = id_[2] >> shift_;
+
     if (id_[0] < this.lodRange_[0] || id_[0] > this.lodRange_[1] ||
-        id_[1] < this.tileRange_[0][0] || id_[1] > this.tileRange_[1][0] ||
-        id_[2] < this.tileRange_[0][1] || id_[2] > this.tileRange_[1][1] ) {
+        x < this.tileRange_[0][0] || x > this.tileRange_[1][0] ||
+        y < this.tileRange_[0][1] || y > this.tileRange_[1][1] ) {
         return false;
     }
 
@@ -22,5 +33,5 @@ Melown.MapBoundLayer.prototype.hasTile = function(id_) {
 };
 
 Melown.MapBoundLayer.prototype.getUrl = function(id_, skipBaseUrl_) {
-    this.map_.makeUrl(this.url_, id_, null, skipBaseUrl_);
+    return this.map_.makeUrl(this.url_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
 };

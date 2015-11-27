@@ -86,6 +86,9 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.drawFog_ = true;
     this.debugTextSize_ = 1.0;
 
+    this.drawTileState_ = this.renderer_.gpu_.createState({});
+    this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});
+
     //this.mesh_ = new Melown.MapMesh(this);
     //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
 
@@ -150,11 +153,11 @@ Melown.Map.prototype.addBoundLayer = function(number_, layer_) {
 };
 
 Melown.Map.prototype.getBoundLayerByNumber = function(number_) {
-    return this.boundLayers_[number_];
+    return this.searchMapByInnerId(this.boundLayers_, number_);
 };
 
 Melown.Map.prototype.getBoundLayerById = function(id_) {
-    return this.searchArrayById(this.boundLayers_, id_);
+    return this.boundLayers_[id_];
 };
 
 Melown.Map.prototype.addFreeLayer = function(id_, layer_) {
@@ -191,12 +194,23 @@ Melown.Map.prototype.setMapView = function(view_) {
     }
 
     this.generateSurfaceSequence();
+    this.generateBoundLayerSequence();
 };
 
 Melown.Map.prototype.searchArrayById = function(array_, id_) {
     for (var i = 0, li = array_.length; i < li; i++) {
         if (array_[i].id_ == id_) {
             return array_[i];
+        }
+    }
+
+    return null;
+};
+
+Melown.Map.prototype.searchMapByInnerId = function(map_, id_) {
+    for (var key_ in map_) {
+        if (map_[key_].id_ == id_) {
+            return map_[key_];
         }
     }
 
@@ -215,15 +229,15 @@ Melown.Map.prototype.generateBoundLayerSequence = function() {
             var layer_ = this.getBoundLayerById(item_);
         } else {
             var layer_ = this.getBoundLayerById(item_["id"]);
-        }
 
+            if (layer_ != null && typeof item_["alpha"] !== "undefined") {
+                layer_.currentAlpha_ = item_["alpha"];
+            }
+        }
 
         if (layer_ != null) {
-            this.boundLayerSequence_
-        } else {
-
+            this.boundLayerSequence_.push(layer_);
         }
-
     }
 };
 
