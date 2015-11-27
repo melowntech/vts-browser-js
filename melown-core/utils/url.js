@@ -1,15 +1,15 @@
-Melown.URL = {};
+Melown.Url = {};
 
-Melown.URL.isSameOrigin = function(url_) {
+Melown.Url.isSameOrigin = function(url_) {
     if (typeof url_ !== 'string') {
         return false;
     }
     var docHost_ = document.location.hostname;
-    var parser_ = Melown.URL.parse(url_)
+    var parser_ = Melown.Url.parse(url_)
     return parser_['hostname'] === docHost_;
 }
 
-Melown.URL.parse = function(url_) {
+Melown.Url.parse = function(url_) {
     if (typeof url_ !== 'string') {
         return null;
     }

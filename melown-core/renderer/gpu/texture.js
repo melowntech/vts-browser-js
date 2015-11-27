@@ -157,7 +157,7 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
 };
 
 Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_) {
-    this.image_ = Melown.http.imageFactory(path_, (function () {
+    this.image_ = Melown.Http.imageFactory(path_, (function () {
         if (this.core_ != null && this.core_.killed_ == true) {
             return;
         }

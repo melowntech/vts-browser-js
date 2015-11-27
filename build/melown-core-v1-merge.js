@@ -4273,18 +4273,18 @@ Melown.Platform = {
     ]
 
 };
-Melown.URL = {};
+Melown.Url = {};
 
-Melown.URL.isSameOrigin = function(url_) {
+Melown.Url.isSameOrigin = function(url_) {
     if (typeof url_ !== 'string') {
         return false;
     }
     var docHost_ = document.location.hostname;
-    var parser_ = Melown.URL.parse(url_)
+    var parser_ = Melown.Url.parse(url_)
     return parser_['hostname'] === docHost_;
 }
 
-Melown.URL.parse = function(url_) {
+Melown.Url.parse = function(url_) {
     if (typeof url_ !== 'string') {
         return null;
     }
@@ -4294,30 +4294,30 @@ Melown.URL.parse = function(url_) {
     return parser_
 }
 
-Melown.http = {};
+Melown.Http = {};
 
-Melown.http.loadImageFormUrl = function(image_, url_) {
+Melown.Http.loadImageFormUrl = function(image_, url_) {
     if (!image_ instanceof Image || typeof url_ !== 'string') {
         return;
     }
 
-    var parser_ = Melown.URL.parse(url_);
+    var parser_ = Melown.Url.parse(url_);
     if (parser_ === null) {
         return;
     }
 
     if (parser_['hostname'] !== '') {
-        image_.crossOrigin = Melown.URL.isSameOrigin(url_) ? 
+        image_.crossOrigin = Melown.Url.isSameOrigin(url_) ? 
                              "use-credentials" : "anonymous";
     }
     image_.src = url_;
 }
 
-Melown.http.imageFactory = function(url_, onload_, onerror_) {
+Melown.Http.imageFactory = function(url_, onload_, onerror_) {
     var image_ = new Image();
     image_.onerror = onerror_;
     image_.onload = onload_;
-    Melown.http.loadImageFormUrl(image_, url_);
+    Melown.Http.loadImageFormUrl(image_, url_);
     return image_;
 }
 
@@ -8419,7 +8419,7 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
 };
 
 Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_) {
-    this.image_ = Melown.http.imageFactory(path_, (function () {
+    this.image_ = Melown.Http.imageFactory(path_, (function () {
         if (this.core_ != null && this.core_.killed_ == true) {
             return;
         }
@@ -16121,7 +16121,7 @@ Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
 
     var onerror_ = this.onLoadError.bind(this);
     var onload_ = this.onLoaded.bind(this);
-    this.image_ = Melown.http.imageFactory(url_, onload_, onerror_);
+    this.image_ = Melown.Http.imageFactory(url_, onload_, onerror_);
 
     this.loadState_ = 1;
 };
