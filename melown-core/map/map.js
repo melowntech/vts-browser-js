@@ -48,6 +48,7 @@ Melown.Map = function(core_, mapConfig_, path_) {
     this.viewCounter_ = 0;
 
     this.surfaceSequence_ = [];
+    this.boundLayerSequence_ = [];
 
     this.mapTrees_ = [];
 
@@ -144,12 +145,16 @@ Melown.Map.prototype.getGlue = function(id_) {
     return this.searchArrayById(this.glues_, id_);
 };
 
-Melown.Map.prototype.addBoundLayer = function(id_, layer_) {
-    this.boundLayers_[id_] = layer_;
+Melown.Map.prototype.addBoundLayer = function(number_, layer_) {
+    this.boundLayers_[number_] = layer_;
 };
 
-Melown.Map.prototype.getBoundLayer = function(id_) {
-    return this.boundLayers_[id_];
+Melown.Map.prototype.getBoundLayerByNumber = function(number_) {
+    return this.boundLayers_[number_];
+};
+
+Melown.Map.prototype.getBoundLayerById = function(id_) {
+    return this.searchArrayById(this.boundLayers_, id_);
 };
 
 Melown.Map.prototype.addFreeLayer = function(id_, layer_) {
@@ -198,9 +203,34 @@ Melown.Map.prototype.searchArrayById = function(array_, id_) {
     return null;
 };
 
+Melown.Map.prototype.generateBoundLayerSequence = function() {
+    var view_ = this.currentView_;
+    var layers_ = view_.boundLayers_;
+    this.boundLayerSequence_ = [];
+
+    for (var i = 0, li = layers_.length; i < li; i++) {
+        var item_ = layers_[i];
+
+        if (typeof item_ === "string") {
+            var layer_ = this.getBoundLayerById(item_);
+        } else {
+            var layer_ = this.getBoundLayerById(item_["id"]);
+        }
+
+
+        if (layer_ != null) {
+            this.boundLayerSequence_
+        } else {
+
+        }
+
+    }
+};
+
 Melown.Map.prototype.generateSurfaceSequence = function() {
     var view_ = this.currentView_;
     var surfaces_ = view_.surfaces_;
+    this.surfaceSequence_ = [];
 
     for (var i = 0, li = surfaces_.length; i < li; i++) {
 

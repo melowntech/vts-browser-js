@@ -19,10 +19,11 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
     if (tile_.surface_ != null) {
 
-        if ((node_.flags_ & MelownMetanodeFlags_GeometryPresent) != 0) {
+        if (node_.hasGeometry()) {
 
             if (tile_.surfaceMesh_ == null) {
-                tile_.surfaceMesh_ = new Melown.MapMesh(this, tile_);
+                var path_ = tile_.surface_.getMeshUrl(tile_.id_);
+                tile_.surfaceMesh_ = new Melown.MapMesh(this, path_);
             }
 
             if (this.drawBBoxes_) {
@@ -41,8 +42,20 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                         submeshes_[i].drawBBox(cameraPos_);
                     }
 
+                    /*
+                    if (this.updateBounds_) {
+                        this.updateBounds_ = false;
+                        this.boundLayers_ = {};
+                        this.boundTextures_ = {};
+
+                        var boundLayer_ = surfaceMesh_.getSubmeshBoundLayer(i);
+                        boundLayer_.hasTile(tile_.id_);
+                    }
+                    */
+
                     if (tile_.surfaceTextures_[i] == null) {
-                        tile_.surfaceTextures_[i] = new Melown.MapTexture(this, tile_, i, false);
+                        var path_ = tile_.surface_.getTexureUrl(tile_.id_, i);
+                        tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                     } else {
                         if (tile_.surfaceTextures_[i].isReady() == true) {
                             tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, tile_.surfaceTextures_[i]);

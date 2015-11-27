@@ -189,7 +189,6 @@ struct TexcoorsBlock {
     this.tmpInternalUVs_ = internalUVs_;
 
     stream_.index_ = index_;
-
 };
 
 Melown.MapSubmesh.prototype.parseFaces = function (stream_) {
@@ -307,11 +306,15 @@ Melown.MapSubmesh.prototype.fileSize = function () {
 };
 
 Melown.MapSubmesh.prototype.buildGpuMesh = function () {
-    return new Melown.GpuMesh(this.map_.renderer_.gpu_, {bbox_: this.bbox_, vertices_: this.vertices_, uvs_: this.internalUVs_}, 1, this.map_.core_);
+    return new Melown.GpuMesh(this.map_.renderer_.gpu_, {
+            bbox_: this.bbox_,
+            vertices_: this.vertices_,
+            uvs_: this.internalUVs_,
+            uvs2_: this.externalUVs_
+        }, 1, this.map_.core_);
 };
 
-Melown.MapSubmesh.prototype.getWorldMatrix = function(geoPos_, matrix_)
-{
+Melown.MapSubmesh.prototype.getWorldMatrix = function(geoPos_, matrix_) {
     // Note: the current camera geographic position (geoPos) is not necessary
     // here, in theory, but for numerical stability (OpenGL ES is float only)
     // we get rid of the large UTM numbers in the following subtractions. The
@@ -336,7 +339,6 @@ Melown.MapSubmesh.prototype.getWorldMatrix = function(geoPos_, matrix_)
 };
 
 Melown.MapSubmesh.prototype.drawBBox = function(cameraPos_) {
-
     var renderer_ = this.map_.renderer_;
 
     renderer_.gpu_.useProgram(renderer_.progBBox_, "aPosition");
@@ -353,6 +355,5 @@ Melown.MapSubmesh.prototype.drawBBox = function(cameraPos_) {
 
     //draw bbox
     renderer_.bboxMesh_.draw(renderer_.progBBox_, "aPosition");
-
 };
 

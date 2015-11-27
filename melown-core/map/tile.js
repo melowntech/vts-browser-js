@@ -17,8 +17,8 @@ Melown.MapTile = function(map_, parent_, id_) {
 
     this.empty_ = true;
 
-    this.layerIndex_ = null;  //index of layer
-    this.layerTextures_ = [];
+    this.updateBounds_ = false;
+    this.boundTextures_ = {};
 
     this.heightMap_ = null;
 

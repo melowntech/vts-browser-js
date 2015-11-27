@@ -12,6 +12,10 @@ cat utils/libs/proj4.js \
     utils/math.js \
     utils/utils.js \
     utils/platform.js \
+    inspector/inspector.js \
+    inspector/input.js \
+    inspector/stats.js \
+    inspector/graphs.js \
     renderer/gpu/bbox.js \
     renderer/gpu/device.js \
     renderer/gpu/font.js \
@@ -95,7 +99,7 @@ cd ..
 # rm ../build/geodata-worker-tmp.js 
 # cp build/engine-v1.js build/engine-latest.js
 # cp build/engine-v1.css build/engine-latest.css
- 
+
 
 
 

@@ -1,14 +1,8 @@
-//! Holds a GPU vertex buffer.
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
-
-//3D Line, line width is defined in meters
 
 /**
  * @constructor
  */
-Melown.GpuLine = function(gpu_, core_)
-{
+Melown.GpuLine = function(gpu_, core_) {
     this.bbox_ = null;
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
@@ -27,8 +21,7 @@ Melown.GpuLine = function(gpu_, core_)
 };
 
 //destructor
-Melown.GpuLine.prototype.kill = function()
-{
+Melown.GpuLine.prototype.kill = function() {
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
 /*
     if (this.core_.renderer_ != null) {
@@ -39,8 +32,7 @@ Melown.GpuLine.prototype.kill = function()
 };
 
 //add line to vertices buffer
-Melown.GpuLine.prototype.addLine = function(p1, p2, size_)
-{
+Melown.GpuLine.prototype.addLine = function(p1, p2, size_) {
     //get direction vector
     var v = [p2[0] - p1[0], p2[1] - p1[1], 0];
 
@@ -86,8 +78,7 @@ Melown.GpuLine.prototype.addLine = function(p1, p2, size_)
 };
 
 //add circle to vertices buffer
-Melown.GpuLine.prototype.addCircle = function(p1, size_, sides_)
-{
+Melown.GpuLine.prototype.addCircle = function(p1, size_, sides_) {
     var i;
 
     if (this.circleBuffer_ == null) {
@@ -129,8 +120,7 @@ Melown.GpuLine.prototype.addCircle = function(p1, size_, sides_)
 };
 
 //compile content of vertices buffer into gpu buffer
-Melown.GpuLine.prototype.compile = function()
-{
+Melown.GpuLine.prototype.compile = function() {
     var gl_ = this.gl_;
 
     //create vertex buffer
@@ -155,8 +145,7 @@ Melown.GpuLine.prototype.compile = function()
 };
 
 //! Draws the mesh, given the two vertex shader attributes locations.
-Melown.GpuLine.prototype.draw = function(program_, attrPosition_, attrTexCoord_, attrBarycenteric_)
-{
+Melown.GpuLine.prototype.draw = function(program_, attrPosition_, attrTexCoord_, attrBarycenteric_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.vertexPositionBuffer_ == null){
         return;
