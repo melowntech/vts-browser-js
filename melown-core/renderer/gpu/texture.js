@@ -157,24 +157,14 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
 };
 
 Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_) {
-    this.image_ = new Image();
-
-    if (direct_ != true) { //this is for firefox compatibility
-        this.image_.crossOrigin = "use-credentials";
-    }
-
-    this.image_.onload = (function () {
-
+    this.image_ = Melown.Http.imageFactory(path_, (function () {
         if (this.core_ != null && this.core_.killed_ == true) {
             return;
         }
 
         this.createFromImage(this.image_, this.filter_, this.repeat_);
         this.image_ = null;
-
-    }).bind(this);
-
-    this.image_.onerror = (function () {
+    }).bind(this), (function () {
 
         if (this.core_ != null && this.core_.killed_ == true) {
             return;
@@ -183,10 +173,8 @@ Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
         if (onError_ != null) {
             onError_();
         }
+    }).bind(this));
 
-    }).bind(this);
-
-    this.image_.src = path_;
 };
 
 Melown.GpuTexture.prototype.createFramebufferFromData = function(lx_, ly_, data_) {
