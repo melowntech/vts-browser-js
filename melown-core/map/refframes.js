@@ -108,6 +108,10 @@ Melown.MapRefFrames.prototype.parseSpaceExtents = function(extentsData_) {
     };
 };
 
+Melown.MapRefFrames.prototype.getSpatialDivisionNodes = function() {
+    return this.division_.nodes_;
+};
+
 Melown.MapRefFrames.prototype.getRefFrame = function(id_) {
     var lod_ = id_[0];
 

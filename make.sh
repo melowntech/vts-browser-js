@@ -1,3 +1,5 @@
+mkdir build 
+
 cd melown-core
 
 # merge geodata workers

@@ -105,7 +105,7 @@ Melown.GpuMesh.prototype.draw = function(program_, attrVertex_, attrUV_, attrUV2
     if (this.uv2Buffer_ != null) {
         var uv2Attribute_ = program_.getAttribute(attrUV2_);
         gl_.bindBuffer(gl_.ARRAY_BUFFER, this.uv2Buffer_);
-        gl_.vertexAttribPointer(uvAttribute_, this.uv2Buffer_.itemSize, gl_.FLOAT, false, 0, 0);
+        gl_.vertexAttribPointer(uv2Attribute_, this.uv2Buffer_.itemSize, gl_.FLOAT, false, 0, 0);
     }
 
     if (attrBarycenteric_ != null) {
