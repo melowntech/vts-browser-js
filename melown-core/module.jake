@@ -79,6 +79,8 @@ var files = [
     'utils/matrix.js',
     'utils/platform.js',
     'utils/utils.js',
+    'utils/url.js',
+    'utils/http.js',
     
     'utils/libs/geographics-full.js',
     'utils/libs/proj4.js',
