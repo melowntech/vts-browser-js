@@ -22,6 +22,8 @@ Melown.Roi = function(config_, browser_, options_) {
     this.refPosition_ = null;               // filled from config JSON 
     this.needsRedraw_ = false;              // dirty flag for drawing
     this.alpha_ = 1.0;
+    this.defaultControlMode_ = 'pano';
+    this.defaultControlModeConfig_ = null;
 
     // binded callbacks
     this.tickClb_ = null;
@@ -45,6 +47,7 @@ Melown.Roi = function(config_, browser_, options_) {
         },
         set : function(val_) {}
     });
+    this.controlMode_ = this.browser_.getControlMode();
     this.loadingQueue_ = null;
     this.processQueue_ = null;
 
@@ -134,7 +137,8 @@ Melown.Roi.prototype.delve = function(enterPosition_) {
     this.enterPosition_ = this.core_.getMap().getPosition();
 
     this.core_.getMap().setPosition(this.refPosition_);
-    this.browser_.setControlMode('pannorama');
+    this.controlMode_.setCurrentCotnrolMode(this.defaultControlMode_
+                                            , this.defaultControlModeConfig_);
 
     this.state_ = Melown.Roi.State.Presenting;
 
@@ -156,7 +160,7 @@ Melown.Roi.prototype.leave = function() {
     this.state_ = Melown.Roi.State.FadingOut;
 
     this.core_.getMap().setPosition(this.enterPosition_);
-    this.browser_.setControlMode('observer');
+    this.controlMode_.setDefaultControlMode();
 
     this.state_ = Melown.Roi.State.Ready;
 

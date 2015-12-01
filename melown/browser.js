@@ -14,7 +14,7 @@ Melown.Browser = function(element_, config_) {
 
     this.autopilot_ = new Melown.Autopilot(this);
     this.rois_ = new Melown.Rois(this);
-    this.controlMode_ = "observer";
+    this.controlMode_ = new Melown.ControlMode(this, this.ui_);
 
     this.on("map-loaded", this.onMapLoaded.bind(this));
     this.on("map-unloaded", this.onMapUnloaded.bind(this));
@@ -25,6 +25,10 @@ Melown.Browser = function(element_, config_) {
 
 Melown.Browser.prototype.getCore = function() {
     return this.core_;
+};
+
+Melown.Browser.prototype.getControlMode = function() {
+    return this.controlMode_;
 };
 
 Melown.Browser.prototype.on = function(name_, listener_) {

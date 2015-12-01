@@ -20,6 +20,8 @@ Melown.Roi.Photo = function(config_, core_, options_) {
 
     this.super_ = Melown.Roi.prototype;
     Melown.Roi.call(this, config_, core_, options_);
+
+    this.defaultControlMode_ = 'disabled';
 }
 
 // Inheritance from Roi

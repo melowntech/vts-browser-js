@@ -47,6 +47,8 @@ Melown.UI.prototype.tick = function() {
     this.compass_.update();
 };
 
-
+Melown.UI.getMapControl = function() {
+    return this.map_;
+}
 
 
