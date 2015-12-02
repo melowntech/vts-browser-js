@@ -1,8 +1,9 @@
-var Melown.ControlMode.Pano = function(browser_) {
+Melown.ControlMode.Pano = function(browser_) {
+    this.browser_ = browser_;
     this.config_ = null;
 }
 
-Melown.ControlMode.Pano.prototype.drag = function() {
+Melown.ControlMode.Pano.prototype.drag = function(event_) {
     var map_ = this.browser_.getCore().getMap();
     if (map_ == null) {
         return;
@@ -20,7 +21,7 @@ Melown.ControlMode.Pano.prototype.drag = function() {
     map_.setPosition(pos_);
 }
 
-Melown.ControlMode.Pano.prototype.wheel = function() {
+Melown.ControlMode.Pano.prototype.wheel = function(event_) {
     var map_ = this.browser_.getCore().getMap();
     if (map_ == null) {
         return;
@@ -35,7 +36,7 @@ Melown.ControlMode.Pano.prototype.wheel = function() {
     map_.setPosition(pos_);
 }
 
-Melown.ControlMode.Pano.prototype.tick = function() {
+Melown.ControlMode.Pano.prototype.tick = function(event_) {
     
 }
 

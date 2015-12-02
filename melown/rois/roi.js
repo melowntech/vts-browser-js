@@ -137,7 +137,7 @@ Melown.Roi.prototype.delve = function(enterPosition_) {
     this.enterPosition_ = this.core_.getMap().getPosition();
 
     this.core_.getMap().setPosition(this.refPosition_);
-    this.controlMode_.setCurrentCotnrolMode(this.defaultControlMode_
+    this.controlMode_.setCurrentControlMode(this.defaultControlMode_
                                             , this.defaultControlModeConfig_);
 
     this.state_ = Melown.Roi.State.Presenting;

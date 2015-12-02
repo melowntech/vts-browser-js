@@ -1,4 +1,4 @@
-var Melown.ControlMode.Disabled = function() { }
+Melown.ControlMode.Disabled = function() { }
 
 Melown.ControlMode.Disabled.prototype.drag = function() { }
 

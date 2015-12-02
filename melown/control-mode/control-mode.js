@@ -9,7 +9,7 @@ Melown.ControlMode = function(browser_, ui_) {
     this.browser_.on('tick', this.onTick.bind(this));
 
     this.controlModes_ = {};
-    this.currentCotnrolMode_;
+    this.currentCotnrolMode_ = 'map-observer';
 
     // default control modes
     this.addControlMode('map-observer', new Melown.ControlMode.MapObserver(browser_));
@@ -51,13 +51,13 @@ Melown.ControlMode.prototype.removeControlMode = function(id_) {
 }
 
 Melown.ControlMode.prototype.setCurrentControlMode = function(id_, options_) {
-    var newMode_ = this.currentCotnrolMode_[id_];
+    var newMode_ = this.controlModes_[id_];
     if (newMode_ === null || typeof newMode_ !== 'object') {
         throw new Error ('Melown.ControlMode.setCurrentControlMode: Try tu use unregistered control mode ' + id_  + '.');
     }
 
     // set new mode
-    this.currentControlMode_ = newMode_;
+    this.currentControlMode_ = id_;
 
     // call reset
     if (typeof newMode_[Melown_ControlMode_Reset] === 'function') {
@@ -66,32 +66,38 @@ Melown.ControlMode.prototype.setCurrentControlMode = function(id_, options_) {
 }
 
 Melown.ControlMode.prototype.setDefaultControlMode = function() {
-    this.setDefaultControlMode('map-observer');
+    this.setCurrentControlMode('map-observer');
 }
 
 Melown.ControlMode.prototype.getCurrentControlMode = function() {
-    return this.currentCotnrolMode_;
+    return this.currentControlMode_;
 }
 
 // Event callbacks
 
 Melown.ControlMode.prototype.onDrag = function(event_) {
-    if (typeof this.currentCotnrolMode_[Melown_ControlMode_Drag] 
+    if (typeof this._currentController()[Melown_ControlMode_Drag] 
         === 'function') {
-        this.currentControlMode_[Melown_ControlMode_Drag](event_);
+        this._currentController()[Melown_ControlMode_Drag](event_);
     }
 }
 
 Melown.ControlMode.prototype.onWheel = function(event_) {
-    if (typeof this.currentCotnrolMode_[Melown_ControlMode_Wheel] 
+    if (typeof this._currentController()[Melown_ControlMode_Wheel] 
         === 'function') {
-        this.currentControlMode_[Melown_ControlMode_Wheel](event_);
+        this._currentController()[Melown_ControlMode_Wheel](event_);
     }
 }
 
 Melown.ControlMode.prototype.onTick = function(event_) {
-    if (typeof this.currentCotnrolMode_[Melown_ControlMode_Tick] 
+    if (typeof this._currentController()[Melown_ControlMode_Tick] 
         === 'function') {
-        this.currentControlMode_[Melown_ControlMode_Tick](event_);
+        this._currentController()[Melown_ControlMode_Tick](event_);
     }
+}
+
+// Private metod
+
+Melown.ControlMode.prototype._currentController = function() {
+    return this.controlModes_[this.currentControlMode_];
 }

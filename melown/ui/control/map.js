@@ -9,8 +9,10 @@ Melown.UIControlMap = function(ui_) {
       + ' class="melown-map">'
       + ' </div>');
 
-    this.dragCall_ = this.onDrag.bind(this);
-
-    var map_ = this.control_.getElement("melown-map");
+    var map_ = this.getMapElement();
     map_.setDraggableState(true);
 };
+
+Melown.UIControlMap.prototype.getMapElement = function() {
+    return this.control_.getElement("melown-map");
+}

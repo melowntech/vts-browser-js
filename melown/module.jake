@@ -30,6 +30,11 @@ var files = [
     'ui/element/event.js',
     'ui/element/events.js',
 
+    'control-mode/control-mode.js',
+    'control-mode/map-observer.js',
+    'control-mode/disabled.js',
+    'control-mode/pano.js',
+
     'utility/dom.js',
     'utility/utility.js',
 ];
