@@ -1,13 +1,16 @@
 /**
  * @constructor
  */
-Melown.MapTexture = function(map_, path_) {
+Melown.MapTexture = function(map_, path_, heightMap_) {
     this.map_ = map_;
     this.stats_ = map_.stats_;
     this.image_ = null;
+    this.imageData_ = null;
+    this.imageExtents_ = null;
     this.gpuTexture_ = null;
     this.loadState_ = 0;
     this.mapLoaderUrl_ = path_;
+    this.heightMap_ = heightMap_ || false;
 
     this.cacheItem_ = null; //store killImage
     this.gpuCacheItem_ = null; //store killGpuTexture
@@ -22,6 +25,7 @@ Melown.MapTexture.prototype.kill = function() {
 
 Melown.MapTexture.prototype.killImage = function(killedByCache_) {
     this.image_ = null;
+    this.imageData_ = null;
 
     if (killedByCache_ != true && this.cacheItem_ != null) {
         this.map_.resourcesCache_.remove(this.cacheItem_);
@@ -50,13 +54,18 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
 
 Melown.MapTexture.prototype.isReady = function() {
     if (this.loadState_ == 2) { //loaded
-        if (this.gpuTexture_ == null) {
-            this.buildGpuTexture();
+        if (this.heightMap_) {
+            if (this.imageData_ == null) {
+                this.buildHeightMap();
+            }
+        } else {
+            if (this.gpuTexture_ == null) {
+                this.buildGpuTexture();
+            }
+
+            this.map_.resourcesCache_.updateItem(this.cacheItem_);
+            this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
         }
-
-        this.map_.resourcesCache_.updateItem(this.cacheItem_);
-        this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
-
         return true;
     } else {
         if (this.loadState_ == 0) { //not loaded
@@ -96,7 +105,7 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
         return;
     }
 
-    var size_ = this.image_.naturalWidth * this.image_.naturalHeight * 3;
+    var size_ = this.image_.naturalWidth * this.image_.naturalHeight * (this.heightMap_ ? 3 : 3);
 
     this.cacheItem_ = this.map_.resourcesCache_.insert(this.killImage.bind(this, true), size_);
 
@@ -111,4 +120,16 @@ Melown.MapTexture.prototype.buildGpuTexture = function () {
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuTexture.bind(this, true), this.gpuTexture_.size_);
 };
+
+Melown.MapTexture.prototype.buildHeightMap = function () {
+    var canvas_ = document.createElement("canvas");
+    canvas_.width = this.image_.naturalWidth;
+    canvas_.height = this.image_.naturalHeight;
+    var ctx_ = canvas.getContext("2d");
+    ctx_.drawImage(this.image_, 0, 0);
+    this.imageData_ = ctx.getImageData(0, 0, this.image_.naturalWidth, this.image_.naturalHeight);
+    this.imageExtents_ = [this.image_.naturalWidth, this.image_.naturalHeight];
+    this.image_ = null;
+};
+
 

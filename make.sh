@@ -46,6 +46,7 @@ cat utils/libs/proj4.js \
     map/geodata/processor.js \
     map/bound-layer.js \
     map/cache.js \
+    map/position.js \
     map/camera.js \
     map/config.js \
     map/credit.js \
@@ -60,10 +61,9 @@ cat utils/libs/proj4.js \
     map/metanode.js \
     map/metastorage.js \
     map/metatile.js \
+    map/division-node.js \
     map/refframe.js \
     map/metatile.js \
-    map/refframe.js \
-    map/refframes.js \
     map/srs.js \
     map/stats.js \
     map/submesh.js \

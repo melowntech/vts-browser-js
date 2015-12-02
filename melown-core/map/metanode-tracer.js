@@ -9,9 +9,11 @@ Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_)
     this.rootId_ = mapTree_.rootId_;
     this.surface_ = surface_; //????
     this.nodeProcessingFunction_ = nodeProcessingFunction_;
+    this.params_ = null;
 };
 
-Melown.MapMetanodeTracer.prototype.trace = function(tile_) {
+Melown.MapMetanodeTracer.prototype.trace = function(tile_, params_) {
+    this.params_ = params_;
     this.traceTile(this.surfaceTree_);
 };
 
@@ -44,12 +46,9 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
         }
 
         if (metatile_.isReady() == true) {
-
             tile_.metanode_ = metatile_.getNode(tile_.id_);
 
-            if (tile_.metanode_ == null) {
-                tile_.metanode_ = metatile_.getNode(tile_.id_);
-            } else {
+            if (tile_.metanode_ != null) {
                 /*
                 if (tile_.id_[0] == 15) {
                     tile_ = tile_;
@@ -78,18 +77,50 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
 
     tile_.metanode_.metatile_.used();
 
-    if (this.nodeProcessingFunction_(tile_) == true) {
+    //if (tile_.id_[0] == 17) {
+        //tile_ = tile_;
+    //}
 
-        if (tile_.id_[0] == 17) {
-            tile_ = tile_;
-        }
+    if (this.nodeProcessingFunction_(tile_, this.params_) == true) {
 
-        //trace children
-        for (var i = 0; i < 4; i++) {
-            this.traceTile(tile_.children_[i]);
+        if (this.params_ && this.params_.traceHeight_) {
+            var coords_ = this.params_.coords_;
+            var extents_ = this.params_.extens_;
+            var center_ = [(extents_.ll_[0] + extents_.ur_[0]) *0.5,
+                           (extents_.ll_[1] + extents_.ur_[1]) *0.5];
+
+            //ul,ur,ll,lr
+
+            if (coords_[0] >= center_[0]) {
+                extents_.ll_[0] = center_[0];
+
+                if (coords_[1] >= center_[1]) {
+                    extents_.ll_[1] = center_[1];
+                    this.traceTile(tile_.children_[1]);
+                } else {
+                    extents_.ur_[1] = center_[1];
+                    this.traceTile(tile_.children_[0]);
+                }
+
+            } else {
+                extents_.ur_[0] = center_[0];
+
+                if (coords_[1] >= center_[1]) {
+                    extents_.ll_[1] = center_[1];
+                    this.traceTile(tile_.children_[3]);
+                } else {
+                    extents_.ur_[1] = center_[1];
+                    this.traceTile(tile_.children_[2]);
+                }
+            }
+
+        } else {
+            //trace children
+            for (var i = 0; i < 4; i++) {
+                this.traceTile(tile_.children_[i]);
+            }
         }
     }
-
 };
 
 Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {

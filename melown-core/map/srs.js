@@ -67,15 +67,14 @@ Melown.MapSrs.prototype.getSrsInfo = function() {
 };
 
 Melown.MapSrs.prototype.convertCoordsTo = function(coords_, srs_) {
-    var coords2_ = this.proj4_(this.srsDef_, srs_.srsDef_, coords_);
+    var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsDef_;
+    var coords2_ = this.proj4_(this.srsDef_, srsDef_, coords_);
     return coords2_;
 };
 
 Melown.MapSrs.prototype.convertCoordsFrom = function(coords_, srs_) {
     var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsDef_;
-//    var coords2_ = this.proj4_(this.srsDef_, srsDef_, coords_);
     var coords2_ = this.proj4_(srsDef_, this.srsDef_, coords_);
-//    var coords2_ = this.proj4_(srsDef_, coords_);
     return coords2_;
 };
 

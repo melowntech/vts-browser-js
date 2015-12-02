@@ -123,8 +123,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         /*map_.heightmapOnly_ = !map_.heightmapOnly_;*/
 
                         var pos_ = map_.getPosition();
-                        pos_[4] *= 0.9;
-
+                        pos_setHeight(pos_.setHeight() * 0.9);
                         map_.setPosition(pos_);
 
                         break;  //key H pressed

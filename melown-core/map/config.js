@@ -1,6 +1,5 @@
 
 Melown.Map.prototype.parseConfig = function() {
-
     //if (this.mapConfig_["version"] < 4) {
       //  return;
     //}
@@ -13,30 +12,13 @@ Melown.Map.prototype.parseConfig = function() {
     }
 
     if (this.mapConfig_["position"] != null) {
-/*
-        var pos_ = this.mapConfig_["position"];
-        pos_[1] = 472112;
-        pos_[2] = 5555728;
-        pos_[3] = 202;
-
-        pos_[4] = 0;
-        pos_[5] = -30;
-        pos_[6] = 0;
-
-        pos_[7] = 5000;
-
-        pos_[8] = 90;
-*/
-
         this.setPosition(this.mapConfig_["position"], false);
     }
 
     this.setMapView(this.initialView_);
-
 };
 
 Melown.Map.prototype.parseSrses = function() {
-
     var srses_ = this.mapConfig_["srses"];
     this.srses_ = {};
 
@@ -52,17 +34,16 @@ Melown.Map.prototype.parseSrses = function() {
 };
 
 Melown.Map.prototype.parseReferenceFrame = function() {
-
     var rf_ = this.mapConfig_["referenceFrame"];
-    this.referenceFrames_ = {};
+    this.referenceFrame_ = {};
 
     if (rf_ == null) {
         return false;
     }
 
-    this.setReferenceFrames(new Melown.MapRefFrames(this, rf_));
+    this.setReferenceFrame(new Melown.MapRefFrame(this, rf_));
 
-    if (this.referenceFrames_.valid_ == false) {
+    if (this.referenceFrame_.valid_ == false) {
         return false;
     }
 
@@ -71,7 +52,6 @@ Melown.Map.prototype.parseReferenceFrame = function() {
 
 
 Melown.Map.prototype.parseCredits = function() {
-
     var credits_ = this.mapConfig_["credits"];
     this.credits_ = {};
 
@@ -87,7 +67,6 @@ Melown.Map.prototype.parseCredits = function() {
 };
 
 Melown.Map.prototype.parseSurfaces = function() {
-
     var surfaces_ = this.mapConfig_["surfaces"];
     this.surfaces_ = [];
 
@@ -104,7 +83,6 @@ Melown.Map.prototype.parseSurfaces = function() {
 };
 
 Melown.Map.prototype.parseViews = function() {
-
     var views_ = this.mapConfig_["namedViews"];
     this.namedViews_ = [];
 
@@ -127,7 +105,6 @@ Melown.Map.prototype.parseViews = function() {
 };
 
 Melown.Map.prototype.parseGlues = function() {
-
     var glues_ = this.mapConfig_["glues"];
     this.glues_ = [];
 
@@ -141,11 +118,9 @@ Melown.Map.prototype.parseGlues = function() {
     }
 
     return true;
-
 };
 
 Melown.Map.prototype.parseBoundLayers = function() {
-
     var layers_ = this.mapConfig_["boundLayers"];
     this.boundLayers_ = [];
 
@@ -162,7 +137,6 @@ Melown.Map.prototype.parseBoundLayers = function() {
 };
 
 Melown.Map.prototype.parseFreeLayers = function() {
-
     var layers_ = this.mapConfig_["freeLayers"];
     this.freeLayers_ = [];
 

@@ -1,17 +1,17 @@
 /**
  * @constructor
  */
-Melown.MapTree = function(map_, rootId_, refFrame_, freeLayer_) {
+Melown.MapTree = function(map_, divisionNode_, freeLayer_) {
     this.map_ = map_;
     this.camera_ = map_.camera_;
-    this.rootId_ = rootId_;
-    this.refFrame_ = refFrame_;
+    this.rootId_ = divisionNode_.id_;
+    this.divisionNode_ = divisionNode_;
     this.freeLayer_ = freeLayer_;
-    this.metaBinaryOrder_ = this.map_.referenceFrames_.params_.metaBinaryOrder_;
+    this.metaBinaryOrder_ = this.map_.referenceFrame_.params_.metaBinaryOrder_;
     this.initialized_ = false;
 
-    this.surfaceTree_ = new Melown.MapTile(this.map_, null, rootId_);
-    this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, rootId_);
+    this.surfaceTree_ = new Melown.MapTile(this.map_, null, this.rootId_);
+    this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
 
     this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceSurfaceTile.bind(this));
 
@@ -46,8 +46,8 @@ Melown.MapTree.prototype.draw = function() {
     this.worldPos_ = [0,0,0];
     this.ndcToScreenPixel_ = this.map_.ndcToScreenPixel_;
 
-    var refFrame_ = this.refFrame_;
-    var periodicity_ = this.refFrame_.srs_.periodicity_;
+    var divisionNode_ = this.divisionNode_;
+    var periodicity_ = divisionNode_.srs_.periodicity_;
 
     if (periodicity_ != null) {
         this.drawSurface([0,0,0]);
@@ -66,15 +66,14 @@ Melown.MapTree.prototype.drawSurface = function(shift_) {
     this.surfaceTracer_.trace(this.rootId_);
 };
 
-Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
-
+Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
     var node_ = tile_.metanode_;
 
     if (node_ == null) {
         return false;
     }
 
-    var cameraPos_ = this.map_.navCameraPosition_;
+    var cameraPos_ = this.map_.cameraPosition_;
 
     if (this.camera_.bboxVisible(node_.bbox_, cameraPos_) != true) {
         return false;
@@ -110,71 +109,51 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, pos_, lod_) {
         return false;
     }
 
-
-
-    //node_.drawBBox(cameraPos_);
-
-/*
-    if (this.camera_.bboxVisible(node_.bbox_) != true) {
-        return false;
-    }
-*/
-
-    //if (node_.id_[0] <= 11) {
-    //    return true;
-        //node_.drawBBox(cameraPos_);
-    //}
-
-
-//    if (true && node_.id_[0] == 19 && tile_.surface_ != null) {
-
-
-    //if (tile_.metanode_.bbox_)
-
     return true;
 };
 
-Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, pos_, lod_) {
-    if (lod_ >= tile_.lod_) {
-
-        //get height from height map
-
-        if (tile_.heightMap_ == null) {
-            //load height map
-        }
-
-        //compute height map coords
-        //get height form height map
-
-        this.measurements_.height_ = height_;
+Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_) {
+    if (tile_.id_[0] > params_.desiredLod_) {
         return false;
-
-    } else {
-
-        //get needed child
-
     }
 
-    return true;
+    var node_ = tile_.metanode_;
+
+    if (node_ == null) {
+        return false;
+    }
+
+    if (node_.hasNavtile()) {
+        if (tile_.heightMap_ == null) {
+            var path_ = tile_.surface_.getNavUrl(tile_.id_);
+            tile_.heightMap_ = new Melown.MapTexture(this.map_, path_);
+        } else {
+            if (tile_.heightMap_.isReady() == true) {
+                params_.metanode_ =  node_;
+                params_.heightMap_ = tile_.heightMap_;
+                params_.extents_ = {
+                    ll_ : params_.extents_.ll_.slice(),
+                    ur_ : params_.extents_.ur_.slice()
+                };
+                return true;
+            }
+        }
+    } else {
+        params_.metanode_ =  node_;
+        return true;
+    }
+
+    return false;
 };
 
 
 Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
     var min_ = bbox_.min_;
     var max_ = bbox_.max_;
-    /*
-    var tileSize_ = max_[0]-min_[0]; //get tile size
-    var tilePos_ = [min_[0]-worldPos_[0], min_[1]-worldPos_[1], min_[2]-worldPos_[2]]; //get global pos
-    var tilePos2_ = [tilePos_[0] + tileSize_, tilePos_[1], tilePos_[2]];
-    var tilePos3_ = [tilePos_[0] + tileSize_, tilePos_[1] + tileSize_, tilePos_[2]];
-    var tilePos4_ = [tilePos_[0], tilePos_[1] + tileSize_, tilePos_[2]];
-    */
-
     var tilePos_ = [min_[0] - cameraPos_[0], min_[1] - cameraPos_[1]];
     var tilePos2_ = [max_[0] - cameraPos_[0], min_[1] - cameraPos_[1]];
     var tilePos3_ = [max_[0] - cameraPos_[0], max_[1] - cameraPos_[1]];
     var tilePos4_ = [min_[0] - cameraPos_[0], max_[1] - cameraPos_[1]];
-
     var h1_ = min_[2] - cameraPos_[2];
     var h2_ = max_[2] - cameraPos_[2];
 

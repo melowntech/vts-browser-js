@@ -10,7 +10,7 @@ Melown.MapInterface.prototype.setPosition = function(position_) {
 };
 
 Melown.MapInterface.prototype.getPosition = function(type_) {
-    return this.map_.getPosition(type_);
+    return this.map_.getPosition().pos_;
 };
 
 Melown.MapInterface.prototype.setView = function(view_) {
@@ -62,7 +62,7 @@ Melown.MapInterface.prototype.getReferenceFrame = function() {
 };
 
 Melown.MapInterface.prototype.pan = function(position_, dx_, dy_) {
-    return this.map_.pan(position_, dx_, dy_);
+    return this.map_.pan(new Melown.MapPosition(this.map_, position_), dx_, dy_).pos_.slice();
 };
 
 Melown.MapInterface.prototype.getCameraInfo = function() {
@@ -75,4 +75,7 @@ Melown.MapInterface.prototype.getCameraInfo = function() {
         "vector" : [0,0,1]
     };
 };
+
+Melown.MapPositionInterface = Melown.MapPosition;
+
 
