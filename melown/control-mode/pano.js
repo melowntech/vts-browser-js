@@ -1,24 +1,35 @@
 Melown.ControlMode.Pano = function(browser_) {
     this.browser_ = browser_;
     this.config_ = null;
+
+    this.center_ = [0, 0];
+    this.dragging_ = false;
+    this.velocity_ = [0, 0];
 }
 
 Melown.ControlMode.Pano.prototype.drag = function(event_) {
-    var map_ = this.browser_.getCore().getMap();
-    if (map_ == null) {
+    if (!this.dragging_) {
         return;
     }
 
-    var pos_ = map_.getPosition();
-    var delta_ = event_.getDragDelta();
+    var mouse_ = event_.getMousePosition();
+    var delta_ = [mouse_[0] - this.center_[0], mouse_[1] - this.center_[1]];
+    var sensitivity_ = 0.008;
+    this.velocity_[0] = delta_[0] * sensitivity_;
+    this.velocity_[1] = delta_[1] * sensitivity_;
+}
 
-    if (event_.getDragButton("right")) { //rotate
-        var sensitivity_ = 0.4;
-        pos_[5] -= delta_[0] * sensitivity_;
-        pos_[6] -= delta_[1] * sensitivity_;
+Melown.ControlMode.Pano.prototype.down = function(event_) {
+    if (event_.getMouseButton() === 'left') {
+        this.center_ = event_.getMousePosition();
+        this.dragging_ = true;
     }
+}
 
-    map_.setPosition(pos_);
+Melown.ControlMode.Pano.prototype.up = function(event_) {
+    if (event_.getMouseButton() === 'left') {
+        this.dragging_ = false;
+    }
 }
 
 Melown.ControlMode.Pano.prototype.wheel = function(event_) {
@@ -37,9 +48,22 @@ Melown.ControlMode.Pano.prototype.wheel = function(event_) {
 }
 
 Melown.ControlMode.Pano.prototype.tick = function(event_) {
-    
+    if (!this.dragging_) {
+        return;
+    }
+
+    var map_ = this.browser_.getCore().getMap();
+    if (map_ == null) {
+        return;
+    }
+
+    var pos_ = map_.getPosition();
+    pos_[5] -= this.velocity_[0];
+    pos_[6] -= this.velocity_[1];
+    map_.setPosition(pos_);
 }
 
 Melown.ControlMode.Pano.prototype.reset = function(config_) {
     this.config_ = config_;
+    console.log('reset');
 }

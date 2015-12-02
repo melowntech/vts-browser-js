@@ -173,7 +173,7 @@ Melown.Roi.Pano.prototype._update = function() {
     var vpMat_ = this.map_.getCameraInfo()['view-projection-matrix'];
     // calc zoom (suitable lod)
     var useLod_ = this._suitableLod();
-    console.log('Using lod: ' + useLod_);
+    // console.log('Using lod: ' + useLod_);
     // find visible tiles
     var newTiles = this._visibleTiles(vpMat_, useLod_);
 

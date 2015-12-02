@@ -5,6 +5,8 @@ Melown.ControlMode = function(browser_, ui_) {
     this.mapElement_ = this.mapControl_.getMapElement();
         
     this.mapElement_.on('drag', this.onDrag.bind(this));
+    this.mapElement_.on('mousedown', this.onDown.bind(this));
+    this.mapElement_.on('mouseup', this.onUp.bind(this));
     this.mapElement_.on('mousewheel', this.onWheel.bind(this));
     this.browser_.on('tick', this.onTick.bind(this));
 
@@ -22,6 +24,8 @@ Melown.ControlMode = function(browser_, ui_) {
 
 // Control Mode object interface keys
 /** @const */ Melown_ControlMode_Drag = 'drag';
+/** @const */ Melown_ControlMode_Down = 'down';
+/** @const */ Melown_ControlMode_Up = 'up';
 /** @const */ Melown_ControlMode_Wheel = 'wheel';
 /** @const */ Melown_ControlMode_Tick = 'tick';
 /** @const */ Melown_ControlMode_Reset = 'reset';
@@ -79,6 +83,20 @@ Melown.ControlMode.prototype.onDrag = function(event_) {
     if (typeof this._currentController()[Melown_ControlMode_Drag] 
         === 'function') {
         this._currentController()[Melown_ControlMode_Drag](event_);
+    }
+}
+
+Melown.ControlMode.prototype.onDown = function(event_) {
+    if (typeof this._currentController()[Melown_ControlMode_Down] 
+        === 'function') {
+        this._currentController()[Melown_ControlMode_Down](event_);
+    }
+}
+
+Melown.ControlMode.prototype.onUp = function(event_) {
+    if (typeof this._currentController()[Melown_ControlMode_Up] 
+        === 'function') {
+        this._currentController()[Melown_ControlMode_Up](event_);
     }
 }
 
