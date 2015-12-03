@@ -1,3 +1,6 @@
+/**
+ * @constructor
+ */
 Melown.Roi.ProcessQueue = function(options_) {
     this.options_ = options_;
 
@@ -10,7 +13,7 @@ Melown.Roi.ProcessQueue = function(options_) {
     if (typeof this.options_ === 'object' && this.options_ !== null) {
         this.opsPerTick_ = this.options_.opsPerTick_ || 1;
     }
-}
+};
 
 Melown.Roi.ProcessQueue.prototype.tick = function() {
     for (var i = 0; i < this.opsPerTick_; i++) {
@@ -21,7 +24,7 @@ Melown.Roi.ProcessQueue.prototype.tick = function() {
             break;
         }
     }
-}
+};
 
 Melown.Roi.ProcessQueue.prototype.enqueue = function(task_) {
     if (typeof task_ !== 'function') {
@@ -34,11 +37,11 @@ Melown.Roi.ProcessQueue.prototype.enqueue = function(task_) {
         }
     }
     this.enqueued_.push(task_);
-}
+};
 
 Melown.Roi.ProcessQueue.prototype.enqueued = function() {
     this.enqueued_;
-}
+};
 
 Melown.Roi.ProcessQueue.prototype.denqueue = function(task_) {
     if (typeof task_ !== 'function') {
@@ -51,4 +54,4 @@ Melown.Roi.ProcessQueue.prototype.denqueue = function(task_) {
             break;
         }
     }
-}
+};

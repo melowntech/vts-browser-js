@@ -10,7 +10,7 @@ Melown.Roi.Location = function(config_, core_, options_) {
 
     this.super_ = Melown.Roi.prototype;
     Melown.Roi.call(this, config_, core_, options_);
-}
+};
 
 // Inheritance from Roi
 Melown.Roi.Location.prototype = Object.create(Melown.Roi.prototype);
@@ -25,7 +25,7 @@ Melown.Roi.Location.prototype._init = function() {
     // prepare UI
 
     this.super_._init.call(this);
-}
+};
 
 Melown.Roi.Location.prototype._processConfig = function() {
     this.super_._processConfig.call(this);
@@ -35,10 +35,10 @@ Melown.Roi.Location.prototype._processConfig = function() {
     }
 
     var err = null;
-    if (typeof this.config_['location'] !== 'object' 
+    if (typeof this.config_['location'] !== 'object'
         || this.config_['location'] === null) {
         err = new Error('Missing (or type error) location key in config JSON');
-    } else if (!this.config_['location']['navControl'] instanceof Array 
+    } else if (!this.config_['location']['navControl'] instanceof Array
         || this.config_['location']['navExtents'].length !== 4) {
         err = new Error('Missing (or type error) location.navExtents in config JSON');
     } else if (typeof this.config_['location']['navControl'] !== 'string') {
@@ -52,7 +52,7 @@ Melown.Roi.Location.prototype._processConfig = function() {
         this.navControl_ = this.config_['location']['navControl'];
         this.navExtents_ = this.config_['location']['navExtents'];
     }
-}
+};
 
 // Public accessors
 
@@ -65,4 +65,4 @@ Melown.Roi.Location.prototype.alpha = function(alpha_) {
     alpha_ = 0.0;
 
     this.super_.alpha.call(this, alpha_);
-}
+};

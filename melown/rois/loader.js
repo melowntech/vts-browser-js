@@ -1,3 +1,6 @@
+/**
+ * @constructor
+ */
 Melown.Roi.LoadingQueue = function(options_) {
     this.options_ = options_;
 
@@ -18,10 +21,10 @@ Melown.Roi.LoadingQueue = function(options_) {
     this.finishedSlots_ = 5;
 
     if (typeof this.options_ === 'object' && this.options_ !== null) {
-        this.slots_ = this.options_.slots_ || 1; 
-        this.finishedSlots_ = this.options_.finishedSlots_ || 5; 
+        this.slots_ = this.options_.slots_ || 1;
+        this.finishedSlots_ = this.options_.finishedSlots_ || 5;
     }
-}
+};
 
 /**
  * @enum {int}
@@ -31,7 +34,7 @@ Melown.Roi.LoadingQueue.Status = {
     Downloading : 1,
     Finished : 2,
     Error : -1
-}
+};
 
 /**
  * @enum {int}
@@ -51,7 +54,7 @@ Melown.Roi.LoadingQueue.TypeCheck = function(type_) {
         }
     }
     return valid_;
-}
+};
 
 Melown_Roi_LQ_Downloaded = 'downloaded';
 Melown_Roi_LQ_Failed = 'failed';
@@ -63,7 +66,7 @@ Melown_Roi_LQ_Begin = 'begin';
 Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) {
     var clb_ = clb_ || function(){};
 
-    if (typeof resourceUrl_ !== 'string' 
+    if (typeof resourceUrl_ !== 'string'
         ) {// TODO: || !Melown.Utils.URLSanity(resourceUrl_)) {
         var err = new Error('Loading Queue: URL given to enqueue is not valid URL');
         console.error(err);
@@ -74,7 +77,7 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
     if (!Melown.Roi.LoadingQueue.TypeCheck(type_)) {
         var err = new Error('Loading Queue: Given hint type is not valid type');
         console.error(err);
-        clb(err);   
+        clb(err);
         return null;
     }
 
@@ -118,7 +121,7 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
     this._next();
 
     return item_;
-}
+};
 
 Melown.Roi.LoadingQueue.prototype.dequeue = function(resourceUrl_) {
     var item_ = this._pickItem(resourceUrl_);
@@ -126,7 +129,7 @@ Melown.Roi.LoadingQueue.prototype.dequeue = function(resourceUrl_) {
         this._cancel(item_);
     }
     return item_;
-}
+};
 
 Melown.Roi.LoadingQueue.prototype.on = function(event_, action_) {
     if (typeof action_ !== 'function'
@@ -140,7 +143,7 @@ Melown.Roi.LoadingQueue.prototype.on = function(event_, action_) {
             this.listeners_[event_].push(action_);
         }
     }
-}
+};
 
 Melown.Roi.LoadingQueue.prototype.removeListener = function(event_, action_) {
     if (typeof action_ !== 'function'
@@ -154,21 +157,21 @@ Melown.Roi.LoadingQueue.prototype.removeListener = function(event_, action_) {
             this.listeners_[event_].slice(i, 1);
         }
     }
-}
+};
 
 // Accessor methods
 
 Melown.Roi.LoadingQueue.prototype.enqueued = function() {
     return this.enqueued_;
-}
+};
 
 Melown.Roi.LoadingQueue.prototype.downloading = function() {
     return this.inProgress_;
-}
+};
 
 Melown.Roi.LoadingQueue.prototype.item = function(resourceUrl_) {
     return this._pickItem(resourceUrl_, true);
-}
+};
 
 // Private methods
 
@@ -180,10 +183,10 @@ Melown.Roi.LoadingQueue.prototype._next = function() {
     if (its_.length === 0) {
         return;
     }
-    
+
     var item_ = its_[0];
     this.inProgress_.push(item_);
-    
+
     if (item_.type_ === Melown.Roi.LoadingQueue.Type.Binary) {
         // TODO
         this._finalizeItem(item_, new Error('Not implemented yet'), null);
@@ -207,11 +210,11 @@ Melown.Roi.LoadingQueue.prototype._next = function() {
         // //item_.data_.crossOrigin = "anonymous";
         // item_.data_.src = item_.url_;
     }
-}
+};
 
 Melown.Roi.LoadingQueue.prototype._cancel = function(item_) {
     // TODO
-}
+};
 
 Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
     var item_ = null;
@@ -239,10 +242,10 @@ Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
                 nremove_ || this.finished_.splice(i, 1);
                 break;
             }
-        }   
+        }
     }
     return item_;
-}
+};
 
 Melown.Roi.LoadingQueue.prototype._finalizeItem = function(item_, error_, data_) {
     // remove from progress queue pass it to finished queue
@@ -265,4 +268,4 @@ Melown.Roi.LoadingQueue.prototype._finalizeItem = function(item_, error_, data_)
 
     // try to load next
     this._next();
-}
+};

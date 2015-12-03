@@ -1,9 +1,12 @@
+/**
+ * @constructor
+ */
 Melown.ControlMode = function(browser_, ui_) {
     this.browser_ = browser_;
     this.ui_ = ui_;
     this.mapControl_ = this.ui_.getMapControl();
     this.mapElement_ = this.mapControl_.getMapElement();
-        
+
     this.mapElement_.on('drag', this.onDrag.bind(this));
     this.mapElement_.on('mousedown', this.onDown.bind(this));
     this.mapElement_.on('mouseup', this.onUp.bind(this));
@@ -20,7 +23,7 @@ Melown.ControlMode = function(browser_, ui_) {
 
     // use map observer mode as default
     this.setDefaultControlMode();
-}
+};
 
 // Control Mode object interface keys
 /** @const */ Melown_ControlMode_Drag = 'drag';
@@ -33,26 +36,26 @@ Melown.ControlMode = function(browser_, ui_) {
 // Public methods
 
 Melown.ControlMode.prototype.addControlMode = function(id_, controller_) {
-    if (typeof id_ !== 'string' 
-        || controller_ === null 
+    if (typeof id_ !== 'string'
+        || controller_ === null
         || typeof controller_ !== 'object') {
         throw new Error('Melown.ControlMode.addControlMode function has (String, Object) prototype.');
     }
 
     this.controlModes_[id_] = controller_;
-}
+};
 
 Melown.ControlMode.prototype.removeControlMode = function(id_) {
     if (typeof id_ !== 'string') {
-        throw new Error('Melown.ControlMode.removeControlMode function takes string as argument.');   
+        throw new Error('Melown.ControlMode.removeControlMode function takes string as argument.');
     }
     if (id_ === this.currentCotnrolMode_) {
-        throw new Error(id_ + ' control mode is in use. Can\'t be removed.');      
+        throw new Error(id_ + ' control mode is in use. Can\'t be removed.');
     }
 
     delete this.controlModes_[id_];
     this.controlModes_[id_];
-}
+};
 
 Melown.ControlMode.prototype.setCurrentControlMode = function(id_, options_) {
     var newMode_ = this.controlModes_[id_];
@@ -67,55 +70,55 @@ Melown.ControlMode.prototype.setCurrentControlMode = function(id_, options_) {
     if (typeof newMode_[Melown_ControlMode_Reset] === 'function') {
         newMode_[Melown_ControlMode_Reset](options_);
     }
-}
+};
 
 Melown.ControlMode.prototype.setDefaultControlMode = function() {
     this.setCurrentControlMode('map-observer');
-}
+};
 
 Melown.ControlMode.prototype.getCurrentControlMode = function() {
     return this.currentControlMode_;
-}
+};
 
 // Event callbacks
 
 Melown.ControlMode.prototype.onDrag = function(event_) {
-    if (typeof this._currentController()[Melown_ControlMode_Drag] 
+    if (typeof this._currentController()[Melown_ControlMode_Drag]
         === 'function') {
         this._currentController()[Melown_ControlMode_Drag](event_);
     }
-}
+};
 
 Melown.ControlMode.prototype.onDown = function(event_) {
-    if (typeof this._currentController()[Melown_ControlMode_Down] 
+    if (typeof this._currentController()[Melown_ControlMode_Down]
         === 'function') {
         this._currentController()[Melown_ControlMode_Down](event_);
     }
-}
+};
 
 Melown.ControlMode.prototype.onUp = function(event_) {
-    if (typeof this._currentController()[Melown_ControlMode_Up] 
+    if (typeof this._currentController()[Melown_ControlMode_Up]
         === 'function') {
         this._currentController()[Melown_ControlMode_Up](event_);
     }
-}
+};
 
 Melown.ControlMode.prototype.onWheel = function(event_) {
-    if (typeof this._currentController()[Melown_ControlMode_Wheel] 
+    if (typeof this._currentController()[Melown_ControlMode_Wheel]
         === 'function') {
         this._currentController()[Melown_ControlMode_Wheel](event_);
     }
-}
+};
 
 Melown.ControlMode.prototype.onTick = function(event_) {
-    if (typeof this._currentController()[Melown_ControlMode_Tick] 
+    if (typeof this._currentController()[Melown_ControlMode_Tick]
         === 'function') {
         this._currentController()[Melown_ControlMode_Tick](event_);
     }
-}
+};
 
 // Private metod
 
 Melown.ControlMode.prototype._currentController = function() {
     return this.controlModes_[this.currentControlMode_];
-}
+};

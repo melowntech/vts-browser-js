@@ -1,3 +1,6 @@
-Melown.ControlMode.Disabled = function() { 
+/**
+ * @constructor
+ */
+Melown.ControlMode.Disabled = function() {
 
-}
+};

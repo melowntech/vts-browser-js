@@ -1,6 +1,14 @@
+/**
+ * @constructor
+ */
 Melown.ControlMode.MapObserver = function(browser_) {
     this.browser_ = browser_;
-}
+
+    this["drag"] = this.drag;
+    this["wheel"] = this.wheel;
+    this["tick"] = this.tick;
+    this["reset"] = this.reset;
+};
 
 Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     var map_ = this.browser_.getCore().getMap();
@@ -22,7 +30,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     }
 
     map_.setPosition(pos_);
-}
+};
 
 Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     var map_ = this.browser_.getCore().getMap();
@@ -37,12 +45,12 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     pos_[8] *= factor_;
 
     map_.setPosition(pos_);
-}
+};
 
 Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
-    
-}
+
+};
 
 Melown.ControlMode.MapObserver.prototype.reset = function(config_) {
-    
-}
+
+};

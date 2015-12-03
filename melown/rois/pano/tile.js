@@ -11,26 +11,26 @@ Melown.Roi.Pano.Tile = function(face_, position_, index_, lod_, scale_, url_) {
         image_ : null,
         texture_ : null
     };
-}
+};
 
 Melown.Roi.Pano.Tile.prototype.applendChild = function(tile_) {
     this.children_.push(tile_);
-}
+};
 
 Melown.Roi.Pano.Tile.prototype.url = function() {
     return this.resources_.url_;
-}
+};
 
 Melown.Roi.Pano.Tile.prototype.image = function(image_) {
     if (image_ === undefined) {
-        return this.resources_.image_ 
+        return this.resources_.image_
     }
     this.resources_.image_ = image_;
-}
+};
 
 Melown.Roi.Pano.Tile.prototype.texture = function(texture_) {
     if (texture_ === undefined) {
-        return this.resources_.texture_ 
+        return this.resources_.texture_
     }
     this.resources_.texture_ = texture_;
-}
+};
