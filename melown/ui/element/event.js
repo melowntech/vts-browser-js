@@ -47,7 +47,7 @@ Melown.UIEvent.prototype.getDragDelta = function() {
         case "drag":
 
             return [ this.event_.deltaX,
-                     this.event_.deltaY];
+                     this.event_.deltaY ];
     }
 
     return [0,0];

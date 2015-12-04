@@ -2,7 +2,8 @@
  * @constructor
  */
 Melown.Browser = function(element_, config_) {
-    this.config_ = config_;
+    this.initConfig();
+    this.setConfigParams(config_, true);
     this.ui_ = new Melown.UI(this, (typeof element_ === "string") ? document.getElementById(element_) : element_);
 
     this.core_ = Melown.MapCore("melown-map", config_);

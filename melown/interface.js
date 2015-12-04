@@ -157,6 +157,23 @@ Melown.BrowserInterface.prototype.on = function(eventName_, call_) {
     this.core_.on(eventName_, call_);
 };
 
+Melown.BrowserInterface.prototype.setControlVisible = function(id_, state_) {
+    this.ui_.setControlDisplayState(id_, state_);
+};
+
+Melown.BrowserInterface.prototype.getControlVisible = function(id_) {
+    return this.ui_.getControlDisplayState(id_);
+};
+
+Melown.BrowserInterface.prototype.addControl = function(id_, html_, visible_) {
+    return this.ui_.addControl(id_, html_, visible_);
+};
+
+Melown.BrowserInterface.prototype.setControlHtml = function(id_, html_) {
+    return this.ui_.setControlHtml(id_, html_);
+};
+
+
 Melown.getBrowserVersion = function() {
     return "0.1";
 };
