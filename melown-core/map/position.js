@@ -100,6 +100,13 @@ Melown.MapPosition.prototype.setHeightMode = function(mode_) {
     return this;
 };
 
+Melown.MapPosition.prototype.convertHeightMode = function(mode_) {
+    //TODO: convert
+    this.pos_[3] = mode_;
+    return this;
+};
+
+
 Melown.MapPosition.prototype.convertSrs = function(sourceSrs_, destinationSrs_) {
 };
 

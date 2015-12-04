@@ -125,9 +125,9 @@ Melown.MapTexture.prototype.buildHeightMap = function () {
     var canvas_ = document.createElement("canvas");
     canvas_.width = this.image_.naturalWidth;
     canvas_.height = this.image_.naturalHeight;
-    var ctx_ = canvas.getContext("2d");
+    var ctx_ = canvas_.getContext("2d");
     ctx_.drawImage(this.image_, 0, 0);
-    this.imageData_ = ctx.getImageData(0, 0, this.image_.naturalWidth, this.image_.naturalHeight);
+    this.imageData_ = ctx_.getImageData(0, 0, this.image_.naturalWidth, this.image_.naturalHeight).data;
     this.imageExtents_ = [this.image_.naturalWidth, this.image_.naturalHeight];
     this.image_ = null;
 };
