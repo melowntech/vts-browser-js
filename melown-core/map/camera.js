@@ -45,7 +45,7 @@ Melown.Map.prototype.updateCamera = function() {
 
     //var worldPos_ = [this.position_.getCoords()[0], this.position_.getCoords()[1], height_];
 
-    console.log("height: " + JSON.stringify(height2_));
+    //console.log("height: " + JSON.stringify(height2_));
 
     this.cameraPosition_ = worldPos_;
 
