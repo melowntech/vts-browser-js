@@ -11,6 +11,7 @@ Melown.BrowserInterface = function(element_, config_) {
     this.browser_ = new Melown.Browser(element_, config_);
     this.core_ = this.browser_.getCore();
     this.map_ = this.core_.getMap();
+    this.ui_ = this.browser_.ui_;
 };
 
 Melown.BrowserInterface.prototype.getCore = function(position_) {
