@@ -16,21 +16,6 @@ Melown.Map = function(core_, mapConfig_, path_) {
 
     this.baseURL_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
-    //this.mapConfig_["view"] = { "surfaces": ["ppspace"], "boundLayers": [], "freeLayers": [] };
-    /*
-    this.navMode_ = "obj";
-    this.navFov_ = 45;
-    this.navCenter_ = [0,0];
-    this.navHeight_ = 0;
-    this.navTerrainHeight_ = 0;
-    this.navTerrainHeightUnknown_ = true;
-    this.navViewExtent_ = 1;
-    this.navOrientation_ = [0,0,0];
-    this.navCameraDistance_ = 0;
-    this.navCameraPosition_ = [0,0,0];
-    this.navHeightMode_ = "abs";
-    */
-
     this.position_ = new Melown.MapPosition(this, ["obj", 0, 0, "fix", 0,  0, 0, 0,  0, 0]);
     this.lastPosition_ = this.position_.clone();
 
@@ -91,10 +76,6 @@ Melown.Map = function(core_, mapConfig_, path_) {
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});
-
-    //this.mesh_ = new Melown.MapMesh(this);
-    //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
-
 };
 
 Melown.Map.prototype.kill = function() {
@@ -124,6 +105,10 @@ Melown.Map.prototype.addSrs = function(id_, srs_) {
     this.srses_[id_] = srs_;
 };
 
+Melown.Map.prototype.getSrses = function() {
+    return this.getMapKeys(this.srses_);
+};
+
 Melown.Map.prototype.setReferenceFrame = function(referenceFrame_) {
     this.referenceFrame_ = referenceFrame_;
 };
@@ -138,6 +123,14 @@ Melown.Map.prototype.addSurface = function(id_, surface_) {
 
 Melown.Map.prototype.getSurface = function(id_) {
     return this.searchArrayById(this.surfaces_, id_);
+};
+
+Melown.Map.prototype.getSurfaces = function() {
+    var keys_ = [];
+    for (var i = 0, li = this.surfaces_.length; i < li; i++) {
+        keys_.push(this.surfaces_[i].id_);
+    }
+    return keys_;
 };
 
 Melown.Map.prototype.addGlue = function(id_, glue_) {
@@ -160,12 +153,20 @@ Melown.Map.prototype.getBoundLayerById = function(id_) {
     return this.boundLayers_[id_];
 };
 
+Melown.Map.prototype.getBoundLayers = function() {
+    return this.getMapKeys(this.boundLayers_);
+};
+
 Melown.Map.prototype.addFreeLayer = function(id_, layer_) {
     this.freeLayers_[id_] = layer_;
 };
 
 Melown.Map.prototype.getFreeLayer = function(id_) {
     return this.freeLayers_[id_];
+};
+
+Melown.Map.prototype.getFreeLayers = function() {
+    return this.getMapKeys(this.freeLayers_);
 };
 
 Melown.Map.prototype.getMapsSrs = function(srs_) {
@@ -180,6 +181,18 @@ Melown.Map.prototype.getMapsSrs = function(srs_) {
 
     //search existing srs
     return this.srses_[srs_];
+};
+
+Melown.Map.prototype.addMapView = function(id_, view_) {
+    this.namedViews_[id_] = view_;
+};
+
+Melown.Map.prototype.getMapView = function(id_, view_) {
+    return this.namedViews_[id_];
+};
+
+Melown.Map.prototype.getMapViews = function() {
+    return this.getMapKeys(this.namedViews_);
 };
 
 Melown.Map.prototype.setMapView = function(view_) {
@@ -215,6 +228,13 @@ Melown.Map.prototype.searchMapByInnerId = function(map_, id_) {
     }
 
     return null;
+};
+
+Melown.Map.prototype.getMapKeys = function(map_) {
+    var keys_ = [];
+    for (var key_ in map_) {
+        keys_.push(key_);
+    }
 };
 
 Melown.Map.prototype.generateBoundLayerSequence = function() {

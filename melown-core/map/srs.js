@@ -62,6 +62,17 @@ Melown.MapSrs.prototype.parsePeriodicity = function(periodicityData_) {
     return periodicity_;
 };
 
+Melown.MapSrs.prototype.getInfo = function() {
+    return {
+        "comment" : this.comment_,
+        "srsDef" : this.srsDef_,
+        "srsModifiers" : this.srsModifiers_,
+        "type" : this.type_,
+        "vdatum" : this.vdatum_,
+        "srsDefEllps" : this.srsDef_
+    };
+};
+
 Melown.MapSrs.prototype.getSrsInfo = function() {
     return this.srsInfo_;
 };

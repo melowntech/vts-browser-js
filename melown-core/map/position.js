@@ -80,7 +80,7 @@ Melown.MapPosition.prototype.setViewExtent = function(extent_) {
     return this;
 };
 
-Melown.MapPosition.prototype.getViewMode = function(mode_) {
+Melown.MapPosition.prototype.getViewMode = function() {
     return this.pos_[0];
 };
 
@@ -90,7 +90,7 @@ Melown.MapPosition.prototype.setViewMode = function(mode_) {
     return this;
 };
 
-Melown.MapPosition.prototype.getHeightMode = function(mode_) {
+Melown.MapPosition.prototype.getHeightMode = function() {
     return this.pos_[3];
 };
 
@@ -101,8 +101,24 @@ Melown.MapPosition.prototype.setHeightMode = function(mode_) {
 };
 
 Melown.MapPosition.prototype.convertHeightMode = function(mode_) {
-    //TODO: convert
-    this.pos_[3] = mode_;
+    if (this.pos_[3] == mode_) {
+        return this;
+    }
+
+    //TODO: get desired lod
+    var height_ = this.getSurfaceHeight(this.position_.getCoords(), 11);
+
+    if (height_[2] == null) {
+        return null;
+    }
+
+    //set new height
+    if (mode_ == "float") {
+        this.pos_[4] = this.pos_[4] - height_;
+    } else if (mode_ == "float") {
+        this.pos_[4] = this.pos_[4] + height_;
+    }
+
     return this;
 };
 

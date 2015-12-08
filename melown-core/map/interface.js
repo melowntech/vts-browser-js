@@ -54,7 +54,15 @@ Melown.MapInterface.prototype.getSurfaces = function() {
 };
 
 Melown.MapInterface.prototype.getSurfaceInfo = function(surfaceId_) {
-    return this.map_.getSurfacesInfo(surfaceId_);
+    return this.map_.getSurfacesInfo(srsId_);
+};
+
+Melown.MapInterface.prototype.getSrses = function() {
+    return this.map_.getSrses(surfaceId_);
+};
+
+Melown.MapInterface.prototype.getSrsInfo = function(srsId_) {
+    return this.map_.getSrsInfo(surfaceId_);
 };
 
 Melown.MapInterface.prototype.getReferenceFrame = function() {

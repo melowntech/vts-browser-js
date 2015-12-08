@@ -105,6 +105,26 @@ Melown.Map.prototype.getSpatialDivisionNode = function(coords_) {
     return [bestNode_, bestCoords_];
 };
 
+Melown.Map.prototype.getOptimalHeightLod = function(coords_, viewExtent_, desiredSamplesPerViewExtent_) {
+    var result_ = this.getSpatialDivisionNode(coords_);
+    var node_ = result_[0];
+    var nodeCoords_ = result_[1];
+
+    if (node_ != null) {
+        var nodeLod_ = node_.id_[0];
+        var nodeExtent_ = extents_.ul_[1] - extents_.ll_[1];
+
+        var lod_ = Math.log((desiredSamplesPerViewExtent_ * nodeExtent_) / viewExtent_) / Math.log(2);
+        lod_ = lod - 8 + nodeLod_;
+
+        return Math.max(0, lod_);
+    }
+
+    return null;
+};
+
+
+
 
 
 

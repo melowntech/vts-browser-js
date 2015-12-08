@@ -13,6 +13,17 @@ Melown.MapBoundLayer = function(map_, json_) {
     this.currentAlpha_ = 1.0;
 };
 
+Melown.MapBoundLayer.prototype.getInfo = function() {
+    return {
+        "type" : this.type_,
+        "url" : this.url_,
+        "tileSize" : this.tileSize_,
+        "credits" : this.credits_,
+        "lodRange" : this.lodRange_,
+        "tileRange" : this.tileRange_
+    };
+};
+
 Melown.MapBoundLayer.prototype.hasTile = function(id_) {
     var shift_ = id_[0] - this.lodRange_[0];
 
