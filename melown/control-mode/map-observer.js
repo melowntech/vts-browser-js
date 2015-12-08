@@ -21,10 +21,16 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     var delta_ = event_.getDragDelta();
 
     if (event_.getDragButton("left") && this.config_.panAllowed_) { //pan
-        var sensitivity_ = 0.5;
-        pos_ = map_.pan(pos_, delta_[0] * sensitivity_,
-                              delta_[1] * sensitivity_);
-
+        if (map_.getPositionHeightMode(pos_) == "fix") {
+            var pos2_ = map_.convertPositionHeightMode(pos_, "float");
+            if (pos2_ != null) {
+                pos_ = pos2_;
+            }
+        } else {
+            var sensitivity_ = 0.5;
+            pos_ = map_.pan(pos_, delta_[0] * sensitivity_,
+                                  delta_[1] * sensitivity_);
+        }
     } else if (event_.getDragButton("right") && this.config_.rotationAllowed_) { //rotate
         var sensitivity_ = 0.4;
         pos_[5] -= delta_[0] * sensitivity_;

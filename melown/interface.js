@@ -105,69 +105,63 @@ Melown.BrowserInterface.prototype.getReferenceFrame = function() {
 };
 
 Melown.BrowserInterface.prototype.convertPositionViewMode = function(position_, mode_) {
-    return (new Melown.MapPosition(this.map_, position_)).convertViewMode(mode_);
+    return this.map_.convertPositionViewMode(position_, mode_);
 };
 
 Melown.BrowserInterface.prototype.convertPositionHeightMode = function(position_, mode_) {
-    return (new Melown.MapPosition(this.map_, position_)).convertHeightMode(mode_);
+    return this.map_.convertPositionHeightMode(position_, mode_);
 };
 
 Melown.BrowserInterface.prototype.convertCoords = function(sourceSrs_, destinationSrs_, coords_) {
-    var srs_ = this.map_.getSrs(sourceSrs_);
-    var srs2_ = this.map_.getSrs(destinationSrs_);
-    if (!srs_ || !srs2_) {
-        return null;
-    }
-
-    return srs2_.convertCoordsFrom(coords_, srs_);
+    return this.map_.convertCoords(sourceSrs_, destinationSrs_, coords_);
 };
 
 Melown.BrowserInterface.prototype.setPositionCoords = function(position_, coords_) {
-    return (new Melown.MapPosition(this.map_, position_)).setCoords();
+    return this.map_.setPositionCoords(position_, coords_);
 };
 
 Melown.BrowserInterface.prototype.getPositionCoords = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getCoords();
+    return this.map_.getPositionCoords(position_);
 };
 
 Melown.BrowserInterface.prototype.setPositionHeight = function(position_, height_) {
-    return (new Melown.MapPosition(this.map_, position_)).setHeight();
+    return this.map_.setPositionHeight(position_, height_);
 };
 
 Melown.BrowserInterface.prototype.getPositionHeight = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getHeight();
+    return this.map_.getPositionHeight(position_);
 };
 
-Melown.BrowserInterface.prototype.setPositionOrientation = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).setOrientation();
+Melown.BrowserInterface.prototype.setPositionOrientation = function(position_, orientation_) {
+    return this.map_.setPositionOrientation(position_);
 };
 
 Melown.BrowserInterface.prototype.getPositionOrientation = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getOrientation();
+    return this.map_.getPositionOrientation(position_);
 };
 
 Melown.BrowserInterface.prototype.setPositionViewExtent = function(position_, extent_) {
-    return (new Melown.MapPosition(this.map_, position_)).setViewExtent();
+    return this.map_.setPositionViewExtent(position_, extent_);
 };
 
 Melown.BrowserInterface.prototype.getPositionViewExtent = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getViewExtent();
+    return this.map_.getPositionViewExtent(position_);
 };
 
 Melown.BrowserInterface.prototype.setPositionFov = function(position_, fov_) {
-    return (new Melown.MapPosition(this.map_, position_)).setFov(fov_);
+    return this.map_.setPositionFov(position_, fov_);
 };
 
 Melown.BrowserInterface.prototype.getPositionFov = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getFov();
+    return this.map_.getPositionFov(position_);
 };
 
 Melown.BrowserInterface.prototype.getPositionViewMode = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getViewMode();
+    return this.map_.getPositionViewMode(position_);
 };
 
 Melown.BrowserInterface.prototype.getPositionHeigthMode = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getHeightMode();
+    return this.map_.getPositionHeightMode(position_);
 };
 
 Melown.BrowserInterface.prototype.pan = function(position_, dx_, dy_) {
@@ -191,7 +185,7 @@ Melown.BrowserInterface.prototype.addControl = function(id_, html_, visible_) {
 };
 
 Melown.BrowserInterface.prototype.removeControl = function(id_) {
-    return this.ui_.removeControl(id_, html_, visible_);
+    return this.ui_.removeControl(id_);
 };
 
 
