@@ -6,13 +6,14 @@
 /**
  * @constructor
  */
-Melown.Map = function(core_, mapConfig_, path_) {
+Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.core_ = core_;
     this.proj4_ = this.core_.getProj4();
     this.mapConfig_ = mapConfig_;
     this.coreConfig_ = core_.coreConfig_;
     this.killed_ = false;
     this.urlCounter_ = 0;
+    this.config_ = config_ || {};
 
     this.baseURL_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 

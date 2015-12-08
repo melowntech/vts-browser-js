@@ -38,7 +38,12 @@ Melown.Map.prototype.updateCamera = function() {
 
     //var height_ = 227;
     var height_ = this.position_.getHeight();//232.2;
-    var height2_ = this.getSurfaceHeight(this.position_.getCoords(), 11);
+
+    if (this.position_.getHeightMode() == "float") {
+        var lod_ =  this.getOptimalHeightLod(this.position_.getCoords(), this.position_.getViewExtent(), 10);
+        var surfaceHeight_ = this.getSurfaceHeight(this.position_.getCoords(), lod_);
+        height_ += surfaceHeight_[0];
+    }
 
     //convert public coords to physical
     var worldPos_ = this.convertCoords([this.position_.getCoords()[0], this.position_.getCoords()[1], height_], "navigation", "physical");

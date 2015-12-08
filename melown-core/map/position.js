@@ -105,18 +105,20 @@ Melown.MapPosition.prototype.convertHeightMode = function(mode_) {
         return this;
     }
 
-    //TODO: get desired lod
-    var height_ = this.getSurfaceHeight(this.position_.getCoords(), 11);
+    var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), 10);
+    var height_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
 
-    if (height_[2] == null) {
+    if (height_[1] == false) {
         return null;
     }
 
     //set new height
     if (mode_ == "float") {
-        this.pos_[4] = this.pos_[4] - height_;
-    } else if (mode_ == "float") {
-        this.pos_[4] = this.pos_[4] + height_;
+        this.pos_[3] = mode_;
+        this.pos_[4] = this.pos_[4] - height_[0];
+    } else if (mode_ == "fix") {
+        this.pos_[3] = mode_;
+        this.pos_[4] = this.pos_[4] + height_[0];
     }
 
     return this;
@@ -159,13 +161,15 @@ Melown.MapPosition.prototype.validate = function() {
     pos_[0] = (pos_[0] == "obj" || pos_[0] == "subj") ? pos_[0] : "obj";
     pos_[1] = pos_[1] || 0;
     pos_[2] = pos_[2] || 0;
-    pos_[3] = (pos_[3] == "fix" || pos_[3] == "float") ? pos_[3] : "float";
+    pos_[3] = (pos_[3] == "fix" || pos_[3] == "fixed" || pos_[3] == "float") ? pos_[3] : "float";
     pos_[4] = pos_[4] || 0;
     pos_[5] = pos_[5] || 0;
     pos_[6] = pos_[6] || 0;
     pos_[7] = pos_[7] || 0;
     pos_[8] = pos_[8] || 300;
     pos_[9] = pos_[9] || 90;
+
+    pos_[3] = (pos_[3] == "fixed") ? "fix" : pos_[3];
 };
 
 

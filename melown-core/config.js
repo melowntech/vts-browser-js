@@ -1,4 +1,57 @@
 
+
+Melown.Core.prototype.initConfig = function(data_) {
+    this.config_ = {
+        mapCache_ : 900,
+        mapGPUCache_ : 360,
+        mapMetatileCache_ : 60,
+        mapTexelSizeFit_ : 1.1,
+        mapTexelSizeTolerance_ : 2.2,
+        mapDownloadThreads_ : 6,
+        mapMaxProcessedMeshes_ : 1,
+        mapMaxProcessedTextures_ : 1,
+        mapMaxProcessedMetatiles_ : 2,
+        mapMobileMode_ : false,
+        mapMobileTexelDegradation_ : 2,
+        mapNavSamplesPerViewExtent_ : 10,
+        rendererAntialiasing_ : true,
+        rendererAllowScreenshots_ : false
+    };
+};
+
+Melown.Core.prototype.setConfigParams = function(params_, ignoreCore_) {
+    if (typeof param_ === "object" && param_ !== null) {
+        for (var key_ in params_) {
+            this.setConfigParam(key_. params_[key_]);
+        }
+    }
+};
+
+Melown.Core.prototype.setConfigParam = function(key_, value_) {
+    if (key_.indexOf("map") == 0) {
+        this.core_.getMap().setConfigParam(key_, value_);
+    }
+
+    if (key_.indexOf("renderer") == 0) {
+        this.core_.getRenderer().setConfigParam(key_, value_);
+    }
+};
+
+Melown.Core.prototype.getConfigParam = function(key_) {
+    if (key_.indexOf("map") == 0) {
+        return this.core_.getMap().setConfigParam(key_, value_);
+    }
+
+    if (key_.indexOf("renderer") == 0) {
+        return this.core_.getRenderer().setConfigParam(key_, value_);
+    }
+};
+
+
+//========================================================================
+// OLD STUFF
+//========================================================================
+
 /**
  * @constructor
  */
