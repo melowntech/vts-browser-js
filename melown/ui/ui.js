@@ -35,19 +35,19 @@ Melown.UI.prototype.removeControl = function(id_) {
 
 Melown.UI.prototype.setControlHtml = function(id_, html_) {
     if (this.controls_[id_] != null) {
-        this.controls_[id_].updateHTML(html_);
+        this.controls_[id_].setHTML(html_);
     }
 };
 
-Melown.UI.prototype.setControlDisplayState = function(id_, state_) {
+Melown.UI.prototype.setControlVisible = function(id_, state_) {
     if (this.controls_[id_] != null) {
-        this.controls_[id_].setDisplayState(state_);
+        this.controls_[id_].setVisible(state_);
     }
 };
 
-Melown.UI.prototype.getControlDisplayState = function(id_) {
+Melown.UI.prototype.getControlVisible = function(id_) {
     if (this.controls_[id_] != null) {
-        this.controls_[id_].getDisplayState(state_);
+        this.controls_[id_].getVisible(state_);
     }
 };
 
@@ -61,11 +61,11 @@ Melown.UI.prototype.getMapControl = function() {
 
 Melown.UI.prototype.setParam = function(key_) {
     switch (key_) {
-        case "controlCompass":     this.compass_.setDisplayState(this.config_.controlCompass_); break;
-        case "controlZoom":        this.zoom_.setDisplayState(this.config_.controlZoom_); break;
-        //case "controlMeasure":     this.layers_.setDisplayState(this.config_.controlCompass_); break;
-        case "controlScale":       this.scale_.setDisplayState(this.config_.controlScale_); break;
-        case "controlLayers":      this.layers_.setDisplayState(this.config_.controlLayers_); break;
+        case "controlCompass":     this.setControlVisible("comapss", this.config_.controlCompass_); break;
+        case "controlZoom":        this.setControlVisible("zoom", this.config_.controlZoom_); break;
+        //case "controlMeasure":     this.setControlVisible(this.config_.controlCompass_); break;
+        case "controlScale":       this.setControlVisible("scale", this.config_.controlScale_); break;
+        case "controlLayers":      this.setControlVisible("layers", this.config_.controlLayers_); break;
     }
 };
 
