@@ -3,6 +3,7 @@
  */
 Melown.ControlMode.MapObserver = function(browser_) {
     this.browser_ = browser_;
+    this.config_ = browser_.config_;
 
     this["drag"] = this.drag;
     this["wheel"] = this.wheel;
@@ -19,11 +20,12 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     var pos_ = map_.getPosition();
     var delta_ = event_.getDragDelta();
 
-    if (event_.getDragButton("left")) { //pan
+    if (event_.getDragButton("left") && this.config_.panAllowed_) { //pan
         var sensitivity_ = 0.5;
         pos_ = map_.pan(pos_, delta_[0] * sensitivity_,
                               delta_[1] * sensitivity_);
-    } else if (event_.getDragButton("right")) { //rotate
+
+    } else if (event_.getDragButton("right") && this.config_.rotationAllowed_) { //rotate
         var sensitivity_ = 0.4;
         pos_[5] -= delta_[0] * sensitivity_;
         pos_[6] -= delta_[1] * sensitivity_;
@@ -34,7 +36,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
 
 Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     var map_ = this.browser_.getCore().getMap();
-    if (map_ == null) {
+    if (map_ == null || !this.config_.zoomAllowed_) {
         return;
     }
 

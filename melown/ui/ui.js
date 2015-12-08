@@ -12,11 +12,11 @@ Melown.UI = function(browser_, element_) {
 
 Melown.UI.prototype.init = function() {
     this.map_ = new Melown.UIControlMap(this);
-    this.compass_ = new Melown.UIControlCompass(this);
+    this.compass_ = new Melown.UIControlCompass(this, this.config_.controlCompass_);
     this.credits_ = new Melown.UIControlCredits(this);
     this.logo_ = new Melown.UIControlLogo(this);
-    this.zoom_ = new Melown.UIControlZoom(this);
-    this.layers_ = new Melown.UIControlLayers(this);
+    this.zoom_ = new Melown.UIControlZoom(this, this.config_.controlZoom_);
+    this.layers_ = new Melown.UIControlLayers(this, this.config_.controlLayers_);
     this.fallback_ = new Melown.UIControlFallback(this);
     Melown.Utils.disableContexMenu(this.element_);
 };

@@ -5,7 +5,7 @@ Melown.UIControlHolder = function(ui_, html_, visible_) {
     this.ui_ = ui_;
     this.html_ = html_;
     this.elementsById_ = [];
-    this.visible_ = visible_ || true;
+    this.visible_ = (visible_ != null) ? visible_ : true;
 
     //create holder element
     this.element_ = document.createElement("div");

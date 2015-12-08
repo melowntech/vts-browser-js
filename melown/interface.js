@@ -33,24 +33,34 @@ Melown.BrowserInterface.prototype.getPosition = function() {
     return this.map_.getPosition();
 };
 
+Melown.BrowserInterface.prototype.getPositionCredits = function() {
+    return this.map_.getCurrentCredits();
+};
+
 Melown.BrowserInterface.prototype.setView = function(view_) {
-    this.map_.setView();
+    this.map_.setMapView();
 };
 
 Melown.BrowserInterface.prototype.getView = function() {
-    return this.map_.getView();
+    return this.map_.getMapView();
 };
 
 Melown.BrowserInterface.prototype.getCredits = function() {
     return this.map_.getCredits();
 };
 
+Melown.BrowserInterface.prototype.getCreditsInfo = function(creditId_) {
+    var credit_ = this.map_.getCredit(creditId_);
+    return (credit_ != null) ? credit_.getInfo() : null;
+};
+
 Melown.BrowserInterface.prototype.getViews = function() {
-    return this.map_.getViews();
+    return this.map_.getMapViews();
 };
 
 Melown.BrowserInterface.prototype.getViewInfo = function(viewId_) {
-    return this.map_.getViewInfo(viewId_);
+    var view_ = this.map_.getMapView(viewId_);
+    return (view_ != null) ? view_.getInfo() : null;
 };
 
 Melown.BrowserInterface.prototype.getBoundLayers = function() {
@@ -58,7 +68,8 @@ Melown.BrowserInterface.prototype.getBoundLayers = function() {
 };
 
 Melown.BrowserInterface.prototype.getBoundLayerInfo = function(layerId_) {
-    return this.map_.getBoundLayerInfo(layerId_);
+    var layer_ = this.map_.getBoundLayer(layerId_);
+    return (layer_ != null) ? layer_.getInfo() : null;
 };
 
 Melown.BrowserInterface.prototype.getFreeLayers = function() {
@@ -66,7 +77,8 @@ Melown.BrowserInterface.prototype.getFreeLayers = function() {
 };
 
 Melown.BrowserInterface.prototype.getFreeLayerInfo = function(layerId_) {
-    return this.map_.getFreeLayers(layerId_);
+    var layer_ = this.map_.getFreeLayer(layerId_);
+    return (layer_ != null) ? layer_.getInfo() : null;
 };
 
 Melown.BrowserInterface.prototype.getSurfaces = function() {
@@ -74,27 +86,39 @@ Melown.BrowserInterface.prototype.getSurfaces = function() {
 };
 
 Melown.BrowserInterface.prototype.getSurfaceInfo = function(surfaceId_) {
-    return this.map_.getSurfacesInfo(surfaceId_);
+    var surface_ = this.map_.getFreeLayer(surfaceId_);
+    return (surface_ != null) ? surface_.getInfo() : null;
 };
 
 Melown.BrowserInterface.prototype.getSrses = function() {
     return this.map_.getSrses();
 };
 
+Melown.BrowserInterface.prototype.getSrsInfo = function(srsId_) {
+    var srs_ = this.map_.getSrs(srsId_);
+    return (srs_ != null) ? srs_.getInfo() : null;
+};
+
 Melown.BrowserInterface.prototype.getReferenceFrame = function() {
-    return this.map_.getReferenceFrame();
+    return this.referenceFrame_.getInfo();
 };
 
 Melown.BrowserInterface.prototype.convertPositionViewMode = function(position_, mode_) {
-
+    return (new Melown.MapPosition(this.map_, position_)).convertViewMode(mode_);
 };
 
 Melown.BrowserInterface.prototype.convertPositionHeightMode = function(position_, mode_) {
-
+    return (new Melown.MapPosition(this.map_, position_)).convertHeightMode(mode_);
 };
 
 Melown.BrowserInterface.prototype.convertCoords = function(sourceSrs_, destinationSrs_, coords_) {
+    var srs_ = this.map_.getSrs(sourceSrs_);
+    var srs2_ = this.map_.getSrs(destinationSrs_);
+    if (!srs_ || !srs2_) {
+        return null;
+    }
 
+    return srs2_.convertCoordsFrom(coords_, srs_);
 };
 
 Melown.BrowserInterface.prototype.setPositionCoords = function(position_, coords_) {
