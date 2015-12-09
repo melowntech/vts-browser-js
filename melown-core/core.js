@@ -1,10 +1,12 @@
 /**
  * @constructor
  */
-Melown.Core = function(element_, options_) {
+Melown.Core = function(element_, config_) {
+    this.initConfig();
+    this.setConfigParams(config_);
     this.element_ = element_;
-    this.options_ = options_;
-    this.coreConfig_ = new Melown.CoreConfig(options_);
+    //this.options_ = options_;
+    this.coreConfig_ = new Melown.CoreConfig({}); //TODO: remove this CoreConfig
     this.ready_ = false;
     this.killed_ = false;
     this.listeners_ = [];
@@ -13,14 +15,14 @@ Melown.Core = function(element_, options_) {
 
     this.map_ = null;
     this.mapInterface_ = null;
-    this.renderer_ = new Melown.Renderer(this, this.element_, null, false);
+    this.renderer_ = new Melown.Renderer(this, this.element_, null, this.config_);
     this.rendererInterface_ = new Melown.RendererInterface(this.renderer_);
     this.proj4_ = window["_mproj4_"];
 
     //platform detection
     Melown.Platform.init();
 
-    this.loadMap(this.coreConfig_.map_);
+    this.loadMap(this.config_.map_);
 
     window.requestAnimFrame(this.onUpdate.bind(this));
 };
@@ -38,7 +40,7 @@ Melown.Core.prototype.loadMap = function(path_) {
     }
 
     var onLoaded_ = (function(data_) {
-        this.map_ = new Melown.Map(this, data_, path_);
+        this.map_ = new Melown.Map(this, data_, path_, this.config_);
         this.mapInterface_ = new Melown.MapInterface(this.map_);
         this.callListener("map-loaded", {});
     }).bind(this);

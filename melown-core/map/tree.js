@@ -67,12 +67,11 @@ Melown.MapTree.prototype.drawSurface = function(shift_) {
 };
 
 Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
-    var node_ = tile_.metanode_;
-
-    if (node_ == null) {
+    if (tile_ == null || tile_.metanode_ == null) {
         return false;
     }
 
+    var node_ = tile_.metanode_;
     var cameraPos_ = this.map_.cameraPosition_;
 
     if (this.camera_.bboxVisible(node_.bbox_, cameraPos_) != true) {
@@ -113,7 +112,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
 };
 
 Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_) {
-    if (tile_.id_[0] > params_.desiredLod_) {
+    if (tile_ == null || tile_.id_[0] > params_.desiredLod_) {
         return false;
     }
 
@@ -126,12 +125,12 @@ Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_) {
     if (node_.hasNavtile()) {
         if (tile_.heightMap_ == null) {
             var path_ = tile_.surface_.getNavUrl(tile_.id_);
-            tile_.heightMap_ = new Melown.MapTexture(this.map_, path_);
+            tile_.heightMap_ = new Melown.MapTexture(this.map_, path_, true);
         } else {
             if (tile_.heightMap_.isReady() == true) {
                 params_.metanode_ =  node_;
                 params_.heightMap_ = tile_.heightMap_;
-                params_.extents_ = {
+                params_.heightMapExtents_ = {
                     ll_ : params_.extents_.ll_.slice(),
                     ur_ : params_.extents_.ur_.slice()
                 };

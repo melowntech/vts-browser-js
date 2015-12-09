@@ -6,30 +6,18 @@
 /**
  * @constructor
  */
-Melown.Map = function(core_, mapConfig_, path_) {
+Melown.Map = function(core_, mapConfig_, path_, config_) {
+    this.config_ = config_ || {};
+    this.setConfigParams(config_);
     this.core_ = core_;
     this.proj4_ = this.core_.getProj4();
     this.mapConfig_ = mapConfig_;
     this.coreConfig_ = core_.coreConfig_;
     this.killed_ = false;
     this.urlCounter_ = 0;
+    this.config_ = config_ || {};
 
     this.baseURL_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
-
-    //this.mapConfig_["view"] = { "surfaces": ["ppspace"], "boundLayers": [], "freeLayers": [] };
-    /*
-    this.navMode_ = "obj";
-    this.navFov_ = 45;
-    this.navCenter_ = [0,0];
-    this.navHeight_ = 0;
-    this.navTerrainHeight_ = 0;
-    this.navTerrainHeightUnknown_ = true;
-    this.navViewExtent_ = 1;
-    this.navOrientation_ = [0,0,0];
-    this.navCameraDistance_ = 0;
-    this.navCameraPosition_ = [0,0,0];
-    this.navHeightMode_ = "abs";
-    */
 
     this.position_ = new Melown.MapPosition(this, ["obj", 0, 0, "fix", 0,  0, 0, 0,  0, 0]);
     this.lastPosition_ = this.position_.clone();
@@ -53,9 +41,9 @@ Melown.Map = function(core_, mapConfig_, path_) {
 
     this.mapTrees_ = [];
 
-    this.gpuCache_ = new Melown.MapCache(this, 380*1024*1024);
-    this.resourcesCache_ = new Melown.MapCache(this, 450*1024*1024);
-    this.metatileCache_ = new Melown.MapCache(this, 60*1024*1024);
+    this.gpuCache_ = new Melown.MapCache(this, this.config_.mapGpuCache_*1024*1024);
+    this.resourcesCache_ = new Melown.MapCache(this, this.config_.mapCache_*1024*1024);
+    this.metatileCache_ = new Melown.MapCache(this, this.config_.mapMetatileCache_*1024*1024);
 
     this.loader_ = new Melown.MapLoader(this);
 
@@ -91,10 +79,6 @@ Melown.Map = function(core_, mapConfig_, path_) {
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});
-
-    //this.mesh_ = new Melown.MapMesh(this);
-    //this.mesh_.load("http://pomerol.internal:8889/vasek-output/vts/jenstejn.ppspace/18-130382-129149.bin");
-
 };
 
 Melown.Map.prototype.kill = function() {
@@ -124,6 +108,10 @@ Melown.Map.prototype.addSrs = function(id_, srs_) {
     this.srses_[id_] = srs_;
 };
 
+Melown.Map.prototype.getSrses = function() {
+    return this.getMapKeys(this.srses_);
+};
+
 Melown.Map.prototype.setReferenceFrame = function(referenceFrame_) {
     this.referenceFrame_ = referenceFrame_;
 };
@@ -138,6 +126,14 @@ Melown.Map.prototype.addSurface = function(id_, surface_) {
 
 Melown.Map.prototype.getSurface = function(id_) {
     return this.searchArrayById(this.surfaces_, id_);
+};
+
+Melown.Map.prototype.getSurfaces = function() {
+    var keys_ = [];
+    for (var i = 0, li = this.surfaces_.length; i < li; i++) {
+        keys_.push(this.surfaces_[i].id_);
+    }
+    return keys_;
 };
 
 Melown.Map.prototype.addGlue = function(id_, glue_) {
@@ -160,12 +156,20 @@ Melown.Map.prototype.getBoundLayerById = function(id_) {
     return this.boundLayers_[id_];
 };
 
+Melown.Map.prototype.getBoundLayers = function() {
+    return this.getMapKeys(this.boundLayers_);
+};
+
 Melown.Map.prototype.addFreeLayer = function(id_, layer_) {
     this.freeLayers_[id_] = layer_;
 };
 
 Melown.Map.prototype.getFreeLayer = function(id_) {
     return this.freeLayers_[id_];
+};
+
+Melown.Map.prototype.getFreeLayers = function() {
+    return this.getMapKeys(this.freeLayers_);
 };
 
 Melown.Map.prototype.getMapsSrs = function(srs_) {
@@ -180,6 +184,18 @@ Melown.Map.prototype.getMapsSrs = function(srs_) {
 
     //search existing srs
     return this.srses_[srs_];
+};
+
+Melown.Map.prototype.addMapView = function(id_, view_) {
+    this.namedViews_[id_] = view_;
+};
+
+Melown.Map.prototype.getMapView = function(id_, view_) {
+    return this.namedViews_[id_];
+};
+
+Melown.Map.prototype.getMapViews = function() {
+    return this.getMapKeys(this.namedViews_);
 };
 
 Melown.Map.prototype.setMapView = function(view_) {
@@ -215,6 +231,13 @@ Melown.Map.prototype.searchMapByInnerId = function(map_, id_) {
     }
 
     return null;
+};
+
+Melown.Map.prototype.getMapKeys = function(map_) {
+    var keys_ = [];
+    for (var key_ in map_) {
+        keys_.push(key_);
+    }
 };
 
 Melown.Map.prototype.generateBoundLayerSequence = function() {
@@ -301,7 +324,7 @@ Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
     var coords2_ = pos_.getCoords();
     var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
 
-    if (navigationSrsInfo_["proj-name"] != "longlat") {
+    if (this.getNavigationSrs().isProjected()) {
         pos2_.setCoords2([coords_[0] + (forward_[0]*dy_ - aside_[0]*dx_),
                           coords_[1] + (forward_[1]*dy_ - aside_[1]*dx_)]);
     } else {
@@ -310,7 +333,7 @@ Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
 
         var azimut_ = Melown.degrees(Math.atan2(mx_, my_));
         var distance_ = Math.sqrt(mx_*mx_ + my_*my_);
-        console.log("azimut: " + azimut_ + " distance: " + distance_);
+        //console.log("azimut: " + azimut_ + " distance: " + distance_);
 
         var coords_ = pos_.getCoords();
         var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
@@ -326,6 +349,50 @@ Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
     }
 
     return pos2_;
+};
+
+Melown.Map.prototype.setConfigParams = function(params_) {
+    if (typeof params_ === "object" && params_ !== null) {
+        for (var key_ in params_) {
+            this.setConfigParam(key_, params_[key_]);
+        }
+    }
+};
+
+Melown.Map.prototype.setConfigParam = function(key_, value_) {
+    switch (key_) {
+        case "map":                           this.config_.map_ = Melown.validateString(value_, null); break;
+        case "mapCache":                      this.config_.mapCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 900); break;
+        case "mapGPUCache":                   this.config_.mapGPUCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 360); break;
+        case "mapMetatileCache":              this.config_.mapMetatileCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 60); break;
+        case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
+        case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
+        case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;
+        case "mapMaxProcessedMeshes":         this.config_.mapMaxProcessedMeshes_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1); break;
+        case "mapMaxProcessedTextures":       this.config_.mapMaxProcessedTextures_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1); break;
+        case "mapMaxProcessedMetatiles":      this.config_.mapMaxProcessedMetatiles_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
+        case "mapMobileMode":                 this.config_.mapMobileMode_ = Melown.validateBool(value_, false); break;
+        case "mapMobileTexelDegradation":     this.config_.mapMobileTexelDegradation_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
+        case "mapNavSamplesPerViewExtent":    this.config_.mapNavSamplesPerViewExtent_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 10); break;
+    }
+};
+
+Melown.Map.prototype.getConfigParam = function(key_) {
+    switch (key_) {
+        case "map":                           return this.config_.map_;
+        case "mapCache":                      return this.config_.mapCache_;
+        case "mapGPUCache":                   return this.config_.mapGPUCache_;
+        case "mapMetatileCache":              return this.config_.mapMetatileCache_;
+        case "mapTexelSizeFit":               return this.config_.mapTexelSizeFit_;
+        case "mapTexelSizeTolerance":         return this.config_.mapTexelSizeTolerance_;
+        case "mapDownloadThreads":            return this.config_.mapDownloadThreads_;
+        case "mapMaxProcessedMeshes":         return this.config_.mapMaxProcessedMeshes_;
+        case "mapMaxProcessedTextures":       return this.config_.mapMaxProcessedTextures_;
+        case "mapMaxProcessedMetatiles":      return this.config_.mapMaxProcessedMetatiles_;
+        case "mapMobileMode":                 return this.config_.mapMobileMode_;
+        case "mapMobileTexelDegradation":     return this.config_.mapMobileTexelDegradation_;
+        case "mapNavSamplesPerViewExtent":    return this.config_.mapNavSamplesPerViewExtent_;
+    }
 };
 
 Melown.Map.prototype.update = function() {
@@ -368,3 +435,4 @@ Melown.Map.prototype.update = function() {
     this.stats_.end();
 
 };
+

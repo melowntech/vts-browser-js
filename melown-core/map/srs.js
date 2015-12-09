@@ -62,11 +62,39 @@ Melown.MapSrs.prototype.parsePeriodicity = function(periodicityData_) {
     return periodicity_;
 };
 
+Melown.MapSrs.prototype.getInfo = function() {
+    return {
+        "comment" : this.comment_,
+        "srsDef" : this.srsDef_,
+        "srsModifiers" : this.srsModifiers_,
+        "type" : this.type_,
+        "vdatum" : this.vdatum_,
+        "srsDefEllps" : this.srsDef_
+    };
+};
+
 Melown.MapSrs.prototype.getSrsInfo = function() {
     return this.srsInfo_;
 };
 
+Melown.MapSrs.prototype.isReady = function() {
+    return this.isGeoidGridReady();
+};
+
+Melown.MapSrs.prototype.isGeoidGridReady = function() {
+    return true; //(this.geoidGrid_ == null || this.geoidGridMap_.isReady());
+};
+
+Melown.MapSrs.prototype.isProjected = function() {
+    return (this.type_ == "projected");
+};
+
 Melown.MapSrs.prototype.convertCoordsTo = function(coords_, srs_) {
+    this.isReady();
+    if (typeof srs_ !== "string") {
+        srs_.isReady();
+    }
+
     var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsDef_;
     var coords2_ = this.proj4_(this.srsDef_, srsDef_, coords_);
     return coords2_;

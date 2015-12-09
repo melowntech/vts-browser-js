@@ -35,13 +35,13 @@ Melown.Map.prototype.parseSrses = function() {
 
 Melown.Map.prototype.parseReferenceFrame = function() {
     var rf_ = this.mapConfig_["referenceFrame"];
-    this.referenceFrame_ = {};
+    //this.referenceFrame_ = {};
 
     if (rf_ == null) {
         return false;
     }
 
-    this.setReferenceFrame(new Melown.MapRefFrame(this, rf_));
+    this.referenceFrame_ = new Melown.MapRefFrame(this, rf_);
 
     if (this.referenceFrame_.valid_ == false) {
         return false;

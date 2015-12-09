@@ -85,34 +85,55 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
 
         if (this.params_ && this.params_.traceHeight_) {
             var coords_ = this.params_.coords_;
-            var extents_ = this.params_.extens_;
+            var extents_ = this.params_.extents_;
             var center_ = [(extents_.ll_[0] + extents_.ur_[0]) *0.5,
                            (extents_.ll_[1] + extents_.ur_[1]) *0.5];
 
             //ul,ur,ll,lr
 
-            if (coords_[0] >= center_[0]) {
-                extents_.ll_[0] = center_[0];
+            var right_ = (coords_[0] >= center_[0]);
+            var bottom_ = (coords_[1] >= center_[1]);
 
-                if (coords_[1] >= center_[1]) {
+            if (right_) {
+                extents_.ll_[0] = center_[0];
+                if (bottom_) {
                     extents_.ll_[1] = center_[1];
-                    this.traceTile(tile_.children_[1]);
                 } else {
                     extents_.ur_[1] = center_[1];
-                    this.traceTile(tile_.children_[0]);
+                }
+            } else {
+                extents_.ur_[0] = center_[0];
+                if (bottom_) {
+                    extents_.ll_[1] = center_[1];
+                } else {
+                    extents_.ur_[1] = center_[1];
+                }
+            }
+
+            /*
+            if (extents_.ll_[0] > extents_.ur_[0]) {
+                right_ = !right_;
+            }
+
+            if (extents_.ll_[1] < extents_.ur_[1]) {
+                bottom_ = !bottom_;
+            }*/
+
+            if (right_) {
+                if (bottom_) {
+                    this.traceTile(tile_.children_[1]);
+                } else {
+                    this.traceTile(tile_.children_[3]);
                 }
 
             } else {
-                extents_.ur_[0] = center_[0];
-
-                if (coords_[1] >= center_[1]) {
-                    extents_.ll_[1] = center_[1];
-                    this.traceTile(tile_.children_[3]);
+                if (bottom_) {
+                    this.traceTile(tile_.children_[0]);
                 } else {
-                    extents_.ur_[1] = center_[1];
                     this.traceTile(tile_.children_[2]);
                 }
             }
+
 
         } else {
             //trace children
