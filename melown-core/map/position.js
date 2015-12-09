@@ -105,7 +105,7 @@ Melown.MapPosition.prototype.convertHeightMode = function(mode_) {
         return this;
     }
 
-    var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), 10);
+    var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
     var height_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
 
     if (height_[1] == false) {

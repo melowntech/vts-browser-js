@@ -1,7 +1,8 @@
 
 
-Melown.Core.prototype.initConfig = function(data_) {
+Melown.Core.prototype.initConfig = function() {
     this.config_ = {
+        map_ : null,
         mapCache_ : 900,
         mapGPUCache_ : 360,
         mapMetatileCache_ : 60,
@@ -19,31 +20,39 @@ Melown.Core.prototype.initConfig = function(data_) {
     };
 };
 
-Melown.Core.prototype.setConfigParams = function(params_, ignoreCore_) {
-    if (typeof param_ === "object" && param_ !== null) {
+Melown.Core.prototype.setConfigParams = function(params_) {
+    if (typeof params_ === "object" && params_ !== null) {
         for (var key_ in params_) {
-            this.setConfigParam(key_. params_[key_]);
+            this.setConfigParam(key_, params_[key_]);
         }
     }
 };
 
 Melown.Core.prototype.setConfigParam = function(key_, value_) {
-    if (key_.indexOf("map") == 0) {
-        this.core_.getMap().setConfigParam(key_, value_);
-    }
+    if (key_ == "map") {
+        this.config_.map_ = Melown.validateString(value_, null);
+    } else {
+        if (key_.indexOf("map") == 0 && this.getMap() != null) {
+            this.getMap().setConfigParam(key_, value_);
+        }
 
-    if (key_.indexOf("renderer") == 0) {
-        this.core_.getRenderer().setConfigParam(key_, value_);
+        if (key_.indexOf("renderer") == 0) {
+            this.getRenderer().setConfigParam(key_, value_);
+        }
     }
 };
 
 Melown.Core.prototype.getConfigParam = function(key_) {
-    if (key_.indexOf("map") == 0) {
-        return this.core_.getMap().setConfigParam(key_, value_);
-    }
+    if (key_ == "map") {
+        return this.config_.map_;
+    } else {
+        if (key_.indexOf("map") == 0 && this.getMap() != null) {
+            return this.getMap().getConfigParam(key_, value_);
+        }
 
-    if (key_.indexOf("renderer") == 0) {
-        return this.core_.getRenderer().setConfigParam(key_, value_);
+        if (key_.indexOf("renderer") == 0) {
+            return this.getRenderer().getConfigParam(key_, value_);
+        }
     }
 };
 

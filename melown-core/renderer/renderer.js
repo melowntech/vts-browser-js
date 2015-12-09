@@ -10,7 +10,9 @@ Melown.StencilLineState_ = null;
 /**
  * @constructor
  */
-Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_) {
+Melown.Renderer = function(core_, div_, onUpdate_, config_) {
+    this.config_ = config_ || {};
+    this.setConfigParams(config_);
     this.core_ = core_;
     this.progTile_ = null;
     this.progHeightmap_ = null;
@@ -50,7 +52,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, keepFrameBuffer_) {
     this.noForwardMovement_ = true;
     this.heightLod_ = this.core_.coreConfig_.heightLod_;
 
-    this.gpu_ = new Melown.GpuDevice(div_, this.curSize_, keepFrameBuffer_);
+    this.gpu_ = new Melown.GpuDevice(div_, this.curSize_, this.config_.rendererAllowScreenshots_);
 
     this.camera_ = new Melown.Camera(this, this.core_.coreConfig_.cameraFOV_, 2, this.core_.coreConfig_.cameraVisibility_);
 
@@ -535,4 +537,24 @@ Melown.Renderer.prototype.getBitmap = function(url_, filter_, tiled_) {
     return texture_;
 };
 
+Melown.Renderer.prototype.setConfigParams = function(params_) {
+    if (typeof params_ === "object" && params_ !== null) {
+        for (var key_ in params_) {
+            this.setConfigParam(key_, params_[key_]);
+        }
+    }
+};
 
+Melown.Renderer.prototype.setConfigParam = function(key_, value_) {
+    switch (key_) {
+        case "rendererAntialiasing":       this.config_.rendererAntialiasing_ = Melown.validateBool(value_, true); break;
+        case "rendererAllowScreenshots":   this.config_.rendererAllowScreenshots_ = Melown.validateBool(value_, false); break;
+    }
+};
+
+Melown.Renderer.prototype.getConfigParam = function(key_) {
+    switch (key_) {
+        case "rendererAntialiasing":       return this.config_.rendererAntialiasing_;
+        case "rendererAllowScreenshots":   return this.config_.rendererAllowScreenshots_;
+    }
+};

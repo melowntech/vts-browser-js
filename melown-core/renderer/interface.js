@@ -157,6 +157,20 @@ Melown.RendererInterface.prototype.getScreenSize = function(point_, mvp_) {
     return this.renderer_.curSize_.slice();
 };
 
+Melown.RendererInterface.prototype.setConfigParams = function(params_) {
+    this.renderer_.setConfigParams(params_);
+    return this;
+};
+
+Melown.RendererInterface.prototype.setConfigParam = function(key_, value_) {
+    this.renderer_.setConfigParam(key_, value_);
+    return this;
+};
+
+Melown.RendererInterface.prototype.getConfigParam = function(key_) {
+    return this.renderer_.getConfigParam(key_, value_);
+};
+
 
 //prevent minification
 Melown.RendererInterface.prototype["clear"] = Melown.RendererInterface.prototype.clear;

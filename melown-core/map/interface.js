@@ -138,6 +138,14 @@ Melown.MapInterface.prototype.getPositionHeightMode = function(position_) {
     return (new Melown.MapPosition(this.map_, position_)).getHeightMode();
 };
 
+Melown.MapInterface.prototype.getSurfaceHeight = function(coords_, precision_) {
+    return this.map_.getSurfaceHeight(coords_, this.map_.getOptimalHeightLodBySampleSize(coords_, precision_));
+};
+
+Melown.MapInterface.prototype.getDistance = function(coords_, coords2_, includingHeight_) {
+    return this.map_.getDistancet(coords_, coords2_, includingHeight_);
+};
+
 Melown.MapInterface.prototype.pan = function(position_, dx_, dy_) {
     return this.map_.pan(new Melown.MapPosition(this.map_, position_), dx_, dy_).pos_.slice();
 };
@@ -153,38 +161,18 @@ Melown.MapInterface.prototype.getCameraInfo = function() {
     };
 };
 
+Melown.RendererInterface.prototype.setConfigParams = function(params_) {
+    this.map_.setConfigParams(params_);
+    return this;
+};
+
 Melown.MapInterface.prototype.setConfigParam = function(key_, value_) {
-    switch (key_) {
-        case "mapCache":                      this.config_.mapCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 900); break;
-        case "mapGPUCache":                   this.config_.mapGPUCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 360); break;
-        case "mapMetatileCache":              this.config_.mapMetatileCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 60); break;
-        case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
-        case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
-        case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;
-        case "mapMaxProcessedMeshes":         this.config_.mapMaxProcessedMeshes_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1); break;
-        case "mapMaxProcessedTextures":       this.config_.mapMaxProcessedTextures_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1); break;
-        case "mapMaxProcessedMetatiles":      this.config_.mapMaxProcessedMetatiles_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
-        case "mapMobileMode":                 this.config_.mapMobileMode_ = Melown.validateBool(value_, false); break;
-        case "mapMobileTexelDegradation":     this.config_.mapMobileTexelDegradation_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
-        case "mapNavSamplesPerViewExtent":    this.config_.mapNavSamplesPerViewExtent_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 10); break;
-    }
+    this.map_.setConfigParam(key_, value_);
+    return this;
 };
 
 Melown.MapInterface.prototype.getConfigParam = function(key_) {
-    switch (key_) {
-        case "mapCache":                      return this.config_.mapCache_;
-        case "mapGPUCache":                   return this.config_.mapGPUCache_;
-        case "mapMetatileCache":              return this.config_.mapMetatileCache_;
-        case "mapTexelSizeFit":               return this.config_.mapTexelSizeFit_;
-        case "mapTexelSizeTolerance":         return this.config_.mapTexelSizeTolerance_;
-        case "mapDownloadThreads":            return this.config_.mapDownloadThreads_;
-        case "mapMaxProcessedMeshes":         return this.config_.mapMaxProcessedMeshes_;
-        case "mapMaxProcessedTextures":       return this.config_.mapMaxProcessedTextures_;
-        case "mapMaxProcessedMetatiles":      return this.config_.mapMaxProcessedMetatiles_;
-        case "mapMobileMode":                 return this.config_.mapMobileMode_;
-        case "mapMobileTexelDegradation":     return this.config_.mapMobileTexelDegradation_;
-        case "mapNavSamplesPerViewExtent":    return this.config_.mapNavSamplesPerViewExtent_;
-    }
+    return this.map_.getConfigParam(key_, value_);
 };
 
 

@@ -4,7 +4,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
     var node_ = result_[0];
     var nodeCoords_ = result_[1];
 
-    if (node_ != null) {
+    if (node_ != null && lod_ !== null) {
 
         for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
             var tree_ = this.mapTrees_[i];
@@ -141,7 +141,43 @@ Melown.Map.prototype.getOptimalHeightLod = function(coords_, viewExtent_, desire
     return null;
 };
 
+Melown.Map.prototype.getDistance = function(coords_, coords2_, includingHeight_) {
+    var p1_ = this.getPhysicalSrs().convertCoordsFrom(coords_, this.getNavigationSrs());
+    var p2_ = this.getPhysicalSrs().convertCoordsFrom(coords2_, this.getNavigationSrs());
+    var d = 0;
 
+    var dx_ = p2_[0] - p1_[0];
+    var dy_ = p2_[1] - p1_[1];
+    var dz_ = p2_[2] - p1_[2];
+
+    if (includingHeight_) {
+        d = Math.sqrt(dx_*dx_ + dy_*dy_ + dz_*dz_);
+    } else {
+        d = Math.sqrt(dx_*dx_ + dy_*dy_);
+    }
+
+    var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
+
+    if (!this.getNavigationSrs().isProjected()) {
+        var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo_["a"],
+                                                       (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
+
+        var r = geod.Inverse(coords_[1], coords_[0], coords2_[0], coords2_[0]);
+
+        if (d > (navigationSrsInfo_["a"] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
+            if (includingHeight_) {
+                return [Math.sqrt(r.s12*r.s12 + dz_*dz_), r.az1];
+            } else {
+                return [r.s12, r.az1];
+            }
+        } else {
+            return [d, r.az1];
+        }
+
+    } else {
+        return [d, Melown.degrees(Math.atan2(dx_, dy_))];
+    }
+};
 
 
 
