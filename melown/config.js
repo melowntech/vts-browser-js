@@ -14,9 +14,9 @@ Melown.Browser.prototype.initConfig = function(data_) {
 };
 
 Melown.Browser.prototype.setConfigParams = function(params_, ignoreCore_) {
-    if (typeof param_ === "object" && param_ !== null) {
+    if (typeof params_ === "object" && params_ !== null) {
         for (var key_ in params_) {
-            this.setConfigParam(key_. params_[key_]);
+            this.setConfigParam(key_, params_[key_]);
         }
     }
 };
@@ -68,11 +68,11 @@ Melown.Browser.prototype.getConfigParam = function(key_) {
 
     if (ignoreCore_ == true) {
         if (key_.indexOf("map") == 0) {
-            return this.core_.getMap().setConfigParam(key_, value_);
+            return this.core_.getMap().getConfigParam(key_, value_);
         }
 
         if (key_.indexOf("renderer") == 0) {
-            return this.core_.getRenderer().setConfigParam(key_, value_);
+            return this.core_.getRenderer().getConfigParam(key_, value_);
         }
     }
 };

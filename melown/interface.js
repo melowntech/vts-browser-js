@@ -188,6 +188,20 @@ Melown.BrowserInterface.prototype.removeControl = function(id_) {
     return this.ui_.removeControl(id_);
 };
 
+Melown.BrowserInterface.prototype.setParams = function(params_) {
+    this.setConfigParams(params_);
+    return this;
+};
+
+Melown.BrowserInterface.prototype.setParam = function(key_, value_) {
+    this.setConfigParam(key_, value_);
+    return this;
+};
+
+Melown.BrowserInterface.prototype.getParam = function(key_) {
+    return this.getConfigParam(key_, value_);
+};
+
 
 Melown.getBrowserVersion = function() {
     return "0.1";
