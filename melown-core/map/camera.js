@@ -40,7 +40,7 @@ Melown.Map.prototype.updateCamera = function() {
     var height_ = this.position_.getHeight();//232.2;
 
     if (this.position_.getHeightMode() == "float") {
-        var lod_ =  this.getOptimalHeightLod(this.position_.getCoords(), this.position_.getViewExtent(), 10);
+        var lod_ =  this.getOptimalHeightLod(this.position_.getCoords(), this.position_.getViewExtent(), 2);
         var surfaceHeight_ = this.getSurfaceHeight(this.position_.getCoords(), lod_);
         height_ += surfaceHeight_[0];
     }

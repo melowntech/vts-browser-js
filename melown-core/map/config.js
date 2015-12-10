@@ -27,7 +27,7 @@ Melown.Map.prototype.parseSrses = function() {
     }
 
     for (var key_ in srses_) {
-        this.addSrs(key_, new Melown.MapSrs(this, srses_[key_]));
+        this.addSrs(key_, new Melown.MapSrs(this, key_, srses_[key_]));
     }
 
     return true;
