@@ -100,6 +100,21 @@ Melown.MapPosition.prototype.setHeightMode = function(mode_) {
     return this;
 };
 
+Melown.MapPosition.prototype.convertViewMode = function(mode_) {
+    if (mode_ == this.pos_[0]) {
+        return this;
+    }
+
+    if (mode_ == "obj") {
+
+    } else if (mode_ == "subj") {
+        var coords_ = this.cameraCoords(this.getHeightMode());
+        this.setCoords(coords_);
+    }
+
+    return this;
+};
+
 Melown.MapPosition.prototype.convertHeightMode = function(mode_) {
     if (this.pos_[3] == mode_) {
         return this;
@@ -172,7 +187,63 @@ Melown.MapPosition.prototype.validate = function() {
     pos_[3] = (pos_[3] == "fixed") ? "fix" : pos_[3];
 };
 
+Melown.MapPosition.prototype.cameraCoords = function(heightMode_) {
+    var rotMatrix_ = Melown.mat4.create();
+    Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(orientation_[0])), Melown.rotationMatrix(0, Melown.radians(orientation_[1])), rotMatrix_);
 
+    if (this.getViewMode() == "obj") {
+        var distance_ = (this.getViewExtent()) / Math.tan(Melown.radians(this.getFov()*0.5));
+        var orbitPos_ = [0, -distance_, 0];
+
+        if (this.map_.getNavigationSrs().isProjected()) {
+            Melown.mat4.multiplyVec3(rotMatrix_, orbitPos_);
+        } else {
+
+        }
+
+        var coords_ = this.getCoords();
+        coords_[0] += orbitPos_[0];
+        coords_[1] += orbitPos_[1];
+        coords_[2] += orbitPos_[2];
+
+        //convert height to fix
+        if (this.getHeightMode() == "float") {
+            var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
+            var surfaceHeight_ = this.getSurfaceHeight(this.getCoords(), lod_);
+            coords_[2] += surfaceHeight_[0];
+        }
+
+        if (heightMode_ == "fix") {
+            return coords_;
+        } else {
+            //get float height for new coords
+            var lod_ =  this.map_.getOptimalHeightLod(coords_, this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
+            var surfaceHeight_ = this.getSurfaceHeight(coords_, lod_);
+            coords_[2] -= surfaceHeight_[0];
+
+            return coords_;
+        }
+
+    } else {
+
+        if (this.getHeightMode() == heightMode_) {
+            return this.getCoords();
+        } else {
+            var height_ = this.getHeight();
+
+            if (heightMode_ == "fix") {
+                var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
+                var surfaceHeight_ = this.getSurfaceHeight(this.getCoords(), lod_);
+                height_ += surfaceHeight_[0];
+
+                var coords_ = this.getCoords();
+                coords_[2] += surfaceHeight_[0];
+            }
+
+            return coords_;
+        }
+    }
+};
 
 
 

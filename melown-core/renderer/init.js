@@ -6,6 +6,7 @@ Melown.Renderer.prototype.initShaders = function() {
     this.progFogTile_ = new Melown.GpuProgram(this.gpu_, Melown.fogTileVertexShader, Melown.fogTileFragmentShader);
     this.progWireframeTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframeFragmentShader);
     this.progWireframeTile2_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframe2FragmentShader);
+    this.progWireframeTile3_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframe3VertexShader, Melown.tileWireframeFragmentShader);
     this.progFlatShadeTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileFlatShadeVertexShader, Melown.tileFlatShadeFragmentShader);
     this.progHeightmap_ = new Melown.GpuProgram(this.gpu_, Melown.heightmapVertexShader, Melown.heightmapFragmentShader);
     this.progSkydome_ = new Melown.GpuProgram(this.gpu_, Melown.skydomeVertexShader, Melown.skydomeFragmentShader);

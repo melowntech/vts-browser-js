@@ -10,6 +10,7 @@ Melown.Camera = function(parent_, fov_, near_, far_) {
     this.fov_ = fov_;
     this.near_ = near_;
     this.far_ = far_;
+    this.rotationByMatrix_ = false;
 
     // derived quantities, calculated from camera parameters by update()
     this.modelview_ = Melown.mat4.create();
@@ -31,9 +32,17 @@ Melown.Camera.prototype.setPosition = function(position_) {
 };
 
 Melown.Camera.prototype.setOrientation = function(orientation_) {
+    this.rotationByMatrix_ = false;
     this.orientation_ = orientation_;
     this.dirty_ = true;
 };
+
+Melown.Camera.prototype.setRotationMatrix = function(matrix_){
+    this.rotationByMatrix_ = true;
+    this.rotationview_ = matrix_.slice();
+    this.dirty_ = true;
+};
+
 
 //! Sets the viewport aspect ratio (width / height). Should be called
 //! whenever the rendering viewport changes.
@@ -183,8 +192,12 @@ Melown.Camera.prototype.update = function() {
     // brings the camera from the origin to its world position (the inverse
     // is trivial here -- negative angles, reverse order of transformations)
     //this.modelview_ = Melown.mat4.create();
-    Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(-this.orientation_[2])), Melown.rotationMatrix(0, Melown.radians(-this.orientation_[1] - 90.0)), this.rotationview_);
-    Melown.mat4.multiply(this.rotationview_, Melown.rotationMatrix(2, Melown.radians(-this.orientation_[0])), this.rotationview_);
+
+    if (!this.rotationByMatrix_) {
+        Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(-this.orientation_[2])), Melown.rotationMatrix(0, Melown.radians(-this.orientation_[1] - 90.0)), this.rotationview_);
+        Melown.mat4.multiply(this.rotationview_, Melown.rotationMatrix(2, Melown.radians(-this.orientation_[0])), this.rotationview_);
+    }
+
     Melown.mat4.multiply(this.rotationview_, Melown.translationMatrix(-this.position_[0], -this.position_[1], -this.position_[2]), this.modelview_);
 
     if (this.ortho_ == true) {

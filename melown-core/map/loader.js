@@ -63,6 +63,8 @@ Melown.MapLoader.prototype.update = function() {
                     this.downloading_.splice(this.downloading_.indexOf(path_), 1);
                     this.usedThreads_--;
 
+                    this.map_.dirty_ = true;
+
                 }).bind(this);
 
                 var onError_ = (function(path_){

@@ -175,6 +175,10 @@ Melown.MapInterface.prototype.getConfigParam = function(key_) {
     return this.map_.getConfigParam(key_, value_);
 };
 
+Melown.MapInterface.prototype.redraw = function() {
+    this.map_.markDirty();
+    return this;
+};
 
 Melown.MapPositionInterface = Melown.MapPosition;
 

@@ -19,8 +19,9 @@ Melown.MapTile = function(map_, parent_, id_) {
 
     this.updateBounds_ = true;
     this.transparentBounds_ = false;
-    this.boundLayers_ = [];
-    this.boundTextures_ = [];
+    this.boundLayers_ = {};
+    this.boundTextures_ = {};
+    this.boundSequence_ = [];
 
     this.heightMap_ = null;
 
@@ -71,6 +72,7 @@ Melown.MapTile.prototype.kill = function() {
     this.transparentBounds_ = false;
     this.boundLayers_ = {};
     this.boundTextures_ = {};
+    this.boundSequence_ = [];
 
     this.heightMap_ = null;
 

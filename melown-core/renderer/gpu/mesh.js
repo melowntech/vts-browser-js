@@ -96,19 +96,19 @@ Melown.GpuMesh.prototype.draw = function(program_, attrVertex_, attrUV_, attrUV2
     gl_.vertexAttribPointer(vertexAttribute_, this.vertexBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
 
     //bind texture coords
-    if (this.uvBuffer_ != null) {
+    if (this.uvBuffer_ && attrUV_) {
         var uvAttribute_ = program_.getAttribute(attrUV_);
         gl_.bindBuffer(gl_.ARRAY_BUFFER, this.uvBuffer_);
         gl_.vertexAttribPointer(uvAttribute_, this.uvBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
     }
 
-    if (this.uv2Buffer_ != null) {
+    if (this.uv2Buffer_ && attrUV2_) {
         var uv2Attribute_ = program_.getAttribute(attrUV2_);
         gl_.bindBuffer(gl_.ARRAY_BUFFER, this.uv2Buffer_);
         gl_.vertexAttribPointer(uv2Attribute_, this.uv2Buffer_.itemSize, gl_.FLOAT, false, 0, 0);
     }
 
-    if (attrBarycenteric_ != null) {
+    if (attrBarycenteric_ && attrBarycenteric_) {
         var barycentericAttribute_ = program_.getAttribute(attrBarycenteric_);
         gl_.bindBuffer(gl_.ARRAY_BUFFER, Melown.GpuBarycentricBuffer_);
         gl_.vertexAttribPointer(barycentericAttribute_, Melown.GpuBarycentricBuffer_.itemSize, gl_.FLOAT, false, 0, 0);

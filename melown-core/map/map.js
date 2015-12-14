@@ -287,6 +287,7 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
 
 Melown.Map.prototype.setPosition = function(pos_, public_) {
     this.position_ = new Melown.MapPosition(this, pos_);
+    this.dirty_ = true;
 };
 
 Melown.Map.prototype.convertCoords = function(coords_, source_, destination_) {
@@ -395,6 +396,10 @@ Melown.Map.prototype.getConfigParam = function(key_) {
     }
 };
 
+Melown.Map.prototype.markDirty = function() {
+    this.dirty_ = true;
+};
+
 Melown.Map.prototype.update = function() {
     if (this.killed_ == true){
         return;
@@ -418,19 +423,26 @@ Melown.Map.prototype.update = function() {
 
     if (this.renderer_.curSize_[0] != rect_.width || this.renderer_.curSize_[1] != rect_.height) {
         this.renderer_.onResize();
+        this.dirty_ = true;
     }
 
     this.loader_.update();
-    this.renderer_.gpu_.setViewport();
 
-    this.updateCamera();
-    this.renderer_.dirty_ = true;
+    if (this.dirty_) {
+        this.dirty_ = false;
 
-    //this.cameraPosition_ = this.renderer_.cameraPosition();
+        this.renderer_.gpu_.setViewport();
 
-    this.renderer_.paintGL();
+        this.updateCamera();
+        this.renderer_.dirty_ = true;
 
-    this.draw();
+        //this.cameraPosition_ = this.renderer_.cameraPosition();
+
+        this.renderer_.paintGL();
+
+        this.draw();
+        this.core_.callListener("map-update", {});
+    }
 
     this.stats_.end();
 

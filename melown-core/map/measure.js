@@ -61,6 +61,10 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
                     height_ = metanode_.minHeight_ + (metanode_.maxHeight_ - metanode_.minHeight_) * (height_/255);
 
                     return [height_, metanode_.id_[0] >= lod_, true];
+                } else if (metanode_ != null && metanode_.id_[0] == lod_ && !metanode_.hasNavtile()){
+                    var center_ = metanode_.bbox_.center();
+                    center_ = this.convertCoords(center_, "physical", "navigation");
+                    return [center_[2], true, true];
                 }
 
                 /*

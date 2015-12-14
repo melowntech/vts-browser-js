@@ -475,6 +475,24 @@ Melown.tileWireframe2FragmentShader = "precision mediump float;\n"+
         "gl_FragColor = vec4( mix(vec3(0.0), vec3(0.5), edgeFactor()) , 1.0);\n"+
     "}";
 
+//textured wire frame tile mesh
+Melown.tileWireframe3VertexShader =
+    "attribute vec3 aPosition;\n"+
+    "attribute vec2 aTexCoord2;\n"+
+    "attribute vec3 aBarycentric;\n"+
+    "uniform mat4 uMV, uProj;\n"+
+    "uniform float uFogDensity;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying vec3 vBarycentric;\n"+
+    "varying float vFogFactor;\n"+
+    "void main() {\n"+
+        "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
+        "gl_Position = uProj * camSpacePos;\n"+
+        "float camDist = length(camSpacePos.xyz);\n"+
+        "vFogFactor = exp(uFogDensity * camDist);\n"+
+        "vTexCoord = aTexCoord2;\n"+
+        "vBarycentric = aBarycentric;\n"+
+    "}";
 
 //depth encoded tile mesh
 Melown.tileDepthVertexShader =

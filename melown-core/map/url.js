@@ -120,6 +120,10 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
 
     //var worldParams_ = id_.getWorldParams();
     //var url_ = Melown.simpleFmtObjOrCall(templ_, {"lod":id_.lod_, "easting":Melown.padNumber(worldParams_[0], 7), "northing":Melown.padNumber(worldParams_[1], 7),
+
+    //remove white spaces from template
+    templ_ = templ_.replace(/ /g, '');
+
     var url_ = Melown.simpleFmtObjOrCall(templ_, {"lod":id_.lod_,  "x":id_.ix_, "y":id_.iy_, "sub": subId_,
                                                     "here_app_id": "abcde", "here_app_code":"12345"},
                                            this.processUrlFunction.bind(this, id_, this.urlCounter_));

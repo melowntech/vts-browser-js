@@ -225,26 +225,52 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
 
     var texcoordsAttr_ = null;
     var texcoords2Attr_ = null;
+    var drawWireframe_ = this.map_.drawWireframe_;
 
-    switch(type_) {
-        case "internal":
-            program_ = renderer_.progTile_;
-            texcoordsAttr_ = "aTexCoord";
-            break;
+    if (drawWireframe_ > 0) {
+        switch (drawWireframe_) {
+            case 2: program_ = renderer_.progWireframeTile2_;  break;
+            case 3: program_ = renderer_.progFlatShadeTile_;  break;
+            case 1:
 
-        case "external":
-        case "external-nofog":
-            program_ = renderer_.progTile2_;
-            texcoords2Attr_ = "aTexCoord2";
-            break;
+                switch(type_) {
+                    case "internal":
+                        program_ = renderer_.progWireframeTile_;
+                        texcoordsAttr_ = "aTexCoord";
+                        break;
 
-        case "fog":
-            program_ = renderer_.progFogTile_;
+                    case "external":
+                    case "external-nofog":
+                        program_ = renderer_.progWireframeTile3_;
+                        texcoords2Attr_ = "aTexCoord2";
+                        break;
+
+                    case "fog":
+                        return;
+                }
+
             break;
+        }
+    } else {
+        switch(type_) {
+            case "internal":
+                program_ = renderer_.progTile_;
+                texcoordsAttr_ = "aTexCoord";
+                break;
+
+            case "external":
+            case "external-nofog":
+                program_ = renderer_.progTile2_;
+                texcoords2Attr_ = "aTexCoord2";
+                break;
+
+            case "fog":
+                program_ = renderer_.progFogTile_;
+                break;
+        }
     }
 
-
-    renderer_.gpu_.useProgram(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, renderer_.drawWireframe_ == true ? "aBarycentric" : null);
+    renderer_.gpu_.useProgram(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
 
     var mv_ = Melown.mat4.create();
     Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_), mv_);
@@ -253,21 +279,23 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     program_.setMat4("uMV", mv_);
     program_.setMat4("uProj", proj_);
 
-    switch(type_) {
-        case "internal":
-        case "fog":
-            renderer_.fogSetup(program_, "uFogDensity");
-            break;
+    if (drawWireframe_ == 0) {
+        switch(type_) {
+            case "internal":
+            case "fog":
+                renderer_.fogSetup(program_, "uFogDensity");
+                break;
 
-        case "external":
-            program_.setFloat("uAlpha", 1);
-            program_.setFloat("uFogDensity", 0);
-            break;
+            case "external":
+                program_.setFloat("uAlpha", 1);
+                program_.setFloat("uFogDensity", 0);
+                break;
 
-        case "external-nofog":
-            program_.setFloat("uAlpha", alpha_);
-            renderer_.fogSetup(program_, "uFogDensity");
-            break;
+            case "external-nofog":
+                program_.setFloat("uAlpha", alpha_);
+                renderer_.fogSetup(program_, "uFogDensity");
+                break;
+        }
     }
 
     if (texture_ != null && texture_.gpuTexture_ != null) {
@@ -276,7 +304,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         return;
     }
 
-    gpuSubmesh_.draw(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, renderer_.drawWireframe_ == true ? "aBarycentric" : null);
+    gpuSubmesh_.draw(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
     this.stats_.drawnFaces_ += this.faces_;
 };
 
