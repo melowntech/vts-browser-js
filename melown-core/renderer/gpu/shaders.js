@@ -48,6 +48,34 @@ Melown.line3FragmentShader = "precision mediump float;\n"+
         "gl_FragColor = uColor;\n"+
     "}";
 
+Melown.line4VertexShader =
+    "attribute vec3 aPosition;\n"+
+    "uniform mat4 uMVP;\n"+
+    "uniform vec3 uScale;\n"+
+    "uniform vec3 uPoints[32];\n"+
+    "void main(){ \n"+
+        "vec4 pp0 = (uMVP * vec4(uPoints[int(aPosition.x)], 1.0));\n"+
+        "if (aPosition.y < 0.0) {\n"+
+            "if (aPosition.y == -1.0) {\n"+
+                "gl_Position = pp0;\n"+
+            "} else {\n"+
+                "gl_Position = pp0 + vec4((vec3(-sin(aPosition.z)*uScale.x*uScale.z, cos(aPosition.z)*uScale.y*uScale.z, 0.0)), 0.0);\n"+
+            "}\n"+
+        "} else {\n"+
+            "vec2 pp1 = pp0.xy / pp0.w;\n"+
+            "vec4 pp3 = (uMVP * vec4(uPoints[int(aPosition.y)], 1.0));\n"+
+            "vec2 pp2 = pp3.xy / pp3.w;\n"+
+            "vec2 n = normalize(pp2 - pp1);\n"+
+            "gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n"+
+        "}\n"+
+    "}";
+
+Melown.line4FragmentShader = "precision mediump float;\n"+
+    "uniform vec4 uColor;\n"+
+    "void main() {\n"+
+        "gl_FragColor = uColor;\n"+
+    "}";
+
 Melown.tlineVertexShader =
     "attribute vec4 aPosition;\n"+
     "attribute vec4 aNormal;\n"+

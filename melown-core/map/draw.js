@@ -175,7 +175,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
     var min_ = node_.bbox_.min_;
     var max_ = node_.bbox_.max_;
 
-    var pos_ =  this.core_.getRendererInterface().getScreenCoords(
+    var pos_ =  this.core_.getRendererInterface().getCanvasCoords(
                     [(min_[0] + (max_[0] - min_[0])*0.5) - cameraPos_[0],
                      (min_[1] + (max_[1] - min_[1])*0.5) - cameraPos_[1],
                      (max_[2]) - cameraPos_[2]],

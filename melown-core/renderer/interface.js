@@ -106,17 +106,17 @@ Melown.RendererInterface.prototype.drawImage = function(options_) {
         return;
     }
 
-    if (options["texture"] == null || options["rect"] == null) {
+    if (options_["texture"] == null || options_["rect"] == null) {
         return;
     }
 
-    var rect_ = options["rect"];
-    var color_ = options["color"] || [255,255,255,255];
-    var depth_ = options["depth"] || 0;
-    var depthTest_ = options["depth-test"] || false;
-    var blend_ = options["blend"] || false;
+    var rect_ = options_["rect"];
+    var color_ = options_["color"] || [255,255,255,255];
+    var depth_ = options_["depth"] || 0;
+    var depthTest_ = options_["depth-test"] || false;
+    var blend_ = options_["blend"] || false;
 
-    this.renderer_.drawImage(rect_[0], rect_[1], rect_[2], rect_[3], options["texture"], color_, depth_, depthTest_, blend_);
+    this.renderer_.drawImage(rect_[0], rect_[1], rect_[2], rect_[3], options_["texture"], color_, depth_, depthTest_, blend_);
 };
 
 Melown.RendererInterface.prototype.drawBillboard = function(options_) {
@@ -136,7 +136,22 @@ Melown.RendererInterface.prototype.drawBillboard = function(options_) {
     this.renderer_.drawBillboard(mvp_, options_["texture"], color_, depthTest_, blend_);
 };
 
-Melown.RendererInterface.prototype.drawLinestring = function(options_) {
+Melown.RendererInterface.prototype.drawLineString = function(options_) {
+    if (options_ == null || typeof options_ !== "object") {
+        return;
+    }
+
+    if (options_["points"] == null) {
+        return;
+    }
+
+    var points_ = options_["points"];
+    var color_ = options_["color"] || [255,255,255,255];
+    var size_ = options_["size"] || 2;
+    var depthTest_ = options_["depth-test"] || false;
+    var blend_ = options_["blend"] || false;
+
+    this.renderer_.drawLineString(points_, size_, color_, depthTest_, blend_);
 };
 
 Melown.RendererInterface.prototype.drawJobs = function(options_) {
@@ -149,11 +164,11 @@ Melown.RendererInterface.prototype.drawBBox = function(options_) {
 Melown.RendererInterface.prototype.drawDebugText = function(options_) {
 };
 
-Melown.RendererInterface.prototype.getScreenCoords = function(point_, mvp_) {
+Melown.RendererInterface.prototype.getCanvasCoords = function(point_, mvp_) {
     return this.renderer_.project2(point_, mvp_);
 };
 
-Melown.RendererInterface.prototype.getScreenSize = function(point_, mvp_) {
+Melown.RendererInterface.prototype.getCanvasSize = function(point_, mvp_) {
     return this.renderer_.curSize_.slice();
 };
 

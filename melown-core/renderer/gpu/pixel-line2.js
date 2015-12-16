@@ -1,8 +1,9 @@
-//! Holds a GPU vertex buffer.
 
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
+// !!!!   NOT USED - NOT WORKING - NOT NEEDED - NOT COMPLETE   !!!!!!!!!!!!
 
 //3D Line, line width is defined in pixels
+//with sharp joints
+//not used
 
 /**
  * @constructor

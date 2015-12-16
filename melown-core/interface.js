@@ -13,7 +13,7 @@ Melown.MapCore = function(element_, config_) {
  * @constructor
  */
 Melown.CoreInterface = function(element_, config_) {
-    this.core_ = new Melown.Core(element_, config_);
+    this.core_ = new Melown.Core(element_, config_, this);
     this.map_ = this.core_.getMap();
 };
 

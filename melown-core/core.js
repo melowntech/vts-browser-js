@@ -1,10 +1,11 @@
 /**
  * @constructor
  */
-Melown.Core = function(element_, config_) {
+Melown.Core = function(element_, config_, interface_) {
     this.initConfig();
     this.setConfigParams(config_);
     this.element_ = element_;
+    this.interface_ = interface_;
     //this.options_ = options_;
     this.coreConfig_ = new Melown.CoreConfig({}); //TODO: remove this CoreConfig
     this.ready_ = false;

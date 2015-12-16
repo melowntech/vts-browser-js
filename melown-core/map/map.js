@@ -90,6 +90,14 @@ Melown.Map.prototype.kill = function() {
     }
 };
 
+Melown.Map.prototype.getCoreInterface = function() {
+	return this.core_.interface_;
+};
+
+Melown.Map.prototype.getRendererInterface = function() {
+	return this.core_.interface_.getRendererInterface();
+};
+
 Melown.Map.prototype.initMapTrees = function() {
     var nodes_ = this.referenceFrame_.division_.nodes_;
 
@@ -441,6 +449,17 @@ Melown.Map.prototype.update = function() {
         this.renderer_.paintGL();
 
         this.draw();
+		
+		/*
+        var points_ = [
+            [0,0,0],
+            [500,500,0],
+            [100, 600,0]
+        ];
+
+        this.renderer_.drawLineString(points_, 2.0, [255,0,255,255], false, false);
+        */
+        
         this.core_.callListener("map-update", {});
     }
 

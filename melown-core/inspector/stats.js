@@ -22,6 +22,7 @@ Melown.Inspector.prototype.initStatsPanel = function() {
 
         + "#melown-stats-panel-info {"
             + "margin-top: 5px;"
+            + "margin-bottom: 3px;"
         + "}"
 
         + "#melown-stats-panel-info table {"
@@ -33,16 +34,22 @@ Melown.Inspector.prototype.initStatsPanel = function() {
         + "#melown-stats-panel-info table td {"
             + "vertical-align: top;"
         + "}"
+
+        + "#melown-stats-panel-pos {"
+            + "width: 100%;"
+        + "}"
     );
 
     this.statsElement_ = document.createElement("div");
     this.statsElement_.id = "melown-stats-panel";
     this.statsElement_.innerHTML =
         '<span id="melown-stats-panel-title">Render statistics</h3>'+
-        '<p id="melown-stats-panel-info"></p>';
+        '<p id="melown-stats-panel-info"></p>'+
+        '<input id="melown-stats-panel-pos" type="text">';
 
     this.core_.element_.appendChild(this.statsElement_);
     this.statsInfoElement_ = document.getElementById("melown-stats-panel-info");
+    this.statsPosElement_ = document.getElementById("melown-stats-panel-pos");
     this.statsPanelVisible_ = false;
 };
 
@@ -83,5 +90,17 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
     var text_ = "<table style='width:305px'><tr><td>" + text2_ + "</td><td>" + text3_ + "</td></tr></table>";
 
     this.statsInfoElement_.innerHTML = text_;
+
+    var map_ = this.core_.getMap();
+
+    if (map_ != null) {
+        var p = map_.getPosition();
+        var value_ = JSON.stringify(p.pos_);
+
+        if (this.statsPosElement_.value != value_) {
+            this.statsPosElement_.value = value_;
+        }
+    }
+
 };
 

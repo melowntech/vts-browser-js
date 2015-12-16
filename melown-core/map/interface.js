@@ -138,6 +138,10 @@ Melown.MapInterface.prototype.getPositionHeightMode = function(position_) {
     return (new Melown.MapPosition(this.map_, position_)).getHeightMode();
 };
 
+Melown.MapInterface.prototype.getPositionCanvasCoords = function(position_) {
+    return (new Melown.MapPosition(this.map_, position_)).getCanvasCoords();
+};
+
 Melown.MapInterface.prototype.getSurfaceHeight = function(coords_, precision_) {
     return this.map_.getSurfaceHeight(coords_, this.map_.getOptimalHeightLodBySampleSize(coords_, precision_));
 };

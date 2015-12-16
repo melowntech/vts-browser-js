@@ -76,6 +76,54 @@ Melown.Renderer.prototype.drawBall = function(position_, size_) {
     gl_.enable(gl_.CULL_FACE);
 };
 
+Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, depthTest_, transparent_) {
+    var gl_ = this.gpu_.gl_;
+    var index_ = 0;
+
+    //fill points
+    for (var i = 0, li = points_.length; i < li; i++) {
+        var p = points_[i];
+        this.plineBuffer_[index_] = p[0];
+        this.plineBuffer_[index_+1] = p[1];
+        this.plineBuffer_[index_+2] = p[2] || 0;
+        index_ += 3;
+    }
+
+    if (depthTest_ != true) {
+        gl_.disable(gl_.DEPTH_TEST);
+    }
+
+    if (transparent_ == true) {
+        //gl_.blendFunc(gl_.SRC_ALPHA, gl_.ONE);
+        gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
+        gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
+        gl_.enable(gl_.BLEND);
+    }
+
+    gl_.disable(gl_.CULL_FACE);
+
+    this.gpu_.useProgram(this.progLine4_, "aPosition", null);
+
+    this.progLine4_.setMat4("uMVP", this.imageProjectionMatrix_);
+    this.progLine4_.setVec3("uScale", [(2 / this.curSize_[0]), (2 / this.curSize_[1]), size_*0.5]);
+    this.progLine4_.setVec4("uColor", (color_ != null ? color_ : [255,255,255,255]));
+//    this.progLine4_.setVec3Array("uPoints", this.plineBuffer_);
+    this.progLine4_.setVec3("uPoints", this.plineBuffer_);
+
+
+    this.plines_.draw(this.progLine4_, "aPosition", li);
+
+    if (depthTest_ != true) {
+        gl_.enable(gl_.DEPTH_TEST);
+    }
+
+    if (transparent_ == true) {
+        gl_.disable(gl_.BLEND);
+    }
+
+    gl_.enable(gl_.CULL_FACE);
+
+};
 
 //draw 2d image - used for debuging
 Melown.Renderer.prototype.drawImage = function(x, y, lx, ly, texture_, color_, depth_, depthTest_, transparent_) {

@@ -28,6 +28,7 @@ cat utils/libs/proj4.js \
     renderer/gpu/line.js \
     renderer/gpu/mesh.js \
     renderer/gpu/pixel-line.js \
+    renderer/gpu/pixel-line3.js \
     renderer/gpu/polygon.js \
     renderer/gpu/program.js \
     renderer/gpu/shaders.js \

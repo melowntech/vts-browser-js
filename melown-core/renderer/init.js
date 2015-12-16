@@ -18,6 +18,7 @@ Melown.Renderer.prototype.initShaders = function() {
     this.progBBox_ = new Melown.GpuProgram(this.gpu_, Melown.bboxVertexShader, Melown.bboxFragmentShader);
     this.progLine_ = new Melown.GpuProgram(this.gpu_, Melown.lineVertexShader, Melown.lineFragmentShader);
     this.progLine3_ = new Melown.GpuProgram(this.gpu_, Melown.line3VertexShader, Melown.line3FragmentShader);
+    this.progLine4_ = new Melown.GpuProgram(this.gpu_, Melown.line4VertexShader, Melown.line4FragmentShader);
     this.progTLine_ = new Melown.GpuProgram(this.gpu_, Melown.tlineVertexShader, Melown.tlineFragmentShader);
     this.progTPLine_ = new Melown.GpuProgram(this.gpu_, Melown.tplineVertexShader, Melown.tlineFragmentShader);
     this.progTBLine_ = new Melown.GpuProgram(this.gpu_, Melown.tlineVertexShader, Melown.tblineFragmentShader);
@@ -330,6 +331,13 @@ Melown.Renderer.prototype.initBBox = function() {
     */
 };
 
+
+Melown.Renderer.prototype.initLines = function() {
+    this.plineBuffer_ = new Float32Array(32*3);
+    this.plines_ = new Melown.GpuPixelLine3(this.gpu_, this.core_, true, 64, true, 8);
+    this.plineJoints_ = new Melown.GpuPixelLine3(this.gpu_, this.core_, false, 64, true, 8);
+};
+
 Melown.Renderer.prototype.initBaricentricBuffer = function() {
     var buffer_ = new Array(65535*3);
 
@@ -366,5 +374,6 @@ Melown.Renderer.prototype.initializeGL = function() {
     this.initImage();
     this.initTestMap();
     this.initBBox();
+    this.initLines();
     this.initBaricentricBuffer();
 };

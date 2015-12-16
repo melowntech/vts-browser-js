@@ -209,7 +209,7 @@ Melown.MapPosition.prototype.cameraCoords = function(heightMode_) {
         //convert height to fix
         if (this.getHeightMode() == "float") {
             var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
-            var surfaceHeight_ = this.getSurfaceHeight(this.getCoords(), lod_);
+            var surfaceHeight_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
             coords_[2] += surfaceHeight_[0];
         }
 
@@ -218,7 +218,7 @@ Melown.MapPosition.prototype.cameraCoords = function(heightMode_) {
         } else {
             //get float height for new coords
             var lod_ =  this.map_.getOptimalHeightLod(coords_, this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
-            var surfaceHeight_ = this.getSurfaceHeight(coords_, lod_);
+            var surfaceHeight_ = this.map_.getSurfaceHeight(coords_, lod_);
             coords_[2] -= surfaceHeight_[0];
 
             return coords_;
@@ -233,7 +233,7 @@ Melown.MapPosition.prototype.cameraCoords = function(heightMode_) {
 
             if (heightMode_ == "fix") {
                 var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
-                var surfaceHeight_ = this.getSurfaceHeight(this.getCoords(), lod_);
+                var surfaceHeight_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
                 height_ += surfaceHeight_[0];
 
                 var coords_ = this.getCoords();
@@ -244,6 +244,30 @@ Melown.MapPosition.prototype.cameraCoords = function(heightMode_) {
         }
     }
 };
+
+Melown.MapPosition.prototype.getCanvasCoords = function() {
+	var coords_ = this.getCoords();
+
+    if (this.getHeightMode() == "float") {
+        var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
+        var surfaceHeight_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
+    	coords_[2] += surfaceHeight_[0]; 
+	}
+
+    var worldPos_ = this.map_.convertCoords(coords_, "navigation", "physical");
+    var camPos_ = this.map_.cameraPosition_;
+	worldPos_[0] -= camPos_[0];
+	worldPos_[1] -= camPos_[1];
+	worldPos_[2] -= camPos_[2];
+
+	return this.map_.renderer_.project2(worldPos_, this.map_.camera_.getMvpMatrix());
+};
+
+
+
+
+
+
 
 
 

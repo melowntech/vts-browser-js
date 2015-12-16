@@ -45,7 +45,7 @@ Melown.Map.prototype.updateCamera = function() {
         this.cameraVector_ = [0, 1, 0];
         Melown.mat4.multiplyVec3(this.updateCameraMatrix_, this.cameraVector_);
 
-        this.camera_.setPosition(orbitPos_);
+        //this.camera_.setPosition(orbitPos_);
         this.camera_.setOrientation(orientation_);
         this.renderer_.cameraDistance_ = this.cameraDistance_;
 
@@ -179,7 +179,7 @@ Melown.Map.prototype.updateCamera = function() {
         var orbitPos_ = [0, -this.cameraDistance_, 0];
         Melown.mat4.multiplyVec3(rotationMatrix_, orbitPos_);
 
-        this.camera_.setPosition(orbitPos_);
+        //this.camera_.setPosition(orbitPos_);
         this.camera_.setRotationMatrix(rotationMatrix_);
         this.renderer_.cameraDistance_ = this.cameraDistance_;
     }
@@ -189,8 +189,16 @@ Melown.Map.prototype.updateCamera = function() {
 
     this.camera_.setParams(this.position_.getFov()*0.5, this.renderer_.camera_.getNear(), this.renderer_.camera_.getFar());
 
+
     //convert public coords to physical
     var worldPos_ = this.convertCoords([this.position_.getCoords()[0], this.position_.getCoords()[1], height_], "navigation", "physical");
+	worldPos_[0] += orbitPos_[0];
+	worldPos_[1] += orbitPos_[1];
+	worldPos_[2] += orbitPos_[2];
+    this.camera_.setPosition([0,0,0]); //always zeros
+
+	//var camCoords_ = orbitPos
+
 
     //var worldPos_ = [this.position_.getCoords()[0], this.position_.getCoords()[1], height_];
 
