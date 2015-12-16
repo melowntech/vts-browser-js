@@ -164,6 +164,10 @@ Melown.BrowserInterface.prototype.getPositionHeigthMode = function(position_) {
     return this.map_.getPositionHeightMode(position_);
 };
 
+Melown.BrowserInterface.prototype.getPositionCanvasCoords = function(position_) {
+    return this.map_.getPositionCanvasCoords(position_);
+};
+
 Melown.BrowserInterface.prototype.pan = function(position_, dx_, dy_) {
     return this.map_.pan(position_, dx_, dy_);
 };
