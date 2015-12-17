@@ -115,7 +115,7 @@ Melown.MapPosition.prototype.convertViewMode = function(mode_) {
     return this;
 };
 
-Melown.MapPosition.prototype.convertHeightMode = function(mode_) {
+Melown.MapPosition.prototype.convertHeightMode = function(mode_, noPrecisionCheck_) {
     if (this.pos_[3] == mode_) {
         return this;
     }
@@ -123,7 +123,7 @@ Melown.MapPosition.prototype.convertHeightMode = function(mode_) {
     var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
     var height_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
 
-    if (height_[1] == false) {
+    if (height_[1] == false && !noPrecisionCheck_) {
         return null;
     }
 

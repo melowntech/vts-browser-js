@@ -25,6 +25,7 @@ var files = [
     'map/loader.js',
     'map/map.js',
     'map/measure.js',
+    'map/trajectory.js',
     'map/mesh.js',
     'map/metanode-tracer.js',
     'map/metanode.js',

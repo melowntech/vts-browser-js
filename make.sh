@@ -57,6 +57,7 @@ cat utils/libs/proj4.js \
     map/interface.js \
     map/loader.js \
     map/measure.js \
+    map/trajectory.js \
     map/mesh.js \
     map/metanode-tracer.js \
     map/metanode.js \
