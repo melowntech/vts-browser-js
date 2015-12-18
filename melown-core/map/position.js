@@ -4,7 +4,7 @@
  */
 Melown.MapPosition = function(map_, pos_) {
     this.map_ = map_;
-    if (this.pos_ instanceof Melown.MapPosition) {
+    if (pos_ instanceof Melown.MapPosition) {
         this.pos_ = pos_.pos_.slice();
     } else {
         if (!(pos_ != null && (pos_ instanceof Array))) {
@@ -32,7 +32,7 @@ Melown.MapPosition.prototype.getCoords2 = function() {
 Melown.MapPosition.prototype.setCoords = function(coords_) {
     this.pos_[1] = coords_[0];
     this.pos_[2] = coords_[1];
-    this.pos_[3] = coords_[2];
+    this.pos_[4] = coords_[2];
     return this;
 };
 
@@ -80,24 +80,29 @@ Melown.MapPosition.prototype.setViewExtent = function(extent_) {
     return this;
 };
 
-Melown.MapPosition.prototype.getViewMode = function() {
-    return this.pos_[0];
+Melown.MapPosition.prototype.getViewDistance = function() {
+    //do not divide height by 2, probably because of screen has range from -1 to 1
+    return (this.getViewExtent()) / Math.tan(Melown.radians(this.getFov()*0.5));
 };
 
-Melown.MapPosition.prototype.setViewMode = function(mode_) {
-    //TODO: convert
-    this.pos_[0] = mode_;
-    return this;
+Melown.MapPosition.prototype.getViewMode = function() {
+    return this.pos_[0];
 };
 
 Melown.MapPosition.prototype.getHeightMode = function() {
     return this.pos_[3];
 };
 
-Melown.MapPosition.prototype.setHeightMode = function(mode_) {
-    //TODO: convert
-    this.pos_[3] = mode_;
-    return this;
+Melown.MapPosition.prototype.check = function(mode_) {
+    //check pich
+    if (this.getViewMode() == "obj") {
+        this.pos_[6] = Melown.clamp(this.pos_[6], -90.0, 90.0);
+    } else {
+        this.pos_[6] = Melown.clamp(this.pos_[6], -90.0, 90.0);
+    }
+
+    this.pos_[5] = this.pos_[5] % 360;
+    this.pos_[7] = this.pos_[7] % 360;
 };
 
 Melown.MapPosition.prototype.convertViewMode = function(mode_) {
@@ -106,11 +111,45 @@ Melown.MapPosition.prototype.convertViewMode = function(mode_) {
     }
 
     if (mode_ == "obj") {
+        if (this.getHeightMode() == "float") {
+            var covertToFloat_ = true;
+            this.convertHeightMode("fix", true);
+        }
+        
+        var distance_ = this.getViewDistance();
+        var coords_ = this.getCoords();
+        var orientation_ = this.getOrientation();
+        
+        //get height delta
+        var pich_ = Melown.radians(-orientation_[1]);
+        var heightDelta_ = distance_ * Math.sin(pich_);
 
+        //reduce distance by pich
+        distance_ *= Math.cos(pich_);
+        
+        //get forward vector
+        var yaw_ = Melown.radians(orientation_[0]);
+        var forward_ = [-Math.sin(yaw_), Math.cos(yaw_)];
+
+        //get center coords 
+        coords_[0] = coords_[0] + (forward_[0] * distance_);
+        coords_[1] = coords_[1] + (forward_[1] * distance_);
+        coords_[2] -= heightDelta_;
+        
+        this.setCoords(coords_);
+
+        if (covertToFloat_) {
+            this.convertHeightMode("float", true);
+        }
+        
     } else if (mode_ == "subj") {
         var coords_ = this.cameraCoords(this.getHeightMode());
         this.setCoords(coords_);
+        
+        //TODO: take in accout planet ellipsoid
     }
+
+    this.pos_[0] = mode_;
 
     return this;
 };
@@ -188,6 +227,7 @@ Melown.MapPosition.prototype.validate = function() {
 };
 
 Melown.MapPosition.prototype.cameraCoords = function(heightMode_) {
+    var orientation_ = this.getOrientation();
     var rotMatrix_ = Melown.mat4.create();
     Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(orientation_[0])), Melown.rotationMatrix(0, Melown.radians(orientation_[1])), rotMatrix_);
 

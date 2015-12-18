@@ -6,20 +6,13 @@ Melown.Map.prototype.updateCamera = function() {
 
     this.updateCameraMatrix_ = Melown.mat4.create();
 
-    //check orietation extents
-    if (this.position_.getViewMode() == "obj") {
-        orientation_[1] = Melown.clamp(orientation_[1], -90.0, 90.0);
-        //orientation_[1] = Melown.clamp(orientation_[1], -90.0, 10.0);
-    } else {
-        orientation_[1] = Melown.clamp(orientation_[1], -90.0, 90.0);
-    }
+    //check position orientaion ...
+    this.position_.check();
 
-    this.position_.setOrientation(orientation_);
+    //get camera distance
+    this.cameraDistance_ = this.position_.getViewDistance();
+    this.cameraDistance_ = Melown.clamp(this.cameraDistance_, 0.1, this.camera_.getFar());
 
-    this.cameraDistance_ = Melown.clamp(this.cameraDistance_, 5, this.camera_.getFar());
-
-    //do not divide height by 2, probably because of screen has range from -1 to 1
-    this.cameraDistance_ = (this.position_.getViewExtent()) / Math.tan(Melown.radians(this.position_.getFov()*0.5));
 
     Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(orientation_[0])), Melown.rotationMatrix(0, Melown.radians(orientation_[1])), this.updateCameraMatrix_);
 
@@ -39,8 +32,13 @@ Melown.Map.prototype.updateCamera = function() {
 
 
     if (this.getNavigationSrs().isProjected()) {
-        var orbitPos_ = [0, -this.cameraDistance_, 0];
-        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, orbitPos_);
+        
+        if (this.position_.getViewMode() == "obj") {
+            var orbitPos_ = [0, -this.cameraDistance_, 0];
+            Melown.mat4.multiplyVec3(this.updateCameraMatrix_, orbitPos_);
+        } else {
+            var orbitPos_ = [0, 0, 0];
+        }
 
         this.cameraVector_ = [0, 1, 0];
         Melown.mat4.multiplyVec3(this.updateCameraMatrix_, this.cameraVector_);

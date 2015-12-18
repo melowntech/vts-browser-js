@@ -169,7 +169,16 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 69:
                     case 101:
-                        /*this.showExport();*/ break; //key E pressed
+                        /*this.showExport();*/
+                       
+                       var pos_ = map_.getPosition();
+                       console.log("pos-before: " + JSON.stringify(pos_.pos_));
+                       pos_.convertViewMode((pos_.getViewMode() == "obj") ? "subj" : "obj");
+                       console.log("new mode: " + pos_.getViewMode());
+                       console.log("pos-after: " + JSON.stringify(pos_.pos_));
+                       map_.setPosition(pos_);
+                       
+                       break; //key E pressed
 
                     case 79:
                     case 111:
@@ -177,7 +186,17 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 86:
                     case 118:
-                         /*this.switchLocationsPanel();*/ break; //key V pressed
+                         /*this.switchLocationsPanel();*/
+
+                       var pos_ = map_.getPosition();
+                       console.log("hpos-before: " + JSON.stringify(pos_.pos_));
+                       pos_.convertHeightMode((pos_.getHeightMode() == "fix") ? "float" : "fix", true);
+                       console.log("new hmode: " + pos_.getHeightMode());
+                       console.log("hpos-after: " + JSON.stringify(pos_.pos_));
+                       map_.setPosition(pos_);
+
+                        
+                        break; //key V pressed
 
                     case 90:
                     case 122:
