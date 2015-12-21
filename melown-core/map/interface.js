@@ -168,7 +168,7 @@ Melown.MapInterface.prototype.getCameraInfo = function() {
 Melown.MapInterface.prototype.generateTrajectory = function(p1_, p2_, options_) {
     p1_ = new Melown.MapPosition(this.map_, p1_);
     p2_ = new Melown.MapPosition(this.map_, p2_);
-    return this.map_.generateTrajectory(p1_, p2_, options_);
+    return (new Melown.MapTrajectory(this.map_, p1_, p2_, options_)).generate();
 };
 
 Melown.RendererInterface.prototype.setConfigParams = function(params_) {

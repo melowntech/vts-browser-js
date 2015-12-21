@@ -29,6 +29,9 @@ Melown.CoreInterface.prototype.on = function(eventName_, call_) {
     this.core_.on(eventName_, call_);
 };
 
+Melown.CoreInterface.prototype.callListener = function(name_, event_) {
+    this.core_.callListener(name_, event_);
+};
 
 //prevent minification
 Melown["MapCore"] = Melown.MapCore;

@@ -74,11 +74,9 @@ Melown.MapStats.prototype.begin = function() {
     this.statsCycle_++;
 
     this.renderTimeBegin_ = performance.now();
-
 };
 
 Melown.MapStats.prototype.end = function() {
-
     var timer_ = performance.now();
 
     var renderTime_ = timer_ - this.renderTimeBegin_;

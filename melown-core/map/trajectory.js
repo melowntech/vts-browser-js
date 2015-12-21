@@ -16,14 +16,14 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     this.mode_ = options_["mode"] || "auto";
     this.maxHeight_ = options_["maxHeight"] || 100000;
     this.maxDuration_ = options_["maxDuration"] || 10000;
-    this.sampleRate_ = options_["sampleRate"] || 100;
+    this.samplePeriod_ = options_["samplePeriod"] || 100;
 
     //get distance and azimut
-    var res_ = this.map_.getDistance(coords_, coords2_);
+    var res_ = this.map_.getDistance(this.pp1_.getCoords(), this.pp2_.getCoords());
     this.distance_ = res_[0];
     this.azimut_ = res_[1];
 
-    if (!this.getNavigationSrs().isProjected()) {
+    if (!this.map_.getNavigationSrs().isProjected()) {
         this.geodesic_ = this.getGeodesic(); 
     }
     
@@ -33,7 +33,7 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
 };
 
 Melown.MapTrajectory.prototype.detectFlightHeight = function(flightHeight_) {
-    if (this.mode_ == "fly") {
+    if (this.mode_ == "ballistic") {
         this.flightHeight_ = Math.max(this.pp1_.getHeight(), this.pp2_.getHeight());
         this.flightHeight_ += flightHeight_ || (this.distance_ * 0.5);
         this.flightHeight_ = Math.min(this.flightHeight_, this.maxHeight_);
@@ -42,8 +42,8 @@ Melown.MapTrajectory.prototype.detectFlightHeight = function(flightHeight_) {
 };
 
 Melown.MapTrajectory.prototype.detectMode = function() {
-    if (this.mode_ == "auto") {"
-        this.mode_ = (this.distance_ > 2000) ? "fly" : "direct";
+    if (this.mode_ == "auto") {
+        this.mode_ = (this.distance_ > 2000) ? "ballistic" : "direct";
     }
 };
 
@@ -80,15 +80,15 @@ Melown.MapTrajectory.prototype.detectDuration = function() {
 };
     
 Melown.MapTrajectory.prototype.generate = function() {
-    var samples_ = new Array(Math.ceil(duration_ / this.sampleRate_)+1);
+    var samples_ = new Array(Math.ceil(this.duration_ / this.samplePeriod_)+1);
     var index_ = 0;
     
-    for (var time_ = 0; time <= this.duration_; time_ += this.sampleRate_) {
+    for (var time_ = 0; time_ <= this.duration_; time_ += this.samplePeriod_) {
         var factor_ = time_ / this.duration_;
 
         var p = this.pp1_.clone();
         
-        if (mode_ == "direct") {
+        if (this.mode_ == "direct") {
             p.setCoords(this.getInterpolatedCoords(factor_));
             
             var o1_ = this.pp1_.getOrientation(); 
@@ -97,7 +97,7 @@ Melown.MapTrajectory.prototype.generate = function() {
             p.setOrientation(this.getInterpolatedOrinetation(o1_, o2_, factor_));
             p.setFov(this.getInterpolatedFov(factor_));
             
-            samples_[index_] = p;
+            samples_[index_] = p.pos_;
             index_++;
         } else {
 
@@ -109,12 +109,12 @@ Melown.MapTrajectory.prototype.generate = function() {
             p.setOrientation(this.getFlightOrienation(time_));
             p.setFov(this.getInterpolatedFov(factor_));
 
-            samples_[index_] = p;
+            samples_[index_] = p.pos_;
             index_++;
         }
     }
     
-    samples_[index_] = this.p2_.clone();
+    samples_[index_] = this.p2_.clone().pos_;
 
     return samples_;
 };
@@ -123,7 +123,7 @@ Melown.MapTrajectory.prototype.getInterpolatedCoords = function(factor_) {
     var c1_ = this.pp1_.getCoords(); 
     var c2_ = this.pp2_.getCoords(); 
 
-    if (!this.getNavigationSrs().isProjected()) {
+    if (!this.map_.getNavigationSrs().isProjected()) {
         //this.geodesic_ = ; 
     } else {
         return [ c1_[0] + (c2_[0] - c1_[0]) * factor_,
