@@ -12,6 +12,7 @@ Melown.BrowserInterface = function(element_, config_) {
     this.core_ = this.browser_.getCore();
     this.map_ = this.core_.getMap();
     this.ui_ = this.browser_.ui_;
+    this.autopilot_ = this.browser_.autopilot_;
 };
 
 Melown.BrowserInterface.prototype.getCore = function(position_) {
@@ -173,7 +174,7 @@ Melown.BrowserInterface.prototype.pan = function(position_, dx_, dy_) {
 };
 
 Melown.BrowserInterface.prototype.flyTo = function(position_, options_) {
-    this.map_.getSrses();
+    return this.autopilot_.flyTo(position_, options_); 
 };
 
 Melown.BrowserInterface.prototype.on = function(eventName_, call_) {
