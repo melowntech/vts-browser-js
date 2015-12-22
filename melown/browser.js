@@ -45,17 +45,17 @@ Melown.Browser.prototype.callListener = function(name_, event_) {
 Melown.Browser.prototype.onMapLoaded = function() {
 /*
     //demo for Tomas
-*/
     var map_ = this.getCore().getMap();
-    
     var p = map_.getPosition();
     p[1] = 494264;
     p[2] = 5517976;
     p[3] = "fix";
     p[4] = 403;
+
     p[8] = 200;
 
     this.autopilot_.flyTo(p, {"samplePeriod": 10});
+*/    
 };
 
 Melown.Browser.prototype.onMapUnloaded = function() {

@@ -30,6 +30,7 @@ Melown.Autopilot.prototype.setTrajectory = function(trajectory_, sampleDuration_
         return;
     }
 
+    this.speed_ = options_["speed"] || 1.0;
     this.lastControlMode_ = this.browser_.getControlMode().getCurrentControlMode(); 
     this.browser_.getControlMode().setCurrentControlMode("disabled");
 
@@ -58,7 +59,7 @@ Melown.Autopilot.prototype.tick = function() {
     }
     
     var time_ = performance.now() - this.timeStart_;
-    var sampleIndex_ =  Math.floor(time_ / this.sampleDuration_);
+    var sampleIndex_ =  Math.floor((time_ / this.sampleDuration_)*this.speed_);
     var totalSamples_ = this.trajectory_.length - 1; 
 
     if (sampleIndex_ < totalSamples_) {
