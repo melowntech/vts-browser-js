@@ -21,7 +21,7 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     //get distance and azimut
     var res_ = this.map_.getDistance(this.pp1_.getCoords(), this.pp2_.getCoords());
     this.distance_ = res_[0];
-    this.azimut_ = res_[1];
+    this.azimut_ = res_[1] + 90;
 
     if (!this.map_.getNavigationSrs().isProjected()) {
         this.geodesic_ = this.getGeodesic(); 
@@ -49,7 +49,7 @@ Melown.MapTrajectory.prototype.detectMode = function() {
 
 Melown.MapTrajectory.prototype.detectDuration = function() {
     this.duration_ = 0;
-    this.headingDuration_ = 1500;
+    this.headingDuration_ = 1000;
     
     if (this.distance_ < 500) {
         this.duration_ = 1000;
@@ -57,26 +57,38 @@ Melown.MapTrajectory.prototype.detectDuration = function() {
         this.duration_ = 2000;
     } else {
         this.duration_ = this.distance_ / 100;
-        this.headingDuration_ = 1500;
 
         if (this.duration_ < 300) {
-             this.duration_ = 3000;
-             this.headingDuration_ = 1000;
+            this.duration_ = 3000;
+        } else {
+            this.headingDuration_ = 1500;
         }
         
         if (this.duration_ < 6000) {
-             this.duration_ = 6000;
+            this.duration_ = 6000;
         }
 
         if (this.duration_ > 10000) {
-             this.duration_ = 10000;
+            this.duration_ = 10000;
         }
 
         if (this.mode_ != "direct") {
-            this.duration_ *= 1.8;
-            this.headingDuration_ *= 1.8;
+           this.duration_ *= 1.8;
+           this.headingDuration_ *= 1.8;
         }
     }
+    
+    if (this.mode_ != "direct") {
+        var minDuration_ = 3 * this.headingDuration_; 
+        this.duration_ = Math.max(this.duration_, minDuration_);
+        
+        if (this.maxDuration_ < minDuration_) {
+            this.duration_ = this.maxDuration_;
+            this.headingDuration_ = this.maxDuration_ / 3;
+        }   
+    }    
+    
+    this.duration_ = Math.min(this.duration_, this.maxDuration_);
 };
     
 Melown.MapTrajectory.prototype.generate = function() {
@@ -100,6 +112,12 @@ Melown.MapTrajectory.prototype.generate = function() {
             samples_[index_] = p.pos_;
             index_++;
         } else {
+
+            //http://en.wikipedia.org/wiki/Smoothstep
+            var x = factor_;
+            factor_ =  x*x*(3 - 2*x);
+            x = factor_;
+            factor_ =  x*x*(3 - 2*x);
 
             //factor2 includes slow start and end of flight
             factor2_ =  this.getSmoothFactor(time_);
@@ -156,7 +174,7 @@ Melown.MapTrajectory.prototype.getInterpolatedFov = function(factor_) {
     return f1_ + (f2_ - f1_) * factor_;
 };
 
-Melown.MapTrajectory.prototype.getSineHeight = function(height_, factor_) {
+Melown.MapTrajectory.prototype.getSineHeight = function(factor_) {
     var c1_ = this.pp1_.getCoords(); 
     var c2_ = this.pp2_.getCoords(); 
 
