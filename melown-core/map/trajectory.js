@@ -10,8 +10,8 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
       
     this.pp1_.convertHeightMode("fix", true);
     this.pp2_.convertHeightMode("fix", true);
-    this.pp1_.convertViewMode("obj");
-    this.pp2_.convertViewMode("obj");
+    this.pp1_.convertViewMode("subj");
+    this.pp2_.convertViewMode("subj");
 
     this.mode_ = options_["mode"] || "auto";
     this.maxHeight_ = options_["maxHeight"] || 100000;
