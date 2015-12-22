@@ -183,7 +183,7 @@ Melown.Map.prototype.getDistance = function(coords_, coords2_, includingHeight_)
     }
 };
 
-Melown.Map.prototype.getGeodesic = function(coords_, anzimut_) {
+Melown.Map.prototype.getGeodesic = function() {
     var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
 
     var geodesic_ = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo_["a"],

@@ -123,7 +123,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         /*map_.heightmapOnly_ = !map_.heightmapOnly_;*/
 
                         var pos_ = map_.getPosition();
-                        pos_setHeight(pos_.setHeight() * 0.9);
+                        pos_.setHeight(pos_.setHeight() * 0.9);
                         map_.setPosition(pos_);
 
                         break;  //key H pressed
@@ -188,13 +188,16 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 118:
                          /*this.switchLocationsPanel();*/
 
+                       /*
                        var pos_ = map_.getPosition();
                        console.log("hpos-before: " + JSON.stringify(pos_.pos_));
                        pos_.convertHeightMode((pos_.getHeightMode() == "fix") ? "float" : "fix", true);
                        console.log("new hmode: " + pos_.getHeightMode());
                        console.log("hpos-after: " + JSON.stringify(pos_.pos_));
                        map_.setPosition(pos_);
+                       */
 
+                        map_.camera_.setParams(map_.camera_.getFov(), 2000, 200000000);
                         
                         break; //key V pressed
 

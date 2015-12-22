@@ -304,8 +304,52 @@ Melown.MapPosition.prototype.getCanvasCoords = function() {
 };
 
 
+Melown.MapPosition.prototype.getNED = function() {
+    var pos_ = this.clone();
+    pos_.convertHeightMode("fix");
+    pos_.setCoords2([0,0]);
+    var coords_ = pos_.getCoords();
+    var centerCoords_ = this.map_.convertCoords(coords_, "navigation", "physical");
 
+    if (this.map_.getNavigationSrs().isProjected()) {
+        var upCoords_ = this.map_.convertCoords([coords_[0], coords_[1] + 100, coords_[2]], "navigation", "physical");
+        var rightCoords_ = this.map_.convertCoords([coords_[0] + 100, coords_[1], coords_[2]], "navigation", "physical");
+    } else {
+        var geodesic_ = this.map_.getGeodesic();
+    
+        var r = geodesic_.Direct(coords_[1], coords_[0], 0, 100);
+        var upPos_ = this.clone();
+        upPos_.setCoords2([r.lon2, r.lat2]);        
+        var upCoords_ = this.map_.convertCoords(upPos_.getCoords(), "navigation", "physical");
 
+        r = geodesic_.Direct(coords_[1], coords_[0], 90, -100);
+        var rightPos_ = this.clone();
+        rightPos_.setCoords2([r.lon2, r.lat2]);        
+        var rightCoords_ = this.map_.convertCoords(rightPos_.getCoords(), "navigation", "physical");
+    }
+
+    var up_ = [upCoords_[0] - centerCoords_[0],
+               upCoords_[1] - centerCoords_[1],
+               upCoords_[2] - centerCoords_[2]]; 
+
+    var right_ = [rightCoords_[0] - centerCoords_[0],
+                  rightCoords_[1] - centerCoords_[1],
+                  rightCoords_[2] - centerCoords_[2]]; 
+
+    var dir_ = [0,0,0];
+
+    Melown.vec3.normalize(up_);
+    Melown.vec3.normalize(right_);
+    Melown.vec3.cross(right_, up_, dir_);
+    Melown.vec3.normalize(dir_);
+    
+    return {
+        east_  : right_, 
+        direction_ : up_,
+        north_ : dir_        
+    };
+
+};
 
 
 

@@ -30,29 +30,29 @@ Melown.Map.prototype.updateCamera = function() {
         height_ += surfaceHeight_[0];
     }
 
+    if (this.position_.getViewMode() == "obj") {
+        var orbitPos_ = [0, -this.cameraDistance_, 0];
+        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, orbitPos_);
+    } else {
+        var orbitPos_ = [0, 0, 0];
+    }
+
+    this.cameraVector_ = [0, 1, 0];
+    Melown.mat4.multiplyVec3(this.updateCameraMatrix_, this.cameraVector_);
+
 
     if (this.getNavigationSrs().isProjected()) {
-        
-        if (this.position_.getViewMode() == "obj") {
-            var orbitPos_ = [0, -this.cameraDistance_, 0];
-            Melown.mat4.multiplyVec3(this.updateCameraMatrix_, orbitPos_);
-        } else {
-            var orbitPos_ = [0, 0, 0];
-        }
-
-        this.cameraVector_ = [0, 1, 0];
-        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, this.cameraVector_);
-
         //this.camera_.setPosition(orbitPos_);
-        this.camera_.setOrientation(orientation_);
-        this.renderer_.cameraDistance_ = this.cameraDistance_;
+        //this.camera_.setOrientation(orientation_);
+        //this.renderer_.cameraDistance_ = this.cameraDistance_;
 
-        /*
+        
         this.updateCameraMatrix_ = Melown.mat4.create();
-
+        
         //Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(-orientation_[0])), Melown.rotationMatrix(0, Melown.radians(-orientation_[1] - 90.0)), this.updateCameraMatrix_);
         Melown.mat4.multiply(Melown.rotationMatrix(0, Melown.radians(-orientation_[1] - 90.0)), Melown.rotationMatrix(2, Melown.radians(-orientation_[0])), this.updateCameraMatrix_);
 
+        /*
         //get NED for latlon coordinates
         //http://www.mathworks.com/help/aeroblks/directioncosinematrixeceftoned.html
         var coords_ = this.position_.getCoords();
@@ -65,42 +65,46 @@ Melown.Map.prototype.updateCamera = function() {
         var north_ = [-Math.cos(lat_)*Math.cos(lon_), -Math.cos(lat_)*Math.sin(lon_), -Math.sin(lat_)];
         //direction_ = [-direction_[0], -direction_[1], -direction_[2]];
 
-        //east_  = [1,0,0];
-        //direction_ = [0,1,0];
-        //north_ = [0,0,1];
-
         north_ = Melown.vec3.negate(north_);
         east_  = Melown.vec3.negate(east_);
         //direction_ = Melown.vec3.negate(direction_);
-
-        /*
-        //get elipsoid factor
-        var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
-        var factor_ = navigationSrsInfo_["b"] / navigationSrsInfo_["a"];
-
-        //flaten vectors
-        north_[2] *= factor_;
-        east_[2] *= factor_;
-        direction_[2] *= factor_;
-
-        //normalize vectors
-        north_ = Melown.vec3.normalize(north_);
-        east_  = Melown.vec3.normalize(east_);
-        direction_ = Melown.vec3.normalize(direction_);
-
         */
 
-        //this.updateCameraMatrix_ = Melown.mat4.inverse(this.updateCameraMatrix_);
-        /*
+        var ned_ = this.position_.getNED();
+        north_ = ned_.north_;
+        east_  = ned_.east_;
+        direction_ = ned_.direction_;
+
+        var spaceMatrix_ = [
+            east_[0], east_[1], east_[2], 0,
+            direction_[0], direction_[1], direction_[2], 0,
+            north_[0], north_[1], north_[2], 0,
+            0, 0, 0, 1
+        ];
+        
+        var east2_  = [1,0,0];
+        var direction2_ = [0,1,0];
+        var north2_ = [0,0,1];
+
         //rotate vectors according to eulers
-        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, north_);
-        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, east_);
-        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, direction_);
+        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, north2_);
+        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, east2_);
+        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, direction2_);
 
-        //var t = north_[0]; north_[0] = north_[1]; north_[1] = t; north_[2] = -north_[2];
-        //var t = east_[0]; east_[0] = east_[1]; east_[1] = t; east_[2] = -east_[2];
-        //var t = direction_[0]; direction_[0] = direction_[1]; direction_[1] = t; direction_[2] = -direction_[2];
+        Melown.mat4.multiplyVec3(spaceMatrix_, north2_);
+        Melown.mat4.multiplyVec3(spaceMatrix_, east2_);
+        Melown.mat4.multiplyVec3(spaceMatrix_, direction2_);
 
+        //get rotation matrix
+        var rotationMatrix_ = [
+            east2_[0], east2_[1], east2_[2], 0,
+            direction2_[0], direction2_[1], direction2_[2], 0,
+            north2_[0], north2_[1], north2_[2], 0,
+            0, 0, 0, 1
+        ];
+
+        Melown.mat4.multiplyVec3(spaceMatrix_, orbitPos_);
+/*
         //get rotation matrix
         var rotationMatrix_ = [
             east_[0], east_[1], east_[2], 0,
@@ -108,45 +112,29 @@ Melown.Map.prototype.updateCamera = function() {
             north_[0], north_[1], north_[2], 0,
             0, 0, 0, 1
         ];
-
-        //Melown.mat4.transpose(rotationMatrix_);
-        //rotationMatrix_ = Melown.mat4.inverse(rotationMatrix_);
-
-
-        var orbitPos2_ = [0, -this.cameraDistance_, 0];
-        Melown.mat4.multiplyVec3(rotationMatrix_, orbitPos2_);
-
-        var orbitPos3_ = [0, this.cameraDistance_, 0];
-        Melown.mat4.multiplyVec3(rotationMatrix_, orbitPos3_);
-
-        rotationMatrix_ = Melown.mat4.inverse(rotationMatrix_);
-
-        var orbitPos4_ = [0, -this.cameraDistance_, 0];
-        Melown.mat4.multiplyVec3(rotationMatrix_, orbitPos4_);
-
-        var orbitPos5_ = [0, -this.cameraDistance_, 0];
-        Melown.mat4.multiplyVec3(rotationMatrix_, orbitPos5_);
-
-        orbitPos_ = orbitPos_;
-
-        //this.camera_.setPosition(orbitPos_);
+*/
+        this.camera_.setPosition(orbitPos_);
         this.camera_.setRotationMatrix(rotationMatrix_);
-        //this.renderer_.cameraDistance_ = this.cameraDistance_;
-        */
+        this.renderer_.cameraDistance_ = this.cameraDistance_;
+        
 
     } else { //geographics
 
         //get NED for latlon coordinates
         //http://www.mathworks.com/help/aeroblks/directioncosinematrixeceftoned.html
+        /*
         var coords_ = this.position_.getCoords();
         var lon_ = Melown.radians(coords_[0]);
         var lat_ = Melown.radians(coords_[1]);
 
         //NED vectors for sphere
-        var north_ = [-Math.sin(lat_)*Math.cos(lon_), -Math.sin(lat_)*Math.sin(lon_), Math.cos(lat_)];
-        var east_ = [-Math.sin(lon_), Math.cos(lon_), 0];
-        var direction_ = [-Math.cos(lat_)*Math.cos(lon_), -Math.cos(lat_)*Math.sin(lon_), -Math.sin(lat_)];
+        var east_ = [-Math.sin(lat_)*Math.cos(lon_), -Math.sin(lat_)*Math.sin(lon_), Math.cos(lat_)];
+        var direction_ = [-Math.sin(lon_), Math.cos(lon_), 0];
+        var north_ = [-Math.cos(lat_)*Math.cos(lon_), -Math.cos(lat_)*Math.sin(lon_), -Math.sin(lat_)];
 
+        north_ = Melown.vec3.negate(north_);
+        east_  = Melown.vec3.negate(east_);
+        
         //get elipsoid factor
         var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
         var factor_ = navigationSrsInfo_["b"] / navigationSrsInfo_["a"];
@@ -160,26 +148,53 @@ Melown.Map.prototype.updateCamera = function() {
         north_ = Melown.vec3.normalize(north_);
         east_  = Melown.vec3.normalize(east_);
         direction_ = Melown.vec3.normalize(direction_);
+        */
+        
+        var ned_ = this.position_.getNED();
+        north_ = ned_.north_;
+        east_  = ned_.east_;
+        direction_ = ned_.direction_;
+
+        var spaceMatrix_ = [
+            east_[0], east_[1], east_[2], 0,
+            direction_[0], direction_[1], direction_[2], 0,
+            north_[0], north_[1], north_[2], 0,
+            0, 0, 0, 1
+        ];
+        
+        //spaceMatrix_ = Melown.mat4.inverse(spaceMatrix_);
+        
+        this.updateCameraMatrix_ = Melown.mat4.create();
+        Melown.mat4.multiply(Melown.rotationMatrix(0, Melown.radians(-orientation_[1] - 90.0)), Melown.rotationMatrix(2, Melown.radians(-orientation_[0])), this.updateCameraMatrix_);
+
+        var east2_  = [1,0,0];
+        var direction2_ = [0,1,0];
+        var north2_ = [0,0,1];
 
         //rotate vectors according to eulers
-        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, north_);
-        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, east_);
-        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, direction_);
+        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, north2_);
+        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, east2_);
+        Melown.mat4.multiplyVec3(this.updateCameraMatrix_, direction2_);
+
+        Melown.mat4.multiplyVec3(spaceMatrix_, north2_);
+        Melown.mat4.multiplyVec3(spaceMatrix_, east2_);
+        Melown.mat4.multiplyVec3(spaceMatrix_, direction2_);
 
         //get rotation matrix
         var rotationMatrix_ = [
-            north_[0], north_[1], north_[2], 0,
-            east_[0], east_[1], east_[2], 0,
-            direction_[0], direction_[1], direction_[2], 0,
+            east2_[0], east2_[1], east2_[2], 0,
+            direction2_[0], direction2_[1], direction2_[2], 0,
+            north2_[0], north2_[1], north2_[2], 0,
             0, 0, 0, 1
         ];
 
-        var orbitPos_ = [0, -this.cameraDistance_, 0];
-        Melown.mat4.multiplyVec3(rotationMatrix_, orbitPos_);
+        Melown.mat4.multiplyVec3(spaceMatrix_, orbitPos_);
 
-        //this.camera_.setPosition(orbitPos_);
+        this.camera_.setPosition(orbitPos_);
         this.camera_.setRotationMatrix(rotationMatrix_);
         this.renderer_.cameraDistance_ = this.cameraDistance_;
+        
+        this.position_.setHeight(0);
     }
 
     this.camera_.setViewHeight(this.position_.getViewExtent());
