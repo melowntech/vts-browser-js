@@ -307,9 +307,18 @@ Melown.MapPosition.prototype.getCanvasCoords = function() {
 Melown.MapPosition.prototype.getNED = function() {
     var pos_ = this.clone();
     pos_.convertHeightMode("fix");
-    pos_.setCoords2([0,0]);
+   // pos_.setCoords2([0,90]);
     var coords_ = pos_.getCoords();
     var centerCoords_ = this.map_.convertCoords(coords_, "navigation", "physical");
+
+    var tcoords01_ = this.map_.convertCoords([0,0], "navigation", "physical");
+    var tcoords06_ = this.map_.convertCoords([-180,0], "navigation", "physical");
+    var tcoords02_ = this.map_.convertCoords([90,0], "navigation", "physical");
+    var tcoords03_ = this.map_.convertCoords([0,90], "navigation", "physical");
+    var tcoords04_ = this.map_.convertCoords([-90,0], "navigation", "physical");
+    var tcoords05_ = this.map_.convertCoords([0,-90], "navigation", "physical");
+    var tcoords07_ = this.map_.convertCoords([0,-100], "navigation", "physical");
+
 
     if (this.map_.getNavigationSrs().isProjected()) {
         var upCoords_ = this.map_.convertCoords([coords_[0], coords_[1] + 100, coords_[2]], "navigation", "physical");
@@ -317,12 +326,12 @@ Melown.MapPosition.prototype.getNED = function() {
     } else {
         var geodesic_ = this.map_.getGeodesic();
     
-        var r = geodesic_.Direct(coords_[1], coords_[0], 0, 100);
+        var r = geodesic_.Direct(coords_[1], coords_[0], 0, -100);
         var upPos_ = this.clone();
         upPos_.setCoords2([r.lon2, r.lat2]);        
         var upCoords_ = this.map_.convertCoords(upPos_.getCoords(), "navigation", "physical");
 
-        r = geodesic_.Direct(coords_[1], coords_[0], 90, -100);
+        r = geodesic_.Direct(coords_[1], coords_[0], 90, 100);
         var rightPos_ = this.clone();
         rightPos_.setCoords2([r.lon2, r.lat2]);        
         var rightCoords_ = this.map_.convertCoords(rightPos_.getCoords(), "navigation", "physical");
@@ -340,7 +349,7 @@ Melown.MapPosition.prototype.getNED = function() {
 
     Melown.vec3.normalize(up_);
     Melown.vec3.normalize(right_);
-    Melown.vec3.cross(right_, up_, dir_);
+    Melown.vec3.cross(up_, right_, dir_);
     Melown.vec3.normalize(dir_);
     
     return {

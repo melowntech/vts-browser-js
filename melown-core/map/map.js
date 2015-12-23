@@ -41,7 +41,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
 
     this.mapTrees_ = [];
 
-    this.gpuCache_ = new Melown.MapCache(this, this.config_.mapGpuCache_*1024*1024);
+    this.gpuCache_ = new Melown.MapCache(this, this.config_.mapGPUCache_*1024*1024);
     this.resourcesCache_ = new Melown.MapCache(this, this.config_.mapCache_*1024*1024);
     this.metatileCache_ = new Melown.MapCache(this, this.config_.mapMetatileCache_*1024*1024);
 
