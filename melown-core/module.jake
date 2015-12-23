@@ -38,6 +38,7 @@ var files = [
     'map/submesh.js',
     'map/surface.js',
     'map/texture.js',
+    'map/trajectory.js',
     'map/tile.js',
     'map/tree.js',
     'map/url.js',
