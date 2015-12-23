@@ -55,6 +55,12 @@ Melown.RendererInterface.prototype.createTexture = function(options_) {
     return null;
 };
 
+Melown.RendererInterface.prototype.removeTexture = function(texture_) {
+    if (texture_) {
+        texture_.kill();
+    }
+};
+
 Melown.RendererInterface.prototype.createMesh = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return null;
@@ -69,6 +75,12 @@ Melown.RendererInterface.prototype.createMesh = function(options_) {
     };
 
     return new Melown.GpuMesh(this.gpu_, data_, 0, this.renderer_.core_);
+};
+
+Melown.RendererInterface.prototype.removeMesh = function(mesh_) {
+    if (mesh_) {
+        mesh_.kill();
+    }
 };
 
 Melown.RendererInterface.prototype.createProgram = function(options_) {
