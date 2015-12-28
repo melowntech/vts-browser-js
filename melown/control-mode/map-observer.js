@@ -4,6 +4,10 @@
 Melown.ControlMode.MapObserver = function(browser_) {
     this.browser_ = browser_;
     this.config_ = browser_.config_;
+    
+    this.coordsDeltas_ = [];
+    this.orientationDeltas_ = [];
+    this.viewExtentDeltas_ = [];
 
     this["drag"] = this.drag;
     this["wheel"] = this.wheel;
@@ -19,6 +23,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
 
     var pos_ = map_.getPosition();
     var delta_ = event_.getDragDelta();
+    var azimuthDistance_ = this.getAzimuthAndDistance(delta_[0], delta_[1]);
 
     if (event_.getDragButton("left") && this.config_.panAllowed_) { //pan
         if (map_.getPositionHeightMode(pos_) == "fix") {
@@ -27,9 +32,12 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
                 pos_ = pos2_;
             }
         } else {
-            var sensitivity_ = 0.5;
-            pos_ = map_.pan(pos_, delta_[0] * sensitivity_,
-                                  delta_[1] * sensitivity_);
+            var azimuth_ = Melown.radians(azimuthDistance_[0]);
+            var forward_ = [-Math.sin(azimuth_),
+                            Math.cos(azimuth_),
+                            azimuthDistance_[1]];
+            
+            this.coordsDeltas_.push(forward_);
         }
     } else if (event_.getDragButton("right") && this.config_.rotationAllowed_) { //rotate
         var sensitivity_ = 0.4;
@@ -55,10 +63,70 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     map_.setPosition(pos_);
 };
 
-Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
+Melown.ControlMode.MapObserver.prototype.getAzimuthAndDistance = function(dx_, dy_) {
+    var map_ = this.browser_.getCore().getMap();
+    var pos_ = map_.getPosition();
+    var viewExtent_ = map_.getPositionViewExtent(pos_);
+    var fov_ = map_.getPositionFov(pos_)*0.5;
 
+    var sensitivity_ = 0.5;
+    var zoomFactor_ = ((viewExtent_ * Math.tan(Melown.radians(fov_))) / 800) * sensitivity_;
+    dx_ *= zoomFactor_;
+    dy_ *= zoomFactor_;
+
+    var distance_ = Math.sqrt(dx_*dx_ + dy_*dy_);    
+    var azimuth_ = Melown.degrees(Math.atan2(dx_, dy_)) + map_.getPositionOrientation(pos_)[0];
+    
+    return [azimuth_, distance_];
+};
+
+Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
+    var map_ = this.browser_.getCore().getMap();
+    if (map_ == null) {
+        return;
+    }
+
+    var pos_ = map_.getPosition();
+    var update_ = false; 
+
+    //process coords deltas
+    if (this.coordsDeltas_.length > 0) {
+        var deltas_ = this.coordsDeltas_;
+        var forward_ = [0,0];
+        var inertia_ = 0.8; 
+        
+        //get foward vector form coord deltas    
+        for (var i = 0; i < deltas_.length; i++) {
+            var delta_ = deltas_[i];
+            forward_[0] += delta_[0] * delta_[2];  
+            forward_[1] += delta_[1] * delta_[2];
+            delta_[2] *= inertia_;
+            
+            //remove zero deltas
+            if (delta_[2] < 0.01) {
+                deltas_.splice(i, 1);
+                i--;
+            }
+        }
+        
+        var distance_ = Math.sqrt(forward_[0]*forward_[0] + forward_[1]*forward_[1]);
+        var azimuth_ = Melown.degrees(Math.atan2(forward_[0], forward_[1]));
+    
+        //apply final azimuth and distance
+        pos_ = map_.movePositionCoordsTo(pos_, azimuth_, distance_);
+        update_ = true;
+    }
+
+
+    //set new position
+    if (update_) {
+        map_.setPosition(pos_);        
+    }
+    
 };
 
 Melown.ControlMode.MapObserver.prototype.reset = function(config_) {
 
 };
+
+

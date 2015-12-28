@@ -117,6 +117,10 @@ Melown.BrowserInterface.prototype.convertCoords = function(sourceSrs_, destinati
     return this.map_.convertCoords(sourceSrs_, destinationSrs_, coords_);
 };
 
+Melown.BrowserInterface.prototype.clonePosition = function(position_) {
+    return this.map_.clonePosition(position_);
+};
+
 Melown.BrowserInterface.prototype.setPositionCoords = function(position_, coords_) {
     return this.map_.setPositionCoords(position_, coords_);
 };
@@ -167,6 +171,10 @@ Melown.BrowserInterface.prototype.getPositionHeigthMode = function(position_) {
 
 Melown.BrowserInterface.prototype.getPositionCanvasCoords = function(position_) {
     return this.map_.getPositionCanvasCoords(position_);
+};
+
+Melown.BrowserInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_) {
+    return this.map_.movePositionCoordsTo(position_, azimuth_, distance_);
 };
 
 Melown.BrowserInterface.prototype.pan = function(position_, dx_, dy_) {

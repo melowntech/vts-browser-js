@@ -54,8 +54,8 @@ Melown.Browser.prototype.onMapLoaded = function() {
 
     p[8] = 200;
 
-    this.autopilot_.flyTo(p, {"samplePeriod": 10});
-*/    
+    this.autopilot_.flyTo(p, {"mode":"ballistic", "samplePeriod": 10, "speed":0.1});
+*/
 };
 
 Melown.Browser.prototype.onMapUnloaded = function() {
