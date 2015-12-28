@@ -90,6 +90,10 @@ Melown.MapInterface.prototype.convertCoords = function(sourceSrs_, destinationSr
     return srs2_.convertCoordsFrom(coords_, srs_);
 };
 
+Melown.MapInterface.prototype.clonePosition = function(position_) {
+    return (new Melown.MapPosition(this.map_, position_)).pos_;
+};
+
 Melown.MapInterface.prototype.setPositionCoords = function(position_, coords_) {
     return (new Melown.MapPosition(this.map_, position_)).setCoords(coords_).pos_;
 };
@@ -140,6 +144,10 @@ Melown.MapInterface.prototype.getPositionHeightMode = function(position_) {
 
 Melown.MapInterface.prototype.getPositionCanvasCoords = function(position_) {
     return (new Melown.MapPosition(this.map_, position_)).getCanvasCoords();
+};
+
+Melown.MapInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_) {
+    return (new Melown.MapPosition(this.map_, position_)).moveCoordsTo(azimuth_, distance_);
 };
 
 Melown.MapInterface.prototype.getSurfaceHeight = function(coords_, precision_) {

@@ -318,6 +318,7 @@ Melown.Map.prototype.getPosition = function() {
     return this.position_.clone();
 };
 
+
 Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
     var pos2_ = pos_.clone();
 

@@ -105,6 +105,32 @@ Melown.MapPosition.prototype.check = function(mode_) {
     this.pos_[7] = this.pos_[7] % 360;
 };
 
+Melown.MapPosition.prototype.moveCoordsTo = function(azimuth_, distance_) {
+    var coords_ = this.getCoords();
+    var navigationSrsInfo_ = this.map_.getNavigationSrs().getSrsInfo();
+
+    if (this.map_.getNavigationSrs().isProjected()) {
+        var yaw_ = Melown.radians(azimuth_);
+        var forward_ = [-Math.sin(yaw_), Math.cos(yaw_)];
+
+        this.setCoords2([coords_[0] + (forward_[0]*distance_),
+                         coords_[1] + (forward_[1]*distance_)]);
+    } else {
+        var navigationSrsInfo_ = this.map_.getNavigationSrs().getSrsInfo();
+
+        var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo_["a"],
+                                                       (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
+
+        var r = geod.Direct(coords_[1], coords_[0], azimut_, distance_);
+        this.setCoords2([r.lon2, r.lat2]);
+
+        //console.log("oldpos: " + JSON.stringify(this));
+        //console.log("newpos: " + JSON.stringify(pos2_));
+    }
+    
+    return this;
+};
+
 Melown.MapPosition.prototype.convertViewMode = function(mode_) {
     if (mode_ == this.pos_[0]) {
         return this;
