@@ -318,49 +318,6 @@ Melown.Map.prototype.getPosition = function() {
     return this.position_.clone();
 };
 
-
-Melown.Map.prototype.pan = function(pos_, dx_ ,dy_) {
-    var pos2_ = pos_.clone();
-
-    var zoomFactor_ = (pos_.getViewExtent() * Math.tan(Melown.radians(this.camera_.getFov()))) / 800;
-    dx_ *= zoomFactor_;
-    dy_ *= zoomFactor_;
-
-    var yaw_ = Melown.radians(pos_.getOrientation()[0]);
-    var forward_ = [-Math.sin(yaw_), Math.cos(yaw_)];
-    var aside_ = [Math.cos(yaw_), Math.sin(yaw_)];
-
-    var coords_ = pos_.getCoords();
-    var coords2_ = pos_.getCoords();
-    var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
-
-    if (this.getNavigationSrs().isProjected()) {
-        pos2_.setCoords2([coords_[0] + (forward_[0]*dy_ - aside_[0]*dx_),
-                          coords_[1] + (forward_[1]*dy_ - aside_[1]*dx_)]);
-    } else {
-        var mx_ = forward_[0]*dy_ - aside_[0]*dx_;
-        var my_ = forward_[1]*dy_ - aside_[1]*dx_;
-
-        var azimut_ = Melown.degrees(Math.atan2(mx_, my_));
-        var distance_ = Math.sqrt(mx_*mx_ + my_*my_);
-        //console.log("azimut: " + azimut_ + " distance: " + distance_);
-
-        var coords_ = pos_.getCoords();
-        var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
-
-        var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo_["a"],
-                                                       (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
-
-        var r = geod.Direct(coords_[1], coords_[0], azimut_, distance_);
-        pos2_.setCoords2([r.lon2, r.lat2]);
-
-        //console.log("oldpos: " + JSON.stringify(pos_));
-        //console.log("newpos: " + JSON.stringify(pos2_));
-    }
-
-    return pos2_;
-};
-
 Melown.Map.prototype.setConfigParams = function(params_) {
     if (typeof params_ === "object" && params_ !== null) {
         for (var key_ in params_) {
