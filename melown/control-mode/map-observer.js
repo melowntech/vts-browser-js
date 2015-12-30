@@ -94,20 +94,21 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
     }
 
     var pos_ = map_.getPosition();
-    var update_ = false; 
+    var update_ = false;
+    //var inertia_ = [0.8, 0.8, 0.8]; 
+    var inertia_ = [0, 0, 0]; 
 
     //process coords deltas
     if (this.coordsDeltas_.length > 0) {
         var deltas_ = this.coordsDeltas_;
         var forward_ = [0,0];
-        var inertia_ = 0.8; 
         
         //get foward vector form coord deltas    
         for (var i = 0; i < deltas_.length; i++) {
             var delta_ = deltas_[i];
             forward_[0] += delta_[0] * delta_[2];  
             forward_[1] += delta_[1] * delta_[2];
-            delta_[2] *= inertia_;
+            delta_[2] *= inertia_[0];
             
             //remove zero deltas
             if (delta_[2] < 0.01) {
@@ -117,7 +118,7 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
         }
         
         var distance_ = Math.sqrt(forward_[0]*forward_[0] + forward_[1]*forward_[1]);
-        var azimuth_ = -Melown.degrees(Math.atan2(forward_[0], forward_[1]));
+        var azimuth_ = Melown.degrees(Math.atan2(forward_[0], forward_[1]));
     
         //console.log("tick: " + azimuth_ + " " + distance_);
 
@@ -130,7 +131,6 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
     if (this.orientationDeltas_.length > 0) {
         var deltas_ = this.orientationDeltas_;
         var orientation_ = map_.getPositionOrientation(pos_);
-        var inertia_ = 0.8; 
         
         //apply detals to current orientation    
         for (var i = 0; i < deltas_.length; i++) {
@@ -138,9 +138,9 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
             orientation_[0] += delta_[0];  
             orientation_[1] += delta_[1];
             orientation_[2] += delta_[2];
-            delta_[0] *= inertia_;
-            delta_[1] *= inertia_;
-            delta_[2] *= inertia_;
+            delta_[0] *= inertia_[1];
+            delta_[1] *= inertia_[1];
+            delta_[2] *= inertia_[1];
             
             //remove zero deltas
             if (delta_[0]*delta_[0] + delta_[1]*delta_[1] + delta_[2]*delta_[2] < 0.1) {
@@ -158,12 +158,11 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
     if (this.viewExtentDeltas_.length > 0) {
         var deltas_ = this.viewExtentDeltas_;
         var viewExtent_ = map_.getPositionViewExtent(pos_);
-        var inertia_ = 0.8; 
         
         //apply detals to current orientation    
         for (var i = 0; i < deltas_.length; i++) {
             viewExtent_ *= deltas_[i];
-            deltas_[i] += (1 - deltas_[i]) * (1.0 - inertia_);
+            deltas_[i] += (1 - deltas_[i]) * (1.0 - inertia_[2]);
             
             //remove zero deltas
             if (Math.abs(1 - deltas_[i]) < 0.001) {
