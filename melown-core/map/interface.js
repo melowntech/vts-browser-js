@@ -158,8 +158,8 @@ Melown.MapInterface.prototype.getDistance = function(coords_, coords2_, includin
     return this.map_.getDistancet(coords_, coords2_, includingHeight_);
 };
 
-Melown.MapInterface.prototype.pan = function(position_, dx_, dy_) {
-    return this.map_.pan(new Melown.MapPosition(this.map_, position_), dx_, dy_).pos_.slice();
+Melown.MapInterface.prototype.getAzimuthCorrection = function(coords_, coords2_) {
+    return this.map_.getAzimuthCorrection(coords_, coords2_);
 };
 
 Melown.MapInterface.prototype.getCameraInfo = function() {

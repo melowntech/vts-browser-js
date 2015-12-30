@@ -326,6 +326,15 @@ Melown.Map.prototype.setConfigParams = function(params_) {
     }
 };
 
+Melown.Map.prototype.getAzimuthCorrection = function(coords_, coords2_) {
+    if (!this.map_.getNavigationSrs().isProjected()) {
+        var geodesic_ = this.getGeodesic();
+        var r = geodesic_.Inverse(coords_[0], coords_[1], coords2_[0], coords2_[1]);
+        return (r.azi1 - r.azi2); 
+    }
+    return 0;
+};
+
 Melown.Map.prototype.setConfigParam = function(key_, value_) {
     switch (key_) {
         case "map":                           this.config_.map_ = Melown.validateString(value_, null); break;

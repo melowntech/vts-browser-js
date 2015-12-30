@@ -121,8 +121,15 @@ Melown.MapPosition.prototype.moveCoordsTo = function(azimuth_, distance_) {
         var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo_["a"],
                                                        (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
 
-        var r = geod.Direct(coords_[1], coords_[0], azimut_, distance_);
+        var r = geod.Direct(coords_[1], coords_[0], azimuth_, distance_);
         this.setCoords2([r.lon2, r.lat2]);
+
+        var orientation_ = this.getOrientation();
+
+        orientation_[0] += (r.azi1 - r.azi2); 
+        //orientation_[0] -= (r.azi1 - r.azi2); 
+
+        var orientation_ = this.setOrientation(orientation_);
 
         //console.log("oldpos: " + JSON.stringify(this));
         //console.log("newpos: " + JSON.stringify(pos2_));
