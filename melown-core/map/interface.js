@@ -63,11 +63,12 @@ Melown.MapInterface.prototype.getSrses = function() {
 };
 
 Melown.MapInterface.prototype.getSrsInfo = function(srsId_) {
-    return this.map_.getSrsInfo(surfaceId_);
+    var srs_ = this.map_.getSrs(srsId_);
+    return srs_ ? srs_.getInfo() : {};
 };
 
 Melown.MapInterface.prototype.getReferenceFrame = function() {
-    return this.map_.getReferenceFrame();
+    return this.map_.referenceFrame_.getInfo();
 };
 
 Melown.MapInterface.prototype.convertPositionViewMode = function(position_, mode_) {

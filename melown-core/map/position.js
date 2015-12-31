@@ -126,6 +126,8 @@ Melown.MapPosition.prototype.moveCoordsTo = function(azimuth_, distance_) {
 
         var orientation_ = this.getOrientation();
 
+        console.log("corerction_: " + (r.azi1 - r.azi2));
+
         orientation_[0] += (r.azi1 - r.azi2); 
         //orientation_[0] -= (r.azi1 - r.azi2); 
 

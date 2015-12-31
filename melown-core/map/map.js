@@ -116,6 +116,10 @@ Melown.Map.prototype.addSrs = function(id_, srs_) {
     this.srses_[id_] = srs_;
 };
 
+Melown.Map.prototype.getSrs = function(srsId_) {
+    return this.srses_[srsId_];
+};
+
 Melown.Map.prototype.getSrses = function() {
     return this.getMapKeys(this.srses_);
 };
@@ -327,10 +331,14 @@ Melown.Map.prototype.setConfigParams = function(params_) {
 };
 
 Melown.Map.prototype.getAzimuthCorrection = function(coords_, coords2_) {
-    if (!this.map_.getNavigationSrs().isProjected()) {
+    if (!this.getNavigationSrs().isProjected()) {
         var geodesic_ = this.getGeodesic();
         var r = geodesic_.Inverse(coords_[0], coords_[1], coords2_[0], coords2_[1]);
-        return (r.azi1 - r.azi2); 
+        var ret_ = (r.azi1 - r.azi2);
+        if (isNaN(ret_)) {
+            ret_ = 0;
+        } 
+        return ret_; 
     }
     return 0;
 };

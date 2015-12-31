@@ -63,9 +63,9 @@ Melown.MapRefFrame = function(map_, json_) {
 
 Melown.MapRefFrame.prototype.getInfo = function() {
     return {
-        "physicalSrs" : this.model_.physicalSrs_,
-        "navigationSrs" : this.model_.navigationSrs_,
-        "publicSrs" : this.model_.publicSrs_
+        "physicalSrs" : this.model_.physicalSrs_.id_,
+        "navigationSrs" : this.model_.navigationSrs_.id_,
+        "publicSrs" : this.model_.publicSrs_.id_
     };
 };
 

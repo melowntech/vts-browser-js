@@ -12,8 +12,8 @@ Melown.Map.prototype.parseConfig = function() {
     }
 
     if (this.mapConfig_["position"] != null) {
-        this.mapConfig_["position"][1] = 0;
-        this.mapConfig_["position"][2] = 0;//89.99;
+        //this.mapConfig_["position"][1] = 0;
+        //this.mapConfig_["position"][2] = 0;//89.99;
 
         //this.mapConfig_["position"][5] = 0;
         //this.mapConfig_["position"][6] = 0;
