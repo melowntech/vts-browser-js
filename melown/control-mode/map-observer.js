@@ -105,6 +105,7 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
     var pos_ = map_.getPosition();
     var update_ = false;
     var inertia_ = [0.8, 0.8, 0.8]; 
+    //var inertia_ = [0.95, 0.8, 0.8]; 
     //var inertia_ = [0, 0, 0]; 
 
     //process coords deltas
