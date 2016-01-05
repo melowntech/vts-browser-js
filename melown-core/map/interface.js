@@ -207,7 +207,7 @@ Melown.Map.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
     this.map_.moveRenderSlotBefore(whichId_, whereId_);
 };
 
-Melown.Map.prototype.addRenderSlotAfter = function(whichId_, whereId_) {
+Melown.Map.prototype.moveRenderSlotAfter = function(whichId_, whereId_) {
     this.map_.moveRenderSlotAfter(whichId_, whereId_);
 };
 
