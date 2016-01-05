@@ -199,6 +199,30 @@ Melown.MapInterface.prototype.redraw = function() {
     return this;
 };
 
+Melown.MapInterface.prototype.addRenderSlot = function(id_, callback_, enabled_) {
+    this.map_.addRenderSlot(id_, callback_, enabled_);
+};
+
+Melown.Map.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
+    this.map_.moveRenderSlotBefore(whichId_, whereId_);
+};
+
+Melown.Map.prototype.addRenderSlotAfter = function(whichId_, whereId_) {
+    this.map_.moveRenderSlotAfter(whichId_, whereId_);
+};
+
+Melown.Map.prototype.removeRenderSlot = function(id_) {
+    this.map_.removeRenderSlot(id_);
+};
+
+Melown.Map.prototype.setRenderSlotEnabled = function(id_, state_) {
+    this.map_.setRenderSlotEnabled(id_, state_);
+};
+
+Melown.Map.prototype.getRenderSlotEnabled = function(id_) {
+    return this.map_.getRenderSlotEnabled(id_);
+};
+
 Melown.MapPositionInterface = Melown.MapPosition;
 
 

@@ -65,6 +65,7 @@ cat utils/libs/proj4.js \
     map/metatile.js \
     map/division-node.js \
     map/refframe.js \
+    map/render-slots.js \
     map/metatile.js \
     map/srs.js \
     map/stats.js \

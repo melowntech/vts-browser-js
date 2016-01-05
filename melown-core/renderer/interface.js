@@ -16,11 +16,28 @@ Melown.RendererInterface.prototype.clear = function(options_) {
 };
 
 Melown.RendererInterface.prototype.createState = function(options_) {
+    if (options_ != null) {
+        return null;
+    }
+
+    var stateOptions_ = {
+        blend_ : options_["blend"] || false,
+        stencil_ : options_["stencil"] || false,
+        zoffset_ : options_["zoffset"] || 0,
+        zwrite_ : options_["zwrite"] || true,
+        ztest_ : options_["ztest"] || true,
+        zequal_ : options_["zequal"] || true,
+        culling_ : options_["culling"] || true
+    };
+
+    return this.gpu_.createState(stateOptions_);
 };
 
-Melown.RendererInterface.prototype.setState = function(options_) {
+Melown.RendererInterface.prototype.setState = function(state_) {
+    if (state_ != null) {
+        this.gpu_.setState(state_);
+    }
 };
-
 
 Melown.RendererInterface.prototype.createTexture = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
@@ -110,7 +127,7 @@ Melown.RendererInterface.prototype.clearJobs = function(options_) {
 
 
 
-Melown.RendererInterface.prototype.drawMesh = function(options_) {
+Melown.RendererInterface.prototype.drawMesh = function(mesh_, options_) {
 };
 
 Melown.RendererInterface.prototype.drawImage = function(options_) {
@@ -127,8 +144,10 @@ Melown.RendererInterface.prototype.drawImage = function(options_) {
     var depth_ = options_["depth"] || 0;
     var depthTest_ = options_["depth-test"] || false;
     var blend_ = options_["blend"] || false;
+    var writeDepth_ = options_["write-depth"] || false;
+    var useState_ = options_["use-state"] || false;
 
-    this.renderer_.drawImage(rect_[0], rect_[1], rect_[2], rect_[3], options_["texture"], color_, depth_, depthTest_, blend_);
+    this.renderer_.drawImage(rect_[0], rect_[1], rect_[2], rect_[3], options_["texture"], color_, depth_, depthTest_, blend_, writeDepth_, useState_);
 };
 
 Melown.RendererInterface.prototype.drawBillboard = function(options_) {
@@ -144,8 +163,10 @@ Melown.RendererInterface.prototype.drawBillboard = function(options_) {
     var color_ = options_["color"] || [255,255,255,255];
     var depthTest_ = options_["depth-test"] || false;
     var blend_ = options_["blend"] || false;
+    var writeDepth_ = options_["write-depth"] || false;
+    var useState_ = options_["use-state"] || false;
 
-    this.renderer_.drawBillboard(mvp_, options_["texture"], color_, depthTest_, blend_);
+    this.renderer_.drawBillboard(mvp_, options_["texture"], color_, depthTest_, blend_, writeDepth_, useState_);
 };
 
 Melown.RendererInterface.prototype.drawLineString = function(options_) {
@@ -162,8 +183,10 @@ Melown.RendererInterface.prototype.drawLineString = function(options_) {
     var size_ = options_["size"] || 2;
     var depthTest_ = options_["depth-test"] || false;
     var blend_ = options_["blend"] || false;
+    var writeDepth_ = options_["write-depth"] || false;
+    var useState_ = options_["use-state"] || false;
 
-    this.renderer_.drawLineString(points_, size_, color_, depthTest_, blend_);
+    this.renderer_.drawLineString(points_, size_, color_, depthTest_, blend_, useState_);
 };
 
 Melown.RendererInterface.prototype.drawJobs = function(options_) {

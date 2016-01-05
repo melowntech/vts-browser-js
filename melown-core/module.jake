@@ -33,6 +33,7 @@ var files = [
     'map/metatile.js',
     'map/position.js',
     'map/refframe.js',
+    'map/render-slots.js',
     'map/srs.js',
     'map/stats.js',
     'map/submesh.js',

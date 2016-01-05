@@ -76,7 +76,7 @@ Melown.Renderer.prototype.drawBall = function(position_, size_) {
     gl_.enable(gl_.CULL_FACE);
 };
 
-Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, depthTest_, transparent_) {
+Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, depthTest_, transparent_, writeDepth_, useState_) {
     var gl_ = this.gpu_.gl_;
     var index_ = 0;
 
@@ -89,18 +89,24 @@ Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, dept
         index_ += 3;
     }
 
-    if (depthTest_ != true) {
-        gl_.disable(gl_.DEPTH_TEST);
+    if (useState_ != true) {
+        if (depthTest_ != true) {
+            gl_.disable(gl_.DEPTH_TEST);
+        }
+    
+        if (transparent_ == true) {
+            //gl_.blendFunc(gl_.SRC_ALPHA, gl_.ONE);
+            gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
+            gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
+            gl_.enable(gl_.BLEND);
+        }
+    
+        if (writeDepth_ === false) {
+            gl_.depthMask(false); 
+        }
+    
+        gl_.disable(gl_.CULL_FACE);
     }
-
-    if (transparent_ == true) {
-        //gl_.blendFunc(gl_.SRC_ALPHA, gl_.ONE);
-        gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
-        gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
-        gl_.enable(gl_.BLEND);
-    }
-
-    gl_.disable(gl_.CULL_FACE);
 
     this.gpu_.useProgram(this.progLine4_, "aPosition", null);
 
@@ -113,38 +119,50 @@ Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, dept
 
     this.plines_.draw(this.progLine4_, "aPosition", li);
 
-    if (depthTest_ != true) {
-        gl_.enable(gl_.DEPTH_TEST);
+    if (useState_ != true) {
+        if (depthTest_ != true) {
+            gl_.enable(gl_.DEPTH_TEST);
+        }
+    
+        if (transparent_ == true) {
+            gl_.disable(gl_.BLEND);
+        }
+    
+        if (writeDepth_ === false) {
+            gl_.depthMask(false); 
+        }
+    
+        gl_.enable(gl_.CULL_FACE);
     }
-
-    if (transparent_ == true) {
-        gl_.disable(gl_.BLEND);
-    }
-
-    gl_.enable(gl_.CULL_FACE);
 
 };
 
 //draw 2d image - used for debuging
-Melown.Renderer.prototype.drawImage = function(x, y, lx, ly, texture_, color_, depth_, depthTest_, transparent_) {
+Melown.Renderer.prototype.drawImage = function(x, y, lx, ly, texture_, color_, depth_, depthTest_, transparent_, writeDepth_, useState_) {
     if (texture_ == null || this.imageProjectionMatrix_ == null) {
         return;
     }
 
     var gl_ = this.gpu_.gl_;
 
-    if (depthTest_ != true) {
-        gl_.disable(gl_.DEPTH_TEST);
+    if (useState_ != true) {
+        if (depthTest_ != true) {
+            gl_.disable(gl_.DEPTH_TEST);
+        }
+    
+        if (transparent_ == true) {
+            //gl_.blendFunc(gl_.SRC_ALPHA, gl_.ONE);
+            gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
+            gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
+            gl_.enable(gl_.BLEND);
+        }
+    
+        if (writeDepth_ === false) {
+            gl_.depthMask(false); 
+        }
+    
+        gl_.disable(gl_.CULL_FACE);
     }
-
-    if (transparent_ == true) {
-        //gl_.blendFunc(gl_.SRC_ALPHA, gl_.ONE);
-        gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
-        gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
-        gl_.enable(gl_.BLEND);
-    }
-
-    gl_.disable(gl_.CULL_FACE);
 
     this.gpu_.useProgram(this.progImage_, "aPosition", null);
     this.gpu_.bindTexture(texture_);
@@ -170,32 +188,44 @@ Melown.Renderer.prototype.drawImage = function(x, y, lx, ly, texture_, color_, d
 
     gl_.drawElements(gl_.TRIANGLES, indices_.numItems, gl_.UNSIGNED_SHORT, 0);
 
-    if (depthTest_ != true) {
-        gl_.enable(gl_.DEPTH_TEST);
+    if (useState_ != true) {
+        if (writeDepth_ === false) {
+            gl_.depthMask(true); 
+        }
+    
+        if (depthTest_ != true) {
+            gl_.enable(gl_.DEPTH_TEST);
+        }
+    
+        if (transparent_ == true) {
+            gl_.disable(gl_.BLEND);
+        }
+    
+        gl_.enable(gl_.CULL_FACE);
     }
-
-    if (transparent_ == true) {
-        gl_.disable(gl_.BLEND);
-    }
-
-    gl_.enable(gl_.CULL_FACE);
 };
 
-Melown.Renderer.prototype.drawBillboard = function(mvp_, texture_, color_, depthTest_, transparent_) {
+Melown.Renderer.prototype.drawBillboard = function(mvp_, texture_, color_, depthTest_, transparent_, writeDepth_, useState_) {
     var gl_ = this.gpu_.gl_;
 
-    if (depthTest_ != true) {
-        gl_.disable(gl_.DEPTH_TEST);
+    if (useState_ != true) {
+        if (depthTest_ != true) {
+            gl_.disable(gl_.DEPTH_TEST);
+        }
+    
+        if (transparent_ == true) {
+            //gl_.blendFunc(gl_.SRC_ALPHA, gl_.ONE);
+            gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
+            gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
+            gl_.enable(gl_.BLEND);
+        }
+    
+        if (writeDepth_ === false) {
+            gl_.depthMask(false); 
+        }
+    
+        gl_.disable(gl_.CULL_FACE);
     }
-
-    if (transparent_ == true) {
-        //gl_.blendFunc(gl_.SRC_ALPHA, gl_.ONE);
-        gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
-        gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
-        gl_.enable(gl_.BLEND);
-    }
-
-    gl_.disable(gl_.CULL_FACE);
 
     this.gpu_.useProgram(this.progImage_, "aPosition", "aTexCoord");
     this.gpu_.bindTexture(texture_);
@@ -224,15 +254,21 @@ Melown.Renderer.prototype.drawBillboard = function(mvp_, texture_, color_, depth
 
     gl_.drawElements(gl_.TRIANGLES, indices_.numItems, gl_.UNSIGNED_SHORT, 0);
 
-    if (depthTest_ != true) {
-        gl_.enable(gl_.DEPTH_TEST);
+    if (useState_ != true) {
+        if (writeDepth_ === false) {
+            gl_.depthMask(true); 
+        }
+    
+        if (depthTest_ != true) {
+            gl_.enable(gl_.DEPTH_TEST);
+        }
+    
+        if (transparent_ == true) {
+            gl_.disable(gl_.BLEND);
+        }
+    
+        gl_.enable(gl_.CULL_FACE);
     }
-
-    if (transparent_ == true) {
-        gl_.disable(gl_.BLEND);
-    }
-
-    gl_.enable(gl_.CULL_FACE);
 };
 
 

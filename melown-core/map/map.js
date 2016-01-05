@@ -79,6 +79,10 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});
+    
+    this.renderSlots_ = [];
+    
+    this.addRenderSlot("map", this.drawMap.bind(this), true);
 };
 
 Melown.Map.prototype.kill = function() {
@@ -223,6 +227,16 @@ Melown.Map.prototype.setMapView = function(view_) {
 
     this.generateSurfaceSequence();
     this.generateBoundLayerSequence();
+};
+
+Melown.Map.prototype.searchArrayIndexById = function(array_, id_) {
+    for (var i = 0, li = array_.length; i < li; i++) {
+        if (array_[i].id_ == id_) {
+            return i;
+        }
+    }
+
+    return -1;
 };
 
 Melown.Map.prototype.searchArrayById = function(array_, id_) {
@@ -383,6 +397,29 @@ Melown.Map.prototype.markDirty = function() {
     this.dirty_ = true;
 };
 
+Melown.Map.prototype.drawMap = function() {
+    this.renderer_.gpu_.setViewport();
+
+    this.updateCamera();
+    this.renderer_.dirty_ = true;
+
+    //this.cameraPosition_ = this.renderer_.cameraPosition();
+
+    this.renderer_.paintGL();
+
+    this.draw();
+    
+    /*
+    var points_ = [
+        [0,0,0],
+        [500,500,0],
+        [100, 600,0]
+    ];
+
+    this.renderer_.drawLineString(points_, 2.0, [255,0,255,255], false, false);
+    */
+};
+
 Melown.Map.prototype.update = function() {
     if (this.killed_ == true){
         return;
@@ -390,7 +427,7 @@ Melown.Map.prototype.update = function() {
 
     if (this.div_ != null && this.div_.style.visibility == "hidden"){
         //loop heartbeat
-        window.requestAnimFrame(this.update.bind(this));
+        //window.requestAnimFrame(this.update.bind(this));
         return;
     }
 
@@ -413,27 +450,8 @@ Melown.Map.prototype.update = function() {
 
     if (this.dirty_) {
         this.dirty_ = false;
-
-        this.renderer_.gpu_.setViewport();
-
-        this.updateCamera();
-        this.renderer_.dirty_ = true;
-
-        //this.cameraPosition_ = this.renderer_.cameraPosition();
-
-        this.renderer_.paintGL();
-
-        this.draw();
-		
-		/*
-        var points_ = [
-            [0,0,0],
-            [500,500,0],
-            [100, 600,0]
-        ];
-
-        this.renderer_.drawLineString(points_, 2.0, [255,0,255,255], false, false);
-        */
+        
+        this.processRenderSlots();
         
         this.core_.callListener("map-update", {});
     }
