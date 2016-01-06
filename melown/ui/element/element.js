@@ -43,5 +43,12 @@ Melown.UIElement.prototype.removeClass = function(name_) {
     return this;
 };
 
+Melown.UIElement.prototype.setHTML = function(html_) {
+    this.element_.innerHTML = html_;
+};
+
+Melown.UIElement.prototype.getHTML = function() {
+    return this.element_.innerHTML;
+};
 
 
