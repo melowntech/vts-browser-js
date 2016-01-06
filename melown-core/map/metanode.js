@@ -11,6 +11,7 @@ Melown.MapMetanode = function(metatile_, id_, stream_) {
     this.metatile_ = metatile_;
     this.map_ = metatile_.map_;
     this.id_ = id_;
+    this.credits_ = [];
     //this.metadata_ = null;
     //this.nodes_ = [];
     //this.children_ = [null, null, null, null];

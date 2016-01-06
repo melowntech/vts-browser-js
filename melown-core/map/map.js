@@ -39,6 +39,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.surfaceSequence_ = [];
     this.boundLayerSequence_ = [];
 
+    this.currentCreditsIds_ = [];
+
     this.mapTrees_ = [];
 
     this.gpuCache_ = new Melown.MapCache(this, this.config_.mapGPUCache_*1024*1024);
@@ -134,6 +136,14 @@ Melown.Map.prototype.setReferenceFrame = function(referenceFrame_) {
 
 Melown.Map.prototype.addCredit = function(id_, credit_) {
     this.credits_[id_] = credit_;
+};
+
+Melown.Map.prototype.getCredit = function(id_) {
+    return this.credits_[id_];
+};
+
+Melown.Map.prototype.getCredits = function(id_) {
+    return this.currentCreditsIds_;
 };
 
 Melown.Map.prototype.addSurface = function(id_, surface_) {
@@ -399,6 +409,8 @@ Melown.Map.prototype.markDirty = function() {
 
 Melown.Map.prototype.drawMap = function() {
     this.renderer_.gpu_.setViewport();
+
+    this.currentCreditsIds_ = [];
 
     this.updateCamera();
     this.renderer_.dirty_ = true;

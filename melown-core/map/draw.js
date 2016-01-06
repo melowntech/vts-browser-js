@@ -150,6 +150,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                             tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                         } else {
                             if (tile_.surfaceTextures_[i].isReady() == true) {
+                                
+                                //set credits
+                                for (var k = 0, lk_ = node_.credits_.length; k < lk; k++) {
+                                    this.currentCreditsIds_[node_] = node_.credits_[k];  
+                                }
+                                
                                 tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, tile_.surfaceTextures_[i], "internal");
                             }
                         }

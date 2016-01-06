@@ -26,6 +26,11 @@ Melown.MapInterface.prototype.getCredits = function() {
     return this.map_.getCredits();
 };
 
+Melown.MapInterface.prototype.getCreditInfo = function(creditId_) {
+    var credit_ = this.map_.getCredit(creditId_);
+    return credit_ ? credit_.getInfo() : {};
+};
+
 Melown.MapInterface.prototype.getViews = function() {
     return this.map_.getViews();
 };

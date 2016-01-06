@@ -172,7 +172,7 @@ Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
     }
 
     //rounded to bytes
-    var sizex8_ = ((this.sizex_+7) >> 3) << 3;
+    this.sizex8_ = ((this.sizex_+7) >> 3) << 3;
 
     var bitfieldSize_ = ((this.sizex8_ * this.sizey_) >> 3);
 
@@ -191,6 +191,24 @@ Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
 
 };
 
+Melown.MapMetatile.prototype.applyMetatatileCredits = function() {
+    for (var y = 0; y < this.sizey_; y++) {
+        for (var x = 0; x < this.sizex_; x++) {
+            var byteIndex_ = (this.sizex8_ * y + x) >> 3;
+            var bitIndex_ = byteIndex_ & 7;
+            var bitMask_ = 1 << bitIndex_;
+            byteIndex_ >>= 3;
+
+            for (var i = 0, li = this.creditsCount_; i < li; i++) {
+                if (this.credits_[i].bitfield_[byteIndex_] & bitMask_) {
+                    this.nodes_[y*this.sizey_+x].credits_.push(this.credits_[i].creditId_);
+                }
+            }
+             
+        }
+    }
+};
+
 Melown.MapMetatile.prototype.parseMetatatileNodes = function(stream_) {
     this.nodes_ = new Array(this.sizex_*this.sizey_);
     var index_ = 0;
@@ -201,5 +219,7 @@ Melown.MapMetatile.prototype.parseMetatatileNodes = function(stream_) {
             index_++;
         }
     }
+    
+    this.applyMetatatileCredits();
 };
 
