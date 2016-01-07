@@ -25,6 +25,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.srses_ = {};
     this.referenceFrame_ = {};
     this.credits_ = {};
+    this.creditsByNumber_ = {};
     this.surfaces_ = [];
     this.glues_ = [];
     this.freeLayers_ = [];
@@ -39,7 +40,10 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.surfaceSequence_ = [];
     this.boundLayerSequence_ = [];
 
-    this.currentCreditsIds_ = [];
+    this.visibleCredits_ = {
+      imagery_ : [],
+      mapdata_ : []
+    };
 
     this.mapTrees_ = [];
 
@@ -136,14 +140,42 @@ Melown.Map.prototype.setReferenceFrame = function(referenceFrame_) {
 
 Melown.Map.prototype.addCredit = function(id_, credit_) {
     this.credits_[id_] = credit_;
+    this.creditsByNumber_[credit_.id_] = credit_;
+    credit_.key_ = id_;
 };
 
-Melown.Map.prototype.getCredit = function(id_) {
+Melown.Map.prototype.getCreditByNumber = function(id_) {
+    return this.creditsByNumber_[id_];
+};
+
+Melown.Map.prototype.getCreditById = function(id_) {
     return this.credits_[id_];
 };
 
-Melown.Map.prototype.getCredits = function(id_) {
-    return this.currentCreditsIds_;
+Melown.Map.prototype.getCredits = function() {
+    return this.getMapKeys(this.credits_);
+};
+
+Melown.Map.prototype.getVisibleCredits = function() {
+    var imagery_ = this.visibleCredits_.imagery_;
+    var imageryArray_ = []; 
+    
+    for (var key_ in imagery_) {
+        imageryArray_.push(this.creditsByNumber_[key_].key_);
+    }
+
+    var mapdata_ = this.visibleCredits_.mapdata_;
+    var mapdataArray_ = []; 
+    
+    for (var key_ in mapdata_) {
+        mapdataArray_.push(this.creditsByNumber_[key_].key_);
+    }
+
+    return {
+        "3D" : [], 
+        "imagery" : imageryArray_, 
+        "mapdata" : mapdataArray_ 
+    };
 };
 
 Melown.Map.prototype.addSurface = function(id_, surface_) {
@@ -273,6 +305,13 @@ Melown.Map.prototype.getMapKeys = function(map_) {
     var keys_ = [];
     for (var key_ in map_) {
         keys_.push(key_);
+    }
+};
+
+Melown.Map.prototype.getMapIds = function(map_) {
+    var keys_ = [];
+    for (var key_ in map_) {
+        keys_.push(key_.id_);
     }
 };
 
@@ -410,7 +449,10 @@ Melown.Map.prototype.markDirty = function() {
 Melown.Map.prototype.drawMap = function() {
     this.renderer_.gpu_.setViewport();
 
-    this.currentCreditsIds_ = [];
+    this.visibleCredits_ = {
+      imagery_ : [],
+      mapdata_ : []
+    };
 
     this.updateCamera();
     this.renderer_.dirty_ = true;

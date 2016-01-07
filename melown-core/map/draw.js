@@ -99,6 +99,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                         tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                                     } else {
                                         if (tile_.surfaceTextures_[i].isReady() == true) {
+                                            //set credits
+                                            for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                                                this.visibleCredits_.imagery_[node_.credits_[k]] = true;  
+                                            }
+                                
+                                            //draw mesh
                                             tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, tile_.surfaceTextures_[i], "internal");
                                         }
                                     }
@@ -109,6 +115,13 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                 for (var j = 0, lj = textures_.length; j < lj; j++) {
                                     var texture_ = tile_.surfaceTextures_[layers_[j]];
                                     if (texture_ && texture_.isReady()) {
+                                        //set credits
+                                        var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
+                                        for (var k = 0, lk = credits_.length; k < lk; k++) {
+                                            this.visibleCredits_.imagery_[credits_[k]] = true;  
+                                        }
+                                        
+                                        //draw mesh
                                         tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, textures_, "external-nofog");
                                     }
                                 }
@@ -116,8 +129,15 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                 this.renderer_.gpu_.setState(this.drawTileState_);
                             } else {
                                 var layerId_ = tile_.boundSequence_[tile_.boundSequence_.length-1];
-                                var texture_ = tile_.surfaceTextures_[layers_.length - 1];
+                                var texture_ = tile_.surfaceTextures_[layerId_];
                                 if (texture_ && texture_.isReady()) {
+                                    //set credits
+                                    var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;
+                                    for (var k = 0, lk = credits_.length; k < lk; k++) {
+                                        this.visibleCredits_.imagery_[credits_[k]] = true;  
+                                    }
+                                    
+                                    //draw mesh
                                     tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, texture_, "external");
                                 }
                             }
@@ -125,6 +145,13 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                             if (submesh_.textureLayer_) {
                                 var texture_ = tile_.boundTextures_[submesh_.textureLayer_];
                                 if (texture_ && texture_.isReady() == true) {
+                                    //set credits
+                                    var credits_ = tile_.boundLayers_[submesh_.textureLayer_].creditsNumbers_;
+                                    for (var k = 0, lk = credits_.length; k < lk; k++) {
+                                        this.visibleCredits_.imagery_[credits_[k]] = true;  
+                                    }
+                                    
+                                    //draw mesh
                                     tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, texture_, "external");
                                 }
                             } else {
@@ -135,6 +162,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                         tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                                     } else {
                                         if (tile_.surfaceTextures_[i].isReady() == true) {
+                                            //set credits
+                                            for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                                                this.visibleCredits_.imagery_[node_.credits_[k]] = true;  
+                                            }
+
+                                            //draw mesh
                                             tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, tile_.surfaceTextures_[i], "internal");
                                         }
                                     }
@@ -150,10 +183,9 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                             tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                         } else {
                             if (tile_.surfaceTextures_[i].isReady() == true) {
-                                
                                 //set credits
-                                for (var k = 0, lk_ = node_.credits_.length; k < lk; k++) {
-                                    this.currentCreditsIds_[node_] = node_.credits_[k];  
+                                for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                                    this.visibleCredits_.imagery_[node_.credits_[k]] = true;  
                                 }
                                 
                                 tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, tile_.surfaceTextures_[i], "internal");

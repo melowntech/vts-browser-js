@@ -172,13 +172,11 @@ Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
     }
 
     //rounded to bytes
-    this.sizex8_ = ((this.sizex_+7) >> 3) << 3;
-
-    var bitfieldSize_ = ((this.sizex8_ * this.sizey_) >> 3);
+    var bitfieldSize_ = ((this.sizex_ * this.sizey_ + 7) >> 3);
 
     this.credits_ = new Array(this.creditCount_);
 
-    for (var i = 0; i < this.creditsCount_; i++) {
+    for (var i = 0, li = this.credits_.length; i < li; i++) {
         var creditId_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
         var bitfield_ = new Uint8Array(bitfieldSize_);
 
@@ -194,14 +192,14 @@ Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
 Melown.MapMetatile.prototype.applyMetatatileCredits = function() {
     for (var y = 0; y < this.sizey_; y++) {
         for (var x = 0; x < this.sizex_; x++) {
-            var byteIndex_ = (this.sizex8_ * y + x) >> 3;
+            var byteIndex_ = this.sizex_ * y + x;
             var bitIndex_ = byteIndex_ & 7;
             var bitMask_ = 1 << bitIndex_;
             byteIndex_ >>= 3;
 
-            for (var i = 0, li = this.creditsCount_; i < li; i++) {
-                if (this.credits_[i].bitfield_[byteIndex_] & bitMask_) {
-                    this.nodes_[y*this.sizey_+x].credits_.push(this.credits_[i].creditId_);
+            for (var i = 0, li = this.credits_.length; i < li; i++) {
+                if (this.credits_[i].creditMask_[byteIndex_] & bitMask_) {
+                    this.nodes_[y*this.sizex_+x].credits_.push(this.credits_[i].creditId_);
                 }
             }
              

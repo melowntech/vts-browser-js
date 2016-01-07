@@ -11,6 +11,14 @@ Melown.MapBoundLayer = function(map_, json_) {
     this.credits_ = json_["credits"] || [];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.currentAlpha_ = 1.0;
+    this.creditsNumbers_ = [];
+
+    for (var i = 0, li = this.credits_.length; i < li; i++) {
+        var credit_ = map_.getCreditById(this.credits_[i]);
+        if (credit_) {
+            this.creditsNumbers_.push(credit_.id_); 
+        }
+    }
 };
 
 Melown.MapBoundLayer.prototype.getInfo = function() {
