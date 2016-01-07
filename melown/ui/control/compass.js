@@ -28,6 +28,8 @@ Melown.UIControlCompass = function(ui_, visible_) {
     this.image_ = this.control_.getElement("melown-compass-compass");
     this.image2_ = this.control_.getElement("melown-compass-compass2");
     this.image3_ = this.control_.getElement("melown-compass-compass3");
+    
+    this.lastStyle_ = "";
 };
 
 Melown.UIControlCompass.prototype.update = function() {
@@ -39,9 +41,12 @@ Melown.UIControlCompass.prototype.update = function() {
     var pos_ = map_.getPosition();
     var value_ = "rotateX("+((pos_[6]+90)*0.7)+"deg) " + "rotateZ("+(pos_[5]-45)+"deg)";
 
-    this.image_.setStyle(Melown.Utils.TRANSFORM, value_);
-    this.image2_.setStyle(Melown.Utils.TRANSFORM, value_);
-    this.image3_.setStyle(Melown.Utils.TRANSFORM, value_);
+    if (value_ != this.lastStyle_) {
+        this.lastStyle_ = value_;
+        this.image_.setStyle(Melown.Utils.TRANSFORM, value_);
+        this.image2_.setStyle(Melown.Utils.TRANSFORM, value_);
+        this.image3_.setStyle(Melown.Utils.TRANSFORM, value_);
+    }
 };
 
 Melown.UIControlCompass.prototype.onDrag = function(event_) {

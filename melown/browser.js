@@ -63,6 +63,8 @@ Melown.Browser.prototype.onMapUnloaded = function() {
 };
 
 Melown.Browser.prototype.onMapUpdate = function() {
+    this.dirty_ = true;
+    
 /*
     //demo for Tomas
     if (!this.demoImage_) {
@@ -116,7 +118,8 @@ Melown.Browser.prototype.onMapUpdate = function() {
 
 Melown.Browser.prototype.onTick = function() {
     this.autopilot_.tick();
-    this.ui_.tick();
+    this.ui_.tick(this.dirty_);
+    this.dirty_ = false;
 };
 
 
