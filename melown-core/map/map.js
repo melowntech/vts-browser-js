@@ -348,7 +348,7 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
 
         //check for glue
         if (i + 1 < li) {
-            var guleId_ = surfaces_[i].id_ + ";" + surfaces_[i+1].id_;
+            var glueId_ = surfaces_[i].id_ + ";" + surfaces_[i+1].id_;
             var glue_ = this.glues_[glueId_];
 
             if (glue_ != null) {

@@ -46,6 +46,22 @@ Melown.MapSurface.prototype.hasTile = function(id_) {
     return true;
 };
 
+Melown.MapSurface.prototype.hasTile2 = function(id_) {
+    var shift_ = id_[0] - this.lodRange_[0];
+    var above_ = (shift_ < 0);
+    var x = id_[1] >> shift_;
+    var y = id_[2] >> shift_;
+
+    if (id_[0] > this.lodRange_[1] ||
+        x < this.tileRange_[0][0] || x > this.tileRange_[1][0] ||
+        y < this.tileRange_[0][1] || y > this.tileRange_[1][1] ) {
+        return [false , false];
+    }
+
+    return [true, above_];
+};
+
+
 Melown.MapSurface.prototype.hasMetatile = function(id_) {
     if (id_[0] > this.lodRange_[1]) {
         return false;

@@ -30,6 +30,11 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
         tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
     }
 
+    if (tile_.virtual_ == true) {
+        this.checkTileSurface(tile_);
+    }
+
+
     if (tile_.metanode_ == null) {
 
         var surface_ = this.surface_ || tile_.surface_;
@@ -146,28 +151,58 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
 
 Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
     tile_.surface_ = null;
+    tile_.virtual_ = false;
+    tile_.virtualReady_ = false;
+    tile_.virtualSurfaces_ = [];
 
     var sequence_ = this.map_.surfaceSequence_;
 
     //find surfaces with content
     for (var i = sequence_.length - 1; i >= 0; i--) {
-        if (sequence_[i].hasTile(tile_.id_) == true) {
+        var res_ = sequence_[i].hasTile2(tile_.id_);
+        if (res_[0] == true) {
 
             var surface_ = sequence_[i];
-
-            //reset tile data
-            if (tile_.surface_ != surface_) {
-                tile_.surfaceMesh_ = null;
-                tile_.surfaceTexture_ = null;
-                tile_.surfaceGeodata_ = null;
-                tile_.heightMap_ = null;
+            
+            //check if tile exist
+            if (tile_.id_[0] > surface_.lodRange_[0]) {
+                var parent_ = tile_.parent_;
+                var metatile_ = parent_.metastorage_.getMetatile(surface_);
+                if (metatile_) {
+                    var node_ = metatile_.getNode(parent_.id_);
+                    if (node_) {
+                        if (!node_.hasChildById(tile_.id_)) {
+                            continue;
+                        }
+                    }
+                }
             }
 
-            tile_.surface_ = surface_;
-            tile_.empty_ = false;
-
-            return;
+            //set top most surface
+            if (tile_.surface_ == null && res_[1] == false) {
+                //reset tile data
+                if (tile_.surface_ != surface_) {
+                    tile_.surfaceMesh_ = null;
+                    tile_.surfaceTexture_ = null;
+                    tile_.surfaceGeodata_ = null;
+                    tile_.heightMap_ = null;
+                }
+    
+                tile_.surface_ = surface_;
+                tile_.empty_ = false;
+            }
+    
+            //store surface
+            tile_.virtualSurfaces_.push(surface_);        
         }
+    }
+
+    if (tile_.surface_ != null) {
+        if (tile_.virtualSurfaces_.length > 1) {
+            tile_.virtual_ = true;
+        }
+        
+        return;
     }
 
     //find surfaces with metatile

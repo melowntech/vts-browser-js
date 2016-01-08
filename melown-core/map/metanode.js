@@ -26,6 +26,14 @@ Melown.MapMetanode.prototype.hasChild = function(index_) {
     return ((this.flags_ & (1<<(index_+4))) != 0);
 };
 
+Melown.MapMetanode.prototype.hasChildById = function(id_) {
+    var ix_ = id_[1] - (this.id_[1]<<1); 
+    var iy_ = id_[2] - (this.id_[2]<<1);
+    
+    //ul,ur,ll,lr
+    return this.hasChild((iy_<<1) + ix_); 
+};
+
 Melown.MapMetanode.prototype.hasChildren = function() {
     return ((this.flags_ & ((15)<<4)) != 0);
 };

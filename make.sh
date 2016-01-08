@@ -52,8 +52,6 @@ cat utils/libs/proj4.js \
     map/config.js \
     map/credit.js \
     map/draw.js \
-    map/free-layer.js \
-    map/glue.js \
     map/interface.js \
     map/loader.js \
     map/measure.js \
@@ -71,6 +69,8 @@ cat utils/libs/proj4.js \
     map/stats.js \
     map/submesh.js \
     map/surface.js \
+    map/free-layer.js \
+    map/glue.js \
     map/texture.js \
     map/tile.js \
     map/tree.js \

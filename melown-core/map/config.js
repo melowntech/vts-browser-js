@@ -111,7 +111,7 @@ Melown.Map.prototype.parseViews = function() {
 };
 
 Melown.Map.prototype.parseGlues = function() {
-    var glues_ = this.mapConfig_["glues"];
+    var glues_ = this.mapConfig_["glue"];
     this.glues_ = [];
 
     if (glues_ == null) {
