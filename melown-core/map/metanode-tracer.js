@@ -30,17 +30,14 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
         tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
     }
 
-    if (tile_.virtual_) {
-        //if (!this.isVirtualMetanodeReady(tile_) ){
-            //return;
-        //}
-    }
-
-
     if (tile_.metanode_ == null) {
+        if (tile_.virtual_) {
+            if (!this.isVirtualMetanodeReady(tile_) ){
+                return;
+            }
+        }
 
         var surface_ = this.surface_ || tile_.surface_;
-
         if (surface_ == null) {
             return;
         }
@@ -75,7 +72,6 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
         } else {
             return;
         }
-
     }
 
     if (tile_.metanode_ == null) { //only for wrong data
@@ -229,3 +225,67 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
     }
 
 };
+
+Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_) {
+    var surfaces_ = tile_.virtualSurfaces_;
+    var readyCount_ = 0;
+
+    for (var i = 0, li = surfaces_.length; i < li; i++) {
+        var surface_ = surfaces_[i];
+        var metatile_ = tile_.metastorage_.getMetatile(surface_);
+
+        if (metatile_ == null) {
+            metatile_ = new Melown.MapMetatile(tile_.metastorage_, surface_);
+            tile_.metastorage_.addMetatile(metatile_);
+        }
+
+        if (metatile_.isReady() == true) {
+            readyCount_++;
+        }
+    }
+    
+    if (readyCount_ == li) {
+        tile_.metanode_ = this.createVirtualMetanode(tile_);
+        return true;        
+    } else {
+        return false;
+    }
+};
+
+Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_) {
+    var surfaces_ = tile_.virtualSurfaces_;
+    var first_ = false;
+    var node_ = null;
+
+    for (var i = 0, li = surfaces_.length; i < li; i++) {
+        var surface_ = surfaces_[i];
+        var metatile_ = tile_.metastorage_.getMetatile(surface_);
+
+        if (metatile_.isReady() == true) {
+            var metanode_ = metatile_.getNode(tile_.id_);
+
+            if (metanode_ != null) {
+                if (!node_) {
+                    node_ = metanode_.clone(); 
+                } else {
+                    node_.flags_ |= metanode_.flags_ & ((15)<<4); 
+                    node_.bbox_.min_[0] = Math.min(node_.bbox_.min_[0], metatile_.bbox_.min_[0]); 
+                    node_.bbox_.min_[1] = Math.min(node_.bbox_.min_[1], metatile_.bbox_.min_[1]); 
+                    node_.bbox_.min_[2] = Math.min(node_.bbox_.min_[2], metatile_.bbox_.min_[2]); 
+                    node_.bbox_.max_[0] = Math.max(node_.bbox_.max_[0], metatile_.bbox_.max_[0]); 
+                    node_.bbox_.max_[1] = Math.max(node_.bbox_.max_[1], metatile_.bbox_.max_[1]); 
+                    node_.bbox_.max_[2] = Math.max(node_.bbox_.max_[2], metatile_.bbox_.max_[2]); 
+                }
+            }
+        }
+    }
+    
+    return node_;
+};
+
+
+
+
+
+
+

@@ -16,7 +16,9 @@ Melown.MapMetanode = function(metatile_, id_, stream_) {
     //this.nodes_ = [];
     //this.children_ = [null, null, null, null];
 
-    this.parseMetanode(stream_);
+    if (stream_) {
+        this.parseMetanode(stream_);
+    }
 };
 
 Melown.MapMetanode.prototype.kill = function() {
@@ -156,6 +158,16 @@ struct Metanode {
 */
 };
 
+Melown.MapMetanode.prototype.clone = function() {
+    var node_ = new  Melown.MapMetanode(this.metatile_, this.id_);
+    node_.flags_ = this.flags_;
+    node_.minHeight_ = this.minHeight_;
+    node_.maxHeight_ = this.maxHeight_;
+    node_.bbox_ = this.bbox_.clone();
+    node_.internalTextureCount_ = this.internalTextureCount_;
+    node_.pixelSize_ = this.pixelSize_;
+    node_.displaySize_ = this.displaySize_;
+};
 
 Melown.MapMetanode.prototype.getWorldMatrix = function(geoPos_, matrix_) {
     // Note: the current camera geographic position (geoPos) is not necessary

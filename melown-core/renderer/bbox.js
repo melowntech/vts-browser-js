@@ -18,6 +18,11 @@ Melown.BBox = function(xmin_, ymin_, zmin_, xmax_, ymax_, zmax_) {
                              this.max_[2] - this.min_[2]);
 };
 
+Melown.BBox.prototype.clone = function() {
+    return new Melown.BBox(this.min_[0], this.min_[1], this.min_[2],
+                           this.max_[0], this.max_[1], this.max_[2]);
+};
+
 Melown.BBox.prototype.side = function(index_) {
     return this.max_[index_] - this.min_[index_];
 };
