@@ -30,8 +30,10 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
         tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
     }
 
-    if (tile_.virtual_ == true) {
-        this.checkTileSurface(tile_);
+    if (tile_.virtual_) {
+        //if (!this.isVirtualMetanodeReady(tile_) ){
+            //return;
+        //}
     }
 
 

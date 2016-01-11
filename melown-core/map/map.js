@@ -475,7 +475,7 @@ Melown.Map.prototype.drawMap = function() {
 };
 
 Melown.Map.prototype.update = function() {
-    if (this.killed_ == true){
+    if (this.killed_ == true) {
         return;
     }
 
