@@ -69,6 +69,7 @@ cat utils/libs/proj4.js \
     map/stats.js \
     map/submesh.js \
     map/surface.js \
+    map/surface-sequence.js \
     map/free-layer.js \
     map/glue.js \
     map/texture.js \

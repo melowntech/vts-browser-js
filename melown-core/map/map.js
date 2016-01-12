@@ -339,27 +339,6 @@ Melown.Map.prototype.generateBoundLayerSequence = function() {
     }
 };
 
-Melown.Map.prototype.generateSurfaceSequence = function() {
-    var view_ = this.currentView_;
-    var surfaces_ = view_.surfaces_;
-    this.surfaceSequence_ = [];
-
-    for (var i = 0, li = surfaces_.length; i < li; i++) {
-
-        //check for glue
-        if (i + 1 < li) {
-            var glueId_ = surfaces_[i].id_ + ";" + surfaces_[i+1].id_;
-            var glue_ = this.glues_[glueId_];
-
-            if (glue_ != null) {
-                this.surfaceSequence_.push(glue_);
-            }
-        }
-
-        this.surfaceSequence_.push(this.getSurface(surfaces_[i]));
-    }
-};
-
 Melown.Map.prototype.setPosition = function(pos_, public_) {
     this.position_ = new Melown.MapPosition(this, pos_);
     this.dirty_ = true;

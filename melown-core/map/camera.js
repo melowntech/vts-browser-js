@@ -305,12 +305,13 @@ Melown.Map.prototype.updateCamera = function() {
 
 
     //set near and far of camera by distance of orbit
-    var factor_ = Math.max(1.0, this.cameraDistance_ / 600000);
+    var factor_ = this.cameraDistance_ / 600000;
 
-    var near_ = 2 * (factor_ * 20);
+    var near_ = Math.max(2, 2 * (factor_ * 20));
+    factor_ = Math.max(1.0, factor_);
     var far_ = 600000 * (factor_ * 10);
 
-    //console.log("near: " + near_ + "  far: " + far_);
+    console.log("near: " + near_ + "  far: " + far_);
 
     this.camera_.setParams(this.camera_.getFov(), near_, far_);
 
