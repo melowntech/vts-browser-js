@@ -127,6 +127,22 @@ struct Metanode {
         index_ += extentBits_;
     }
 
+    //check zero bbox
+    var extentsBytesSum_ = 0;
+    for (var i = 0, li = extentsBytes_.length; i < li; i++) {
+        extentsBytesSum_ += extentsBytes_[i];
+    }
+    
+    //extent bytes are empty and therefore bbox is empty also
+    if (extentsBytesSum_ == 0 ) {
+        minExtents_[0] = Number.POSITIVE_INFINITY;
+        minExtents_[1] = Number.POSITIVE_INFINITY;
+        minExtents_[2] = Number.POSITIVE_INFINITY;
+        maxExtents_[0] = Number.NEGATIVE_INFINITY;
+        maxExtents_[1] = Number.NEGATIVE_INFINITY;
+        maxExtents_[2] = Number.NEGATIVE_INFINITY;
+    }
+
     this.bbox_ = new Melown.BBox(minExtents_[0], minExtents_[1], minExtents_[2], maxExtents_[0], maxExtents_[1], maxExtents_[2]);
 
     this.internalTextureCount_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
@@ -167,6 +183,7 @@ Melown.MapMetanode.prototype.clone = function() {
     node_.internalTextureCount_ = this.internalTextureCount_;
     node_.pixelSize_ = this.pixelSize_;
     node_.displaySize_ = this.displaySize_;
+    return node_;
 };
 
 Melown.MapMetanode.prototype.getWorldMatrix = function(geoPos_, matrix_) {

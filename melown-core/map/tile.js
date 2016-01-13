@@ -15,7 +15,11 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.surfaceGeodata_ = null; //probably only used in free layers
     this.surfaceTextures_ = [];
 
-    this.empty_ = true;
+    this.virtual_ = false;
+    this.virtualReady_ = false;
+    this.virtualSurfaces_ = [];
+    
+    //this.empty_ = true;
 
     this.updateBounds_ = true;
     this.transparentBounds_ = false;

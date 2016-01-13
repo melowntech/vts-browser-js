@@ -311,7 +311,7 @@ Melown.Map.prototype.updateCamera = function() {
     factor_ = Math.max(1.0, factor_);
     var far_ = 600000 * (factor_ * 10);
 
-    console.log("near: " + near_ + "  far: " + far_);
+    //console.log("near: " + near_ + "  far: " + far_);
 
     this.camera_.setParams(this.camera_.getFov(), near_, far_);
 

@@ -119,7 +119,7 @@ Melown.Map.prototype.parseGlues = function() {
     }
 
     for (var i = 0, li = glues_.length; i < li; i++) {
-        var surface_ = new Melown.MapGlue(this, glues_[i]);
+        var surface_ = new Melown.MapGlue(this, glues_[i], true);
         this.addGlue(surface_.id_.join(";"), surface_);
     }
 
