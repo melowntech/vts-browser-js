@@ -162,8 +162,8 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
     
     //only one surface
     if (sequence_.length == 1) {
-        if (sequence_[i].hasMetatile(tile_.id_) == true) {
-            var surface_ = sequence_[i];
+        if (sequence_[0].hasMetatile(tile_.id_) == true) {
+            var surface_ = sequence_[0];
 
             //reset tile data
             if (tile_.surface_ != surface_) {
@@ -179,6 +179,11 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
         return;        
     }
 
+    //if (tile_.id_[0] == 13) {
+       // tile_ = tile_;
+       // debugger;
+    //}
+
     //multiple surfaces
     //build virtual surfaces array
     //find surfaces with content
@@ -190,13 +195,17 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
             
             //check if tile exist
             if (tile_.id_[0] > surface_.lodRange_[0]) {
+                //!!!!!!removed for debug
+                ///* ????????
                 var parent_ = tile_.parent_;
-                var metatile_ = parent_.metastorage_.getMetatile(surface_);
-                if (metatile_) {
-                    var node_ = metatile_.getNode(parent_.id_);
-                    if (node_) {
-                        if (!node_.hasChildById(tile_.id_)) {
-                            continue;
+                if (parent_ != null && parent_.metastorage_ != null) {
+                    var metatile_ = parent_.metastorage_.getMetatile(surface_);
+                    if (metatile_ && metatile_.isReady()) {
+                        var node_ = metatile_.getNode(parent_.id_);
+                        if (node_) {
+                            if (!node_.hasChildById(tile_.id_)) {
+                                continue;
+                            }
                         }
                     }
                 }
@@ -220,11 +229,16 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
             //store surface
             tile_.virtualSurfaces_.push(surface_);        
         }
+
+        //!!!!!!debug hack
+        //tile_.virtualSurfaces_.push(sequence_[i]);        
     }
 
     //if (tile_.surface_ != null) {
         if (tile_.virtualSurfaces_.length > 1) {
             tile_.virtual_ = true;
+        } else {
+            tile_.surface_ = tile_.virtualSurfaces_[0];
         }
         
         return;
@@ -257,6 +271,10 @@ Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_) {
     var surfaces_ = tile_.virtualSurfaces_;
     var readyCount_ = 0;
 
+    //if (tile_.id_[0] == 20) {
+        //debugger;
+    //}
+
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i];
         var metatile_ = tile_.metastorage_.getMetatile(surface_);
@@ -284,10 +302,17 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_) {
     var first_ = false;
     var node_ = null;
     
-    /*if (tile_.id_[0] == 12) {
-        tile_ = tile_;
-        debugger;
-    }*/
+    //if (tile_.id_[0] == 15 &&
+      //  tile_.id_[1] == 16297 &&
+      //  tile_.id_[2] == 16143) {
+        //tile_ = tile_;
+      //  debugger;
+    //}
+
+    //if (tile_.id_[0] == 20) {
+        //debugger;
+    //}
+
 
     //get top most existing surface
     for (var i = 0, li = surfaces_.length; i < li; i++) {
@@ -302,8 +327,20 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_) {
                 //internalTextureCount is reference to surface
                 if (surface_.glue_ && !metanode_.hasGeometry() &&
                     metanode_.internalTextureCount_ > 0) {
-                    i = this.map_.surfaceSequenceIndices_[metanode_.internalTextureCount_ - 1] - 1;
-                    continue;
+                    var desiredSurfaceIndex_ = metanode_.internalTextureCount_ - 1;
+                    var jump_ = false; 
+                        
+                    for (var j = i; j < li; j++) {
+                        if (surfaces_[j].viewSurfaceIndex_ <= desiredSurfaceIndex_) {
+                            jump_ = (j > i);
+                            i = j - 1;
+                            break;
+                        }
+                    }
+                    
+                    if (jump_) {
+                        continue;
+                    }                         
                 }
                 
                 if (metanode_.hasGeometry()) {
@@ -313,6 +350,12 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_) {
                 }
             }
         }
+    }
+
+    if (tile_.id_[0] == 13 &&
+        tile_.id_[1] == 4075 &&
+        tile_.id_[2] == 4034) {
+        //debugger;
     }
 
     //extend bbox and children flags by other surfaces
@@ -326,23 +369,28 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_) {
             if (metanode_ != null) {
                 //does metanode have surface reference?
                 //internalTextureCount is reference to surface
+                /*
                 if (surface_.glue_ && !metanode_.hasGeometry() &&
                     metanode_.internalTextureCount_ > 0) {
                     i = this.map_.surfaceSequenceIndices_[metanode_.internalTextureCount_ - 1] - 1;
                     continue;
-                }
+                }*/
 
                 if (!node_) { //just in case all surfaces are without geometry
                     node_ = metanode_.clone();
                     tile_.surface_ = surface_;
                 } else {
                     node_.flags_ |= metanode_.flags_ & ((15)<<4); 
+
+                    //!!!!!!removed for debug
+                    
                     node_.bbox_.min_[0] = Math.min(node_.bbox_.min_[0], metanode_.bbox_.min_[0]); 
                     node_.bbox_.min_[1] = Math.min(node_.bbox_.min_[1], metanode_.bbox_.min_[1]); 
                     node_.bbox_.min_[2] = Math.min(node_.bbox_.min_[2], metanode_.bbox_.min_[2]); 
                     node_.bbox_.max_[0] = Math.max(node_.bbox_.max_[0], metanode_.bbox_.max_[0]); 
                     node_.bbox_.max_[1] = Math.max(node_.bbox_.max_[1], metanode_.bbox_.max_[1]); 
-                    node_.bbox_.max_[2] = Math.max(node_.bbox_.max_[2], metanode_.bbox_.max_[2]); 
+                    node_.bbox_.max_[2] = Math.max(node_.bbox_.max_[2], metanode_.bbox_.max_[2]);
+                     
                 }
             }
         }

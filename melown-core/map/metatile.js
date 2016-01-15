@@ -58,6 +58,11 @@ Melown.MapMetatile.prototype.used = function() {
 Melown.MapMetatile.prototype.getNode = function(id_) {
     var x = id_[1] - this.id_[1] - this.offsetx_;
     var y = id_[2] - this.id_[2] - this.offsety_;
+    
+    if (x < 0 || y < 0 || x >= this.sizex_ || y >= this.sizey_) {
+        return null;
+    }
+    
     return this.nodes_[this.sizex_ * y + x];
 };
 
@@ -213,7 +218,7 @@ Melown.MapMetatile.prototype.parseMetatatileNodes = function(stream_) {
 
     for (var y = 0; y < this.sizey_; y++) {
         for (var x = 0; x < this.sizex_; x++) {
-            this.nodes_[index_] = (new Melown.MapMetanode(this, [this.lod_, this.metatileIdx_ + x, this.metatileIdy_ + y], stream_));
+            this.nodes_[index_] = (new Melown.MapMetanode(this, [this.lod_, this.metatileIdx_ + this.offsetx_ + x, this.metatileIdy_ + this.offsety_ + y], stream_));
             index_++;
         }
     }

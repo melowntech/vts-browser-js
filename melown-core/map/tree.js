@@ -74,22 +74,53 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
     var node_ = tile_.metanode_;
     var cameraPos_ = this.map_.cameraPosition_;
 
-    //Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pixelSize_) {
-    console.log("--------------------------------------------");
-    console.log("draw-tile: id: " + JSON.stringify(node_.id_));
-    console.log("surafce: id: " + tile_.surface_.id_);
-    console.log("flags: " + JSON.stringify(node_.bbox_));
-    console.log("bbox: " + JSON.stringify(node_.flags_));
-    console.log("tcount: " + node_.internalTextureCount_);
-    console.log("tsize: " + node_.pixelSize_);
+    var log2_ = false;        
 
+    if (log2_) {
+        console.log("--------------------------------------------");
+        console.log("draw-tile: id: " + JSON.stringify(node_.id_));
+        console.log("surafce: id: " + tile_.surface_.id_);
+        
+        var vs = tile_.virtualSurfaces_;
+        var s = "";
+        for (var i = 0, li = vs.length; i < li; i++) {
+            s += vs[i].id_ + "|";
+        }
+        
+        console.log("bbox: " + JSON.stringify(node_.bbox_));
+        console.log("tcount: " + node_.internalTextureCount_);
+        console.log("glue: " + tile_.surface_.glue_);
+        console.log("geometry: " + node_.hasGeometry());
+        console.log("children: " + node_.hasChildren());
+        console.log("tsize: " + node_.pixelSize_);
+        console.log("virtual: " + tile_.virtual_ + " " + s);
+    }
+    
+    //Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pixelSize_) {
+    var log_ = false;        
+
+    if (log_) {
+        console.log("--------------------------------------------");
+        console.log("draw-tile: id: " + JSON.stringify(node_.id_));
+        console.log("surafce: id: " + tile_.surface_.id_);
+        console.log("bbox: " + JSON.stringify(node_.bbox_));
+        console.log("flags: " + JSON.stringify(node_.flags_));
+        console.log("tcount: " + node_.internalTextureCount_);
+        console.log("tsize: " + node_.pixelSize_);
+    }
+
+    //if (node_.id_[0] == 13) {
+      //  this.map_.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
+    //}
 
     if (this.camera_.bboxVisible(node_.bbox_, cameraPos_) != true) {
         return false;
         //return true;
     }
 
-    console.log("draw-tile: visible");
+    if (log2_) { console.log("visible"); }
+
+    if (log_) { console.log("draw-tile: visible"); }
 
     var pixelSize_;
 
@@ -112,12 +143,21 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
         pixelSize_ = [Number.POSITIVE_INFINITY, 99999];
     }
 
-    console.log("draw-tile: children=="  + node_.hasChildren());
-    console.log("draw-tile: psize=="  + pixelSize_[0]);
+    if (log_) {
+        console.log("draw-tile: children=="  + node_.hasChildren());
+        console.log("draw-tile: psize=="  + pixelSize_[0]);
+    }
+
+    //if (node_.id_[0] == 14) {
+        //debugger;
+    //}
+
 
     if (node_.hasChildren() == false || pixelSize_[0] < 1.1) {
 
-        console.log("draw-tile: drawn");
+        if (log2_) { console.log("drawn"); }
+
+        if (log_) { console.log("draw-tile: drawn"); }
 
         this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_);
 

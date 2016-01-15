@@ -62,15 +62,20 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
         
     } while(!sorted_);
 
-    var lastIndex_ = 0;
+    var lastIndex_ = surfaces_.length - 1;
 
     //convert list to surface sequence
     for (var i = 0, li = list_.length; i < li; i++) {
         this.surfaceSequence_.push(list_[i][1]);
         
+        //var viewSurfaceIndex_ = lastIndex_;// + ((lastIndex_ > 0) ? 1 : 0);
+        
+        list_[i][1].viewSurfaceIndex_ = lastIndex_; 
+        
         if (list_[i][2]) {
-            this.surfaceSequenceIndices_[list_[i][3]] = lastIndex_;
-            lastIndex_ = i;
+            //this.surfaceSequenceIndices_[list_[i][3]] = lastIndex_;
+            lastIndex_--;
+            //lastIndex_ = i;
         }
     }
     

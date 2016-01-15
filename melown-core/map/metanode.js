@@ -135,6 +135,9 @@ struct Metanode {
     
     //extent bytes are empty and therefore bbox is empty also
     if (extentsBytesSum_ == 0 ) {
+        //console.log("empty-node: id: " + JSON.stringify(this.id_));
+        //console.log("empty-node: surafce: " + this.metatile_.surface_.id_);
+
         minExtents_[0] = Number.POSITIVE_INFINITY;
         minExtents_[1] = Number.POSITIVE_INFINITY;
         minExtents_[2] = Number.POSITIVE_INFINITY;
