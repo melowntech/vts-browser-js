@@ -74,7 +74,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
     var node_ = tile_.metanode_;
     var cameraPos_ = this.map_.cameraPosition_;
 
-    var log2_ = false;        
+    var log2_ = this.map_.drawBBoxes_;        
 
     if (log2_) {
         console.log("--------------------------------------------");

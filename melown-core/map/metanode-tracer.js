@@ -22,6 +22,12 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
         return;
     }
 
+    if (tile_.id_[0] == 18 &&
+        tile_.id_[1] == 130430 &&
+        tile_.id_[2] == 129088) {
+        debugger;
+    }
+
     if (tile_.metastorage_ == null) {
         tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
     }
@@ -50,7 +56,7 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
             metatile_ = new Melown.MapMetatile(tile_.metastorage_, surface_);
             tile_.metastorage_.addMetatile(metatile_);
         }
-
+    
         if (metatile_.isReady() == true) {
 
             if (!tile_.virtual_) {
@@ -206,7 +212,11 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
                             if (!node_.hasChildById(tile_.id_)) {
                                 continue;
                             }
+                        } else {
+                            continue;
                         }
+                    } else {
+                        continue;
                     }
                 }
             }
@@ -271,9 +281,11 @@ Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_) {
     var surfaces_ = tile_.virtualSurfaces_;
     var readyCount_ = 0;
 
-    //if (tile_.id_[0] == 20) {
-        //debugger;
-    //}
+//    if (tile_.id_[0] == 18 &&
+//        tile_.id_[1] == 130400 &&
+//        tile_.id_[2] == 129088) {
+//        debugger;
+//    }
 
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i];
@@ -352,11 +364,11 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_) {
         }
     }
 
-    if (tile_.id_[0] == 13 &&
-        tile_.id_[1] == 4075 &&
-        tile_.id_[2] == 4034) {
+    //if (tile_.id_[0] == 13 &&
+      //  tile_.id_[1] == 4075 &&
+      //  tile_.id_[2] == 4034) {
         //debugger;
-    }
+    //}
 
     //extend bbox and children flags by other surfaces
     for (var i = 0, li = surfaces_.length; i < li; i++) {
