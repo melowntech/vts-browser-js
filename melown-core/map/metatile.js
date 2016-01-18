@@ -35,11 +35,11 @@ Melown.MapMetatile.prototype.kill = function(killedByCache_) {
 };
 
 Melown.MapMetatile.prototype.isReady = function () {
-    if (this.id_[0] == 18 &&
-        this.id_[1] == 130400 &&
-        this.id_[2] == 129088) {
-        debugger;
-    }
+    //if (this.id_[0] == 18 &&
+    //    this.id_[1] == 130400 &&
+    //    this.id_[2] == 129088) {
+    //    debugger;
+    //}
 
     if (this.loadState_ == 2) { //loaded
         return true;

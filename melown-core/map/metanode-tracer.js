@@ -22,14 +22,19 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
         return;
     }
 
-    if (tile_.id_[0] == 18 &&
-        tile_.id_[1] == 130430 &&
-        tile_.id_[2] == 129088) {
-        debugger;
-    }
+    //if (tile_.id_[0] == 18 &&
+    //    tile_.id_[1] == 130430 &&
+    //    tile_.id_[2] == 129088) {
+    //    debugger;
+    //}
 
     if (tile_.metastorage_ == null) {
         tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
+    }
+
+    if (this.map_.viewCounter_ != tile_.viewCoutner_) {
+        tile_.viewSwitched();
+        tile_.viewCoutner_ = this.map_.viewCounter_; 
     }
 
     if (tile_.surface_ == null && tile_.virtualSurfaces_.length == 0) {
@@ -88,6 +93,13 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
     if (tile_.metanode_ == null) { //only for wrong data
         return;
     }
+
+    if (tile_.lastSurface_ && tile_.lastSurface_ == tile_.surface_) {
+        tile_.lastSurface_ = null;
+        tile_.restoreLastState();
+        return;
+    }
+
 
     tile_.metanode_.metatile_.used();
 

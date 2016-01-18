@@ -21,7 +21,7 @@ Melown.Map.prototype.parseConfig = function() {
         this.setPosition(this.mapConfig_["position"], false);
     }
 
-    this.setMapView(this.initialView_);
+    this.setView(this.initialView_);
 };
 
 Melown.Map.prototype.parseSrses = function() {
@@ -94,12 +94,11 @@ Melown.Map.prototype.parseViews = function() {
 
     if (views_ != null) {
         for (var key_ in views_) {
-            this.addView(key_, new Melown.MapView(this, views_[key_]));
+            this.addNamedView(key_, new Melown.MapView(this, views_[key_]));
         }
     }
 
     var view_ = this.mapConfig_["view"];
-
     if (view_ == null) {
         return true;
     }
@@ -111,8 +110,8 @@ Melown.Map.prototype.parseViews = function() {
     //view_["surfaces"] = ["jenstejn2015"]; 
     //view_["surfaces"] = ["jenstejn"]; 
 
-    this.initialView_ = new Melown.MapView(this, view_);
-    this.currentView_ = null;
+    this.initialView_ = JSON.parse(JSON.stringify(view_));//new Melown.MapView(this, view_);
+    //this.currentView_ = null;
 
     return true;
 };

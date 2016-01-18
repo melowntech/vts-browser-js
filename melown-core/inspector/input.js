@@ -197,7 +197,10 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                        map_.setPosition(pos_);
                        */
 
-                        map_.camera_.setParams(map_.camera_.getFov(), 2000, 200000000);
+                        //map_.camera_.setParams(map_.camera_.getFov(), 2000, 200000000);
+                        var view_ = map_.getView();
+                        view_["surfaces"] = ["jenstejn-hf", "jenstejn2015"]; 
+                        map_.setView(view_);
                         
                         break; //key V pressed
 

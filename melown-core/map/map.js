@@ -33,7 +33,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.dynamicLayers_ = [];
 
     this.initialView_ = null;
-    this.currentView_ = null;
+    this.currentView_ = new Melown.MapView(this, {});
+    this.currentViewString_ = "";
     this.namedViews_ = [];
     this.viewCounter_ = 0;
 
@@ -244,31 +245,38 @@ Melown.Map.prototype.getMapsSrs = function(srs_) {
     return this.srses_[srs_];
 };
 
-Melown.Map.prototype.addMapView = function(id_, view_) {
+Melown.Map.prototype.addNamedView = function(id_, view_) {
     this.namedViews_[id_] = view_;
 };
 
-Melown.Map.prototype.getMapView = function(id_, view_) {
+Melown.Map.prototype.getNamedView = function(id_) {
     return this.namedViews_[id_];
 };
 
-Melown.Map.prototype.getMapViews = function() {
+Melown.Map.prototype.getNamedViews = function() {
     return this.getMapKeys(this.namedViews_);
 };
 
-Melown.Map.prototype.setMapView = function(view_) {
+Melown.Map.prototype.setView = function(view_) {
     if (view_ == null) {
         return;
     }
 
-    if (view_ != this.currentView_) {
-        this.currentView_ = view_;
+    var string_ = JSON.stringify(view_);
+    if (string_ != this.currentViewString_) {
+        this.currentView_.parse(view_);
+        this.currentViewString_ = string_;
         this.freeLayers_ = this.currentView_.freeLayers_;
         this.viewCounter_++;
     }
 
     this.generateSurfaceSequence();
     this.generateBoundLayerSequence();
+    this.dirty_ = true;
+};
+
+Melown.Map.prototype.getView = function() {
+    return this.currentView_.getInfo();
 };
 
 Melown.Map.prototype.searchArrayIndexById = function(array_, id_) {
