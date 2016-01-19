@@ -97,7 +97,7 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
     if (tile_.lastSurface_ && tile_.lastSurface_ == tile_.surface_) {
         tile_.lastSurface_ = null;
         tile_.restoreLastState();
-        return;
+        //return;
     }
 
 

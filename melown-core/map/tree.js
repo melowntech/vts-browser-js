@@ -74,7 +74,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
     var node_ = tile_.metanode_;
     var cameraPos_ = this.map_.cameraPosition_;
 
-    var log2_ = false;//this.map_.drawBBoxes_;        
+    var log2_ = false; //this.map_.drawBBoxes_;        
 
     if (log2_) {
         console.log("--------------------------------------------");
@@ -151,6 +151,10 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
     //if (node_.id_[0] == 14) {
         //debugger;
     //}
+
+    if (log2_ && node_.id_[0] == 11) { 
+        debugger;
+    }
 
 
     if (node_.hasChildren() == false || pixelSize_[0] < 1.1) {
