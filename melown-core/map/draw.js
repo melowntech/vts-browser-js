@@ -61,7 +61,9 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                         tile_.boundSequence_.push(layer_.id_);
                                         tile_.boundLayers_[layer_.id_] = layer_;
                                         var path_ = layer_.getUrl(tile_.id_);
-                                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                                        if (!tile_.boundTextures_[layer_.id_]) {
+                                            tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                                        }
                                         if (layer_.currentAlpha < 1.0) {
                                             tile_.transparentBounds_ = true;
                                         }
@@ -73,7 +75,9 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                     tile_.boundSequence_.push(layer_.id_);
                                     tile_.boundLayers_[layer_.id_] = layer_;
                                     var path_ = layer_.getUrl(tile_.id_);
-                                    tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                                    if (!tile_.boundTextures_[layer_.id_]) {
+                                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                                    }
                                 }
                             } else { //search submeshes
                                 for (var j = 0; j < li; j++) {
@@ -83,7 +87,9 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                             //submeshes_[j].textureLayerId_ = tile_.id_;
                                             tile_.boundLayers_[layer_.id_] = layer_;
                                             var path_ = layer_.getUrl(tile_.id_);
-                                            tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                                            if (!tile_.boundTextures_[layer_.id_]) {
+                                                tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                                            }
                                         }
                                     }
                                 }

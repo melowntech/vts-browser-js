@@ -233,6 +233,15 @@ Melown.Map.prototype.getRenderSlotEnabled = function(id_) {
     return this.map_.getRenderSlotEnabled(id_);
 };
 
+Melown.Map.prototype.setLoaderSuspended = function(state_) {
+    this.map_.loaderSuspended_ = state_;
+    return this;
+};
+
+Melown.Map.prototype.getLoaderSuspended = function() {
+    return this.map_.loaderSuspended_;
+};
+
 Melown.MapPositionInterface = Melown.MapPosition;
 
 

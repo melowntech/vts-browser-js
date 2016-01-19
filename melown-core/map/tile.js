@@ -116,11 +116,11 @@ Melown.MapTile.prototype.viewSwitched = function() {
     this.verifyChildren_ = true;
     this.metanode_ = null;
 
-    this.updateBounds_ = true;
-    this.transparentBounds_ = false;
     this.boundLayers_ = {};
     this.boundTextures_ = {};
     this.boundSequence_ = [];
+    this.updateBounds_ = true;
+    this.transparentBounds_ = false;
 
     this.surface_ = null;
     this.surfaceMesh_ = null;
