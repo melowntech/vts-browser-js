@@ -40,6 +40,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.viewCounter_ = 0;
 
     this.surfaceSequence_ = [];
+    this.surfaceOnlySequence_ = [];
     this.boundLayerSequence_ = [];
 
     this.visibleCredits_ = {
@@ -321,30 +322,6 @@ Melown.Map.prototype.getMapIds = function(map_) {
     var keys_ = [];
     for (var key_ in map_) {
         keys_.push(key_.id_);
-    }
-};
-
-Melown.Map.prototype.generateBoundLayerSequence = function() {
-    var view_ = this.currentView_;
-    var layers_ = view_.boundLayers_;
-    this.boundLayerSequence_ = [];
-
-    for (var i = 0, li = layers_.length; i < li; i++) {
-        var item_ = layers_[i];
-
-        if (typeof item_ === "string") {
-            var layer_ = this.getBoundLayerById(item_);
-        } else {
-            var layer_ = this.getBoundLayerById(item_["id"]);
-
-            if (layer_ != null && typeof item_["alpha"] !== "undefined") {
-                layer_.currentAlpha_ = item_["alpha"];
-            }
-        }
-
-        if (layer_ != null) {
-            this.boundLayerSequence_.push(layer_);
-        }
     }
 };
 

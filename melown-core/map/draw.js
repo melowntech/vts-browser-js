@@ -54,17 +54,17 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                             tile_.updateBounds_ = false;
 
                             //search map view
-                            if (this.boundLayerSequence_.length > 0) {
-                                for (var i = 0, li = this.boundLayerSequence_.length; i < li; i++) {
-                                    var layer_ = this.boundLayerSequence_[i];
-                                    if (layer_ && layer_.hasTile(tile_.id_) && layer_.currentAlpha > 0  && !tile_.boundTextures_[layer_.id_]) {
+                            if (tile_.surface_.boundLayerSequence_.length > 0) {
+                                for (var i = 0, li = tile_.surface_.boundLayerSequence_.length; i < li; i++) {
+                                    var layer_ = tile_.surface_.boundLayerSequence_[i][0];
+                                    if (layer_ && layer_.hasTile(tile_.id_) && tile_.surface_.boundLayerSequence_[i][1] > 0  && !tile_.boundTextures_[layer_.id_]) {
                                         tile_.boundSequence_.push(layer_.id_);
                                         tile_.boundLayers_[layer_.id_] = layer_;
                                         var path_ = layer_.getUrl(tile_.id_);
                                         if (!tile_.boundTextures_[layer_.id_]) {
                                             tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
                                         }
-                                        if (layer_.currentAlpha < 1.0) {
+                                        if (tile_.surface_.boundLayerSequence_[i][1] < 1.0) {
                                             tile_.transparentBounds_ = true;
                                         }
                                     }
@@ -118,8 +118,8 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
                                 this.renderer_.gpu_.setState(this.drawBlendedTileState_);
                                 var layers_ = tile_.boundSequence_;
-                                for (var j = 0, lj = textures_.length; j < lj; j++) {
-                                    var texture_ = tile_.surfaceTextures_[layers_[j]];
+                                for (var j = 0, lj = layers_.length; j < lj; j++) {
+                                    var texture_ = tile_.boundTextures_[layers_[j]];
                                     if (texture_ && texture_.isReady()) {
                                         //set credits
                                         var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
@@ -135,7 +135,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                 this.renderer_.gpu_.setState(this.drawTileState_);
                             } else {
                                 var layerId_ = tile_.boundSequence_[tile_.boundSequence_.length-1];
-                                var texture_ = tile_.surfaceTextures_[layerId_];
+                                var texture_ = tile_.boundTextures_[layerId_];
                                 if (texture_ && texture_.isReady()) {
                                     //set credits
                                     var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;

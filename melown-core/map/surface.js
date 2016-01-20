@@ -13,6 +13,7 @@ Melown.MapSurface = function(map_, json_, glue_) {
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.textureLayer_ = json_["textureLayer"] || null;
+    this.boundLayerSequence_ = [];
     this.glue_ = glue_ || false;
 };
 

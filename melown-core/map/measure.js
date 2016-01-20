@@ -16,7 +16,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
                 };
                 var params_ = {
                     coords_ : nodeCoords_,
-                    desiredLod_ : lod_,
+                    desiredLod_ : Math.ceil(lod_),
                     extents_ : extents_,
                     metanode_ : null,
                     heightMap_ : null,
@@ -30,6 +30,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
                 var metanode_ = params_.metanode_;
 
                 if (params_.heightMap_ != null) {
+                    /*
                     var data_ = heightMap_.imageData_;
                     var dataExtents_ = heightMap_.imageExtents_;
                     var mapExtents_ = params_.heightMapExtents_;
@@ -59,8 +60,20 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
                     var height_ = (w0_ + (w1_ - w0_)*fy_);
 
                     height_ = metanode_.minHeight_ + (metanode_.maxHeight_ - metanode_.minHeight_) * (height_/255);
+                    */
+                   
+                    if (metanode_.id_[0] > 0 && params_.parent_ && params_.parent_ && params_.parent_.heightMap_) {
+                        var height1_ = this.getHeightmapValue(nodeCoords_, params_.parent_.metanode_, params_.parent_);  
+                        var height2_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
+                        var factor_ = lod_ - Math.floor(lod_);
+                        var height_ = height1_ + (height2_ - height1_) * factor_;
+                        
+                        console.log("lod: " + lod_ + " h1: " + height1_ + " h2: " + height2_ + " h: " + height_);  
+                    } else {
+                        var height_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
+                    }
 
-                    return [height_, metanode_.id_[0] >= lod_, true];
+                    return [height_, metanode_.id_[0] >= Math.ceil(lod_), true];
                 } else if (metanode_ != null && metanode_.id_[0] == lod_ && !metanode_.hasNavtile()){
                     var center_ = metanode_.bbox_.center();
                     center_ = this.convertCoords(center_, "physical", "navigation");
@@ -81,6 +94,41 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
     //coords_
 
     return [0, false, false];
+};
+
+Melown.Map.prototype.getHeightmapValue = function(coords_, node_, params_) {
+    var heightMap_ = params_.heightMap_;
+    var data_ = heightMap_.imageData_;
+    var dataExtents_ = heightMap_.imageExtents_;
+    var mapExtents_ = params_.heightMapExtents_;
+
+    //relative tile coords
+    var x = coords_[0] - mapExtents_.ll_[0];
+    //var y = nodeCoords_[1] - mapExtents_.ll_[1];
+    var y = mapExtents_.ur_[1] - coords_[1];
+
+    //data coords
+    x = (dataExtents_[0]-1) * (x / (mapExtents_.ur_[0] - mapExtents_.ll_[0]));
+    y = (dataExtents_[1]-1) * (y / (mapExtents_.ur_[1] - mapExtents_.ll_[1]));
+
+    var ix_ = Math.floor(x);
+    var iy_ = Math.floor(y);
+    var fx_ = x - ix_;
+    var fy_ = y - iy_;
+
+    var index_ = iy_ * dataExtents_[0];
+    var index2_ = index_ + dataExtents_[0];
+    var h00_ = data_[(index_ + ix_)*4];
+    var h01_ = data_[(index_ + ix_ + 1)*4];
+    var h10_ = data_[(index2_ + ix_)*4];
+    var h11_ = data_[(index2_ + ix_ + 1)*4];
+    var w0_ = (h00_ + (h01_ - h00_)*fx_);
+    var w1_ = (h10_ + (h11_ - h10_)*fx_);
+    var height_ = (w0_ + (w1_ - w0_)*fy_);
+
+    height_ = node_.minHeight_ + (node_.maxHeight_ - node_.minHeight_) * (height_/255);
+    
+    return height_;
 };
 
 Melown.Map.prototype.getSpatialDivisionNode = function(coords_) {
@@ -119,7 +167,8 @@ Melown.Map.prototype.getOptimalHeightLodBySampleSize = function(coords_, desired
         var nodeExtent_ = node_.extents_.ur_[1] - node_.extents_.ll_[1];
 
         var lod_ = Math.log(nodeExtent_ / desiredSamplesSize_) / Math.log(2);
-        lod_ = Math.round(lod_) - 8 + nodeLod_;
+        //lod_ = Math.round(lod_) - 8 + nodeLod_;
+        lod_ = lod_ - 8 + nodeLod_;
 
         return Math.max(0, lod_);
     }
@@ -137,7 +186,8 @@ Melown.Map.prototype.getOptimalHeightLod = function(coords_, viewExtent_, desire
         var nodeExtent_ = node_.extents_.ur_[1] - node_.extents_.ll_[1];
 
         var lod_ = Math.log((desiredSamplesPerViewExtent_ * nodeExtent_) / viewExtent_) / Math.log(2);
-        lod_ = Math.round(lod_) - 8 + nodeLod_;
+        //lod_ = Math.round(lod_) - 8 + nodeLod_;
+        lod_ = lod_ - 8 + nodeLod_;
 
         return Math.max(0, lod_);
     }

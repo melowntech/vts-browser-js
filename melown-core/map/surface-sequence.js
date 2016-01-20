@@ -1,9 +1,16 @@
 
 Melown.Map.prototype.generateSurfaceSequence = function() {
     var view_ = this.currentView_;
-    var surfaces_ = view_.surfaces_;
     this.surfaceSequence_ = [];
     this.surfaceSequenceIndices_ = [];
+
+    this.surfaceOnlySequence_ = [];
+
+    var surfaces_ = [];
+    
+    for (var key_ in view_.surfaces_) {
+        surfaces_.push(key_);
+    }
    
     var list_ = [];
     var maxShift_ = surfaces_.length;
@@ -76,9 +83,44 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
             //this.surfaceSequenceIndices_[list_[i][3]] = lastIndex_;
             lastIndex_--;
             //lastIndex_ = i;
+            
+            this.surfaceOnlySequence_.push(list_[i][1]);
         }
     }
     
 };
 
+Melown.Map.prototype.generateBoundLayerSequence = function() {
+    var view_ = this.currentView_;
+    var surfaces_ = [];
+    
+    for (var key_ in view_.surfaces_) {
+        var surfaceLayers_ = view_.surfaces_[key_];
+        var surface_ = this.getSurface(key_);
+        if (surface_ != null) {
+            surface_.boundLayerSequence_ = [];
+            
+            for (var i = 0, li = surfaceLayers_.length; i < li; i++) {
+                var item_ = surfaceLayers_[i];
+        
+                if (typeof item_ === "string") {
+                    var layer_ = this.getBoundLayerById(item_);
+                    if (layer_) {
+                        surface_.boundLayerSequence_.push([layer_, 1]);
+                    }
+                } else {
+                    var layer_ = this.getBoundLayerById(item_["id"]);
+                    if (layer_) {
 
+                        var alpha_ = null;
+                        if (item_["alpha"] !== "undefined") {
+                            alpha_ = item_["alpha"];
+                        }
+
+                        surface_.boundLayerSequence_.push([layer_, alpha]);
+                    }
+                }
+            }
+        }
+    }
+};

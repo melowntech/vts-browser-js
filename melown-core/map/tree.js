@@ -152,9 +152,9 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
         //debugger;
     //}
 
-    if (log2_ && node_.id_[0] == 11) { 
-        debugger;
-    }
+    //if (log2_ && node_.id_[0] == 11) { 
+        //debugger;
+    //}
 
 
     if (node_.hasChildren() == false || pixelSize_[0] < 1.1) {
@@ -188,6 +188,12 @@ Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_) {
             tile_.heightMap_ = new Melown.MapTexture(this.map_, path_, true);
         } else {
             if (tile_.heightMap_.isReady() == true) {
+                params_.parent_ = {
+                    metanode_ : params_.metanode_,
+                    heightMap_ : params_.heightMap_,
+                    heightMapExtents_ : params_.heightMapExtents_
+                };
+                
                 params_.metanode_ =  node_;
                 params_.heightMap_ = tile_.heightMap_;
                 params_.heightMapExtents_ = {
