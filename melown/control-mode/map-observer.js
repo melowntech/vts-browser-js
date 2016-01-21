@@ -28,7 +28,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
 
     if (event_.getDragButton("left") && this.config_.panAllowed_) { //pan
         if (map_.getPositionHeightMode(pos_) == "fix") {
-            var pos2_ = map_.convertPositionHeightMode(pos_, "float");
+            var pos2_ = map_.convertPositionHeightMode(pos_, "float", true);
             if (pos2_ != null) {
                 pos_ = pos2_;
             }
@@ -208,6 +208,8 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
                 i--;
             }
         }
+        
+        viewExtent_ = Math.max(1, viewExtent_);
 
         //apply final orintation
         pos_ = map_.setPositionViewExtent(pos_, viewExtent_);
