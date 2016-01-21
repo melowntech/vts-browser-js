@@ -112,12 +112,12 @@ Melown.Map.prototype.generateBoundLayerSequence = function() {
                     var layer_ = this.getBoundLayerById(item_["id"]);
                     if (layer_) {
 
-                        var alpha_ = null;
-                        if (item_["alpha"] !== "undefined") {
+                        var alpha_ = 1;
+                        if (typeof item_["alpha"] !== "undefined") {
                             alpha_ = item_["alpha"];
                         }
 
-                        surface_.boundLayerSequence_.push([layer_, alpha]);
+                        surface_.boundLayerSequence_.push([layer_, alpha_]);
                     }
                 }
             }

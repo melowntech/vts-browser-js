@@ -19,6 +19,7 @@ Melown.MapTree = function(map_, divisionNode_, freeLayer_) {
         this.heightTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceSurfaceTileHeight.bind(this));
     }
 
+    this.config_ = this.map_.config_;
     this.cameraPos_ = [0,0,0];
     this.worldPos_ = [0,0,0];
     this.ndcToScreenPixel_ = 1.0;
@@ -66,7 +67,7 @@ Melown.MapTree.prototype.drawSurface = function(shift_) {
     this.surfaceTracer_.trace(this.rootId_);
 };
 
-Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
+Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, reducedProcessing_) {
     if (tile_ == null || tile_.metanode_ == null) {
         return false;
     }
@@ -157,29 +158,51 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_) {
     //}
 
 
-    if (node_.hasChildren() == false || pixelSize_[0] < 1.1) {
+    if (node_.hasChildren() == false || pixelSize_[0] < this.config_.mapTexelSizeFit_) {
 
         if (log2_) { console.log("drawn"); }
-
         if (log_) { console.log("draw-tile: drawn"); }
 
-        this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_);
+        this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, reducedProcessing_);
 
         return false;
+        
+    } else if (node_.hasGeometry() && pixelSize_[0] < this.config_.mapTexelSizeTolerance_) {
+        return [true, false];
+        
+        var childrenReady_ = true;
+        
+        //are children ready?   
+        for (var i = 0; i < 4; i++) {
+            if (tile_.children_[i]) {
+                if (!tile_.children_[i].renderReady_) {
+                    childrenReady_ = false;
+                }
+            }
+        }
+        
+        //if children are not ready then draw coarser lod
+        if (childrenReady_) {
+            return [false, reducedProcessing_];
+        } else {
+            //draw coarsed load and continue tracing children but do not draw them
+            this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, true);            
+            return [true, true];
+        }
     }
 
-    return true;
+    return [true, reducedProcessing_];
 };
 
-Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_) {
+Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_, reducedProcessing_) {
     if (tile_ == null || tile_.id_[0] > params_.desiredLod_) {
-        return false;
+        return [false, reducedProcessing_];
     }
 
     var node_ = tile_.metanode_;
 
     if (node_ == null) {
-        return false;
+        return [false, reducedProcessing_];
     }
 
     if (node_.hasNavtile()) {
@@ -200,15 +223,15 @@ Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_) {
                     ll_ : params_.extents_.ll_.slice(),
                     ur_ : params_.extents_.ur_.slice()
                 };
-                return true;
+                return [true, reducedProcessing_];
             }
         }
     } else {
         params_.metanode_ =  node_;
-        return true;
+        return [true, reducedProcessing_];
     }
 
-    return false;
+    return [false, reducedProcessing_];
 };
 
 

@@ -6,6 +6,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.id_ = id_;
     this.parent_ = parent_;
     this.viewCoutner_ = map_.viewCounter_;
+    this.renderReady_ = false;
 
     this.metanode_ = null;  //[metanode, cacheItem]
     this.metastorage_ = null; //link to metatile storage
@@ -25,6 +26,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.transparentBounds_ = false;
     this.boundLayers_ = {};
     this.boundTextures_ = {};
+    this.boundAlpha_ = {};
     this.boundSequence_ = [];
 
     this.heightMap_ = null;
@@ -72,16 +74,21 @@ Melown.MapTile.prototype.kill = function() {
     this.surfaceTextures_ = [];
     this.surfaceGeodata_ = null;
 
-    this.updateBounds_ = true;
-    this.transparentBounds_ = false;
     this.boundLayers_ = {};
     this.boundTextures_ = {};
+    this.boundAlpha_ = {};
     this.boundSequence_ = [];
+    this.updateBounds_ = true;
+    this.transparentBounds_ = false;
 
     this.virtual_ = false;
     this.virtualReady_ = false;
     this.virtualSurfaces_ = [];
 
+    this.renderReady_ = false;
+    this.lastSurface_ = null;
+    this.lastState_ = null;
+        
     this.heightMap_ = null;
 
     this.verifyChildren_ = false;
@@ -114,10 +121,12 @@ Melown.MapTile.prototype.viewSwitched = function() {
     
     //zero surface related data    
     this.verifyChildren_ = true;
+    this.renderReady_ = false;
     this.metanode_ = null;
 
     this.boundLayers_ = {};
     this.boundTextures_ = {};
+    this.boundAlpha_ = {};
     this.boundSequence_ = [];
     this.updateBounds_ = true;
     this.transparentBounds_ = false;

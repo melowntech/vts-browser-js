@@ -17,7 +17,7 @@ Melown.MapMetanodeTracer.prototype.trace = function(tile_, params_) {
     this.traceTile(this.surfaceTree_);
 };
 
-Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
+Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, reducedProcessing_) {
     if (tile_ == null) {
         return;
     }
@@ -106,8 +106,10 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
     //if (tile_.id_[0] == 17) {
         //tile_ = tile_;
     //}
+    
+    var res_ = this.nodeProcessingFunction_(tile_, this.params_, reducedProcessing_); 
 
-    if (this.nodeProcessingFunction_(tile_, this.params_) == true) {
+    if (res_[0] == true) {
 
         if (this.params_ && this.params_.traceHeight_) {
             var coords_ = this.params_.coords_;
@@ -164,7 +166,7 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_) {
         } else {
             //trace children
             for (var i = 0; i < 4; i++) {
-                this.traceTile(tile_.children_[i]);
+                this.traceTile(tile_.children_[i], res_[1]);
             }
         }
     }

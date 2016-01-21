@@ -86,8 +86,8 @@ Melown.MapInterface.prototype.convertPositionViewMode = function(position_, mode
     return (pos_ != null) ? pos_.pos_ : pos_;
 };
 
-Melown.MapInterface.prototype.convertPositionHeightMode = function(position_, mode_) {
-    var pos_ = (new Melown.MapPosition(this.map_, position_)).convertHeightMode(mode_);
+Melown.MapInterface.prototype.convertPositionHeightMode = function(position_, mode_, noPrecisionCheck_) {
+    var pos_ = (new Melown.MapPosition(this.map_, position_)).convertHeightMode(mode_, noPrecisionCheck_);
     return (pos_ != null) ? pos_.pos_ : pos_;
 };
 
