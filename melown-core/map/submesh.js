@@ -18,6 +18,7 @@ Melown.MapSubmesh = function(mesh_, stream_) {
     this.internalUVs_ = null;
     this.externalUVs_ = null;
     this.undulationDeltas_ = null;
+    this.mesh_ = mesh_;
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
@@ -64,7 +65,8 @@ struct MapSubmeshHeader {
                                    // bit 1 - contains external texture coords
                                    // bit 2 - contains per vertex undulation
                                    // bit 3 - texture mode (0 - internal, 1 - external)
-
+    
+    uchar surfaceReference;        // reference to the surface of origin, see bellow
     ushort textureLayer;           // applicable if texture mode is external: texture layer numeric id
     double boundingBox[2][3];      // read more about bounding box bellow
 };
@@ -73,6 +75,12 @@ struct MapSubmeshHeader {
     var streamData_ = stream_.data_;
 
     this.flags_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+
+    if (this.mesh_.version_ > 1) {
+        this.surfaceReference_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+    } else {
+        this.surfaceReference_ = 0;
+    }
 
     this.textureLayer_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
 

@@ -3,6 +3,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
     var result_ = this.getSpatialDivisionNode(coords_);
     var node_ = result_[0];
     var nodeCoords_ = result_[1];
+    lod_ = Math.floor(lod_); //hack to achive better comatibility
 
     if (node_ != null && lod_ !== null) {
 
@@ -30,7 +31,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
                 var metanode_ = params_.metanode_;
 
                 if (params_.heightMap_ != null) {
-                    /*
+                    
                     var data_ = heightMap_.imageData_;
                     var dataExtents_ = heightMap_.imageExtents_;
                     var mapExtents_ = params_.heightMapExtents_;
@@ -60,8 +61,12 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
                     var height_ = (w0_ + (w1_ - w0_)*fy_);
 
                     height_ = metanode_.minHeight_ + (metanode_.maxHeight_ - metanode_.minHeight_) * (height_/255);
-                    */
+
+                    //console.log("lod: " + lod_ + " h: " + height_);  
+
+                    return [height_, metanode_.id_[0] >= Math.floor(lod_), true];
                    
+                    /*
                     if (metanode_.id_[0] > 0 && params_.parent_ && params_.parent_ && params_.parent_.heightMap_) {
                         var height1_ = this.getHeightmapValue(nodeCoords_, params_.parent_.metanode_, params_.parent_);  
                         var height2_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
@@ -72,11 +77,15 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
                     } else {
                         var height_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
                     }
-
                     return [height_, metanode_.id_[0] >= Math.ceil(lod_), true];
+                    */
+
                 } else if (metanode_ != null && metanode_.id_[0] == lod_ && !metanode_.hasNavtile()){
                     var center_ = metanode_.bbox_.center();
                     center_ = this.convertCoords(center_, "physical", "navigation");
+
+                    //console.log("lod2: " + lod_ + " h: " + center_[2]);  
+
                     return [center_[2], true, true];
                 }
 
@@ -92,6 +101,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_) {
     }
 
     //coords_
+    //console.log("lod3: " + lod_ + " h: 0");  
 
     return [0, false, false];
 };

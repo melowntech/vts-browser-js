@@ -15,6 +15,7 @@ Melown.Core.prototype.initConfig = function() {
         mapMobileMode_ : false,
         mapMobileTexelDegradation_ : 2,
         mapNavSamplesPerViewExtent_ : 4,
+        mapFog_ : false,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false
     };

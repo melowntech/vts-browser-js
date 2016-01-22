@@ -16,7 +16,8 @@ Melown.Inspector = function(core_) {
     document.addEventListener("keyup", this.onKeyUp.bind(this), false);
     document.addEventListener("keypress", this.onKeyPress.bind(this), false);
     document.addEventListener("keydown", this.onKeyDown.bind(this), false);
-
+    
+    this.debugValue_ = 0.1;
 };
 
 Melown.Inspector.prototype.addStyle = function(string_) {

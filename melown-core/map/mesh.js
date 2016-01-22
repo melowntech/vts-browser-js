@@ -165,9 +165,9 @@ Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
         return;
     }
 
-    var version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
 
-    if (version_ > 1) {
+    if (this.version_ > 2) {
         return;
     }
 
@@ -235,6 +235,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
 
                 switch(type_) {
                     case "internal":
+                    case "internal-nofog":
                         program_ = renderer_.progWireframeTile_;
                         texcoordsAttr_ = "aTexCoord";
                         break;
@@ -254,6 +255,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     } else {
         switch(type_) {
             case "internal":
+            case "internal-nofog":
                 program_ = renderer_.progTile_;
                 texcoordsAttr_ = "aTexCoord";
                 break;
@@ -286,14 +288,18 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
                 renderer_.fogSetup(program_, "uFogDensity");
                 break;
 
+            case "internal-nofog":
+                program_.setFloat("uFogDensity", 0);
+                break;
+
             case "external":
                 program_.setFloat("uAlpha", 1);
-                program_.setFloat("uFogDensity", 0);
+                renderer_.fogSetup(program_, "uFogDensity");
                 break;
 
             case "external-nofog":
                 program_.setFloat("uAlpha", alpha_);
-                renderer_.fogSetup(program_, "uFogDensity");
+                program_.setFloat("uFogDensity", 0);
                 break;
         }
     }

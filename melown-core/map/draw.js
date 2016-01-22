@@ -57,19 +57,19 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
                             //search map view
                             if (tile_.surface_.boundLayerSequence_.length > 0) {
-                                for (var i = 0, li = tile_.surface_.boundLayerSequence_.length; i < li; i++) {
-                                    var layer_ = tile_.surface_.boundLayerSequence_[i][0];
-                                    if (layer_ && layer_.hasTile(tile_.id_) && tile_.surface_.boundLayerSequence_[i][1] > 0) {
+                                for (var j = 0, lj = tile_.surface_.boundLayerSequence_.length; j < lj; j++) {
+                                    var layer_ = tile_.surface_.boundLayerSequence_[j][0];
+                                    if (layer_ && layer_.hasTile(tile_.id_) && tile_.surface_.boundLayerSequence_[j][1] > 0) {
                                         tile_.boundSequence_.push(layer_.id_);
                                         tile_.boundLayers_[layer_.id_] = layer_;
-                                        tile_.boundAlpha_[layer_.id_] = tile_.surface_.boundLayerSequence_[i][1];
+                                        tile_.boundAlpha_[layer_.id_] = tile_.surface_.boundLayerSequence_[j];
                                         if (!tile_.boundTextures_[layer_.id_]) {
                                             var path_ = layer_.getUrl(tile_.id_);
                                             if (!tile_.boundTextures_[layer_.id_]) {
                                                 tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
                                             }
                                         }
-                                        if (tile_.boundAlpha_[layer_.id_] < 1.0) {
+                                        if (tile_.boundAlpha_[layer_.id_][1] < 1.0) {
                                             tile_.transparentBounds_ = true;
                                         }
                                     }
@@ -122,7 +122,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                                 }
                                     
                                                 //draw mesh
-                                                tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, tile_.surfaceTextures_[i], "internal");
+                                                tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, tile_.surfaceTextures_[i], "internal-nofog");
                                             }
                                         }
                                     }
@@ -144,7 +144,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                             }
                                             
                                             //draw mesh
-                                            tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, texture_, "external-nofog", tile_.boundAlpha_[layers_[j]]);
+                                            tile_.surfaceMesh_.drawSubmesh(cameraPos_, i, texture_, "external-nofog", tile_.boundAlpha_[layers_[j]][1]);
                                         }
                                     }
                                 }

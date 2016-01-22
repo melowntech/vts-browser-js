@@ -378,6 +378,7 @@ Melown.tile2FragmentShader = "precision mediump float;\n"+
     "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
     "void main() {\n"+
         "gl_FragColor = mix(fogColor, texture2D(uSampler, vTexCoord), vFogFactor);\n"+
+        //"gl_FragColor = texture2D(uSampler, vTexCoord);\n"+
         "gl_FragColor[3] = uAlpha;\n"+
     "}";
 
@@ -398,7 +399,7 @@ Melown.fogTileFragmentShader = "precision mediump float;\n"+
     "varying float vFogFactor;\n"+
     "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
     "void main() {\n"+
-        "gl_FragColor = vec4(fogColor.xyz, vFogFactor);\n"+
+        "gl_FragColor = vec4(fogColor.xyz, 1.0-vFogFactor);\n"+
     "}";
 
 

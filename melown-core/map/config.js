@@ -104,6 +104,7 @@ Melown.Map.prototype.parseViews = function() {
     }
 
     //view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn2015" : [], "jenstejn" : [] }; 
+    //view_["surfaces"] = { "jenstejn-hf" : [{"id":"mapycz-basic"}], "jenstejn2015" : [], "jenstejn" : [] }; 
 
     //view_["surfaces"] = ["jenstejn-hf", "jenstejn2015", "jenstejn"]; 
     //view_["surfaces"] = ["jenstejn-hf", "jenstejn2015"]; 

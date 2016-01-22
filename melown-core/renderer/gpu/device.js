@@ -163,7 +163,7 @@ Melown.GpuDevice.prototype.createState = function(state_) {
     if (state_.zoffset_ == null) { state_.zoffset_ = 0; }
     if (state_.zwrite_ == null) { state_.zwrite_ = true; }
     if (state_.ztest_ == null) { state_.ztest_ = true; }
-    if (state_.zequal_ == null) { state_.zequal_ = true; }
+    if (state_.zequal_ == null) { state_.zequal_ = false; }
     if (state_.culling_ == null) { state_.culling_ = true; }
 
     return state_;
@@ -232,9 +232,9 @@ Melown.GpuDevice.prototype.setState = function(state_, directOffset_) {
 
     if (currentState_.zequal_ != state_.zequal_) {
         if (state_.zequal_ != 0) {
-            gl_.depthFunc(gl.LEQUAL);
+            gl_.depthFunc(gl_.LEQUAL);
         } else {
-            gl_.depthFunc(gl.LESS);
+            gl_.depthFunc(gl_.LESS);
         }
     }
 

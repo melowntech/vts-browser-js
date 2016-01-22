@@ -83,7 +83,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawTextureSize_ = false;
     this.drawLayers_ = true;
     this.ignoreTexelSize_ = false;
-    this.drawFog_ = true;
+    this.drawFog_ = this.config_.mapFog_;
     this.debugTextSize_ = 1.0;
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
@@ -183,6 +183,7 @@ Melown.Map.prototype.getVisibleCredits = function() {
 
 Melown.Map.prototype.addSurface = function(id_, surface_) {
     this.surfaces_.push(surface_);
+    surface_.index_ = this.surfaces_.length - 1; 
 };
 
 Melown.Map.prototype.getSurface = function(id_) {
@@ -386,6 +387,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapMobileMode":                 this.config_.mapMobileMode_ = Melown.validateBool(value_, false); break;
         case "mapMobileTexelDegradation":     this.config_.mapMobileTexelDegradation_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
         case "mapNavSamplesPerViewExtent":    this.config_.mapNavSamplesPerViewExtent_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 10); break;
+        case "mapFog":                        this.config_.mapFog_ = Melown.validateBool(value_, false); break;
     }
 };
 
@@ -404,6 +406,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapMobileMode":                 return this.config_.mapMobileMode_;
         case "mapMobileTexelDegradation":     return this.config_.mapMobileTexelDegradation_;
         case "mapNavSamplesPerViewExtent":    return this.config_.mapNavSamplesPerViewExtent_;
+        case "mapFog":                        return this.config_.mapFog_;
     }
 };
 
@@ -421,6 +424,7 @@ Melown.Map.prototype.drawMap = function() {
 
     this.updateCamera();
     this.renderer_.dirty_ = true;
+    this.renderer_.drawFog_ = this.drawFog_;
 
     //this.cameraPosition_ = this.renderer_.cameraPosition();
 

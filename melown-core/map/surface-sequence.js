@@ -11,6 +11,24 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
     for (var key_ in view_.surfaces_) {
         surfaces_.push(key_);
     }
+
+    //sort surface by index
+    do {
+        var sorted_ = true;
+        
+        for (var i = 0, li = surfaces_.length - 1; i < li; i++) {
+            var s1_ = this.getSurface(surfaces_[i]);
+            var s2_ = this.getSurface(surfaces_[i+1]);
+            
+            if (s2_.index_ < s1_.index_) {
+                var t = surfaces_[i];
+                surfaces_[i] = surfaces_[i+1];
+                surfaces_[i+1] = t;
+                sorted_ = false;
+            } 
+        }
+        
+    } while(!sorted_);
    
     var list_ = [];
     var maxShift_ = surfaces_.length;

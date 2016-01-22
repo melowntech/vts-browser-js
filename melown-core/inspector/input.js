@@ -201,14 +201,18 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         var view_ = map_.getView();
                         
                         view_["surfaces"] = {
-                            "jenstejn-hf" : [
-                            {"id":"mapycz-pp"},
+                            "jenstejn-hf" : [],
+                            //{"id":"mapycz-pp"},
                             //{"id":"mapycz-orto06"}//,
-                            {"id":"mapycz-orto03", "alpha":1}
-                            ],
-                            "jenstejn2015" : [],
+                            //{"id":"mapycz-orto03", "alpha": this.debugValue_}
+                            //{"id":"mapycz-basic", "alpha": this.debugValue_}
+                            //],
+                            //"jenstejn2015" : []//,
                             "jenstejn" : []
                         }; 
+                        
+                        this.debugValue_ += 0.1;
+                        this.debugValue_ %= 1;
 
                         /*view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [] };*/ 
 

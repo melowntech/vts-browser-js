@@ -135,7 +135,7 @@ Melown.Map.prototype.updateCamera = function() {
 */
         this.camera_.setPosition(orbitPos_);
         this.camera_.setRotationMatrix(rotationMatrix_);
-        this.renderer_.cameraDistance_ = this.cameraDistance_;
+        this.renderer_.cameraDistance_ = this.cameraDistance_; //needed for fog
         
 
     } else { //geographics
@@ -260,7 +260,7 @@ Melown.Map.prototype.updateCamera = function() {
 
         this.camera_.setPosition(orbitPos_);
         this.camera_.setRotationMatrix(rotationMatrix_);
-        this.renderer_.cameraDistance_ = this.cameraDistance_;
+        this.renderer_.cameraDistance_ = this.cameraDistance_; //needed for fog
         
        // this.position_.setCoords([0,90,0]);
         this.position_.setHeight(0);
