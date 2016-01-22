@@ -200,6 +200,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         //map_.camera_.setParams(map_.camera_.getFov(), 2000, 200000000);
                         var view_ = map_.getView();
                         
+                        /*
                         view_["surfaces"] = {
                             "jenstejn-hf" : [],
                             //{"id":"mapycz-pp"},
@@ -209,14 +210,16 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                             //],
                             //"jenstejn2015" : []//,
                             "jenstejn" : []
-                        }; 
+                        };*/ 
                         
                         this.debugValue_ += 0.1;
                         this.debugValue_ %= 1;
 
                         /*view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [] };*/ 
 
+                        map_.hackBounds_ = 121;
                         map_.setView(view_);
+                        
                         
                         break; //key V pressed
 
