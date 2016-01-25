@@ -83,6 +83,7 @@ struct MapSubmeshHeader {
     }
 
     this.textureLayer_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    this.textureLayer2_ = this.textureLayer_; //hack for presentation
 
     var bboxMin_ = this.bbox_.min_;
     var bboxMax_ = this.bbox_.max_;

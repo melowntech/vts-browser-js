@@ -260,13 +260,13 @@ Melown.Map.prototype.getNamedViews = function() {
     return this.getMapKeys(this.namedViews_);
 };
 
-Melown.Map.prototype.setView = function(view_) {
+Melown.Map.prototype.setView = function(view_, forceRefresh_) {
     if (view_ == null) {
         return;
     }
 
     var string_ = JSON.stringify(view_);
-    if (string_ != this.currentViewString_) {
+    if (string_ != this.currentViewString_ || forceRefresh_) {
         this.currentView_.parse(view_);
         this.currentViewString_ = string_;
         this.freeLayers_ = this.currentView_.freeLayers_;

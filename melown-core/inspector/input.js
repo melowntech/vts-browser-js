@@ -217,8 +217,18 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                         /*view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [] };*/ 
 
-                        map_.hackBounds_ = 121;
-                        map_.setView(view_);
+                        if (map_.hackBounds_ && map_.hackBounds2_) {
+                            map_.hackBounds_ = 120;
+                            map_.hackBounds2_ = null;
+                        } else {
+                            if (map_.hackBounds_ != 121) {
+                                map_.hackBounds_ = 121;
+                            } else {
+                                map_.hackBounds2_ = 122;
+                            }
+                        }
+                        
+                        map_.setView(view_, true);
                         
                         
                         break; //key V pressed

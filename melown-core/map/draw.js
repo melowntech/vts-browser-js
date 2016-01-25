@@ -41,9 +41,26 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                 this.stats_.drawnTiles_++;
                 var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
-                for (var i = 0, li = submeshes_.length; i < li; i++) {
 
+                //hack for presentation
+                for (var i = 0, li = submeshes_.length; i < li; i++) {
                     var submesh_ = submeshes_[i];
+                    
+                    if (!submesh_.textureLayer2_) {
+                        submesh_.textureLayer_ = this.hackBounds2_; 
+                    } else {
+                        if (this.hackBounds_ != null) { // && submesh_.textureLayer2_) {
+                            submesh_.textureLayer_ = this.hackBounds_;
+                        }
+                    }
+                }
+
+                for (var i = 0, li = submeshes_.length; i < li; i++) {
+                    var submesh_ = submeshes_[i];
+                    
+                    if (tile_.surface_.glue_ && tile_.updateBounds_) {
+                        tile_ = tile_;
+                    }
 
                     //debug bbox
                     if (this.drawBBoxes_ && this.drawMeshBBox_ && !reducedProcessing_) {
@@ -89,12 +106,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                             } else { //search submeshes
                                 for (var j = 0; j < li; j++) {
                                     if (submeshes_[j].textureLayer_ != 0) {
-                                        
-                                        if (this.hackBounds_ != null) {
-                                            var layer_ = this.getBoundLayerByNumber(this.hackBounds_);
-                                        } else {
-                                            var layer_ = this.getBoundLayerByNumber(submeshes_[j].textureLayer_);
-                                        }
+                                        var layer_ = this.getBoundLayerByNumber(submeshes_[j].textureLayer_);
 
                                         if (layer_ && layer_.hasTile(tile_.id_)) {
                                             //submeshes_[j].textureLayerId_ = tile_.id_;
@@ -178,11 +190,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                         } else {
                             if (submesh_.textureLayer_) {
                                 
-                                if (this.hackBounds_ != null) {
-                                    var texture_ = tile_.boundTextures_[this.hackBounds_];
-                                } else {
-                                    var texture_ = tile_.boundTextures_[submesh_.textureLayer_];
-                                }
+                                var texture_ = tile_.boundTextures_[submesh_.textureLayer_];
                                 
                                 if (texture_ && texture_.isReady() == true && !reducedProcessing_) {
 
@@ -195,7 +203,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                             this.visibleCredits_.imagery_[credits_[k]] = true;  
                                         }
                                     } else {
-                                        debugger;
+                                        //debugger;
                                     }
 
                                     
