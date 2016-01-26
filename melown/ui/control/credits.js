@@ -32,7 +32,7 @@ Melown.UIControlCredits.prototype.getCreditsString = function(array_) {
         }
 
         if (i + 1 < li) {
-            html_ += ",";        
+            html_ += ", ";        
         }
     }
     
