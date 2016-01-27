@@ -28,6 +28,8 @@ Melown.Map.prototype.updateCamera = function() {
         var lod_ =  this.getOptimalHeightLod(this.position_.getCoords(), this.position_.getViewExtent(), this.config_.mapNavSamplesPerViewExtent_);
         var surfaceHeight_ = this.getSurfaceHeight(this.position_.getCoords(), lod_);
         height_ += surfaceHeight_[0];
+        
+        console.log("terrain height:" + surfaceHeight_[0] + "  pos height:" + this.position_.getHeight());
     }
 
     if (this.position_.getViewMode() == "obj") {

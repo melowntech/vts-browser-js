@@ -6,6 +6,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.id_ = id_;
     this.parent_ = parent_;
     this.viewCoutner_ = map_.viewCounter_;
+    this.renderCounter_ = 0;
     this.renderReady_ = false;
 
     this.metanode_ = null;  //[metanode, cacheItem]

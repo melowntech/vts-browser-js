@@ -106,12 +106,10 @@ Melown.Map.prototype.parseViews = function() {
     //view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn2015" : [], "jenstejn" : [] }; 
     //view_["surfaces"] = { "jenstejn-hf" : [{"id":"mapycz-basic"}], "jenstejn2015" : [], "jenstejn" : [] }; 
 
-    //view_["surfaces"] = ["jenstejn-hf", "jenstejn2015", "jenstejn"]; 
-    //view_["surfaces"] = ["jenstejn-hf", "jenstejn2015"]; 
-    //view_["surfaces"] = ["jenstejn-hf", "jenstejn"]; 
-    //view_["surfaces"] = ["jenstejn-hf"]; 
-    //view_["surfaces"] = ["jenstejn2015"]; 
-    //view_["surfaces"] = ["jenstejn"]; 
+//    view_["surfaces"] = { "ev" : ["mapycz", {"id": "katastr", "alpha": 0.95}] }; 
+//    view_["surfaces"] = { "ev" : ["mapycz"] }; 
+
+//    view_["surfaces"] = { "ev" : [] }; 
 
     this.initialView_ = JSON.parse(JSON.stringify(view_));//new Melown.MapView(this, view_);
     //this.currentView_ = null;

@@ -199,24 +199,34 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                         //map_.camera_.setParams(map_.camera_.getFov(), 2000, 200000000);
                         var view_ = map_.getView();
-                        
-                        /*
-                        view_["surfaces"] = {
-                            "jenstejn-hf" : [],
-                            //{"id":"mapycz-pp"},
-                            //{"id":"mapycz-orto06"}//,
-                            //{"id":"mapycz-orto03", "alpha": this.debugValue_}
-                            //{"id":"mapycz-basic", "alpha": this.debugValue_}
-                            //],
-                            //"jenstejn2015" : []//,
-                            "jenstejn" : []
-                        };*/ 
-                        
+ 
+/*                        
                         this.debugValue_ += 0.1;
                         this.debugValue_ %= 1;
+*/                        
+/*
+                        switch(this.debugValue_) {
+                            case 0: view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [] }; break; 
+                            case 1: view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn2015" : [] }; break; 
+                            case 2: view_["surfaces"] = { "jenstejn-hf" : [] }; break; 
+                            case 3: view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [], "jenstejn2015" : [] }; break; 
+                        };
+                        
+                        this.debugValue_++;
+                        this.debugValue_%=4;
+*/
 
+                        switch(this.debugValue_) {
+                            case 0: view_["surfaces"] = { "ev" : ["mapycz", {"id": "katastr", "alpha": 0.95}] };  break; 
+                            case 1: view_["surfaces"] = { "ev" : ["mapycz"] };  break; 
+                        };
+                        
+                        this.debugValue_++;
+                        this.debugValue_%=2;
+                        
                         /*view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [] };*/ 
 
+                        /*
                         if (map_.hackBounds_ && map_.hackBounds2_) {
                             map_.hackBounds_ = 120;
                             map_.hackBounds2_ = null;
@@ -227,6 +237,9 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                                 map_.hackBounds2_ = 122;
                             }
                         }
+                        */
+                       //map_.hackBounds2_ = 122;
+
                         
                         map_.setView(view_, true);
                         

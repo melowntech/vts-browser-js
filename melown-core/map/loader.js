@@ -43,8 +43,11 @@ Melown.MapLoader.prototype.load = function(path_, downloadFunction_) {
 
 
 Melown.MapLoader.prototype.update = function() {
-    if (this.pending_.length > 0) {
-        if (this.usedThreads_ < this.numThreads_) {
+    //if (this.pending_.length > 0) {
+        //if (this.usedThreads_ < this.numThreads_) {
+        while (this.pending_.length > 0 && this.usedThreads_ < this.numThreads_) {
+
+            //console.log("used: " + this.usedThreads_ + " pending:" + this.pendingPath_.length + " max:" + this.numThreads_);
 
             var downloadFunction_ = this.pending_.shift();
             var path_ = this.pendingPath_.shift();
@@ -80,5 +83,5 @@ Melown.MapLoader.prototype.update = function() {
                 downloadFunction_(path_, onLoaded_, onError_);
             }
         }
-    }
+    //}
 };
