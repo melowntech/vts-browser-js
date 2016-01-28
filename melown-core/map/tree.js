@@ -19,7 +19,7 @@ Melown.MapTree = function(map_, divisionNode_, freeLayer_) {
 
     if (freeLayer_ != true) {
         this.heightTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceSurfaceTileHeight.bind(this));
-        this.heightTracer2_ = new Melown.MapMetanodeTracer(this, null, this.traceSurfaceTileHeight2.bind(this));
+        this.heightTracerNodeOnly_ = new Melown.MapMetanodeTracer(this, null, this.traceSurfaceTileHeightNodeOnly.bind(this));
     }
 
     this.config_ = this.map_.config_;
@@ -308,7 +308,7 @@ Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_, reduc
     return [false, reducedProcessing_];
 };
 
-Melown.MapTree.prototype.traceSurfaceTileHeight2 = function(tile_, params_, reducedProcessing_) {
+Melown.MapTree.prototype.traceSurfaceTileHeightNodeOnly = function(tile_, params_, reducedProcessing_) {
     if (tile_ == null || tile_.id_[0] > params_.desiredLod_) {
         return [false, reducedProcessing_];
     }

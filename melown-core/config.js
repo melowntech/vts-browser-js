@@ -15,13 +15,14 @@ Melown.Core.prototype.initConfig = function() {
         mapMobileMode_ : false,
         mapMobileTexelDegradation_ : 2,
         mapNavSamplesPerViewExtent_ : 4,
+        mapIgnoreNavtiles_ : false,
         mapFog_ : false,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false
     };
 };
 
-Melown.Core.prototype.setConfigParams = function(params_) {
+Melown.Core.prototype.setConfigParams = function(params_, onlyMapRelated_) {
     if (typeof params_ === "object" && params_ !== null) {
         for (var key_ in params_) {
             this.setConfigParam(key_, params_[key_]);
@@ -33,8 +34,11 @@ Melown.Core.prototype.setConfigParam = function(key_, value_) {
     if (key_ == "map") {
         this.config_.map_ = Melown.validateString(value_, null);
     } else {
-        if (key_.indexOf("map") == 0 && this.getMap() != null) {
-            this.getMap().setConfigParam(key_, value_);
+        if (key_.indexOf("map") == 0) {
+            this.configStorage_[key_] = value_;
+            if (this.getMap() != null) {
+                this.getMap().setConfigParam(key_, value_);
+            }
         }
 
         if (key_.indexOf("renderer") == 0) {

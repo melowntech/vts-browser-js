@@ -3,6 +3,7 @@
  */
 Melown.Core = function(element_, config_, interface_) {
     this.initConfig();
+    this.configStorage_ = {}; 
     this.setConfigParams(config_);
     this.element_ = element_;
     this.interface_ = interface_;
@@ -43,6 +44,7 @@ Melown.Core.prototype.loadMap = function(path_) {
     var onLoaded_ = (function(data_) {
         this.map_ = new Melown.Map(this, data_, path_, this.config_);
         this.mapInterface_ = new Melown.MapInterface(this.map_);
+        this.setConfigParams(this.configStorage_);
         this.callListener("map-loaded", {});
     }).bind(this);
 
