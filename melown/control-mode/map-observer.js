@@ -13,6 +13,9 @@ Melown.ControlMode.MapObserver = function(browser_) {
     this["wheel"] = this.wheel;
     this["tick"] = this.tick;
     this["reset"] = this.reset;
+    this["keyup"] = this.keyup;
+    this["keydown"] = this.keydown;
+    this["keypress"] = this.keypress;
 };
 
 Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
@@ -25,8 +28,14 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     var coords_ = map_.getPositionCoords(pos_);
     var delta_ = event_.getDragDelta();
     var azimuthDistance_ = this.getAzimuthAndDistance(delta_[0], delta_[1]);
+    
+    var modifierKey_ = (this.browser_.controlMode_.altKey_
+               || this.browser_.controlMode_.shiftKey_
+               || this.browser_.controlMode_.ctrlKey_);
 
-    if (event_.getDragButton("left") && this.config_.panAllowed_) { //pan
+    if ((event_.getDragButton("left") && !modifierKey_)
+        && this.config_.panAllowed_) { //pan
+            
         if (map_.getPositionHeightMode(pos_) == "fix") {
             var pos2_ = map_.convertPositionHeightMode(pos_, "float", true);
             if (pos2_ != null) {
@@ -40,14 +49,11 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
                             coords_[0], coords_[1]];
             
             this.coordsDeltas_.push(forward_);
-            //this.coordsDeltas_[0] = forward_;
-            //console.log("pan: " + JSON.stringify(azimuthDistance_));
         }
-    } else if (event_.getDragButton("right") && this.config_.rotationAllowed_) { //rotate
+    } else if ((event_.getDragButton("right") || modifierKey_) 
+               && this.config_.rotationAllowed_) { //rotate
+                   
         var sensitivity_ = 0.4;
-        //pos_[5] -= delta_[0] * sensitivity_;
-        //pos_[6] -= delta_[1] * sensitivity_;
-
         this.orientationDeltas_.push([-delta_[0] * sensitivity_,
                                       -delta_[1] * sensitivity_, 0]);
     }
@@ -63,13 +69,18 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
 
     var pos_ = map_.getPosition();
     var delta_ = event_.getWheelDelta();
-
     var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
-    //pos_[8] *= factor_;
-
-    //map_.setPosition(pos_);
     
     this.viewExtentDeltas_.push(factor_);
+};
+
+Melown.ControlMode.MapObserver.prototype.keyup = function(event_) {
+};
+
+Melown.ControlMode.MapObserver.prototype.keydown = function(event_) {
+};
+
+Melown.ControlMode.MapObserver.prototype.keypress = function(event_) {
 };
 
 Melown.ControlMode.MapObserver.prototype.isNavigationSRSProjected = function() {
@@ -104,7 +115,7 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
 
     var pos_ = map_.getPosition();
     var update_ = false;
-    var inertia_ = [0.8, 0.8, 0.8]; 
+    var inertia_ = [0.8, 0.8, 0.7]; 
     //var inertia_ = [0.95, 0.8, 0.8]; 
     //var inertia_ = [0, 0, 0]; 
 

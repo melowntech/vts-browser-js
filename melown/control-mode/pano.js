@@ -17,6 +17,9 @@ Melown.ControlMode.Pano = function(browser_) {
     this["wheel"] = this.wheel;
     this["tick"] = this.tick;
     this["reset"] = this.reset;
+    this["keyup"] = this.keyup;
+    this["keydown"] = this.keydown;
+    this["keypress"] = this.keypress;
 };
 
 Melown.ControlMode.Pano.prototype.drag = function(event_) {
@@ -60,6 +63,15 @@ Melown.ControlMode.Pano.prototype.wheel = function(event_) {
     pos_[9] = Melown.clamp(pos_[9] + factor_, 1, 179);
 
     map_.setPosition(pos_);
+};
+
+Melown.ControlMode.Pano.prototype.keyup = function(event_) {
+};
+
+Melown.ControlMode.Pano.prototype.keydown = function(event_) {
+};
+
+Melown.ControlMode.Pano.prototype.keypress = function(event_) {
 };
 
 Melown.ControlMode.Pano.prototype.tick = function(event_) {

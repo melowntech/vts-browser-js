@@ -8,7 +8,6 @@ Melown.UIEvent = function(type_, element_, event_) {
 };
 
 Melown.UIEvent.prototype.getMouseButton = function() {
-
     switch(this.event_.which) {
         case 1: return "left";
         case 2: return "middle";
@@ -51,6 +50,42 @@ Melown.UIEvent.prototype.getDragDelta = function() {
     }
 
     return [0,0];
+};
+
+Melown.UIEvent.prototype.getModifierKey = function(key_) {
+    switch (this.type_) {
+        case "mouseup":
+        case "mousedown":
+        case "keyup":
+        case "keydown":
+        case "keypress":
+
+            switch(key_) {
+                case "alt":   return this.event_.altKey;
+                case "ctrl":  return this.event_.ctrlKey;
+                case "shift": return this.event_.shiftKey;
+            }
+    }
+
+    return false;
+};
+
+Melown.UIEvent.prototype.getKeyCode = function(key_) {
+    switch (this.type_) {
+        case "keyup":
+        case "keydown":
+        case "keypress":
+        
+            if (this.event_.keyCode) {         // eg. IE
+                return this.event_.keyCode;
+            } else if (this.event_.which) {   // eg. Firefox
+                return this.event_.which;
+            } else {
+                return this.event_.charCode;
+            }
+    }
+    
+    return null;
 };
 
 Melown.UIEvent.prototype.getDragButton = function(button_) {
