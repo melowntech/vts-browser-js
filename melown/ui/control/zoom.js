@@ -27,11 +27,11 @@ Melown.UIControlZoom = function(ui_, visible_) {
 };
 
 Melown.UIControlZoom.prototype.onZoomIn = function() {
-    this.repeat(7, 0.9, 60);
+    this.repeat(7, 0.96, 50);
 };
 
 Melown.UIControlZoom.prototype.onZoomOut = function() {
-    this.repeat(7, 1.1, 60);
+    this.repeat(7, 1.04, 50);
 };
 
 Melown.UIControlZoom.prototype.repeat = function(count_, factor_, delay_) {
@@ -44,10 +44,16 @@ Melown.UIControlZoom.prototype.repeat = function(count_, factor_, delay_) {
         return;
     }
 
-    var pos_ = map_.getPosition();
-    pos_[7] *= factor_;
+    //var pos_ = map_.getPosition();
+    //pos_[8] *= factor_;
+    //map_.setPosition(pos_);
+    
+    var controller_ = this.browser_.controlMode_.getCurrentController();
+    
+    if (controller_.viewExtentDeltas_) {
+        controller_.viewExtentDeltas_.push(factor_);
+    }
 
-    map_.setPosition(pos_);
     setTimeout(this.repeat.bind(this, --count_, factor_, delay_), delay_);
 };
 

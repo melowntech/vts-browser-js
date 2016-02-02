@@ -40,6 +40,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
             var pos2_ = map_.convertPositionHeightMode(pos_, "float", true);
             if (pos2_ != null) {
                 pos_ = pos2_;
+                map_.setPosition(pos_);
             }
         } else {
             var azimuth_ = Melown.radians(azimuthDistance_[0]);
@@ -49,6 +50,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
                             coords_[0], coords_[1]];
             
             this.coordsDeltas_.push(forward_);
+            this.reduceFloatingHeight(0.9);
         }
     } else if ((event_.getDragButton("right") || modifierKey_) 
                && this.config_.rotationAllowed_) { //rotate
@@ -57,8 +59,6 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
         this.orientationDeltas_.push([-delta_[0] * sensitivity_,
                                       -delta_[1] * sensitivity_, 0]);
     }
-
-    map_.setPosition(pos_);
 };
 
 Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
@@ -72,6 +72,7 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
     
     this.viewExtentDeltas_.push(factor_);
+    this.reduceFloatingHeight(0.8);
 };
 
 Melown.ControlMode.MapObserver.prototype.keyup = function(event_) {
@@ -81,6 +82,25 @@ Melown.ControlMode.MapObserver.prototype.keydown = function(event_) {
 };
 
 Melown.ControlMode.MapObserver.prototype.keypress = function(event_) {
+};
+
+Melown.ControlMode.MapObserver.prototype.reduceFloatingHeight = function(factor_) {
+    var map_ = this.browser_.getCore().getMap();
+    var pos_ = map_.getPosition();
+    var coords_ = map_.getPositionCoords(pos_);
+    
+    if (map_.getPositionHeightMode(pos_) == "float") {
+        if (coords_[2] != 0) {
+            coords_[2] *= factor_;
+
+            if (Math.abs(coords_[2]) < 0.1) {
+                coords_[2] = 0;
+            }
+
+            pos_ = map_.setPositionCoords(pos_, coords_);
+            map_.setPosition(pos_);
+        }
+    }
 };
 
 Melown.ControlMode.MapObserver.prototype.isNavigationSRSProjected = function() {

@@ -31,6 +31,8 @@ Melown.Browser.prototype.updateUI = function(key_) {
 
 Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
     switch (key_) {
+        case "pos":                
+        case "position":           this.config_.position_ = value_;                                           break;
         case "panAllowed":         this.config_.panAllowed_ = Melown.Utils.validateBool(value_, true);        break;
         case "rotationAllowed":    this.config_.rotationAllowed_ = Melown.Utils.validateBool(value_, true);   break;
         case "zoomAllowed":        this.config_.zoomAllowed_ = Melown.Utils.validateBool(value_, true);       break;
@@ -43,7 +45,7 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
     }
 
     if (ignoreCore_ == true) {
-        if (key_.indexOf("map") == 0) {
+        if (key_.indexOf("map") == 0 && this.core_.getMap()) {
             this.core_.getMap().setConfigParam(key_, value_);
         }
 
@@ -55,6 +57,7 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
 
 Melown.Browser.prototype.getConfigParam = function(key_) {
     switch (key_) {
+        case "position":           return this.config_.panAllowed_;
         case "panAllowed":         return this.config_.panAllowed_;
         case "rotationAllowed":    return this.config_.rotationAllowed_;
         case "zoomAllowed":        return this.config_.zoomAllowed_;
@@ -67,7 +70,7 @@ Melown.Browser.prototype.getConfigParam = function(key_) {
     }
 
     if (ignoreCore_ == true) {
-        if (key_.indexOf("map") == 0) {
+        if (key_.indexOf("map") == 0 && this.core_.getMap()) {
             return this.core_.getMap().getConfigParam(key_, value_);
         }
 

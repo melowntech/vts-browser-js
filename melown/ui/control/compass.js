@@ -57,12 +57,14 @@ Melown.UIControlCompass.prototype.onDrag = function(event_) {
 
     var pos_ = map_.getPosition();
     var delta_ = event_.getDragDelta();
-
-    var sensitivity_ = 1.5;
-    pos_[5] -= delta_[0] * sensitivity_;
-    pos_[6] -= delta_[1] * sensitivity_;
-
-    map_.setPosition(pos_);
+    var sensitivity_ = 0.8;
+    
+    var controller_ = this.browser_.controlMode_.getCurrentController();
+    
+    if (controller_.orientationDeltas_) {
+        controller_.orientationDeltas_.push([-delta_[0] * sensitivity_,
+                                             -delta_[1] * sensitivity_, 0]);
+    }
 };
 
 

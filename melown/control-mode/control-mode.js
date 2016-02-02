@@ -152,13 +152,17 @@ Melown.ControlMode.prototype.onTick = function(event_) {
     }
 };
 
+Melown.ControlMode.prototype.getCurrentController = function() {
+    return this.controlModes_[this.currentControlMode_];
+};
+
 // Private metod
 Melown.ControlMode.prototype._updateModifierKeys = function(event_) {
     this.altKey_ = event_.getModifierKey("alt");
     this.shiftKey_ = event_.getModifierKey("shift");
     this.ctrlKey_ = event_.getModifierKey("ctrl");
     
-    console.log("alt:" + this.altKey_ + "  ctrl:" + this.ctrlKey_ + "  shift:" + this.shiftKey_);
+    //console.log("alt:" + this.altKey_ + "  ctrl:" + this.ctrlKey_ + "  shift:" + this.shiftKey_);
 };
 
 Melown.ControlMode.prototype._currentController = function() {
