@@ -45,6 +45,11 @@ Melown.MapStats = function(map_) {
     this.resourcesUsed_ = 0;
     this.metaUsed_ = 0;
 
+    this.heightClass_ = 0;
+    this.heightLod_ = 0;
+    this.heightNode_ = 0;
+    this.heightTerrain_ = 0;
+    this.heightDelta_ = 0;
 };
 
 Melown.MapStats.prototype.resetGraphs = function() {

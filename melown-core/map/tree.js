@@ -269,7 +269,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, reducedProc
 };
 
 Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_, reducedProcessing_) {
-    if (tile_ == null || tile_.id_[0] > params_.desiredLod_) {
+    if (tile_ == null || (tile_.id_[0] > params_.desiredLod_ && params_.heightMap_)) {
         return [false, reducedProcessing_];
     }
 

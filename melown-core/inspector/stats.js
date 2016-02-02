@@ -83,7 +83,12 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
 //            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +
 //            "viewHeight: " + Math.round(this.core_.getOption("viewHeight")) + " m<br/>" +
 //            "distance: " + Math.round(this.core_.renderer_.cameraDistance_) + " m<br/>" +
-            "Polygons: " + (stats_.drawnFaces_) + "<br/>";
+            "Polygons: " + (stats_.drawnFaces_) + "<br/><br/>" +
+            "Terrain Height: " + (stats_.heightTerrain_.toFixed(2)) + "<br/>" +
+            "- float: " + (stats_.heightDelta_.toFixed(2)) + "<br/>" +
+            "- desired lod: " + (stats_.heightLod_.toFixed(2)) + "<br/>" +
+            "- used lod: " + (stats_.heightNode_.toFixed(2)) + "<br/>" +
+            "- used source: " + ((stats_.heightClass_ == 2 ? "navtile" : stats_.heightClass_ == 1 ? "node": "---") ) + "<br/>";
 
     var text3_ = "Tiles: " + (stats_.drawnTiles_) +"<br/>";
 
@@ -95,10 +100,18 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
 
     if (map_ != null) {
         var p = map_.getPosition();
-        var value_ = JSON.stringify(p.pos_);
+        var s = "";
+        s += p.getViewMode() + ",";
+        var c = p.getCoords();
+        s += c[0] + "," + c[1] + "," + p.getHeightMode() + "," + c[2].toFixed(2) + ",";
+        var o = p.getOrientation();
+        s += o[0].toFixed(2) + "," + o[1].toFixed(2) + "," + o[2].toFixed(2) + ",";
+        s += p.getViewExtent().toFixed(2) + "," + p.getFov().toFixed(2);
+        
+        //var value_ = JSON.stringify(p.pos_);
 
-        if (this.statsPosElement_.value != value_) {
-            this.statsPosElement_.value = value_;
+        if (this.statsPosElement_.value != s) {
+            this.statsPosElement_.value = s;
         }
     }
 
