@@ -5,7 +5,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.map_ = map_;
     this.id_ = id_;
     this.parent_ = parent_;
-    this.viewCoutner_ = map_.viewCounter_;
+    this.viewCounter_ = map_.viewCounter_;
     this.renderCounter_ = 0;
     this.renderReady_ = false;
 
@@ -25,6 +25,9 @@ Melown.MapTile = function(map_, parent_, id_) {
 
     this.updateBounds_ = true;
     this.transparentBounds_ = false;
+    
+    this.bounds_ = {};
+    
     this.boundLayers_ = {};
     this.boundTextures_ = {};
     this.boundAlpha_ = {};

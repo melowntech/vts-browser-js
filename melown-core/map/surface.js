@@ -15,6 +15,14 @@ Melown.MapSurface = function(map_, json_, glue_) {
     this.textureLayer_ = json_["textureLayer"] || null;
     this.boundLayerSequence_ = [];
     this.glue_ = glue_ || false;
+    //this.flatId_ = id_;
+
+    this.surfaceReference_ = [];
+    if (this.glue_) {
+        for (var i = 0, li = this.id_.length; i < li; i++) {
+            this.surfaceReference_.push(this.map_.getSurface(this.id_[i]));
+        }
+    }
 };
 
 Melown.MapSurface.prototype.getInfo = function() {
@@ -105,6 +113,11 @@ Melown.MapSurface.prototype.hasMetatile = function(id_) {
     }
 
     return true;
+};
+
+//used only for glues
+Melown.MapSurface.prototype.getSurfaceReference = function(index_) {
+    return this.surfaceReference_[index_ - 1];
 };
 
 Melown.MapSurface.prototype.getMetaUrl = function(id_, skipBaseUrl_) {

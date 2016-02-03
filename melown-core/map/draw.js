@@ -264,6 +264,92 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
 };
 
+Melown.Map.prototype.updateTileBounds = function(tile_, submeshes_) {
+    for (var i = 0, li = submeshes_.length; i < li; i++) {
+        var submesh_ = submeshes_[i];
+        
+        if (submesh_.externalUVs_) {
+            var submeshSurface_ = tile_.surface_;
+
+            if (tile_.surface_.glue_) { //glue have multiple surfaces per tile
+                submeshSurface_ = tile_.surface_.getSurfaceReference(submesh_.surfaceReference_);
+            }
+            
+            if (submeshSurface_) {
+                var bounds_ = tile_.bounds_[submeshSurface_.id_];
+                
+                if (!bounds_) {
+                    tile_.bounds_[submeshSurface_.id_] = {
+                        sequence_ : [],
+                        transparent_ : false
+                    };
+                } 
+                
+                if (bounds_.viewCoutner_ != tile_.viewCoutner_) {
+                    this.updateTileSurfaceBounds(tile_, submeshes_, tile_.surface_, bounds_.viewCoutner_ != tile_.viewCoutner_);
+                    bounds_.viewCoutner_ = tile_.viewCoutner_;
+                }  
+            }
+        }
+    }
+};
+
+Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface_, bound_, fullUpdate_) {
+
+    //search map view
+    if (surface_.boundLayerSequence_.length > 0) {
+        if (fullUpdate_) {
+            bound_.sequence_ = [];
+            for (var j = 0, lj = surface_.boundLayerSequence_.length; j < lj; j++) {
+                var layer_ = surface_.boundLayerSequence_[j][0];
+                if (layer_ && layer_.hasTile(tile_.id_) && surface_.boundLayerSequence_[j][1] > 0) {
+                    bound_.sequence_.push(layer_.id_);
+                    bound_.alpha_[layer_.id_] = surface_.boundLayerSequence_[j];
+                    tile_.boundLayers_[layer_.id_] = layer_;
+                    if (!tile_.boundTextures_[layer_.id_]) {
+                        var path_ = layer_.getUrl(tile_.id_);
+                        if (!tile_.boundTextures_[layer_.id_]) {
+                            tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                        }
+                    }
+                    if (bound_.alpha_[layer_.id_][1] < 1.0) {
+                        bound_.transparent_ = true;
+                    }
+                }
+            }
+        }
+    } else if (surface_.textureLayer_ != null) { //search surface
+        if (fullUpdate_) {
+            var layer_ = this.getBoundLayerById(surface_.textureLayer_);
+            if (layer_ && layer_.hasTile(tile_.id_)) {
+                bound_.sequence_.push(layer_.id_);
+                tile_.boundLayers_[layer_.id_] = layer_;
+                if (!tile_.boundTextures_[layer_.id_]) {
+                    var path_ = layer_.getUrl(tile_.id_);
+                    if (!tile_.boundTextures_[layer_.id_]) {
+                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                    }
+                }
+            }
+        }
+    } else { //search submeshes
+        if (submesh_.textureLayer_ != 0) {
+            var layer_ = this.getBoundLayerByNumber(submesh_.textureLayer_);
+
+            if (layer_ && layer_.hasTile(tile_.id_)) {
+                //submeshes_[j].textureLayerId_ = tile_.id_;
+                tile_.boundLayers_[layer_.id_] = layer_;
+                if (!tile_.boundTextures_[layer_.id_]) {
+                    var path_ = layer_.getUrl(tile_.id_);
+                    if (!tile_.boundTextures_[layer_.id_]) {
+                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                    }
+                }
+            }
+        }
+    }
+
+};
 
 Melown.Map.prototype.isSurfaceTileReady = function(tile_) {
     //free tile resources when map view changed
