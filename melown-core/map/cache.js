@@ -117,6 +117,11 @@ Melown.MapCache.prototype.remove = function(item_) {
 
     if (item_ != this.last_ && item_ != this.first_) {
         item_.prev_.next_ = item_.next_;
+        
+        //if (!item_.next_) {
+          //  debugger;
+        //}
+        
         item_.next_.prev_ = item_.prev_;
     }
 

@@ -19,6 +19,7 @@ cat utils/libs/proj4.js \
     inspector/inspector.js \
     inspector/input.js \
     inspector/stats.js \
+    inspector/layers.js \
     inspector/graphs.js \
     renderer/gpu/bbox.js \
     renderer/gpu/device.js \

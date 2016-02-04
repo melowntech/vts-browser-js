@@ -317,6 +317,8 @@ Melown.Map.prototype.getMapKeys = function(map_) {
     for (var key_ in map_) {
         keys_.push(key_);
     }
+
+    return keys_;
 };
 
 Melown.Map.prototype.getMapIds = function(map_) {
@@ -324,6 +326,8 @@ Melown.Map.prototype.getMapIds = function(map_) {
     for (var key_ in map_) {
         keys_.push(key_.id_);
     }
+
+    return keys_;
 };
 
 Melown.Map.prototype.setPosition = function(pos_, public_) {

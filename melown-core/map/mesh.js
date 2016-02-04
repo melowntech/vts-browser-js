@@ -35,7 +35,7 @@ Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
 
     if (killedByCache_ != true && this.cacheItem_ != null) {
         this.map_.resourcesCache_.remove(this.cacheItem_);
-        this.tile_.validate();
+        //this.tile_.validate();
     }
 
     this.loadState_ = 0;
@@ -52,7 +52,7 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
 
     if (killedByCache_ != true && this.gpuCacheItem_ != null) {
         this.map_.gpuCache_.remove(this.gpuCacheItem_);
-        this.tile_.validate();
+        //this.tile_.validate();
     }
 
     this.gpuCacheItem_ = null;

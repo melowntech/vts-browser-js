@@ -136,6 +136,10 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 115:
                         this.switchStatsPanel(); break; //key S pressed
 
+                    case 76:
+                    case 108:
+                        this.switchLayersPanel(); break; //key L pressed
+
                     case 66:
                     case 98:
                         map_.drawBBoxes_ = !map_.drawBBoxes_; break; //key B pressed
@@ -217,32 +221,20 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 */
 
                         switch(this.debugValue_) {
-                            case 0: view_["surfaces"] = { "ev" : ["mapycz", {"id": "katastr", "alpha": 0.95}] };  break; 
-                            case 1: view_["surfaces"] = { "ev" : ["mapycz"] };  break; 
+                            case 0: view_["surfaces"] = { "ev" : ["mapycz", {"id": "katastr", "alpha": 0.95}], "grand" : [] };  break; 
+                            case 1: view_["surfaces"] = { "ev" : ["mapycz"], "grand" : ["bing"] };  break; 
+                            case 2: view_["surfaces"] = { "ev" : ["mapycz-base"], "grand" : ["bing"] };  break; 
+                            case 3: view_["surfaces"] = { "ev" : ["bing"], "grand" : ["mapycz-base"] };  break; 
+                            case 4: view_["surfaces"] = { "ev" : ["mapycz"]};  break; 
+                            case 5: view_["surfaces"] = { "ev" : []};  break; 
+                            case 6: view_["surfaces"] = { "grand" : []};  break; 
+                            case 7: view_["surfaces"] = { };  break; 
                         };
                         
                         this.debugValue_++;
-                        this.debugValue_%=2;
-                        
-                        /*view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [] };*/ 
-
-                        /*
-                        if (map_.hackBounds_ && map_.hackBounds2_) {
-                            map_.hackBounds_ = 120;
-                            map_.hackBounds2_ = null;
-                        } else {
-                            if (map_.hackBounds_ != 121) {
-                                map_.hackBounds_ = 121;
-                            } else {
-                                map_.hackBounds2_ = 122;
-                            }
-                        }
-                        */
-                       //map_.hackBounds2_ = 122;
-
-                        
-                        map_.setView(view_, true);
-                        
+                        this.debugValue_%=8;
+                       
+                        map_.setView(view_);
                         
                         break; //key V pressed
 

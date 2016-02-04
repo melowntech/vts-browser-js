@@ -23,15 +23,10 @@ Melown.MapTile = function(map_, parent_, id_) {
     
     //this.empty_ = true;
 
-    this.updateBounds_ = true;
-    this.transparentBounds_ = false;
-    
     this.bounds_ = {};
-    
     this.boundLayers_ = {};
     this.boundTextures_ = {};
-    this.boundAlpha_ = {};
-    this.boundSequence_ = [];
+    this.updateBounds_ = true;
 
     this.heightMap_ = null;
 
@@ -78,12 +73,10 @@ Melown.MapTile.prototype.kill = function() {
     this.surfaceTextures_ = [];
     this.surfaceGeodata_ = null;
 
+    this.bounds_ = {};
     this.boundLayers_ = {};
     this.boundTextures_ = {};
-    this.boundAlpha_ = {};
-    this.boundSequence_ = [];
     this.updateBounds_ = true;
-    this.transparentBounds_ = false;
 
     this.virtual_ = false;
     this.virtualReady_ = false;
@@ -128,10 +121,17 @@ Melown.MapTile.prototype.viewSwitched = function() {
     this.renderReady_ = false;
     this.metanode_ = null;
 
+    for (var key_ in this.bounds_) {
+        this.bounds_[key_] = {
+            sequence_ : [],
+            alpha_ : [],
+            transparent_ : false,
+            viewCoutner_ : 0            
+        };
+    }
+
     this.boundLayers_ = {};
     this.boundTextures_ = {};
-    this.boundAlpha_ = {};
-    this.boundSequence_ = [];
     this.updateBounds_ = true;
     this.transparentBounds_ = false;
 
