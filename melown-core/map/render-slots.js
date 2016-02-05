@@ -18,7 +18,7 @@ Melown.Map.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
     var from_ = this.getRenderSlotIndex(whichId_);
     var to_ = this.getRenderSlotIndex(whereId_);
     if (from_ != -1 && to_ != -1) { 
-        this.renderSlots_.splice(to_, 0, this.splice(from_, 1)[0]);
+        this.renderSlots_.splice(to_, 0, this.renderSlots_.splice(from_, 1)[0]);
     }
 };
 
@@ -27,7 +27,7 @@ Melown.Map.prototype.addRenderSlotAfter = function(whichId_, whereId_) {
     var to_ = this.getRenderSlotIndex(whereId_);
     if (from_ != -1 && to_ != -1) {
         to_++; 
-        this.renderSlots_.splice(to_, 0, this.splice(from_, 1)[0]);
+        this.renderSlots_.splice(to_, 0, this.renderSlots_.splice(from_, 1)[0]);
     }
 };
 
