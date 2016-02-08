@@ -136,9 +136,9 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 115:
                         this.switchStatsPanel(); break; //key S pressed
 
-                    case 76:
-                    case 108:
-                        this.switchLayersPanel(); break; //key L pressed
+                    case 86:
+                    case 118:
+                        this.switchLayersPanel(); break; //key V pressed
 
                     case 66:
                     case 98:
@@ -188,8 +188,8 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 111:
                         map_.camera_.setOrtho(!map_.camera_.getOrtho()); break; //key O pressed
 
-                    case 86:
-                    case 118:
+                    case 76:
+                    case 108:
                          /*this.switchLocationsPanel();*/
 
                        /*
@@ -236,7 +236,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                        
                         map_.setView(view_);
                         
-                        break; //key V pressed
+                        break; //key L pressed
 
                     case 90:
                     case 122:
