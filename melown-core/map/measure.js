@@ -303,10 +303,10 @@ Melown.Map.prototype.getDistance = function(coords_, coords2_, includingHeight_)
     var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
 
     if (!this.getNavigationSrs().isProjected()) {
-        var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo_["a"],
+        var geod = new GeographicLib["Geodesic"]["Geodesic"](navigationSrsInfo_["a"],
                                                        (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
 
-        var r = geod.Inverse(coords_[1], coords_[0], coords2_[0], coords2_[0]);
+        var r = geod["Inverse"](coords_[1], coords_[0], coords2_[0], coords2_[0]);
 
         if (d > (navigationSrsInfo_["a"] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
             if (includingHeight_) {
@@ -326,7 +326,7 @@ Melown.Map.prototype.getDistance = function(coords_, coords2_, includingHeight_)
 Melown.Map.prototype.getGeodesic = function() {
     var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
 
-    var geodesic_ = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo_["a"],
+    var geodesic_ = new GeographicLib["Geodesic"]["Geodesic"](navigationSrsInfo_["a"],
                                                        (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
 
     return geodesic_;

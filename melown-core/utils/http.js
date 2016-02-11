@@ -24,3 +24,6 @@ Melown.Http.imageFactory = function(url_, onload_, onerror_) {
     Melown.Http.loadImageFormUrl(image_, url_);
     return image_;
 };
+
+Melown["Http"] = Melown.Http;
+Melown.Http["imageFactory"] = Melown.Http.imageFactory;

@@ -166,11 +166,11 @@ Melown.MapSrs.prototype.getVerticalAdjustmentFactor = function(coords_) {
         var coords2_ = this.proj4_(this.srsDef_, latlonProj_, [coords_[0], coords_[1]]);
 
         //move coors 1000m
-        var geod = new GeographicLib.Geodesic.Geodesic(info_["a"],
+        var geod = new GeographicLib["Geodesic"]["Geodesic"](info_["a"],
                                                        (info_["a"] / info_["b"]) - 1.0);
 
 
-        var r = geod.Direct(coords2_[1], coords2_[0], 90, 1000);
+        var r = geod["Direct"](coords2_[1], coords2_[0], 90, 1000);
         coords2_ = [r.lon2, r.lat2];
 
         //convet coords from latlon back to projected

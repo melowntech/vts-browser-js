@@ -37,3 +37,7 @@ Melown.Url.getParamsFromUrl = function(url_) {
     }
     return queryString_;
 };
+
+Melown["Url"] = Melown.Url;
+Melown.Url["getParamsFromUrl"] = Melown.Url.getParamsFromUrl;
+

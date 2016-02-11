@@ -38,6 +38,7 @@ Melown["MapCore"] = Melown.MapCore;
 Melown.CoreInterface.prototype["getMap"] = Melown.CoreInterface.prototype.getMap;
 Melown.CoreInterface.prototype["getRenderer"] = Melown.CoreInterface.prototype.getRenderer;
 Melown.CoreInterface.prototype["on"] = Melown.CoreInterface.prototype.on;
+Melown.CoreInterface.prototype["callListener"] = Melown.CoreInterface.prototype.callListener;
 Melown["getVersion"] = Melown.getVersion;
 Melown["checkSupport"] = Melown.checkSupport;
 

@@ -141,12 +141,20 @@ Melown.Inspector.prototype.initLayersPanel = function() {
     this.layersFreeLayersItems_ = document.getElementById("melown-layers-right-items");
     this.layersJsonText_ = document.getElementById("melown-layers-json-text");
 
+    this.layersElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
+    this.layersElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
+    this.layersElement_.addEventListener("mousewheel", this.doNothing.bind(this), false);
+
     this.layersViews_ = [];
     
     this.layersPanelVisible_ = false;
     this.layersPanelInitialized_ = false;
     this.layersCurrentView_ = "";
     this.layersCurrentSurface_ = "";
+};
+
+Melown.Inspector.prototype.doNothing = function() {
+    return false;
 };
 
 Melown.Inspector.prototype.initViews = function() {
@@ -207,7 +215,7 @@ Melown.Inspector.prototype.initViews = function() {
             var id_ = freeLayers_[i];
             
             view_.freelayers_[id_] = {
-                enabled_ : false,
+                enabled_ : false
             };
         }
         
