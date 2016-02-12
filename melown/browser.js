@@ -56,12 +56,18 @@ Melown.Browser.prototype.onMapLoaded = function() {
 
     this.autopilot_.flyTo(p, {"mode":"ballistic", "samplePeriod": 10, "speed":0.1});
 */
+    var map_ = this.getCore().getMap();
 
     if (this.config_.position_) {
-        var map_ = this.getCore().getMap();
         map_.setPosition(this.config_.position_);
         this.config_.position_ = null;
     }
+
+    if (this.config_.view_) {
+        map_.setView(this.config_.view_);
+        this.config_.view_ = null;
+    }
+
 };
 
 Melown.Browser.prototype.onMapUnloaded = function() {

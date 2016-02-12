@@ -27,13 +27,13 @@ Melown.UIEvent.prototype.getMousePosition = function(absolute_) {
         case "drag":
 
             if (this.element_.getBoundingClientRect == null || absolute_) {
-                return [ this.event_.clientX,
-                         this.event_.clientY ];
+                return [ this.event_["clientX"],
+                         this.event_["clientY"] ];
             } else {
                 var rect_ = this.element_.getBoundingClientRect();
 
-                return [ this.event_.clientX - rect_.left,
-                         this.event_.clientY - rect_.top ];
+                return [ this.event_["clientX"] - rect_.left,
+                         this.event_["clientY"] - rect_.top ];
             }
 
     }
@@ -45,8 +45,8 @@ Melown.UIEvent.prototype.getDragDelta = function() {
     switch (this.type_) {
         case "drag":
 
-            return [ this.event_.deltaX,
-                     this.event_.deltaY ];
+            return [ this.event_["deltaX"],
+                     this.event_["deltaY"] ];
     }
 
     return [0,0];
@@ -90,9 +90,10 @@ Melown.UIEvent.prototype.getKeyCode = function(key_) {
 
 Melown.UIEvent.prototype.getDragButton = function(button_) {
     switch(button_) {
-        case "left": return this.event_.left;
-        case "right": return this.event_.right;
-        case "middle": return this.event_.middle;
+        case "left": 
+        case "right":
+        case "middle":
+            return this.event_[button_];
     }
 
     return false;

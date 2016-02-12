@@ -33,6 +33,7 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
     switch (key_) {
         case "pos":                
         case "position":           this.config_.position_ = value_;                                           break;
+        case "view":               this.config_.view_ = value_;                                               break;
         case "panAllowed":         this.config_.panAllowed_ = Melown.Utils.validateBool(value_, true);        break;
         case "rotationAllowed":    this.config_.rotationAllowed_ = Melown.Utils.validateBool(value_, true);   break;
         case "zoomAllowed":        this.config_.zoomAllowed_ = Melown.Utils.validateBool(value_, true);       break;
@@ -57,7 +58,8 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
 
 Melown.Browser.prototype.getConfigParam = function(key_) {
     switch (key_) {
-        case "position":           return this.config_.panAllowed_;
+        case "position":           return this.config_.position_;
+        case "view":               return this.config_.view_;
         case "panAllowed":         return this.config_.panAllowed_;
         case "rotationAllowed":    return this.config_.rotationAllowed_;
         case "zoomAllowed":        return this.config_.zoomAllowed_;
