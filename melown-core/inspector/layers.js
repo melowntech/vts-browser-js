@@ -230,14 +230,18 @@ Melown.Inspector.prototype.initViews = function() {
 
                 for (var i = 0, li = layers_.length; i < li; i++) {
                     if (typeof layers_[i] === "string") {
-                        if (surface_.layers_[layers_[i]]) {
-                            surface_.layers_[layers_[i]].enabled_ = true;
+                        var index_ = this.findIdInArray(surface_.layers_, layers_[i]);
+                        if (index_ != -1 && surface_.layers_[index_]) {
+                            surface_.layers_[index_].enabled_ = true;
+                            surface_.layers_.splice(i, 0, surface_.layers_.splice(index_, 1)[0]);
                         }    
                     } else {
                         var id_ = layers_[i]["id"];
-                        if (surface_.layers_[id_]) {
-                            surface_.layers_[id_].enabled_ = true;
-                            surface_.layers_[id_].alpha_ = layers_[i]["alpha"] ? (parseFloat(layers_[i]["alpha"])*100) : 100;
+                        var index_ = this.findIdInArray(surface_.layers_, id_);
+                        if (index_ != -1 && surface_.layers_[index_]) {
+                            surface_.layers_[index_].enabled_ = true;
+                            surface_.layers_[index_].alpha_ = layers_[i]["alpha"] ? (parseFloat(layers_[i]["alpha"])*100) : 100;
+                            surface_.layers_.splice(i, 0, surface_.layers_.splice(index_, 1)[0]);
                         }    
                     }
                 }
@@ -257,6 +261,16 @@ Melown.Inspector.prototype.initViews = function() {
         }
                  
     }
+};
+
+Melown.Inspector.prototype.findIdInArray = function(array_, id_) {
+    for (var i = 0, li = array_.length; i < li; i++) {
+        if (array_[i].id_ == id_) {
+            return i;
+        } 
+    }
+    
+    return -1;
 };
 
 Melown.Inspector.prototype.buildViews = function() {

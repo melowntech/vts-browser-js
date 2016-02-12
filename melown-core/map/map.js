@@ -264,6 +264,16 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
     if (view_ == null) {
         return;
     }
+    
+    if (typeof view_ === "string") {
+        view_ = this.getNamedView(id_);
+        
+        if (!view_) {
+            return;
+        }
+        
+        this.setView(view_);
+    }
 
     var string_ = JSON.stringify(view_);
     if (string_ != this.currentViewString_ || forceRefresh_) {

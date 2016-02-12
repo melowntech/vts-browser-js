@@ -122,13 +122,13 @@ Melown.MapPosition.prototype.moveCoordsTo = function(azimuth_, distance_) {
                                                        (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
 
         var r = geod["Direct"](coords_[1], coords_[0], azimuth_, distance_);
-        this.setCoords2([r.lon2, r.lat2]);
+        this.setCoords2([r["lon2"], r["lat2"]]);
 
         var orientation_ = this.getOrientation();
 
         //console.log("corerction_: " + (r.azi1 - r.azi2));
 
-        orientation_[0] += (r.azi1 - r.azi2); 
+        orientation_[0] += (r["azi1"] - r["azi2"]); 
         //orientation_[0] -= (r.azi1 - r.azi2); 
 
         var orientation_ = this.setOrientation(orientation_);
@@ -363,12 +363,12 @@ Melown.MapPosition.prototype.getNED = function() {
     
         var r = geodesic_["Direct"](coords_[1], coords_[0], 0, -100);
         var upPos_ = this.clone();
-        upPos_.setCoords2([r.lon2, r.lat2]);        
+        upPos_.setCoords2([r["lon2"], r["lat2"]]);        
         var upCoords_ = this.map_.convertCoords(upPos_.getCoords(), "navigation", "physical");
 
         r = geodesic_["Direct"](coords_[1], coords_[0], 90, 100);
         var rightPos_ = this.clone();
-        rightPos_.setCoords2([r.lon2, r.lat2]);        
+        rightPos_.setCoords2([r["lon2"], r["lat2"]]);        
         var rightCoords_ = this.map_.convertCoords(rightPos_.getCoords(), "navigation", "physical");
     }
 

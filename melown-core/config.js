@@ -31,9 +31,13 @@ Melown.Core.prototype.setConfigParams = function(params_, onlyMapRelated_) {
 };
 
 Melown.Core.prototype.setConfigParam = function(key_, value_) {
-    if (key_ == "pos") {
+    if (key_ == "pos" || key_ == "position") {
         if (this.getMap() != null) {
             this.getMap().setPosition(new Melown.MapPosition(this, value_));
+        }
+    } else if (key_ == "view") {
+        if (this.getMap() != null) {
+            this.getMap().setView(value_);
         }
     } else if (key_ == "map") {
         this.config_.map_ = Melown.validateString(value_, null);

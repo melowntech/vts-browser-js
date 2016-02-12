@@ -221,3 +221,27 @@ Melown.RendererInterface.prototype["getConfigParam"] = function(key_) {
     return this.renderer_.getConfigParam(key_, value_);
 };
 
+Melown.RendererInterface.prototype["clear"] = Melown.RendererInterface.prototype.clear;
+Melown.RendererInterface.prototype["createState"] = Melown.RendererInterface.prototype.createState; 
+Melown.RendererInterface.prototype["setState"] = Melown.RendererInterface.prototype.setState;
+Melown.RendererInterface.prototype["createTexture"] = Melown.RendererInterface.prototype.createTexture; 
+Melown.RendererInterface.prototype["removeTexture"] = Melown.RendererInterface.prototype.removeTexture; 
+Melown.RendererInterface.prototype["createMesh"] = Melown.RendererInterface.prototype.createMesh;
+Melown.RendererInterface.prototype["removeMesh"] = Melown.RendererInterface.prototype.removeMesh; 
+Melown.RendererInterface.prototype["createProgram"] = Melown.RendererInterface.prototype.createProgram; 
+Melown.RendererInterface.prototype["removeResource"] = Melown.RendererInterface.prototype.removeResource; 
+Melown.RendererInterface.prototype["addJob"] = Melown.RendererInterface.prototype.addJob;
+Melown.RendererInterface.prototype["clearJobs"] = Melown.RendererInterface.prototype.clearJobs; 
+Melown.RendererInterface.prototype["drawMesh"] = Melown.RendererInterface.prototype.drawMesh;
+Melown.RendererInterface.prototype["drawImage"] = Melown.RendererInterface.prototype.drawImage; 
+Melown.RendererInterface.prototype["drawBillboard"] = Melown.RendererInterface.prototype.drawBillboard; 
+Melown.RendererInterface.prototype["drawLineString"] = Melown.RendererInterface.prototype.drawLineString; 
+Melown.RendererInterface.prototype["drawJobs"] = Melown.RendererInterface.prototype.drawJobs;
+Melown.RendererInterface.prototype["drawBBox"] = Melown.RendererInterface.prototype.drawBBox; 
+Melown.RendererInterface.prototype["drawDebugText"] = Melown.RendererInterface.prototype.drawDebugText; 
+Melown.RendererInterface.prototype["getCanvasCoords"] = Melown.RendererInterface.prototype.getCanvasCoords; 
+Melown.RendererInterface.prototype["getCanvasSize"] = Melown.RendererInterface.prototype.getCanvasSize;
+Melown.RendererInterface.prototype["setConfigParams"] = Melown.RendererInterface.prototype.setConfigParams; 
+Melown.RendererInterface.prototype["setConfigParam"] = Melown.RendererInterface.prototype.setConfigParam;
+Melown.RendererInterface.prototype["getConfigParam"] = Melown.RendererInterface.prototype.getConfigParam; 
+

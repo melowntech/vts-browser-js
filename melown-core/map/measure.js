@@ -148,7 +148,7 @@ Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeSta
 
                 if (metanode_ != null) { // && metanode_.id_[0] == lod_){
                     var center_ = metanode_.bbox_.center();
-                    //center_ = this.convertCoords(center_, "physical", "navigation");
+                    center_ = this.convertCoords(center_, "physical", "navigation");
 
                     //console.log("lod2: " + lod_ + " nodelod: " + metanode_.id_[0] + " h: " + center_[2]/1.55);  
 
@@ -310,12 +310,12 @@ Melown.Map.prototype.getDistance = function(coords_, coords2_, includingHeight_)
 
         if (d > (navigationSrsInfo_["a"] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
             if (includingHeight_) {
-                return [Math.sqrt(r.s12*r.s12 + dz_*dz_), r.az1];
+                return [Math.sqrt(r["s12"]*r["s12"] + dz_*dz_), r.az1];
             } else {
-                return [r.s12, r.az1];
+                return [r["s12"], r["az1"]];
             }
         } else {
-            return [d, r.az1];
+            return [d, r["az1"]];
         }
 
     } else {
