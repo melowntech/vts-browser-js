@@ -12,13 +12,13 @@ Melown.UIControlHolder = function(ui_, html_, visible_) {
     this.setVisible(this.visible_);
 
     //set element content
-    this.setHTML(html_);
+    this.setHtml(html_);
 
     //append elemenet to UI
     this.ui_.element_.appendChild(this.element_);
 };
 
-Melown.UIControlHolder.prototype.setHTML = function(html_) {
+Melown.UIControlHolder.prototype.setHtml = function(html_) {
     this.element_.innerHTML = html_;
 
     var allElements_ = this.element_.getElementsByTagName('*');
@@ -48,6 +48,11 @@ Melown.UIControlHolder.prototype.getVisible = function() {
 };
 
 
+//prevent minification
+Melown.UIControlHolder.prototype["setHtml"] = Melown.UIControlHolder.prototype.setHtml; 
+Melown.UIControlHolder.prototype["getElement"] = Melown.UIControlHolder.prototype.getElement; 
+Melown.UIControlHolder.prototype["setVisible"] = Melown.UIControlHolder.prototype.setVisible; 
+Melown.UIControlHolder.prototype["getVisible"] = Melown.UIControlHolder.prototype.getVisible; 
 
 
 

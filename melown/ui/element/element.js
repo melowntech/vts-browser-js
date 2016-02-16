@@ -51,4 +51,19 @@ Melown.UIElement.prototype.getHTML = function() {
     return this.element_.innerHTML;
 };
 
+Melown.UIElement.prototype.getElement = function() {
+    return this.element_;
+};
+
+//prevent minification
+Melown.UIElement.prototype["setHtml"] = Melown.UIElement.prototype.setHtml; 
+Melown.UIElement.prototype["getHtml"] = Melown.UIElement.prototype.getHtml; 
+Melown.UIElement.prototype["getElement"] = Melown.UIElement.prototype.getElement; 
+Melown.UIElement.prototype["setClass"] = Melown.UIElement.prototype.setClass; 
+Melown.UIElement.prototype["getClass"] = Melown.UIElement.prototype.getClass; 
+Melown.UIElement.prototype["setStyle"] = Melown.UIElement.prototype.setStyle; 
+Melown.UIElement.prototype["getStyle"] = Melown.UIElement.prototype.getStyle; 
+Melown.UIElement.prototype["addClass"] = Melown.UIElement.prototype.addClass; 
+Melown.UIElement.prototype["hasClass"] = Melown.UIElement.prototype.hasClass; 
+Melown.UIElement.prototype["removeClass"] = Melown.UIElement.prototype.removeClass; 
 

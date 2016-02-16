@@ -30,6 +30,10 @@ Melown.Browser.prototype.getCore = function() {
     return this.core_;
 };
 
+Melown.Browser.prototype.getUI = function() {
+    return this.ui_;
+};
+
 Melown.Browser.prototype.getControlMode = function() {
     return this.controlMode_;
 };

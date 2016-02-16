@@ -119,7 +119,12 @@ Melown.UIEvent.prototype.getWheelDelta = function() {
     return 0;
 };
 
-
-
-
+//prevent minification
+Melown.UIEvent.prototype["getMouseButton"] = Melown.UIEvent.prototype.getMouseButton;
+Melown.UIEvent.prototype["getMousePosition"] = Melown.UIEvent.prototype.getMousePosition;
+Melown.UIEvent.prototype["getDragDelta"] = Melown.UIEvent.prototype.getDragDelta;
+Melown.UIEvent.prototype["getModifierKey"] = Melown.UIEvent.prototype.getModifierKey;
+Melown.UIEvent.prototype["getKeyCode"] = Melown.UIEvent.prototype.getKeyCode;
+Melown.UIEvent.prototype["getDragButton"] = Melown.UIEvent.prototype.getDragButton;
+Melown.UIEvent.prototype["getWheelDelta"] = Melown.UIEvent.prototype.getWheelDelta;
 

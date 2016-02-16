@@ -66,11 +66,13 @@ Melown.UIElement.prototype.removeEvent = function(type_, function_, externalElem
 };
 
 Melown.UIElement.prototype.getEventName = function(type_) {
-//    if (type_ == "click") {
-  //      return type_;
-//    }
     return type_;
-
-//    return "on" + type_;
 };
+
+//prevent minification
+Melown.UIElement.prototype["on"] = Melown.UIElement.prototype.on;
+Melown.UIElement.prototype["once"] = Melown.UIElement.prototype.once;
+Melown.UIElement.prototype["off"] = Melown.UIElement.prototype.off;
+Melown.UIElement.prototype["fire"] = Melown.UIElement.prototype.fire;
+
 

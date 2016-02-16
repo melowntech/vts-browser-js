@@ -19,6 +19,10 @@ Melown.BrowserInterface.prototype.getCore = function(position_) {
     return this.core_;
 };
 
+Melown.BrowserInterface.prototype.getUI = function(position_) {
+    return this.ui_;
+};
+
 Melown.BrowserInterface.prototype.setControlMode = function(mode_) {
     this.browser_.controlMode_ = mode_;
 };
@@ -223,6 +227,7 @@ Melown.getBrowserVersion = function() {
 //prevent minification
 Melown["MapBrowser"] = Melown.MapBrowser;
 Melown.BrowserInterface.prototype["getCore"] = Melown.BrowserInterface.prototype.getCore; 
+Melown.BrowserInterface.prototype["getUI"] = Melown.BrowserInterface.prototype.getUI; 
 Melown.BrowserInterface.prototype["setControlMode"] = Melown.BrowserInterface.prototype.setControlMode;
 Melown.BrowserInterface.prototype["getControlMode"] = Melown.BrowserInterface.prototype.getControlMode;
 Melown.BrowserInterface.prototype["setPosition"] = Melown.BrowserInterface.prototype.setPosition;
