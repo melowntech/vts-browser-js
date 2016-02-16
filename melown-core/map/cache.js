@@ -98,9 +98,11 @@ Melown.MapCache.prototype.insert = function(destructor_, cost_) {
 
 Melown.MapCache.prototype.remove = function(item_) {
     this.totalItems_++;
+    var hit_ = false;
 
     if (item_ == this.first_) {
         this.first_ = item_.next_;
+        hit_ = true;
 
         if (this.first_ != null) {
             this.first_.prev_ = null;
@@ -109,13 +111,15 @@ Melown.MapCache.prototype.remove = function(item_) {
 
     if (item_ == this.last_) {
         this.last_ = item_.prev_;
+        hit_ = true;
 
         if (this.last_ != null) {
             this.last_.next_ = null;
         }
     }
 
-    if (item_ != this.last_ && item_ != this.first_) {
+    if (!hit_) {
+    //if (item_ != this.last_ && item_ != this.first_) {
 
         if (!item_.prev_) {
             debugger;
