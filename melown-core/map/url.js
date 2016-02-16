@@ -1,5 +1,5 @@
 
-Melown.Map.prototype.quad = function(lod_, ix, iy) {
+Melown.Map.prototype["quad"] = function(lod_, ix, iy) {
     var quadKey = "";
     //ty = Math.pow(2,zoom - 1) - ty;
     for (i = lod_; i > 0; i--) {
@@ -19,7 +19,7 @@ Melown.Map.prototype.quad = function(lod_, ix, iy) {
     return quadKey;
 };
 
-Melown.Map.prototype.msDigit = function(iy, ix) {
+Melown.Map.prototype["msDigit"] = function(iy, ix) {
     return (((iy & 3) << 1) + (ix & 1));
 };
 
@@ -31,12 +31,12 @@ Melown.Map.prototype.hex = function(v, n) {
     return s;
 };
 
-Melown.Map.prototype.ppx = function(lod_, ix) {
+Melown.Map.prototype["ppx"] = function(lod_, ix) {
     return this.hex(ix << (28 - lod_), 7);
 
 };
 
-Melown.Map.prototype.ppy = function(lod_, iy) {
+Melown.Map.prototype["ppy"] = function(lod_, iy) {
     return this.hex((1 << 28) - ((iy + 1) << (28 - lod_)), 7);
 };
 

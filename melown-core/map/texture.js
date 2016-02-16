@@ -20,7 +20,7 @@ Melown.MapTexture.prototype.kill = function() {
     this.texture_ = null;
     this.killImage();
     this.killGpuTexture();
-    this.tile_.validate();
+    //this.tile_.validate();
 };
 
 Melown.MapTexture.prototype.killImage = function(killedByCache_) {
@@ -29,7 +29,7 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
 
     if (killedByCache_ != true && this.cacheItem_ != null) {
         this.map_.resourcesCache_.remove(this.cacheItem_);
-        this.tile_.validate();
+        //this.tile_.validate();
     }
 
     this.loadState_ = 0;
@@ -46,7 +46,7 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
 
     if (killedByCache_ != true && this.gpuCacheItem_ != null) {
         this.map_.gpuCache_.remove(this.gpuCacheItem_);
-        this.tile_.validate();
+        //this.tile_.validate();
     }
 
     this.gpuCacheItem_ = null;

@@ -3,7 +3,7 @@ Melown.Map.prototype.parseConfig = function() {
     //if (this.mapConfig_["version"] < 4) {
       //  return;
     //}
-
+/*
     this.mapConfig_["boundLayers"] = 
     {
         "bing" : 
@@ -156,7 +156,7 @@ Melown.Map.prototype.parseConfig = function() {
             "url" : false
         }
     };
-
+*/
     if (!(this.parseSrses() && this.parseReferenceFrame() &&
           this.parseCredits() && this.parseSurfaces() &&
           this.parseGlues() && this.parseBoundLayers() &&

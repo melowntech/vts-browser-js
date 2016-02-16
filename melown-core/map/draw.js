@@ -57,7 +57,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                         }
                         
                         var surface_ = tile_.surface_;
-                        if (surface_.glue_) { //glue have multiple surfaces per tile
+                        if (surface_.glue_ /*&& submesh_.surfaceReference_ != 0*/) { //glue have multiple surfaces per tile
                             surface_ = tile_.surface_.getSurfaceReference(submesh_.surfaceReference_);
                         }
 
@@ -235,10 +235,14 @@ Melown.Map.prototype.updateTileBounds = function(tile_, submeshes_) {
                 
                 if (bounds_.viewCoutner_ != tile_.viewCoutner_) {
                     this.updateTileSurfaceBounds(tile_, submesh_, submeshSurface_, bounds_, bounds_.viewCoutner_ != tile_.viewCoutner_);
-                    bounds_.viewCoutner_ = tile_.viewCoutner_;
+                    //bounds_.viewCoutner_ = tile_.viewCoutner_;
                 }  
             }
         }
+    }
+
+    for (var key_ in tile_.bounds_) {
+        tile_.bounds_[key_].viewCoutner_ = tile_.viewCoutner_;
     }
 };
 

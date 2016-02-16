@@ -164,14 +164,20 @@ Melown.Map.prototype.getVisibleCredits = function() {
     var imageryArray_ = []; 
     
     for (var key_ in imagery_) {
-        imageryArray_.push(this.creditsByNumber_[key_].key_);
+        var item_ = this.creditsByNumber_[key_];
+        if (item_) {
+            imageryArray_.push(item_.key_);
+        }
     }
 
     var mapdata_ = this.visibleCredits_.mapdata_;
     var mapdataArray_ = []; 
     
     for (var key_ in mapdata_) {
-        mapdataArray_.push(this.creditsByNumber_[key_].key_);
+        var item_ = this.creditsByNumber_[key_];
+        if (item_) {
+            mapdataArray_.push(item_.key_);
+        }
     }
 
     return {

@@ -59,7 +59,7 @@ Melown.MapTile.prototype.kill = function() {
         this.heightMap_.kill();
     }
 
-    for (var key in this.boundTextures_) {
+    for (var key_ in this.boundTextures_) {
         if (this.boundTextures_[key_] != null) {
             this.boundTextures_[key_].kill();
         }

@@ -288,7 +288,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                 case 73:
                 case 105:
-                    map_.drawIndices_ = !map_.drawIndices_; break; //key M pressed
+                    map_.drawIndices_ = !map_.drawIndices_; break; //key I pressed
 
                 case 83:
                 case 115:

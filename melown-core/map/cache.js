@@ -116,13 +116,19 @@ Melown.MapCache.prototype.remove = function(item_) {
     }
 
     if (item_ != this.last_ && item_ != this.first_) {
-        item_.prev_.next_ = item_.next_;
+
+        if (!item_.prev_) {
+            debugger;
+        } else {
+            item_.prev_.next_ = item_.next_;
+        }
         
-        //if (!item_.next_) {
-          //  debugger;
-        //}
+        if (!item_.next_) {
+            debugger;
+        } else {
+            item_.next_.prev_ = item_.prev_;
+        }
         
-        item_.next_.prev_ = item_.prev_;
     }
 
     this.totalCost_ -= item_.cost_;
