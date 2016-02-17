@@ -21,6 +21,8 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.virtualReady_ = false;
     this.virtualSurfaces_ = [];
     
+    this.drawCommands_ = [];
+    
     //this.empty_ = true;
 
     this.bounds_ = {};
@@ -29,6 +31,8 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.updateBounds_ = true;
 
     this.heightMap_ = null;
+    this.drawCommands_ = [];
+    this.credits_ = [];
 
     this.children_ = [null, null, null, null];
 };
@@ -87,6 +91,8 @@ Melown.MapTile.prototype.kill = function() {
     this.lastState_ = null;
         
     this.heightMap_ = null;
+    this.drawCommands_ = [];
+    this.credits_ = [];
 
     this.verifyChildren_ = false;
     this.children_ = [null, null, null, null];
