@@ -58,7 +58,7 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     this.gpuCacheItem_ = null;
 };
 
-Melown.MapMesh.prototype.isReady = function () {
+Melown.MapMesh.prototype.isReady = function (doNotLoad_) {
     if (this.loadState_ == 2) { //loaded
 
         if (this.gpuSubmeshes_.length == 0) {
@@ -70,7 +70,7 @@ Melown.MapMesh.prototype.isReady = function () {
 
         return true;
     } else {
-        if (this.loadState_ == 0) { //not loaded
+        if (this.loadState_ == 0 && !doNotLoad_) { //not loaded
             this.scheduleLoad();
         } //else load in progress
     }

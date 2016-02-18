@@ -52,7 +52,7 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     this.gpuCacheItem_ = null;
 };
 
-Melown.MapTexture.prototype.isReady = function() {
+Melown.MapTexture.prototype.isReady = function(doNotLoad_) {
     if (this.loadState_ == 2) { //loaded
         if (this.heightMap_) {
             if (this.imageData_ == null) {
@@ -68,7 +68,7 @@ Melown.MapTexture.prototype.isReady = function() {
         }
         return true;
     } else {
-        if (this.loadState_ == 0) { //not loaded
+        if (this.loadState_ == 0 && !doNotLoad_) { //not loaded
             this.scheduleLoad();
         } //else load in progress
     }

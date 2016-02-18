@@ -89,10 +89,11 @@ Melown.MapTile.prototype.kill = function() {
     this.renderReady_ = false;
     this.lastSurface_ = null;
     this.lastState_ = null;
+    this.lastRenderState_ = null;
         
     this.heightMap_ = null;
     this.drawCommands_ = [];
-    this.credits_ = [];
+    this.credits_ = {};
 
     this.verifyChildren_ = false;
     this.children_ = [null, null, null, null];
@@ -121,6 +122,11 @@ Melown.MapTile.prototype.viewSwitched = function() {
         boundTextures_ : this.boundTextures_,
         surfaceGeodata_ : this.surfaceGeodata_
     };    
+
+    this.lastRenderState_ = {
+        drawCommands_ : this.drawCommands_,
+        credits_ : this.credits_
+    };
     
     //zero surface related data    
     this.verifyChildren_ = true;
@@ -132,7 +138,7 @@ Melown.MapTile.prototype.viewSwitched = function() {
             sequence_ : [],
             alpha_ : [],
             transparent_ : false,
-            viewCoutner_ : 0            
+            viewCoutner_ : 0
         };
     }
 
@@ -149,6 +155,9 @@ Melown.MapTile.prototype.viewSwitched = function() {
     this.virtual_ = false;
     this.virtualReady_ = false;
     this.virtualSurfaces_ = [];
+    
+    this.drawCommands_ = [];
+    this.credits_ = {};
 };
 
 Melown.MapTile.prototype.restoreLastState = function() {
