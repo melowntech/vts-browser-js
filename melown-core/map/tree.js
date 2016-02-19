@@ -256,25 +256,31 @@ Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_) 
         return false;
     }  
 
+    var ret_ = false;
+
     for (var i = 0; i < 4; i++) {
         if (tile_.children_[i]) {
             var childTile_ = tile_.children_[i];
             
             if (!childTile_.metanode_) {
-                return true;
+                ret_ = true;
+                continue;
             }
 
             if (childTile_.metanode_.hasGeometry() &&
                 this.camera_.bboxVisible(childTile_.metanode_.bbox_, cameraPos_)) {
 
                 if (!(childTile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(childTile_.drawCommands_))) {
-                    return true;
+                    //load data for child tile
+                    this.map_.drawSurfaceTile(childTile_, childTile_.metanode_, cameraPos_, 1, true, false);            
+                    ret_ = true;
+                    continue;
                 }
             }
         }
     }
 
-    return false;
+    return ret_;
 };
 
 Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_, reducedProcessing_) {
