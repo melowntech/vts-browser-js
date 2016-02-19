@@ -12,7 +12,6 @@ Melown.MapLoader = function(map_, numThreads_) {
     this.downloading_ = [];
 };
 
-
 Melown.MapLoader.prototype.load = function(path_, downloadFunction_) {
     var index_ = this.downloading_.indexOf(path_);
 
@@ -41,6 +40,14 @@ Melown.MapLoader.prototype.load = function(path_, downloadFunction_) {
     }
 };
 
+
+Melown.MapLoader.prototype.remove = function(path_) {
+    var index_ = this.pendingPath_.indexOf(path_);
+    if (index_ != -1) {
+        this.pending_.splice(index_, 1);
+        this.pendingPath_.splice(index_, 1);
+    }
+};
 
 Melown.MapLoader.prototype.update = function() {
     //if (this.pending_.length > 0) {

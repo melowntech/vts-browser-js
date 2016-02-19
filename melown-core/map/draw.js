@@ -15,7 +15,7 @@ Melown.Map.prototype.draw = function() {
 
 };
 
-Melown.Map.prototype.areDrawCommandsReady = function(commands_) {
+Melown.Map.prototype.areDrawCommandsReady = function(commands_, doNotLoad_) {
     for (var i = 0, li = commands_.length; i < li; i++) {
         var command_ = commands_[i];
         
@@ -25,8 +25,8 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_) {
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_; 
                 
-                if (!(mesh_ && mesh_.isReady() &&
-                      (!texture_  || (texture_ && texture_.isReady()))) ) {
+                if (!(mesh_ && mesh_.isReady(doNotLoad_) &&
+                      (!texture_  || (texture_ && texture_.isReady(doNotLoad_)))) ) {
                      return false;   
                 }
                 
@@ -69,7 +69,7 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, doNot
     }
 };
 
-Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, reducedProcessing_) {
+Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, preventRedener_, preventLoad_) {
     //free tile resources when map view changed
     //if (this.viewCounter_ != tile_.viewCoutner_) {
       //  tile_.kill();
@@ -86,58 +86,39 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                 tile_.surfaceMesh_ = new Melown.MapMesh(this, path_);
             }
 
-            if (this.drawBBoxes_ && !reducedProcessing_) {
+            if (this.drawBBoxes_ && !preventRedener_) {
                 this.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
             }
 
             //var drawLastRenderState_ = false;
 
-            if (tile_.drawCommands_.length > 0 && this.areDrawCommandsReady(tile_.drawCommands_)) {
-                this.processDrawCommands(cameraPos_, tile_.drawCommands_);
-                this.applyCredits(tile_);
+            if (tile_.drawCommands_.length > 0 && this.areDrawCommandsReady(tile_.drawCommands_, preventLoad_)) {
+                if (!preventRedener_) {
+                    this.processDrawCommands(cameraPos_, tile_.drawCommands_);
+                    this.applyCredits(tile_);
+                }
                 return;
             } else if (tile_.lastRenderState_){
                 //drawLastRenderState_ = true;
 
-                if (tile_.surfaceMesh_.isReady() == true) {
+                if (tile_.surfaceMesh_.isReady(true) == true) {
                     if (tile_.drawCommands_.length > 0) {
-                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
-                        this.applyCredits(tile_);
+                        if (!preventRedener_) {
+                            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
+                            this.applyCredits(tile_);
+                        }
                         return;
                     }
                 } else {
-                    this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
-                    this.applyCredits(tile_);
+                    if (!preventRedener_) {
+                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
+                        this.applyCredits(tile_);
+                    }
                 }
             }
 
-/*
-            if (tile_.drawCommands_.length > 0) {
-                if (this.areDrawCommandsReady(tile_.drawCommands_)) {
-                    this.processDrawCommands(cameraPos_, tile_.drawCommands_);
-                    this.applyCredits(tile_);
-                    //return;
-                } else if (tile_.lastRenderState_){
-                    this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_);
-                    this.applyCredits(tile_);
-    
-                    //if (tile_.drawCommands_.length > 0) {
-                    //}
-                }
 
-                return;
-
-            } /*else if (tile_.lastRenderState_){
-                this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_);
-                this.applyCredits(tile_);
-
-                if (tile_.drawCommands_.length > 0) {
-                    return;
-                }
-            }*/
-
-
-            if (tile_.surfaceMesh_.isReady() == true) {
+            if (tile_.surfaceMesh_.isReady(preventLoad_) && !preventLoad_) {
                 this.stats_.drawnTiles_++;
                 var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
@@ -155,7 +136,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                     var submesh_ = submeshes_[i];
                     
                     //debug bbox
-                    if (this.drawBBoxes_ && this.drawMeshBBox_ && !reducedProcessing_) {
+                    if (this.drawBBoxes_ && this.drawMeshBBox_ && !preventRedener_) {
                         submesh_.drawBBox(cameraPos_);
                     }
 
@@ -186,28 +167,24 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                                     tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                                                 }
 
-                                                if (!reducedProcessing_) {
-                                                    //set credits
-                                                    for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-                                                        tile_.credits_[node_.credits_[k]] = true;  
-                                                    }
-                                                            
-                                                    tile_.drawCommands_.push({
-                                                        type_ : "submesh",
-                                                        mesh_ : tile_.surfaceMesh_,
-                                                        submesh_ : i,
-                                                        texture_ : tile_.surfaceTextures_[i],
-                                                        material_ : "internal-nofog"
-                                                    });
+                                                //set credits
+                                                for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                                                    tile_.credits_[node_.credits_[k]] = true;  
                                                 }
+                                                        
+                                                tile_.drawCommands_.push({
+                                                    type_ : "submesh",
+                                                    mesh_ : tile_.surfaceMesh_,
+                                                    submesh_ : i,
+                                                    texture_ : tile_.surfaceTextures_[i],
+                                                    material_ : "internal-nofog"
+                                                });
                                             }
             
-                                            if (!reducedProcessing_) {
-                                                tile_.drawCommands_.push({
-                                                    type_ : "state",
-                                                    state_ : this.drawBlendedTileState_
-                                                });            
-                                            }
+                                            tile_.drawCommands_.push({
+                                                type_ : "state",
+                                                state_ : this.drawBlendedTileState_
+                                            });            
                                             
                                             var layers_ = bounds_.sequence_;
                                             for (var j = 0, lj = layers_.length; j < lj; j++) {
@@ -215,59 +192,53 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                                 if (texture_) {
                                                     //tile_.renderReady_ = true;
 
-                                                    if (!reducedProcessing_) {
-                                                        //set credits
-                                                        var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
-                                                        for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                                            tile_.credits_[credits_[k]] = true;  
-                                                        }
-
-                                                        tile_.drawCommands_.push({
-                                                            type_ : "submesh",
-                                                            mesh_ : tile_.surfaceMesh_,
-                                                            submesh_ : i,
-                                                            texture_ : texture_,
-                                                            material_ : "external-nofog",
-                                                            alpha_ : bounds_.alpha_[layers_[j]][1]
-                                                        });
-                                                    }
-                                                }
-                                            }
-                                            
-                                            if (!reducedProcessing_) {
-                                                tile_.drawCommands_.push({
-                                                    type_ : "submesh",
-                                                    mesh_ : tile_.surfaceMesh_,
-                                                    submesh_ : i,
-                                                    texture_ : null,
-                                                    material_ : "fog",
-                                                });                                                
-
-                                                tile_.drawCommands_.push({
-                                                    type_ : "state",
-                                                    state_ : this.drawTileState_
-                                                });  
-                                            }
-                                        } else {
-                                            var layerId_ = bounds_.sequence_[bounds_.sequence_.length-1];
-                                            var texture_ = tile_.boundTextures_[layerId_];
-                                            if (texture_) {
-                                                //tile_.renderReady_ = true;
-                                                if (!reducedProcessing_) {
                                                     //set credits
-                                                    var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;
+                                                    var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
                                                     for (var k = 0, lk = credits_.length; k < lk; k++) {
                                                         tile_.credits_[credits_[k]] = true;  
                                                     }
-                                                    
+
                                                     tile_.drawCommands_.push({
                                                         type_ : "submesh",
                                                         mesh_ : tile_.surfaceMesh_,
                                                         submesh_ : i,
                                                         texture_ : texture_,
-                                                        material_ : "external"
+                                                        material_ : "external-nofog",
+                                                        alpha_ : bounds_.alpha_[layers_[j]][1]
                                                     });
                                                 }
+                                            }
+                                            
+                                            tile_.drawCommands_.push({
+                                                type_ : "submesh",
+                                                mesh_ : tile_.surfaceMesh_,
+                                                submesh_ : i,
+                                                texture_ : null,
+                                                material_ : "fog",
+                                            });                                                
+
+                                            tile_.drawCommands_.push({
+                                                type_ : "state",
+                                                state_ : this.drawTileState_
+                                            });  
+                                        } else {
+                                            var layerId_ = bounds_.sequence_[bounds_.sequence_.length-1];
+                                            var texture_ = tile_.boundTextures_[layerId_];
+                                            if (texture_) {
+                                                //tile_.renderReady_ = true;
+                                                //set credits
+                                                var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;
+                                                for (var k = 0, lk = credits_.length; k < lk; k++) {
+                                                    tile_.credits_[credits_[k]] = true;  
+                                                }
+                                                
+                                                tile_.drawCommands_.push({
+                                                    type_ : "submesh",
+                                                    mesh_ : tile_.surfaceMesh_,
+                                                    submesh_ : i,
+                                                    texture_ : texture_,
+                                                    material_ : "external"
+                                                });
                                             }
                                         }
                                     } else {
@@ -275,7 +246,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                             
                                             var texture_ = tile_.boundTextures_[submesh_.textureLayer_];
                                             
-                                            if (texture_ && !reducedProcessing_) {
+                                            if (texture_) {
                                                 //tile_.renderReady_ = true;
                                                 var layer_ = tile_.boundLayers_[submesh_.textureLayer_];
                                                 
@@ -306,24 +277,19 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                                     tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                                                 }
                                                 
-                                                // else {
-                                                    if (!reducedProcessing_) {
-                                                        //set credits
-                                                        for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-                                                            tile_.credits_[node_.credits_[k]] = true;  
-                                                        }
-            
-                                                        //draw mesh
-                                                        tile_.drawCommands_.push({
-                                                            type_ : "submesh",
-                                                            mesh_ : tile_.surfaceMesh_,
-                                                            submesh_ : i,
-                                                            texture_ : tile_.surfaceTextures_[i],
-                                                            material_ : "internal"
-                                                        });
-                                                        
-                                                    }
-                                                //}
+                                                //set credits
+                                                for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                                                    tile_.credits_[node_.credits_[k]] = true;  
+                                                }
+    
+                                                //draw mesh
+                                                tile_.drawCommands_.push({
+                                                    type_ : "submesh",
+                                                    mesh_ : tile_.surfaceMesh_,
+                                                    submesh_ : i,
+                                                    texture_ : tile_.surfaceTextures_[i],
+                                                    material_ : "internal"
+                                                });
                                             }
             
                                         }
@@ -335,40 +301,45 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                         var path_ = tile_.surface_.getTexureUrl(tile_.id_, i);
                                         tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                                     } else {
-                                        if (!reducedProcessing_) {
-                                            //set credits
-                                            for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-                                                tile_.credits_[node_.credits_[k]] = true;  
-                                            }
-                                            
-                                            tile_.drawCommands_.push({
-                                                type_ : "submesh",
-                                                mesh_ : tile_.surfaceMesh_,
-                                                submesh_ : i,
-                                                texture_ : tile_.surfaceTextures_[i],
-                                                material_ : "internal"
-                                            });                                                
+                                        //set credits
+                                        for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                                            tile_.credits_[node_.credits_[k]] = true;  
                                         }
+                                        
+                                        tile_.drawCommands_.push({
+                                            type_ : "submesh",
+                                            mesh_ : tile_.surfaceMesh_,
+                                            submesh_ : i,
+                                            texture_ : tile_.surfaceTextures_[i],
+                                            material_ : "internal"
+                                        });                                                
                                     }
-            
                                 }
                             }                            
                         }
                     }
                 }
 
-                if (this.areDrawCommandsReady(tile_.drawCommands_)) {
-                    this.processDrawCommands(cameraPos_, tile_.drawCommands_);
-                    this.applyCredits(tile_);
+                if (this.areDrawCommandsReady(tile_.drawCommands_, preventLoad_)) {
+                    if (!preventRedener_) {
+                        this.processDrawCommands(cameraPos_, tile_.drawCommands_);
+                        this.applyCredits(tile_);
+                    }
                 } else if (tile_.lastRenderState_) {
-                    this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
-                    this.applyCredits(tile_);
+                    if (!preventRedener_) {
+                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
+                        this.applyCredits(tile_);
+                    }
                 }
                 
                 
             }
         }
     }
+
+};
+
+Melown.Map.prototype.updateTileRenderCommands = function(tile_, submeshes_) {
 
 };
 

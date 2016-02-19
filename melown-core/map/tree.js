@@ -78,6 +78,7 @@ Melown.MapTree.prototype.renderSurface = function(shift_) {
     //this.renderTracer_.trace(this.rootId_);
 };
 
+/*
 Melown.MapTree.prototype.traceRenderTile = function(tile_, params_) {
     if (tile_ == null || tile_.metanode_ == null) {
         return false;
@@ -123,8 +124,9 @@ Melown.MapTree.prototype.traceRenderTile = function(tile_, params_) {
 
     return [true, reducedProcessing_];
 };
+*/
 
-Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, reducedProcessing_) {
+Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, preventRedener_, preventLoad_) {
     if (tile_ == null || tile_.metanode_ == null) {
         return false;
     }
@@ -220,52 +222,59 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, reducedProc
         if (log2_) { console.log("drawn"); }
         if (log_) { console.log("draw-tile: drawn"); }
 
-/*
-        if (!this.map_.isSurfaceTileReady(tile_)) {
-            var childrenReady_ = false;
-            
-            //are children ready?   
-            for (var i = 0; i < 4; i++) {
-                if (tile_.children_[i] && tile_.children_[i].renderReady_) {
-                    childrenReady_ = true;
-                }
-            }
-        
-            return [childrenReady_, reducedProcessing_, childrenReady_];
-        
+          
+        if (this.canDrawDetailedLod(tile_)) {
+            this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, true, preventLoad_);
+            return [true, preventRedener_, true];
         } else {
-            */
-            this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, reducedProcessing_);
-/*        }*/
+            this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, preventRedener_, preventLoad_);
+        }
 
-
-        return [false, reducedProcessing_];
+        return [false, preventRedener_, preventLoad_];
         
     } else if (node_.hasGeometry() && pixelSize_[0] < this.config_.mapTexelSizeTolerance_) {
-        return [true, reducedProcessing_];
-        
-        var childrenReady_ = true;
-        
-        //are children ready?   
-        for (var i = 0; i < 4; i++) {
-            if (tile_.children_[i]) {
-                if (!this.map_.isSurfaceTileReady(tile_.children_[i])) { //tile_.children_[i].renderReady_) {
-                    childrenReady_ = false;
-                }
-            }
-        }
+        //return [true, preventRedener_];
         
         //if children are not ready then draw coarser lod
-        if (childrenReady_) {
-            return [false, reducedProcessing_];
-        } else {
+        if (this.canDrawCoarserLod(tile_, node_, cameraPos_)) {
             //draw coarsed load and continue tracing children but do not draw them
-            this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, true);            
-            return [true, true];
+            this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, preventRedener_, preventLoad_);            
+            return [true, true, preventLoad_];
         }
     }
 
-    return [true, reducedProcessing_];
+    //continue to more detailed lods
+    return [true, preventRedener_, preventLoad_];
+};
+
+Melown.MapTree.prototype.canDrawDetailedLod = function(tile_) {
+    return !(tile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_));
+};
+
+Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_) {
+    if (!node_.hasGeometry() || !(tile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_))) {
+        return false;
+    }  
+
+    for (var i = 0; i < 4; i++) {
+        if (tile_.children_[i]) {
+            var childTile_ = tile_.children_[i];
+            
+            if (!childTile_.metanode_) {
+                return true;
+            }
+
+            if (childTile_.metanode_.hasGeometry() &&
+                this.camera_.bboxVisible(childTile_.metanode_.bbox_, cameraPos_)) {
+
+                if (!(childTile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(childTile_.drawCommands_))) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 };
 
 Melown.MapTree.prototype.traceSurfaceTileHeight = function(tile_, params_, reducedProcessing_) {
