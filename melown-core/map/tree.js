@@ -128,7 +128,7 @@ Melown.MapTree.prototype.traceRenderTile = function(tile_, params_) {
 
 Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, preventRedener_, preventLoad_) {
     if (tile_ == null || tile_.metanode_ == null) {
-        return false;
+        return [false, preventRedener_, preventLoad_];
     }
 
     var node_ = tile_.metanode_;
@@ -174,7 +174,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, preventRede
     //}
 
     if (this.camera_.bboxVisible(node_.bbox_, cameraPos_) != true) {
-        return false;
+        return [false, preventRedener_, preventLoad_];
         //return true;
     }
 
@@ -223,7 +223,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, preventRede
         if (log_) { console.log("draw-tile: drawn"); }
 
           
-        if (this.canDrawDetailedLod(tile_)) {
+        if (this.config_.mapAllowHires_ && this.canDrawDetailedLod(tile_)) {
             this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, true, preventLoad_);
             return [true, preventRedener_, true];
         } else {
@@ -232,7 +232,7 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, preventRede
 
         return [false, preventRedener_, preventLoad_];
         
-    } else if (node_.hasGeometry() && pixelSize_[0] < this.config_.mapTexelSizeTolerance_) {
+    } else if (this.config_.mapAllowLowres_ && node_.hasGeometry() && pixelSize_[0] < this.config_.mapTexelSizeTolerance_) {
         //return [true, preventRedener_];
         
         //if children are not ready then draw coarser lod
@@ -248,7 +248,10 @@ Melown.MapTree.prototype.traceSurfaceTile = function(tile_, params_, preventRede
 };
 
 Melown.MapTree.prototype.canDrawDetailedLod = function(tile_) {
-    return !(tile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_));
+    if (tile_.lastRenderState_) {
+        //debugger;
+    }
+    return !(tile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_)) && !tile_.lastRenderState_;
 };
 
 Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_) {

@@ -409,6 +409,9 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapNavSamplesPerViewExtent":    this.config_.mapNavSamplesPerViewExtent_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 10); break;
         case "mapFog":                        this.config_.mapFog_ = Melown.validateBool(value_, false); break;
         case "mapIgnoreNavtiles":             this.config_.mapIgnoreNavtiles_ = Melown.validateBool(value_, false); break;
+        case "mapAllowHires":                 this.config_.mapAllowHires_ = Melown.validateBool(value_, true); break;
+        case "mapAllowLowres":                this.config_.mapAllowLowres_ = Melown.validateBool(value_, true); break;
+        case "mapAllowSmartSwitching":        this.config_.mapAllowSmartSwitching_ = Melown.validateBool(value_, true); break;
     }
 };
 
@@ -429,6 +432,9 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapNavSamplesPerViewExtent":    return this.config_.mapNavSamplesPerViewExtent_;
         case "mapFog":                        return this.config_.mapFog_;
         case "mapIgnoreNavtiles":             return this.config_.mapIgnoreNavtiles_;
+        case "mapAllowHires":                 return this.config_.mapAllowHires_;
+        case "mapAllowLowres":                return this.config_.mapAllowLowres_;
+        case "mapAllowSmartSwitching":        return this.config_.mapAllowSmartSwitching_;
     }
 };
 

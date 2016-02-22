@@ -123,10 +123,15 @@ Melown.MapTile.prototype.viewSwitched = function() {
         surfaceGeodata_ : this.surfaceGeodata_
     };    
 
-    this.lastRenderState_ = {
-        drawCommands_ : this.drawCommands_,
-        credits_ : this.credits_
-    };
+    if (this.drawCommands_.length > 0) {
+        this.lastRenderState_ = {
+            drawCommands_ : this.drawCommands_,
+            credits_ : this.credits_
+        };
+    } else {
+        this.lastRenderState_ = null;
+    }
+
     
     //zero surface related data    
     this.verifyChildren_ = true;

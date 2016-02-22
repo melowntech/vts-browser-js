@@ -97,6 +97,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                     this.processDrawCommands(cameraPos_, tile_.drawCommands_);
                     this.applyCredits(tile_);
                 }
+                tile_.lastRenderState_ = null;
                 return;
             } else if (tile_.lastRenderState_){
                 //drawLastRenderState_ = true;
@@ -325,6 +326,8 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                         this.processDrawCommands(cameraPos_, tile_.drawCommands_);
                         this.applyCredits(tile_);
                     }
+                    
+                    tile_.lastRenderState_ = null;
                 } else if (tile_.lastRenderState_) {
                     if (!preventRedener_) {
                         this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);

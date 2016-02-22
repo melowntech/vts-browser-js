@@ -27,16 +27,18 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
     //    tile_.id_[2] == 129088) {
     //    debugger;
     //}
-    if (!processFlag2_) {
+
+
+    if (tile_.metastorage_ == null) {
+        tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
+    }
+
+    if (this.map_.viewCounter_ != tile_.viewCoutner_) {
+        tile_.viewSwitched();
+        tile_.viewCoutner_ = this.map_.viewCounter_; 
+    }
         
-        if (tile_.metastorage_ == null) {
-            tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
-        }
-    
-        if (this.map_.viewCounter_ != tile_.viewCoutner_) {
-            tile_.viewSwitched();
-            tile_.viewCoutner_ = this.map_.viewCounter_; 
-        }
+    if (!processFlag2_) {
     
         if (tile_.surface_ == null && tile_.virtualSurfaces_.length == 0) {
             this.checkTileSurface(tile_);
