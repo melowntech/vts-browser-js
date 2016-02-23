@@ -127,6 +127,94 @@ Melown.ControlMode.MapObserver.prototype.constrainPosition = function(pos_) {
         
   //  }
 
+
+/*
+    var maxIter_ = 1000;
+
+    var cameraMinDesiredDistance_ = this.cameraMinDesiredDistance_;
+    var cameraConstrainDistance_ = this.cameraConstrainDistance_;
+
+    if (this.ignoreTexelSize_ == true) {
+        cameraConstrainDistance_ = 1;
+        cameraMinDesiredDistance_ = 0.5;
+    }
+
+
+    var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (this.position_[2] * Math.tan(Vadstena.radians(3.0))));
+    var cameraHeight_ = this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_;
+
+    if (cameraHeight_ < hmax_) {
+
+        if (this.position_[2] < hmax_) {
+
+            var getFinalDistance = (function(start_, end_, level_) {
+
+                var value_ = (start_ + end_) * 0.5;
+
+                if (level_ > 20) {
+                    return value_;
+                } else {
+
+                    this.position_[2] = value_;
+                    this.updateCamera();
+
+                    if ((this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_) < hmax_) {
+                        return getFinalDistance(start_, value_, level_+1);
+                    } else {
+                        return getFinalDistance(value_, end_, level_+1);
+                    }
+
+                }
+
+            }).bind(this);
+
+            this.position_[2] = getFinalDistance(this.position_[2]+250, this.position_[2], 0);
+            //this.position_[2] = getFinalDistance(this.position_[2]+cameraConstrainDistance_, this.position_[2], 0);
+
+            this.updateCamera();
+
+        } else {
+
+            var getFinalOrientation = (function(start_, end_, level_) {
+
+                var value_ = (start_ + end_) * 0.5;
+
+                if (level_ > 20) {
+                    return value_;
+                } else {
+
+                    this.orientation_[1] = value_;
+                    this.updateCamera();
+
+                    if ((this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_) < hmax_) {
+                        return getFinalOrientation(start_, value_, level_+1);
+                    } else {
+                        return getFinalOrientation(value_, end_, level_+1);
+                    }
+
+                }
+
+            }).bind(this);
+
+            this.orientation_[1] = getFinalOrientation(-89, Math.min(-1, this.orientation_[1]), 0);
+            this.updateCamera();
+
+        }
+
+    } else {
+
+        var distance_ = cameraMinDesiredDistance_ * 0.5;
+
+        var hmax2_ = Math.max(distance_, (this.position_[2] * (0.1*(20.0/distance_))));
+
+
+        //apply cameraMinDesiredDistance_ directly
+        if (cameraHeight_ >= hmax2_) {
+            //this.cameraMinDistance_ = cameraMinDesiredDistance_;
+            //cameraConstrainDistance_ = this.cameraMinDistance_ * 0.5;
+        }
+    }
+*/
     return pos_;
 };
 
