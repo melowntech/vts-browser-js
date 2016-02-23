@@ -85,6 +85,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.ignoreTexelSize_ = false;
     this.drawFog_ = this.config_.mapFog_;
     this.debugTextSize_ = 1.0;
+    this.fogDensity_ = 0;
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});

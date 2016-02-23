@@ -2,6 +2,7 @@
 
 Melown.Map.prototype.draw = function() {
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
+    this.updateFogDensity();
 
     //loop map trees
     for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
@@ -508,4 +509,30 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
 };
 
 
+Melown.Map.prototype.updateFogDensity = function() {
+    // the fog equation is: exp(-density*distance), this gives the fraction
+    // of the original color that is still visible at some distance
+
+    // we define visibility as a distance where only 5% of the original color
+    // is visible; from this it is easy to calculate the correct fog density
+
+    //var density_ = Math.log(0.05) / this.core_.coreConfig_.cameraVisibility_;
+    var pos_ = this.getPosition();
+    var orientation_ = pos_.getOrientation();
+    
+    var cameraVisibility_ = this.camera_.getFar();
+    var density_ = Math.log(0.05) / (cameraVisibility_ * 10*(Math.max(5,-orientation_[1])/90));
+    density_ *= (5.0) / (Math.min(50000, Math.max(this.cameraDistance_, 1000)) /5000);
+
+    if (this.drawFog_ == false) {
+        density_ = 0;
+    }
+    
+    //reduce fog when camera is facing down
+    //density_ *= 1.0 - (-this.orientation_[0]/90)
+    
+    this.fogDensity_ = density_;
+
+    //console.log("fden: " + density_);
+};
 

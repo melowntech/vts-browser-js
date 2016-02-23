@@ -302,7 +302,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
 
             case "external":
                 program_.setFloat("uAlpha", 1);
-                renderer_.fogSetup(program_, "uFogDensity");
+                program_.setFloat("uFogDensity", this.map_.fogDensity_);
                 break;
 
             case "external-nofog":

@@ -74,7 +74,9 @@ Melown.MapSrs.prototype.getInfo = function() {
         "srsModifiers" : this.srsModifiers_,
         "type" : this.type_,
         "vdatum" : this.vdatum_,
-        "srsDefEllps" : this.srsDef_
+        "srsDefEllps" : this.srsDef_,
+        "a" : this.srsInfo_["a"],
+        "b" : this.srsInfo_["b"]
     };
 };
 
