@@ -19,7 +19,7 @@ Melown.ControlMode.MapObserver = function(browser_) {
 };
 
 Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     if (map_ == null) {
         return;
     }
@@ -40,7 +40,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
             var pos2_ = map_.convertPositionHeightMode(pos_, "float", true);
             if (pos2_ != null) {
                 pos_ = pos2_;
-                map_.setPosition(pos_);
+                this.setPosition(pos_);
             }
         } else {
             var azimuth_ = Melown.radians(azimuthDistance_[0]);
@@ -62,7 +62,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
 };
 
 Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     if (map_ == null || !this.config_.zoomAllowed_) {
         return;
     }
@@ -84,8 +84,54 @@ Melown.ControlMode.MapObserver.prototype.keydown = function(event_) {
 Melown.ControlMode.MapObserver.prototype.keypress = function(event_) {
 };
 
+Melown.ControlMode.MapObserver.prototype.setPosition = function(pos_) {
+    pos_ = this.constrainPosition(pos_);
+    var map_ = this.browser_.getMap();
+    map_.setPosition(pos_);
+};
+
+Melown.ControlMode.MapObserver.prototype.constrainPosition = function(pos_) {
+
+//    if (this.isNavigationSRSProjected()) {
+        
+        
+//    } else {
+        
+        //reduce tilt whe you are far off the planet
+        
+        var map_ = this.browser_.getMap();
+        var rf_ = map_.getReferenceFrame();
+        var srs_ = map_.getSrsInfo(rf_["navigationSrs"]);
+        
+        var distance_ = map_.getPositionViewExtent(pos_) / Math.tan(Melown.radians(map_.getPositionFov(pos_)*0.5));
+        
+        if (srs_["a"]) {
+            
+            //var factor_ = Math.min(distance_ / (srs_["a"]*0.1), 1.0); 
+            var factor_ = Math.min(distance_ / (srs_["a"]*0.5), 1.0);
+            var maxTilt_ = 20 + ((-90) - 20) * factor_; 
+            
+            var o = map_.getPositionOrientation(pos_);
+            
+            //o[1] = o[1] + ((-90) - o[1]) * factor_;
+            
+            if (o[1] > maxTilt_) {
+                o[1] = maxTilt_;
+            }
+
+            pos_ = map_.setPositionOrientation(pos_, o);
+        }
+        
+
+        //get        
+        
+  //  }
+
+    return pos_;
+};
+
 Melown.ControlMode.MapObserver.prototype.reduceFloatingHeight = function(factor_) {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     var pos_ = map_.getPosition();
     var coords_ = map_.getPositionCoords(pos_);
     
@@ -98,20 +144,20 @@ Melown.ControlMode.MapObserver.prototype.reduceFloatingHeight = function(factor_
             }
 
             pos_ = map_.setPositionCoords(pos_, coords_);
-            map_.setPosition(pos_);
+            this.setPosition(pos_);
         }
     }
 };
 
 Melown.ControlMode.MapObserver.prototype.isNavigationSRSProjected = function() {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     var rf_ = map_.getReferenceFrame();
     var srs_ = map_.getSrsInfo(rf_["navigationSrs"]);
     return (srs_) ? (srs_["type"] == "projected") : false; 
 };
 
 Melown.ControlMode.MapObserver.prototype.getAzimuthAndDistance = function(dx_, dy_) {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     var pos_ = map_.getPosition();
     var viewExtent_ = map_.getPositionViewExtent(pos_);
     var fov_ = map_.getPositionFov(pos_)*0.5;
@@ -128,7 +174,7 @@ Melown.ControlMode.MapObserver.prototype.getAzimuthAndDistance = function(dx_, d
 };
 
 Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     if (map_ == null) {
         return;
     }
@@ -250,7 +296,7 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
 
     //set new position
     if (update_) {
-        map_.setPosition(pos_);        
+        this.setPosition(pos_);        
     }
     
 };

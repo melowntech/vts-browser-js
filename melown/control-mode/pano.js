@@ -51,7 +51,7 @@ Melown.ControlMode.Pano.prototype.up = function(event_) {
 };
 
 Melown.ControlMode.Pano.prototype.wheel = function(event_) {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     if (map_ == null) {
         return;
     }
@@ -79,7 +79,7 @@ Melown.ControlMode.Pano.prototype.tick = function(event_) {
         return;
     }
 
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     if (map_ == null) {
         return;
     }

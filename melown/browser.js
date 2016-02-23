@@ -30,6 +30,10 @@ Melown.Browser.prototype.getCore = function() {
     return this.core_;
 };
 
+Melown.Browser.prototype.getMap = function() {
+    return this.core_.getMap();
+};
+
 Melown.Browser.prototype.getUI = function() {
     return this.ui_;
 };
