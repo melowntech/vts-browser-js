@@ -6,7 +6,7 @@ Melown.RendererInterface = function(renderer_) {
     this.gpu_ = renderer_.gpu_;
 };
 
-Melown.RendererInterface.prototype["clear"] = function(options_) {
+Melown.RendererInterface.prototype.clear = function(options_) {
     if (options_ != null) {
         this.gpu_.clear((options_["clearDepth"] || true),
                         (options_["clearColor"] || false),
@@ -15,7 +15,7 @@ Melown.RendererInterface.prototype["clear"] = function(options_) {
     }
 };
 
-Melown.RendererInterface.prototype["createState"] = function(options_) {
+Melown.RendererInterface.prototype.createState = function(options_) {
     if (options_ != null) {
         return null;
     }
@@ -33,13 +33,13 @@ Melown.RendererInterface.prototype["createState"] = function(options_) {
     return this.gpu_.createState(stateOptions_);
 };
 
-Melown.RendererInterface.prototype["setState"] = function(state_) {
+Melown.RendererInterface.prototype.setState = function(state_) {
     if (state_ != null) {
         this.gpu_.setState(state_);
     }
 };
 
-Melown.RendererInterface.prototype["createTexture"] = function(options_) {
+Melown.RendererInterface.prototype.createTexture = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return null;
     }
@@ -72,13 +72,13 @@ Melown.RendererInterface.prototype["createTexture"] = function(options_) {
     return null;
 };
 
-Melown.RendererInterface.prototype["removeTexture"] = function(texture_) {
+Melown.RendererInterface.prototype.removeTexture = function(texture_) {
     if (texture_) {
         texture_.kill();
     }
 };
 
-Melown.RendererInterface.prototype["createMesh"] = function(options_) {
+Melown.RendererInterface.prototype.createMesh = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return null;
     }
@@ -94,13 +94,13 @@ Melown.RendererInterface.prototype["createMesh"] = function(options_) {
     return new Melown.GpuMesh(this.gpu_, data_, 0, this.renderer_.core_);
 };
 
-Melown.RendererInterface.prototype["removeMesh"] = function(mesh_) {
+Melown.RendererInterface.prototype.removeMesh = function(mesh_) {
     if (mesh_) {
         mesh_.kill();
     }
 };
 
-Melown.RendererInterface.prototype["createProgram"] = function(options_) {
+Melown.RendererInterface.prototype.createProgram = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return null;
     }
@@ -113,24 +113,24 @@ Melown.RendererInterface.prototype["createProgram"] = function(options_) {
     }
 };
 
-Melown.RendererInterface.prototype["removeResource"] = function(resource_) {
+Melown.RendererInterface.prototype.removeResource = function(resource_) {
     if (resource_ != null && resource_.kill != null) {
         resource.kill();
     }
 };
 
-Melown.RendererInterface.prototype["addJob"] = function(options_) {
+Melown.RendererInterface.prototype.addJob = function(options_) {
 };
 
-Melown.RendererInterface.prototype["clearJobs"] = function(options_) {
+Melown.RendererInterface.prototype.clearJobs = function(options_) {
 };
 
 
 
-Melown.RendererInterface.prototype["drawMesh"] = function(mesh_, options_) {
+Melown.RendererInterface.prototype.drawMesh = function(mesh_, options_) {
 };
 
-Melown.RendererInterface.prototype["drawImage"] = function(options_) {
+Melown.RendererInterface.prototype.drawImage = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return;
     }
@@ -150,7 +150,7 @@ Melown.RendererInterface.prototype["drawImage"] = function(options_) {
     this.renderer_.drawImage(rect_[0], rect_[1], rect_[2], rect_[3], options_["texture"], color_, depth_, depthTest_, blend_, writeDepth_, useState_);
 };
 
-Melown.RendererInterface.prototype["drawBillboard"] = function(options_) {
+Melown.RendererInterface.prototype.drawBillboard = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return;
     }
@@ -169,7 +169,7 @@ Melown.RendererInterface.prototype["drawBillboard"] = function(options_) {
     this.renderer_.drawBillboard(mvp_, options_["texture"], color_, depthTest_, blend_, writeDepth_, useState_);
 };
 
-Melown.RendererInterface.prototype["drawLineString"] = function(options_) {
+Melown.RendererInterface.prototype.drawLineString = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return;
     }
@@ -189,35 +189,35 @@ Melown.RendererInterface.prototype["drawLineString"] = function(options_) {
     this.renderer_.drawLineString(points_, size_, color_, depthTest_, blend_, useState_);
 };
 
-Melown.RendererInterface.prototype["drawJobs"] = function(options_) {
+Melown.RendererInterface.prototype.drawJobs = function(options_) {
 };
 
 
-Melown.RendererInterface.prototype["drawBBox"] = function(options_) {
+Melown.RendererInterface.prototype.drawBBox = function(options_) {
 };
 
-Melown.RendererInterface.prototype["drawDebugText"] = function(options_) {
+Melown.RendererInterface.prototype.drawDebugText = function(options_) {
 };
 
-Melown.RendererInterface.prototype["getCanvasCoords"] = function(point_, mvp_) {
+Melown.RendererInterface.prototype.getCanvasCoords = function(point_, mvp_) {
     return this.renderer_.project2(point_, mvp_);
 };
 
-Melown.RendererInterface.prototype["getCanvasSize"] = function(point_, mvp_) {
+Melown.RendererInterface.prototype.getCanvasSize = function(point_, mvp_) {
     return this.renderer_.curSize_.slice();
 };
 
-Melown.RendererInterface.prototype["setConfigParams"] = function(params_) {
+Melown.RendererInterface.prototype.setConfigParams = function(params_) {
     this.renderer_.setConfigParams(params_);
     return this;
 };
 
-Melown.RendererInterface.prototype["setConfigParam"] = function(key_, value_) {
+Melown.RendererInterface.prototype.setConfigParam = function(key_, value_) {
     this.renderer_.setConfigParam(key_, value_);
     return this;
 };
 
-Melown.RendererInterface.prototype["getConfigParam"] = function(key_) {
+Melown.RendererInterface.prototype.getConfigParam = function(key_) {
     return this.renderer_.getConfigParam(key_, value_);
 };
 

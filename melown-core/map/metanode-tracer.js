@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_) {
+Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_, childSelectingFunction_) {
     this.map_ = mapTree_.map_;
     this.surfaceTree_ = mapTree_.surfaceTree_;
     this.metastorageTree_ = mapTree_.metastorageTree_;
@@ -9,6 +9,7 @@ Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_)
     this.rootId_ = mapTree_.rootId_;
     this.surface_ = surface_; //????
     this.nodeProcessingFunction_ = nodeProcessingFunction_;
+    this.childSelectingFunction_ = childSelectingFunction_;
     this.params_ = null;
 };
 
@@ -28,11 +29,11 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
     //    debugger;
     //}
 
-
-    if (tile_.metastorage_ == null) {
+    if (tile_.metastorage_ == null) {  //metastorage stores metatiles
         tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
     }
 
+    //has map view changed?
     if (this.map_.viewCounter_ != tile_.viewCoutner_) {
         tile_.viewSwitched();
         tile_.viewCoutner_ = this.map_.viewCounter_; 
@@ -40,55 +41,16 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
         
     if (!processFlag2_) {
     
+        //provide surface for tile
         if (tile_.surface_ == null && tile_.virtualSurfaces_.length == 0) {
             this.checkTileSurface(tile_);
         }
     
+        //provide metanode for tile
         if (tile_.metanode_ == null) {
-            if (tile_.virtual_) {
-                if (!this.isVirtualMetanodeReady(tile_)) {
-                    return;
-                }
-            }
-    
-            //var surface_ = this.surface_ || tile_.surface_; ?????
-            var surface_ = tile_.surface_;
-    
-            if (surface_ == null) {
-                return;
-            }
-    
-            var metatile_ = tile_.metastorage_.getMetatile(surface_);
-    
-            if (metatile_ == null) {
-                metatile_ = new Melown.MapMetatile(tile_.metastorage_, surface_);
-                tile_.metastorage_.addMetatile(metatile_);
-            }
-        
-            if (metatile_.isReady() == true) {
-    
-                if (!tile_.virtual_) {
-                    tile_.metanode_ = metatile_.getNode(tile_.id_);
-                }
-    
-                if (tile_.metanode_ != null) {
-                    /*
-                    if (tile_.id_[0] == 15) {
-                        tile_ = tile_;
-                    }*/
-    
-                    tile_.metanode_.tile_ = tile_; //used only for validate
-    
-                    for (var i = 0; i < 4; i++) {
-                        if (tile_.metanode_.hasChild(i) == true) {
-                            tile_.addChild(i);
-                        } else {
-                            tile_.removeChildByIndex(i);
-                        }
-                    }
-                }
-    
-            } else {
+            var ret_ = this.checkTileMetanode(tile_);
+            
+            if (!ret_) { //metanode is not ready yet
                 return;
             }
         }
@@ -97,7 +59,12 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
 
 
     if (tile_.metanode_ == null) { //only for wrong data
-        return;
+            return;
+        if (tile.lastState_ != null && tile_.lastState_.metanode_ != null) {
+            
+        } else {
+            return;
+        }
     }
 
     if (tile_.lastSurface_ && tile_.lastSurface_ == tile_.surface_) {
@@ -113,67 +80,14 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
         //tile_ = tile_;
     //}
     
+    //process tile e.g. draw or get height
     var res_ = this.nodeProcessingFunction_(tile_, this.params_, processFlag_, processFlag2_); 
-
-    if (res_[0] == true) {
-
-        if (this.params_ && this.params_.traceHeight_) {
-            var coords_ = this.params_.coords_;
-            var extents_ = this.params_.extents_;
-            var center_ = [(extents_.ll_[0] + extents_.ur_[0]) *0.5,
-                           (extents_.ll_[1] + extents_.ur_[1]) *0.5];
-
-            //ul,ur,ll,lr
-
-            var right_ = (coords_[0] >= center_[0]);
-            var bottom_ = (coords_[1] >= center_[1]);
-
-            if (right_) {
-                extents_.ll_[0] = center_[0];
-                if (bottom_) {
-                    extents_.ll_[1] = center_[1];
-                } else {
-                    extents_.ur_[1] = center_[1];
-                }
-            } else {
-                extents_.ur_[0] = center_[0];
-                if (bottom_) {
-                    extents_.ll_[1] = center_[1];
-                } else {
-                    extents_.ur_[1] = center_[1];
-                }
-            }
-
-            /*
-            if (extents_.ll_[0] > extents_.ur_[0]) {
-                right_ = !right_;
-            }
-
-            if (extents_.ll_[1] < extents_.ur_[1]) {
-                bottom_ = !bottom_;
-            }*/
-
-            if (right_) {
-                if (bottom_) {
-                    this.traceTile(tile_.children_[1]);
-                } else {
-                    this.traceTile(tile_.children_[3]);
-                }
-
-            } else {
-                if (bottom_) {
-                    this.traceTile(tile_.children_[0]);
-                } else {
-                    this.traceTile(tile_.children_[2]);
-                }
-            }
-
-
-        } else {
-            //trace children
-            for (var i = 0; i < 4; i++) {
-                this.traceTile(tile_.children_[i], res_[1], res_[2]);
-            }
+    
+    if (res_[0] == true) { //we need to go deeper
+        var children_ = this.childSelectingFunction_(tile_, this.params_);
+        
+        for (var i = 0, li = children_.length; i < li; i++) {
+            this.traceTile(tile_.children_[children_[i]], res_[1], res_[2]);
         }
     }
 };
@@ -240,61 +154,72 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
                     }
                 }
             }
-            
-            /*
-            //set top most surface
-            if (tile_.surface_ == null) { // && res_[1] == false) {
-                //reset tile data
-                if (tile_.surface_ != surface_) {
-                    tile_.surfaceMesh_ = null;
-                    tile_.surfaceTexture_ = null;
-                    tile_.surfaceGeodata_ = null;
-                    tile_.heightMap_ = null;
-                }
-    
-                tile_.surface_ = surface_;
-                //tile_.empty_ = false;
-            }*/
     
             //store surface
             tile_.virtualSurfaces_.push(surface_);        
         }
-
-        //!!!!!!debug hack
-        //tile_.virtualSurfaces_.push(sequence_[i]);        
     }
 
-    //if (tile_.surface_ != null) {
-        if (tile_.virtualSurfaces_.length > 1) {
-            tile_.virtual_ = true;
+    //
+    if (tile_.virtualSurfaces_.length > 1) {
+        tile_.virtual_ = true;
+    } else {
+        tile_.surface_ = tile_.virtualSurfaces_[0];
+    }
+
+};
+
+Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_) {
+    if (tile_.virtual_) {
+        if (this.isVirtualMetanodeReady(tile_)) {
+            tile_.metanode_ = this.createVirtualMetanode(tile_);
         } else {
-            tile_.surface_ = tile_.virtualSurfaces_[0];
-        }
-        
-        return;
-    //}
-/*
-    //find surfaces with metatile
-    for (var i = sequence_.length - 1; i >= 0; i--) {
-        if (sequence_[i].hasMetatile(tile_.id_) == true) {
-
-            var surface_ = sequence_[i];
-
-            //reset tile data
-            if (tile_.surface_ != surface_) {
-                tile_.surfaceMesh_ = null;
-                tile_.surfaceTexture_ = null;
-                tile_.surfaceGeodata_ = null;
-                tile_.heightMap_ = null;
-            }
-
-            tile_.surface_ = surface_;
-            //tile_.empty_ = true;
-
-            return;
+            return false;
         }
     }
-*/
+
+    //var surface_ = this.surface_ || tile_.surface_; ?????
+    var surface_ = tile_.surface_;
+
+    if (surface_ == null) {
+        return false;
+    }
+
+    var metatile_ = tile_.metastorage_.getMetatile(surface_);
+
+    if (metatile_ == null) {
+        metatile_ = new Melown.MapMetatile(tile_.metastorage_, surface_);
+        tile_.metastorage_.addMetatile(metatile_);
+    }
+
+    if (metatile_.isReady() == true) {
+
+        if (!tile_.virtual_) {
+            tile_.metanode_ = metatile_.getNode(tile_.id_);
+        }
+
+        if (tile_.metanode_ != null) {
+            /*
+            if (tile_.id_[0] == 15) {
+                tile_ = tile_;
+            }*/
+
+            tile_.metanode_.tile_ = tile_; //used only for validate
+
+            for (var i = 0; i < 4; i++) {
+                if (tile_.metanode_.hasChild(i) == true) {
+                    tile_.addChild(i);
+                } else {
+                    tile_.removeChildByIndex(i);
+                }
+            }
+        }
+
+    } else {
+        return false;
+    }
+    
+    return true;
 };
 
 Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_) {
@@ -322,7 +247,6 @@ Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_) {
     }
     
     if (readyCount_ == li) {
-        tile_.metanode_ = this.createVirtualMetanode(tile_);
         return true;        
     } else {
         return false;

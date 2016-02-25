@@ -489,14 +489,15 @@ Melown.Map.prototype.update = function() {
 
     this.lastPosition_ = this.position_.clone();
 
-    this.stats_.begin();
-
     var rect_ = this.renderer_.div_.getBoundingClientRect();
 
     if (this.renderer_.curSize_[0] != rect_.width || this.renderer_.curSize_[1] != rect_.height) {
         this.renderer_.onResize();
         this.dirty_ = true;
     }
+
+    var dirty_ = this.dirty_;
+    this.stats_.begin(dirty_);
 
     if (!this.loaderSuspended_) {
         this.loader_.update();
@@ -510,7 +511,7 @@ Melown.Map.prototype.update = function() {
         this.core_.callListener("map-update", {});
     }
 
-    this.stats_.end();
+    this.stats_.end(dirty_);
 
 };
 

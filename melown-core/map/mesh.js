@@ -293,7 +293,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         switch(type_) {
             case "internal":
             case "fog":
-                renderer_.fogSetup(program_, "uFogDensity");
+                program_.setFloat("uFogDensity", this.map_.fogDensity_);
                 break;
 
             case "internal-nofog":

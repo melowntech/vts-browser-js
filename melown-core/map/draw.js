@@ -216,7 +216,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                                 mesh_ : tile_.surfaceMesh_,
                                                 submesh_ : i,
                                                 texture_ : null,
-                                                material_ : "fog",
+                                                material_ : "fog"
                                             });                                                
 
                                             tile_.drawCommands_.push({

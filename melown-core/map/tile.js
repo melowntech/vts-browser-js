@@ -120,7 +120,8 @@ Melown.MapTile.prototype.viewSwitched = function() {
         surfaceMesh_ : this.surfaceMesh_,
         surfaceTextures_ : this.surfaceTextures_,
         boundTextures_ : this.boundTextures_,
-        surfaceGeodata_ : this.surfaceGeodata_
+        surfaceGeodata_ : this.surfaceGeodata_,
+        metanode_ : this.metanode_
     };    
 
     if (this.drawCommands_.length > 0) {

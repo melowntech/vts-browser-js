@@ -14,6 +14,7 @@ Melown.MapStats = function(map_) {
     this.renderTime_ = 0;
     this.renderTimeTmp_ = 0;
     this.renderTimeBegin_ = 0;
+    this.lastRenderTime_ = 0;
 
     this.recordGraphs_ = false;
     this.graphsTimeIndex_ = 0;
@@ -72,22 +73,29 @@ Melown.MapStats.prototype.resetGraphs = function() {
     }
 };
 
-Melown.MapStats.prototype.begin = function() {
-    this.drawnTiles_ = 0;
-    this.drawnFaces_ = 0;
+Melown.MapStats.prototype.begin = function(dirty_) {
+    if (dirty_) {
+        this.drawnTiles_ = 0;
+        this.drawnFaces_ = 0;
+    }
     this.counter_++;
     this.statsCycle_++;
 
     this.renderTimeBegin_ = performance.now();
 };
 
-Melown.MapStats.prototype.end = function() {
+Melown.MapStats.prototype.end = function(dirty_) {
     var timer_ = performance.now();
 
     var renderTime_ = timer_ - this.renderTimeBegin_;
     var frameTime_ = timer_ - this.frameTime_;
     this.frameTime_ = timer_;
-    this.renderTimeTmp_ += renderTime_;
+    if (dirty_) { 
+        this.renderTimeTmp_ += renderTime_;
+        this.lastRenderTime_ = renderTime_;
+    } else {
+        this.renderTimeTmp_ += this.lastRenderTime_;
+    }
 
     if (this.recordGraphs_) {
         var i = this.graphsTimeIndex_;
@@ -108,7 +116,7 @@ Melown.MapStats.prototype.end = function() {
     }
 
 
-    if ((this.statsCycle_ % 100) == 0) {
+    if ((this.statsCycle_ % 50) == 0) {
         this.renderTime_ = this.renderTimeTmp_ / 100;
         this.fps_ = 1000 / this.renderTime_;
         this.renderTimeTmp_ = 0;
