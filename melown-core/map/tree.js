@@ -291,21 +291,23 @@ Melown.MapTree.prototype.traceHeightChild = function(tile_, params_, res_) {
     }
 };
 
-Melown.MapTree.prototype.traceTileHeight = function(tile_, params_, reducedProcessing_) {
+Melown.MapTree.prototype.traceTileHeight = function(tile_, params_, reducedProcessing_, preventLoad_) {
     if (tile_ == null || (tile_.id_[0] > params_.desiredLod_ && params_.heightMap_)) {
-        return [false, reducedProcessing_];
+        return [false, reducedProcessing_, preventLoad_];
     }
 
     var node_ = tile_.metanode_;
 
     if (node_ == null) {
-        return [false, reducedProcessing_];
+        return [false, reducedProcessing_, preventLoad_];
     }
 
     if (node_.hasNavtile()) {
         if (tile_.heightMap_ == null) {
-            var path_ = tile_.surface_.getNavUrl(tile_.id_);
-            tile_.heightMap_ = new Melown.MapTexture(this.map_, path_, true);
+            if (!preventLoad_) {
+                var path_ = tile_.surface_.getNavUrl(tile_.id_);
+                tile_.heightMap_ = new Melown.MapTexture(this.map_, path_, true);
+            }
         } else {
             if (tile_.heightMap_.isReady() == true) {
                 params_.parent_ = {
@@ -320,30 +322,30 @@ Melown.MapTree.prototype.traceTileHeight = function(tile_, params_, reducedProce
                     ll_ : params_.extents_.ll_.slice(),
                     ur_ : params_.extents_.ur_.slice()
                 };
-                return [true, reducedProcessing_];
+                return [true, reducedProcessing_, preventLoad_];
             }
         }
     } else {
         params_.metanode_ =  node_;
-        return [true, reducedProcessing_];
+        return [true, reducedProcessing_, preventLoad_];
     }
 
-    return [false, reducedProcessing_];
+    return [false, reducedProcessing_, preventLoad_];
 };
 
-Melown.MapTree.prototype.traceTileHeightNodeOnly = function(tile_, params_, reducedProcessing_) {
+Melown.MapTree.prototype.traceTileHeightNodeOnly = function(tile_, params_, reducedProcessing_, preventLoad_) {
     if (tile_ == null || tile_.id_[0] > params_.desiredLod_) {
-        return [false, reducedProcessing_];
+        return [false, reducedProcessing_, preventLoad_];
     }
 
     var node_ = tile_.metanode_;
 
     if (node_ == null) {
-        return [false, reducedProcessing_];
+        return [false, reducedProcessing_, preventLoad_];
     }
 
     params_.metanode_ =  node_;
-    return [true, reducedProcessing_];
+    return [true, reducedProcessing_, preventLoad_];
 };
 
 

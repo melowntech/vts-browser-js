@@ -339,6 +339,11 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                 
             }
         }
+    } else {
+        if (!preventRedener_ && tile_.lastRenderState_) {
+            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
+            this.applyCredits(tile_);
+        }
     }
 
 };
@@ -484,7 +489,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
 
     //draw face count
     if (this.drawFaceCount_ == true && mesh_ != null) {
-        var text_ = "" + mesh_.faces_ + " - " + mesh_.submeshes_.length;
+        var text_ = "" + mesh_.faces_ + " - " + mesh_.submeshes_.length + ((tile_.surface_ && tile_.surface_.glue_) ? " - 1" : " - 0");
         this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [0,255,0,255], pos_[2]);
     }
 

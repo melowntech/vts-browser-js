@@ -11,6 +11,7 @@ Melown.MapTile = function(map_, parent_, id_) {
 
     this.metanode_ = null;  //[metanode, cacheItem]
     this.metastorage_ = null; //link to metatile storage
+    this.lastMetanode_ = null;
 
     this.surface_ = null; //surface or glue
     this.surfaceMesh_ = null;
@@ -120,8 +121,7 @@ Melown.MapTile.prototype.viewSwitched = function() {
         surfaceMesh_ : this.surfaceMesh_,
         surfaceTextures_ : this.surfaceTextures_,
         boundTextures_ : this.boundTextures_,
-        surfaceGeodata_ : this.surfaceGeodata_,
-        metanode_ : this.metanode_
+        surfaceGeodata_ : this.surfaceGeodata_
     };    
 
     if (this.drawCommands_.length > 0) {
@@ -137,7 +137,12 @@ Melown.MapTile.prototype.viewSwitched = function() {
     //zero surface related data    
     this.verifyChildren_ = true;
     this.renderReady_ = false;
-    this.metanode_ = null;
+    this.lastMetanode_ = this.metanode_;
+    //this.metanode_ = null; //keep old value for smart switching
+
+
+    //this.lastMetanode_ = null;
+    //this.metanode_ = null;
 
     for (var key_ in this.bounds_) {
         this.bounds_[key_] = {

@@ -36,7 +36,12 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
     //has map view changed?
     if (this.map_.viewCounter_ != tile_.viewCoutner_) {
         tile_.viewSwitched();
-        tile_.viewCoutner_ = this.map_.viewCounter_; 
+        tile_.viewCoutner_ = this.map_.viewCounter_;
+        this.map_.dirty_ = true; 
+
+        if (tile_.lastRenderState_) {
+            tile_.lastRenderState_ = tile_.lastRenderState_; //debug
+        }
     }
         
     if (!processFlag2_) {
@@ -45,13 +50,17 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
         if (tile_.surface_ == null && tile_.virtualSurfaces_.length == 0) {
             this.checkTileSurface(tile_);
         }
-    
+   
         //provide metanode for tile
-        if (tile_.metanode_ == null) {
+        if (tile_.metanode_ == null || tile_.lastMetanode_) {
             var ret_ = this.checkTileMetanode(tile_);
             
-            if (!ret_) { //metanode is not ready yet
+            if (!ret_ && !(tile_.metanode_ != null && tile_.lastMetanode_)) { //metanode is not ready yet
                 return;
+            }
+            
+            if (tile_.lastMetanode_) {
+                processFlag2_ = true;
             }
         }
         
@@ -59,26 +68,24 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
 
 
     if (tile_.metanode_ == null) { //only for wrong data
-            return;
-        if (tile.lastState_ != null && tile_.lastState_.metanode_ != null) {
-            
-        } else {
-            return;
-        }
+        return;
     }
+
+    tile_.metanode_.metatile_.used();
 
     if (tile_.lastSurface_ && tile_.lastSurface_ == tile_.surface_) {
         tile_.lastSurface_ = null;
         tile_.restoreLastState();
         //return;
     }
-
-
-    tile_.metanode_.metatile_.used();
-
+        
     //if (tile_.id_[0] == 17) {
         //tile_ = tile_;
     //}
+
+    if (tile_.id_[0] == 16 && tile_.id_[1] == 32592 && tile_.id_[2] == 32288) {
+        tile_ = tile_;
+    }
     
     //process tile e.g. draw or get height
     var res_ = this.nodeProcessingFunction_(tile_, this.params_, processFlag_, processFlag2_); 
@@ -101,17 +108,18 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_) {
     var sequence_ = this.map_.surfaceSequence_;
     
     //only one surface
-    if (sequence_.length == 1) {
+    if (sequence_.length == 1000000) {  //1000000 is hack old value is 1
         if (sequence_[0].hasMetatile(tile_.id_) == true) {
             var surface_ = sequence_[0];
 
             //reset tile data
+            /*
             if (tile_.surface_ != surface_) {
                 tile_.surfaceMesh_ = null;
                 tile_.surfaceTexture_ = null;
                 tile_.surfaceGeodata_ = null;
                 tile_.heightMap_ = null;
-            }
+            }*/
 
             tile_.surface_ = surface_;
         }
@@ -173,6 +181,8 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_) {
     if (tile_.virtual_) {
         if (this.isVirtualMetanodeReady(tile_)) {
             tile_.metanode_ = this.createVirtualMetanode(tile_);
+            tile_.lastMetanode_ = null;
+            this.map_.dirty_ = true; 
         } else {
             return false;
         }
@@ -196,6 +206,8 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_) {
 
         if (!tile_.virtual_) {
             tile_.metanode_ = metatile_.getNode(tile_.id_);
+            tile_.lastMetanode_ = null;
+            this.map_.dirty_ = true; 
         }
 
         if (tile_.metanode_ != null) {
@@ -205,6 +217,8 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_) {
             }*/
 
             tile_.metanode_.tile_ = tile_; //used only for validate
+            tile_.lastMetanode_ = null;
+            this.map_.dirty_ = true; 
 
             for (var i = 0; i < 4; i++) {
                 if (tile_.metanode_.hasChild(i) == true) {
