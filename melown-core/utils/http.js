@@ -25,5 +25,15 @@ Melown.Http.imageFactory = function(url_, onload_, onerror_) {
     return image_;
 };
 
+Melown.Http.loadJSON = function(url_, onLoaded_, onError_) {
+    Melown.loadBinary(url_, onLoaded_, onError_);
+};
+
+Melown.Http.loadBinary = function(url_, onLoaded_, onError_) {
+    Melown.loadBinary(url_, onLoaded_, onError_);
+};
+
 Melown["Http"] = Melown.Http;
 Melown.Http["imageFactory"] = Melown.Http.imageFactory;
+Melown.Http["loadJSON"] = Melown.loadJSON;
+Melown.Http["loadBinary"] = Melown.loadBinary;

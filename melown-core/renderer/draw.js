@@ -80,8 +80,18 @@ Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, dept
     var gl_ = this.gpu_.gl_;
     var index_ = 0;
 
+    var totalPoints_ = points_.length; 
+    
+    if (totalPoints_ > 32) {
+        for (var i = 0; i < totalPoints_; i += 31) {
+            var p_ = points_.slice(i, i + 32); 
+            this.drawLineString(p_, size_, color_, depthTest_, transparent_, writeDepth_, useState_);
+        }
+        return;
+    }
+
     //fill points
-    for (var i = 0, li = points_.length; i < li; i++) {
+    for (var i = 0; i < totalPoints_; i++) {
         var p = points_[i];
         this.plineBuffer_[index_] = p[0];
         this.plineBuffer_[index_+1] = p[1];
@@ -117,7 +127,7 @@ Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, dept
     this.progLine4_.setVec3("uPoints", this.plineBuffer_);
 
 
-    this.plines_.draw(this.progLine4_, "aPosition", li);
+    this.plines_.draw(this.progLine4_, "aPosition", totalPoints_);
 
     if (useState_ != true) {
         if (depthTest_ != true) {

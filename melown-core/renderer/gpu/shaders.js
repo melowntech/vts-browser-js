@@ -502,7 +502,9 @@ Melown.tileWireframe2FragmentShader = "precision mediump float;\n"+
         "#endif\n"+
     "}\n"+
     "void main() {\n"+
-        "gl_FragColor = vec4( mix(vec3(0.0), vec3(0.5), edgeFactor()) , 1.0);\n"+
+        //"gl_FragColor = vec4( mix(vec3(0.0), vec3(0.5), edgeFactor()) , 1.0);\n"+
+        "if (edgeFactor() < 0.5){ gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); } else { discard; }"+ 
+        //"gl_FragColor = mix(vec4(0.0, 0.0, 0.0, 1.0), vec4(0.0, 0.0, 0.0, 0.0), edgeFactor());\n"+
     "}";
 
 //textured wire frame tile mesh

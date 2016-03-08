@@ -190,52 +190,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 76:
                     case 108:
-                         /*this.switchLocationsPanel();*/
-
-                       /*
-                       var pos_ = map_.getPosition();
-                       console.log("hpos-before: " + JSON.stringify(pos_.pos_));
-                       pos_.convertHeightMode((pos_.getHeightMode() == "fix") ? "float" : "fix", true);
-                       console.log("new hmode: " + pos_.getHeightMode());
-                       console.log("hpos-after: " + JSON.stringify(pos_.pos_));
-                       map_.setPosition(pos_);
-                       */
-
-                        //map_.camera_.setParams(map_.camera_.getFov(), 2000, 200000000);
-                        var view_ = map_.getView();
- 
-/*                        
-                        this.debugValue_ += 0.1;
-                        this.debugValue_ %= 1;
-*/                        
-/*
-                        switch(this.debugValue_) {
-                            case 0: view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [] }; break; 
-                            case 1: view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn2015" : [] }; break; 
-                            case 2: view_["surfaces"] = { "jenstejn-hf" : [] }; break; 
-                            case 3: view_["surfaces"] = { "jenstejn-hf" : [], "jenstejn" : [], "jenstejn2015" : [] }; break; 
-                        };
-                        
-                        this.debugValue_++;
-                        this.debugValue_%=4;
-*/
-
-                        switch(this.debugValue_) {
-                            case 0: view_["surfaces"] = { "ev" : ["mapycz", {"id": "katastr", "alpha": 0.95}], "grand" : [] };  break; 
-                            case 1: view_["surfaces"] = { "ev" : ["mapycz"], "grand" : ["bing"] };  break; 
-                            case 2: view_["surfaces"] = { "ev" : ["mapycz-base"], "grand" : ["bing"] };  break; 
-                            case 3: view_["surfaces"] = { "ev" : ["bing"], "grand" : ["mapycz-base"] };  break; 
-                            case 4: view_["surfaces"] = { "ev" : ["mapycz"]};  break; 
-                            case 5: view_["surfaces"] = { "ev" : []};  break; 
-                            case 6: view_["surfaces"] = { "grand" : []};  break; 
-                            case 7: view_["surfaces"] = { };  break; 
-                        };
-                        
-                        this.debugValue_++;
-                        this.debugValue_%=8;
                        
-                        map_.setView(view_);
-                        
                         break; //key L pressed
 
                     case 90:

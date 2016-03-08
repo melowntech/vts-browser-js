@@ -2,7 +2,7 @@
 /**
  * @constructor
  */
-Melown.GpuDevice = function(div_, size_, keepFrameBuffer_) {
+Melown.GpuDevice = function(div_, size_, keepFrameBuffer_, antialias_) {
     this.div_ = div_;
     this.canvas_ =  null;
     this.curSize_ = size_;
@@ -13,6 +13,7 @@ Melown.GpuDevice = function(div_, size_, keepFrameBuffer_) {
     this.currentOffset_ = 0; //used fot direct offset
 
     this.keepFrameBuffer_ = (keepFrameBuffer_ == null) ? false : keepFrameBuffer_;
+    this.antialias_ = antialias_ ? true : false;
 };
 
 Melown.GpuDevice.prototype.init = function() {
@@ -33,7 +34,7 @@ Melown.GpuDevice.prototype.init = function() {
     }
 
     try {
-        this.gl_ = this.canvas_.getContext("webgl", {preserveDrawingBuffer: this.keepFrameBuffer_, stencil: true}) || this.canvas_.getContext("experimental-webgl", {preserveDrawingBuffer: this.keepFrameBuffer_});
+        this.gl_ = this.canvas_.getContext("webgl", {preserveDrawingBuffer: this.keepFrameBuffer_, antialias: this.antialias_, stencil: true}) || this.canvas_.getContext("experimental-webgl", {preserveDrawingBuffer: this.keepFrameBuffer_});
     } catch(e) {
         //webgl not supported
     }

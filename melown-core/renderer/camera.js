@@ -90,7 +90,7 @@ Melown.Camera.prototype.getViewHeight = function(){ return this.viewHeight_; };
 Melown.Camera.prototype.getOrtho = function(){ return this.ortho_; };
 
 //! Returns rotation matrix
-Melown.Camera.prototype.getRotationviewMatrix = function(){
+Melown.Camera.prototype.getRotationviewMatrix = function() {
     if (this.dirty_) this.update();
     return this.rotationview_;
 };
@@ -103,13 +103,13 @@ Melown.Camera.prototype.getModelviewMatrix = function(){
 };
 
 //! Returns a matrix that transforms the camera space to screen space.
-Melown.Camera.prototype.getProjectionMatrix = function(){
+Melown.Camera.prototype.getProjectionMatrix = function() {
     if (this.dirty_) this.update();
     return this.projection_;
 };
 
 //! Returns projectionMatrix() * modelviewMatrix()
-Melown.Camera.prototype.getMvpMatrix = function(){
+Melown.Camera.prototype.getMvpMatrix = function() {
     if (this.dirty_) this.update();
     return this.mvp_;
 };

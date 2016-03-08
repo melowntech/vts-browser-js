@@ -25,6 +25,10 @@ Melown.CoreInterface.prototype.getRenderer = function() {
     return this.core_.getRendererInterface();
 };
 
+Melown.CoreInterface.prototype.getProj4 = function() {
+    return this.core_.getProj4();
+};
+
 Melown.CoreInterface.prototype.on = function(eventName_, call_) {
     this.core_.on(eventName_, call_);
 };

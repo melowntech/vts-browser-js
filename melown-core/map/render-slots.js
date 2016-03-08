@@ -22,7 +22,7 @@ Melown.Map.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
     }
 };
 
-Melown.Map.prototype.addRenderSlotAfter = function(whichId_, whereId_) {
+Melown.Map.prototype.moveRenderSlotAfter = function(whichId_, whereId_) {
     var from_ = this.getRenderSlotIndex(whichId_);
     var to_ = this.getRenderSlotIndex(whereId_);
     if (from_ != -1 && to_ != -1) {

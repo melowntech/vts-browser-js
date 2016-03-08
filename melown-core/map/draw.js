@@ -90,6 +90,9 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             if (this.drawBBoxes_ && !preventRedener_) {
                 this.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
             }
+            
+            this.stats_.drawnTiles_++;
+
 
             //var drawLastRenderState_ = false;
 
@@ -121,7 +124,6 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
 
             if (tile_.surfaceMesh_.isReady(preventLoad_) && !preventLoad_) {
-                this.stats_.drawnTiles_++;
                 var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
                 //tile_.drawCommands_ = [];
@@ -537,6 +539,7 @@ Melown.Map.prototype.updateFogDensity = function() {
     //density_ *= 1.0 - (-this.orientation_[0]/90)
     
     this.fogDensity_ = density_;
+    this.renderer_.fogDensity_ = density_; 
 
     //console.log("fden: " + density_);
 };

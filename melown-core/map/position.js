@@ -395,7 +395,12 @@ Melown.MapPosition.prototype.getNED = function() {
 
 };
 
-
+Melown.MapPosition.prototype.toString = function() {
+    var p = this.pos_;
+    return p[0] + ", " + p[1].toFixed(0) + ", " + p[2].toFixed(0) + ", " + p[3] + ", " + p[4].toFixed(0)
+           + ", " + p[5].toFixed(0) + ", " + p[6].toFixed(0) + ", " + p[7].toFixed(0) + ", " 
+           + ", " + p[8].toFixed(0) + ", " + p[9].toFixed(0); 
+};
 
 
 

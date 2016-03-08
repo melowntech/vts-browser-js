@@ -13,6 +13,7 @@ Melown.RendererInterface.prototype.clear = function(options_) {
                         (options_["color"] || [255,255,255,255]),
                         (options_["depth"] || 1.0) );
     }
+    return this;    
 };
 
 Melown.RendererInterface.prototype.createState = function(options_) {
@@ -37,6 +38,7 @@ Melown.RendererInterface.prototype.setState = function(state_) {
     if (state_ != null) {
         this.gpu_.setState(state_);
     }
+    return this;    
 };
 
 Melown.RendererInterface.prototype.createTexture = function(options_) {
@@ -76,6 +78,7 @@ Melown.RendererInterface.prototype.removeTexture = function(texture_) {
     if (texture_) {
         texture_.kill();
     }
+    return this;    
 };
 
 Melown.RendererInterface.prototype.createMesh = function(options_) {
@@ -98,6 +101,7 @@ Melown.RendererInterface.prototype.removeMesh = function(mesh_) {
     if (mesh_) {
         mesh_.kill();
     }
+    return this;    
 };
 
 Melown.RendererInterface.prototype.createProgram = function(options_) {
@@ -117,26 +121,84 @@ Melown.RendererInterface.prototype.removeResource = function(resource_) {
     if (resource_ != null && resource_.kill != null) {
         resource.kill();
     }
+    return this;    
 };
 
 Melown.RendererInterface.prototype.addJob = function(options_) {
+    return this;    
 };
 
 Melown.RendererInterface.prototype.clearJobs = function(options_) {
+    return this;    
 };
 
-
-
 Melown.RendererInterface.prototype.drawMesh = function(mesh_, options_) {
+    if (options_ == null || typeof options_ !== "object") {
+        return this;    
+    }
+
+    if (options_["mesh"] == null) {
+        return this;    
+    }
+
+    var renderer_ = this.renderer_; 
+    var mesh_ = options_["mesh"];
+    var program_ = options_["program"] || renderer_.progTile_;
+    var programOptions_ = options_["program-options"];
+
+    renderer_.gpu_.useProgram(program_, "aPosition", "aTexCoord", null, null);
+
+    if (!programOptions_) {
+        var mv_ = Melown.mat4.create();
+        Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_), mv_);
+        var proj_ = renderer_.camera_.getProjectionMatrix();
+
+        program_.setMat4("uMV", mv_);
+        program_.setMat4("uProj", proj_);
+        program_.setFloat("uFogDensity", renderer_.fogDensity_);
+    } else {
+        for (var key_ in programOptions_) {
+            switch(programOptions_[key_][0]){
+                case "floatArray":
+                    program_.setFloatArray(key_, programOptions_[key_][1]);
+                    break;
+                case "float":
+                    program_.setFloat(key_, programOptions_[key_][1]);
+                    break;
+                case "mat4":
+                    program_.setMat4(key_, programOptions_[key_][1]);
+                    break;
+                case "vec2":
+                    program_.setVec2(key_, programOptions_[key_][1]);
+                    break;
+                case "vec3":
+                    program_.setVec3(key_, programOptions_[key_][1]);
+                    break;
+                case "vec4":
+                    program_.setVec4(key_, programOptions_[key_][1]);
+                    break;
+                case "sampler":
+                    program_.setSampler(key_, programOptions_[key_][1]);
+                    break;
+            } 
+        }
+    }
+
+    if (texture_ != null && texture_.gpuTexture_ != null) {
+        renderer_.gpu_.bindTexture(texture_.gpuTexture_);
+    }
+    
+    mesh_.draw(program_, "aPosition", "aTexCoord", null, null);
+    return this;    
 };
 
 Melown.RendererInterface.prototype.drawImage = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
-        return;
+        return this;    
     }
 
     if (options_["texture"] == null || options_["rect"] == null) {
-        return;
+        return this;    
     }
 
     var rect_ = options_["rect"];
@@ -148,15 +210,16 @@ Melown.RendererInterface.prototype.drawImage = function(options_) {
     var useState_ = options_["use-state"] || false;
 
     this.renderer_.drawImage(rect_[0], rect_[1], rect_[2], rect_[3], options_["texture"], color_, depth_, depthTest_, blend_, writeDepth_, useState_);
+    return this;    
 };
 
 Melown.RendererInterface.prototype.drawBillboard = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
-        return;
+        return this;    
     }
 
     if (options_["texture"] == null || options_["mvp"] == null) {
-        return;
+        return this;    
     }
 
     var mvp_ = options_["mvp"];
@@ -167,15 +230,16 @@ Melown.RendererInterface.prototype.drawBillboard = function(options_) {
     var useState_ = options_["use-state"] || false;
 
     this.renderer_.drawBillboard(mvp_, options_["texture"], color_, depthTest_, blend_, writeDepth_, useState_);
+    return this;    
 };
 
 Melown.RendererInterface.prototype.drawLineString = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
-        return;
+        return this;    
     }
 
     if (options_["points"] == null) {
-        return;
+        return this;    
     }
 
     var points_ = options_["points"];
@@ -187,16 +251,20 @@ Melown.RendererInterface.prototype.drawLineString = function(options_) {
     var useState_ = options_["use-state"] || false;
 
     this.renderer_.drawLineString(points_, size_, color_, depthTest_, blend_, useState_);
+    return this;    
 };
 
 Melown.RendererInterface.prototype.drawJobs = function(options_) {
+    return this;    
 };
 
 
 Melown.RendererInterface.prototype.drawBBox = function(options_) {
+    return this;    
 };
 
 Melown.RendererInterface.prototype.drawDebugText = function(options_) {
+    return this;    
 };
 
 Melown.RendererInterface.prototype.getCanvasCoords = function(point_, mvp_) {

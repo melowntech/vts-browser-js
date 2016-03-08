@@ -5,23 +5,30 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     this.map_ = map_;
     this.p1_ = p1_.clone();
     this.p2_ = p2_.clone();
-    this.pp1_ = p1_.clone();
-    this.pp2_ = p2_.clone();
+    
+    this.p1_.pos_[5] = this.p1_.pos_[5] < 0 ? (360 + (this.p1_.pos_[5] % 360)) : (this.p1_.pos_[5] % 360);  
+    this.p2_.pos_[5] = this.p2_.pos_[5] < 0 ? (360 + (this.p2_.pos_[5] % 360)) : (this.p2_.pos_[5] % 360);  
+    
+    this.pp1_ = this.p1_.clone();
+    this.pp2_ = this.p2_.clone();
       
-    this.pp1_.convertHeightMode("fix", true);
-    this.pp2_.convertHeightMode("fix", true);
-    this.pp1_.convertViewMode("subj");
-    this.pp2_.convertViewMode("subj");
+    //this.pp1_.convertHeightMode("fix", true);
+    //this.pp2_.convertHeightMode("fix", true);
+    //this.pp1_.convertViewMode("subj");
+    //this.pp2_.convertViewMode("subj");
 
     this.mode_ = options_["mode"] || "auto";
     this.maxHeight_ = options_["maxHeight"] || 100000;
     this.maxDuration_ = options_["maxDuration"] || 10000;
-    this.samplePeriod_ = options_["samplePeriod"] || 100;
+    this.samplePeriod_ = options_["samplePeriod"] || 10;
 
     //get distance and azimut
     var res_ = this.map_.getDistance(this.pp1_.getCoords(), this.pp2_.getCoords());
     this.distance_ = res_[0];
-    this.azimut_ = res_[1] + 90;
+    this.azimut_ = (res_[1] - 90) % 360;
+    this.azimut_ = (this.azimut_ < 0) ? (360 + this.azimut_) : this.azimut_;
+    
+    //console.log("azim: " + Math.round(this.azimut_) + " p1: " + this.p1_.pos_[5]  + " p2: " + this.p2_.pos_[5]);
 
     if (!this.map_.getNavigationSrs().isProjected()) {
         this.geodesic_ = this.getGeodesic(); 
@@ -102,12 +109,14 @@ Melown.MapTrajectory.prototype.generate = function() {
         
         if (this.mode_ == "direct") {
             p.setCoords(this.getInterpolatedCoords(factor_));
+            p.setHeight(this.getInterpolatedHeight(factor_));
             
             var o1_ = this.pp1_.getOrientation(); 
             var o2_ = this.pp2_.getOrientation(); 
 
             p.setOrientation(this.getInterpolatedOrinetation(o1_, o2_, factor_));
             p.setFov(this.getInterpolatedFov(factor_));
+            p.setViewExtent(this.getInterpolatedViewExtent(factor_));
             
             samples_[index_] = p.pos_;
             index_++;
@@ -126,13 +135,20 @@ Melown.MapTrajectory.prototype.generate = function() {
             p.setHeight(this.getSineHeight(factor_));            
             p.setOrientation(this.getFlightOrienation(time_));
             p.setFov(this.getInterpolatedFov(factor_));
+            p.setViewExtent(this.getInterpolatedViewExtent(factor_));
+            
+            //p.convertViewMode("subj");
+            //console.log("pos: " + p.toString());
 
+            samples_[index_] = p.pos_;
             samples_[index_] = p.pos_;
             index_++;
         }
     }
     
     samples_[index_] = this.p2_.clone().pos_;
+
+    //console.log("pos2: " + this.p2_.toString());
 
     return samples_;
 };
@@ -172,6 +188,18 @@ Melown.MapTrajectory.prototype.getInterpolatedFov = function(factor_) {
     var f1_ = this.pp1_.getFov(); 
     var f2_ = this.pp2_.getFov(); 
     return f1_ + (f2_ - f1_) * factor_;
+};
+
+Melown.MapTrajectory.prototype.getInterpolatedViewExtent = function(factor_) {
+    var v1_ = this.pp1_.getViewExtent(); 
+    var v2_ = this.pp2_.getViewExtent(); 
+    return v1_ + (v2_ - v1_) * factor_;
+};
+
+Melown.MapTrajectory.prototype.getInterpolatedHeight = function(factor_) {
+    var h1_ = this.pp1_.getHeight(); 
+    var h2_ = this.pp2_.getHeight(); 
+    return h1_ + (h2_ - h1_) * factor_;
 };
 
 Melown.MapTrajectory.prototype.getSineHeight = function(factor_) {

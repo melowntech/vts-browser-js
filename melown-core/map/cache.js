@@ -174,3 +174,21 @@ Melown.MapCache.prototype.checkCost = function() {
     }
 };
 
+Melown.MapCache.prototype.addItem = function(cost_, destructor_) {
+    return this.insert(destructor_, cost_);
+};
+
+Melown.MapCache.prototype.removeItem = function(item_) {
+    return this.remove(item_);
+};
+
+Melown.MapCache.prototype.itemUsed = function(item_) {
+    return this.updateItem(item_);
+};
+
+
+Melown.MapCache.prototype["addItem"] = Melown.MapCache.prototype.addItem;
+Melown.MapCache.prototype["removeItem"] = Melown.MapCache.prototype.removeItem;
+Melown.MapCache.prototype["itemUsed"] = Melown.MapCache.prototype.itemUsed;
+
+

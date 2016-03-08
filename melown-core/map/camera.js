@@ -43,8 +43,8 @@ Melown.Map.prototype.updateCamera = function() {
         var orbitPos_ = [0, 0, 0];
     }
 
-    this.cameraVector_ = [0, 1, 0];
-    Melown.mat4.multiplyVec3(this.updateCameraMatrix_, this.cameraVector_);
+    this.cameraVector_ = [0, 0, 1];
+    //Melown.mat4.multiplyVec3(this.updateCameraMatrix_, this.cameraVector_);
 
 
     if (this.getNavigationSrs().isProjected()) {
@@ -268,6 +268,13 @@ Melown.Map.prototype.updateCamera = function() {
         this.camera_.setRotationMatrix(rotationMatrix_);
         this.renderer_.cameraDistance_ = this.cameraDistance_; //needed for fog
         
+        //Melown.mat4.multiplyVec3(rotationMatrix_, this.cameraVector_);
+        //this.cameraVector_ = [-dir_[0], -dir_[1], -dir_[2]]; 
+//        this.cameraVector_ = [rotationMatrix_[4], rotationMatrix_[5], rotationMatrix_[6]]; 
+        this.cameraVector_ = [-spaceMatrix_[8], -spaceMatrix_[9], -spaceMatrix_[10]]; 
+        
+        //console.log("cam vec: " + JSON.stringify(this.cameraVector_));
+         
        // this.position_.setCoords([0,90,0]);
         this.position_.setHeight(0);
     }

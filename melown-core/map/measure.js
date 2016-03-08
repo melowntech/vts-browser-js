@@ -319,7 +319,7 @@ Melown.Map.prototype.getDistance = function(coords_, coords2_, includingHeight_)
         }
 
     } else {
-        return [d, Melown.degrees(Math.atan2(dx_, dy_))];
+        return [d, Melown.degrees(Math.atan2(dy_, dx_))];
     }
 };
 

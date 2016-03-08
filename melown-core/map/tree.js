@@ -9,6 +9,7 @@ Melown.MapTree = function(map_, divisionNode_, freeLayer_) {
     this.freeLayer_ = freeLayer_;
     this.metaBinaryOrder_ = this.map_.referenceFrame_.params_.metaBinaryOrder_;
     this.initialized_ = false;
+    this.geocent_ = !this.map_.getNavigationSrs().isProjected();
 
     this.surfaceTree_ = new Melown.MapTile(this.map_, null, this.rootId_);
     this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
@@ -129,7 +130,7 @@ Melown.MapTree.prototype.traceTile = function(tile_, params_, preventRedener_, p
       //  this.map_.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
     //}
 
-    if (this.bboxVisible(node_.bbox_, cameraPos_) != true) {
+    if (this.bboxVisible(tile_.id_, node_.bbox_, cameraPos_) != true) {
         return [false, preventRedener_, preventLoad_];
         //return true;
     }
@@ -227,7 +228,7 @@ Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_) 
             }
 
             if (childTile_.metanode_.hasGeometry() &&
-                this.bboxVisible(childTile_.metanode_.bbox_, cameraPos_)) {
+                this.bboxVisible(childTile_.id_, childTile_.metanode_.bbox_, cameraPos_)) {
 
                 if (!(childTile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(childTile_.drawCommands_))) {
                     //load data for child tile
@@ -242,7 +243,39 @@ Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_) 
     return ret_;
 };
 
-Melown.MapTree.prototype.bboxVisible = function(bbox_, cameraPos_) {
+Melown.MapTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_) {
+    if (this.geocent_ && id_[0] > 0 && id_[0] < 12) {
+        var hit_ = false;
+        var cv_ = this.map_.cameraVector_;
+        var bmax_ = bbox_.max_;
+        var bmin_ = bbox_.min_;
+        
+        if (id_[0] < 5) factor_ = 0.4;
+        if (id_[0] >= 5) factor_ = 0.9;
+        //if (id_[0] >= 6) factor_ = 0.9;
+        //if (id_[0] >= 9) factor_ = 0.9;
+
+        var edge_ = -Math.min(0.7, Math.sin(Melown.radians(this.map_.camera_.getFov()*factor_)));
+        //var edge_ = -Math.min(0.7, Math.sin(Melown.radians(this.map_.camera_.getFov()*Math.min(1,(id_[0]*1.7+2)/12))));
+        
+        //var v = bbox_.center();
+        
+        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmax_[2]])) < edge_);
+        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmax_[2]])) < edge_);
+        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmax_[2]])) < edge_);
+        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmax_[2]])) < edge_);
+
+        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmin_[2]])) < edge_);
+        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmin_[2]])) < edge_);
+        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmin_[2]])) < edge_);
+        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmin_[2]])) < edge_);
+        
+        
+        if (!hit_) {
+            return false;
+        }
+    }
+    
     return this.camera_.bboxVisible(bbox_, cameraPos_);
     //childTile_.metanode_.bbox_
 };

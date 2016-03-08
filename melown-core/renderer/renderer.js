@@ -52,7 +52,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, config_) {
     this.noForwardMovement_ = true;
     this.heightLod_ = this.core_.coreConfig_.heightLod_;
 
-    this.gpu_ = new Melown.GpuDevice(div_, this.curSize_, this.config_.rendererAllowScreenshots_);
+    this.gpu_ = new Melown.GpuDevice(div_, this.curSize_, this.config_.rendererAllowScreenshots_, this.config_.rendererAntialiasing_);
 
     this.camera_ = new Melown.Camera(this, this.core_.coreConfig_.cameraFOV_, 2, this.core_.coreConfig_.cameraVisibility_);
 
@@ -84,6 +84,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, config_) {
     this.imageProjectionMatrix_ = null;
 
     this.font_ = null;
+    this.fogDensity_ = 0;
 
     //hack for melown maps
     //this.melownHack_ = true;
@@ -112,8 +113,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, config_) {
     //this.planet_.addTiledTerrainLayer("terrain");
 };
 
-Melown.Renderer.prototype.onResize = function()
-{
+Melown.Renderer.prototype.onResize = function() {
     if (this.killed_ == true){
         return;
     }
@@ -123,8 +123,7 @@ Melown.Renderer.prototype.onResize = function()
     this.resizeGL(Math.floor(rect_.width), Math.floor(rect_.height));
 };
 
-Melown.Renderer.prototype.kill = function()
-{
+Melown.Renderer.prototype.kill = function() {
     if (this.killed_ == true){
         return;
     }
@@ -148,13 +147,11 @@ Melown.Renderer.prototype.kill = function()
 };
 
 
-Melown.Renderer.prototype.getPlanet = function()
-{
+Melown.Renderer.prototype.getPlanet = function() {
     return this.planet_;
 };
 
-Melown.Renderer.prototype.resizeGL = function(width_, height_, skipCanvas_, skipPaint_)
-{
+Melown.Renderer.prototype.resizeGL = function(width_, height_, skipCanvas_, skipPaint_) {
     this.camera_.setAspect(width_ / height_);
     this.curSize_ = [width_, height_];
     this.gpu_.resize(this.curSize_, skipCanvas_);
@@ -235,8 +232,7 @@ Melown.Renderer.prototype.project = function(point_, mvp_) {
 };
 
 
-Melown.Renderer.prototype.getScreenRay = function(screenX_, screenY_)
-{
+Melown.Renderer.prototype.getScreenRay = function(screenX_, screenY_) {
     if (this.camera_ == null) {
         return [0,0,1.0];
     }
@@ -270,8 +266,7 @@ Melown.Renderer.prototype.getScreenRay = function(screenX_, screenY_)
 };
 
 
-Melown.Renderer.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_)
-{
+Melown.Renderer.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_) {
     var gl_ = this.gpu_.gl_;
 
     //conver screen coords to texture coords
@@ -375,9 +370,7 @@ Melown.Renderer.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_)
 };
 
 
-Melown.Renderer.prototype.hitTest = function(screenX_, screenY_, mode_)
-{
-
+Melown.Renderer.prototype.hitTest = function(screenX_, screenY_, mode_) {
     //this.core_.hover(screenX_, screenY_, false, { test:true});
     //return [0,0,0,false];
 

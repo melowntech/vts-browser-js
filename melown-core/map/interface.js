@@ -8,6 +8,7 @@ Melown.MapInterface = function(map_) {
 
 Melown.MapInterface.prototype.setPosition = function(position_) {
     this.map_.setPosition(position_);
+    return this;    
 };
 
 Melown.MapInterface.prototype.getPosition = function(type_) {
@@ -16,6 +17,7 @@ Melown.MapInterface.prototype.getPosition = function(type_) {
 
 Melown.MapInterface.prototype.setView = function(view_) {
     this.map_.setView(view_);
+    return this;    
 };
 
 Melown.MapInterface.prototype.getView = function() {
@@ -26,7 +28,7 @@ Melown.MapInterface.prototype.getCredits = function() {
     return this.map_.getCredits();
 };
 
-Melown.MapInterface.prototype.getVisibleCredits = function() {
+Melown.MapInterface.prototype.getCurrentCredits = function() {
     return this.map_.getVisibleCredits();
 };
 
@@ -101,8 +103,19 @@ Melown.MapInterface.prototype.convertCoords = function(sourceSrs_, destinationSr
     return srs2_.convertCoordsFrom(coords_, srs_);
 };
 
+Melown.MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos_, mode_) {
+    var p_ = ["obj", pos_[0], pos_[1], mode_, pos_[2], 0, 0, 0, 10, 90 ];
+    return (new Melown.MapPosition(this.map_, p_)).getCanvasCoords();
+};
+
 Melown.MapInterface.prototype.clonePosition = function(position_) {
     return (new Melown.MapPosition(this.map_, position_)).pos_;
+};
+
+Melown.MapInterface.prototype.arePositionsSame = function(position_, position2_) {
+    p1_ = new Melown.MapPosition(this.map_, position_);
+    p2_ = new Melown.MapPosition(this.map_, position2_);
+    return !(p1_.isDifferent(p2_));
 };
 
 Melown.MapInterface.prototype.setPositionCoords = function(position_, coords_) {
@@ -155,6 +168,10 @@ Melown.MapInterface.prototype.getPositionHeightMode = function(position_) {
 
 Melown.MapInterface.prototype.getPositionCanvasCoords = function(position_) {
     return (new Melown.MapPosition(this.map_, position_)).getCanvasCoords();
+};
+
+Melown.MapInterface.prototype.getPositionCameraCoords = function(position_) {
+    return (new Melown.MapPosition(this.map_, position_)).getCameraCoords();
 };
 
 Melown.MapInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_) {
@@ -211,36 +228,46 @@ Melown.MapInterface.prototype.redraw = function() {
 
 Melown.MapInterface.prototype.addRenderSlot = function(id_, callback_, enabled_) {
     this.map_.addRenderSlot(id_, callback_, enabled_);
+    return this;    
 };
 
-Melown.Map.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
+Melown.MapInterface.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
     this.map_.moveRenderSlotBefore(whichId_, whereId_);
+    return this;    
 };
 
-Melown.Map.prototype.moveRenderSlotAfter = function(whichId_, whereId_) {
+Melown.MapInterface.prototype.moveRenderSlotAfter = function(whichId_, whereId_) {
     this.map_.moveRenderSlotAfter(whichId_, whereId_);
+    return this;    
 };
 
-Melown.Map.prototype.removeRenderSlot = function(id_) {
+Melown.MapInterface.prototype.removeRenderSlot = function(id_) {
     this.map_.removeRenderSlot(id_);
+    return this;    
 };
 
-Melown.Map.prototype.setRenderSlotEnabled = function(id_, state_) {
+Melown.MapInterface.prototype.setRenderSlotEnabled = function(id_, state_) {
     this.map_.setRenderSlotEnabled(id_, state_);
+    return this;    
 };
 
-Melown.Map.prototype.getRenderSlotEnabled = function(id_) {
+Melown.MapInterface.prototype.getRenderSlotEnabled = function(id_) {
     return this.map_.getRenderSlotEnabled(id_);
 };
 
-Melown.Map.prototype.setLoaderSuspended = function(state_) {
+Melown.MapInterface.prototype.setLoaderSuspended = function(state_) {
     this.map_.loaderSuspended_ = state_;
     return this;
 };
 
-Melown.Map.prototype.getLoaderSuspended = function() {
+Melown.MapInterface.prototype.getLoaderSuspended = function() {
     return this.map_.loaderSuspended_;
 };
+
+Melown.MapInterface.prototype.getGpuCache = function() {
+    return this.map_.gpuCache_;
+};
+
 
 Melown.MapPositionInterface = Melown.MapPosition;
 
@@ -251,7 +278,7 @@ Melown.MapInterface.prototype["getPosition"] = Melown.MapInterface.prototype.get
 Melown.MapInterface.prototype["setView"] = Melown.MapInterface.prototype.setView;
 Melown.MapInterface.prototype["getView"] = Melown.MapInterface.prototype.getView;
 Melown.MapInterface.prototype["getCredits"] = Melown.MapInterface.prototype.getCredits;
-Melown.MapInterface.prototype["getVisibleCredits"] = Melown.MapInterface.prototype.getVisibleCredits;
+Melown.MapInterface.prototype["getCurrentCredits"] = Melown.MapInterface.prototype.getCurrentCredits;
 Melown.MapInterface.prototype["getCreditInfo"] = Melown.MapInterface.prototype.getCreditInfo;
 Melown.MapInterface.prototype["getViews"] = Melown.MapInterface.prototype.getViews;
 Melown.MapInterface.prototype["getViewInfo"] = Melown.MapInterface.prototype.getViewInfo;
@@ -267,6 +294,7 @@ Melown.MapInterface.prototype["getReferenceFrame"] = Melown.MapInterface.prototy
 Melown.MapInterface.prototype["convertPositionViewMode"] = Melown.MapInterface.prototype.convertPositionViewMode; 
 Melown.MapInterface.prototype["convertPositionHeightMode"] = Melown.MapInterface.prototype.convertPositionHeightMode; 
 Melown.MapInterface.prototype["convertCoords"] = Melown.MapInterface.prototype.convertCoords;
+Melown.MapInterface.prototype["convertCoordsFromNavToCanvas"] = Melown.MapInterface.prototype.convertCoordsFromNavToCanvas;
 Melown.MapInterface.prototype["clonePosition"] = Melown.MapInterface.prototype.clonePosition; 
 Melown.MapInterface.prototype["setPositionCoords"] = Melown.MapInterface.prototype.setPositionCoords; 
 Melown.MapInterface.prototype["getPositionCoords"] = Melown.MapInterface.prototype.getPositionCoords; 
@@ -281,6 +309,7 @@ Melown.MapInterface.prototype["getPositionFov"] = Melown.MapInterface.prototype.
 Melown.MapInterface.prototype["getPositionViewMode"] = Melown.MapInterface.prototype.getPositionViewMode; 
 Melown.MapInterface.prototype["getPositionHeightMode"] = Melown.MapInterface.prototype.getPositionHeightMode; 
 Melown.MapInterface.prototype["getPositionCanvasCoords"] = Melown.MapInterface.prototype.getPositionCanvasCoords; 
+Melown.MapInterface.prototype["getPositionCameraCoords"] = Melown.MapInterface.prototype.getPositionCameraCoords; 
 Melown.MapInterface.prototype["movePositionCoordsTo"] = Melown.MapInterface.prototype.movePositionCoordsTo;
 Melown.MapInterface.prototype["getSurfaceHeight"] = Melown.MapInterface.prototype.getSurfaceHeight;
 Melown.MapInterface.prototype["getDistance"] = Melown.MapInterface.prototype.getDistance;
@@ -298,4 +327,5 @@ Melown.MapInterface.prototype["setRenderSlotEnabled"] = Melown.MapInterface.prot
 Melown.MapInterface.prototype["getRenderSlotEnabled"] = Melown.MapInterface.prototype.getRenderSlotEnabled; 
 Melown.MapInterface.prototype["setLoaderSuspended"] = Melown.MapInterface.prototype.setLoaderSuspended;
 Melown.MapInterface.prototype["getLoaderSuspended"] = Melown.MapInterface.prototype.getLoaderSuspended; 
+Melown.MapInterface.prototype["getGpuCache"] = Melown.MapInterface.prototype.getGpuCache;
 
