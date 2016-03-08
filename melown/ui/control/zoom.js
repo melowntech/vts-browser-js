@@ -43,10 +43,6 @@ Melown.UIControlZoom.prototype.repeat = function(count_, factor_, delay_) {
     if (map_ == null) {
         return;
     }
-
-    //var pos_ = map_.getPosition();
-    //pos_[8] *= factor_;
-    //map_.setPosition(pos_);
     
     var controller_ = this.browser_.controlMode_.getCurrentController();
     

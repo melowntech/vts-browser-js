@@ -76,7 +76,11 @@ Melown.UI.prototype.tick = function(dirty_) {
     }
 };
 
-
-
+Melown.UI.prototype["addControl"] = Melown.UI.prototype.addControl;
+Melown.UI.prototype["removeControl"] = Melown.UI.prototype.removeControl;
+Melown.UI.prototype["setControlHtml"] = Melown.UI.prototype.setControlHtml;
+Melown.UI.prototype["setControlVisible"] = Melown.UI.prototype.setControlVisible;
+Melown.UI.prototype["getControlVisible"] = Melown.UI.prototype.getControlVisible;
+Melown.UI.prototype["getControlById"] = Melown.UI.prototype.getControlById;
 
 

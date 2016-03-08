@@ -46,7 +46,7 @@ Melown.UIControlCredits.prototype.update = function() {
     }
 
     var html_ = "<ul>";
-    var credits_ = map_.getVisibleCredits();
+    var credits_ = map_.getCurrentCredits();
     
     if (credits_["imagery"].length > 0) {
         html_ += "<li>Imagery: " + this.getCreditsString(credits_["imagery"]) + "</li>";

@@ -17,12 +17,22 @@ Melown.Autopilot = function(browser_) {
 
 Melown.Autopilot.prototype.flyTo = function(position_, options_) {
     var map_ = this.browser_.getCore().getMap();
-    if (!options_ || !map_) {
+    if (!map_) {
         return;
     }
     
+    options_ = options_ || {};
     var trajectory_ = map_.generateTrajectory(map_.getPosition(), position_, options_);
-    this.setTrajectory(trajectory_, options_["samplePeriod"] || 100, options_); 
+    this.setTrajectory(trajectory_, options_["samplePeriod"] || 10, options_); 
+};
+
+Melown.Autopilot.prototype.flyTrajectory = function(trajectory_, sampleDuration_) {
+    var options_ = {};
+    this.setTrajectory(trajectory_, sampleDuration_, options_);
+};
+
+Melown.Autopilot.prototype.cancelFlight = function() {
+    this.finished_ = true;
 };
 
 Melown.Autopilot.prototype.setTrajectory = function(trajectory_, sampleDuration_, options_) {
@@ -52,8 +62,7 @@ Melown.Autopilot.prototype.tick = function() {
         return;
     }
 
-    var map_ = this.browser_.getCore().getMap();
-    
+    var map_ = this.browser_.getMap();
     if (!map_) {
         return;
     }

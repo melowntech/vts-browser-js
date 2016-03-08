@@ -110,6 +110,7 @@ Melown.ControlMode.MapObserver.prototype.constrainPosition = function(pos_) {
             //var factor_ = Math.min(distance_ / (srs_["a"]*0.1), 1.0); 
             var factor_ = Math.min(distance_ / (srs_["a"]*0.5), 1.0);
             var maxTilt_ = 20 + ((-90) - 20) * factor_; 
+            var minTilt_ = -90; 
             
             var o = map_.getPositionOrientation(pos_);
             
@@ -117,6 +118,10 @@ Melown.ControlMode.MapObserver.prototype.constrainPosition = function(pos_) {
             
             if (o[1] > maxTilt_) {
                 o[1] = maxTilt_;
+            }
+
+            if (o[1] < minTilt_) {
+                o[1] = minTilt_;
             }
 
             pos_ = map_.setPositionOrientation(pos_, o);
