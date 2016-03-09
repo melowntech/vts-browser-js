@@ -170,8 +170,8 @@ Melown.MapInterface.prototype.getPositionCanvasCoords = function(position_) {
     return (new Melown.MapPosition(this.map_, position_)).getCanvasCoords();
 };
 
-Melown.MapInterface.prototype.getPositionCameraCoords = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getCameraCoords();
+Melown.MapInterface.prototype.getPositionCameraCoords = function(position_, mode_) {
+    return (new Melown.MapPosition(this.map_, position_)).getCameraCoords(mode_);
 };
 
 Melown.MapInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_) {
