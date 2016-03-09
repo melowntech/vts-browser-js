@@ -231,9 +231,9 @@ Melown.BrowserInterface.prototype.getPositionCanvasCoords = function(position_) 
     return this.map_.getPositionCanvasCoords(position_);
 };
 
-Melown.BrowserInterface.prototype.getPositionCameraCoords = function(position_) {
+Melown.BrowserInterface.prototype.getPositionCameraCoords = function(position_, mode_) {
     if(!this.map_) return;
-    return this.map_.getPositionCameraCoords(position_);
+    return this.map_.getPositionCameraCoords(position_, mode_);
 };
 
 Melown.BrowserInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_) {

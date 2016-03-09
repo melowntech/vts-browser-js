@@ -63,13 +63,17 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
 
 Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     var map_ = this.browser_.getMap();
-    if (map_ == null || !this.config_.zoomAllowed_) {
+    if (!map_ || !this.config_.zoomAllowed_) { 
         return;
     }
 
     var pos_ = map_.getPosition();
     var delta_ = event_.getWheelDelta();
     var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
+    
+    if (map_.getPositionViewMode(pos_) != "obj") {
+        return;
+    }
     
     this.viewExtentDeltas_.push(factor_);
     this.reduceFloatingHeight(0.8);
@@ -88,138 +92,77 @@ Melown.ControlMode.MapObserver.prototype.setPosition = function(pos_) {
     pos_ = this.constrainPosition(pos_);
     var map_ = this.browser_.getMap();
     map_.setPosition(pos_);
+    //console.log(JSON.stringify(pos_));
 };
 
 Melown.ControlMode.MapObserver.prototype.constrainPosition = function(pos_) {
 
-//    if (this.isNavigationSRSProjected()) {
-        
-        
-//    } else {
-        
-        //reduce tilt whe you are far off the planet
-        
-        var map_ = this.browser_.getMap();
+    //reduce tilt whe you are far off the planet
+    var map_ = this.browser_.getMap();
+
+    if (map_.getPositionViewMode(pos_) == "obj") {
         var rf_ = map_.getReferenceFrame();
         var srs_ = map_.getSrsInfo(rf_["navigationSrs"]);
         
         var distance_ = map_.getPositionViewExtent(pos_) / Math.tan(Melown.radians(map_.getPositionFov(pos_)*0.5));
         
         if (srs_["a"]) {
-            
-            //var factor_ = Math.min(distance_ / (srs_["a"]*0.1), 1.0); 
             var factor_ = Math.min(distance_ / (srs_["a"]*0.5), 1.0);
             var maxTilt_ = 20 + ((-90) - 20) * factor_; 
             var minTilt_ = -90; 
             
             var o = map_.getPositionOrientation(pos_);
             
-            //o[1] = o[1] + ((-90) - o[1]) * factor_;
-            
             if (o[1] > maxTilt_) {
                 o[1] = maxTilt_;
             }
-
+    
             if (o[1] < minTilt_) {
                 o[1] = minTilt_;
             }
-
+    
             pos_ = map_.setPositionOrientation(pos_, o);
         }
-        
-
-        //get        
-        
-  //  }
-
-
-/*
-    var maxIter_ = 1000;
-
-    var cameraMinDesiredDistance_ = this.cameraMinDesiredDistance_;
-    var cameraConstrainDistance_ = this.cameraConstrainDistance_;
-
-    if (this.ignoreTexelSize_ == true) {
-        cameraConstrainDistance_ = 1;
-        cameraMinDesiredDistance_ = 0.5;
     }
 
+    //do not allow camera under terrain
+    var camPos_ = map_.getPositionCameraCoords(pos_, "float");
+    var cameraConstrainDistance_ = 1;
+    
+    if (!camPos_) {
+        debugger;
+        camPos_ = map_.getPositionCameraCoords(pos_, "float");
+        return pos_;
+    }
 
-    var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (this.position_[2] * Math.tan(Vadstena.radians(3.0))));
-    var cameraHeight_ = this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_;
+    var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (distance_ * Math.tan(Melown.radians(3.0))));
+    var cameraHeight_ = camPos_[2]; //this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_;
 
     if (cameraHeight_ < hmax_) {
+        var o = map_.getPositionOrientation(pos_);
 
-        if (this.position_[2] < hmax_) {
+        var getFinalOrientation = (function(start_, end_, level_) {
+            var value_ = (start_ + end_) * 0.5;
 
-            var getFinalDistance = (function(start_, end_, level_) {
+            if (level_ > 20) {
+                return value_;
+            } else {
+                o[1] = value_;
+                pos_ = map_.setPositionOrientation(pos_, o);
 
-                var value_ = (start_ + end_) * 0.5;
-
-                if (level_ > 20) {
-                    return value_;
+                if (map_.getPositionCameraCoords(pos_, "float")[2] < hmax_) {
+                    return getFinalOrientation(start_, value_, level_+1);
                 } else {
-
-                    this.position_[2] = value_;
-                    this.updateCamera();
-
-                    if ((this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_) < hmax_) {
-                        return getFinalDistance(start_, value_, level_+1);
-                    } else {
-                        return getFinalDistance(value_, end_, level_+1);
-                    }
-
+                    return getFinalOrientation(value_, end_, level_+1);
                 }
+            }
 
-            }).bind(this);
+        }).bind(this);
 
-            this.position_[2] = getFinalDistance(this.position_[2]+250, this.position_[2], 0);
-            //this.position_[2] = getFinalDistance(this.position_[2]+cameraConstrainDistance_, this.position_[2], 0);
-
-            this.updateCamera();
-
-        } else {
-
-            var getFinalOrientation = (function(start_, end_, level_) {
-
-                var value_ = (start_ + end_) * 0.5;
-
-                if (level_ > 20) {
-                    return value_;
-                } else {
-
-                    this.orientation_[1] = value_;
-                    this.updateCamera();
-
-                    if ((this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_) < hmax_) {
-                        return getFinalOrientation(start_, value_, level_+1);
-                    } else {
-                        return getFinalOrientation(value_, end_, level_+1);
-                    }
-
-                }
-
-            }).bind(this);
-
-            this.orientation_[1] = getFinalOrientation(-89, Math.min(-1, this.orientation_[1]), 0);
-            this.updateCamera();
-
-        }
-
-    } else {
-
-        var distance_ = cameraMinDesiredDistance_ * 0.5;
-
-        var hmax2_ = Math.max(distance_, (this.position_[2] * (0.1*(20.0/distance_))));
-
-
-        //apply cameraMinDesiredDistance_ directly
-        if (cameraHeight_ >= hmax2_) {
-            //this.cameraMinDistance_ = cameraMinDesiredDistance_;
-            //cameraConstrainDistance_ = this.cameraMinDistance_ * 0.5;
-        }
+        o[1] = getFinalOrientation(-90, Math.min(-1, o[1]), 0);
+        pos_ = map_.setPositionOrientation(pos_, o);
     }
-*/
+
     return pos_;
 };
 
@@ -228,7 +171,8 @@ Melown.ControlMode.MapObserver.prototype.reduceFloatingHeight = function(factor_
     var pos_ = map_.getPosition();
     var coords_ = map_.getPositionCoords(pos_);
     
-    if (map_.getPositionHeightMode(pos_) == "float") {
+    if (map_.getPositionHeightMode(pos_) == "float" &&
+        map_.getPositionViewMode(pos_) == "obj") {
         if (coords_[2] != 0) {
             coords_[2] *= factor_;
 
