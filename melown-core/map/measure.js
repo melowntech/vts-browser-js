@@ -84,16 +84,21 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_) {
 
 
 Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeStats_, statsLod_, deltaSample_) {
-    var result_ = this.getSpatialDivisionNode(coords_);
-    var node_ = result_[0];
-    var nodeCoords_ = result_[1];
+    if (!deltaSample_) {
+        var result_ = this.getSpatialDivisionNode(coords_);
+        var node_ = result_[0];
+        var nodeCoords_ = result_[1];
+    } else {
+        var node_ = deltaSample_[0];
+        var nodeCoords_ = deltaSample_[1];
+    }
 
     if (!this.config_.mapHeightLodBlend_) {
         lod_ = Math.floor(lod_);
     }
 
     if (!deltaSample_ && this.config_.mapHeightNodeBlend_) {
-        var res1_ = this.getSurfaceHeightNodeOnly(coords_, lod_, storeStats_, statsLod_, true);
+        var res1_ = this.getSurfaceHeightNodeOnly(null, lod_, storeStats_, statsLod_, [node_, [nodeCoords_[0], nodeCoords_[1], nodeCoords_[2]]]);
         
         if (res1_[2]) {
             var sx_ = res1_[3].ur_[0] - res1_[3].ll_[0];
@@ -102,6 +107,7 @@ Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeSta
             var fx_ = (nodeCoords_[0] - res1_[3].ll_[0]) / sx_;
             var fy_ = (nodeCoords_[1] - res1_[3].ll_[1]) / sy_;
             
+            /*
             var c2_ = node_.getOuterCoords([nodeCoords_[0] + sx_, nodeCoords_[1], nodeCoords_[2]]);
             var c3_ = node_.getOuterCoords([nodeCoords_[0], nodeCoords_[1] + sy_, nodeCoords_[2]]);
             var c4_ = node_.getOuterCoords([nodeCoords_[0] + sx_, nodeCoords_[1] + sy_, nodeCoords_[2]]);
@@ -109,7 +115,12 @@ Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeSta
             var res2_ = this.getSurfaceHeightNodeOnly(c2_, lod_, storeStats_, statsLod_, true);
             var res3_ = this.getSurfaceHeightNodeOnly(c3_, lod_, storeStats_, statsLod_, true);
             var res4_ = this.getSurfaceHeightNodeOnly(c4_, lod_, storeStats_, statsLod_, true);
+            */
             
+            var res2_ = this.getSurfaceHeightNodeOnly(null, lod_, storeStats_, statsLod_, [node_, [nodeCoords_[0] + sx_, nodeCoords_[1], nodeCoords_[2]]]);
+            var res3_ = this.getSurfaceHeightNodeOnly(null, lod_, storeStats_, statsLod_, [node_, [nodeCoords_[0], nodeCoords_[1] + sy_, nodeCoords_[2]]]);
+            var res4_ = this.getSurfaceHeightNodeOnly(null, lod_, storeStats_, statsLod_, [node_, [nodeCoords_[0] + sx_, nodeCoords_[1] + sy_, nodeCoords_[2]]]);
+
             var w0_ = (res1_[0] + (res2_[0] - res1_[0])*fx_);
             var w1_ = (res3_[0] + (res4_[0] - res3_[0])*fx_);
             var height_ = (w0_ + (w1_ - w0_)*fy_);

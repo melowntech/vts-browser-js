@@ -85,7 +85,7 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
         for (var i = 0, li = cbuffer_.length; i < li; i++) {
             var p = cbuffer_[i];
             renderer_.drawImage({
-                "rect" : [p[0]-12, p[1]-12, 24, 24],
+                "rect" : [p[0]-10, p[1]-10, 20, 20],
                 "texture" : this.circleTexture_,
                 "color" : [255,0,255,255],
                 "depth" : p[2],
