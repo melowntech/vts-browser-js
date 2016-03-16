@@ -321,6 +321,25 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                 }
                             }                            
                         }
+                    } else if (submesh_.internalUVs_) {
+
+                        if (tile_.surfaceTextures_[i] == null) {
+                            var path_ = tile_.surface_.getTexureUrl(tile_.id_, i);
+                            tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
+                        } else {
+                            //set credits
+                            for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                                tile_.credits_[node_.credits_[k]] = true;  
+                            }
+                            
+                            tile_.drawCommands_.push({
+                                type_ : "submesh",
+                                mesh_ : tile_.surfaceMesh_,
+                                submesh_ : i,
+                                texture_ : tile_.surfaceTextures_[i],
+                                material_ : "internal"
+                            });                                                
+                        }
                     }
                 }
 

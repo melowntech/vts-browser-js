@@ -19,6 +19,8 @@ Melown.Core.prototype.initConfig = function() {
         mapAllowHires_ : true,
         mapAllowLowres_ : true,
         mapAllowSmartSwitching_ : true,
+        mapHeightLodBlend_ : true,
+        mapHeightNodeBlend_ : true,
         mapFog_ : false,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false

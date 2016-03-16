@@ -87,6 +87,18 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 switch(keyCode_) {
                     case 68:
                     case 100:
+                    
+                    //load image    
+                        
+                        if (!this.circleImage_) {
+                            this.circleImage_ = Melown.Http.imageFactory(
+                                "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png",
+                                (function(){
+                                    this.circleTexture_ = this.core_.getRendererInterface().createTexture({ "source": this.circleImage_ });
+                                }).bind(this)
+                            );
+                        }
+                                            
                         this.diagnosticMode_ = true; hit_ = true; break;  //key D pressed
                 }
 
@@ -190,7 +202,8 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 76:
                     case 108:
-                       
+
+                        this.drawRadar_ = !this.drawRadar_;
                         break; //key L pressed
 
                     case 90:

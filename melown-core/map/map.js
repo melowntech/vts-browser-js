@@ -413,6 +413,8 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapAllowHires":                 this.config_.mapAllowHires_ = Melown.validateBool(value_, true); break;
         case "mapAllowLowres":                this.config_.mapAllowLowres_ = Melown.validateBool(value_, true); break;
         case "mapAllowSmartSwitching":        this.config_.mapAllowSmartSwitching_ = Melown.validateBool(value_, true); break;
+        case "mapHeightLodBlend":             this.config_.mapHeightLodBlend_ = Melown.validateBool(value_, true); break;
+        case "mapHeightNodeBlend":            this.config_.mapHeightNodeBlend_ = Melown.validateBool(value_, true); break;
     }
 };
 
@@ -436,6 +438,8 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapAllowHires":                 return this.config_.mapAllowHires_;
         case "mapAllowLowres":                return this.config_.mapAllowLowres_;
         case "mapAllowSmartSwitching":        return this.config_.mapAllowSmartSwitching_;
+        case "mapHeightLodBlend":             return this.config_.mapHeightLodBlend_;
+        case "mapHeightNodeBlend":            return this.config_.mapHeightNodeBlend_;
     }
 };
 
