@@ -9,6 +9,7 @@ Melown.UIElement = function(control_, element_) {
     this.dragBeginCall_ = this.onDragBegin.bind(this);
     this.dragMoveCall_ = this.onDragMove.bind(this);
     this.dragEndCall_ = this.onDragEnd.bind(this);
+    this.lastDragDistance_ = 0;
 };
 
 Melown.UIElement.prototype.setStyle = function(key_, value_) {

@@ -27,13 +27,24 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     var pos_ = map_.getPosition();
     var coords_ = map_.getPositionCoords(pos_);
     var delta_ = event_.getDragDelta();
+    var zoom_ = event_.getDragZoom(); 
     var azimuthDistance_ = this.getAzimuthAndDistance(delta_[0], delta_[1]);
     
     var modifierKey_ = (this.browser_.controlMode_.altKey_
                || this.browser_.controlMode_.shiftKey_
                || this.browser_.controlMode_.ctrlKey_);
 
-    if ((event_.getDragButton("left") && !modifierKey_)
+    if (Math.abs(zoom_ - 1) > 0.1) {
+        var factor_ = 1.0 + (zoom_ > 1.0 ? -1 : 1)*0.01;
+        
+        if (map_.getPositionViewMode(pos_) != "obj") {
+            return;
+        }
+        
+        this.viewExtentDeltas_.push(factor_);
+        this.reduceFloatingHeight(0.8);
+        
+    } else if ((event_.getDragButton("left") && !modifierKey_)
         && this.config_.panAllowed_) { //pan
             
         if (map_.getPositionHeightMode(pos_) == "fix") {

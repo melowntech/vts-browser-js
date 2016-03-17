@@ -42,6 +42,7 @@ Melown.Utils.getClass = function(element_) {
 };
 
 Melown.Utils.preventDefault = function(e) {
+    e = e instanceof Melown.UIEvent ? e.event_ : e;
     if (e.preventDefault) {
         e.preventDefault();
     } else {

@@ -8,17 +8,58 @@ Melown.UIEvent = function(type_, element_, event_) {
 };
 
 Melown.UIEvent.prototype.getMouseButton = function() {
-    switch(this.event_.which) {
-        case 1: return "left";
-        case 2: return "middle";
-        case 3: return "right";
+    switch (this.type_) {
+        case "touchstart":
+        case "touchend":
+        case "touchmove":
+
+            var touches_ = this.event_["touches"];
+            
+            if (touches_) {
+                switch(touches_.length) {
+                    case 1: return "left";
+                    case 2: return "right";
+                    case 3: return "middle";
+                }
+            }   
+
+        default:
+    
+            switch(this.event_.which) {
+                case 1: return "left";
+                case 2: return "middle";
+                case 3: return "right";
+            }
     }
 
     return "";
 };
 
 Melown.UIEvent.prototype.getMousePosition = function(absolute_) {
+    var event_ = null;
+
     switch (this.type_) {
+        case "touchstart":
+        case "touchend":
+        case "touchmove":
+
+            var touches_ = this.event_["touches"];
+            if (!touches_ || touches_.length == 0) {
+                break;
+            }
+            
+            var pos_ = [0,0];
+            
+            for (var i = 0, li = touches_.length; i < li; i++) {
+                var pos2_ = this.getEventPosition(this.event_["touches"][i], absolute_);
+                pos_[0] += pos2_[0];   
+                pos_[1] += pos2_[1];   
+            }
+            
+            pos_[0] /= li;
+            pos_[1] /= li;
+            return pos_;    
+
         case "mousedown":
         case "mouseup":
         case "mousemove":
@@ -26,19 +67,24 @@ Melown.UIEvent.prototype.getMousePosition = function(absolute_) {
         case "dragend":
         case "drag":
 
-            if (this.element_.getBoundingClientRect == null || absolute_) {
-                return [ this.event_["clientX"],
-                         this.event_["clientY"] ];
-            } else {
-                var rect_ = this.element_.getBoundingClientRect();
-
-                return [ this.event_["clientX"] - rect_.left,
-                         this.event_["clientY"] - rect_.top ];
-            }
+            return this.getEventPosition(this.event_, absolute_);
+            break;
 
     }
 
     return [0,0];
+};
+
+Melown.UIEvent.prototype.getEventPosition = function(event_, absolute_) {
+    if (this.element_.getBoundingClientRect == null || absolute_) {
+        return [ event_["clientX"],
+                 event_["clientY"] ];
+    } else {
+        var rect_ = this.element_.getBoundingClientRect();
+
+        return [ event_["clientX"] - rect_.left,
+                 event_["clientY"] - rect_.top ];
+    }
 };
 
 Melown.UIEvent.prototype.getDragDelta = function() {
@@ -50,6 +96,15 @@ Melown.UIEvent.prototype.getDragDelta = function() {
     }
 
     return [0,0];
+};
+
+Melown.UIEvent.prototype.getDragZoom = function() {
+    switch (this.type_) {
+        case "drag":
+            return this.event_["zoom"];
+    }
+    
+    return 1.0;
 };
 
 Melown.UIEvent.prototype.getModifierKey = function(key_) {
@@ -93,7 +148,15 @@ Melown.UIEvent.prototype.getDragButton = function(button_) {
         case "left": 
         case "right":
         case "middle":
-            return this.event_[button_];
+            
+            switch(this.getTouchesCount()) {
+                case -1: return this.event_[button_];
+                case 0: return false;
+                case 1: return button_ == "left";
+                case 2: return button_ == "right";
+                case 3: return button_ == "middle";
+            }
+        
     }
 
     return false;
@@ -119,6 +182,53 @@ Melown.UIEvent.prototype.getWheelDelta = function() {
     return 0;
 };
 
+Melown.UIEvent.prototype.getTouchesCount = function() {
+    switch (this.type_) {
+        case "touchstart":
+        case "touchend":
+        case "touchmove":
+
+            var touches_ = this.event_["touches"];
+            if (!touches_) {
+                break;
+            }
+            
+            return this.event_["touches"].length;    
+    }
+    
+    return -1;
+};
+
+Melown.UIEvent.prototype.getTouchPosition = function(index_, absolute_) {
+    switch (this.type_) {
+        case "touchstart":
+        case "touchend":
+        case "touchmove":
+
+            var touches_ = this.event_["touches"];
+            if (!touches_) {
+                break;
+            }
+            
+            var event_ = this.event_["touches"][index_];    
+            if (!event_) {
+                break;
+            }
+
+            if (this.element_.getBoundingClientRect == null || absolute_) {
+                return [ event_["clientX"],
+                         event_["clientY"] ];
+            } else {
+                var rect_ = this.element_.getBoundingClientRect();
+
+                return [ event_["clientX"] - rect_.left,
+                         event_["clientY"] - rect_.top ];
+            }
+    }
+
+    return [0,0];
+};
+
 //prevent minification
 Melown.UIEvent.prototype["getMouseButton"] = Melown.UIEvent.prototype.getMouseButton;
 Melown.UIEvent.prototype["getMousePosition"] = Melown.UIEvent.prototype.getMousePosition;
@@ -127,4 +237,8 @@ Melown.UIEvent.prototype["getModifierKey"] = Melown.UIEvent.prototype.getModifie
 Melown.UIEvent.prototype["getKeyCode"] = Melown.UIEvent.prototype.getKeyCode;
 Melown.UIEvent.prototype["getDragButton"] = Melown.UIEvent.prototype.getDragButton;
 Melown.UIEvent.prototype["getWheelDelta"] = Melown.UIEvent.prototype.getWheelDelta;
+Melown.UIEvent.prototype["getDragZoom"] = Melown.UIEvent.prototype.getDragZoom;
+Melown.UIEvent.prototype["getTouchesCount"] = Melown.UIEvent.prototype.getTouchesCount;
+Melown.UIEvent.prototype["getTouchPosition"] = Melown.UIEvent.prototype.getTouchPosition;
+
 
