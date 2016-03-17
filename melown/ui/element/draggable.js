@@ -30,7 +30,9 @@ Melown.UIElement.prototype.getDraggableState = function() {
 
 Melown.UIElement.prototype.onDragBegin = function(event_) {
     this.dragButtons_[event_.getMouseButton()] = true;
+    this.firstDragDistance_ = 0;
     this.lastDragDistance_ = 0;
+    this.zoomDrag_ = false;
 
     if (this.dragging_ != true) {
         this.dragging_ = true;
@@ -65,7 +67,7 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
 
     Melown.Utils.preventDefault(event_);
 
-    var zoom_ = 1.0;
+    var zoom_ = 0;
 
     if (event_.getTouchesCount() == 2) {
         var p1_ = event_.getTouchPosition(0); 
@@ -74,9 +76,17 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
         var dy_ = p2_[1] - p1_[1];
         var distance_ = Math.sqrt(dx_ * dx_ + dy_* dy_); 
 
-        if (this.lastDragDistance_ > 0) {
-            zoom_ = distance_ / this.lastDragDistance_; 
+        if (this.firstDragDistance_ == 0) {
+            this.firstDragDistance_ = distance_;
+        }
+
+        if (!this.zoomDrag_ && Math.abs(this.firstDragDistance_ - distance_) > 25) {
+            this.zoomDrag_ = true;
+            this.firstDragDistance_ = distance_;
+            this.lastDragDistance_ = distance_;
+            //zoom_ = 1.0;
         } else {
+            zoom_ = this.zoomDrag_ ? (distance_ / this.lastDragDistance_) : 0; 
             this.lastDragDistance_ = distance_;
         }
     }
@@ -98,7 +108,9 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
 Melown.UIElement.prototype.onDragEnd = function(event_) {
     //this.dragButtons_[event_.getMouseButton()] = false;
     this.updateDragButtonsState(event_, false);
+    this.firstDragDistance_ = 0;
     this.lastDragDistance_ = 0;
+    this.zoomDrag_ = false;
 
     if (this.dragging_ == true) {
         var pos_ = event_.getMousePosition();

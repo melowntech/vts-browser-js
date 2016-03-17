@@ -34,7 +34,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
                || this.browser_.controlMode_.shiftKey_
                || this.browser_.controlMode_.ctrlKey_);
 
-    if (Math.abs(zoom_ - 1) > 0.1) {
+    if (zoom_ != 0) {
         var factor_ = 1.0 + (zoom_ > 1.0 ? -1 : 1)*0.01;
         
         if (map_.getPositionViewMode(pos_) != "obj") {
