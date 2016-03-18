@@ -76,8 +76,8 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
             "FPS: " + Math.round(stats_.fps_) + "<br/>" +
             "Render time: " + Math.round(stats_.renderTime_*1000) + "<br/>" +
             "- gpu total: " + Math.round(stats_.gpuUsed_/(1024*1024)) + "MB<br/>" +
-            "- gpu textures: " + Math.round(stats_.gpuTexturesUsed_/(1024*1024)) + "MB<br/>" +
-            "- gpu meshes: " + Math.round(stats_.gpuMeshesUsed_/(1024*1024)) + "MB<br/>" +
+            "- gpu textures: " + Math.round(stats_.gpuTextures_/(1024*1024)) + "MB<br/>" +
+            "- gpu meshes: " + Math.round(stats_.gpuMeshes_/(1024*1024)) + "MB<br/>" +
             "- cpu cache: " + Math.round(stats_.resourcesUsed_/(1024*1024)) + "MB<br/>" +
             "- metailes: " + Math.round(stats_.metaUsed_/(1024*1024)) + "MB<br/>" +
 //            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +

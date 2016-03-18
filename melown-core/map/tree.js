@@ -14,7 +14,8 @@ Melown.MapTree = function(map_, divisionNode_, freeLayer_) {
     this.surfaceTree_ = new Melown.MapTile(this.map_, null, this.rootId_);
     this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
 
-    this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTile.bind(this), this.traceChildSequenceBasic.bind(this));
+    //this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTile.bind(this), this.traceChildSequenceBasic.bind(this));
+    this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTile.bind(this), this.traceChildSequenceViewBased.bind(this));
 
     //this.renderTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceRenderTile.bind(this));
 
@@ -79,9 +80,58 @@ Melown.MapTree.prototype.renderSurface = function(shift_) {
     //this.renderTracer_.trace(this.rootId_);
 };
 
-Melown.MapTree.prototype.traceChildSequenceBasic = function(tile_, params_, res_) {
+Melown.MapTree.prototype.traceChildSequenceBasic = function(tile_) {
     return [0,1,2,3];
 };
+
+Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
+    var angles_ = [];
+    var camPos_ = this.map_.cameraCenter_;//this.map_.cameraPosition_;  
+    var camVec_ = this.map_.cameraVector_;
+    
+    for (var i = 0; i < 4; i++) {
+        var child_ = tile_.children_[i];
+        
+        if (child_) {
+            var angle_ = 0.0;
+            
+            if (child_.metanode_) {
+                var pos_ = child_.metanode_.bbox_.center();
+                var vec_ = [pos_[0] - camPos_[0], pos_[1] - camPos_[1], pos_[2] - camPos_[2]];
+                var d = Melown.vec3.length(vec_);
+                //vec_ = Melown.vec3.normalize(vec_);
+                //angle_ = (2-(Melown.vec3.dot(camVec_, vec_) + 1)) * d;
+                //angle_ = (2-(Melown.vec3.dot(camVec_, vec_) + 1));
+                angle_ = d;
+            }
+                        
+            angles_.push([i, angle_]);    
+        }
+    }
+
+    do {
+        var sorted_ = true;
+        
+        for (var i = 0, li = angles_.length - 1; i < li; i++) {
+            if (angles_[i][1] > angles_[i+1][1]) {
+                var t = angles_[i];
+                angles_[i] = angles_[i+1];
+                angles_[i+1] = t;
+                sorted_ = false;
+            } 
+        }
+        
+    } while(!sorted_);
+
+    var seq_ = [];
+
+    for (var i = 0, li = angles_.length; i < li; i++) {
+        seq_.push(angles_[i][0]);
+    }
+    
+    return seq_;
+};
+
 
 Melown.MapTree.prototype.traceTile = function(tile_, params_, preventRedener_, preventLoad_) {
     if (tile_ == null || tile_.metanode_ == null) {

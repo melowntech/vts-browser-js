@@ -83,9 +83,9 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, processFlag_, pro
         //tile_ = tile_;
     //}
 
-    if (tile_.id_[0] == 16 && tile_.id_[1] == 32592 && tile_.id_[2] == 32288) {
-        tile_ = tile_;
-    }
+    //if (tile_.id_[0] == 16 && tile_.id_[1] == 32592 && tile_.id_[2] == 32288) {
+      //  tile_ = tile_;
+    //}
     
     //process tile e.g. draw or get height
     var res_ = this.nodeProcessingFunction_(tile_, this.params_, processFlag_, processFlag2_); 

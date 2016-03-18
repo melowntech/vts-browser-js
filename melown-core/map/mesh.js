@@ -44,7 +44,7 @@ Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
 
 Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     for (var i = 0, li = this.gpuSubmeshes_.length; i < li; i++) {
-        this.stats_.gpuMeshesUsed_ -= this.gpuSubmeshes_[i].size_;
+        this.stats_.gpuMeshes_ -= this.gpuSubmeshes_[i].size_;
         this.gpuSubmeshes_[i].kill();
     }
 
@@ -198,7 +198,7 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
         size_ += this.gpuSubmeshes_[i].size_;
     }
 
-    this.stats_.gpuMeshesUsed_ += size_;
+    this.stats_.gpuMeshes_ += size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuSubmeshes.bind(this, true), size_);
 };
@@ -227,7 +227,6 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         }
     }
 */
-
     var renderer_ = this.map_.renderer_;
     var program_ = null;
 
@@ -313,10 +312,13 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     }
 
     if (texture_ != null && texture_.gpuTexture_ != null) {
+        this.map_.gpuCacheUsed_ += texture_.gpuTexture_.size_;
         renderer_.gpu_.bindTexture(texture_.gpuTexture_);
     } else if (type_ != "fog") {
         return;
     }
+
+    this.map_.gpuCacheUsed_ += gpuSubmesh_.size_;
 
     gpuSubmesh_.draw(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
     this.stats_.drawnFaces_ += this.faces_;

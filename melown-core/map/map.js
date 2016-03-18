@@ -32,6 +32,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.freeLayers_ = [];
     this.boundLayers_ = [];
     this.dynamicLayers_ = [];
+    this.gpuCacheUsed_ = 0; 
 
     this.initialView_ = null;
     this.currentView_ = new Melown.MapView(this, {});
@@ -60,6 +61,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.camera_ = this.renderer_.camera_;
     this.cameraDistance_ = 10;
     this.cameraPosition_ = [0,0,0];
+    this.cameraVector_ = [0,0,1];
+    this.cameraCenter_ = [0,0,0];
 
     this.stats_ = new Melown.MapStats(this);
 
@@ -396,9 +399,12 @@ Melown.Map.prototype.getAzimuthCorrection = function(coords_, coords2_) {
 Melown.Map.prototype.setConfigParam = function(key_, value_) {
     switch (key_) {
         case "map":                           this.config_.map_ = Melown.validateString(value_, null); break;
-        case "mapCache":                      this.config_.mapCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 900); break;
-        case "mapGPUCache":                   this.config_.mapGPUCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 360); break;
-        case "mapMetatileCache":              this.config_.mapMetatileCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 60); break;
+        case "mapCache":                      this.config_.mapCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 900)*1024*1024;
+                                              this.resourcesCache_.setMaxCost(this.config_.mapCache_); break;
+        case "mapGPUCache":                   this.config_.mapGPUCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 360)*1024*1024;
+                                              this.gpuCache_.setMaxCost(this.config_.mapGPUCache_); break;
+        case "mapMetatileCache":              this.config_.mapMetatileCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 60)*1024*1024;
+                                              this.metatileCache_.setMaxCost(this.config_.mapMetatileCache_); break;
         case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
         case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 2.2); break;
         case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;

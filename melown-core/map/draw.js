@@ -3,6 +3,9 @@
 Melown.Map.prototype.draw = function() {
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
     this.updateFogDensity();
+    this.gpuCacheUsed_ = 0; 
+    this.maxGpuUsed_ = this.gpuCache_.getMaxCost() * 0.9; 
+    this.cameraCenter_ = this.position_.getCoords();
 
     //loop map trees
     for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
@@ -22,6 +25,10 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, doNotLoad_) {
         
         switch (command_.type_) {
             case "submesh":
+
+                if (this.gpuCacheUsed_ >= this.maxGpuUsed_) {
+                    return false;
+                }
                 
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_; 
@@ -56,10 +63,14 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, doNot
                 break;
 
             case "submesh":
+            
+                if (this.gpuCacheUsed_ >= this.maxGpuUsed_) {
+                    break;
+                }
                 
                 var mesh_ = command_.mesh_; 
-                var texture_ = command_.texture_; 
-                
+                var texture_ = command_.texture_;
+               
                 if (mesh_ && mesh_.isReady(doNotLoad_) &&
                     (!texture_  || (texture_ && texture_.isReady(doNotLoad_))) ) {
                     mesh_.drawSubmesh(cameraPos_, command_.submesh_, texture_, command_.material_, command_.alpha_);
@@ -76,8 +87,13 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
       //  tile_.kill();
     //}
 
+    if (this.gpuCacheUsed_ >= this.maxGpuUsed_) {
+        return;
+    }
+
     tile_.renderReady_ = false;
 
+    
     if (tile_.surface_ != null) {
 
         if (node_.hasGeometry()) {

@@ -522,6 +522,8 @@ Melown.MapPosition.prototype.getCameraInfo = function(projected_) {
             0, 0, 0, 1
         ];
 */
+        ret_.vector_ = Melown.vec3.normalize([-orbitPos_[0], -orbitPos_[1], -orbitPos_[2]]); 
+        
         ret_.orbitCoords_ = orbitPos_;
         ret_.rotMatrix_ = rotationMatrix_; 
 

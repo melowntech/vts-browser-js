@@ -40,8 +40,8 @@ Melown.MapStats = function(map_) {
     this.graphsCreateMeshTime_ = 0;
     this.resetGraphs();
 
-    this.gpuMeshesUsed_ = 0;
-    this.gpuTexturesUsed_ = 0;
+    this.gpuMeshes_ = 0;
+    this.gpuTextures_ = 0;
     this.gpuUsed_ = 0;
     this.resourcesUsed_ = 0;
     this.metaUsed_ = 0;
@@ -107,8 +107,8 @@ Melown.MapStats.prototype.end = function(dirty_) {
         this.graphsFrameTimes_[i] = frameTime_;
         this.graphsCpuMemoryUsed_[i] = this.map_.resourcesCache_.totalCost_;
         this.graphsCpuMemoryMetatiles_[i] = this.map_.metatileCache_.totalCost_;
-        this.graphsGpuMemoryTextures_[i] = this.gpuTexturesUsed_;
-        this.graphsGpuMemoryMeshes_[i] = this.gpuMeshesUsed_;
+        this.graphsGpuMemoryTextures_[i] = this.gpuTextures_;
+        this.graphsGpuMemoryMeshes_[i] = this.gpuMeshes_;
         this.graphsPolygons_[i] = this.drawnFaces_;
 
         this.graphsTimeIndex_ = (this.graphsTimeIndex_ + 1) % this.graphsTimeSamples_;
