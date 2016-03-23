@@ -50,6 +50,11 @@ Melown.Inspector.prototype.initStatsPanel = function() {
     this.core_.element_.appendChild(this.statsElement_);
     this.statsInfoElement_ = document.getElementById("melown-stats-panel-info");
     this.statsPosElement_ = document.getElementById("melown-stats-panel-pos");
+
+    this.statsElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
+    this.statsElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
+    this.statsElement_.addEventListener("mousewheel", this.doNothing.bind(this), false);
+
     this.statsPanelVisible_ = false;
 };
 
@@ -75,11 +80,13 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
     var text2_ =
             "FPS: " + Math.round(stats_.fps_) + "<br/>" +
             "Render time: " + Math.round(stats_.renderTime_*1000) + "<br/>" +
-            "- gpu total: " + Math.round(stats_.gpuUsed_/(1024*1024)) + "MB<br/>" +
-            "- gpu textures: " + Math.round(stats_.gpuTextures_/(1024*1024)) + "MB<br/>" +
-            "- gpu meshes: " + Math.round(stats_.gpuMeshes_/(1024*1024)) + "MB<br/>" +
-            "- cpu cache: " + Math.round(stats_.resourcesUsed_/(1024*1024)) + "MB<br/>" +
-            "- metailes: " + Math.round(stats_.metaUsed_/(1024*1024)) + "MB<br/>" +
+            " - resources: " + Math.round(stats_.gpuRenderUsed_/(1024*1024)) + "MB<br/>" +
+            //" - resources: " + (stats_.gpuRenderUsed_) + " --- " + (stats_.gpuRenderUsed_ / stats_.drawnTiles_) + "<br/>" +
+            "GPU Cache: " + Math.round(stats_.gpuUsed_/(1024*1024)) + "MB<br/>" +
+            " - textures: " + Math.round(stats_.gpuTextures_/(1024*1024)) + "MB<br/>" +
+            " - meshes: " + Math.round(stats_.gpuMeshes_/(1024*1024)) + "MB<br/>" +
+            "CPU Cache: " + Math.round(stats_.resourcesUsed_/(1024*1024)) + "MB<br/>" +
+            "Metaile Cache: " + Math.round(stats_.metaUsed_/(1024*1024)) + "MB<br/>" +
 //            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +
 //            "viewHeight: " + Math.round(this.core_.getOption("viewHeight")) + " m<br/>" +
 //            "distance: " + Math.round(this.core_.renderer_.cameraDistance_) + " m<br/>" +
@@ -88,9 +95,16 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
             "- float: " + (stats_.heightDelta_.toFixed(2)) + "<br/>" +
             "- desired lod: " + (stats_.heightLod_.toFixed(2)) + "<br/>" +
             "- used lod: " + (stats_.heightNode_.toFixed(2)) + "<br/>" +
-            "- used source: " + ((stats_.heightClass_ == 2 ? "navtile" : stats_.heightClass_ == 1 ? "node": "---") ) + "<br/>";
+            "- used source: " + ((stats_.heightClass_ == 2 ? "navtile" : stats_.heightClass_ == 1 ? "node": "---") ) + "<br/>" +
+            "Terrain Radar Lod: " + (this.radarLod_) + "<br/>";
 
     var text3_ = "Tiles: " + (stats_.drawnTiles_) +"<br/>";
+
+    for (var i =0, li = stats_.renderedLods_.length; i < li; i++) {
+        if (stats_.renderedLods_[i]) {
+            text3_ += "LOD " + i + ": " + (stats_.renderedLods_[i]) +"<br/>";
+        }        
+    }
 
     var text_ = "<table style='width:305px'><tr><td>" + text2_ + "</td><td>" + text3_ + "</td></tr></table>";
 

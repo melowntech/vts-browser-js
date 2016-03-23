@@ -15,11 +15,13 @@ Melown.MapStats = function(map_) {
     this.renderTimeTmp_ = 0;
     this.renderTimeBegin_ = 0;
     this.lastRenderTime_ = 0;
+    this.renderedLods_ = new Array(32);
+    this.debugIds_ = {};
 
     this.recordGraphs_ = false;
     this.graphsTimeIndex_ = 0;
     this.graphsLastTimeIndex_ = 0;
-    this.graphsTimeSamples_ = 500;
+    this.graphsTimeSamples_ = 600;
     this.graphsRenderTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateMeshTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateGpuMeshTimes_ = new Array(this.graphsTimeSamples_);
@@ -29,6 +31,7 @@ Melown.MapStats = function(map_) {
     this.graphsCpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryTextures_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryMeshes_ = new Array(this.graphsTimeSamples_);
+    this.graphsGpuMemoryRender_ = new Array(this.graphsTimeSamples_);
     this.graphsPolygons_ = new Array(this.graphsTimeSamples_);
     this.graphsLODs_ = new Array(this.graphsTimeSamples_);
     this.graphsFluxTextures_ = new Array(this.graphsTimeSamples_);
@@ -45,6 +48,7 @@ Melown.MapStats = function(map_) {
     this.gpuUsed_ = 0;
     this.resourcesUsed_ = 0;
     this.metaUsed_ = 0;
+    this.gpuRenderUsed_ = 0;
 
     this.heightClass_ = 0;
     this.heightLod_ = 0;
@@ -66,6 +70,7 @@ Melown.MapStats.prototype.resetGraphs = function() {
         this.graphsCpuMemoryMetatiles_[i] = 0;
         this.graphsGpuMemoryTextures_[i] = 0;
         this.graphsGpuMemoryMeshes_[i] = 0;
+        this.graphsGpuMemoryRender_[i] = 0;
         this.graphsPolygons_[i] = 0;
         this.graphsLODs_[i] = [0,[]];
         this.graphsFluxTextures_[i] = [[0,0],[0,0]];
@@ -77,7 +82,18 @@ Melown.MapStats.prototype.begin = function(dirty_) {
     if (dirty_) {
         this.drawnTiles_ = 0;
         this.drawnFaces_ = 0;
+        this.gpuRenderUsed_ = 0;
+
+        for (var i = 0, li = this.renderedLods_.length; i < li; i++) {
+            this.renderedLods_[i] = 0;
+        } 
     }
+
+    this.debugIds_ = {};
+
+    this.graphsFluxTexture_ = [[0,0],[0,0]];
+    this.graphsFluxMesh_ = [[0,0],[0,0]];
+
     this.counter_++;
     this.statsCycle_++;
 
@@ -109,7 +125,11 @@ Melown.MapStats.prototype.end = function(dirty_) {
         this.graphsCpuMemoryMetatiles_[i] = this.map_.metatileCache_.totalCost_;
         this.graphsGpuMemoryTextures_[i] = this.gpuTextures_;
         this.graphsGpuMemoryMeshes_[i] = this.gpuMeshes_;
+        this.graphsGpuMemoryRender_[i] = this.gpuRenderUsed_;
         this.graphsPolygons_[i] = this.drawnFaces_;
+        this.graphsFluxTextures_[i] = [[this.graphsFluxTexture_[0][0], this.graphsFluxTexture_[0][1]], [this.graphsFluxTexture_[1][0], this.graphsFluxTexture_[1][1]] ];
+        this.graphsFluxMeshes_[i] = [[this.graphsFluxMesh_[0][0], this.graphsFluxMesh_[0][1]], [this.graphsFluxMesh_[1][0], this.graphsFluxMesh_[1][1]] ];
+        this.graphsLODs_[i] = [this.drawnTiles_, this.renderedLods_.slice()];
 
         this.graphsTimeIndex_ = (this.graphsTimeIndex_ + 1) % this.graphsTimeSamples_;
         this.inspector_.updateGraphs(this);

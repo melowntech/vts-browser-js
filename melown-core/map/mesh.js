@@ -43,9 +43,16 @@ Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
 };
 
 Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
+    var size_ = 0;
     for (var i = 0, li = this.gpuSubmeshes_.length; i < li; i++) {
-        this.stats_.gpuMeshes_ -= this.gpuSubmeshes_[i].size_;
         this.gpuSubmeshes_[i].kill();
+        size_ += this.gpuSubmeshes_[i].size_;
+    }
+
+    if (li > 0) {
+        this.stats_.gpuMeshes_ -= size_;
+        this.stats_.graphsFluxMesh_[1][0]++;
+        this.stats_.graphsFluxMesh_[1][1] += size_;
     }
 
     this.gpuSubmeshes_ = [];
@@ -58,7 +65,7 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     this.gpuCacheItem_ = null;
 };
 
-Melown.MapMesh.prototype.isReady = function (doNotLoad_) {
+Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
     if (this.loadState_ == 2) { //loaded
         if (this.gpuSubmeshes_.length == 0) {
             this.buildGpuSubmeshes();
@@ -78,7 +85,7 @@ Melown.MapMesh.prototype.isReady = function (doNotLoad_) {
             } else {
                 //not loaded
                 //add to loading queue or top position in queue
-                this.scheduleLoad();
+                this.scheduleLoad(priority_);
             }
         } //else load in progress
     }
@@ -86,12 +93,12 @@ Melown.MapMesh.prototype.isReady = function (doNotLoad_) {
     return false;
 };
 
-Melown.MapMesh.prototype.scheduleLoad = function() {
+Melown.MapMesh.prototype.scheduleLoad = function(priority_) {
     if (this.mapLoaderUrl_ == null) {
         this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.surface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
     }
 
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this));
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_);
 };
 
 Melown.MapMesh.prototype.onLoad = function(url_, onLoaded_, onError_) {
@@ -199,6 +206,8 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
     }
 
     this.stats_.gpuMeshes_ += size_;
+    this.stats_.graphsFluxMesh_[0][0]++;
+    this.stats_.graphsFluxMesh_[0][1] += size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuSubmeshes.bind(this, true), size_);
 };
@@ -312,13 +321,22 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     }
 
     if (texture_ != null && texture_.gpuTexture_ != null) {
-        this.map_.gpuCacheUsed_ += texture_.gpuTexture_.size_;
+        if (texture_.statsCoutner_ != this.stats_.counter_) {
+            texture_.statsCoutner_ = this.stats_.counter_;
+            this.stats_.gpuRenderUsed_ += texture_.gpuTexture_.size_;
+        }
+        
         renderer_.gpu_.bindTexture(texture_.gpuTexture_);
     } else if (type_ != "fog") {
         return;
     }
 
-    this.map_.gpuCacheUsed_ += gpuSubmesh_.size_;
+    if (submesh_.statsCoutner_ != this.stats_.counter_) {
+        submesh_.statsCoutner_ = this.stats_.counter_;
+        this.stats_.gpuRenderUsed_ += gpuSubmesh_.size_;
+    } else {
+        this.stats_.gpuRenderUsed_ ++;
+    }
 
     gpuSubmesh_.draw(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
     this.stats_.drawnFaces_ += this.faces_;

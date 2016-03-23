@@ -103,9 +103,9 @@ Melown.MapInterface.prototype.convertCoords = function(sourceSrs_, destinationSr
     return srs2_.convertCoordsFrom(coords_, srs_);
 };
 
-Melown.MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos_, mode_) {
+Melown.MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos_, mode_, lod_) {
     var p_ = ["obj", pos_[0], pos_[1], mode_, pos_[2], 0, 0, 0, 10, 90 ];
-    return (new Melown.MapPosition(this.map_, p_)).getCanvasCoords();
+    return (new Melown.MapPosition(this.map_, p_)).getCanvasCoords(lod_);
 };
 
 Melown.MapInterface.prototype.clonePosition = function(position_) {
@@ -166,8 +166,8 @@ Melown.MapInterface.prototype.getPositionHeightMode = function(position_) {
     return (new Melown.MapPosition(this.map_, position_)).getHeightMode();
 };
 
-Melown.MapInterface.prototype.getPositionCanvasCoords = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getCanvasCoords();
+Melown.MapInterface.prototype.getPositionCanvasCoords = function(position_, lod_) {
+    return (new Melown.MapPosition(this.map_, position_)).getCanvasCoords(lod_);
 };
 
 Melown.MapInterface.prototype.getPositionCameraCoords = function(position_, mode_) {

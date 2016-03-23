@@ -101,11 +101,9 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                                             
                         this.diagnosticMode_ = true; hit_ = true; break;  //key D pressed
                 }
-
             }
 
             if (this.diagnosticMode_ == true) {
-
                 var blockHit_ = true;
 
                 switch(keyCode_) {
@@ -202,9 +200,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 76:
                     case 108:
-
-                        this.drawRadar_ = !this.drawRadar_;
-                        break; //key L pressed
+                        this.drawRadar_ = !this.drawRadar_; break; //key L pressed
 
                     case 90:
                     case 122:
@@ -219,14 +215,38 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 if (blockHit_) {
                     hit_ = true;
                 }
-
             }
-
         }
 
+        if (this.diagnosticMode_ && this.drawRadar_ && !this.shiftDown_ && !press_) {
+            var blockHit_ = true;
 
-        if (this.diagnosticMode_ == true && map_.drawBBoxes_ == true && this.shiftDown_ != true && press_ != true) {
+            switch(keyCode_) {
+                case 43:
+                case 107:
+                    if (this.radarLod_ == null) { this.radarLod_ = 8;}
+                    this.radarLod_++; console.log("radarLOD: " + this.radarLod_); break; //key mun + pressed
 
+                case 45:
+                case 109:
+                    if (this.radarLod_ == null) { this.radarLod_ = 8;}
+                    this.radarLod_ = Math.max(0,this.radarLod_-1); console.log("radarLOD: " + this.radarLod_); break; //key mun - pressed
+
+                case 42:
+                case 106:
+                    this.radarLod_ = null; console.log("radarLOD: auto"); break; //key mun * pressed
+
+                default:
+                    blockHit_ = false;
+                    break;
+            }
+
+            if (blockHit_) {
+                hit_ = true;
+            }
+        }
+
+        if (this.diagnosticMode_ && map_.drawBBoxes_ && !this.shiftDown_ && !press_) {
              var blockHit_ = true;
 
             switch(keyCode_) {
@@ -270,8 +290,6 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
             if (blockHit_) {
                 hit_ = true;
             }
-
-
         }
 
     }

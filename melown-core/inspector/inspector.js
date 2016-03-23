@@ -17,6 +17,7 @@ Melown.Inspector = function(core_) {
     this.core_.on("map-update", this.onMapUpdate.bind(this));
    
     this.drawRadar_ = false;
+    this.radarLod_ = null;
     this.debugValue_ = 0;
 };
 
@@ -25,6 +26,12 @@ Melown.Inspector.prototype.addStyle = function(string_) {
     style_.type = 'text/css';
     style_.innerHTML = string_;
     document.getElementsByTagName('head')[0].appendChild(style_);
+};
+
+//used to block mouse events
+Melown.Inspector.prototype.doNothing = function(e) {
+    e.stopPropagation();
+    return false;
 };
 
 Melown.Inspector.prototype.onMapUpdate = function(string_) {
@@ -45,7 +52,7 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
         for (var j = 0; j < count_; j++) {
             for (var i = 0; i < count_; i++) {
                 var screenCoords_ = map_.convertCoordsFromNavToCanvas([coords_[0] + i*step_ - count_*0.5*step_,
-                                                                       coords_[1] + j*step_ - count_*0.5*step_, 0], "float");
+                                                                       coords_[1] + j*step_ - count_*0.5*step_, 0], "float", this.radarLod_);
         
                 cbuffer_[j * count_ + i] = screenCoords_;
             }            

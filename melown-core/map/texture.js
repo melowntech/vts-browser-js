@@ -11,6 +11,7 @@ Melown.MapTexture = function(map_, path_, heightMap_) {
     this.loadState_ = 0;
     this.mapLoaderUrl_ = path_;
     this.heightMap_ = heightMap_ || false;
+    this.statsCounter_ = 0;
 
     this.cacheItem_ = null; //store killImage
     this.gpuCacheItem_ = null; //store killGpuTexture
@@ -40,6 +41,9 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     if (this.gpuTexture_ != null) {
         this.stats_.gpuTextures_ -= this.gpuTexture_.size_;
         this.gpuTexture_.kill();
+
+        this.stats_.graphsFluxTexture_[1][0]++;
+        this.stats_.graphsFluxTexture_[1][1] += this.gpuTexture_.size_;
     }
 
     this.gpuTexture_ = null;
@@ -52,7 +56,7 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     this.gpuCacheItem_ = null;
 };
 
-Melown.MapTexture.prototype.isReady = function(doNotLoad_) {
+Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
     if (this.loadState_ == 2) { //loaded
         if (this.heightMap_) {
             if (this.imageData_ == null) {
@@ -77,7 +81,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_) {
             } else {
                 //not loaded
                 //add to loading queue or top position in queue
-                this.scheduleLoad();
+                this.scheduleLoad(priority_);
             }
         } //else load in progress
     }
@@ -85,8 +89,8 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_) {
     return false;
 };
 
-Melown.MapTexture.prototype.scheduleLoad = function() {
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this));
+Melown.MapTexture.prototype.scheduleLoad = function(priority_) {
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_);
 };
 
 Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
@@ -126,6 +130,9 @@ Melown.MapTexture.prototype.buildGpuTexture = function () {
     this.gpuTexture_ = new Melown.GpuTexture(this.map_.renderer_.gpu_, null, this.map_.core_);
     this.gpuTexture_.createFromImage(this.image_, "linear", false);
     this.stats_.gpuTextures_ += this.gpuTexture_.size_;
+
+    this.stats_.graphsFluxTexture_[0][0]++;
+    this.stats_.graphsFluxTexture_[0][1] += this.gpuTexture_.size_;
 
     this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuTexture.bind(this, true), this.gpuTexture_.size_);
 };

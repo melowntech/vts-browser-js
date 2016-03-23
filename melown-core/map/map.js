@@ -32,7 +32,6 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.freeLayers_ = [];
     this.boundLayers_ = [];
     this.dynamicLayers_ = [];
-    this.gpuCacheUsed_ = 0; 
 
     this.initialView_ = null;
     this.currentView_ = new Melown.MapView(this, {});
@@ -421,6 +420,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapAllowSmartSwitching":        this.config_.mapAllowSmartSwitching_ = Melown.validateBool(value_, true); break;
         case "mapHeightLodBlend":             this.config_.mapHeightLodBlend_ = Melown.validateBool(value_, true); break;
         case "mapHeightNodeBlend":            this.config_.mapHeightNodeBlend_ = Melown.validateBool(value_, true); break;
+        case "mapBasicTileSequence":          this.config_.mapBasicTileSequence_ = Melown.validateBool(value_, true); break;
     }
 };
 
@@ -446,6 +446,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapAllowSmartSwitching":        return this.config_.mapAllowSmartSwitching_;
         case "mapHeightLodBlend":             return this.config_.mapHeightLodBlend_;
         case "mapHeightNodeBlend":            return this.config_.mapHeightNodeBlend_;
+        case "mapBasicTileSequence":          return this.config_.mapBasicTileSequence_;
     }
 };
 

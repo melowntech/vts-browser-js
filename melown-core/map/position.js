@@ -278,7 +278,7 @@ Melown.MapPosition.prototype.getCameraCoords = function(heightMode_) {
 
         //convert height to fix
         if (this.getHeightMode() == "float") {
-            var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
+            var lod_ = this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
             var surfaceHeight_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
             terrainHeight_ = surfaceHeight_[0];
         }
@@ -336,11 +336,11 @@ Melown.MapPosition.prototype.getCameraCoords = function(heightMode_) {
     }
 };
 
-Melown.MapPosition.prototype.getCanvasCoords = function() {
+Melown.MapPosition.prototype.getCanvasCoords = function(lod_) {
 	var coords_ = this.getCoords();
 
     if (this.getHeightMode() == "float") {
-        var lod_ =  this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
+        lod_ =  (lod_ != null) ? lod_ : this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
         var surfaceHeight_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
     	coords_[2] += surfaceHeight_[0]; 
 	}

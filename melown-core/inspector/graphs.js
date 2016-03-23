@@ -42,9 +42,9 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
     this.graphsElement_ = document.createElement("div");
     this.graphsElement_.id = "melown-graphs-panel";
     this.graphsElement_.innerHTML = ""
-        + '<canvas id="melown-graphs-render" class="melown-graphs-canvas" width="500" height="100" ></canvas>'
+        + '<canvas id="melown-graphs-render" class="melown-graphs-canvas" width="600" height="100" ></canvas>'
         + '<div id="melown-graphs-info" class="melown-graphs-info" >&FilledSmallSquare; Frame: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: 1234 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Mesh: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMesh: 1234</div>'
-        + '<canvas id="melown-graphs-cache" class="melown-graphs-canvas" width="500" height="100" ></canvas>'
+        + '<canvas id="melown-graphs-cache" class="melown-graphs-canvas" width="600" height="100" ></canvas>'
         + '<div id="melown-graphs-info2" class="melown-graphs-info" >&FilledSmallSquare; Cache: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Used: 123 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> Mesh: &nbsp 1234</div>'
         + '<div id="melown-graphs-rec" class="melown-graphs-button" >Recording On</div>'
         + '<div id="melown-graphs-ref" class="melown-graphs-button" >Refresh On</div>'
@@ -84,11 +84,13 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
 Melown.Inspector.prototype.showGraphsPanel = function() {
     this.graphsElement_.style.display = "block";
     this.graphsPanelVisible_ = true;
+    this.graphsRecordingPressed(true);
 };
 
 Melown.Inspector.prototype.hideGraphsPanel = function() {
     this.graphsElement_.style.display = "none";
     this.graphsPanelVisible_ = false;
+    this.graphsRecordingPressed(true);
 };
 
 Melown.Inspector.prototype.switchGraphsPanel = function() {
@@ -99,21 +101,20 @@ Melown.Inspector.prototype.switchGraphsPanel = function() {
     }
 };
 
-Melown.Inspector.prototype.graphsRecordingPressed = function() {
+Melown.Inspector.prototype.graphsRecordingPressed = function(state_) {
     var map_ = this.core_.getMap();
 
     if (map_ == null) {
         return;
     }
 
-    map_.stats_.recordGraphs_ = !map_.stats_.recordGraphs_;
+    map_.stats_.recordGraphs_ = (state_ == null) ? state_ : !map_.stats_.recordGraphs_;
     this.updateGraphsPanel();
     this.updateGraphs(null, true);
 };
 
 Melown.Inspector.prototype.graphsRefreshPressed = function() {
     this.graphsRefresh_ = !this.graphsRefresh_;
-
     this.updateGraphsPanel();
     this.updateGraphs();
 };
@@ -157,15 +158,15 @@ Melown.Inspector.prototype.graphsMagnifyPressed = function() {
     this.graphsMagnify_ = !this.graphsMagnify_;
 
     if (this.graphsMagnify_ == true) {
-        this.graphsCanvasRender_.style.width = "900px";
-        this.graphsCanvasRender_.style.height = "150px";
-        this.graphsCanvasCache_.style.width = "900px";
-        this.graphsCanvasCache_.style.height = "150px";
+        this.graphsCanvasRender_.style.width = "1000px";
+        this.graphsCanvasRender_.style.height = "200px";
+        this.graphsCanvasCache_.style.width = "1000px";
+        this.graphsCanvasCache_.style.height = "200px";
         document.getElementById("melown-graphs-magnify").innerHTML = "Magnify On";
     } else {
-        this.graphsCanvasRender_.style.width = "500px";
+        this.graphsCanvasRender_.style.width = "600px";
         this.graphsCanvasRender_.style.height = "100px";
-        this.graphsCanvasCache_.style.width = "500px";
+        this.graphsCanvasCache_.style.width = "600px";
         this.graphsCanvasCache_.style.height = "100px";
         document.getElementById("melown-graphs-magnify").innerHTML = "Magnify Off";
     }
@@ -215,7 +216,7 @@ Melown.Inspector.prototype.onGraphsMouseMove = function(event_) {
     this.graphsShowCursor_ = true;
 
     if (this.graphsMagnify_ == true) {
-        x = Math.floor(x * 500/900);
+        x = Math.floor(x * 600/1000);
     }
 
     this.graphsCursorIndex_ = x;
@@ -370,17 +371,20 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
             var maxResources_ = 0;
             var maxTextures_ = 0;
             var maxMeshes_ = 0;
+            var maxGpu_ = 0;
 
             var valuesMetatiles_ = stats_.graphsCpuMemoryMetatiles_;
             var valuesResources_ = stats_.graphsCpuMemoryUsed_;
             var valuesTextures_ = stats_.graphsGpuMemoryTextures_;
             var valuesMeshes_ = stats_.graphsGpuMemoryMeshes_;
+            var valuesGpu_ = stats_.graphsGpuMemoryRender_;
 
             for (var i = 0; i < samples_; i++) {
                 maxMetatiles_ = valuesMetatiles_[i] > maxMetatiles_ ? valuesMetatiles_[i] : maxMetatiles_;
                 maxResources_ = valuesResources_[i] > maxResources_ ? valuesResources_[i] : maxResources_;
                 maxTextures_ = valuesTextures_[i] > maxTextures_ ? valuesTextures_[i] : maxTextures_;
                 maxMeshes_ = valuesMeshes_[i] > maxMeshes_ ? valuesMeshes_[i] : maxMeshes_;
+                maxGpu_ = valuesGpu_[i] > maxGpu_ ? valuesGpu_[i] : maxGpu_;
             }
 
             for (var i = 0; i < samples_; i++) {
@@ -402,6 +406,10 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
 
                 ctx_.fillStyle="#ff0000";
                 ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+
+                value_ = valuesGpu_[index_];
+                ctx_.fillStyle="#ffff00";
+                ctx_.fillRect(i*factorX_, height_ -(value_)*factorY_, 1, 1);
             }
 
             if (this.graphsShowCursor_ == true) {
@@ -411,14 +419,16 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                            ' &nbsp <span style="color:#0055ff">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.ceil(valuesTextures_[index_]/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.ceil(valuesMeshes_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(valuesMetatiles_[index_]/(1024*1024)) + "MB" +'</div>';
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(valuesMetatiles_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(valuesGpu_[index_]/(1024*1024)) + "MB" +'</div>';
             } else {
                 var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles_ + maxResources_ + maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources_/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.ceil(maxTextures_/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.ceil(maxMeshes_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(maxMetatiles_/(1024*1024)) + "MB" +'</div>';
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(maxMetatiles_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(maxGpu_/(1024*1024)) + "MB" +'</div>';
             }
 
         }
@@ -486,12 +496,16 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                 //ctx_.fillRect(i*factorX_, height_, 1, -(values_[index_][0])*factorY_);
 
                 var y = height_;
+                
+                var lods_ = values_[index_][1]; 
 
-                for (var j in values_[index_][1]) {
-                    ctx_.fillStyle="hsl("+((j*23)%360)+",100%,50%)";
-                    var value_ = Math.round((values_[index_][1][j])*factorY_);
-                    ctx_.fillRect(i*factorX_, y, 1, -value_);
-                    y -= value_;
+                for (var j = 0, lj = lods_.length; j < lj; j++) {
+                    if (lods_[j]) {
+                        ctx_.fillStyle="hsl("+((j*23)%360)+",100%,50%)";
+                        var value_ = Math.round((lods_[j])*factorY_);
+                        ctx_.fillRect(i*factorX_, y, 1, -value_);
+                        y -= value_;
+                    }
                 }
 
             }
@@ -500,9 +514,12 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                 var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
 
                 var str_ = "LODs:" + values_[index_][0];
+                var lods_ = values_[index_][1]; 
 
-                for (var j in values_[index_][1]) {
-                    str_ += '<span style="color:hsl('+((j*23)%360)+',100%,50%)">&FilledSmallSquare;</span>'+j+':'+values_[index_][1][j];
+                for (var j = 0, lj = lods_.length; j < lj; j++) {
+                    if (lods_[j]) {
+                        str_ += '<span style="color:hsl('+((j*23)%360)+',100%,50%)">&FilledSmallSquare;</span>'+j+':'+lods_[j];
+                    }
                 }
 
             } else {

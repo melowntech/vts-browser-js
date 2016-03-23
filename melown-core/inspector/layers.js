@@ -153,10 +153,6 @@ Melown.Inspector.prototype.initLayersPanel = function() {
     this.layersCurrentSurface_ = "";
 };
 
-Melown.Inspector.prototype.doNothing = function() {
-    return false;
-};
-
 Melown.Inspector.prototype.initViews = function() {
     var map_ = this.core_.getMap();
     if (!map_) {

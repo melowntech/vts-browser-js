@@ -19,6 +19,7 @@ Melown.MapSubmesh = function(mesh_, stream_) {
     this.externalUVs_ = null;
     this.undulationDeltas_ = null;
     this.mesh_ = mesh_;
+    this.statsCounter_ = 0;
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;

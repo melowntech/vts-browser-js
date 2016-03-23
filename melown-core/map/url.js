@@ -108,6 +108,39 @@ Melown.Map.prototype.processUrlFunction = function(id_, counter_, string_) {
 
 };
 
+Melown.Map.prototype.findLocalRoot = function(id_) {
+    var nodes_ = this.referenceFrame_.getSpatialDivisionNodes();
+    var validNodes_ = [];  
+
+    for (var i = 0, li = nodes_.length; i < li; i++) {
+        var node_ = nodes_[i];
+        
+        var delta_ = id_[0] - node_.id_[0];
+        
+        ix_ = id_[1] >> delta_;
+        iy_ = id_[2] >> delta_;
+        
+        if (ix_ == node_.id_[1] && iy_ == node_.id_[2]) {
+            validNodes_.push(node_);           
+        }
+    }
+
+    var bestNode_ = null;
+    var bestLod_ = -1;
+    
+    for (var i = 0, li = validNodes_.length; i < li; i++) {
+        if (validNodes_[i].id_[0] > bestLod_) {
+            bestNode_ = validNodes_[i]; 
+        }
+    }
+    
+    if (bestNode_) {
+        return bestNode_.id_.slice();
+    } else {
+        return [0,0,0];
+    }
+};
+
 Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
     //if (templ_.indexOf("jpg") != -1) {
        //templ_ = "{lod}-{easting}-{northing}.jpg?v=4";
@@ -121,12 +154,25 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
     //var worldParams_ = id_.getWorldParams();
     //var url_ = Melown.simpleFmtObjOrCall(templ_, {"lod":id_.lod_, "easting":Melown.padNumber(worldParams_[0], 7), "northing":Melown.padNumber(worldParams_[1], 7),
 
+    var locx_ = 0;
+    var locy_ = 0;
+    var loclod_ = 0;
+
+    if (id_.lod_) {
+        var localRoot_ = this.findLocalRoot([id_.lod_, id_.ix_, id_.iy_]);    
+        loclod_ = id_.lod_ - localRoot_[0];
+        var mask_ = (1 << loclod_) - 1;
+        locx_ = id_.ix_ & mask_;
+        locy_ = id_.iy_ & mask_;        
+    }
+
     //remove white spaces from template
     templ_ = templ_.replace(/ /g, '');
 
     var url_ = Melown.simpleFmtObjOrCall(templ_, {"lod":id_.lod_,  "x":id_.ix_, "y":id_.iy_, "sub": subId_,
-                                                    "here_app_id": "abcde", "here_app_code":"12345"},
-                                           this.processUrlFunction.bind(this, id_, this.urlCounter_));
+                                                  "locx":locx_, "locy":locy_, "loclod":loclod_, 
+                                                  "here_app_id": "abcde", "here_app_code":"12345"},
+                                         this.processUrlFunction.bind(this, id_, this.urlCounter_));
 
     this.urlCounter_++;
 

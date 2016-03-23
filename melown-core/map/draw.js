@@ -3,7 +3,6 @@
 Melown.Map.prototype.draw = function() {
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
     this.updateFogDensity();
-    this.gpuCacheUsed_ = 0; 
     this.maxGpuUsed_ = this.gpuCache_.getMaxCost() * 0.9; 
     this.cameraCenter_ = this.position_.getCoords();
 
@@ -11,6 +10,7 @@ Melown.Map.prototype.draw = function() {
     for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
         this.mapTrees_[i].draw();
     }
+    //this.mapTrees_[0].draw();
 
     //loop currently used free layers
     for (var i = 0, li = this.freeLayers_.length; i < li; i++) {
@@ -19,22 +19,22 @@ Melown.Map.prototype.draw = function() {
 
 };
 
-Melown.Map.prototype.areDrawCommandsReady = function(commands_, doNotLoad_) {
+Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNotLoad_) {
     for (var i = 0, li = commands_.length; i < li; i++) {
         var command_ = commands_[i];
         
         switch (command_.type_) {
             case "submesh":
 
-                if (this.gpuCacheUsed_ >= this.maxGpuUsed_) {
+                if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
                     return false;
                 }
                 
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_; 
                 
-                if (!(mesh_ && mesh_.isReady(doNotLoad_) &&
-                      (!texture_  || (texture_ && texture_.isReady(doNotLoad_)))) ) {
+                if (!(mesh_ && mesh_.isReady(doNotLoad_, priority_) &&
+                      (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_)))) ) {
                      return false;   
                 }
                 
@@ -51,7 +51,7 @@ Melown.Map.prototype.applyCredits = function(tile_) {
     }
 };
 
-Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, doNotLoad_) {
+Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, priority_, doNotLoad_) {
     //var commands_ = tile_.drawCommands_;
     
     for (var i = 0, li = commands_.length; i < li; i++) {
@@ -64,15 +64,15 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, doNot
 
             case "submesh":
             
-                if (this.gpuCacheUsed_ >= this.maxGpuUsed_) {
+                if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
                     break;
                 }
                 
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_;
                
-                if (mesh_ && mesh_.isReady(doNotLoad_) &&
-                    (!texture_  || (texture_ && texture_.isReady(doNotLoad_))) ) {
+                if (mesh_ && mesh_.isReady(doNotLoad_, priority_) &&
+                    (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_))) ) {
                     mesh_.drawSubmesh(cameraPos_, command_.submesh_, texture_, command_.material_, command_.alpha_);
                 }
                 
@@ -81,13 +81,13 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, doNot
     }
 };
 
-Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, preventRedener_, preventLoad_) {
+Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
     //free tile resources when map view changed
     //if (this.viewCounter_ != tile_.viewCoutner_) {
       //  tile_.kill();
     //}
 
-    if (this.gpuCacheUsed_ >= this.maxGpuUsed_) {
+    if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         return;
     }
 
@@ -107,14 +107,30 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                 this.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
             }
             
+            this.stats_.renderedLods_[tile_.id_[0]]++;
             this.stats_.drawnTiles_++;
+            
+            var sid_ = "" + tile_.id_[0] + "." + tile_.id_[1] + "." + tile_.id_[2];
+            
+            if (sid_ == "20.282345.177720") {
+                sid_ = sid_;
+                //debugger;
+            }
+            
+            if (!this.stats_.debugIds_[sid_]) {
+                this.stats_.debugIds_[sid_] = true; 
+            } else {
+                sid_ = sid_;
+                //debugger; 
+            }
+
 
 
             //var drawLastRenderState_ = false;
 
-            if (tile_.drawCommands_.length > 0 && this.areDrawCommandsReady(tile_.drawCommands_, preventLoad_)) {
+            if (tile_.drawCommands_.length > 0 && this.areDrawCommandsReady(tile_.drawCommands_, priority_, preventLoad_)) {
                 if (!preventRedener_) {
-                    this.processDrawCommands(cameraPos_, tile_.drawCommands_);
+                    this.processDrawCommands(cameraPos_, tile_.drawCommands_, priority_);
                     this.applyCredits(tile_);
                 }
                 tile_.lastRenderState_ = null;
@@ -122,28 +138,28 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             } else if (tile_.lastRenderState_){
                 //drawLastRenderState_ = true;
 
-                if (tile_.surfaceMesh_.isReady(true) == true) {
+                if (tile_.surfaceMesh_.isReady(true, priority_) == true) {
                     if (tile_.drawCommands_.length > 0) {
                         if (!preventRedener_) {
-                            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
+                            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, priority_, true);
                             this.applyCredits(tile_);
                         }
                         return;
                     }
                 } else {
                     if (!preventRedener_) {
-                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
+                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, priority_, true);
                         this.applyCredits(tile_);
                     }
                 }
             }
 
 
-            if (tile_.surfaceMesh_.isReady(preventLoad_) && !preventLoad_) {
+            if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
                 var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
-                //tile_.drawCommands_ = [];
-                //tile_.credits_ = {};
+                tile_.drawCommands_ = [];
+                tile_.credits_ = {};
 
 /*
                 if (tile_.drawCommands_.length > 0) {
@@ -359,16 +375,16 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                     }
                 }
 
-                if (this.areDrawCommandsReady(tile_.drawCommands_, preventLoad_)) {
+                if (this.areDrawCommandsReady(tile_.drawCommands_, priority_, preventLoad_)) {
                     if (!preventRedener_) {
-                        this.processDrawCommands(cameraPos_, tile_.drawCommands_);
+                        this.processDrawCommands(cameraPos_, tile_.drawCommands_, priority_);
                         this.applyCredits(tile_);
                     }
                     
                     tile_.lastRenderState_ = null;
                 } else if (tile_.lastRenderState_) {
                     if (!preventRedener_) {
-                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
+                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, priority_, true);
                         this.applyCredits(tile_);
                     }
                 }
@@ -378,7 +394,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
         }
     } else {
         if (!preventRedener_ && tile_.lastRenderState_) {
-            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, true);
+            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_, priority_, true);
             this.applyCredits(tile_);
         }
     }
