@@ -15,7 +15,8 @@ Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_,
 
 Melown.MapMetanodeTracer.prototype.trace = function(tile_, params_) {
     this.params_ = params_;
-    this.traceTile(this.surfaceTree_, 0);
+    //this.traceTile(this.surfaceTree_, 0);
+    this.traceTile(tile_, 0);
 };
 
 Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, processFlag_, processFlag2_) {

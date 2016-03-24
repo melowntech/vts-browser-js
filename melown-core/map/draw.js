@@ -6,11 +6,7 @@ Melown.Map.prototype.draw = function() {
     this.maxGpuUsed_ = this.gpuCache_.getMaxCost() * 0.9; 
     this.cameraCenter_ = this.position_.getCoords();
 
-    //loop map trees
-    for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
-        this.mapTrees_[i].draw();
-    }
-    //this.mapTrees_[0].draw();
+    this.tree_.draw();
 
     //loop currently used free layers
     for (var i = 0, li = this.freeLayers_.length; i < li; i++) {

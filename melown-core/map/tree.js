@@ -1,11 +1,10 @@
 /**
  * @constructor
  */
-Melown.MapTree = function(map_, divisionNode_, freeLayer_) {
+Melown.MapTree = function(map_, freeLayer_) {
     this.map_ = map_;
     this.camera_ = map_.camera_;
-    this.rootId_ = divisionNode_.id_;
-    this.divisionNode_ = divisionNode_;
+    this.rootId_ = [0,0,0];
     this.freeLayer_ = freeLayer_;
     this.metaBinaryOrder_ = this.map_.referenceFrame_.params_.metaBinaryOrder_;
     this.initialized_ = false;
@@ -48,13 +47,40 @@ Melown.MapTree.prototype.init = function() {
     this.initialized_ = true;
 };
 
+Melown.MapTree.prototype.findSurfaceTile = function(id_) {
+    var tile_ = this.surfaceTree_;
+
+    for (var lod_ = 1; lod_ <= id_[0]; lod_++) {
+        var mask_ = 1 << (lod_-1);
+        var index_ = 0;
+
+        if ((id_[1] & mask_) != 0) {
+            index_ += 1;
+        }
+
+        if ((id_[2] & mask_) != 0) {
+            index_ += 2;
+        }
+        
+        tile_ = tile_.children_[index_];
+
+        if (!tile_) {
+            return null;
+        }
+    }
+    
+    return tile_;
+};
+
 Melown.MapTree.prototype.draw = function() {
     this.cameraPos_ = [0,0,0];
     this.worldPos_ = [0,0,0];
     this.ndcToScreenPixel_ = this.map_.ndcToScreenPixel_;
+    
+    var srs_ = this.map_.getPhysicalSrs();
 
     var divisionNode_ = this.divisionNode_;
-    var periodicity_ = divisionNode_.srs_.periodicity_;
+    var periodicity_ = srs_.periodicity_;
 
     if (this.map_.config_.mapBasicTileSequence_) {
         this.surfaceTracer_ = this.surfaceTracerBasic_;
@@ -62,7 +88,7 @@ Melown.MapTree.prototype.draw = function() {
 
     if (periodicity_ != null) {
         this.drawSurface([0,0,0]);
-        this.renderSurface([0,0,0]);
+        //this.renderSurface([0,0,0]);
 
         if (periodicity_.type_ == "X") {
             this.drawSurface([periodicity_.period_,0,0]);
@@ -71,15 +97,16 @@ Melown.MapTree.prototype.draw = function() {
 
     } else {
         this.drawSurface([0,0,0]);
-        this.renderSurface([0,0,0]);
+        //this.renderSurface([0,0,0]);
     }
 };
 
 Melown.MapTree.prototype.drawSurface = function(shift_) {
     this.counter_++;
-    this.surfaceTracer_.trace(this.rootId_);
+    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);
 };
 
+//probably used for hit test etc..
 Melown.MapTree.prototype.renderSurface = function(shift_) {
     //this.renderTracer_.trace(this.rootId_);
 };

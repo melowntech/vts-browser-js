@@ -48,8 +48,6 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
       mapdata_ : []
     };
 
-    this.mapTrees_ = [];
-
     this.gpuCache_ = new Melown.MapCache(this, this.config_.mapGPUCache_*1024*1024);
     this.resourcesCache_ = new Melown.MapCache(this, this.config_.mapCache_*1024*1024);
     this.metatileCache_ = new Melown.MapCache(this, this.config_.mapMetatileCache_*1024*1024);
@@ -67,7 +65,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
 
     this.parseConfig(this.mapConfig_);
 
-    this.initMapTrees();
+    this.tree_ = new Melown.MapTree(this, false);
 
     this.updateCoutner_ = 0;
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
@@ -112,14 +110,6 @@ Melown.Map.prototype.getCoreInterface = function() {
 
 Melown.Map.prototype.getRendererInterface = function() {
 	return this.core_.interface_.getRendererInterface();
-};
-
-Melown.Map.prototype.initMapTrees = function() {
-    var nodes_ = this.referenceFrame_.division_.nodes_;
-
-    for (var i = 0, li = nodes_.length; i < li; i++) {
-        this.mapTrees_.push(new Melown.MapTree(this, nodes_[i], false));
-    }
 };
 
 Melown.Map.prototype.setOption = function(key_, value_) {

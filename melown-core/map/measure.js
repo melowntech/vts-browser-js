@@ -12,68 +12,63 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_) {
         return this.getSurfaceHeightNodeOnly(coords_, lod_ + 8, storeStats_, lod_);        
     }
 
+    var tree_ = this.tree_;
+
     if (node_ != null && lod_ !== null) {
+        var root_ = tree_.findSurfaceTile(node_.id_);
 
-        for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
-            var tree_ = this.mapTrees_[i];
+        var extents_ = {
+            ll_ : node_.extents_.ll_.slice(),
+            ur_ : node_.extents_.ur_.slice()
+        };
+        var params_ = {
+            coords_ : nodeCoords_,
+            desiredLod_ : Math.ceil(lod_),
+            extents_ : extents_,
+            metanode_ : null,
+            heightMap_ : null,
+            heightMapExtents_ : null,
+            traceHeight_ : true
+        };
 
-            if (tree_.divisionNode_ == node_) {
-                var extents_ = {
-                    ll_ : node_.extents_.ll_.slice(),
-                    ur_ : node_.extents_.ur_.slice()
-                };
-                var params_ = {
-                    coords_ : nodeCoords_,
-                    desiredLod_ : Math.ceil(lod_),
-                    extents_ : extents_,
-                    metanode_ : null,
-                    heightMap_ : null,
-                    heightMapExtents_ : null,
-                    traceHeight_ : true
-                };
+        tree_.heightTracer_.trace(root_, params_);
 
-                tree_.heightTracer_.trace(tree_, params_);
+        var heightMap_ = params_.heightMap_;
+        var metanode_ = params_.metanode_;
 
-                var heightMap_ = params_.heightMap_;
-                var metanode_ = params_.metanode_;
-
-                if (params_.heightMap_ != null) {
-                    if (storeStats_) {
-                        this.stats_.heightClass_ = 2;
-                        this.stats_.heightLod_ = lod_;
-                        this.stats_.heightNode_ = metanode_.id_[0];                        
-                    }
-                   
-                    if (this.config_.mapHeightLodBlend_ && metanode_.id_[0] > 0 &&
-                        params_.parent_ && params_.parent_.heightMap_) {
-                        var height1_ = this.getHeightmapValue(nodeCoords_, params_.parent_.metanode_, params_.parent_);  
-                        var height2_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
-                        var factor_ = lod_ - Math.floor(lod_);
-                        var height_ = height1_ + (height2_ - height1_) * factor_;
-                        
-                        //console.log("lod: " + lod_ + " h1: " + height1_ + " h2: " + height2_ + " h: " + height_);  
-                    } else {
-                        var height_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
-                    }
-
-                    return [height_, metanode_.id_[0] >= Math.ceil(lod_), true];
-
-                } else if (metanode_ != null /*&& metanode_.id_[0] == lod_ && !metanode_.hasNavtile()*/){
-                    var height_ = this.getSurfaceHeightNodeOnly(coords_, lod_ + 8, storeStats_, lod_);
-
-                    //console.log("lod2: " + lod_ + " h: " + height_[0]);  
-                    return [height_[0], height_[1], true];
-                }
-
-                /*
-                if (metanode_ != null) {
-                    var height_ = metanode_.minHeight_ + (metanode_.maxHeight_ - metanode_.minHeight_) * 0.5;
-                    return [height_, metanode_.id_[0] >= lod_, true];
-                }*/
-
-                break;
+        if (params_.heightMap_ != null) {
+            if (storeStats_) {
+                this.stats_.heightClass_ = 2;
+                this.stats_.heightLod_ = lod_;
+                this.stats_.heightNode_ = metanode_.id_[0];                        
             }
+           
+            if (this.config_.mapHeightLodBlend_ && metanode_.id_[0] > 0 &&
+                params_.parent_ && params_.parent_.heightMap_) {
+                var height1_ = this.getHeightmapValue(nodeCoords_, params_.parent_.metanode_, params_.parent_);  
+                var height2_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
+                var factor_ = lod_ - Math.floor(lod_);
+                var height_ = height1_ + (height2_ - height1_) * factor_;
+                
+                //console.log("lod: " + lod_ + " h1: " + height1_ + " h2: " + height2_ + " h: " + height_);  
+            } else {
+                var height_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
+            }
+
+            return [height_, metanode_.id_[0] >= Math.ceil(lod_), true];
+
+        } else if (metanode_ != null /*&& metanode_.id_[0] == lod_ && !metanode_.hasNavtile()*/){
+            var height_ = this.getSurfaceHeightNodeOnly(coords_, lod_ + 8, storeStats_, lod_);
+
+            //console.log("lod2: " + lod_ + " h: " + height_[0]);  
+            return [height_[0], height_[1], true];
         }
+
+        /*
+        if (metanode_ != null) {
+            var height_ = metanode_.minHeight_ + (metanode_.maxHeight_ - metanode_.minHeight_) * 0.5;
+            return [height_, metanode_.id_[0] >= lod_, true];
+        }*/
     }
 
     //coords_
@@ -139,66 +134,61 @@ Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeSta
         //blend values
     }
 
+    var tree_ = this.tree_;
+
     if (node_ != null && lod_ !== null) {
+        var root_ = tree_.findSurfaceTile(node_.id_);
 
-        for (var i = 0, li = this.mapTrees_.length; i < li; i++) {
-            var tree_ = this.mapTrees_[i];
+        var extents_ = {
+            ll_ : node_.extents_.ll_.slice(),
+            ur_ : node_.extents_.ur_.slice()
+        };
+        var params_ = {
+            coords_ : nodeCoords_,
+            desiredLod_ : Math.ceil(lod_),
+            extents_ : extents_,
+            metanode_ : null,
+            heightMap_ : null,
+            heightMapExtents_ : null,
+            traceHeight_ : true
+        };
 
-            if (tree_.divisionNode_ == node_) {
-                var extents_ = {
-                    ll_ : node_.extents_.ll_.slice(),
-                    ur_ : node_.extents_.ur_.slice()
-                };
-                var params_ = {
-                    coords_ : nodeCoords_,
-                    desiredLod_ : Math.ceil(lod_),
-                    extents_ : extents_,
-                    metanode_ : null,
-                    heightMap_ : null,
-                    heightMapExtents_ : null,
-                    traceHeight_ : true
-                };
+        tree_.heightTracerNodeOnly_.trace(root_, params_);
 
-                tree_.heightTracerNodeOnly_.trace(tree_, params_);
+        var metanode_ = params_.metanode_;
 
-                var metanode_ = params_.metanode_;
+        if (metanode_ != null) { // && metanode_.id_[0] == lod_){
+            var center_ = metanode_.bbox_.center();
+            center_ = this.convertCoords(center_, "physical", "navigation");
 
-                if (metanode_ != null) { // && metanode_.id_[0] == lod_){
-                    var center_ = metanode_.bbox_.center();
-                    center_ = this.convertCoords(center_, "physical", "navigation");
+            //console.log("lod2: " + lod_ + " nodelod: " + metanode_.id_[0] + " h: " + center_[2]/1.55);  
 
-                    //console.log("lod2: " + lod_ + " nodelod: " + metanode_.id_[0] + " h: " + center_[2]/1.55);  
+            if (storeStats_) {
+                this.stats_.heightClass_ = 1;
+                this.stats_.heightLod_ = statsLod_;
+                this.stats_.heightNode_ = metanode_.id_[0];                        
+            }
 
-                    if (storeStats_) {
-                        this.stats_.heightClass_ = 1;
-                        this.stats_.heightLod_ = statsLod_;
-                        this.stats_.heightNode_ = metanode_.id_[0];                        
-                    }
+            if (this.config_.mapHeightLodBlend_ && metanode_.id_[0] > 0 &&
+                params_.parent_ && params_.parent_.metanode_) {
+                var center2_ = this.convertCoords(params_.parent_.metanode_.bbox_.center(), "physical", "navigation");
 
-                    if (this.config_.mapHeightLodBlend_ && metanode_.id_[0] > 0 &&
-                        params_.parent_ && params_.parent_.metanode_) {
-                        var center2_ = this.convertCoords(params_.parent_.metanode_.bbox_.center(), "physical", "navigation");
-
-                        var factor_ = lod_ - Math.floor(lod_);
-                        var height_ = center_[2] + (center2_[2] - center_[2]) * factor_;
-                       
-                        var extetnts_ = params_.extents_;
-                        return [height_, true, true, params_.extents_, metanode_];
-                        //console.log("lod: " + lod_ + " h1: " + center_[2] + " h2: " + center2_[2] + " h: " + height_);  
-                    } else {
-                        return [center_[2], true, true, params_.extents_, metanode_];
-                    }
-                }
-
-                /*
-                if (metanode_ != null) {
-                    var height_ = metanode_.minHeight_ + (metanode_.maxHeight_ - metanode_.minHeight_) * 0.5;
-                    return [height_, metanode_.id_[0] >= lod_, true];
-                }*/
-
-                break;
+                var factor_ = lod_ - Math.floor(lod_);
+                var height_ = center_[2] + (center2_[2] - center_[2]) * factor_;
+               
+                var extetnts_ = params_.extents_;
+                return [height_, true, true, params_.extents_, metanode_];
+                //console.log("lod: " + lod_ + " h1: " + center_[2] + " h2: " + center2_[2] + " h: " + height_);  
+            } else {
+                return [center_[2], true, true, params_.extents_, metanode_];
             }
         }
+
+        /*
+        if (metanode_ != null) {
+            var height_ = metanode_.minHeight_ + (metanode_.maxHeight_ - metanode_.minHeight_) * 0.5;
+            return [height_, metanode_.id_[0] >= lod_, true];
+        }*/
     }
 
     //coords_
