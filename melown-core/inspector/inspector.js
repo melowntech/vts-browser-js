@@ -45,10 +45,12 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
         var pos_ = map_.getPosition();
         var count_ = 16;
         var step_ = map_.getPositionViewExtent(pos_) / (count_ * 4);
-        var coords_ = map_.getPositionCoords(pos_);
 
         var cbuffer_ = new Array(count_ * count_);
-        
+
+/*        
+        var coords_ = map_.getPositionCoords(pos_);
+
         for (var j = 0; j < count_; j++) {
             for (var i = 0; i < count_; i++) {
                 var screenCoords_ = map_.convertCoordsFromNavToCanvas([coords_[0] + i*step_ - count_*0.5*step_,
@@ -57,6 +59,25 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
                 cbuffer_[j * count_ + i] = screenCoords_;
             }            
         }
+*/
+
+
+        for (var j = 0; j < count_; j++) {
+            for (var i = 0; i < count_; i++) {
+                var dx_ =  i*step_ - count_*0.5*step_;
+                var dy_ =  j*step_ - count_*0.5*step_;
+                var a = Math.atan2(dy_, dx_);
+                var l = Math.sqrt(dx_*dx_ + dy_*dy_);
+
+                var pos2_ = map_.movePositionCoordsTo(pos_, Melown.degrees(a), l);
+                var coords_ = map_.getPositionCoords(pos2_);
+                
+                var screenCoords_ = map_.convertCoordsFromNavToCanvas([coords_[0], coords_[1], 0], "float", this.radarLod_);
+
+                cbuffer_[j * count_ + i] = screenCoords_;
+            }            
+        }
+
 
         var lbuffer_ = new Array(count_);
 

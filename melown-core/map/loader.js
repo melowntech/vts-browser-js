@@ -65,6 +65,11 @@ Melown.MapLoader.prototype.remove = function(path_) {
 };
 
 Melown.MapLoader.prototype.update = function() {
+    //reduce priority for pending stuff
+    for (var i = 0, li = this.pending_.length; i < li; i++) {
+        this.pending_[i].priority_ *= 19/20;
+    }
+
     //if (this.pending_.length > 0) {
         //if (this.usedThreads_ < this.numThreads_) {
         while (this.pending_.length > 0 && this.usedThreads_ < this.numThreads_) {

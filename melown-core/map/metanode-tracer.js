@@ -88,13 +88,21 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
       //  tile_ = tile_;
     //}
 
-    //get children sequence
-    var childrenSequence_ = this.childSelectingFunction_(tile_, this.params_);
+    var childrenSequence_ = null;
+
+    //get children sequence (render path only)
+    if (!(this.params_ && this.params_.traceHeight_)) {
+        childrenSequence_ = this.childSelectingFunction_(tile_, this.params_);
+    }
     
     //process tile e.g. draw or get height
     var res_ = this.nodeProcessingFunction_(tile_, this.params_, childrenSequence_, priority_, processFlag_, processFlag2_); 
     
     if (res_[0] == true) { //we need to go deeper
+        if (!childrenSequence_) { //get height path only
+            childrenSequence_ = this.childSelectingFunction_(tile_, this.params_);
+        }
+
         for (var i = 0, li = childrenSequence_.length; i < li; i++) {
             this.traceTile(tile_.children_[childrenSequence_[i][0]], childrenSequence_[i][1], res_[1], res_[2]);
         }

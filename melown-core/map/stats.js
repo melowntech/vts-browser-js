@@ -14,6 +14,7 @@ Melown.MapStats = function(map_) {
     this.renderTime_ = 0;
     this.renderTimeTmp_ = 0;
     this.renderTimeBegin_ = 0;
+    this.renderBuild_ = 0;
     this.lastRenderTime_ = 0;
     this.renderedLods_ = new Array(32);
     this.debugIds_ = {};

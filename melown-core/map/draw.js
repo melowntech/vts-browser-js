@@ -5,6 +5,7 @@ Melown.Map.prototype.draw = function() {
     this.updateFogDensity();
     this.maxGpuUsed_ = this.gpuCache_.getMaxCost() * 0.9; 
     this.cameraCenter_ = this.position_.getCoords();
+    this.stats_.renderBuild_ = 0;
 
     this.tree_.draw();
 
