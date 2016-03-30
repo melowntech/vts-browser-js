@@ -54,9 +54,9 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
         this.stats_.graphsFluxMesh_[1][0]++;
         this.stats_.graphsFluxMesh_[1][1] += size_;
 
-        if (this.stats_.graphsFluxMesh_[1][0] > 60) {
-            debugger;
-        }
+        //if (this.stats_.graphsFluxMesh_[1][0] > 60) {
+          //  debugger;
+        //}
 
     }
 

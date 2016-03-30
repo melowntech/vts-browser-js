@@ -71,7 +71,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
                 }
 
                 if (this.stats_.renderBuild_ > 1000 / 20) {
-                    console.log("testure resource build overflow");
+                    //console.log("testure resource build overflow");
                     return false;
                 }
 

@@ -117,7 +117,8 @@ Melown.MapTree.prototype.traceChildSequenceBasic = function(tile_) {
 
 Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
     var angles_ = [];
-    var camPos_ = this.map_.cameraCenter_;//this.map_.cameraPosition_;  
+    //var camPos_ = this.map_.cameraCenter_;//this.map_.cameraPosition_;  
+    var camPos_ = this.map_.cameraPosition_;  
     var camVec_ = this.map_.cameraVector_;
     
     for (var i = 0; i < 4; i++) {
@@ -334,17 +335,23 @@ Melown.MapTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_) {
         var cv_ = this.map_.cameraVector_;
         var bmax_ = bbox_.max_;
         var bmin_ = bbox_.min_;
-        
-        if (id_[0] < 5) factor_ = 0.4;
-        if (id_[0] >= 5) factor_ = 0.9;
-        //if (id_[0] >= 6) factor_ = 0.9;
-        //if (id_[0] >= 9) factor_ = 0.9;
+        var edge_ = -0.5;
 
-        var edge_ = -Math.min(0.7, Math.sin(Melown.radians(this.map_.camera_.getFov()*factor_)));
-        //var edge_ = -Math.min(0.7, Math.sin(Melown.radians(this.map_.camera_.getFov()*Math.min(1,(id_[0]*1.7+2)/12))));
+        if (this.map_.cameraDistance_ < 1000000) {
+            edge_ = -0.9;
+        } 
         
-        //var v = bbox_.center();
+        if (this.map_.cameraDistance_ < 100000) {
+            edge_ = -0.991;
+        } 
         
+        switch(id_[0]) {
+            case 1: edge_ = 1; break;
+            case 2: edge_ = 0; break;
+            case 3: edge_ = -0.4; break;
+            case 4: edge_ = -0.5; break;
+        }
+       
         hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmax_[2]])) < edge_);
         hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmax_[2]])) < edge_);
         hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmax_[2]])) < edge_);
@@ -362,7 +369,6 @@ Melown.MapTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_) {
     }
     
     return this.camera_.bboxVisible(bbox_, cameraPos_);
-    //childTile_.metanode_.bbox_
 };
 
 Melown.MapTree.prototype.traceHeightChild = function(tile_, params_, res_) {
