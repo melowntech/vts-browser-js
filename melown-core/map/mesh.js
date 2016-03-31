@@ -314,6 +314,23 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
 
     renderer_.gpu_.useProgram(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
 
+    if (texture_ != null) {
+        var gpuTexture_ = texture_.getGpuTexture();
+        
+        if (gpuTexture_) {
+            if (texture_.statsCoutner_ != this.stats_.counter_) {
+                texture_.statsCoutner_ = this.stats_.counter_;
+                this.stats_.gpuRenderUsed_ += gpuTexture_.size_;
+            }
+            
+            renderer_.gpu_.bindTexture(gpuTexture_);
+        } else {
+            return;
+        }
+    } else if (type_ != "fog") {
+        return;
+    }
+
     var mv_ = Melown.mat4.create();
     Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_), mv_);
     var proj_ = renderer_.camera_.getProjectionMatrix();
@@ -335,24 +352,15 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
             case "external":
                 program_.setFloat("uAlpha", 1);
                 program_.setFloat("uFogDensity", this.map_.fogDensity_);
+                program_.setVec4("uTransform", texture_.getTransform());
                 break;
 
             case "external-nofog":
                 program_.setFloat("uAlpha", alpha_);
                 program_.setFloat("uFogDensity", 0);
+                program_.setVec4("uTransform", texture_.getTransform());
                 break;
         }
-    }
-
-    if (texture_ != null && texture_.gpuTexture_ != null) {
-        if (texture_.statsCoutner_ != this.stats_.counter_) {
-            texture_.statsCoutner_ = this.stats_.counter_;
-            this.stats_.gpuRenderUsed_ += texture_.gpuTexture_.size_;
-        }
-        
-        renderer_.gpu_.bindTexture(texture_.gpuTexture_);
-    } else if (type_ != "fog") {
-        return;
     }
 
     if (submesh_.statsCoutner_ != this.stats_.counter_) {

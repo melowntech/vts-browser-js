@@ -73,6 +73,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.heightmapOnly_ = false;
     this.blendHeightmap_ = true;
     this.drawBBoxes_ = false;
+    this.drawMeshBBox_ = false;    
     this.drawLods_ = false;
     this.drawPositions_ = false;
     this.drawTexelSize_ = false;

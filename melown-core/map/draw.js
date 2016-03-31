@@ -70,6 +70,12 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
                
                 if (mesh_ && mesh_.isReady(doNotLoad_, priority_) &&
                     (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_))) ) {
+
+                    //debug bbox
+                    if (this.drawBBoxes_ && this.drawMeshBBox_) {
+                        mesh_.submeshes_[command_.submesh_].drawBBox(cameraPos_);
+                    }
+
                     mesh_.drawSubmesh(cameraPos_, command_.submesh_, texture_, command_.material_, command_.alpha_);
                 }
                 
@@ -107,6 +113,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             this.stats_.renderedLods_[tile_.id_[0]]++;
             this.stats_.drawnTiles_++;
             
+            /*
             var sid_ = "" + tile_.id_[0] + "." + tile_.id_[1] + "." + tile_.id_[2];
             
             if (sid_ == "20.282345.177720") {
@@ -120,8 +127,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                 sid_ = sid_;
                 //debugger; 
             }
-
-
+            */
 
             //var drawLastRenderState_ = false;
 
@@ -440,6 +446,22 @@ Melown.Map.prototype.updateTileBounds = function(tile_, submeshes_) {
     }
 };
 
+Melown.Map.prototype.getParentTile = function(tile_, lod_) {
+    while(tile_ && tile_.id_[0] > lod_) {
+        tile_ = tile_.parent_;
+    }
+    
+    return tile_;
+};
+
+Melown.Map.prototype.getTileTextureTransform = function(sourceTile_, targetTile_) {
+    var shift_ = targetTile_.id_[0] - sourceTile_.id_[0];
+    var x = sourceTile_.id_[1] << shift_;
+    var y = sourceTile_.id_[2] << shift_;
+    var s = 1.0 / Math.pow(2.0, shift_);
+    return [ s, s, (targetTile_.id_[1] - x) * s, (targetTile_.id_[2] - y) * s ];
+};
+
 Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface_, bound_, fullUpdate_) {
 
     //search map view
@@ -448,15 +470,24 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
             bound_.sequence_ = [];
             for (var j = 0, lj = surface_.boundLayerSequence_.length; j < lj; j++) {
                 var layer_ = surface_.boundLayerSequence_[j][0];
-                if (layer_ && layer_.hasTile(tile_.id_) && surface_.boundLayerSequence_[j][1] > 0) {
+                if (layer_ && layer_.hasTileOrInfluence(tile_.id_) && surface_.boundLayerSequence_[j][1] > 0) {
+                    var extraBound_ = null; 
+                    
+                    if (tile_.id_[0] > layer_.lodRange_[1]) {
+                        extraBound_ = {
+                            sourceTile_ : this.getParentTile(tile_, layer_.lodRange_[1]),
+                            sourceTexture_ : null,
+                            layer_ : layer_,
+                            tile_ : tile_ 
+                        };
+                    }
+                    
                     bound_.sequence_.push(layer_.id_);
                     bound_.alpha_[layer_.id_] = surface_.boundLayerSequence_[j];
                     tile_.boundLayers_[layer_.id_] = layer_;
                     if (!tile_.boundTextures_[layer_.id_]) {
                         var path_ = layer_.getUrl(tile_.id_);
-                        if (!tile_.boundTextures_[layer_.id_]) {
-                            tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
-                        }
+                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, extraBound_);
                     }
                     if (bound_.alpha_[layer_.id_][1] < 1.0) {
                         bound_.transparent_ = true;
@@ -472,9 +503,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                 tile_.boundLayers_[layer_.id_] = layer_;
                 if (!tile_.boundTextures_[layer_.id_]) {
                     var path_ = layer_.getUrl(tile_.id_);
-                    if (!tile_.boundTextures_[layer_.id_]) {
-                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
-                    }
+                    tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
                 }
             }
         }
@@ -482,14 +511,23 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
         if (submesh_.textureLayer_ != 0) {
             var layer_ = this.getBoundLayerByNumber(submesh_.textureLayer_);
 
-            if (layer_ && layer_.hasTile(tile_.id_)) {
+            if (layer_ && layer_.hasTileOrInfluence(tile_.id_)) {
+                var extraBound_ = null; 
+                
+                if (tile_.id_[0] > layer_.lodRange_[1]) {
+                    extraBound_ = {
+                        sourceTile_ : this.getParentTile(tile_, layer_.lodRange_[1]),
+                        sourceTexture_ : null,
+                        layer_ : layer_,
+                        tile_ : tile_ 
+                    };
+                }
+
                 //submeshes_[j].textureLayerId_ = tile_.id_;
                 tile_.boundLayers_[layer_.id_] = layer_;
                 if (!tile_.boundTextures_[layer_.id_]) {
                     var path_ = layer_.getUrl(tile_.id_);
-                    if (!tile_.boundTextures_[layer_.id_]) {
-                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
-                    }
+                    tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, null, extraBound_);
                 }
             }
         }

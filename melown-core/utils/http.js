@@ -33,7 +33,46 @@ Melown.Http.loadBinary = function(url_, onLoaded_, onError_) {
     Melown.loadBinary(url_, onLoaded_, onError_);
 };
 
+Melown.Http.headRequest = function(url_, onLoaded_, onError_) { 
+    var xhr_ = new XMLHttpRequest();
+
+    xhr_.onreadystatechange = (function (){
+
+            switch (xhr_.readyState) {
+            case 0 : // UNINITIALIZED
+            case 1 : // LOADING
+            case 2 : // LOADED
+            case 3 : // INTERACTIVE
+                break;
+            case 4 : // COMPLETED
+                if (onLoaded_ != null) {
+                    onLoaded_(xhr_.response, xhr_.status);
+                }
+                break;
+    
+            default:
+    
+                if (onError_ != null) {
+                    onError_();
+                }
+    
+                break;
+            }
+
+        }).bind(this);
+
+    xhr_.onerror  = (function() {
+        if (onError_ != null) {
+            onError_();
+        }
+    }).bind(this);
+
+    xhr_.open('HEAD', url_, true);
+    xhr_.send("");
+};
+
 Melown["Http"] = Melown.Http;
 Melown.Http["imageFactory"] = Melown.Http.imageFactory;
 Melown.Http["loadJSON"] = Melown.loadJSON;
 Melown.Http["loadBinary"] = Melown.loadBinary;
+Melown.Http["headRequest"] = Melown.headRequest;

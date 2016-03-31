@@ -360,6 +360,7 @@ Melown.tile2VertexShader =
     "attribute vec2 aTexCoord2;\n"+
     "uniform mat4 uMV, uProj;\n"+
     "uniform float uFogDensity;\n"+
+    "uniform vec4 uTransform;\n"+
     "varying vec2 vTexCoord;\n"+
     "varying float vFogFactor;\n"+
     "void main() {\n"+
@@ -367,7 +368,7 @@ Melown.tile2VertexShader =
         "gl_Position = uProj * camSpacePos;\n"+
         "float camDist = length(camSpacePos.xyz);\n"+
         "vFogFactor = exp(uFogDensity * camDist);\n"+
-        "vTexCoord = aTexCoord2;\n"+
+        "vTexCoord = vec2(uTransform[0] * aTexCoord2[0] + uTransform[2], uTransform[1] * aTexCoord2[1] + uTransform[3]);\n"+
     "}";
 
 Melown.tile2FragmentShader = "precision mediump float;\n"+

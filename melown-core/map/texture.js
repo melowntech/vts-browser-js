@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapTexture = function(map_, path_, heightMap_) {
+Melown.MapTexture = function(map_, path_, heightMap_, extraBound_) {
     this.map_ = map_;
     this.stats_ = map_.stats_;
     this.image_ = null;
@@ -11,6 +11,7 @@ Melown.MapTexture = function(map_, path_, heightMap_) {
     this.loadState_ = 0;
     this.mapLoaderUrl_ = path_;
     this.heightMap_ = heightMap_ || false;
+    this.extraBound_ = extraBound_;
     this.statsCounter_ = 0;
 
     this.cacheItem_ = null; //store killImage
@@ -56,7 +57,49 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     this.gpuCacheItem_ = null;
 };
 
+
 Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
+    if (this.extraBound_) {
+        if (this.extraBound_.texture_) {
+            //if (this.extraBound_.textureStatus_ == 2) {
+                return this.extraBound_.texture_.isReady(doNotLoad_, priority_);
+            /*    
+            } else {
+                if (this.extraBound_.textureStatus_ == 0) {
+                    this.scheduleHeadRequest(priority_);
+                    this.extraBound_.textureStatus_ = 1;
+                } else if (this.extraBound_.textureStatus_ == -1) {
+                    this.scheduleHeadRequest(priority_);
+                    this.extraBound_.sourceTile_ = this.extraBound_.sourceTile_.parent_;
+                    this.extraBound_.textureStatus_ = 1;
+                } //else wait for head request
+                
+                return false;                
+            }
+            */
+            
+        }
+        
+        var tile_ = this.extraBound_.sourceTile_;
+        var layer_ = this.extraBound_.layer_;
+        
+        
+        if (tile_ && layer_) {
+            if (!tile_.boundTextures_[layer_.id_]) {
+                tile_.boundLayers_[layer_.id_] = layer_;
+                var path_ = layer_.getUrl(tile_.id_);
+                tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this.map_, path_);
+            }
+
+            this.extraBound_.texture_ = tile_.boundTextures_[layer_.id_]; 
+            this.extraBound_.transform_ = this.map_.getTileTextureTransform(tile_, this.extraBound_.tile_); 
+        }
+        
+        //get texture
+        
+        return false;
+    }
+
     if (this.loadState_ == 2) { //loaded
         this.map_.resourcesCache_.updateItem(this.cacheItem_);
 
@@ -142,6 +185,41 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
     this.mapLoaderCallLoaded_();
 };
 
+Melown.MapTexture.prototype.scheduleHeadRequest = function(priority_) {
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this), priority_);
+};
+
+Melown.MapTexture.prototype.onLoadHead = function(url_, onLoaded_, onError_) {
+    this.mapLoaderCallLoaded_ = onLoaded_;
+    this.mapLoaderCallError_ = onError_;
+
+    var onerror_ = this.onLoadHeadError.bind(this);
+    var onload_ = this.onHeadLoaded.bind(this);
+
+    Melown.Http.headRequest(url_, onload_, onerror_);
+};
+
+Melown.MapTexture.prototype.onLoadHeadError = function() {
+    if (this.map_.killed_ == true){
+        return;
+    }
+
+    this.mapLoaderCallError_();
+};
+
+Melown.MapTexture.prototype.onHeadLoaded = function(data_, status_) {
+    if (this.map_.killed_ == true){
+        return;
+    }
+    
+    if (data_) {
+        data_ = data_;
+    }
+
+    this.mapLoaderCallLoaded_();
+};
+
+
 Melown.MapTexture.prototype.buildGpuTexture = function () {
     this.gpuTexture_ = new Melown.GpuTexture(this.map_.renderer_.gpu_, null, this.map_.core_);
     this.gpuTexture_.createFromImage(this.image_, "linear", false);
@@ -164,4 +242,25 @@ Melown.MapTexture.prototype.buildHeightMap = function () {
     this.image_ = null;
 };
 
+Melown.MapTexture.prototype.getGpuTexture = function() {
+    if (this.extraBound_) {
+        if (this.extraBound_.texture_) {
+            return this.extraBound_.texture_.gpuTexture_;
+        }
+        return null;
+    } 
+
+    return this.gpuTexture_;
+};
+
+Melown.MapTexture.prototype.getTransform = function() {
+    if (this.extraBound_) {
+        if (this.extraBound_.texture_) {
+            return this.extraBound_.transform_;
+        }
+        return null;
+    } 
+
+    return [1,1,0,0];
+};
 
