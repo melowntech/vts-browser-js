@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapTexture = function(map_, path_, heightMap_, extraBound_) {
+Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
     this.map_ = map_;
     this.stats_ = map_.stats_;
     this.image_ = null;
@@ -12,7 +12,11 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_) {
     this.mapLoaderUrl_ = path_;
     this.heightMap_ = heightMap_ || false;
     this.extraBound_ = extraBound_;
+    this.extraInfo_ = extraInfo_;
     this.statsCounter_ = 0;
+    this.checkType_ = "negative-type";
+    this.checkValue_ = "image/png";
+    this.checkStatus_ = 0;
 
     this.cacheItem_ = null; //store killImage
     this.gpuCacheItem_ = null; //store killGpuTexture
@@ -57,47 +61,69 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     this.gpuCacheItem_ = null;
 };
 
+Melown.MapTexture.prototype.setBoundTexture = function(tile_, layer_) {
+    if (tile_ && layer_) {
+        this.extraBound_.sourceTile_ = tile_;
+        this.extraBound_.layer_ = layer_;
+        
+        if (!tile_.boundTextures_[layer_.id_]) {
+            tile_.boundLayers_[layer_.id_] = layer_;
+            var path_ = layer_.getUrl(tile_.id_);
+            tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this.map_, path_);
+        }
+
+        this.extraBound_.texture_ = tile_.boundTextures_[layer_.id_]; 
+        this.extraBound_.transform_ = this.map_.getTileTextureTransform(tile_, this.extraBound_.tile_);
+        
+        this.map_.dirty_ = true;
+    }
+};
 
 Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
+    if (this.extraInfo_) {
+        if (this.extraInfo_.tile_.id_[0] == 15 &&
+            this.extraInfo_.tile_.id_[1] == 17759 &&
+            this.extraInfo_.tile_.id_[2] == 10985) {
+                this.extraInfo_ = this.extraInfo_;
+        }
+    }
+
     if (this.extraBound_) {
         if (this.extraBound_.texture_) {
-            //if (this.extraBound_.textureStatus_ == 2) {
-                return this.extraBound_.texture_.isReady(doNotLoad_, priority_);
-            /*    
-            } else {
-                if (this.extraBound_.textureStatus_ == 0) {
-                    this.scheduleHeadRequest(priority_);
-                    this.extraBound_.textureStatus_ = 1;
-                } else if (this.extraBound_.textureStatus_ == -1) {
-                    this.scheduleHeadRequest(priority_);
-                    this.extraBound_.sourceTile_ = this.extraBound_.sourceTile_.parent_;
-                    this.extraBound_.textureStatus_ = 1;
-                } //else wait for head request
-                
-                return false;                
-            }
-            */
-            
+           return this.extraBound_.texture_.isReady(doNotLoad_, priority_);
+        } else {
+            this.setBoundTexture(this.extraBound_.sourceTile_, this.extraBound_.layer_);        
         }
-        
-        var tile_ = this.extraBound_.sourceTile_;
-        var layer_ = this.extraBound_.layer_;
-        
-        
-        if (tile_ && layer_) {
-            if (!tile_.boundTextures_[layer_.id_]) {
-                tile_.boundLayers_[layer_.id_] = layer_;
-                var path_ = layer_.getUrl(tile_.id_);
-                tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this.map_, path_);
-            }
-
-            this.extraBound_.texture_ = tile_.boundTextures_[layer_.id_]; 
-            this.extraBound_.transform_ = this.map_.getTileTextureTransform(tile_, this.extraBound_.tile_); 
-        }
-        
-        //get texture
         
         return false;
+    }
+
+    if (this.checkType_) {
+        if (this.checkStatus_ != 2) {
+            if (this.checkStatus_ == 0) {
+                this.scheduleHeadRequest(priority_);
+            } else if (this.checkStatus_ == -1) {
+        
+                if (this.extraInfo_) {
+                    if (this.extraInfo_.tile_.id_[0] == 15 &&
+                        this.extraInfo_.tile_.id_[1] == 17759 &&
+                        this.extraInfo_.tile_.id_[2] == 10985) {
+                            this.extraInfo_ = this.extraInfo_;
+                    }
+
+                    if (!this.extraBound_) {
+                        this.extraBound_ = { tile_: this.extraInfo_.tile_, layer_: this.extraInfo_.layer_};
+                        this.setBoundTexture(this.extraBound_.tile_.parent_, this.extraBound_.layer_);        
+                    }
+    
+                    while (this.extraBound_.texture_.checkStatus_ == -1) {
+                        this.setBoundTexture(this.extraBound_.sourceTile_.parent_, this.extraBound_.layer_);        
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 
     if (this.loadState_ == 2) { //loaded
@@ -177,6 +203,10 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
         return;
     }
 
+    if (this.mapLoaderUrl_ == "http://t4.tiles.virtualearth.net/tiles/a120212123213310.jpeg?g=854&mkt=en-US&token=Ahu6LJpWaKRj0Fzngk4d58AQFI9jKLsnvovS3ReEVcfOf6rBDCxiLDq-ycxakgOi") {
+        this.checkStatus_ = this.checkStatus_;
+    }
+
     var size_ = this.image_.naturalWidth * this.image_.naturalHeight * (this.heightMap_ ? 3 : 3);
 
     this.cacheItem_ = this.map_.resourcesCache_.insert(this.killImage.bind(this, true), size_);
@@ -196,6 +226,8 @@ Melown.MapTexture.prototype.onLoadHead = function(url_, onLoaded_, onError_) {
     var onerror_ = this.onLoadHeadError.bind(this);
     var onload_ = this.onHeadLoaded.bind(this);
 
+    this.checkStatus_ = 1;
+
     Melown.Http.headRequest(url_, onload_, onerror_);
 };
 
@@ -211,10 +243,29 @@ Melown.MapTexture.prototype.onHeadLoaded = function(data_, status_) {
     if (this.map_.killed_ == true){
         return;
     }
-    
-    if (data_) {
-        data_ = data_;
+
+    this.checkStatus_ = 2;
+
+    if (this.mapLoaderUrl_ == "http://t4.tiles.virtualearth.net/tiles/a120212123213310.jpeg?g=854&mkt=en-US&token=Ahu6LJpWaKRj0Fzngk4d58AQFI9jKLsnvovS3ReEVcfOf6rBDCxiLDq-ycxakgOi") {
+        this.checkStatus_ = this.checkStatus_;
     }
+
+    if (this.extraInfo_) {
+        if (this.extraInfo_.tile_.id_[0] == 15 &&
+            this.extraInfo_.tile_.id_[1] == 17759 &&
+            this.extraInfo_.tile_.id_[2] == 10985) {
+                this.extraInfo_ = this.extraInfo_;
+        }
+    }
+    
+    if (this.checkType_ == "negative-type") {
+        if (data_) {
+            if (data_.indexOf(this.checkValue_) != -1) {
+                this.checkStatus_ = -1;
+            }
+        }
+    }
+
 
     this.mapLoaderCallLoaded_();
 };

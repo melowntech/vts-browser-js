@@ -463,7 +463,12 @@ Melown.Map.prototype.getTileTextureTransform = function(sourceTile_, targetTile_
 };
 
 Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface_, bound_, fullUpdate_) {
-
+    if (tile_.id_[0] == 15 &&
+        tile_.id_[1] == 17758 &&
+        tile_.id_[2] == 10988) {
+        tile_ = tile_;
+    }
+        
     //search map view
     if (surface_.boundLayerSequence_.length > 0) {
         if (fullUpdate_) {
@@ -487,7 +492,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                     tile_.boundLayers_[layer_.id_] = layer_;
                     if (!tile_.boundTextures_[layer_.id_]) {
                         var path_ = layer_.getUrl(tile_.id_);
-                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, extraBound_);
+                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, null, extraBound_, {tile_: tile_, layer_: layer_});
                     }
                     if (bound_.alpha_[layer_.id_][1] < 1.0) {
                         bound_.transparent_ = true;
@@ -527,7 +532,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                 tile_.boundLayers_[layer_.id_] = layer_;
                 if (!tile_.boundTextures_[layer_.id_]) {
                     var path_ = layer_.getUrl(tile_.id_);
-                    tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, null, extraBound_);
+                    tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, null, extraBound_, {tile_: tile_, layer_: layer_});
                 }
             }
         }

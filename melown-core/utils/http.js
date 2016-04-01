@@ -46,7 +46,8 @@ Melown.Http.headRequest = function(url_, onLoaded_, onError_) {
                 break;
             case 4 : // COMPLETED
                 if (onLoaded_ != null) {
-                    onLoaded_(xhr_.response, xhr_.status);
+                    onLoaded_(xhr_.getAllResponseHeaders(), xhr_.status);
+                    //onLoaded_(xhr_.getResponseHeader("X-VE-Tile-Info"), xhr_.status);
                 }
                 break;
     
@@ -73,6 +74,6 @@ Melown.Http.headRequest = function(url_, onLoaded_, onError_) {
 
 Melown["Http"] = Melown.Http;
 Melown.Http["imageFactory"] = Melown.Http.imageFactory;
-Melown.Http["loadJSON"] = Melown.loadJSON;
-Melown.Http["loadBinary"] = Melown.loadBinary;
-Melown.Http["headRequest"] = Melown.headRequest;
+Melown.Http["loadJSON"] = Melown.Http.loadJSON;
+Melown.Http["loadBinary"] = Melown.Http.loadBinary;
+Melown.Http["headRequest"] = Melown.Http.headRequest;
