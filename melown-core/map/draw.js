@@ -89,6 +89,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
     //if (this.viewCounter_ != tile_.viewCoutner_) {
       //  tile_.kill();
     //}
+    /*
+    if (tile_.id_[0] == Melown.debugId_[0] &&
+        tile_.id_[1] == Melown.debugId_[1] &&
+        tile_.id_[2] == Melown.debugId_[2]) {
+            tile_ = tile_;
+    }*/
 
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         return;
@@ -463,11 +469,12 @@ Melown.Map.prototype.getTileTextureTransform = function(sourceTile_, targetTile_
 };
 
 Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface_, bound_, fullUpdate_) {
-    if (tile_.id_[0] == 15 &&
-        tile_.id_[1] == 17758 &&
-        tile_.id_[2] == 10988) {
-        tile_ = tile_;
-    }
+    /*
+    if (tile_.id_[0] == Melown.debugId_[0] &&
+        tile_.id_[1] == Melown.debugId_[1] &&
+        tile_.id_[2] == Melown.debugId_[2]) {
+            tile_ = tile_;
+    }*/
         
     //search map view
     if (surface_.boundLayerSequence_.length > 0) {
@@ -503,12 +510,23 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
     } else if (surface_.textureLayer_ != null) { //search surface
         if (fullUpdate_) {
             var layer_ = this.getBoundLayerById(surface_.textureLayer_);
-            if (layer_ && layer_.hasTile(tile_.id_)) {
+            if (layer_ && layer_.hasTileOrInfluence(tile_.id_)) {
+                var extraBound_ = null; 
+                
+                if (tile_.id_[0] > layer_.lodRange_[1]) {
+                    extraBound_ = {
+                        sourceTile_ : this.getParentTile(tile_, layer_.lodRange_[1]),
+                        sourceTexture_ : null,
+                        layer_ : layer_,
+                        tile_ : tile_ 
+                    };
+                }
+
                 bound_.sequence_.push(layer_.id_);
                 tile_.boundLayers_[layer_.id_] = layer_;
                 if (!tile_.boundTextures_[layer_.id_]) {
                     var path_ = layer_.getUrl(tile_.id_);
-                    tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_);
+                    tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, null, extraBound_, {tile_: tile_, layer_: layer_});
                 }
             }
         }

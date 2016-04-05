@@ -101,9 +101,9 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
         if (this.loadState_ == 0) { 
             if (doNotLoad_) {
                 //remove from queue
-                if (this.mapLoaderUrl_) {
-                    this.map_.loader_.remove(this.mapLoaderUrl_);
-                }
+                //if (this.mapLoaderUrl_) {
+                  //  this.map_.loader_.remove(this.mapLoaderUrl_);
+                //}
             } else {
                 //not loaded
                 //add to loading queue or top position in queue
