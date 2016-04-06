@@ -108,6 +108,11 @@ Melown.MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos_, mode
     return (new Melown.MapPosition(this.map_, p_)).getCanvasCoords(lod_);
 };
 
+Melown.MapInterface.prototype.convertCoordsFromNavToCameraSpace = function(pos_, mode_, lod_) {
+    var p_ = ["obj", pos_[0], pos_[1], mode_, pos_[2], 0, 0, 0, 10, 90 ];
+    return (new Melown.MapPosition(this.map_, p_)).getCameraSpaceCoords(lod_);
+};
+
 Melown.MapInterface.prototype.clonePosition = function(position_) {
     return (new Melown.MapPosition(this.map_, position_)).pos_;
 };
@@ -295,6 +300,7 @@ Melown.MapInterface.prototype["convertPositionViewMode"] = Melown.MapInterface.p
 Melown.MapInterface.prototype["convertPositionHeightMode"] = Melown.MapInterface.prototype.convertPositionHeightMode; 
 Melown.MapInterface.prototype["convertCoords"] = Melown.MapInterface.prototype.convertCoords;
 Melown.MapInterface.prototype["convertCoordsFromNavToCanvas"] = Melown.MapInterface.prototype.convertCoordsFromNavToCanvas;
+Melown.MapInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.MapInterface.prototype.convertCoordsFromNavToCameraSpace;
 Melown.MapInterface.prototype["clonePosition"] = Melown.MapInterface.prototype.clonePosition; 
 Melown.MapInterface.prototype["setPositionCoords"] = Melown.MapInterface.prototype.setPositionCoords; 
 Melown.MapInterface.prototype["getPositionCoords"] = Melown.MapInterface.prototype.getPositionCoords; 

@@ -169,10 +169,10 @@ Melown.Inspector.prototype.initViews = function() {
 
     for (var i = 0, li = views_.length; i < li; i++) {
         var view_ = views_[i];
-        this.layersViews_[view_.id_] = {
+        this.layersViews_[view_] = {
             surfaces_ : {},
             freelayers_ : {},
-            original_ : JSON.parse(JSON.stringify(map_.getNamedView(view_.id_)))
+            original_ : JSON.parse(JSON.stringify(map_.getNamedView(view_).getInfo()))
         };
     }
     

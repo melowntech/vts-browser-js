@@ -1091,3 +1091,9 @@ Melown.quat4.slerp = function (a, b, c, d) {
 Melown.quat4.str = function (a) {
     return "[" + a[0] + ", " + a[1] + ", " + a[2] + ", " + a[3] + "]";
 };
+
+Melown["Math"] = {};
+Melown["Math"]["mat4Multiply"] = Melown.mat4.multiply;
+Melown["Math"]["mat4Inverse"] = Melown.mat4.inverse;
+
+

@@ -336,21 +336,27 @@ Melown.MapPosition.prototype.getCameraCoords = function(heightMode_) {
     }
 };
 
-Melown.MapPosition.prototype.getCanvasCoords = function(lod_) {
-	var coords_ = this.getCoords();
+
+Melown.MapPosition.prototype.getCameraSpaceCoords = function(lod_) {
+    var coords_ = this.getCoords();
 
     if (this.getHeightMode() == "float") {
         lod_ =  (lod_ != null) ? lod_ : this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
         var surfaceHeight_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
-    	coords_[2] += surfaceHeight_[0]; 
-	}
+        coords_[2] += surfaceHeight_[0]; 
+    }
 
     var worldPos_ = this.map_.convertCoords(coords_, "navigation", "physical");
     var camPos_ = this.map_.cameraPosition_;
-	worldPos_[0] -= camPos_[0];
-	worldPos_[1] -= camPos_[1];
-	worldPos_[2] -= camPos_[2];
+    worldPos_[0] -= camPos_[0];
+    worldPos_[1] -= camPos_[1];
+    worldPos_[2] -= camPos_[2];
+  
+    return worldPos_;
+};
 
+Melown.MapPosition.prototype.getCanvasCoords = function(lod_) {
+    var worldPos_ = this.getCameraSpaceCoords(lod_);
 	return this.map_.renderer_.project2(worldPos_, this.map_.camera_.getMvpMatrix());
 };
 

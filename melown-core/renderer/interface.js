@@ -88,7 +88,7 @@ Melown.RendererInterface.prototype.createMesh = function(options_) {
 
     var data_ = {
         vertices_ : options_["vertices"],
-        uvs_ : options_["vertices"],
+        uvs_ : options_["uvs"],
         vertexSize_ : options_["vertex-size"],
         uvSize_ : options_["uv-size"],
         bbox_ : options_["bbox"]
@@ -132,63 +132,83 @@ Melown.RendererInterface.prototype.clearJobs = function(options_) {
     return this;    
 };
 
-Melown.RendererInterface.prototype.drawMesh = function(mesh_, options_) {
+Melown.RendererInterface.prototype.drawMesh = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return this;    
     }
 
-    if (options_["mesh"] == null) {
+    if (!options_["mesh"] == null || !options_["program-options"]) {
         return this;    
     }
 
+    var programOptions_ = options_["program-options"];
+    var program_ = options_["program"] || "textured";
+    
     var renderer_ = this.renderer_; 
     var mesh_ = options_["mesh"];
-    var program_ = options_["program"] || renderer_.progTile_;
-    var programOptions_ = options_["program-options"];
+    var texture_ = options_["texture"];
+    var mv_ = renderer_.camera_.getModelviewMatrix();
+    var proj_ = renderer_.camera_.getProjectionMatrix();
+    var fogDensity_ = renderer_.fogDensity_;
+    
+    if (typeof program_ === "string") {
+        switch(program_) {
+            case "textured":
 
-    renderer_.gpu_.useProgram(program_, "aPosition", "aTexCoord", null, null);
+                if (!programOptions_["uMV"]) {
+                    programOptions_["uMV"] = ["mat4", mv_];
+                } 
 
-    if (!programOptions_) {
-        var mv_ = Melown.mat4.create();
-        Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_), mv_);
-        var proj_ = renderer_.camera_.getProjectionMatrix();
+                if (!programOptions_["uProj"]) {
+                    programOptions_["uProj"] = ["mat4", proj_];
+                } 
 
-        program_.setMat4("uMV", mv_);
-        program_.setMat4("uProj", proj_);
-        program_.setFloat("uFogDensity", renderer_.fogDensity_);
-    } else {
-        for (var key_ in programOptions_) {
-            switch(programOptions_[key_][0]){
+                if (!programOptions_["uFogDensity"]) {
+                    programOptions_["uFogDensity"] = ["float", fogDensity_];
+                } 
+            
+                program_ = renderer_.progTile_;
+                break;
+        }
+    }
+
+    renderer_.gpu_.useProgram(program_, "aPosition", texture_ ? "aTexCoord" : null, null, null);
+
+    for (var key_ in programOptions_) {
+        var item_ = programOptions_[key_];
+        
+        if (item_.length == 2) {
+            switch(item_[0]){
                 case "floatArray":
-                    program_.setFloatArray(key_, programOptions_[key_][1]);
+                    program_.setFloatArray(key_, item_[1]);
                     break;
                 case "float":
-                    program_.setFloat(key_, programOptions_[key_][1]);
+                    program_.setFloat(key_, item_[1]);
                     break;
                 case "mat4":
-                    program_.setMat4(key_, programOptions_[key_][1]);
+                    program_.setMat4(key_, item_[1]);
                     break;
                 case "vec2":
-                    program_.setVec2(key_, programOptions_[key_][1]);
+                    program_.setVec2(key_, item_[1]);
                     break;
                 case "vec3":
-                    program_.setVec3(key_, programOptions_[key_][1]);
+                    program_.setVec3(key_, item_[1]);
                     break;
                 case "vec4":
-                    program_.setVec4(key_, programOptions_[key_][1]);
+                    program_.setVec4(key_, item_[1]);
                     break;
                 case "sampler":
-                    program_.setSampler(key_, programOptions_[key_][1]);
+                    program_.setSampler(key_, item_[1]);
                     break;
             } 
         }
     }
 
-    if (texture_ != null && texture_.gpuTexture_ != null) {
-        renderer_.gpu_.bindTexture(texture_.gpuTexture_);
+    if (texture_ != null) {
+        renderer_.gpu_.bindTexture(texture_);
     }
     
-    mesh_.draw(program_, "aPosition", "aTexCoord", null, null);
+    mesh_.draw(program_, "aPosition", texture_ ? "aTexCoord" : null, null, null);
     return this;    
 };
 
