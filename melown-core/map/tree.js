@@ -291,11 +291,15 @@ Melown.MapTree.prototype.canDrawDetailedLod = function(tile_, priority_) {
     if (tile_.lastRenderState_) {
         //debugger;
     }
-    return !(tile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_, priority_)) && !tile_.lastRenderState_;
+	var channel_ = this.map_.drawChannel_;
+	
+    return !(tile_.drawCommands_[channel_].length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_)) && !tile_.lastRenderState_;
 };
 
 Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_, childrenSequence_, priority_) {
-    if (!node_.hasGeometry() || !(tile_.drawCommands_.length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_, priority_, true))) {
+	var channel_ = this.map_.drawChannel_;
+
+    if (!node_.hasGeometry() || !(tile_.drawCommands_[channel_].length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, true))) {
         return false;
     }  
 
@@ -316,7 +320,7 @@ Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_, 
             if (childTile_.metanode_.hasGeometry() &&
                 this.bboxVisible(childTile_.id_, childTile_.metanode_.bbox_, cameraPos_)) {
 
-                if (!(childTile_.drawCommands_.length > 0 && this.map_.areDrawCommandsReady(childTile_.drawCommands_, priority_))) {
+                if (!(childTile_.drawCommands_[channel_].length > 0 && this.map_.areDrawCommandsReady(childTile_.drawCommands_[channel_], priority_))) {
                     //load data for child tile
                     this.map_.drawSurfaceTile(childTile_, childTile_.metanode_, cameraPos_, 1, priority_, true, false);            
                     ret_ = true;

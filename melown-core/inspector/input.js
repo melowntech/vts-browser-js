@@ -295,7 +295,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
     }
 
     if (hit_) {
-        map_.dirty_ = true;
+        map_.markDirty();
         this.preventDefault(event_);
     }
 

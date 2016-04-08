@@ -92,7 +92,7 @@ Melown.MapLoader.prototype.update = function() {
                     this.downloading_.splice(this.downloading_.indexOf(item_.id_), 1);
                     this.usedThreads_--;
 
-                    this.map_.dirty_ = true;
+                    this.map_.markDirty();
 
                 }).bind(this);
 

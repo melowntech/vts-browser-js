@@ -267,48 +267,52 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     var texcoords2Attr_ = null;
     var drawWireframe_ = this.map_.drawWireframe_;
 
-    if (drawWireframe_ > 0) {
-        switch (drawWireframe_) {
-            case 2: program_ = renderer_.progWireframeTile2_;  break;
-            case 3: program_ = renderer_.progFlatShadeTile_;  break;
-            case 1:
-
-                switch(type_) {
-                    case "internal":
-                    case "internal-nofog":
-                        program_ = renderer_.progWireframeTile_;
-                        texcoordsAttr_ = "aTexCoord";
-                        break;
-
-                    case "external":
-                    case "external-nofog":
-                        program_ = renderer_.progWireframeTile3_;
-                        texcoords2Attr_ = "aTexCoord2";
-                        break;
-
-                    case "fog":
-                        return;
-                }
-
-            break;
-        }
+    if (type_ == "depth") {
+        program_ = renderer_.progDepthTile_;
     } else {
-        switch(type_) {
-            case "internal":
-            case "internal-nofog":
-                program_ = renderer_.progTile_;
-                texcoordsAttr_ = "aTexCoord";
+        if (drawWireframe_ > 0) {
+            switch (drawWireframe_) {
+                case 2: program_ = renderer_.progWireframeTile2_;  break;
+                case 3: program_ = renderer_.progFlatShadeTile_;  break;
+                case 1:
+    
+                    switch(type_) {
+                        case "internal":
+                        case "internal-nofog":
+                            program_ = renderer_.progWireframeTile_;
+                            texcoordsAttr_ = "aTexCoord";
+                            break;
+    
+                        case "external":
+                        case "external-nofog":
+                            program_ = renderer_.progWireframeTile3_;
+                            texcoords2Attr_ = "aTexCoord2";
+                            break;
+    
+                        case "fog":
+                            return;
+                    }
+    
                 break;
-
-            case "external":
-            case "external-nofog":
-                program_ = renderer_.progTile2_;
-                texcoords2Attr_ = "aTexCoord2";
-                break;
-
-            case "fog":
-                program_ = renderer_.progFogTile_;
-                break;
+            }
+        } else {
+            switch(type_) {
+                case "internal":
+                case "internal-nofog":
+                    program_ = renderer_.progTile_;
+                    texcoordsAttr_ = "aTexCoord";
+                    break;
+    
+                case "external":
+                case "external-nofog":
+                    program_ = renderer_.progTile2_;
+                    texcoords2Attr_ = "aTexCoord2";
+                    break;
+    
+                case "fog":
+                    program_ = renderer_.progFogTile_;
+                    break;
+            }
         }
     }
 
@@ -327,7 +331,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         } else {
             return;
         }
-    } else if (type_ != "fog") {
+    } else if (type_ != "fog" && type_ != "depth") {
         return;
     }
 

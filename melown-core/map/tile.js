@@ -22,7 +22,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.virtualReady_ = false;
     this.virtualSurfaces_ = [];
     
-    this.drawCommands_ = [];
+    this.drawCommands_ = [[], [], []];
     
     //this.empty_ = true;
 
@@ -32,7 +32,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.updateBounds_ = true;
 
     this.heightMap_ = null;
-    this.drawCommands_ = [];
+    this.drawCommands_ = [[], [], []];
     this.credits_ = [];
 
     this.children_ = [null, null, null, null];
@@ -93,7 +93,7 @@ Melown.MapTile.prototype.kill = function() {
     this.lastRenderState_ = null;
         
     this.heightMap_ = null;
-    this.drawCommands_ = [];
+    this.drawCommands_ = [[], [], []];
     this.credits_ = {};
 
     this.verifyChildren_ = false;
@@ -124,7 +124,7 @@ Melown.MapTile.prototype.viewSwitched = function() {
         surfaceGeodata_ : this.surfaceGeodata_
     };    
 
-    if (this.drawCommands_.length > 0) {
+    if (this.drawCommands_[0].length > 0) {  // check only visible chanel
         this.lastRenderState_ = {
             drawCommands_ : this.drawCommands_,
             credits_ : this.credits_
@@ -167,7 +167,7 @@ Melown.MapTile.prototype.viewSwitched = function() {
     this.virtualReady_ = false;
     this.virtualSurfaces_ = [];
     
-    this.drawCommands_ = [];
+    this.drawCommands_ = [[], [], []];
     this.credits_ = {};
 };
 

@@ -273,6 +273,9 @@ Melown.MapInterface.prototype.getGpuCache = function() {
     return this.map_.gpuCache_;
 };
 
+Melown.MapInterface.prototype.getHitCoords = function(screenX_, screenY_) {
+    return this.map_.getHitCoords(screenX_, screenY_);
+};
 
 Melown.MapPositionInterface = Melown.MapPosition;
 

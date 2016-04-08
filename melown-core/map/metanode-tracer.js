@@ -38,7 +38,7 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
     if (this.map_.viewCounter_ != tile_.viewCoutner_) {
         tile_.viewSwitched();
         tile_.viewCoutner_ = this.map_.viewCounter_;
-        this.map_.dirty_ = true; 
+        this.map_.markDirty(); 
 
         if (tile_.lastRenderState_) {
             tile_.lastRenderState_ = tile_.lastRenderState_; //debug
@@ -192,7 +192,7 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_, priority_
         if (this.isVirtualMetanodeReady(tile_, priority_)) {
             tile_.metanode_ = this.createVirtualMetanode(tile_, priority_);
             tile_.lastMetanode_ = null;
-            this.map_.dirty_ = true; 
+            this.map_.markDirty();
         } else {
             return false;
         }
@@ -217,7 +217,7 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_, priority_
         if (!tile_.virtual_) {
             tile_.metanode_ = metatile_.getNode(tile_.id_);
             tile_.lastMetanode_ = null;
-            this.map_.dirty_ = true; 
+            this.map_.markDirty(); 
         }
 
         if (tile_.metanode_ != null) {
@@ -228,7 +228,7 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_, priority_
 
             tile_.metanode_.tile_ = tile_; //used only for validate
             tile_.lastMetanode_ = null;
-            this.map_.dirty_ = true; 
+            this.map_.markDirty(); 
 
             for (var i = 0; i < 4; i++) {
                 if (tile_.metanode_.hasChild(i) == true) {

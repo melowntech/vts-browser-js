@@ -93,7 +93,7 @@ Melown.MapTexture.prototype.setBoundTexture = function(tile_, layer_) {
         this.extraBound_.texture_ = tile_.boundTextures_[layer_.id_]; 
         this.extraBound_.transform_ = this.map_.getTileTextureTransform(tile_, this.extraBound_.tile_);
         
-        this.map_.dirty_ = true;
+        this.map_.markDirty();
     }
 };
 
