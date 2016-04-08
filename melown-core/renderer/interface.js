@@ -89,8 +89,13 @@ Melown.RendererInterface.prototype.createMesh = function(options_) {
     var data_ = {
         vertices_ : options_["vertices"],
         uvs_ : options_["uvs"],
+        uvs2_ : options_["normals"],
         vertexSize_ : options_["vertex-size"],
         uvSize_ : options_["uv-size"],
+        uv2Size_ : options_["normal-size"],
+        vertexAttr_ : options_["vertex-attr"],
+        uvAttr_ : options_["uv-attr"],
+        uv2Attr_ : options_["normal-attr"],
         bbox_ : options_["bbox"]
     };
 
@@ -104,7 +109,7 @@ Melown.RendererInterface.prototype.removeMesh = function(mesh_) {
     return this;    
 };
 
-Melown.RendererInterface.prototype.createProgram = function(options_) {
+Melown.RendererInterface.prototype.createShader = function(options_) {
     if (options_ == null || typeof options_ !== "object") {
         return null;
     }
@@ -137,13 +142,19 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
         return this;    
     }
 
-    if (!options_["mesh"] == null || !options_["program-options"]) {
+    if (!options_["mesh"] == null || !options_["shader-variables"]) {
         return this;    
     }
 
-    var programOptions_ = options_["program-options"];
-    var program_ = options_["program"] || "textured";
-    
+    var shaderAttributes_ = options_["shader-attributes"];
+    var vertexAttr_ = options_["vertex"] || "aPosition";
+    var uvAttr_ = options_["uv"] || "aTexCoord";
+    var uv2Attr_ = options_["normal"] || "aNormal";
+
+    var shaderVariables_ = options_["shader-variables"];
+    var shader_ = options_["shader"] || "textured";
+
+   
     var renderer_ = this.renderer_; 
     var mesh_ = options_["mesh"];
     var texture_ = options_["texture"];
@@ -151,54 +162,56 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
     var proj_ = renderer_.camera_.getProjectionMatrix();
     var fogDensity_ = renderer_.fogDensity_;
     
-    if (typeof program_ === "string") {
-        switch(program_) {
+    if (typeof shader_ === "string") {
+        switch(shader_) {
             case "textured":
 
-                if (!programOptions_["uMV"]) {
-                    programOptions_["uMV"] = ["mat4", mv_];
+                if (!shaderVariables_["uMV"]) {
+                    shaderVariables_["uMV"] = ["mat4", mv_];
                 } 
 
-                if (!programOptions_["uProj"]) {
-                    programOptions_["uProj"] = ["mat4", proj_];
+                if (!shaderVariables_["uProj"]) {
+                    shaderVariables_["uProj"] = ["mat4", proj_];
                 } 
 
-                if (!programOptions_["uFogDensity"]) {
-                    programOptions_["uFogDensity"] = ["float", fogDensity_];
+                if (!shaderVariables_["uFogDensity"]) {
+                    shaderVariables_["uFogDensity"] = ["float", fogDensity_];
                 } 
             
-                program_ = renderer_.progTile_;
+                //uvAttr_ = options_["uv"] || "aTexCoord";
+                uv2Attr_ = null;
+                shader_ = renderer_.progTile_;
                 break;
         }
     }
 
-    renderer_.gpu_.useProgram(program_, "aPosition", texture_ ? "aTexCoord" : null, null, null);
+    renderer_.gpu_.useProgram(shader_, vertexAttr_, uvAttr_, uv2Attr_, null);
 
-    for (var key_ in programOptions_) {
-        var item_ = programOptions_[key_];
+    for (var key_ in shaderVariables_) {
+        var item_ = shaderVariables_[key_];
         
         if (item_.length == 2) {
             switch(item_[0]){
                 case "floatArray":
-                    program_.setFloatArray(key_, item_[1]);
+                    shader_.setFloatArray(key_, item_[1]);
                     break;
                 case "float":
-                    program_.setFloat(key_, item_[1]);
+                    shader_.setFloat(key_, item_[1]);
                     break;
                 case "mat4":
-                    program_.setMat4(key_, item_[1]);
+                    shader_.setMat4(key_, item_[1]);
                     break;
                 case "vec2":
-                    program_.setVec2(key_, item_[1]);
+                    shader_.setVec2(key_, item_[1]);
                     break;
                 case "vec3":
-                    program_.setVec3(key_, item_[1]);
+                    shader_.setVec3(key_, item_[1]);
                     break;
                 case "vec4":
-                    program_.setVec4(key_, item_[1]);
+                    shader_.setVec4(key_, item_[1]);
                     break;
                 case "sampler":
-                    program_.setSampler(key_, item_[1]);
+                    shader_.setSampler(key_, item_[1]);
                     break;
             } 
         }
@@ -208,7 +221,7 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
         renderer_.gpu_.bindTexture(texture_);
     }
     
-    mesh_.draw(program_, "aPosition", texture_ ? "aTexCoord" : null, null, null);
+    mesh_.draw(shader_, "aPosition", texture_ ? "aTexCoord" : null, null, null);
     return this;    
 };
 
@@ -316,7 +329,7 @@ Melown.RendererInterface.prototype["createTexture"] = Melown.RendererInterface.p
 Melown.RendererInterface.prototype["removeTexture"] = Melown.RendererInterface.prototype.removeTexture; 
 Melown.RendererInterface.prototype["createMesh"] = Melown.RendererInterface.prototype.createMesh;
 Melown.RendererInterface.prototype["removeMesh"] = Melown.RendererInterface.prototype.removeMesh; 
-Melown.RendererInterface.prototype["createProgram"] = Melown.RendererInterface.prototype.createProgram; 
+Melown.RendererInterface.prototype["createshader"] = Melown.RendererInterface.prototype.createshader; 
 Melown.RendererInterface.prototype["removeResource"] = Melown.RendererInterface.prototype.removeResource; 
 Melown.RendererInterface.prototype["addJob"] = Melown.RendererInterface.prototype.addJob;
 Melown.RendererInterface.prototype["clearJobs"] = Melown.RendererInterface.prototype.clearJobs; 

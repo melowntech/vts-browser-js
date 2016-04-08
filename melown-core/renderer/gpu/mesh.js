@@ -18,6 +18,7 @@ Melown.GpuMesh = function(gpu_, meshData_, fileSize_, core_) {
     var vertexSize_ = meshData_.vertexSize_ || 3;
     var uvSize_ = meshData_.uvSize_ || 2;
     var uv2Size_ = meshData_.uv2Size_ || 2;
+
     var gl_ = this.gl_;
 
     if (!vertices_ || !gl_) {
