@@ -530,17 +530,17 @@ Melown.tileWireframe3VertexShader =
 //depth encoded tile mesh
 Melown.tileDepthVertexShader =
     "attribute vec3 aPosition;\n"+
-    "attribute vec2 aTexCoord;\n"+
+    //"attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
-    "uniform float uFogDensity;\n"+
-    "varying vec2 vTexCoord;\n"+
+    //"uniform float uFogDensity;\n"+
+    //"varying vec2 vTexCoord;\n"+
     "varying float vDepth;\n"+
     "void main() {\n"+
         "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
         "gl_Position = uProj * camSpacePos;\n"+
         "float camDist = length(camSpacePos.xyz);\n"+
         "vDepth = camDist;\n"+
-        "vTexCoord = aTexCoord;\n"+
+        //"vTexCoord = aTexCoord;\n"+
     "}";
 
 Melown.tileDepthFragmentShader = "precision mediump float;\n"+
@@ -550,7 +550,7 @@ Melown.tileDepthFragmentShader = "precision mediump float;\n"+
 
 //        "gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);\n"+
         "gl_FragColor = fract(vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vDepth) + (-0.5/255.0);\n"+
-        //"gl_FragColor.w=1.0;"+
+//        "gl_FragColor.w=1.0;"+
 //        "gl_FragColor = fract(vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vDepth);\n"+
 
     "}";

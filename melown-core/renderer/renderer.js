@@ -388,6 +388,7 @@ Melown.Renderer.prototype.switchToFramebuffer = function(type_) {
             this.gpu_.resize(this.curSize_, true);
             this.camera_.update();
             //this.updateCamera();
+            this.onlyDepth_ = false;
             break;
 
         case "depth":
@@ -406,8 +407,16 @@ Melown.Renderer.prototype.switchToFramebuffer = function(type_) {
             gl_.clear(gl_.COLOR_BUFFER_BIT | gl_.DEPTH_BUFFER_BIT);
     
             this.curSize_ = [size_, size_];
+            //this.gpu_.resize(this.curSize_, true);
+
+            var width_ = this.oldSize_[0];
+            var height_ = this.oldSize_[1];
+            //this.camera_.setAspect(width_ / height_);
+
             this.gpu_.clear();
+            //this.camera_.setAspect(2.5);
             this.camera_.update();
+            this.onlyDepth_ = true;
             break;
 
         case "geo":

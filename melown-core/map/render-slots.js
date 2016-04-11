@@ -55,7 +55,9 @@ Melown.Map.prototype.getRenderSlotEnabled = function(id_) {
 };
 
 Melown.Map.prototype.processRenderSlots = function(id_, callback_) {
-    this.renderer_.gpu_.setViewport(); //just in case
+    if (this.drawChannel_ != 1) {
+        this.renderer_.gpu_.setViewport(); //just in case
+    }
 
     for (var i = 0, li = this.renderSlots_.length; i < li; i++) {
         var slot_ = this.renderSlots_[i];

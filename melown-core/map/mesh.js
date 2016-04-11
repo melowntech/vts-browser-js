@@ -269,6 +269,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
 
     if (type_ == "depth") {
         program_ = renderer_.progDepthTile_;
+        //texcoordsAttr_ = "aTexCoord";
     } else {
         if (drawWireframe_ > 0) {
             switch (drawWireframe_) {

@@ -474,7 +474,9 @@ Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
 };
 
 Melown.Map.prototype.drawMap = function() {
-    this.renderer_.gpu_.setViewport();
+    if (this.drawChannel_ != 1) {
+        this.renderer_.gpu_.setViewport();
+    }
 
     this.visibleCredits_ = {
       imagery_ : [],
@@ -528,8 +530,13 @@ Melown.Map.prototype.update = function() {
         this.processRenderSlots();
         
         this.core_.callListener("map-update", {});
-        
-        this.renderer_.drawImage(300, 0, 256, 256, this.renderer_.hitmapTexture_);
+
+        //this.renderer_.gpu_.setState(this.drawTileState_);
+        //this.renderer_.gpu_.gl_.disable(this.renderer_.gpu_.gl_.BLEND);
+        this.renderer_.drawImage(300, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
+
+        this.renderer_.drawImage(558, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
+
     }
 
     this.stats_.end(dirty_);
