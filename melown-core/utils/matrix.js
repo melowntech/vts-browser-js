@@ -1095,5 +1095,9 @@ Melown.quat4.str = function (a) {
 Melown["Math"] = {};
 Melown["Math"]["mat4Multiply"] = Melown.mat4.multiply;
 Melown["Math"]["mat4Inverse"] = Melown.mat4.inverse;
+Melown["Math"]["mat4ToMat3"] = Melown.mat4.toMat3;
+Melown["Math"]["mat4ToInverseMat3"] = Melown.mat4.toInverseMat3;
+Melown["Math"]["mat4Transpose"] = Melown.mat4.transpose;
+Melown["Math"]["mat3Transpose"] = Melown.mat3.transpose;
 
 

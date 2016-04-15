@@ -405,6 +405,66 @@ Melown.fogTileFragmentShader = "precision mediump float;\n"+
     "}";
 
 
+//textured shaded tile mesh
+Melown.tileTShadedVertexShader =
+    "attribute vec3 aPosition;\n"+
+    "attribute vec2 aTexCoord;\n"+
+    "attribute vec3 aNormal;\n"+
+    "uniform mat4 uMV, uProj;\n"+
+    "uniform mat3 uNorm;\n"+
+    "uniform float uFogDensity;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying vec4 vPosition;\n"+
+    "varying vec3 vNormal;\n"+
+    "varying float vFogFactor;\n"+
+    "void main() {\n"+
+        "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
+        "gl_Position = uProj * camSpacePos;\n"+
+        "float camDist = length(camSpacePos.xyz);\n"+
+        "vFogFactor = exp(uFogDensity * camDist);\n"+
+        "vTexCoord = aTexCoord;\n"+
+        "vPosition = camSpacePos;\n"+
+        "vNormal = aNormal * uNorm;\n"+
+    "}";
+
+Melown.tileTShadedFragmentShader = "precision mediump float;\n"+
+    "uniform sampler2D uSampler;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying vec4 vPosition;\n"+
+    "varying vec3 vNormal;\n"+
+    "uniform mat4 uMaterial;\n"+
+    "varying float vFogFactor;\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+        "vec3 ldir = normalize(-vPosition.xyz);\n"+
+        "vec3 normal = normalize(vNormal);\n"+
+        "vec3 eyeDir = ldir;\n"+
+        "vec3 refDir = reflect(-ldir, normal);\n"+
+        "float specW = pow(max(dot(refDir, eyeDir), 0.0), uMaterial[3][0]);\n"+
+        "float diffW = max(dot(normal, ldir), 0.0);\n"+
+        "vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n"+
+        "vec4 tcolor = texture2D(uSampler, vTexCoord);\n"+
+        "gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor);\n"+
+    "}";
+
+Melown.tileShadedFragmentShader = "precision mediump float;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying vec4 vPosition;\n"+
+    "varying vec3 vNormal;\n"+
+    "uniform mat4 uMaterial;\n"+
+    "varying float vFogFactor;\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+        "vec3 ldir = normalize(-vPosition.xyz);\n"+
+        "vec3 normal = normalize(vNormal);\n"+
+        "vec3 eyeDir = ldir;\n"+
+        "vec3 refDir = reflect(-ldir, normal);\n"+
+        "float specW = pow(max(dot(refDir, eyeDir), 0.0), uMaterial[3][0]);\n"+
+        "float diffW = max(dot(normal, ldir), 0.0);\n"+
+        "vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n"+
+        "gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);\n"+
+    "}";
+
 //flat shade tile mesh
 Melown.tileFlatShadeVertexShader =
     "attribute vec3 aPosition;\n"+

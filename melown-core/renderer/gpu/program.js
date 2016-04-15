@@ -81,6 +81,16 @@ Melown.GpuProgram.prototype.setMat4 = function(name_, m_) {
     }
 };
 
+Melown.GpuProgram.prototype.setMat3 = function(name_, m_) {
+    var gl_ = this.gl_;
+    if (gl_ == null || this.program_ == null) return;
+
+    var key_ = this.getUniform(name_);
+    if (key_ != null) {
+        gl_.uniformMatrix3fv(key_, false, m_);
+    }
+};
+
 Melown.GpuProgram.prototype.setVec2 = function(name_, m_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;

@@ -14,8 +14,16 @@ Melown.Map.prototype.getRenderSlotIndex = function(id_) {
     return this.searchArrayIndexById(this.renderSlots_, id_); 
 };
 
+Melown.Map.prototype.checkRenderSlotId = function(id_) {
+    if (id_ == "after-map-render") {
+        return "map"; 
+    } else {
+        return id_;
+    }
+};
+
 Melown.Map.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
-    var from_ = this.getRenderSlotIndex(whichId_);
+    var from_ = this.getRenderSlotIndex(this.checkRenderSlotId(whichId_));
     var to_ = this.getRenderSlotIndex(whereId_);
     if (from_ != -1 && to_ != -1) { 
         this.renderSlots_.splice(to_, 0, this.renderSlots_.splice(from_, 1)[0]);
@@ -23,7 +31,7 @@ Melown.Map.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
 };
 
 Melown.Map.prototype.moveRenderSlotAfter = function(whichId_, whereId_) {
-    var from_ = this.getRenderSlotIndex(whichId_);
+    var from_ = this.getRenderSlotIndex(this.checkRenderSlotId(whichId_));
     var to_ = this.getRenderSlotIndex(whereId_);
     if (from_ != -1 && to_ != -1) {
         to_++; 
@@ -63,7 +71,7 @@ Melown.Map.prototype.processRenderSlots = function(id_, callback_) {
         var slot_ = this.renderSlots_[i];
 
         if (slot_.enabled_ && slot_.callback_) {
-            slot_.callback_();
+            slot_.callback_(this.drawChannelNames_[this.drawChannel_]);
         }
     }
 };

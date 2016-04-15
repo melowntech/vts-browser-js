@@ -92,7 +92,7 @@ Melown.RendererInterface.prototype.createMesh = function(options_) {
         uvs2_ : options_["normals"],
         vertexSize_ : options_["vertex-size"],
         uvSize_ : options_["uv-size"],
-        uv2Size_ : options_["normal-size"],
+        uv2Size_ : options_["normal-size"] || 3,
         vertexAttr_ : options_["vertex-attr"],
         uvAttr_ : options_["uv-attr"],
         uv2Attr_ : options_["normal-attr"],
@@ -164,7 +164,25 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
     
     if (typeof shader_ === "string") {
         switch(shader_) {
+            case "hit":
+
+                if (!shaderVariables_["uMV"]) {
+                    shaderVariables_["uMV"] = ["mat4", mv_];
+                } 
+
+                if (!shaderVariables_["uProj"]) {
+                    shaderVariables_["uProj"] = ["mat4", proj_];
+                } 
+
+                uvAttr_ = null;
+                uv2Attr_ = null;
+                texture_ = null;
+                shader_ = renderer_.progDepthTile_;;
+                break;
+
+            case "shaded":
             case "textured":
+            case "textured-and-shaded":
 
                 if (!shaderVariables_["uMV"]) {
                     shaderVariables_["uMV"] = ["mat4", mv_];
@@ -179,8 +197,8 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
                 } 
             
                 //uvAttr_ = options_["uv"] || "aTexCoord";
-                uv2Attr_ = null;
-                shader_ = renderer_.progTile_;
+                uv2Attr_ = (shader_ == "textured") ? null : "aNormal";
+                shader_ = (shader_ == "textured") ? renderer_.progTile_ : ((shader_ == "shaded") ? renderer_.progShadedTile_ : renderer_.progTShadedTile_);
                 break;
         }
     }
@@ -197,6 +215,9 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
                     break;
                 case "float":
                     shader_.setFloat(key_, item_[1]);
+                    break;
+                case "mat3":
+                    shader_.setMat3(key_, item_[1]);
                     break;
                 case "mat4":
                     shader_.setMat4(key_, item_[1]);
@@ -221,7 +242,7 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
         renderer_.gpu_.bindTexture(texture_);
     }
     
-    mesh_.draw(shader_, "aPosition", texture_ ? "aTexCoord" : null, null, null);
+    mesh_.draw(shader_, "aPosition", texture_ ? uvAttr_ : null, uv2Attr_, null);
     return this;    
 };
 

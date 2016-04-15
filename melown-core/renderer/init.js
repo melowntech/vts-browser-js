@@ -3,6 +3,8 @@ Melown.GpuBarycentricBuffer_ = null;
 Melown.Renderer.prototype.initShaders = function() {
     this.progTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileVertexShader, Melown.tileFragmentShader);
     this.progTile2_ = new Melown.GpuProgram(this.gpu_, Melown.tile2VertexShader, Melown.tile2FragmentShader);
+    this.progShadedTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileTShadedVertexShader, Melown.tileShadedFragmentShader);
+    this.progTShadedTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileTShadedVertexShader, Melown.tileTShadedFragmentShader);
     this.progFogTile_ = new Melown.GpuProgram(this.gpu_, Melown.fogTileVertexShader, Melown.fogTileFragmentShader);
     this.progWireframeTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframeFragmentShader);
     this.progWireframeTile2_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframeVertexShader, Melown.tileWireframe2FragmentShader);
@@ -28,7 +30,6 @@ Melown.Renderer.prototype.initShaders = function() {
     this.progText2_ = new Melown.GpuProgram(this.gpu_, Melown.textVertexShader2, Melown.textFragmentShader);
     this.progImage_ = new Melown.GpuProgram(this.gpu_, Melown.imageVertexShader, Melown.imageFragmentShader);
     this.progIcon_ = new Melown.GpuProgram(this.gpu_, Melown.iconVertexShader, Melown.textFragmentShader);
-
 };
 
 

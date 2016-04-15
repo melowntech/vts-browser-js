@@ -201,6 +201,7 @@ Melown.MapInterface.prototype.getCameraInfo = function() {
         "projection-matrix" : camera_.projection_,
         "view-matrix" : camera_.modelview_,
         "view-projection-matrix" : camera_.mvp_,
+        "rotation-matrix" : camera_.rotationview_,
         "position" : camera_.getPosition(),
         "vector" : [0,0,1]
     };
@@ -273,8 +274,8 @@ Melown.MapInterface.prototype.getGpuCache = function() {
     return this.map_.gpuCache_;
 };
 
-Melown.MapInterface.prototype.getHitCoords = function(screenX_, screenY_) {
-    return this.map_.getHitCoords(screenX_, screenY_);
+Melown.MapInterface.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
+    return this.map_.getHitCoords(screenX_, screenY_, mode_, lod_);
 };
 
 Melown.MapPositionInterface = Melown.MapPosition;
@@ -337,4 +338,5 @@ Melown.MapInterface.prototype["getRenderSlotEnabled"] = Melown.MapInterface.prot
 Melown.MapInterface.prototype["setLoaderSuspended"] = Melown.MapInterface.prototype.setLoaderSuspended;
 Melown.MapInterface.prototype["getLoaderSuspended"] = Melown.MapInterface.prototype.getLoaderSuspended; 
 Melown.MapInterface.prototype["getGpuCache"] = Melown.MapInterface.prototype.getGpuCache;
+Melown.MapInterface.prototype["getHitCoords"] = Melown.MapInterface.prototype.getHitCoords;
 

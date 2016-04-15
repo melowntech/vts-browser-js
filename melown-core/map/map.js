@@ -39,6 +39,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.namedViews_ = [];
     this.viewCounter_ = 0;
     this.drawChannel_ = 0;
+    this.drawChannelNames_ = ["base", "hit"];
 
     this.surfaceSequence_ = [];
     this.surfaceOnlySequence_ = [];
@@ -457,6 +458,11 @@ Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
     }
 
     var cameraSpaceCoords_ = this.renderer_.hitTest(screenX_, screenY_);
+    
+    if (!cameraSpaceCoords_[3]) {
+        return null;
+    }
+    
     var cameraPos_ = this.cameraPosition_;
     var worldPos_ = [ cameraSpaceCoords_[0] + cameraPos_[0],
                       cameraSpaceCoords_[1] + cameraPos_[1],
@@ -467,7 +473,7 @@ Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
     if (mode_ == "float") {
         var lod_ =  (lod_ != null) ? lod_ : this.getOptimalHeightLod(navCoords_, 100, this.config_.mapNavSamplesPerViewExtent_);
         var surfaceHeight_ = this.getSurfaceHeight(navCoords_, lod_);
-        nevCoords_[2] -= surfaceHeight_[0]; 
+        navCoords_[2] -= surfaceHeight_[0]; 
     }
 
     return navCoords_;
@@ -533,9 +539,8 @@ Melown.Map.prototype.update = function() {
 
         //this.renderer_.gpu_.setState(this.drawTileState_);
         //this.renderer_.gpu_.gl_.disable(this.renderer_.gpu_.gl_.BLEND);
-        this.renderer_.drawImage(300, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
-
-        this.renderer_.drawImage(558, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
+        //this.renderer_.drawImage(300, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
+        //this.renderer_.drawImage(558, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
 
     }
 
