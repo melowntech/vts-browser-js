@@ -27,7 +27,7 @@ Melown.ControlMode.Pano.prototype.drag = function(event_) {
         return;
     }
 
-    var mouse_ = event_.getMousePosition();
+    var mouse_ = event_.getMouseCoords();
     var delta_ = [mouse_[0] - this.center_[0], mouse_[1] - this.center_[1]];
     var sensitivity_ = 0.008;
     this.velocity_[0] = delta_[0] * sensitivity_;
@@ -39,7 +39,7 @@ Melown.ControlMode.Pano.prototype.drag = function(event_) {
 
 Melown.ControlMode.Pano.prototype.down = function(event_) {
     if (event_.getMouseButton() === 'left') {
-        this.center_ = event_.getMousePosition();
+        this.center_ = event_.getMouseCoords();
         this.dragging_ = true;
     }
 };

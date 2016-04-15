@@ -151,9 +151,14 @@ Melown.BrowserInterface.prototype.convertCoords = function(sourceSrs_, destinati
     return this.map_.convertCoords(sourceSrs_, destinationSrs_, coords_);
 };
 
-Melown.BrowserInterface.prototype.convertCoordsFromNavToCanvas = function(coords_, heightMode_) {
+Melown.BrowserInterface.prototype.convertCoordsFromNavToCanvas = function(coords_, heightMode_, lod_) {
     if(!this.map_) return;
-    return this.map_.convertCoordsFromNavToCanvas(coords_, heightMode_);
+    return this.map_.convertCoordsFromNavToCanvas(coords_, heightMode_, lod_);
+};
+
+Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace = function(coords_, heightMode_, lod_) {
+    if(!this.map_) return;
+    return this.map_.convertCoordsFromNavToCameraSpace(coords_, heightMode_, lod_);
 };
 
 Melown.BrowserInterface.prototype.clonePosition = function(position_) {
@@ -226,9 +231,9 @@ Melown.BrowserInterface.prototype.getPositionHeigthMode = function(position_) {
     return this.map_.getPositionHeightMode(position_);
 };
 
-Melown.BrowserInterface.prototype.getPositionCanvasCoords = function(position_) {
+Melown.BrowserInterface.prototype.getPositionCanvasCoords = function(position_, lod_) {
     if(!this.map_) return;
-    return this.map_.getPositionCanvasCoords(position_);
+    return this.map_.getPositionCanvasCoords(position_, lod_);
 };
 
 Melown.BrowserInterface.prototype.getPositionCameraCoords = function(position_, mode_) {
@@ -322,6 +327,10 @@ Melown.BrowserInterface.prototype.getGpuCache = function() {
     return this.map_.getGpuCache();
 };
 
+Melown.BrowserInterface.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
+    return this.map_.getHitCoords(screenX_, screenY_, mode_, lod_);
+};
+
 Melown.BrowserInterface.prototype.flyTo = function(position_, options_) {
     if(!this.map_) return;
     this.autopilot_.flyTo(position_, options_); 
@@ -343,6 +352,10 @@ Melown.BrowserInterface.prototype.cancelFlight = function() {
 Melown.BrowserInterface.prototype.on = function(eventName_, call_) {
     this.core_.on(eventName_, call_);
     return this;    
+};
+
+Melown.BrowserInterface.prototype.getMapElement = function() {
+    return this.ui_.getMapControl().getMapElement();
 };
 
 Melown.BrowserInterface.prototype.getControl = function(id_) {
@@ -371,7 +384,6 @@ Melown.BrowserInterface.prototype.setParam = function(key_, value_) {
 Melown.BrowserInterface.prototype.getParam = function(key_) {
     return this.getConfigParam(key_, value_);
 };
-
 
 Melown.getBrowserVersion = function() {
     return "0.1";
@@ -406,6 +418,7 @@ Melown.BrowserInterface.prototype["convertPositionViewMode"] = Melown.BrowserInt
 Melown.BrowserInterface.prototype["convertPositionHeightMode"] = Melown.BrowserInterface.prototype.convertPositionHeightMode; 
 Melown.BrowserInterface.prototype["convertCoords"] = Melown.BrowserInterface.prototype.convertCoords; 
 Melown.BrowserInterface.prototype["convertCoordsFromNavToCanvas"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCanvas; 
+Melown.BrowserInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace;
 Melown.BrowserInterface.prototype["clonePosition"] = Melown.BrowserInterface.prototype.clonePosition; 
 Melown.BrowserInterface.prototype["arePositionsSame"] = Melown.BrowserInterface.prototype.arePositionsSame; 
 Melown.BrowserInterface.prototype["setPositionCoords"] = Melown.BrowserInterface.prototype.setPositionCoords; 
@@ -438,10 +451,12 @@ Melown.BrowserInterface.prototype["getRenderSlotEnabled"] = Melown.BrowserInterf
 Melown.BrowserInterface.prototype["setLoaderSuspended"] = Melown.BrowserInterface.prototype.setLoaderSuspended;
 Melown.BrowserInterface.prototype["getLoaderSuspended"] = Melown.BrowserInterface.prototype.getLoaderSuspended; 
 Melown.BrowserInterface.prototype["getGpuCache"] = Melown.BrowserInterface.prototype.getGpuCache;
+Melown.BrowserInterface.prototype["getHitCoords"] = Melown.BrowserInterface.prototype.getHitCoords;
 Melown.BrowserInterface.prototype["flyTo"] = Melown.BrowserInterface.prototype.flyTo; 
 Melown.BrowserInterface.prototype["flyTrajectory"] = Melown.BrowserInterface.prototype.flyTrajectory; 
 Melown.BrowserInterface.prototype["cancelFlight"] = Melown.BrowserInterface.prototype.cancelFlight; 
 Melown.BrowserInterface.prototype["on"] = Melown.BrowserInterface.prototype.on; 
+Melown.BrowserInterface.prototype["getMapElement"] = Melown.BrowserInterface.prototype.getMapElement; 
 Melown.BrowserInterface.prototype["getControl"] = Melown.BrowserInterface.prototype.getControl; 
 Melown.BrowserInterface.prototype["addControl"] = Melown.BrowserInterface.prototype.addControl; 
 Melown.BrowserInterface.prototype["removeControl"] = Melown.BrowserInterface.prototype.removeControl; 

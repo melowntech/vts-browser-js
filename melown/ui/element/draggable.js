@@ -36,7 +36,7 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
 
     if (this.dragging_ != true) {
         this.dragging_ = true;
-        var pos_ = event_.getMousePosition(true);
+        var pos_ = event_.getMouseCoords(true);
         this.lastDragPos_ = pos_;
         this.on("mousemove", this.dragMoveCall_, document);
         this.on("mouseup", this.dragEndCall_, document);
@@ -55,14 +55,14 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
             "clientY" : pos_[1]
             });
     } else {
-        var pos_ = event_.getMousePosition();
+        var pos_ = event_.getMouseCoords();
         this.lastDragPos_ = pos_;
     }
 
 };
 
 Melown.UIElement.prototype.onDragMove = function(event_) {
-    var pos_ = event_.getMousePosition();
+    var pos_ = event_.getMouseCoords();
     this.updateDragButtonsState(event_, true);
 
     Melown.Utils.preventDefault(event_);
@@ -70,8 +70,8 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
     var zoom_ = 0;
 
     if (event_.getTouchesCount() == 2) {
-        var p1_ = event_.getTouchPosition(0); 
-        var p2_ = event_.getTouchPosition(1); 
+        var p1_ = event_.getTouchCoords(0); 
+        var p2_ = event_.getTouchCoords(1); 
         var dx_ = p2_[0] - p1_[0];
         var dy_ = p2_[1] - p1_[1];
         var distance_ = Math.sqrt(dx_ * dx_ + dy_* dy_); 
@@ -113,7 +113,7 @@ Melown.UIElement.prototype.onDragEnd = function(event_) {
     this.zoomDrag_ = false;
 
     if (this.dragging_ == true) {
-        var pos_ = event_.getMousePosition();
+        var pos_ = event_.getMouseCoords();
         this.lastDragPos_ = pos_;
 
         if (!this.dragButtons_["left"] &&
@@ -121,7 +121,7 @@ Melown.UIElement.prototype.onDragEnd = function(event_) {
             !this.dragButtons_["middle"] ) {
 
             this.dragging_ = false;
-            var pos_ = event_.getMousePosition();
+            var pos_ = event_.getMouseCoords();
             this.off("mousemove", this.dragMoveCall_, document);
             this.off("mouseup", this.dragEndCall_, document);
             //this.off("mouseup", this.onDragEnd.bind(this), document);

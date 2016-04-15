@@ -140,12 +140,6 @@ Melown.ControlMode.MapObserver.prototype.constrainPosition = function(pos_) {
     var camPos_ = map_.getPositionCameraCoords(pos_, "float");
     var cameraConstrainDistance_ = 1;
     
-    if (!camPos_) {
-        debugger;
-        camPos_ = map_.getPositionCameraCoords(pos_, "float");
-        return pos_;
-    }
-
     var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (distance_ * Math.tan(Melown.radians(3.0))));
     var cameraHeight_ = camPos_[2]; //this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_;
 

@@ -35,7 +35,7 @@ Melown.UIEvent.prototype.getMouseButton = function() {
     return "";
 };
 
-Melown.UIEvent.prototype.getMousePosition = function(absolute_) {
+Melown.UIEvent.prototype.getMouseCoords = function(absolute_) {
     var event_ = null;
 
     switch (this.type_) {
@@ -51,7 +51,7 @@ Melown.UIEvent.prototype.getMousePosition = function(absolute_) {
             var pos_ = [0,0];
             
             for (var i = 0, li = touches_.length; i < li; i++) {
-                var pos2_ = this.getEventPosition(this.event_["touches"][i], absolute_);
+                var pos2_ = this.getEventCoords(this.event_["touches"][i], absolute_);
                 pos_[0] += pos2_[0];   
                 pos_[1] += pos2_[1];   
             }
@@ -67,7 +67,7 @@ Melown.UIEvent.prototype.getMousePosition = function(absolute_) {
         case "dragend":
         case "drag":
 
-            return this.getEventPosition(this.event_, absolute_);
+            return this.getEventCoords(this.event_, absolute_);
             break;
 
     }
@@ -75,7 +75,7 @@ Melown.UIEvent.prototype.getMousePosition = function(absolute_) {
     return [0,0];
 };
 
-Melown.UIEvent.prototype.getEventPosition = function(event_, absolute_) {
+Melown.UIEvent.prototype.getEventCoords = function(event_, absolute_) {
     if (this.element_.getBoundingClientRect == null || absolute_) {
         return [ event_["clientX"],
                  event_["clientY"] ];
@@ -199,7 +199,7 @@ Melown.UIEvent.prototype.getTouchesCount = function() {
     return -1;
 };
 
-Melown.UIEvent.prototype.getTouchPosition = function(index_, absolute_) {
+Melown.UIEvent.prototype.getTouchCoords = function(index_, absolute_) {
     switch (this.type_) {
         case "touchstart":
         case "touchend":
@@ -231,7 +231,7 @@ Melown.UIEvent.prototype.getTouchPosition = function(index_, absolute_) {
 
 //prevent minification
 Melown.UIEvent.prototype["getMouseButton"] = Melown.UIEvent.prototype.getMouseButton;
-Melown.UIEvent.prototype["getMousePosition"] = Melown.UIEvent.prototype.getMousePosition;
+Melown.UIEvent.prototype["getMouseCoords"] = Melown.UIEvent.prototype.getMouseCoords;
 Melown.UIEvent.prototype["getDragDelta"] = Melown.UIEvent.prototype.getDragDelta;
 Melown.UIEvent.prototype["getModifierKey"] = Melown.UIEvent.prototype.getModifierKey;
 Melown.UIEvent.prototype["getKeyCode"] = Melown.UIEvent.prototype.getKeyCode;
@@ -239,6 +239,6 @@ Melown.UIEvent.prototype["getDragButton"] = Melown.UIEvent.prototype.getDragButt
 Melown.UIEvent.prototype["getWheelDelta"] = Melown.UIEvent.prototype.getWheelDelta;
 Melown.UIEvent.prototype["getDragZoom"] = Melown.UIEvent.prototype.getDragZoom;
 Melown.UIEvent.prototype["getTouchesCount"] = Melown.UIEvent.prototype.getTouchesCount;
-Melown.UIEvent.prototype["getTouchPosition"] = Melown.UIEvent.prototype.getTouchPosition;
+Melown.UIEvent.prototype["getTouchCoords"] = Melown.UIEvent.prototype.getTouchCoords;
 
 
