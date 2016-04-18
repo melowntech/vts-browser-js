@@ -42,6 +42,8 @@ Melown.Core.prototype.loadMap = function(path_) {
     }
 
     var onLoaded_ = (function(data_) {
+        this.callListener("map-mapconfig-loaded", data_);
+
         this.map_ = new Melown.Map(this, data_, path_, this.config_);
         this.mapInterface_ = new Melown.MapInterface(this.map_);
         this.setConfigParams(this.configStorage_);
