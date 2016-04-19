@@ -12,6 +12,7 @@ Melown.MapTree = function(map_, freeLayer_) {
 
     this.surfaceTree_ = new Melown.MapTile(this.map_, null, this.rootId_);
     this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
+    this.boundMetastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
 
     this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTileRender.bind(this), this.traceChildSequenceViewBased.bind(this));
 
@@ -33,6 +34,7 @@ Melown.MapTree = function(map_, freeLayer_) {
 Melown.MapTree.prototype.kill = function() {
     this.surfaceTree_ = null;
     this.metastorageTree_ = null;
+    this.boundMetastorageTree_ = null;
     this.surfaceTracer_ = null;
     this.heightTracer_ = null;
 };

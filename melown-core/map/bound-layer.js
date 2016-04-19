@@ -10,6 +10,8 @@ Melown.MapBoundLayer = function(map_, json_) {
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.credits_ = json_["credits"] || [];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
+    this.metaUrl_ = json_["metaUrl"] || null;
+    this.maskUrl_ = json_["maskUrl"] || null;
     this.currentAlpha_ = 1.0;
     this.creditsNumbers_ = [];
 
@@ -28,9 +30,16 @@ Melown.MapBoundLayer = function(map_, json_) {
         var p = json_["availability"];
         this.availability_.type_ = p["type"];
         this.availability_.mime_ = p["mime"];
-        //this.availability_.codes_ = p["codes"];
-        this.availability_.coverageUrl_ = p["coverageUrl"];
+        this.availability_.codes_ = p["codes"];
+        //this.availability_.coverageUrl_ = p["coverageUrl"];
     }
+
+    if (this.metaUrl_ && this.maskUrl_) {
+        this.availability_ = {
+            type_ : "metatile"
+        };
+    }
+
 
     //console.log("REMOVE HACK!");
     //this.lodRange_[1] = 14;
@@ -95,4 +104,15 @@ Melown.MapBoundLayer.prototype.hasTileOrInfluence = function(id_) {
 Melown.MapBoundLayer.prototype.getUrl = function(id_, skipBaseUrl_) {
     return this.map_.makeUrl(this.url_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
 };
+
+Melown.MapBoundLayer.prototype.getMetatileUrl = function(id_, skipBaseUrl_) {
+    return this.map_.makeUrl(this.metaUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
+};
+
+Melown.MapBoundLayer.prototype.getMaskUrl = function(id_, skipBaseUrl_) {
+    return this.map_.makeUrl(this.maskUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
+};
+
+
+
 

@@ -44,20 +44,20 @@ Melown.Map.prototype["ppy"] = function(lod_, iy) {
 Melown.Map.prototype.processUrlFunction = function(id_, counter_, string_) {
     if (typeof string_ == "string") {
         if (string_.indexOf("quad") != -1) {
-            var string2_ = "(function(lod,x,y){" + string_.replace("quad", "return this.quad") + "})";
+            var string2_ = "(function(lod,x,y,loclod,locx,locy){" + string_.replace("quad", "return this.quad") + "})";
 
             try {
                 var fc_ = eval(string2_).bind(this);
-                return fc_(id_.lod_, id_.ix_, id_.iy_);
+                return fc_(id_.lod_, id_.ix_, id_.iy_, id_.loclod_, id_.locx_, id_.locy_);
             } catch(e) {
                 return string_;
             }
         } else if (string_.indexOf("ms_digit") != -1) {
-            var string2_ = "(function(x,y){" + string_.replace("ms_digit", "return this.msDigit") + "})";
+            var string2_ = "(function(x,y,loclod,locx,locy){" + string_.replace("ms_digit", "return this.msDigit") + "})";
 
             try {
                 var fc_ = eval(string2_).bind(this);
-                return fc_(id_.ix_, id_.iy_);
+                return fc_(id_.ix_, id_.iy_, id_.loclod_, id_.locx_, id_.locy_);
             } catch(e) {
                 return string_;
             }
@@ -78,22 +78,22 @@ Melown.Map.prototype.processUrlFunction = function(id_, counter_, string_) {
 
         } else if (string_.indexOf("ppx") != -1) {
 
-            var string2_ = "(function(lod,x){" + string_.replace("ppx", "return this.ppx") + "})";
+            var string2_ = "(function(lod,x,loclod,locx){" + string_.replace("ppx", "return this.ppx") + "})";
 
             try {
                 var fc_ = eval(string2_).bind(this);
-                return fc_(id_.lod_, id_.ix_);
+                return fc_(id_.lod_, id_.ix_, id_.loclod_, id_.locx_);
             } catch(e) {
                 return string_;
             }
 
         } else if (string_.indexOf("ppy") != -1) {
 
-            var string2_ = "(function(lod,y){" + string_.replace("ppy", "return this.ppy") + "})";
+            var string2_ = "(function(lod,y,loclod,locy){" + string_.replace("ppy", "return this.ppy") + "})";
 
             try {
                 var fc_ = eval(string2_).bind(this);
-                return fc_(id_.lod_, id_.iy_);
+                return fc_(id_.lod_, id_.iy_, id_.loclod_, id_.locy_);
             } catch(e) {
                 return string_;
             }
@@ -165,6 +165,15 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
         locx_ = id_.ix_ & mask_;
         locy_ = id_.iy_ & mask_;        
     }
+    
+    var id2_ = {
+        lod_: id_.lod_,
+        ix_ : id_.ix_,
+        iy_ : id_.iy_,
+        loclod_: loclod_,
+        locx_ : locx_,
+        locy_ : locy_
+    };
 
     //remove white spaces from template
     templ_ = templ_.replace(/ /g, '');
@@ -172,7 +181,7 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
     var url_ = Melown.simpleFmtObjOrCall(templ_, {"lod":id_.lod_,  "x":id_.ix_, "y":id_.iy_, "sub": subId_,
                                                   "locx":locx_, "locy":locy_, "loclod":loclod_, 
                                                   "here_app_id": "abcde", "here_app_code":"12345"},
-                                         this.processUrlFunction.bind(this, id_, this.urlCounter_));
+                                         this.processUrlFunction.bind(this, id2_, this.urlCounter_));
 
     this.urlCounter_++;
 

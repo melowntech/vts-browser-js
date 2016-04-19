@@ -11,6 +11,7 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
     this.imageExtents_ = null;
     this.gpuTexture_ = null;
     this.loadState_ = 0;
+    this.mask_ = null;
     this.mapLoaderUrl_ = path_;
     this.heightMap_ = heightMap_ || false;
     this.extraBound_ = extraBound_;
@@ -27,7 +28,7 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
             this.checkType_ = layer_.availability_.type_;
             switch (this.checkType_) {
                 case "negative-type": this.checkValue_ = layer_.availability_.mime_; break;
-                //case "negative-code": this.checkValue_ = layer_.availability_.codes_; break;
+                case "negative-code": this.checkValue_ = layer_.availability_.codes_; break;
             }
         }       
     }
@@ -122,6 +123,63 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
     }
 
     switch (this.checkType_) {
+        case "metatile":
+
+            if (this.checkStatus_ != 2) {
+                if (this.checkStatus_ == 0) {
+                    if (this.extraInfo_ && this.extraInfo_.tile_) {
+                        var metastorage_ = this.extraInfo_.tile_.boundMetastorage_;
+                        if (!metastorage_) {
+                            metastorage_ = Melown.FindMetastorage(this.map_, this.map_.tree_.metastorageTree_,
+                                                                  this.map_.tree_.rootId_, this.extraInfo_.tile_, 8);
+                            this.extraInfo_.tile_.boundMetastorage_ = metastorage_;
+                        }
+                        
+                        var layer_ = this.extraInfo_.layer_;
+                        var texture_ = metastorage_.metatiles_[layer_.id_];
+                        
+                        if (!metastorage_.metatiles_[layer_.id_]) {
+                            var path_ = layer_.getMetatileUrl(metastorage_.id_);
+                            texture_ = new Melown.MapTexture(this.map_, path_, true, null, null);
+                            metastorage_.metatiles_[layer_.id_] = texture_;
+                        }
+                        
+                        if (this.mask_) {
+                            if (this.mask_.isReady()) {
+                                this.checkStatus_ = 2;
+                            }
+                        } else {
+                            if (texture_.isReady()) {
+                                var tile_ = this.extraInfo_.tile_;
+                                var value_ = texture_.getHeightMapValue(tile_.id_[1] & 255, tile_.id_[2] & 255);
+                                this.checkStatus_ = (value_ & 128) ? -1 : 2;
+                                
+                                if (this.checkStatus_ == 2) {
+                                    if ((value_ & 64)) { //load mask
+                                        var path_ = layer_.getMaskUrl(tile_.id_);
+                                        this.mask_ = new Melown.MapTexture(this.map_, path_, null, null, null);
+                                        this.checkStatus_ = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (this.checkStatus_ == -1) {
+                    if (!this.extraBound_) {
+                        this.extraBound_ = { tile_: this.extraInfo_.tile_, layer_: this.extraInfo_.layer_};
+                        this.setBoundTexture(this.extraBound_.tile_.parent_, this.extraBound_.layer_);        
+                    }
+    
+                    while (this.extraBound_.texture_.checkStatus_ == -1) {
+                        this.setBoundTexture(this.extraBound_.sourceTile_.parent_, this.extraBound_.layer_);        
+                    }
+                }
+
+                return false;
+            }
+        
+            break;
+
         case "negative-type":
         case "negative-code":
         
@@ -306,14 +364,14 @@ Melown.MapTexture.prototype.onHeadLoaded = function(data_, status_) {
                 }
             }
             break;
-/*            
+            
         case "negative-code":
             if (status_) {
                 if (this.checkValue_.indexOf(status_) != -1) {
                     this.checkStatus_ = -1;
                 }
             }
-            break;*/
+            break;
     }
 
     this.mapLoaderCallLoaded_();
@@ -351,6 +409,14 @@ Melown.MapTexture.prototype.getGpuTexture = function() {
     } 
 
     return this.gpuTexture_;
+};
+
+Melown.MapTexture.prototype.getHeightMapValue = function(x, y) {
+    if (this.imageData_) {
+        return this.imageData_[(y * this.imageExtents_ + x)*4];
+    }
+    
+    return 0;
 };
 
 Melown.MapTexture.prototype.getTransform = function() {

@@ -10,7 +10,8 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.renderReady_ = false;
 
     this.metanode_ = null;  //[metanode, cacheItem]
-    this.metastorage_ = null; //link to metatile storage
+    this.metastorage_ = null; //link to surface metatile storage
+    this.boundMetastorage_ = null; //link to bound layers metatile storage
     this.lastMetanode_ = null;
 
     this.surface_ = null; //surface or glue
