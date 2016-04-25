@@ -90,12 +90,16 @@ Melown.GpuDevice.prototype.clear = function(clearDepth_, clearColor_, color_) {
                    (clearColor_ ? this.gl_.DEPTH_BUFFER_BIT : 0) );
 };
 
-Melown.GpuDevice.prototype.useProgram = function(program_, attrPosition_, attrTexCoord_, attrTexCoord2_, attrBarycentric_, attrNormal_, attrNormal2_, attrNormal3_) {
+Melown.GpuDevice.prototype.useProgram = function(program_, attrPosition_, attrTexCoord_, attrTexCoord2_, attrBarycentric_, attrNormal_, attrNormal2_, attrNormal3_, nextSampler_) {
     if (this.currentProgram_ != program_) {
         this.gl_.useProgram(program_.program_);
         this.currentProgram_ = program_;
 
         program_.setSampler("uSampler", 0);
+        
+        if (nextSampler_) {
+            program_.setSampler("uSampler2", 1);
+        }
 
         var vertexPositionAttribute_ = program_.getAttribute(attrPosition_);
         this.gl_.enableVertexAttribArray(vertexPositionAttribute_);
@@ -133,12 +137,12 @@ Melown.GpuDevice.prototype.useProgram = function(program_, attrPosition_, attrTe
     }
 };
 
-Melown.GpuDevice.prototype.bindTexture = function(texture_) {
+Melown.GpuDevice.prototype.bindTexture = function(texture_, id_) {
     if (texture_.loaded_ == false) {
         return;
     }
 
-    this.gl_.activeTexture(this.gl_.TEXTURE0);
+    this.gl_.activeTexture(id_ ? this.gl_.TEXTURE1 : this.gl_.TEXTURE0);
     this.gl_.bindTexture(this.gl_.TEXTURE_2D, texture_.texture_);
 };
 

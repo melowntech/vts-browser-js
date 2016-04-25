@@ -439,7 +439,8 @@ Melown.MapPosition.prototype.getCameraInfo = function(projected_) {
         orbitCoords_ : null,
         distance_ : distance_,
         rotMatrix_ : null,
-        vector_ : null 
+        vector_ : null,
+        orbitHeight_ : orbitPos_[2]  
     };
 
     if (projected_) {
@@ -590,7 +591,7 @@ Melown.MapPosition.prototype.getCameraInfo = function(projected_) {
         var coords_ = this.getCoords();
         var latlonMatrix_ = Melown.mat4.create();
         Melown.mat4.multiply(Melown.rotationMatrix(0, Melown.radians((coords_[1] - 90.0))), Melown.rotationMatrix(2, Melown.radians((-coords_[0]-90))), latlonMatrix_);
-//        Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians((coords_[0]-90))), Melown.rotationMatrix(0, Melown.radians((coords_[1] - 90.0))), latlonMatrix_);
+//      Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians((coords_[0]-90))), Melown.rotationMatrix(0, Melown.radians((coords_[1] - 90.0))), latlonMatrix_);
 
 
         //Melown.mat4.multiply(Melown.rotationMatrix(0, Melown.radians(0)), Melown.rotationMatrix(2, Melown.radians(-(coords_[0]+90))), latlonMatrix_);

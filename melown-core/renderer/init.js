@@ -3,6 +3,7 @@ Melown.GpuBarycentricBuffer_ = null;
 Melown.Renderer.prototype.initShaders = function() {
     this.progTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileVertexShader, Melown.tileFragmentShader);
     this.progTile2_ = new Melown.GpuProgram(this.gpu_, Melown.tile2VertexShader, Melown.tile2FragmentShader);
+    this.progTile3_ = new Melown.GpuProgram(this.gpu_, Melown.tile2VertexShader, Melown.tile3FragmentShader);
     this.progShadedTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileTShadedVertexShader, Melown.tileShadedFragmentShader);
     this.progTShadedTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileTShadedVertexShader, Melown.tileTShadedFragmentShader);
     this.progFogTile_ = new Melown.GpuProgram(this.gpu_, Melown.fogTileVertexShader, Melown.fogTileFragmentShader);
@@ -12,6 +13,8 @@ Melown.Renderer.prototype.initShaders = function() {
     this.progFlatShadeTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileFlatShadeVertexShader, Melown.tileFlatShadeFragmentShader);
     this.progHeightmap_ = new Melown.GpuProgram(this.gpu_, Melown.heightmapVertexShader, Melown.heightmapFragmentShader);
     this.progSkydome_ = new Melown.GpuProgram(this.gpu_, Melown.skydomeVertexShader, Melown.skydomeFragmentShader);
+    this.progStardome_ = new Melown.GpuProgram(this.gpu_, Melown.skydomeVertexShader, Melown.stardomeFragmentShader);
+    this.progAtmo_ = new Melown.GpuProgram(this.gpu_, Melown.atmoVertexShader, Melown.atmoFragmentShader);
 
     this.progDepthTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileDepthVertexShader, Melown.tileDepthFragmentShader);
     this.progDepthHeightmap_ = new Melown.GpuProgram(this.gpu_, Melown.heightmapDepthVertexShader, Melown.heightmapDepthFragmentShader);
@@ -115,6 +118,21 @@ Melown.Renderer.prototype.initTestMap = function() {
 
     this.whiteTexture_ = new Melown.GpuTexture(this.gpu_);
     this.whiteTexture_.createFromData(size_, size_, data_);
+
+    var data_ = new Uint8Array( size_ * size_ * 4 );
+
+    for (var i = 0; i < size_; i++) {
+        for (var j = 0; j < size_; j++) {
+            var index_ = (i*size_+j)*4;
+             data_[index_] = 0;
+             data_[index_ + 1] = 0;
+             data_[index_ + 2] = 255;
+             data_[index_ + 3] = 255;
+        }
+    }
+
+    this.blackTexture_ = new Melown.GpuTexture(this.gpu_);
+    this.blackTexture_.createFromData(size_, size_, data_);
 
     var sizeX_ = 64;
     var sizeY_ = 8;
@@ -270,6 +288,10 @@ Melown.Renderer.prototype.initSkydome = function() {
     var meshData_ = Melown.RendererGeometry.buildSkydome(32, 64);
     this.skydomeMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
     this.skydomeTexture_ = new Melown.GpuTexture(this.gpu_, this.core_.coreConfig_.skydomeTexture_, this.core_);
+
+    var meshData_ = Melown.RendererGeometry.buildSkydome(128, 256);
+    this.atmoMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
+
 };
 
 

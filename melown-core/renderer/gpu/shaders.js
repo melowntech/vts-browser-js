@@ -242,6 +242,70 @@ Melown.skydomeFragmentShader = "precision mediump float;\n"+
         //"gl_FragColor = vec4(vTexCoord.x, vTexCoord.y, 0.9, 1.0);\n"+
     "}";
 
+Melown.stardomeFragmentShader = "precision mediump float;\n"+
+    "uniform sampler2D uSampler;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "void main() {\n"+
+        "gl_FragColor = texture2D(uSampler, vTexCoord);\n"+
+    "}";
+
+Melown.atmoVertexShader =
+    "attribute vec3 aPosition;\n"+
+    "attribute vec2 aTexCoord;\n"+
+    "uniform mat4 uMV, uProj;\n"+
+    "uniform mat3 uNorm;\n"+
+    "varying vec3 vNormal;\n"+
+    "varying vec4 vPosition;\n"+
+    "void main(){ \n"+
+        "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
+        "gl_Position = uProj * camSpacePos;\n"+
+        "vec4 c = uMV * vec4(aPosition, 1.0);\n"+
+        "vNormal = uNorm * (aPosition.xyz - vec3(0.5));\n"+
+        "vPosition = camSpacePos;\n"+
+    "}";
+
+Melown.atmoFragmentShader = "precision mediump float;\n"+
+    "uniform sampler2D uSampler;\n"+
+    "uniform float uNFactor;\n"+
+    "varying vec4 vPosition;\n"+
+    "varying vec3 vNormal;\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+        "vec3 ldir = normalize(-vPosition.xyz);\n"+
+        "vec4 c = texture2D(uSampler, vec2(0,0));\n"+
+        //"c.y = 1.0+dot(normalize(vNormal),ldir)*4.0;\n"+
+        "float l = dot(normalize(vNormal*uNFactor),ldir);\n"+
+        "c = mix(vec4(0.0,0.0,0.0,1.0),fogColor,max(0.0,-l*3.0));\n"+
+        "gl_FragColor = c;\n"+
+    "}";
+
+Melown.atmoFragmentShader2 = "precision mediump float;\n"+
+    "uniform sampler2D uSampler;\n"+
+    "uniform float uNFactor;\n"+
+    "uniform vec2 uRadius;\n"+
+    "uniform vec3 uPos;\n"+
+    "varying vec4 vPosition;\n"+
+    "varying vec3 vNormal;\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+        "vec3 ldir = normalize(-vPosition.xyz);\n"+
+        "vec3 diff = uPos;\n"+
+        "float a = dot(ldir, ldir);\n"+
+        "float b = 2 * dot(ldir, diff);\n"+
+        "float c = dot(diff, diff) - (uRadius[0] * uRadius[0]);\n"+
+        "float i = 0;\n"+
+        "float discr = b * b - 4 * a * c;\n"+
+        "if (discr > 0.0) {}\n"+
+
+        "}\n"+
+        //"vec4 c = texture2D(uSampler, vec2(0,0));\n"+
+        //"c.y = 1.0+dot(normalize(vNormal),ldir)*4.0;\n"+
+        //"float l = dot(normalize(vNormal*uNFactor),ldir);\n"+
+        //"c = mix(vec4(0.0,0.0,0.0,1.0),fogColor,max(0.0,-l*3.0));\n"+
+        "gl_FragColor = fogColor;\n"+
+    "}";
+
+
 //heightmap tile
 Melown.heightmapVertexShader =
     "attribute vec3 aPosition;\n"+
@@ -382,6 +446,21 @@ Melown.tile2FragmentShader = "precision mediump float;\n"+
         "gl_FragColor = mix(fogColor, c, vFogFactor);\n"+
         //"gl_FragColor = texture2D(uSampler, vTexCoord);\n"+
         "gl_FragColor[3] = c.w * uAlpha;\n"+
+    "}";
+
+Melown.tile3FragmentShader = "precision mediump float;\n"+
+    "uniform sampler2D uSampler;\n"+
+    "uniform sampler2D uSampler2;\n"+
+    "uniform float uAlpha;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying float vFogFactor;\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+        "vec4 c = texture2D(uSampler, vTexCoord);\n"+
+        "vec4 c2 = texture2D(uSampler2, vTexCoord);\n"+
+        "gl_FragColor = mix(fogColor, c, vFogFactor);\n"+
+        //"gl_FragColor = texture2D(uSampler, vTexCoord);\n"+
+        "gl_FragColor[3] = c.w * uAlpha * c2.x;\n"+
     "}";
 
 //fog only tile mesh

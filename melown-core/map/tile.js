@@ -23,6 +23,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.virtualReady_ = false;
     this.virtualSurfaces_ = [];
     
+    this.resetDrawCommands_ = false;
     this.drawCommands_ = [[], [], []];
     
     //this.empty_ = true;

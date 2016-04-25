@@ -1,6 +1,10 @@
 
-Melown.Renderer.prototype.drawSkydome = function() {
-    this.gpu_.gl_.disable(this.gpu_.gl_.CULL_FACE);
+Melown.Renderer.prototype.drawSkydome = function(texture_, shader_) {
+    if (!texture_) {
+        return;
+    }
+    
+    //this.gpu_.gl_.disable(this.gpu_.gl_.CULL_FACE);
 
     ///progSkydome.use();
     var lower_ = 400; // put the dome a bit lower
@@ -17,16 +21,16 @@ Melown.Renderer.prototype.drawSkydome = function() {
     Melown.mat4.multiply(this.camera_.getMvpMatrix(), domeMat_, mvp_);
     Melown.mat4.multiply(mvp_, normMat_, mvp_);
 
-    this.gpu_.useProgram(this.progSkydome_, "aPosition", "aTexCoord");
-    this.gpu_.bindTexture(this.skydomeTexture_);
+    this.gpu_.useProgram(shader_, "aPosition", "aTexCoord");
+    this.gpu_.bindTexture(texture_);
 //    this.gpu_.bindTexture(this.hitmapTexture_);
 
-    this.progSkydome_.setSampler("uSampler", 0);
-    this.progSkydome_.setMat4("uMVP", mvp_);
+    shader_.setSampler("uSampler", 0);
+    shader_.setMat4("uMVP", mvp_);
 
     this.gpu_.gl_.depthMask(false);
 
-    this.skydomeMesh_.draw(this.progSkydome_, "aPosition", "aTexCoord");
+    this.skydomeMesh_.draw(shader_, "aPosition", "aTexCoord");
 
     this.gpu_.gl_.depthMask(true);
 
@@ -35,45 +39,127 @@ Melown.Renderer.prototype.drawSkydome = function() {
     this.renderedPolygons_ += this.skydomeMesh_.getPolygons();
 };
 
-Melown.Renderer.prototype.drawBall = function(position_, size_) {
+Melown.Renderer.prototype.drawTBall = function(position_, size_, shader_) {
     var gl_ = this.gpu_.gl_;
 
-    gl_.disable(gl_.CULL_FACE);
+    //gl_.disable(gl_.CULL_FACE);
 
     var normMat_ = Melown.mat4.create();
     Melown.mat4.multiply(Melown.scaleMatrix(2, 2, 2), Melown.translationMatrix(-0.5, -0.5, -0.5), normMat_);
 
-
-   // var cameraPos2_ = this.camera_.getGlobalPosition();
-    //var cameraPos_ = [0,0,0];
-    var cameraPos2_ = this.camera_.getPosition();
-    var cameraPos_ = this.cameraPosition();
-
-    var pos_ = [position_[0] - cameraPos_[0] + cameraPos2_[0], position_[1] - cameraPos_[1] + cameraPos2_[1], position_[2] - cameraPos_[2] + cameraPos2_[2] ];
-//    var pos_ = [position_[0] - cameraPos_[0], position_[1] - cameraPos_[1], position_[2] ];
-    //var pos_ = [position_[0], position_[1], position_[2] ];
-//    var pos_ = [cameraPos_[0]-position_[0], cameraPos_[1]-position_[1], -(cameraPos_[2]-position_[2]) ];
-
+    var pos_ = [position_[0], position_[1], position_[2] ];
 
     var domeMat_ = Melown.mat4.create();
     Melown.mat4.multiply(Melown.translationMatrix(pos_[0], pos_[1], pos_[2]), Melown.scaleMatrixf(size_ != null ? size_ : 1.5), domeMat_);
     //Melown.mat4.multiply(Melown.translationMatrix(this.camera_.getPosition()[0]+pos_[0], this.camera_.getPosition()[1]+pos_[1], this.camera_.getPosition()[2]), Melown.scaleMatrixf(21.5), domeMat_);
 
-    var mvp_ = Melown.mat4.create();
-    Melown.mat4.multiply(this.camera_.getMvpMatrix(), domeMat_, mvp_);
-    Melown.mat4.multiply(mvp_, normMat_, mvp_);
+    var mv_ = Melown.mat4.create();
+    Melown.mat4.multiply(this.camera_.getModelviewMatrix(), domeMat_, mv_);
+    Melown.mat4.multiply(mv_, normMat_, mv_);
+    var proj_ = this.camera_.getProjectionMatrix();
 
-    this.gpu_.useProgram(this.progSkydome_, "aPosition", "aTexCoord");
+    var norm_ = [0,0,0, 0,0,0, 0,0,0];
+    Melown.Math.mat4ToInverseMat3(mv_, norm_);
+    Melown.mat3.transpose(norm_);
+    
+    //var shader_ = this.progStardome_;
+
+    this.gpu_.useProgram(shader_, "aPosition", null/*"aTexCoord"*/);
     this.gpu_.bindTexture(this.redTexture_);
 
-    this.progSkydome_.setSampler("uSampler", 0);
-    this.progSkydome_.setMat4("uMVP", mvp_);
+    shader_.setSampler("uSampler", 0);
+    shader_.setMat4("uMVP", mvp_);
 
-    this.skydomeMesh_.draw(this.progSkydome_, "aPosition", "aTexCoord");
+    this.atmoMesh_.draw(shader_, "aPosition", null /*"aTexCoord"*/);
 
     this.renderedPolygons_ += this.skydomeMesh_.getPolygons();
 
-    gl_.enable(gl_.CULL_FACE);
+    //gl_.enable(gl_.CULL_FACE);
+};
+
+Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, nfactor_) {
+    var gl_ = this.gpu_.gl_;
+
+    //gl_.disable(gl_.CULL_FACE);
+
+    var normMat_ = Melown.mat4.create();
+    Melown.mat4.multiply(Melown.scaleMatrix(2, 2, 2), Melown.translationMatrix(-0.5, -0.5, -0.5), normMat_);
+
+    var pos_ = [position_[0], position_[1], position_[2] ];
+
+    var domeMat_ = Melown.mat4.create();
+    Melown.mat4.multiply(Melown.translationMatrix(pos_[0], pos_[1], pos_[2]), Melown.scaleMatrixf(size_ != null ? size_ : 1.5), domeMat_);
+    //Melown.mat4.multiply(Melown.translationMatrix(this.camera_.getPosition()[0]+pos_[0], this.camera_.getPosition()[1]+pos_[1], this.camera_.getPosition()[2]), Melown.scaleMatrixf(21.5), domeMat_);
+
+    var mv_ = Melown.mat4.create();
+    Melown.mat4.multiply(this.camera_.getModelviewMatrix(), domeMat_, mv_);
+    Melown.mat4.multiply(mv_, normMat_, mv_);
+    var proj_ = this.camera_.getProjectionMatrix();
+
+    var norm_ = [0,0,0, 0,0,0, 0,0,0];
+    Melown.Math.mat4ToInverseMat3(mv_, norm_);
+    Melown.mat3.transpose(norm_);
+    
+    //var shader_ = this.progStardome_;
+
+    this.gpu_.useProgram(shader_, "aPosition", null/*"aTexCoord"*/);
+    this.gpu_.bindTexture(this.redTexture_);
+
+    shader_.setSampler("uSampler", 0);
+    shader_.setMat4("uProj", proj_);
+    shader_.setMat4("uMV", mv_);
+    shader_.setMat3("uNorm", norm_);
+    shader_.setFloat("uNFactor", nfactor_);
+
+    this.atmoMesh_.draw(shader_, "aPosition", null /*"aTexCoord"*/);
+
+    this.renderedPolygons_ += this.skydomeMesh_.getPolygons();
+
+    //gl_.enable(gl_.CULL_FACE);
+};
+
+Melown.Renderer.prototype.drawBall2 = function(position_, size_, shader_, nfactor_, dir_, radius2_) {
+    var gl_ = this.gpu_.gl_;
+
+    //gl_.disable(gl_.CULL_FACE);
+
+    var normMat_ = Melown.mat4.create();
+    Melown.mat4.multiply(Melown.scaleMatrix(2, 2, 2), Melown.translationMatrix(-0.5, -0.5, -0.5), normMat_);
+
+    var pos_ = [position_[0], position_[1], position_[2] ];
+
+    var domeMat_ = Melown.mat4.create();
+    Melown.mat4.multiply(Melown.translationMatrix(pos_[0], pos_[1], pos_[2]), Melown.scaleMatrixf(size_ != null ? size_ : 1.5), domeMat_);
+    //Melown.mat4.multiply(Melown.translationMatrix(this.camera_.getPosition()[0]+pos_[0], this.camera_.getPosition()[1]+pos_[1], this.camera_.getPosition()[2]), Melown.scaleMatrixf(21.5), domeMat_);
+
+    var mv_ = Melown.mat4.create();
+    Melown.mat4.multiply(this.camera_.getModelviewMatrix(), domeMat_, mv_);
+    Melown.mat4.multiply(mv_, normMat_, mv_);
+    var proj_ = this.camera_.getProjectionMatrix();
+
+    var norm_ = [0,0,0, 0,0,0, 0,0,0];
+    Melown.Math.mat4ToInverseMat3(mv_, norm_);
+    Melown.mat3.transpose(norm_);
+    
+    //var shader_ = this.progStardome_;
+
+    this.gpu_.useProgram(shader_, "aPosition", null/*"aTexCoord"*/);
+    this.gpu_.bindTexture(this.redTexture_);
+
+    shader_.setSampler("uSampler", 0);
+    shader_.setMat4("uProj", proj_);
+    shader_.setMat4("uMV", mv_);
+    shader_.setMat3("uNorm", norm_);
+    shader_.setFloat("uNFactor", nfactor_);
+    shader_.setVec3("uCenter", position_);
+    //shader_.setVec3("uDir", dir_);
+    shader_.setVec2("uRadius", [size_, radius2_]);
+
+    this.atmoMesh_.draw(shader_, "aPosition", null /*"aTexCoord"*/);
+
+    this.renderedPolygons_ += this.skydomeMesh_.getPolygons();
+
+    //gl_.enable(gl_.CULL_FACE);
 };
 
 Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, depthTest_, transparent_, writeDepth_, useState_) {

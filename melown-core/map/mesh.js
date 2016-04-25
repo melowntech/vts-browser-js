@@ -262,6 +262,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
 */
     var renderer_ = this.map_.renderer_;
     var program_ = null;
+    var gpuMask_ = null; 
 
     var texcoordsAttr_ = null;
     var texcoords2Attr_ = null;
@@ -307,6 +308,14 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
                 case "external":
                 case "external-nofog":
                     program_ = renderer_.progTile2_;
+                    
+                    if (texture_) {
+                        gpuMask_ = texture_.getGpuMaskTexture();
+                        if (gpuMask_) {
+                            program_ = renderer_.progTile3_;
+                        }
+                    } 
+                    
                     texcoords2Attr_ = "aTexCoord2";
                     break;
     
@@ -317,7 +326,8 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         }
     }
 
-    renderer_.gpu_.useProgram(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
+    renderer_.gpu_.useProgram(program_, "aPosition", texcoordsAttr_, texcoords2Attr_,
+                              drawWireframe_ != 0 ? "aBarycentric" : null, null, null, null, gpuMask_);
 
     if (texture_ != null) {
         var gpuTexture_ = texture_.getGpuTexture();
@@ -329,6 +339,11 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
             }
             
             renderer_.gpu_.bindTexture(gpuTexture_);
+
+            if (gpuMask_) {
+                renderer_.gpu_.bindTexture(gpuMask_, 1);
+            }
+            
         } else {
             return;
         }

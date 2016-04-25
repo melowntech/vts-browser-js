@@ -35,6 +35,7 @@ Melown.Map.prototype.updateCamera = function() {
     this.renderer_.cameraDistance_ = camInfo_.distance_; //needed for fog
     this.cameraVector_ = camInfo_.vector_;
     this.cameraPosition_ = camInfo_.orbitCoords_;
+    this.cameraHeight_ = camInfo_.orbitHeight_ + height_;
 
     if (!this.getNavigationSrs().isProjected()) { //HACK!!!!!!!!
         //this.position_.setHeight(0);
@@ -71,7 +72,8 @@ Melown.Map.prototype.cameraHeight = function() {
     //return (this.camera_.getPosition()[2] - this.planet_.surfaceHeight([this.position_[0] + cameraPos_[0], this.position_[1] + cameraPos_[1]])[0]);
 
     //hack - distance intead of height
-    return this.cameraDistance_;
+    //return this.cameraDistance_;
+    return this.cameraHeight_;
 };
 
 

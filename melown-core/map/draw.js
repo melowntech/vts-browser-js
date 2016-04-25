@@ -64,6 +64,8 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
                 if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
                     break;
                 }
+
+                //this.renderer_.gpu_.setState(this.drawBlendedTileState_);
                 
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_;
@@ -95,6 +97,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
     }*/
+
+    if (tile_.id_[0] == 11 &&
+        tile_.id_[1] == 546 &&
+        tile_.id_[2] == 343) {
+            tile_ = tile_;
+    }
 
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         return;
@@ -136,6 +144,10 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             }
             */
 
+            if (tile_.resetDrawCommands_) {
+                tile_.drawCommands_ = [[], [], []];
+            }
+
             //var drawLastRenderState_ = false;
 
             if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
@@ -168,7 +180,13 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
                 var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
-                tile_.drawCommands_[channel_] = [];
+                if (tile_.id_[0] == 11 &&
+                    tile_.id_[1] == 546 &&
+                    tile_.id_[2] == 344) {
+                        tile_ = tile_;
+                }
+
+                tile_.drawCommands_ = [[], [], []]; //??
                 tile_.credits_ = {};
 
 /*
@@ -425,6 +443,12 @@ Melown.Map.prototype.updateTileRenderCommands = function(tile_, submeshes_) {
 
 };
 
+Melown.Map.prototype.updateTileBoundsDirectly = function(preventLoad_, priority_) {
+    if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
+        this.updateTileBounds(tile_, tile_.surfaceMesh_.submeshes_);
+    }
+};
+
 Melown.Map.prototype.updateTileBounds = function(tile_, submeshes_) {
     for (var i = 0, li = submeshes_.length; i < li; i++) {
         var submesh_ = submeshes_[i];
@@ -504,14 +528,19 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                             tile_ : tile_ 
                         };
                     }
+
+                    if (!tile_.boundTextures_[layer_.id_]) {
+                        var path_ = layer_.getUrl(tile_.id_);
+                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, null, extraBound_, {tile_: tile_, layer_: layer_});
+                    } else {
+                        var texture_ = 
+                        tile_.boundTextures_[layer_.id_]
+                    }
+
                     
                     bound_.sequence_.push(layer_.id_);
                     bound_.alpha_[layer_.id_] = surface_.boundLayerSequence_[j];
                     tile_.boundLayers_[layer_.id_] = layer_;
-                    if (!tile_.boundTextures_[layer_.id_]) {
-                        var path_ = layer_.getUrl(tile_.id_);
-                        tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, null, extraBound_, {tile_: tile_, layer_: layer_});
-                    }
                     if (bound_.alpha_[layer_.id_][1] < 1.0) {
                         bound_.transparent_ = true;
                     }

@@ -11,6 +11,7 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
     this.imageExtents_ = null;
     this.gpuTexture_ = null;
     this.loadState_ = 0;
+    this.neverReady_ = false;
     this.mask_ = null;
     this.mapLoaderUrl_ = path_;
     this.heightMap_ = heightMap_ || false;
@@ -111,7 +112,13 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
     if (this.extraBound_) {
         if (this.extraBound_.texture_) {
             while (this.extraBound_.texture_.checkStatus_ == -1) {
-                this.setBoundTexture(this.extraBound_.sourceTile_.parent_, this.extraBound_.layer_);        
+                var parent_ = this.extraBound_.sourceTile_.parent_;
+                if (parent_.id_[0] < this.extraBound_.layer_.lodRange_[0]) {
+                    this.neverReady_ = true;
+                    return false;
+                }
+ 
+                this.setBoundTexture(parent_, this.extraBound_.layer_);        
             }
 
             return this.extraBound_.texture_.isReady(doNotLoad_, priority_);
@@ -152,10 +159,11 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
                             if (texture_.isReady()) {
                                 var tile_ = this.extraInfo_.tile_;
                                 var value_ = texture_.getHeightMapValue(tile_.id_[1] & 255, tile_.id_[2] & 255);
-                                this.checkStatus_ = (value_ & 128) ? -1 : 2;
+                                this.checkStatus_ = (value_ & 128) ? 2 : -1;
+                                
                                 
                                 if (this.checkStatus_ == 2) {
-                                    if ((value_ & 64)) { //load mask
+                                    if (!(value_ & 64)) { //load mask
                                         var path_ = layer_.getMaskUrl(tile_.id_);
                                         this.mask_ = new Melown.MapTexture(this.map_, path_, null, null, null);
                                         this.checkStatus_ = 0;
@@ -166,12 +174,24 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
                     }
                 } else if (this.checkStatus_ == -1) {
                     if (!this.extraBound_) {
+                        var parent_ = this.extraInfo_.tile_.parent_;
+                        if (parent_.id_[0] < this.extraInfo_.layer_.lodRange_[0]) {
+                            this.neverReady_ = true;
+                            return false;
+                        }
+
                         this.extraBound_ = { tile_: this.extraInfo_.tile_, layer_: this.extraInfo_.layer_};
                         this.setBoundTexture(this.extraBound_.tile_.parent_, this.extraBound_.layer_);        
                     }
     
                     while (this.extraBound_.texture_.checkStatus_ == -1) {
-                        this.setBoundTexture(this.extraBound_.sourceTile_.parent_, this.extraBound_.layer_);        
+                        var parent_ = this.extraBound_.sourceTile_.parent_;
+                        if (parent_.id_[0] < this.extraBound_.layer_.lodRange_[0]) {
+                            this.neverReady_ = true;
+                            return false;
+                        }
+                        
+                        this.setBoundTexture(parent_, this.extraBound_.layer_);        
                     }
                 }
 
@@ -411,9 +431,34 @@ Melown.MapTexture.prototype.getGpuTexture = function() {
     return this.gpuTexture_;
 };
 
+Melown.MapTexture.prototype.getMaskTexture = function() {
+    if (this.extraBound_) {
+        if (this.extraBound_.texture_) {
+            return this.extraBound_.texture_.mask_;
+        }
+    } 
+
+    return this.mask_;
+};
+
+Melown.MapTexture.prototype.getGpuMaskTexture = function() {
+    if (this.extraBound_) {
+        if (this.extraBound_.texture_ && this.extraBound_.texture_.mask_) {
+            return this.extraBound_.texture_.mask_.gpuTexture_;
+        }
+        return null;
+    } 
+
+    if (this.mask_) {
+        return this.mask_.gpuTexture_;
+    }
+    
+    return null;
+};
+
 Melown.MapTexture.prototype.getHeightMapValue = function(x, y) {
     if (this.imageData_) {
-        return this.imageData_[(y * this.imageExtents_ + x)*4];
+        return this.imageData_[(y * this.imageExtents_[0] + x)*4];
     }
     
     return 0;

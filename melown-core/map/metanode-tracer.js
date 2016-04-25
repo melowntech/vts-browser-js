@@ -24,12 +24,6 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
         return;
     }
 
-    //if (tile_.id_[0] == 18 &&
-    //    tile_.id_[1] == 130430 &&
-    //    tile_.id_[2] == 129088) {
-    //    debugger;
-    //}
-
     if (tile_.metastorage_ == null) {  //metastorage stores metatiles
         tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
     }
@@ -70,6 +64,22 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
 
     if (tile_.metanode_ == null) { //only for wrong data
         return;
+    }
+
+//6,16,11
+//5,8,5
+    if (tile_.id_[0] == 6 &&
+        tile_.id_[1] == 16 &&
+        tile_.id_[2] == 11) {
+        tile_ = tile_;
+        //debugger;
+    }
+
+    if (tile_.id_[0] == 5 &&
+        tile_.id_[1] == 8 &&
+        tile_.id_[2] == 5) {
+        tile_ = tile_;
+        //debugger;
     }
 
     tile_.metanode_.metatile_.used();
