@@ -209,8 +209,8 @@ Melown.Map.prototype.getGlue = function(id_) {
     return this.searchArrayById(this.glues_, id_);
 };
 
-Melown.Map.prototype.addBoundLayer = function(number_, layer_) {
-    this.boundLayers_[number_] = layer_;
+Melown.Map.prototype.addBoundLayer = function(id_, layer_) {
+    this.boundLayers_[id_] = layer_;
 };
 
 Melown.Map.prototype.getBoundLayerByNumber = function(number_) {

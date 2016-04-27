@@ -1,9 +1,10 @@
 /**
  * @constructor
  */
-Melown.MapBoundLayer = function(map_, json_) {
+Melown.MapBoundLayer = function(map_, json_, id_) {
     this.map_ = map_;
-    this.id_ = json_["id"] || null;
+    this.id_ = id_;
+    this.numberId_ = json_["id"] || null;
     this.type_ = json_["type"] || "raster";
     this.url_ = json_["url"] || "";
     this.tileSize_ = json_["tileSize"] || [256,256];

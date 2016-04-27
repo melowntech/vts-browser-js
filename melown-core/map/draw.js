@@ -320,31 +320,31 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                     } else {
                                         if (submesh_.textureLayer_) {
                                             
-                                            var texture_ = tile_.boundTextures_[submesh_.textureLayer_];
+                                            var layer_ = this.getBoundLayerByNumber(submesh_.textureLayer_);
                                             
-                                            if (texture_) {
-                                                //tile_.renderReady_ = true;
-                                                var layer_ = tile_.boundLayers_[submesh_.textureLayer_];
+                                            if (layer_) {
+                                                var texture_ = tile_.boundTextures_[layer_.id_];
                                                 
-                                                if (layer_) {
+                                                if (texture_) {
+                                                    //tile_.renderReady_ = true;
+                                                    
                                                     //set credits
-                                                    var credits_ = tile_.boundLayers_[submesh_.textureLayer_].creditsNumbers_;
+                                                    var credits_ = tile_.boundLayers_[layer_.id_].creditsNumbers_;
                                                     for (var k = 0, lk = credits_.length; k < lk; k++) {
                                                         tile_.credits_[credits_[k]] = true;  
                                                     }
-                                                } else {
-                                                    //debugger;
+                                                    
+                                                    //draw mesh
+                                                    tile_.drawCommands_[0].push({
+                                                        type_ : "submesh",
+                                                        mesh_ : tile_.surfaceMesh_,
+                                                        submesh_ : i,
+                                                        texture_ : texture_,
+                                                        material_ : "external"
+                                                    });
                                                 }
-                                                
-                                                //draw mesh
-                                                tile_.drawCommands_[0].push({
-                                                    type_ : "submesh",
-                                                    mesh_ : tile_.surfaceMesh_,
-                                                    submesh_ : i,
-                                                    texture_ : texture_,
-                                                    material_ : "external"
-                                                });
                                             }
+                                           
                                         } else {
             
                                             if (submesh_.internalUVs_) {  //draw surface
