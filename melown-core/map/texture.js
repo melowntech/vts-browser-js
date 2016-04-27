@@ -1,5 +1,3 @@
-Melown.debugId_ = [14, 8880, 5492];
-
 /**
  * @constructor
  */
@@ -46,6 +44,12 @@ Melown.MapTexture.prototype.kill = function() {
     this.texture_ = null;
     this.killImage();
     this.killGpuTexture();
+    
+    if (this.mask_) {
+        this.mask_.killImage(); 
+        this.mask_.killGpuTexture(); 
+    }
+    
     //this.tile_.validate();
 };
 
@@ -100,28 +104,42 @@ Melown.MapTexture.prototype.setBoundTexture = function(tile_, layer_) {
 };
 
 Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
-    /*
+    
     if (this.extraInfo_) {
         if (this.extraInfo_.tile_.id_[0] == Melown.debugId_[0] &&
             this.extraInfo_.tile_.id_[1] == Melown.debugId_[1] &&
             this.extraInfo_.tile_.id_[2] == Melown.debugId_[2]) {
                 this.extraInfo_ = this.extraInfo_;
         }
-    }*/
-
+    }
+   
+   if (this.neverReady_) {
+       return false;
+   }
+   
     if (this.extraBound_) {
         if (this.extraBound_.texture_) {
             while (this.extraBound_.texture_.checkStatus_ == -1) {
                 var parent_ = this.extraBound_.sourceTile_.parent_;
                 if (parent_.id_[0] < this.extraBound_.layer_.lodRange_[0]) {
                     this.neverReady_ = true;
+                    this.extraBound_.tile_.resetDrawCommands_ = true;
+                    this.map_.markDirty();
                     return false;
                 }
  
-                this.setBoundTexture(parent_, this.extraBound_.layer_);        
+                this.setBoundTexture(parent_, this.extraBound_.layer_);
+            }
+            
+            var ready_ = this.extraBound_.texture_.isReady(doNotLoad_, priority_);
+            
+            if (ready_ && this.checkMask_) {
+                this.extraBound_.tile_.resetDrawCommands_ = (this.extraBound_.texture_.getMaskTexture() != null);
+                this.checkMask_ = false;
             }
 
-            return this.extraBound_.texture_.isReady(doNotLoad_, priority_);
+            return ready_;
+            
         } else {
             this.setBoundTexture(this.extraBound_.sourceTile_, this.extraBound_.layer_);        
         }
@@ -167,27 +185,36 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
                                         var path_ = layer_.getMaskUrl(tile_.id_);
                                         this.mask_ = new Melown.MapTexture(this.map_, path_, null, null, null);
                                         this.checkStatus_ = 0;
+                                        tile_.resetDrawCommands_ = true;
+                                        this.map_.markDirty();
                                     }
                                 }
                             }
                         }
                     }
-                } else if (this.checkStatus_ == -1) {
+                }
+                
+                if (this.checkStatus_ == -1) {
                     if (!this.extraBound_) {
                         var parent_ = this.extraInfo_.tile_.parent_;
                         if (parent_.id_[0] < this.extraInfo_.layer_.lodRange_[0]) {
                             this.neverReady_ = true;
+                            this.extraInfo_.tile_.resetDrawCommands_ = true;
+                            this.map_.markDirty();
                             return false;
                         }
 
                         this.extraBound_ = { tile_: this.extraInfo_.tile_, layer_: this.extraInfo_.layer_};
-                        this.setBoundTexture(this.extraBound_.tile_.parent_, this.extraBound_.layer_);        
+                        this.setBoundTexture(this.extraBound_.tile_.parent_, this.extraBound_.layer_);
+                        this.checkMask_ = true;
                     }
     
                     while (this.extraBound_.texture_.checkStatus_ == -1) {
                         var parent_ = this.extraBound_.sourceTile_.parent_;
                         if (parent_.id_[0] < this.extraBound_.layer_.lodRange_[0]) {
                             this.neverReady_ = true;
+                            this.extraBound_.tile_.resetDrawCommands_ = true;
+                            this.map_.markDirty();
                             return false;
                         }
                         
@@ -262,6 +289,11 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
 
             this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
         }
+        
+        if (this.mask_) {
+            return this.mask_.isReady();
+        }
+        
         return true;
     } else {
         if (this.loadState_ == 0) { 

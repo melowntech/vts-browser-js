@@ -86,24 +86,26 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
     }
 };
 
+Melown.debugId_ = [144, 8880, 5492];
+
 Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
     //free tile resources when map view changed
     //if (this.viewCounter_ != tile_.viewCoutner_) {
       //  tile_.kill();
     //}
-    /*
+    
     if (tile_.id_[0] == Melown.debugId_[0] &&
         tile_.id_[1] == Melown.debugId_[1] &&
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
-    }*/
-
+    }
+/*
     if (tile_.id_[0] == 11 &&
-        tile_.id_[1] == 546 &&
+        tile_.id_[1] == 548 &&
         tile_.id_[2] == 343) {
             tile_ = tile_;
     }
-
+*/
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         return;
     }
@@ -146,6 +148,15 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
             if (tile_.resetDrawCommands_) {
                 tile_.drawCommands_ = [[], [], []];
+                tile_.updateBounds_ = true;
+
+                if (tile_.bounds_) {
+                    for (var key_ in tile_.bounds_) {
+                        tile_.bounds_[key_].viewCoutner_ = 0; 
+                    }
+                }
+                
+                tile_.resetDrawCommands_ = false;
             }
 
             //var drawLastRenderState_ = false;
@@ -533,10 +544,16 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                         var path_ = layer_.getUrl(tile_.id_);
                         tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this, path_, null, extraBound_, {tile_: tile_, layer_: layer_});
                     } else {
-                        var texture_ = 
-                        tile_.boundTextures_[layer_.id_]
-                    }
+                        var texture_ = tile_.boundTextures_[layer_.id_];
 
+                        if (tile_.boundTextures_[layer_.id_].neverReady_) {
+                            continue; //do not use this layer
+                        }
+
+                        if (texture_.getMaskTexture()) {
+                            bound_.transparent_ = true;
+                        }
+                    }
                     
                     bound_.sequence_.push(layer_.id_);
                     bound_.alpha_[layer_.id_] = surface_.boundLayerSequence_[j];
