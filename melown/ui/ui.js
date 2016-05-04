@@ -16,6 +16,9 @@ Melown.UI.prototype.init = function() {
     this.credits_ = new Melown.UIControlCredits(this);
     this.logo_ = new Melown.UIControlLogo(this);
     this.zoom_ = new Melown.UIControlZoom(this, this.config_.controlZoom_);
+    this.space_ = new Melown.UIControlSpace(this, this.config_.controlSpace_);
+    this.link_ = new Melown.UIControlLink(this, this.config_.controlLink_);
+    //this.navigator_ = new Melown.UIControlNavigation(this, this.config_.controlNavigator_);
     this.layers_ = new Melown.UIControlLayers(this, this.config_.controlLayers_);
     this.fallback_ = new Melown.UIControlFallback(this);
     Melown.Utils.disableContexMenu(this.element_);
@@ -72,7 +75,8 @@ Melown.UI.prototype.setParam = function(key_) {
 Melown.UI.prototype.tick = function(dirty_) {
     if (dirty_) {
         this.compass_.update();
-        this.credits_.update();                
+        this.credits_.update();
+        this.link_.updateLink();                
     }
 };
 

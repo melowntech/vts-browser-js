@@ -7,6 +7,7 @@ Melown.Browser.prototype.initConfig = function(data_) {
         inertia_ : 1.1,
         controlCompass_ : true,
         controlZoom_ : true,
+        controlSpace_ : true,
         controlMeasure_ : false,
         controlScale_ : true,
         controlLayers_ : false

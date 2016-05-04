@@ -99,8 +99,8 @@
 
 #melown-compass {
     position:absolute;
-    left:21px;
-    bottom:64px;
+    left:0px;
+    bottom:40px;
     cursor: move;
     overflow: hidden;
     width: 99px;
@@ -110,6 +110,8 @@
     z-index: 0;
     max-width:120px;
     max-height:120px;
+    
+    transform: scale(0.9);    
 }
 
 #melown-compass-frame {
@@ -159,18 +161,99 @@
 
 .melown-zoom-plus {
     position:absolute;
-    left:23px;
-    bottom:20px;
+    left:10px;
+    bottom:10px;
     cursor: pointer;
     z-index: 4;
+    border-radius: 5px;
+    border: 2px solid rgba(255, 255, 255, 0.47);
+    opacity: 0.95;
+}
+
+.melown-zoom-plus img {
+    border-radius: 2px;
+    background-color: #fff;
 }
 
 .melown-zoom-minus {
     position:absolute;
-    left:70px;
-    bottom:20px;
+    left:45px;
+    bottom:10px;
     cursor: pointer;
     z-index: 4;
+    border-radius: 5px;
+    border: 2px solid rgba(255, 255, 255, 0.47);
+    opacity: 0.95;
+}
+
+.melown-zoom-minus img {
+    border-radius: 2px;
+    background-color: #fff;
+}
+
+/*
+ * SPACE
+ */
+
+.melown-space {
+    position:absolute;
+    left:80px;
+    bottom:10px;
+    cursor: pointer;
+    z-index: 4;
+    border-radius: 5px;
+    border: 2px solid rgba(255, 255, 255, 0.47);
+    opacity: 0.95;
+}
+
+.melown-space-button {
+    border-radius: 2px;
+    background-color: #fff;
+    display:none;
+}
+
+/*
+ * LINK
+ */
+
+.melown-link {
+    position:absolute;
+    left:115px;
+    bottom:10px;
+    z-index: 4;
+}
+
+.melown-link-button {
+    cursor: pointer;
+    opacity: 0.95;
+    border-radius: 5px;
+    border: 2px solid rgba(255, 255, 255, 0.47);
+    opacity: 0.95;
+}
+
+.melown-link-button img {
+    border-radius: 2px;
+    background-color: #fff;
+}
+
+.melown-link-text-holder {
+    position: absolute;
+    bottom: 0px;
+    left: 35px;
+    opacity: 0.95;
+    border-radius: 5px;
+    border: 2px solid rgba(255, 255, 255, 0.47);
+    opacity: 0.95;
+}
+
+.melown-link-text {
+    padding: 2px;
+    border-radius: 2px;
+    background-color: #fff;
+}
+
+.melown-link-text input {
+    border: solid 1px #ddd;
 }
 
 

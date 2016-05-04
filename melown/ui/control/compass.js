@@ -22,8 +22,9 @@ Melown.UIControlCompass = function(ui_, visible_) {
       + ' </div>', visible_);
 
     var compass_ = this.control_.getElement("melown-compass");
-    compass_.on("drag", this.onDrag.bind(this));
     compass_.setDraggableState(true);
+    compass_.on("drag", this.onDrag.bind(this));
+    compass_.on("dblclick", this.onDoubleClick.bind(this));
 
     this.image_ = this.control_.getElement("melown-compass-compass");
     this.image2_ = this.control_.getElement("melown-compass-compass2");
@@ -33,7 +34,7 @@ Melown.UIControlCompass = function(ui_, visible_) {
 };
 
 Melown.UIControlCompass.prototype.update = function() {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     if (map_ == null) {
         return;
     }
@@ -50,7 +51,7 @@ Melown.UIControlCompass.prototype.update = function() {
 };
 
 Melown.UIControlCompass.prototype.onDrag = function(event_) {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     if (map_ == null) {
         return;
     }
@@ -65,6 +66,20 @@ Melown.UIControlCompass.prototype.onDrag = function(event_) {
         controller_.orientationDeltas_.push([-delta_[0] * sensitivity_,
                                              -delta_[1] * sensitivity_, 0]);
     }
+};
+
+Melown.UIControlCompass.prototype.onDoubleClick = function(event_) {
+    var map_ = this.browser_.getMap();
+    if (map_ == null) {
+        return;
+    }
+
+    var pos_ = map_.getPosition();
+    var orientation_ = map_.getPositionOrientation(pos_);
+    orientation_[0] = 0;
+    pos_ = map_.setPositionOrientation(pos_, orientation_);
+
+    map_.setPosition(pos_);
 };
 
 
