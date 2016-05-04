@@ -46,6 +46,7 @@ Melown.Core.prototype.loadMap = function(path_) {
 
         this.map_ = new Melown.Map(this, data_, path_, this.config_);
         this.mapInterface_ = new Melown.MapInterface(this.map_);
+        this.setConfigParams(this.map_.browserOptions_);
         this.setConfigParams(this.configStorage_);
 
         if (this.config_.position_) {

@@ -126,7 +126,7 @@ Melown.Renderer.prototype.initTestMap = function() {
             var index_ = (i*size_+j)*4;
              data_[index_] = 0;
              data_[index_ + 1] = 0;
-             data_[index_ + 2] = 255;
+             data_[index_ + 2] = 0;
              data_[index_ + 3] = 255;
         }
     }

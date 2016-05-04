@@ -68,6 +68,7 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
 
 //6,16,11
 //5,8,5
+/*
     if (tile_.id_[0] == 6 &&
         tile_.id_[1] == 16 &&
         tile_.id_[2] == 11) {
@@ -81,7 +82,7 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
         tile_ = tile_;
         //debugger;
     }
-
+*/
     tile_.metanode_.metatile_.used();
 
     if (tile_.lastSurface_ && tile_.lastSurface_ == tile_.surface_) {
@@ -147,10 +148,12 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
         return;        
     }
 
-    //if (tile_.id_[0] == 13) {
-       // tile_ = tile_;
-       // debugger;
-    //}
+    if (tile_.id_[0] == 14 /*&&
+        tile_.id_[1] == 30 &&
+        tile_.id_[2] == 22*/) {
+        tile_ = tile_;
+        //debugger;
+    }
 
     //multiple surfaces
     //build virtual surfaces array
@@ -162,7 +165,7 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
             var surface_ = sequence_[i];
             
             //check if tile exist
-            if (tile_.id_[0] > surface_.lodRange_[0]) {
+            if (tile_.id_[0] > 0) { //surface_.lodRange_[0]) {
                 //!!!!!!removed for debug
                 ///* ????????
                 var parent_ = tile_.parent_;
@@ -260,11 +263,11 @@ Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_, prio
     var surfaces_ = tile_.virtualSurfaces_;
     var readyCount_ = 0;
 
-//    if (tile_.id_[0] == 18 &&
-//        tile_.id_[1] == 130400 &&
-//        tile_.id_[2] == 129088) {
-//        debugger;
-//    }
+    if (tile_.id_[0] == 7 &&
+        tile_.id_[1] == 30 &&
+        tile_.id_[2] == 22) {
+        tile_ = tile_;
+    }
 
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i];

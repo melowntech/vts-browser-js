@@ -99,13 +99,13 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
     }
-/*
-    if (tile_.id_[0] == 11 &&
+
+    if (tile_.id_[0] == 14 /*&&
         tile_.id_[1] == 548 &&
-        tile_.id_[2] == 343) {
+        tile_.id_[2] == 343*/) {
             tile_ = tile_;
     }
-*/
+
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         return;
     }
@@ -563,6 +563,25 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                     }
                 }
             }
+            /*
+            //filter out extra bounds if they are not needed
+            var relevantLayerExists_ = false;
+            for (var i = bound_.sequence_.length; i >= 0 ; i--) {
+                var id_ = bound_.sequence_[i][0];
+                var texture_ = tile_.boundTextures_[id_];
+
+                if (relevantLayerExists_) {
+                    
+                    if (texture_.extraBound_) {
+                        //TODO: remove from sequence
+                        //i++;
+                    }
+                    
+                } else if (!(bound_.sequence_[i][0] < 1 || texture_.extraBound_)) {
+                    relevantLayerExists_ = true;
+                }
+            }*/
+            
         }
     } else if (surface_.textureLayer_ != null) { //search surface
         if (fullUpdate_) {
@@ -665,6 +684,13 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
     if (this.drawDistance_ == true) {
         var text_ = "" + pixelSize_[1].toFixed(2) + "  " + pixelSize_[0].toFixed(2) + "  " + node_.pixelSize_.toFixed(2);
         this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
+    }
+
+    //draw node info
+    if (this.drawNodeInfo_ == true) {
+        var children_ = ((node_.flags_ & ((15)<<4))>>4);
+        var text_ = "" + node_.flags_.toString(2) + "-" + ((children_ & 1) ? "1" : "0") + ((children_ & 2) ? "1" : "0") + ((children_ & 4) ? "1" : "0") + ((children_ & 8) ? "1" : "0");
+        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]-18*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
     }
 
 /*

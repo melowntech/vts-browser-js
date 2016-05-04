@@ -85,6 +85,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawDistance_ = false;
     this.drawMaxLod_ = false;
     this.drawTextureSize_ = false;
+    this.drawNodeInfo_ = false;
     this.drawLayers_ = true;
     this.ignoreTexelSize_ = false;
     this.drawFog_ = this.config_.mapFog_;
@@ -214,7 +215,14 @@ Melown.Map.prototype.addBoundLayer = function(id_, layer_) {
 };
 
 Melown.Map.prototype.getBoundLayerByNumber = function(number_) {
-    return this.searchMapByInnerId(this.boundLayers_, number_);
+    var layers_ = this.boundLayers_;
+    for (var key_ in layers_) {
+        if (layers_[key_].numberId_ == number_) {
+            return layers_[key_];
+        }
+    }
+
+    return null;
 };
 
 Melown.Map.prototype.getBoundLayerById = function(id_) {
@@ -498,7 +506,7 @@ Melown.Map.prototype.drawMap = function() {
     this.renderer_.gpu_.clear(true, false);
 
     if (this.getNavigationSrs().isProjected()) {    
-        this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.progSkydome_);
+        this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.renderer_.progSkydome_);
     } else {
         this.renderer_.drawSkydome(this.renderer_.blackTexture_, this.renderer_.progStardome_);
     }

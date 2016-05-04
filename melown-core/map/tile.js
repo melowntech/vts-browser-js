@@ -111,8 +111,8 @@ Melown.MapTile.prototype.kill = function() {
 
 Melown.MapTile.prototype.validate = function() {
     //is tile empty?
-    if (this.metastorage_ == null || this.metastorage_.getMetatile(this.surface_) == false) {
-        this.kill();
+    if (this.metastorage_ == null || !this.metastorage_.getMetatile(this.surface_)) {
+        //this.kill();
     }
 };
 

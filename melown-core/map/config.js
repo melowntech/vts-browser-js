@@ -7,7 +7,8 @@ Melown.Map.prototype.parseConfig = function() {
     if (!(this.parseSrses() && this.parseReferenceFrame() &&
           this.parseCredits() && this.parseSurfaces() &&
           this.parseGlues() && this.parseBoundLayers() &&
-          this.parseFreeLayers() && this.parseViews() && this.parseParams() )) {
+          this.parseFreeLayers() && this.parseViews() &&
+          this.parseParams() && this.parseBrowserOptions() )) {
         //wrong config file
     }
 
@@ -125,7 +126,7 @@ Melown.Map.prototype.parseBoundLayers = function() {
     }
 
     for (var key_ in layers_) {
-        var layer_ = new Melown.MapBoundLayer(this, layers_[key_]);
+        var layer_ = new Melown.MapBoundLayer(this, layers_[key_], key_);
         this.addBoundLayer(key_, layer_);
     }
 
@@ -149,7 +150,19 @@ Melown.Map.prototype.parseFreeLayers = function() {
 };
 
 Melown.Map.prototype.parseParams = function() {
+    return true;
+};
 
+Melown.Map.prototype.parseBrowserOptions = function() {
+    var options_ = this.mapConfig_["browserOptions"];
+    this.browserOptions_ = {};
+    
+    if (options_ == null) {
+        return true;
+    }
+    
+    this.browserOptions_ = JSON.parse(JSON.stringify(options_));
+    return true;
 };
 
 Melown.Map.prototype.cloneConfig = function() {

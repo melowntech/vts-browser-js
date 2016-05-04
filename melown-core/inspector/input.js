@@ -270,6 +270,10 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 case 100:
                     map_.drawDistance_ = !map_.drawDistance_; break; //key D pressed
 
+                case 78:
+                case 110:
+                    map_.drawNodeInfo_ = !map_.drawNodeInfo_; break; //key N pressed
+
                 case 77:
                 case 109:
                     map_.drawMeshBBox_ = !map_.drawMeshBBox_; break; //key M pressed

@@ -14,6 +14,9 @@ Melown.Http.loadImageFormUrl = function(image_, url_) {
         image_.crossOrigin = Melown.Url.isSameOrigin(url_) ? 
                             "use-credentials" : "anonymous";
     }
+    
+    image_.crossOrigin = "use-credentials";
+
     image_.src = url_;
 };
 
