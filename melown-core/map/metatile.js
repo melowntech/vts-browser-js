@@ -86,11 +86,11 @@ Melown.MapMetatile.prototype.scheduleLoad = function() {
     }
 
     //if (this.mapLoaderUrl_ == "http://condrieu:8888/bl-demo/bl-demo/stage/glues/middle-europe_alps/14-4320-2848.meta?0") {
-    if (this.mapLoaderUrl_ == "http://condrieu:8888/bl-demo/bl-demo/stage/glues/world_extended-europe_high-tatras/7-0-0.meta?0") {
-        this.mapLoaderUrl_ = this.mapLoaderUrl_;
-    }
+    //if (this.mapLoaderUrl_ == "http://condrieu:8888/bl-demo/bl-demo/stage/glues/world_extended-europe_high-tatras/7-0-0.meta?0") {
+        //this.mapLoaderUrl_ = this.mapLoaderUrl_;
+    //}
 
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this));
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), null, (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1));
 };
 
 Melown.MapMetatile.prototype.onLoad = function(url_, onLoaded_, onError_) {

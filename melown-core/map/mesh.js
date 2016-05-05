@@ -127,7 +127,7 @@ Melown.MapMesh.prototype.onLoad = function(url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this));
+    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1));
     this.loadState_ = 1;
 };
 

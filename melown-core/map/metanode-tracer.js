@@ -16,10 +16,22 @@ Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_,
 Melown.MapMetanodeTracer.prototype.trace = function(tile_, params_) {
     this.params_ = params_;
     //this.traceTile(this.surfaceTree_, 0);
+    
+    if (!tile_) {
+        return;
+    }
+
+    if (tile_.id_[0] == 1) { //update root, get height in VTS2015 starts in division node which has lod 1
+        this.traceTile(tile_.parent_, 0, null, null, true);
+        if (!tile_.node_) {
+            return;
+        }
+    }
+    
     this.traceTile(tile_, 0);
 };
 
-Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, processFlag_, processFlag2_) {
+Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, processFlag_, processFlag2_, processFlag3_) {
     if (tile_ == null) {
         return;
     }
@@ -62,20 +74,20 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
     }
 
 
-    if (tile_.metanode_ == null) { //only for wrong data
+    if (tile_.metanode_ == null || processFlag3_) { //only for wrong data
         return;
     }
 
 //6,16,11
 //5,8,5
-/*
-    if (tile_.id_[0] == 6 &&
-        tile_.id_[1] == 16 &&
-        tile_.id_[2] == 11) {
+
+    if (tile_.id_[0] == 13 &&
+        tile_.id_[1] == 2205 &&
+        tile_.id_[2] == 1388) {
         tile_ = tile_;
         //debugger;
     }
-
+/*
     if (tile_.id_[0] == 5 &&
         tile_.id_[1] == 8 &&
         tile_.id_[2] == 5) {
@@ -295,12 +307,12 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
     var first_ = false;
     var node_ = null;
     
-    //if (tile_.id_[0] == 15 &&
-      //  tile_.id_[1] == 16297 &&
-      //  tile_.id_[2] == 16143) {
-        //tile_ = tile_;
+    if (tile_.id_[0] == 16 &&
+        tile_.id_[1] == 17647 &&
+        tile_.id_[2] == 11107) {
+        tile_ = tile_;
       //  debugger;
-    //}
+    }
 
     //if (tile_.id_[0] == 20) {
         //debugger;
@@ -320,7 +332,10 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
                 //internalTextureCount is reference to surface
                 if (surface_.glue_ && !metanode_.hasGeometry() &&
                     metanode_.internalTextureCount_ > 0) {
+                    
                     var desiredSurfaceIndex_ = metanode_.internalTextureCount_ - 1;
+                    desiredSurfaceIndex_ = this.map_.getSurface(surface_.id_[desiredSurfaceIndex_]).viewSurfaceIndex_;
+                    
                     var jump_ = false; 
                         
                     for (var j = i; j < li; j++) {

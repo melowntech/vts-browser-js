@@ -323,7 +323,7 @@ Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
 
     var onerror_ = this.onLoadError.bind(this);
     var onload_ = this.onLoaded.bind(this);
-    this.image_ = Melown.Http.imageFactory(url_, onload_, onerror_);
+    this.image_ = Melown.Http.imageFactory(url_, onload_, onerror_, (url_.indexOf(this.map_.baseURL_) != -1));
 
     this.loadState_ = 1;
 };

@@ -65,8 +65,9 @@ Melown.Core.prototype.loadMap = function(path_) {
     var onError_ = (function() {
     }).bind(this);
 
+    var baseUrl_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
-    Melown.loadJSON(path_, onLoaded_, onError_);
+    Melown.loadJSON(path_, onLoaded_, onError_, null, (path_.indexOf(baseUrl_) != -1));
 };
 
 Melown.Core.prototype.getMap = function() {

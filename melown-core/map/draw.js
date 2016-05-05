@@ -699,7 +699,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
         var text_ = "" + gpuTile_.texture_.width_ + " x " + gpuTile_.texture_.height_;
         this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-18), 4, text_, [255,255,255,255], pos_[2]);
     }
-
+/*
     //draw texel size
     if (this.drawTexelSize_ == true) {
 */
