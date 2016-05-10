@@ -416,7 +416,8 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
     }
 
     this.gpu_.useProgram(this.progImage_, "aPosition", null);
-    this.gpu_.bindTexture(this.textTexture_);
+    this.gpu_.bindTexture(this.textTexture2_);
+    this.gpu_.bindTexture(this.textTexture2_);
 
     var vertices_ = this.rectVerticesBuffer_;
     gl_.bindBuffer(gl_.ARRAY_BUFFER, vertices_);
@@ -429,40 +430,74 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
     this.progImage_.setVec4("uColor", color_);
     this.progImage_.setFloat("uDepth", depth_ != null ? depth_ : 0);
 
-    var sizeX_ = size_;
-    var sizeY_ = size_ * (7/4);
+    //size_ *= 2;
 
-    var texelX_ = 1 / 64;
-    var texelY_ = 1 / 8;
+    var sizeX_ = size_ - 1;
+    var sizeY_ = size_;// * (7/4);
+
+    var sizeX2_ = Math.round(size_*0.5);// - 1;
+
+    var texelX_ = 1 / 256;
+    var texelY_ = 1 / 128;
 
 
     var lx_ = x;
 
     for (var i = 0, li = text_.length; i < li; i++) {
-        var char_ = text_.charAt(i);
-        var charPos_ = this.textTable_[char_];
+        var char_ = text_.charCodeAt(i) - 32;
+        var charPosX_ = (char_ & 15) << 4;
+        var charPosY_ = (char_ >> 4) << 4;
 
-        this.progImage_.setMat4("uData", [
-            x, y,  (charPos_ * texelX_), 0,
-            x + sizeX_, y,  ((charPos_+4) * texelX_), 0,
-            x + sizeX_, y + sizeY_, ((charPos_ + 4) * texelX_), texelY_*7,
-            x,  y + sizeY_,  (charPos_ * texelX_), texelY_*7  ]);
+
+        switch(char_) {
+            case 12:
+            case 14:
+            case 27: //:
+            case 28: //;
+            case 64: //'
+            case 73: //i
+            case 76: //l
+            case 84: //t
+
+                this.progImage_.setMat4("uData", [
+                    x, y,  (charPosX_ * texelX_), (charPosY_ * texelY_),
+                    x + sizeX2_, y,  ((charPosX_+8) * texelX_), (charPosY_ * texelY_),
+                    x + sizeX2_, y + sizeY_, ((charPosX_ + 8) * texelX_), ((charPosY_+16) * texelY_),
+                    x,  y + sizeY_,  (charPosX_ * texelX_), ((charPosY_+16) * texelY_) ]);
+
+                x += sizeX2_;
+                break;
+
+            default:
+
+                this.progImage_.setMat4("uData", [
+                    x, y,  (charPosX_ * texelX_), (charPosY_ * texelY_),
+                    x + sizeX_, y,  ((charPosX_+15) * texelX_), (charPosY_ * texelY_),
+                    x + sizeX_, y + sizeY_, ((charPosX_ + 15) * texelX_), ((charPosY_+16) * texelY_),
+                    x,  y + sizeY_,  (charPosX_ * texelX_), ((charPosY_+16) * texelY_) ]);
+
+                x += sizeX_;
+                
+                break;
+        }
 
         gl_.drawElements(gl_.TRIANGLES, indices_.numItems, gl_.UNSIGNED_SHORT, 0);
 
-        x += sizeX_;
     }
-
-    x = lx_ - 1;
+    
+    var dx = (x - lx_) + 2;
+    x = lx_ - 2;
 
     //draw black line before text
-    var charPos_ = this.textTable_[" "];
+    var char_ = 0;
+    var charPosX_ = (char_ & 15) << 4;
+    var charPosY_ = (char_ >> 4) << 4;
 
     this.progImage_.setMat4("uData", [
-        x, y,  (charPos_ * texelX_), 0,
-        x + sizeX_, y,  ((charPos_+4) * texelX_), 0,
-        x + sizeX_, y + sizeY_, ((charPos_ + 4) * texelX_), texelY_*7,
-        x,  y + sizeY_,  (charPos_ * texelX_), texelY_*7  ]);
+        x, y-2,  (charPosX_ * texelX_), (charPosY_ * texelY_),
+        x + dx, y-2,  ((charPosX_+15) * texelX_), (charPosY_ * texelY_),
+        x + dx, y + sizeY_+1, ((charPosX_ + 15) * texelX_), ((charPosY_+15) * texelY_),
+        x,  y + sizeY_+1,  (charPosX_ * texelX_), ((charPosY_+15) * texelY_) ]);
 
     gl_.drawElements(gl_.TRIANGLES, indices_.numItems, gl_.UNSIGNED_SHORT, 0);
 
@@ -473,6 +508,36 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
         gl_.enable(gl_.DEPTH_TEST);
     }
 
+};
+
+
+Melown.Renderer.prototype.getTextSize = function(size_, text_) {
+    var sizeX_ = size_ - 1;
+    var sizeX2_ = Math.round(size_*0.5);// - 1;
+    var x = 0;
+
+    for (var i = 0, li = text_.length; i < li; i++) {
+        var char_ = text_.charCodeAt(i) - 32;
+
+        switch(char_) {
+            case 12:
+            case 14:
+            case 27: //:
+            case 28: //;
+            case 64: //'
+            case 73: //i
+            case 76: //l
+            case 84: //t
+                x += sizeX2_;
+                break;
+
+            default:
+               x += sizeX_;
+                break;
+        }
+    }
+    
+    return x;
 };
 
 Melown.Renderer.prototype.fogSetup = function(program_, fogDensity_) {

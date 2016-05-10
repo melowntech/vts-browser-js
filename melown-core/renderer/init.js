@@ -190,35 +190,10 @@ Melown.Renderer.prototype.initTestMap = function() {
 Melown.Renderer.prototype.initTextMap = function() {
     var sizeX_ = 64;
     var sizeY_ = 8;
-    var data_ = new Uint8Array( sizeX_ * sizeY_ * 4 );
 
-    var chars_ = [
-    "............................................................",
-    "xxx..x..xxx.xxx.x...xxx.xxx.xxx.xxx.xxx.....................",
-    "x.x.xx....x...x.x...x...x.....x.x.x.x.x......x..............",
-    "x.x..x..xxx.xxx.x...xxx.xxx...x.xxx.xxx.........x.x.xxx.....",
-    "x.x..x..x.....x.xxx...x.x.x...x.x.x...x......x...x..........",
-    "xxx..x..xxx.xxx..x..xxx.xxx...x.xxx.xxx..x......x.x.........",
-    "............................................................"
-    ];
-
-    this.textTable_ = {
-        "0" : 0,
-        "1" : 4,
-        "2" : 8,
-        "3" : 12,
-        "4" : 16,
-        "5" : 20,
-        "6" : 24,
-        "7" : 28,
-        "8" : 32,
-        "9" : 36,
-        "." : 40,
-        ":" : 44,
-        "x" : 48,
-        "-" : 52,
-        " " : 56
-    };
+    //font texture
+    var texture_ = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAACACAMAAADTa0c4AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRFAAAA////pdmf3QAABIFJREFUeNrsnNuyqzAIhsP7v/Se6Yxra0L4OUVNCzetVqP5DAQItrVOiLg95739NnfOaR99RDj6esBw+CKZXiMK4PiuBkAcANoHAP3J5fzzAV2jePQIt6f4Ndb/MIChlVcCEFpAACZPfN4KUAF0/ufboDW3AuBMFgBwHTCfg2ftYgDUKBuA1ABuHKvA2P+5XdONIEt7BO2o2MdlAJoTQOsV6GEAswt0Zq/bsBhdeQQkqEDMwmIAnJHzA8i3ASkWRFKBbADyLGB3mlYD6DyhA4DfBlgsBDtirUPcBgC5woStYMgVtgKATWcB6DskKUEkGFLYrGw3+l3ydR16wKbbPDlWp4Xfo9vZwR1jtOMA6GkABrdvNmt1Vluy6pyvxu4Xt62fquyTggCTsIkCoIuv8gAA08w+ATBXAdSRY56xPDFPx/VPWFZp5v65kFMPgFjP70YASMfRsDn01xLPcwkRq1HLMoK647hR8v+nId74MQBjvIbUQePra42ZVXVcBCR3mIY89mYAlNGLflqA0V1seosCQNMg80B0bsLGAIDNwvFyiqu66ngVGGMGVBwyWwIwpty2DqEr/qf0Bq+DbjYkkcr4VUoOxiRjrYn3YY5SC4BQB/cF0Lq4kD1RCJ+tN4g6Jps5zfWu+QmSz9sUABkA0BIAXocmBwCJ99MDIASATkmtLQAIft4IgE/ZDStZ59yQbOQQAGZWYMbZ3FFCAGRHnwHQznegGAE+zwxNi8kALCOgS9tzAC4jYG1Qo0myRm0Ae/z8eleqewBoZLwfUswCsbT1KgBZD6QAzAEoXUe3K+xxVf2uLf5U3nBeMPRyACW/LtrwVX989id3PRQOG5Io6vh9XwC6stHIdGdJozun03lxNlwvH4u6UgDM8/LmJyx7ak12feEebaXmUwCOYJWk1JcYKsl74HL74wAaH93NqkE1FSKXc4cv0AjaPEEPgE4ru/ieWdvzVq/4psG3AYDFHlEAioQCuEgMgPjK1VDrqlkbTABAiQBGK38B0BlBSf9xtiAJQDM4NtDqMlaeyduTtkDjHgAtEQBj5ZGK2QE0aCcMAIxLSw0WVYlGDgOQXWE+afouAM0S398O4Nej3wIQf4cIHSfz9pbWugyep4MFIAFARvspbm8BcE2DOdvWnCJQAWFhJ/hKzh4AaB2A7NxedKmLPc+6PN4cL2S8GYC1QMIEQJvmFsJfxdvkEQAoLV4AogBS8/kNvdXlWe5GKhABvQUAZASDALJffY1XfsrToFXFbvYD1gBo6wC8LR7/uvj9CwHcfWuoUJItsVl5nwWAnhxxqsXatUq0OYCcaS/fkbK61u5H8jwAuUIEZXHNL1Jmub5oSKZWiDR9FttM4HEAigqRpn8TeB2AuWNiByAXSHCGbB7/3qYCfgCgPgADEEskbjCCaJDB/+kR6wP4P1Obl8jsBwDUB4yAxqKkthaATjX0KmCtDyCxm+yIMLjCbwBgrg94FYC3h8vLPPmfAVBSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlLy9fJPgAEAvWMULbGsSjwAAAAASUVORK5CYII=";
+    this.textTexture2_ = new Melown.GpuTexture(this.gpu_, texture_, this.core_, null, true);
 
     // create red texture
     var data_ = new Uint8Array( sizeX_ * sizeY_ * 4 );
@@ -235,25 +210,6 @@ Melown.Renderer.prototype.initTextMap = function() {
              data_[index_ + 3] = 255;
         }
     }
-
-    for (var i = 0, li = chars_.length; i < li; i++) {
-
-        var string_ = chars_[i];
-
-        for (var j = 0, lj = string_.length; j < lj; j++) {
-
-            var index_ = (i*sizeX_+j)*4;
-
-            if (string_.charAt(j) != '.') {
-                 data_[index_] = 255;
-                 data_[index_ + 1] = 255;
-                 data_[index_ + 2] = 255;
-            }
-        }
-    }
-
-    this.textTexture_ = new Melown.GpuTexture(this.gpu_);
-    this.textTexture_.createFromData(sizeX_, sizeY_, data_);
 };
 
 

@@ -21,9 +21,9 @@ Melown.MapMetanodeTracer.prototype.trace = function(tile_, params_) {
         return;
     }
 
-    if (tile_.id_[0] == 1) { //update root, get height in VTS2015 starts in division node which has lod 1
+    if (tile_.id_[0] == 1 /*&& !params_.traceHeight_*/) { //update root, get height in VTS2015 starts in division node which has lod 1
         this.traceTile(tile_.parent_, 0, null, null, true);
-        if (!tile_.node_) {
+        if (!tile_.parent_.metanode_) {
             return;
         }
     }

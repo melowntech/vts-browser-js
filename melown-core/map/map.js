@@ -87,9 +87,13 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawTextureSize_ = false;
     this.drawNodeInfo_ = false;
     this.drawLayers_ = true;
+    this.drawBoundLayers_ = false;
+    this.drawSurfaces_ = false;
+    this.drawCredits_ = false;
+
     this.ignoreTexelSize_ = false;
     this.drawFog_ = this.config_.mapFog_;
-    this.debugTextSize_ = 1.0;
+    this.debugTextSize_ = 2.0;
     this.fogDensity_ = 0;
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});

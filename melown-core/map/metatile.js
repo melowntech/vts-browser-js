@@ -90,14 +90,14 @@ Melown.MapMetatile.prototype.scheduleLoad = function() {
         //this.mapLoaderUrl_ = this.mapLoaderUrl_;
     //}
 
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), null, (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1));
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), null);
 };
 
 Melown.MapMetatile.prototype.onLoad = function(url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this));
+    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
     this.loadState_ = 1;
 };
 

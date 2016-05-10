@@ -199,6 +199,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
                 tile_.drawCommands_ = [[], [], []]; //??
                 tile_.credits_ = {};
+                tile_.boundsDebug_ = {}; //used for inspector
 
 /*
                 if (tile_.drawCommands_[channel_].length > 0) {
@@ -265,7 +266,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                             for (var j = 0, lj = layers_.length; j < lj; j++) {
                                                 var texture_ = tile_.boundTextures_[layers_[j]];
                                                 if (texture_) {
-                                                    //tile_.renderReady_ = true;
+
+                                                    //debug stuff
+                                                    if (!tile_.boundsDebug_[surface_.id_]) {
+                                                        tile_.boundsDebug_[surface_.id_] = [];
+                                                    }
+                                                    tile_.boundsDebug_[surface_.id_].push(layers_[j]);
 
                                                     //set credits
                                                     var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
@@ -300,7 +306,13 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                             var layerId_ = bounds_.sequence_[bounds_.sequence_.length-1];
                                             var texture_ = tile_.boundTextures_[layerId_];
                                             if (texture_) {
-                                                //tile_.renderReady_ = true;
+
+                                                //debug stuff
+                                                if (!tile_.boundsDebug_[surface_.id_]) {
+                                                    tile_.boundsDebug_[surface_.id_] = [];
+                                                }
+                                                tile_.boundsDebug_[surface_.id_].push(layerId_);
+                                                
                                                 //set credits
                                                 var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;
                                                 for (var k = 0, lk = credits_.length; k < lk; k++) {
@@ -326,7 +338,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                                 var texture_ = tile_.boundTextures_[layer_.id_];
                                                 
                                                 if (texture_) {
-                                                    //tile_.renderReady_ = true;
+                                                    
+                                                    //debug stuff
+                                                    if (!tile_.boundsDebug_[surface_.id_]) {
+                                                        tile_.boundsDebug_[surface_.id_] = [];
+                                                    }
+                                                    tile_.boundsDebug_[surface_.id_].push(layer_.id_);
                                                     
                                                     //set credits
                                                     var credits_ = tile_.boundLayers_[layer_.id_].creditsNumbers_;
@@ -515,17 +532,20 @@ Melown.Map.prototype.getTileTextureTransform = function(sourceTile_, targetTile_
 };
 
 Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface_, bound_, fullUpdate_) {
-    /*
+    
     if (tile_.id_[0] == Melown.debugId_[0] &&
         tile_.id_[1] == Melown.debugId_[1] &&
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
-    }*/
+    }
         
     //search map view
     if (surface_.boundLayerSequence_.length > 0) {
         if (fullUpdate_) {
             bound_.sequence_ = [];
+            var sequenceFullAndOpaque_ = [];
+            var fullAndOpaqueCounter_ = 0;
+            
             for (var j = 0, lj = surface_.boundLayerSequence_.length; j < lj; j++) {
                 var layer_ = surface_.boundLayerSequence_[j][0];
                 if (layer_ && layer_.hasTileOrInfluence(tile_.id_) && surface_.boundLayerSequence_[j][1] > 0) {
@@ -555,6 +575,15 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                         }
                     }
                     
+                    var texture_ = tile_.boundTextures_[layer_.id_];
+                    
+                    var fullAndOpaque_ = !((surface_.boundLayerSequence_[j][1] < 1.0) || texture_.extraBound_ || texture_.getMaskTexture());
+                    if (fullAndOpaque_) {
+                        fullAndOpaqueCounter_++;
+                    }
+                            
+                    sequenceFullAndOpaque_.push(fullAndOpaque_);
+                    
                     bound_.sequence_.push(layer_.id_);
                     bound_.alpha_[layer_.id_] = surface_.boundLayerSequence_[j];
                     tile_.boundLayers_[layer_.id_] = layer_;
@@ -563,24 +592,19 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                     }
                 }
             }
-            /*
-            //filter out extra bounds if they are not needed
-            var relevantLayerExists_ = false;
-            for (var i = bound_.sequence_.length; i >= 0 ; i--) {
-                var id_ = bound_.sequence_[i][0];
-                var texture_ = tile_.boundTextures_[id_];
 
-                if (relevantLayerExists_) {
-                    
-                    if (texture_.extraBound_) {
-                        //TODO: remove from sequence
-                        //i++;
+            //filter out extra bounds if they are not needed
+            if (fullAndOpaqueCounter_ > 0) {
+                for (var i = bound_.sequence_.length - 1; i >= 0; i--) {
+                    if (!sequenceFullAndOpaque_[i]) {
+                        var texture_ = tile_.boundTextures_[bound_.sequence_[i]];
+                        
+                        if (texture_ && texture_.extraBound_) {
+                            //bound_.sequence_.splice(i, 1);
+                        }
                     }
-                    
-                } else if (!(bound_.sequence_[i][0] < 1 || texture_.extraBound_)) {
-                    relevantLayerExists_ = true;
                 }
-            }*/
+            }
             
         }
     } else if (surface_.textureLayer_ != null) { //search surface
@@ -657,53 +681,103 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
     var factor_ = this.debugTextSize_;
 
     //draw lods
-    if (this.drawLods_ == true) {
+    if (this.drawLods_) {
         text_ = "" + tile_.id_[0];
-        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]-4*factor_), 4*factor_, text_, [255,0,0,255], pos_[2]);
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]-4*factor_), 4*factor_, text_, [255,0,0,255], pos_[2]);
     }
 
     //draw indices
-    if (this.drawIndices_ == true) {
+    if (this.drawIndices_) {
         var text_ = "" + tile_.id_[1] + " " + tile_.id_[2];
-        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]-11*factor_), 4*factor_, text_, [0,255,255,255], pos_[2]);
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]-11*factor_), 4*factor_, text_, [0,255,255,255], pos_[2]);
     }
 
     //draw positions
-    if (this.drawPositions_ == true) {
+    if (this.drawPositions_) {
         var text_ = "" + min_[0].toFixed(1) + " " + min_[1].toFixed(1) + " " + min_[2].toFixed(1);
-        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+3*factor_), 4*factor_, text_, [0,255,255,255], pos_[2]);
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+3*factor_), 4*factor_, text_, [0,255,255,255], pos_[2]);
     }
 
     //draw face count
-    if (this.drawFaceCount_ == true && mesh_ != null) {
+    if (this.drawFaceCount_ && mesh_) {
         var text_ = "" + mesh_.faces_ + " - " + mesh_.submeshes_.length + ((tile_.surface_ && tile_.surface_.glue_) ? " - 1" : " - 0");
-        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [0,255,0,255], pos_[2]);
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [0,255,0,255], pos_[2]);
+    }
+
+    if (this.drawSurfaces_) {
+        var text_ = JSON.stringify(tile_.surface_.id_);
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
+    }
+
+    if (this.drawBoundLayers_) {
+        if (tile_.boundsDebug_) {
+            var surface_ = tile_.surface_;
+            if (surface_.glue_) { 
+              
+                for (var i = 0, li = surface_.id_.length; i < li; i++) {
+                    if (tile_.boundsDebug_[surface_.id_[i]]) {
+                        var text_ = "< " + surface_.id_[i] + " >";
+                        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+(10+i*7*2)*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
+                        text_ = JSON.stringify(tile_.boundsDebug_[surface_.id_[i]]);
+                        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+(17+i*7*2)*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
+                    }
+                }
+                
+            } else if (tile_.boundsDebug_[surface_.id_]) {
+                var text_ = "< " + surface_.id_ + " >";
+                this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
+    
+                text_ = JSON.stringify(tile_.boundsDebug_[surface_.id_]);
+                this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
+            }
+        }
+    }
+
+    if (this.drawCredits_) {
+        var text_ = "{ ";
+       
+        for (var key_ in tile_.credits_) {
+            if (tile_.credits_[key_]) {
+                var credit_ = this.getCreditByNumber(key_);
+                if (credit_) {
+                    text_ += credit_.key_ + ", ";
+                }
+            }
+        }
+
+        text_ += "} ";
+
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
     }
 
     //draw distance
-    if (this.drawDistance_ == true) {
+    if (this.drawDistance_) {
         var text_ = "" + pixelSize_[1].toFixed(2) + "  " + pixelSize_[0].toFixed(2) + "  " + node_.pixelSize_.toFixed(2);
-        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
     }
 
     //draw node info
-    if (this.drawNodeInfo_ == true) {
+    if (this.drawNodeInfo_) {
         var children_ = ((node_.flags_ & ((15)<<4))>>4);
         var text_ = "" + node_.flags_.toString(2) + "-" + ((children_ & 1) ? "1" : "0") + ((children_ & 2) ? "1" : "0") + ((children_ & 4) ? "1" : "0") + ((children_ & 8) ? "1" : "0");
-        this.renderer_.drawText(Math.round(pos_[0]-(text_.length*4*factor_)*0.5), Math.round(pos_[1]-18*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]-18*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
     }
-
-/*
+    
     //draw texture size
-    if (this.drawTextureSize_ == true && gpuTile_ != null) {
-        var text_ = "" + gpuTile_.texture_.width_ + " x " + gpuTile_.texture_.height_;
-        this.drawText(Math.round(pos_[0]-(text_.length*4)*0.5), Math.round(pos_[1]-18), 4, text_, [255,255,255,255], pos_[2]);
-    }
-/*
-    //draw texel size
-    if (this.drawTexelSize_ == true) {
-*/
+    if (this.drawTextureSize_ && mesh_) {
+        var submeshes_ = mesh_.submeshes_;
+        for (var i = 0, li = submeshes_.length; i < li; i++) {
 
+            if (submeshes_[i].internalUVs_) {
+                var texture_ = tile_.surfaceTextures_[i];
+
+                if (texture_ && texture_.gpuTexture_) {
+                    var text_ = "[" + i + "]: " + texture_.gpuTexture_.width_ + " x " + texture_.gpuTexture_.height_;
+                    this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+(17+i*7*2)*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
+                }
+            }
+        }
+    }
 
 };
 

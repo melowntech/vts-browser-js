@@ -282,9 +282,21 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 case 105:
                     map_.drawIndices_ = !map_.drawIndices_; break; //key I pressed
 
+                case 66:
+                case 98:
+                    map_.drawBoundLayers_ = !map_.drawBoundLayers_; break; //key B pressed
+
                 case 83:
                 case 115:
-                    map_.debugTextSize_ = (map_.debugTextSize_ == 1.0) ? 2.0 : 1.0; break; //key S pressed
+                    map_.drawSurfaces_ = !map_.drawSurfaces_; break; //key S pressed
+
+                case 67:
+                case 99:
+                    map_.drawCredits_ = !map_.drawCredits_; break; //key C pressed
+
+                case 69:
+                case 101:
+                    map_.debugTextSize_ = (map_.debugTextSize_ == 2.0) ? 3.0 : 2.0; break; //key S pressed
 
                 default:
                     blockHit_ = false;
