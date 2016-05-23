@@ -127,8 +127,7 @@ Melown.BrowserInterface.prototype.getSrses = function() {
 
 Melown.BrowserInterface.prototype.getSrsInfo = function(srsId_) {
     if(!this.map_) return;
-    var srs_ = this.map_.getSrs(srsId_);
-    return (srs_ != null) ? srs_.getInfo() : null;
+    return this.map_.getSrsInfo(srsId_);
 };
 
 Melown.BrowserInterface.prototype.getReferenceFrame = function() {
@@ -156,7 +155,12 @@ Melown.BrowserInterface.prototype.convertCoordsFromNavToCanvas = function(coords
     return this.map_.convertCoordsFromNavToCanvas(coords_, heightMode_, lod_);
 };
 
-Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace = function(coords_, heightMode_, lod_) {
+Melown.BrowserInterface.prototype.convertCoordsFromPhysToCanvas = function(coords_) {
+    if(!this.map_) return;
+    return this.map_.convertCoordsFromPhysToCanvas(coords_);
+};
+
+Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace = function(coords_, heightMode_, lod_) { //remove
     if(!this.map_) return;
     return this.map_.convertCoordsFromNavToCameraSpace(coords_, heightMode_, lod_);
 };
@@ -246,7 +250,7 @@ Melown.BrowserInterface.prototype.movePositionCoordsTo = function(position_, azi
     return this.map_.movePositionCoordsTo(position_, azimuth_, distance_);
 };
 
-Melown.BrowserInterface.prototype.getSurfaceHeight = function() {
+Melown.BrowserInterface.prototype.getSurfaceHeight = function(coords_, precision_) {
     if(!this.map_) return;
     return this.map_.getSurfaceHeight(coords_, precision_);
 };
@@ -264,6 +268,16 @@ Melown.BrowserInterface.prototype.getAzimuthCorrection = function(coords_, coord
 Melown.BrowserInterface.prototype.getCameraInfo = function() {
     if(!this.map_) return;
     return this.map_.getCameraInfo();
+};
+
+Melown.BrowserInterface.prototype.isPointInsideCameraFrustum = function(point_) {
+    if(!this.map_) return;
+    return this.map_.isPointInsideCameraFrustum(point_);
+};
+
+Melown.BrowserInterface.prototype.isBBoxInsideCameraFrustum = function(bbox_) {
+    if(!this.map_) return;
+    return this.map_.isBBoxInsideCameraFrustum(bbox_);
 };
 
 Melown.BrowserInterface.prototype.generateTrajectory = function(position_, position2_, options_) {
@@ -418,7 +432,8 @@ Melown.BrowserInterface.prototype["convertPositionViewMode"] = Melown.BrowserInt
 Melown.BrowserInterface.prototype["convertPositionHeightMode"] = Melown.BrowserInterface.prototype.convertPositionHeightMode; 
 Melown.BrowserInterface.prototype["convertCoords"] = Melown.BrowserInterface.prototype.convertCoords; 
 Melown.BrowserInterface.prototype["convertCoordsFromNavToCanvas"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCanvas; 
-Melown.BrowserInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace;
+Melown.BrowserInterface.prototype["convertCoordsFromPhysToCanvas"] = Melown.BrowserInterface.prototype.convertCoordsFromPhysToCanvas; 
+Melown.BrowserInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace; //remove
 Melown.BrowserInterface.prototype["clonePosition"] = Melown.BrowserInterface.prototype.clonePosition; 
 Melown.BrowserInterface.prototype["arePositionsSame"] = Melown.BrowserInterface.prototype.arePositionsSame; 
 Melown.BrowserInterface.prototype["setPositionCoords"] = Melown.BrowserInterface.prototype.setPositionCoords; 
@@ -440,6 +455,8 @@ Melown.BrowserInterface.prototype["getSurfaceHeight"] = Melown.BrowserInterface.
 Melown.BrowserInterface.prototype["getDistance"] = Melown.BrowserInterface.prototype.getDistance;
 Melown.BrowserInterface.prototype["getAzimuthCorrection"] = Melown.BrowserInterface.prototype.getAzimuthCorrection; 
 Melown.BrowserInterface.prototype["getCameraInfo"] = Melown.BrowserInterface.prototype.getCameraInfo;
+Melown.BrowserInterface.prototype["isPointInsideCameraFrustum"] = Melown.BrowserInterface.prototype.isPointInsideCameraFrustum;
+Melown.BrowserInterface.prototype["isBBoxInsideCameraFrustum"] = Melown.BrowserInterface.prototype.isBBoxInsideCameraFrustum;
 Melown.BrowserInterface.prototype["generateTrajectory"] = Melown.BrowserInterface.prototype.generateTrajectory; 
 Melown.BrowserInterface.prototype["redraw"] = Melown.BrowserInterface.prototype.redraw;
 Melown.BrowserInterface.prototype["addRenderSlot"] = Melown.BrowserInterface.prototype.addRenderSlot; 

@@ -11,6 +11,8 @@ Melown.ControlMode = function(browser_) {
     this.ctrlKey_ = false;
 
     this.mapElement_.on('drag', this.onDrag.bind(this));
+    //this.mapElement_.on('dragstart', this.onDragStart.bind(this));
+    //this.mapElement_.on('dragend', this.onDragEnd.bind(this));
     this.mapElement_.on('mousedown', this.onDown.bind(this));
     this.mapElement_.on('mouseup', this.onUp.bind(this));
     this.mapElement_.on('mousewheel', this.onWheel.bind(this));
@@ -148,6 +150,7 @@ Melown.ControlMode.prototype.onKeyPress = function(event_) {
 Melown.ControlMode.prototype.onTick = function(event_) {
     if (typeof this._currentController()[Melown_ControlMode_Tick]
         === 'function') {
+        event_.draggingState_ = this.mapElement_.getDraggingState();    
         this._currentController()[Melown_ControlMode_Tick](event_);
     }
 };

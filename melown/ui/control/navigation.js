@@ -4,7 +4,7 @@
 Melown.UIControlNavigation = function(ui_, visible_) {
     this.ui_ = ui_;
     this.browser_ = ui_.browser_;
-    this.control_ = this.ui_.addControl("zoom",
+    this.control_ = this.ui_.addControl("navigation",
       '<div id="melown-navigation"'
       + ' class="melown-navigation">'
 

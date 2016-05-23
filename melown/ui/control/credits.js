@@ -56,7 +56,7 @@ Melown.UIControlCredits.prototype.update = function() {
         html_ += "<li>Map Data: " + this.getCreditsString(credits_["mapdata"]) + "</li>";
     }
 
-    html_ += "<li>3D: MELOWN MAPS";
+    html_ += "<li>3D: MELOWN";
 
     if (credits_["mapdata"].length > 0) {
         html_ += ", " + this.getCreditsString(credits_["3d"]) + "</li>";

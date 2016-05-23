@@ -4,7 +4,7 @@
 Melown.UIControlSpace = function(ui_, visible_) {
     this.ui_ = ui_;
     this.browser_ = ui_.browser_;
-    this.control_ = this.ui_.addControl("zoom",
+    this.control_ = this.ui_.addControl("space",
       '<div id="melown-space"'
       + ' class="melown-space">'
 
@@ -52,11 +52,11 @@ Melown.UIControlSpace.prototype.update = function() {
 
     if (this.space3D_) {
         orientation_[1] = -60;
-        pos_ = map_.setPositionFov(pos_, 90);
+        //pos_ = map_.setPositionFov(pos_, 90);
         pos_ = map_.setPositionOrientation(pos_, orientation_);
     } else {
         orientation_[1] = -90;
-        pos_ = map_.setPositionFov(pos_, 5);
+        //pos_ = map_.setPositionFov(pos_, 5);
         pos_ = map_.setPositionOrientation(pos_, orientation_);
     }
 

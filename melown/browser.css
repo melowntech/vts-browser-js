@@ -18,7 +18,7 @@
 .melown-logo {
     font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
     font-size:11px;
-    position:fixed;right:5px;bottom:5px;
+    position:absolute;right:5px;bottom:5px;
     color:#fff;
     text-shadow: 0 0 2px #000;
 }

@@ -5,6 +5,7 @@ Melown.Browser.prototype.initConfig = function(data_) {
         rotationAllowed_ : true,
         zoomAllowed_ : true,
         inertia_ : 1.1,
+        navigationMode_ : "free",
         controlCompass_ : true,
         controlZoom_ : true,
         controlSpace_ : true,
@@ -39,11 +40,15 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
         case "rotationAllowed":    this.config_.rotationAllowed_ = Melown.Utils.validateBool(value_, true);   break;
         case "zoomAllowed":        this.config_.zoomAllowed_ = Melown.Utils.validateBool(value_, true);       break;
         case "inertia":            this.config_.inertia_ = Melown.Utils.validateNumber(value_, 0, 0.99, 0.9); break;
+        case "navigationMode":     this.config_.navigationMode_ = value_;                                     break;
         case "controlCompass":     this.config_.controlCompass_ = Melown.Utils.validateBool(value_, true); this.updateUI(key_);   break;
         case "controlZoom":        this.config_.controlZoom_ = Melown.Utils.validateBool(value_, true); this.updateUI(key_);      break;
         case "controlMeasure":     this.config_.controlMeasure_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);  break;
         case "controlScale":       this.config_.controlScale_ = Melown.Utils.validateBool(value_, true); this.updateUI(key_);     break;
         case "controlLayers":      this.config_.controlLayers_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);   break;
+        case "controlSpace":       this.config_.controlSpace_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);    break;
+        case "controlLink":        this.config_.controlLink_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);     break;
+        case "controlLogo":        this.config_.controlLogo_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);     break;
     }
 
     if (ignoreCore_ == true) {
@@ -65,11 +70,15 @@ Melown.Browser.prototype.getConfigParam = function(key_) {
         case "rotationAllowed":    return this.config_.rotationAllowed_;
         case "zoomAllowed":        return this.config_.zoomAllowed_;
         case "inertia":            return this.config_.inertia_;
+        case "navigationMode":     return this.config_.navigationMode_;
         case "controlCompass":     return this.config_.controlCompass_;
         case "controlZoom":        return this.config_.controlZoom_;
         case "controlMeasure":     return this.config_.controlMeasure_;
         case "controlScale":       return this.config_.controlScale_;
         case "controlLayers":      return this.config_.controlLayers_;
+        case "controlSpace":       return this.config_.controlSpace_;
+        case "controlLink":        return this.config_.controlLink_;
+        case "controlLogo":        return this.config_.controlLogo_;
     }
 
     if (ignoreCore_ == true) {

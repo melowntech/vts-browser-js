@@ -4,7 +4,7 @@
 Melown.UIControlLink = function(ui_, visible_) {
     this.ui_ = ui_;
     this.browser_ = ui_.browser_;
-    this.control_ = this.ui_.addControl("zoom",
+    this.control_ = this.ui_.addControl("link",
       '<div id="melown-link" class="melown-link">'
 
         + '<div id="melown-link-button" class="melown-link-button">'
@@ -19,6 +19,8 @@ Melown.UIControlLink = function(ui_, visible_) {
         
      + ' </div>', visible_);
      
+    this.div_ = this.control_.getElement("melown-link");
+
     var button_ = this.control_.getElement("melown-link-button");
     button_.on("click", this.onSwitch.bind(this));
 
@@ -36,6 +38,12 @@ Melown.UIControlLink.prototype.onSwitch = function() {
 };
 
 Melown.UIControlLink.prototype.update = function() {
+    var button_ = this.control_.getElement("melown-link-button");
+    
+    var left_ = 10 + (this.ui_.config_.controlZoom_ ? 70 : 0) +
+                (this.ui_.config_.controlSpace_ ? 35 : 0);
+    
+    this.div_.setStyle("left", left_ + "px");
     this.linkPanel_.setStyle("display", this.linkVisible_ ? "block" : "none");
 };
 

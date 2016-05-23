@@ -15,7 +15,12 @@ Melown.UIElement.prototype.setDraggableState = function(state_) {
         
         this.dragging_ = false;
     }
-
+    
+    this.dragStartPos_ = [0,0];
+    this.dragCurrentPos_ = [0,0];
+    this.dragLastPos_ = [0,0];
+    this.dragAbsMoved_ = [0,0];
+    
     this.dragable_ = state_;
     this.dragButtons_ = {
       "left" : false,
@@ -28,16 +33,40 @@ Melown.UIElement.prototype.getDraggableState = function() {
     return this.dragable_;
 };
 
+Melown.UIElement.prototype.getDraggingState = function() {
+    return {
+        "dragging" : this.dragging_,
+        "buttonLeft" : this.dragButtons_["left"],
+        "buttonRight" : this.dragButtons_["right"],
+        "buttonMiddle" : this.dragButtons_["middle"],
+        "startPos" : this.dragStartPos_.slice(), 
+        "lastPos" : this.dragLastPos_.slice(), 
+        "currentPos" : this.dragCurrentPos_.slice(), 
+        "absMoved" : this.dragAbsMoved_.slice() 
+    };
+};
+
 Melown.UIElement.prototype.onDragBegin = function(event_) {
+    //console.log("bergin: 1#:  " + JSON.stringify(this.dragButtons_));
+
     this.dragButtons_[event_.getMouseButton()] = true;
+
+    //console.log("bergin: 2#:  " + JSON.stringify(this.dragButtons_));
+
     this.firstDragDistance_ = 0;
     this.lastDragDistance_ = 0;
     this.zoomDrag_ = false;
 
+
+
     if (this.dragging_ != true) {
         this.dragging_ = true;
         var pos_ = event_.getMouseCoords(true);
-        this.lastDragPos_ = pos_;
+        this.dragStartPos_ = [pos_[0], pos_[1]];
+        this.dragCurrentPos_ = [pos_[0], pos_[1]];
+        this.dragLastPos_ = [pos_[0], pos_[1]];
+        this.dragAbsMoved_ = [0,0];
+
         this.on("mousemove", this.dragMoveCall_, document);
         this.on("mouseup", this.dragEndCall_, document);
         //this.on("mouseup", this.onDragEnd.bind(this), document);
@@ -56,16 +85,24 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
             });
     } else {
         var pos_ = event_.getMouseCoords();
-        this.lastDragPos_ = pos_;
+        this.dragLastPos_ = pos_;
     }
 
 };
 
 Melown.UIElement.prototype.onDragMove = function(event_) {
     var pos_ = event_.getMouseCoords();
-    this.updateDragButtonsState(event_, true);
+
+    //console.log("move: 1#:  " + JSON.stringify(this.dragButtons_));
+
+    if (event_.getTouchesCount() != -1) {
+        this.updateDragButtonsState(event_, true);
+    }
 
     Melown.Utils.preventDefault(event_);
+
+
+    //console.log("move: 2#:  " + JSON.stringify(this.dragButtons_));
 
     var zoom_ = 0;
 
@@ -94,34 +131,52 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
     this.fire("drag", {
         "clientX" : pos_[0],
         "clientY" : pos_[1],
-        "deltaX" : pos_[0] - this.lastDragPos_[0],
-        "deltaY" : pos_[1] - this.lastDragPos_[1],
+        "deltaX" : pos_[0] - this.dragLastPos_[0],
+        "deltaY" : pos_[1] - this.dragLastPos_[1],
         "left" : this.dragButtons_["left"],
         "right" : this.dragButtons_["right"],
         "middle" : this.dragButtons_["middle"],
         "zoom" : zoom_
         });
 
-    this.lastDragPos_ = pos_;
+    this.dragLastPos_ = this.dragCurrentPos_;
+    this.dragCurrentPos_ = [pos_[0], pos_[1]];
+    this.dragAbsMoved_[0] += Math.abs(pos_[0] - this.dragLastPos_[0]);
+    this.dragAbsMoved_[1] += Math.abs(pos_[1] - this.dragLastPos_[1]);
+
+    //var el_ = document.getElementById("melown-debug-logo");
+    //el_.innerHTML = "" + this.firstDragDistance_ + "   " + this.lastDragDistance_ + "   " + zoom_;
+    //el_.innerHTML = "" + this.dragAbsMoved_[0] + "    " + this.dragAbsMoved_[1];
+
 };
 
 Melown.UIElement.prototype.onDragEnd = function(event_) {
     //this.dragButtons_[event_.getMouseButton()] = false;
+    //console.log("end: 1#:  " + JSON.stringify(this.dragButtons_));
+
+    var left_ = this.dragButtons_["left"];
+    var right_ = this.dragButtons_["right"];
+    var middle_ = this.dragButtons_["middle"];
+
     this.updateDragButtonsState(event_, false);
+
+    //console.log("end: 2#:  " + JSON.stringify(this.dragButtons_));
+
     this.firstDragDistance_ = 0;
     this.lastDragDistance_ = 0;
     this.zoomDrag_ = false;
 
+
     if (this.dragging_ == true) {
         var pos_ = event_.getMouseCoords();
-        this.lastDragPos_ = pos_;
+        this.dragLastPos_ = pos_;
 
         if (!this.dragButtons_["left"] &&
             !this.dragButtons_["right"] &&
             !this.dragButtons_["middle"] ) {
 
             this.dragging_ = false;
-            var pos_ = event_.getMouseCoords();
+            var pos_ = this.dragCurrentPos_;//event_.getMouseCoords();
             this.off("mousemove", this.dragMoveCall_, document);
             this.off("mouseup", this.dragEndCall_, document);
             //this.off("mouseup", this.onDragEnd.bind(this), document);
@@ -136,7 +191,10 @@ Melown.UIElement.prototype.onDragEnd = function(event_) {
 
             this.fire("dragend", {
                 "clientX" : pos_[0],
-                "clientY" : pos_[1]
+                "clientY" : pos_[1],
+                "left" : left_,
+                "right" : right_,
+                "middle" : middle_
                 });
         }
     }
@@ -152,6 +210,37 @@ Melown.UIElement.prototype.updateDragButtonsState = function(event_, state_) {
     }        
 };
 
+
+
+Melown.UIElement.prototype.setDraggableState = function(state_) {
+    if (state_) {
+        this.on("mousedown", this.dragBeginCall_);
+        this.on("touchstart", this.dragBeginCall_);
+    } else if (this.dragable_){
+        this.off("mousedown", this.dragBeginCall_);
+        this.off("mousemove", this.dragMoveCall_, document);
+        //this.off("mouseup", this.onDragEnd.bind(this));
+        this.off("mouseup", this.dragEndCall_, document);
+        
+        this.off("touchstart", this.dragBeginCall_);
+        this.off("touchmove", this.dragMoveCall_, document);
+        this.off("touchend", this.dragEndCall_, document);
+        
+        this.dragging_ = false;
+    }
+
+    this.dragable_ = state_;
+    this.dragButtons_ = {
+      "left" : false,
+      "right" : false,
+      "middle" : false
+    };
+};
+
+//prevent minification
+Melown.UIElement.prototype["setDraggableState"] = Melown.UIElement.prototype.setDraggableState; 
+Melown.UIElement.prototype["getDraggableState"] = Melown.UIElement.prototype.getDraggableState; 
+Melown.UIElement.prototype["getDraggingState"] = Melown.UIElement.prototype.getDraggingState; 
 
 
 

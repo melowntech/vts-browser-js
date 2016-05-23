@@ -25,11 +25,25 @@ Melown.UIEvent.prototype.getMouseButton = function() {
 
         default:
     
-            switch(this.event_.which) {
-                case 1: return "left";
-                case 2: return "middle";
-                case 3: return "right";
+            if (this.event_.which) { // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
+                //right_ = e.which == 3;
+        
+                switch(this.event_.which) {
+                    case 1: return "left";
+                    case 2: return "middle";
+                    case 3: return "right";
+                }
+        
+            } else if (this.event_.button) { // IE, Opera
+                //right_ = e.button == 2;
+        
+                switch(this.event_.button) {
+                    case 1: return "left";
+                    case 2: return "right";
+                    case 3: return "middle";
+                }
             }
+    
     }
 
     return "";
@@ -229,6 +243,10 @@ Melown.UIEvent.prototype.getTouchCoords = function(index_, absolute_) {
     return [0,0];
 };
 
+Melown.UIEvent.prototype.getType = function() {
+    return this.type_;
+};
+
 //prevent minification
 Melown.UIEvent.prototype["getMouseButton"] = Melown.UIEvent.prototype.getMouseButton;
 Melown.UIEvent.prototype["getMouseCoords"] = Melown.UIEvent.prototype.getMouseCoords;
@@ -240,5 +258,6 @@ Melown.UIEvent.prototype["getWheelDelta"] = Melown.UIEvent.prototype.getWheelDel
 Melown.UIEvent.prototype["getDragZoom"] = Melown.UIEvent.prototype.getDragZoom;
 Melown.UIEvent.prototype["getTouchesCount"] = Melown.UIEvent.prototype.getTouchesCount;
 Melown.UIEvent.prototype["getTouchCoords"] = Melown.UIEvent.prototype.getTouchCoords;
+Melown.UIEvent.prototype["getType"] = Melown.UIEvent.prototype.getType;
 
 
