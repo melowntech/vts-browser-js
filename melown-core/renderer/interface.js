@@ -11,24 +11,24 @@ Melown.RendererInterface.prototype.clear = function(options_) {
         this.gpu_.clear((options_["clearDepth"] || true),
                         (options_["clearColor"] || false),
                         (options_["color"] || [255,255,255,255]),
-                        (options_["depth"] || 1.0) );
+                        ((options_["depth"] != null) ? options_["depth"] : 1.0) );
     }
     return this;    
 };
 
 Melown.RendererInterface.prototype.createState = function(options_) {
-    if (options_ != null) {
-        return null;
+    if (options_ == null || typeof options_ !== "object") {
+        return this;    
     }
-
+    
     var stateOptions_ = {
-        blend_ : options_["blend"] || false,
-        stencil_ : options_["stencil"] || false,
-        zoffset_ : options_["zoffset"] || 0,
-        zwrite_ : options_["zwrite"] || true,
-        ztest_ : options_["ztest"] || true,
-        zequal_ : options_["zequal"] || true,
-        culling_ : options_["culling"] || true
+        blend_ : (options_["blend"] != null) ? options_["blend"] : false,
+        stencil_ : (options_["stencil"] != null) ? options_["stencil"] : false,
+        zoffset_ : (options_["zoffset"] != null) ? options_["zoffset"] : 0,
+        zwrite_ : (options_["zwrite"] != null) ? options_["zwrite"] : true,
+        ztest_ : (options_["ztest"] != null) ? options_["ztest"] : true,
+        zequal_ : (options_["zequal"] != null) ? options_["zequal"] : true,
+        culling_ : (options_["culling"] != null) ? options_["culling"] : true
     };
 
     return this.gpu_.createState(stateOptions_);
@@ -257,11 +257,11 @@ Melown.RendererInterface.prototype.drawImage = function(options_) {
 
     var rect_ = options_["rect"];
     var color_ = options_["color"] || [255,255,255,255];
-    var depth_ = options_["depth"] || 0;
-    var depthTest_ = options_["depth-test"] || false;
-    var blend_ = options_["blend"] || false;
-    var writeDepth_ = options_["write-depth"] || false;
-    var useState_ = options_["use-state"] || false;
+    var depth_ = (options_["depth"] != null) ? options_["depth"] : 0;
+    var depthTest_ = (options_["depth-test"] != null) ? (options_["depth-test"] != null) : false;
+    var blend_ = (options_["blend"] != null) ? options_["blend"] : false;
+    var writeDepth_ = (options_["write-depth"] != null) ? options_["write-depth"] : false;
+    var useState_ = (options_["use-state"] != null) ? options_["use-state"] : false;
 
     this.renderer_.drawImage(rect_[0], rect_[1], rect_[2], rect_[3], options_["texture"], color_, depth_, depthTest_, blend_, writeDepth_, useState_);
     return this;    
@@ -278,10 +278,10 @@ Melown.RendererInterface.prototype.drawBillboard = function(options_) {
 
     var mvp_ = options_["mvp"];
     var color_ = options_["color"] || [255,255,255,255];
-    var depthTest_ = options_["depth-test"] || false;
-    var blend_ = options_["blend"] || false;
-    var writeDepth_ = options_["write-depth"] || false;
-    var useState_ = options_["use-state"] || false;
+    var depthTest_ = (options_["depth-test"] != null) ? (options_["depth-test"] != null) : false;
+    var blend_ = (options_["blend"] != null) ? options_["blend"] : false;
+    var writeDepth_ = (options_["write-depth"] != null) ? options_["write-depth"] : false;
+    var useState_ = (options_["use-state"] != null) ? options_["use-state"] : false;
 
     this.renderer_.drawBillboard(mvp_, options_["texture"], color_, depthTest_, blend_, writeDepth_, useState_);
     return this;    
@@ -299,10 +299,10 @@ Melown.RendererInterface.prototype.drawLineString = function(options_) {
     var points_ = options_["points"];
     var color_ = options_["color"] || [255,255,255,255];
     var size_ = options_["size"] || 2;
-    var depthTest_ = options_["depth-test"] || false;
-    var blend_ = options_["blend"] || false;
-    var writeDepth_ = options_["write-depth"] || false;
-    var useState_ = options_["use-state"] || false;
+    var depthTest_ = (options_["depth-test"] != null) ? (options_["depth-test"] != null) : false;
+    var blend_ = (options_["blend"] != null) ? options_["blend"] : false;
+    var writeDepth_ = (options_["write-depth"] != null) ? options_["write-depth"] : false;
+    var useState_ = (options_["use-state"] != null) ? options_["use-state"] : false;
 
     this.renderer_.drawLineString(points_, size_, color_, depthTest_, blend_, useState_);
     return this;    
@@ -318,6 +318,32 @@ Melown.RendererInterface.prototype.drawBBox = function(options_) {
 };
 
 Melown.RendererInterface.prototype.drawDebugText = function(options_) {
+    if (options_ == null || typeof options_ !== "object") {
+        return this;    
+    }
+
+    var text_ = options_["text"];
+    var coords_ = options_["coords"];
+
+    if (!text_ || !coords_) {
+        return this;    
+    }
+    
+    var color_ = options_["color"] || [255,255,255,255];
+    var size_ = options_["size"] || 16;
+    var depth_ = options_["depth"];
+    var useState_ = options_["use-state"] || false;
+
+    var lx_ = this.renderer_.getTextSize(size_, text_);
+
+    this.renderer_.drawText(coords_[0] - (lx_ * 0.5), coords_[1], size_, text_, color_, depth_, useState_);
+
+    /*
+    var depthTest_ = options_["depth-test"] || false;
+    var blend_ = options_["blend"] || false;
+    var writeDepth_ = options_["write-depth"] || false;
+    */
+
     return this;    
 };
 

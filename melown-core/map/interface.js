@@ -108,7 +108,12 @@ Melown.MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos_, mode
     return (new Melown.MapPosition(this.map_, p_)).getCanvasCoords(lod_);
 };
 
-Melown.MapInterface.prototype.convertCoordsFromNavToCameraSpace = function(pos_, mode_, lod_) {
+Melown.MapInterface.prototype.convertCoordsFromPhysToCanvas = function(pos_) {
+    var p_ = ["obj", pos_[0], pos_[1], "fix", pos_[2], 0, 0, 0, 10, 90 ];
+    return (new Melown.MapPosition(this.map_, p_)).getCanvasCoords(null, true);
+};
+
+Melown.MapInterface.prototype.convertCoordsFromNavToCameraSpace = function(pos_, mode_, lod_) { //remove
     var p_ = ["obj", pos_[0], pos_[1], mode_, pos_[2], 0, 0, 0, 10, 90 ];
     return (new Melown.MapPosition(this.map_, p_)).getCameraSpaceCoords(lod_);
 };
@@ -179,8 +184,8 @@ Melown.MapInterface.prototype.getPositionCameraCoords = function(position_, mode
     return (new Melown.MapPosition(this.map_, position_)).getCameraCoords(mode_);
 };
 
-Melown.MapInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_) {
-    return (new Melown.MapPosition(this.map_, position_)).moveCoordsTo(azimuth_, distance_);
+Melown.MapInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_, skipOrientation_) {
+    return (new Melown.MapPosition(this.map_, position_)).moveCoordsTo(azimuth_, distance_, skipOrientation_);
 };
 
 Melown.MapInterface.prototype.getSurfaceHeight = function(coords_, precision_) {
@@ -198,13 +203,21 @@ Melown.MapInterface.prototype.getAzimuthCorrection = function(coords_, coords2_)
 Melown.MapInterface.prototype.getCameraInfo = function() {
     var camera_ = this.map_.camera_;
     return {
-        "projection-matrix" : camera_.projection_,
-        "view-matrix" : camera_.modelview_,
-        "view-projection-matrix" : camera_.mvp_,
-        "rotation-matrix" : camera_.rotationview_,
-        "position" : camera_.getPosition(),
-        "vector" : [0,0,1]
+        "projection-matrix" : camera_.projection_.slice(),
+        "view-matrix" : camera_.modelview_.slice(),
+        "view-projection-matrix" : camera_.mvp_.slice(),
+        "rotation-matrix" : camera_.rotationview_.slice(),
+        "position" : this.map_.cameraPosition_.slice(),
+        "vector" : this.map_.cameraVector_.slice()
     };
+};
+
+Melown.MapInterface.prototype.isPointInsideCameraFrustum = function(point_) {
+    return this.map_.camera_.pointVisible(point_, this.map_.cameraPosition_);
+};
+
+Melown.MapInterface.prototype.isBBoxInsideCameraFrustum = function(bbox_) {
+    return this.map_.camera_.bboxVisible({min_:bbox_[0], max_:bbox_[1]}, this.map_.cameraPosition_);
 };
 
 Melown.MapInterface.prototype.generateTrajectory = function(p1_, p2_, options_) {
@@ -304,7 +317,8 @@ Melown.MapInterface.prototype["convertPositionViewMode"] = Melown.MapInterface.p
 Melown.MapInterface.prototype["convertPositionHeightMode"] = Melown.MapInterface.prototype.convertPositionHeightMode; 
 Melown.MapInterface.prototype["convertCoords"] = Melown.MapInterface.prototype.convertCoords;
 Melown.MapInterface.prototype["convertCoordsFromNavToCanvas"] = Melown.MapInterface.prototype.convertCoordsFromNavToCanvas;
-Melown.MapInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.MapInterface.prototype.convertCoordsFromNavToCameraSpace;
+Melown.MapInterface.prototype["convertCoordsFromPhysToCanvas"] = Melown.MapInterface.prototype.convertCoordsFromPhysToCanvas;
+Melown.MapInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.MapInterface.prototype.convertCoordsFromNavToCameraSpace; //remove
 Melown.MapInterface.prototype["clonePosition"] = Melown.MapInterface.prototype.clonePosition; 
 Melown.MapInterface.prototype["setPositionCoords"] = Melown.MapInterface.prototype.setPositionCoords; 
 Melown.MapInterface.prototype["getPositionCoords"] = Melown.MapInterface.prototype.getPositionCoords; 
@@ -325,6 +339,8 @@ Melown.MapInterface.prototype["getSurfaceHeight"] = Melown.MapInterface.prototyp
 Melown.MapInterface.prototype["getDistance"] = Melown.MapInterface.prototype.getDistance;
 Melown.MapInterface.prototype["getAzimuthCorrection"] = Melown.MapInterface.prototype.getAzimuthCorrection; 
 Melown.MapInterface.prototype["getCameraInfo"] = Melown.MapInterface.prototype.getCameraInfo;
+Melown.MapInterface.prototype["isPointInsideCameraFrustum"] = Melown.MapInterface.prototype.isPointInsideCameraFrustum;
+Melown.MapInterface.prototype["isBBoxInsideCameraFrustum"] = Melown.MapInterface.prototype.isBBoxInsideCameraFrustum;
 Melown.MapInterface.prototype["generateTrajectory"] = Melown.MapInterface.prototype.generateTrajectory; 
 Melown.MapInterface.prototype["setConfigParam"] = Melown.MapInterface.prototype.setConfigParam;
 Melown.MapInterface.prototype["getConfigParam"] = Melown.MapInterface.prototype.getConfigParam; 

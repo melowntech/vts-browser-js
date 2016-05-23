@@ -281,13 +281,14 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
     }
     
     if (typeof view_ === "string") {
-        view_ = this.getNamedView(id_);
+        view_ = this.getNamedView(view_);
         
         if (!view_) {
             return;
         }
         
-        this.setView(view_);
+        //view_ = JSON.parse(JSON.stringify(view_));
+        view_ = view_.getInfo();
     }
 
     var string_ = JSON.stringify(view_);
@@ -508,6 +509,8 @@ Melown.Map.prototype.drawMap = function() {
 
    
     this.renderer_.gpu_.clear(true, false);
+
+    this.renderer_.gpu_.setState(this.drawTileState_);
 
     if (this.getNavigationSrs().isProjected()) {    
         this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.renderer_.progSkydome_);

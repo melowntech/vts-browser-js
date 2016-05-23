@@ -105,9 +105,10 @@ Melown.MapPosition.prototype.check = function(mode_) {
     this.pos_[7] = this.pos_[7] % 360;
 };
 
-Melown.MapPosition.prototype.moveCoordsTo = function(azimuth_, distance_) {
+Melown.MapPosition.prototype.moveCoordsTo = function(azimuth_, distance_, azimuthCorrectionFactor_) {
     var coords_ = this.getCoords();
     var navigationSrsInfo_ = this.map_.getNavigationSrs().getSrsInfo();
+    azimuthCorrectionFactor_ = (azimuthCorrectionFactor_ == null) ? 1 : azimuthCorrectionFactor_; 
 
     if (this.map_.getNavigationSrs().isProjected()) {
         var yaw_ = Melown.radians(azimuth_);
@@ -128,11 +129,14 @@ Melown.MapPosition.prototype.moveCoordsTo = function(azimuth_, distance_) {
 
         //console.log("corerction_: " + (r.azi1 - r.azi2));
 
-        orientation_[0] += (r["azi1"] - r["azi2"]); 
+        orientation_[0] += (r["azi1"] - r["azi2"]) * azimuthCorrectionFactor_;
         //orientation_[0] -= (r.azi1 - r.azi2); 
 
-        var orientation_ = this.setOrientation(orientation_);
-
+        //if (!skipOrientation_) {
+            this.setOrientation(orientation_);
+        //}
+        
+        //console.log("azimuthCorrection: " + azimuthCorrectionFactor_);
         //console.log("oldpos: " + JSON.stringify(this));
         //console.log("newpos: " + JSON.stringify(pos2_));
     }
@@ -355,8 +359,17 @@ Melown.MapPosition.prototype.getCameraSpaceCoords = function(lod_) {
     return worldPos_;
 };
 
-Melown.MapPosition.prototype.getCanvasCoords = function(lod_) {
-    var worldPos_ = this.getCameraSpaceCoords(lod_);
+Melown.MapPosition.prototype.getCanvasCoords = function(lod_, physical_) {
+    if (physical_) {
+        var camPos_ = this.map_.cameraPosition_;
+        var coords_ = this.getCoords();
+        var worldPos_ = [coords_[0] - camPos_[0],
+                         coords_[1] - camPos_[1],
+                         coords_[2] - camPos_[2]];
+    } else {
+        var worldPos_ = this.getCameraSpaceCoords(lod_);
+    }
+    
 	return this.map_.renderer_.project2(worldPos_, this.map_.camera_.getMvpMatrix());
 };
 
@@ -530,6 +543,7 @@ Melown.MapPosition.prototype.getCameraInfo = function(projected_) {
         ];
 */
         ret_.vector_ = Melown.vec3.normalize([-orbitPos_[0], -orbitPos_[1], -orbitPos_[2]]); 
+        ret_.vector2_ = ret_.vector_; //vector2 is probably hack for tree.js bboxVisible 
         
         ret_.orbitCoords_ = orbitPos_;
         ret_.rotMatrix_ = rotationMatrix_; 
@@ -650,10 +664,16 @@ Melown.MapPosition.prototype.getCameraInfo = function(projected_) {
             0, 0, 0, 1
         ];
 
+        //get orbit pos
         spaceMatrix_ = Melown.mat4.inverse(spaceMatrix_);
-
         Melown.mat4.multiplyVec3(spaceMatrix_, orbitPos_);
 
+        ret_.vector2_ = [-spaceMatrix_[8], -spaceMatrix_[9], -spaceMatrix_[10]]; //vector2 is probably hack for tree.js bboxVisible 
+
+        var ray_ = this.map_.renderer_.getScreenRay(800,400);
+
+        //get camera direction
+        Melown.mat4.inverse(rotationMatrix_, spaceMatrix_);
         ret_.vector_ = [-spaceMatrix_[8], -spaceMatrix_[9], -spaceMatrix_[10]]; 
         
         //console.log("cam vec: " + JSON.stringify(this.cameraVector_));

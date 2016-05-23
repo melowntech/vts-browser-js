@@ -400,24 +400,27 @@ Melown.Renderer.prototype.drawFlatImage = function(x, y, lx, ly, texture_, color
 };
 
 //draw 2d text - used for debuging
-Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_) {
+Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_, useState_) {
     if (this.imageProjectionMatrix_ == null) {
         return;
     }
 
     var gl_ = this.gpu_.gl_;
 
-    gl_.disable(gl_.CULL_FACE);
-
-    gl_.enable(gl_.DEPTH_TEST);
-
-    if (depth_ == null) {
-        gl_.disable(gl_.DEPTH_TEST);
+    if (useState_ != true) {
+        gl_.disable(gl_.CULL_FACE);
+    
+    
+        if (depth_ == null) {
+            gl_.disable(gl_.DEPTH_TEST);
+        } else {
+            gl_.enable(gl_.DEPTH_TEST);
+        }
     }
 
     this.gpu_.useProgram(this.progImage_, "aPosition", null);
     this.gpu_.bindTexture(this.textTexture2_);
-    this.gpu_.bindTexture(this.textTexture2_);
+    //this.gpu_.bindTexture(this.textTexture2_);
 
     var vertices_ = this.rectVerticesBuffer_;
     gl_.bindBuffer(gl_.ARRAY_BUFFER, vertices_);
@@ -440,14 +443,26 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
     var texelX_ = 1 / 256;
     var texelY_ = 1 / 128;
 
+    var lx_ = this.getTextSize(size_, text_) + 2;
 
-    var lx_ = x;
+    //draw black line before text
+    var char_ = 0;
+    var charPosX_ = (char_ & 15) << 4;
+    var charPosY_ = (char_ >> 4) << 4;
+
+    this.progImage_.setMat4("uData", [
+        x-2, y-2,  (charPosX_ * texelX_), (charPosY_ * texelY_),
+        x-2 + lx_, y-2,  ((charPosX_+15) * texelX_), (charPosY_ * texelY_),
+        x-2 + lx_, y + sizeY_+1, ((charPosX_ + 15) * texelX_), ((charPosY_+15) * texelY_),
+        x-2,  y + sizeY_+1,  (charPosX_ * texelX_), ((charPosY_+15) * texelY_) ]);
+
+    gl_.drawElements(gl_.TRIANGLES, indices_.numItems, gl_.UNSIGNED_SHORT, 0);
+    
 
     for (var i = 0, li = text_.length; i < li; i++) {
-        var char_ = text_.charCodeAt(i) - 32;
-        var charPosX_ = (char_ & 15) << 4;
-        var charPosY_ = (char_ >> 4) << 4;
-
+        char_ = text_.charCodeAt(i) - 32;
+        charPosX_ = (char_ & 15) << 4;
+        charPosY_ = (char_ >> 4) << 4;
 
         switch(char_) {
             case 12:
@@ -484,28 +499,13 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
         gl_.drawElements(gl_.TRIANGLES, indices_.numItems, gl_.UNSIGNED_SHORT, 0);
 
     }
+
+    if (useState_ != true) {
+        gl_.enable(gl_.CULL_FACE);
     
-    var dx = (x - lx_) + 2;
-    x = lx_ - 2;
-
-    //draw black line before text
-    var char_ = 0;
-    var charPosX_ = (char_ & 15) << 4;
-    var charPosY_ = (char_ >> 4) << 4;
-
-    this.progImage_.setMat4("uData", [
-        x, y-2,  (charPosX_ * texelX_), (charPosY_ * texelY_),
-        x + dx, y-2,  ((charPosX_+15) * texelX_), (charPosY_ * texelY_),
-        x + dx, y + sizeY_+1, ((charPosX_ + 15) * texelX_), ((charPosY_+15) * texelY_),
-        x,  y + sizeY_+1,  (charPosX_ * texelX_), ((charPosY_+15) * texelY_) ]);
-
-    gl_.drawElements(gl_.TRIANGLES, indices_.numItems, gl_.UNSIGNED_SHORT, 0);
-
-
-    gl_.enable(gl_.CULL_FACE);
-
-    if (depth_ == null) {
-        gl_.enable(gl_.DEPTH_TEST);
+        if (depth_ == null) {
+            gl_.enable(gl_.DEPTH_TEST);
+        }
     }
 
 };

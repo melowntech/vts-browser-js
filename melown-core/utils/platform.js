@@ -1,6 +1,8 @@
 
 Melown.Platform = {
 
+    initialized_ : false,
+
     init: function () {
 
         var self_ = Melown.Platform;
@@ -11,10 +13,33 @@ Melown.Platform = {
 
         self_.mobile_ = (self_.OS == "iphone/ipod" || self_.OS == "android" || self_.OS == "ipad" || self_.OS == "windows ce"  || self_.OS == "windows phone" || self_.OS == "kindle");
         self_.mobileAndroid_ = (self_.OS == "android");
+        self_.initialized_ = true;
     },
 
-    isMobile : function() { return Melown.Platform.mobile_; },
-    isAndroid : function() { return Melown.Platform.mobileAndroid_; },
+    getBrowser : function() {
+        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
+        return Melown.Platform.browser;
+    },
+
+    getBrowserVersion : function() {
+        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
+        return Melown.Platform.browser;
+    },
+
+    getOS : function() {
+        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
+        return Melown.Platform.browser;
+    },
+
+    isMobile : function() {
+        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
+        return Melown.Platform.mobile_;
+    },
+    
+    isAndroid : function() {
+        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
+        return Melown.Platform.mobileAndroid_;
+    },
 
     searchString: function (data) {
         var self_ = Melown.Platform;
@@ -189,3 +214,10 @@ Melown.Platform = {
     ]
 
 };
+
+Melown["getBrowser"] = Melown.Platform.getBrowser;
+Melown["getBrowserVersion"] = Melown.Platform.getBrowserVersion;
+Melown["getOS"] = Melown.Platform.getOS;
+Melown["isPlatformMobileDevice"] = Melown.Platform.isMobile;
+Melown["isPlatformAndroid"] = Melown.Platform.isAndroid;
+

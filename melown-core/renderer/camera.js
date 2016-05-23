@@ -145,6 +145,28 @@ Melown.Camera.prototype.distance = function(worldPos_) {
     return Melown.vec3.length(delta_);
 };
 
+//! Returns true if point is inside camera frustum.
+Melown.Camera.prototype.pointVisible = function(point_, shift_) {
+    if (this.dirty_) this.update();
+
+    if (shift_) {
+        var p = [ point_[0] - shift_[0], point_[1] - shift_[0], point_[2] - shift_[0], 1 ];
+    } else {
+        var p = [ point_[0], point_[1], point_[2], 1 ];
+    }
+
+    // test all frustum planes quickly
+    for (var i = 0; i < 6; i++) {
+        // check if point lie on the negative side of the frustum plane
+        if (Melown.vec4.dot(this.frustumPlanes_[i], p) < 0) {
+            return false;
+        }
+    }
+
+    // the box might be inside - further testing should be done here - TODO!
+    return true;
+};
+
 //! Returns true if the box intersects the camera frustum.
 Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
     if (this.dirty_) this.update();
@@ -152,7 +174,7 @@ Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
     var min_ = bbox_.min_;
     var max_ = bbox_.max_;
 
-    if (shift_ != null) {
+    if (shift_) {
         min_ = [min_[0] - shift_[0], min_[1] - shift_[1], min_[2] - shift_[2]];
         max_ = [max_[0] - shift_[0], max_[1] - shift_[1], max_[2] - shift_[2]];
     }
@@ -169,13 +191,12 @@ Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
     ];
 
     // test all frustum planes quickly
-    for (var i = 0; i < 6; i++)
-    {
+    for (var i = 0; i < 6; i++) {
         // check if all points lie on the negative side of the frustum plane
         var negative_ = true;
-        for (var j = 0; j < 8; j++)
-        {
+        for (var j = 0; j < 8; j++) {
             if (Melown.vec4.dot(this.frustumPlanes_[i], points_[j]) >= 0) {
+                //return false;
                 negative_ = false;
                 break;
             }

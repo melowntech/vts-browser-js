@@ -10,7 +10,7 @@ Melown.StencilLineState_ = null;
 /**
  * @constructor
  */
-Melown.Renderer = function(core_, div_, onUpdate_, config_) {
+Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.config_ = config_ || {};
     this.setConfigParams(config_);
     this.core_ = core_;
@@ -36,6 +36,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, config_) {
     this.hitmapCounter_ = 0;
     this.geoHitmapCounter_ = 0;
     this.clearStencilPasses_ = [];
+    this.onResizeCall_ = onResize_;
 
     this.clickEvent_ = null;
     this.hoverEvent_ = null;
@@ -122,6 +123,10 @@ Melown.Renderer.prototype.onResize = function() {
     var rect_ = this.div_.getBoundingClientRect();
     //var factor_ = window["MelownScreenScaleFactor_"];
     this.resizeGL(Math.floor(rect_.width), Math.floor(rect_.height));
+    
+    if (this.onResizeCall_) {
+        this.onResizeCall_();
+    }
 };
 
 Melown.Renderer.prototype.kill = function() {

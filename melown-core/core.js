@@ -17,7 +17,7 @@ Melown.Core = function(element_, config_, interface_) {
 
     this.map_ = null;
     this.mapInterface_ = null;
-    this.renderer_ = new Melown.Renderer(this, this.element_, null, this.config_);
+    this.renderer_ = new Melown.Renderer(this, this.element_, null, this.onResize.bind(this), this.config_);
     this.rendererInterface_ = new Melown.RendererInterface(this.renderer_);
     this.proj4_ = window["_mproj4_"];
 
@@ -27,6 +27,12 @@ Melown.Core = function(element_, config_, interface_) {
     this.loadMap(this.config_.map_);
 
     window.requestAnimFrame(this.onUpdate.bind(this));
+};
+
+Melown.Core.prototype.onResize = function() {
+    if (this.map_ != null) {
+        this.map_.markDirty();
+    }
 };
 
 Melown.Core.prototype.loadMap = function(path_) {

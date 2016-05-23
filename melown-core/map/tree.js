@@ -258,6 +258,8 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
         //debugger;
     //}
 
+    //HACK
+    this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY;
 
     if (node_.hasChildren() == false || pixelSize_[0] < this.config_.mapTexelSizeFit_) {
 
@@ -319,8 +321,8 @@ Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_, 
                 continue;
             }
 
-            if (childTile_.metanode_.hasGeometry() &&
-                this.bboxVisible(childTile_.id_, childTile_.metanode_.bbox_, cameraPos_)) {
+            if (childTile_.metanode_.hasGeometry() /*&&
+                this.bboxVisible(childTile_.id_, childTile_.metanode_.bbox_, cameraPos_)*/) {
 
                 if (!(childTile_.drawCommands_[channel_].length > 0 && this.map_.areDrawCommandsReady(childTile_.drawCommands_[channel_], priority_))) {
                     //load data for child tile
@@ -340,7 +342,7 @@ Melown.MapTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_) {
 
     if (!skipGeoTest_ && this.geocent_ && id_[0] > 0 && id_[0] < 12) {
         var hit_ = false;
-        var cv_ = this.map_.cameraVector_;
+        var cv_ = this.map_.cameraVector2_; //why vector2???!!!!!
         var bmax_ = bbox_.max_;
         var bmin_ = bbox_.min_;
         var edge_ = -0.5;
@@ -370,7 +372,6 @@ Melown.MapTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_) {
         hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmin_[2]])) < edge_);
         hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmin_[2]])) < edge_);
         hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmin_[2]])) < edge_);
-        
         
         if (!hit_) {
             return false;

@@ -34,6 +34,7 @@ Melown.Map.prototype.updateCamera = function() {
     this.camera_.setRotationMatrix(camInfo_.rotMatrix_);
     this.renderer_.cameraDistance_ = camInfo_.distance_; //needed for fog
     this.cameraVector_ = camInfo_.vector_;
+    this.cameraVector2_ = camInfo_.vector2_;
     this.cameraPosition_ = camInfo_.orbitCoords_;
     this.cameraHeight_ = camInfo_.orbitHeight_ + height_;
 

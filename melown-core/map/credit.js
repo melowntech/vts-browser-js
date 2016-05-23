@@ -13,7 +13,8 @@ Melown.MapCredit.prototype.getInfo = function() {
     return {
         "id" : this.id_,
         "notice" : this.notice_,
-        "copyrighted" : this.copyrighted_,
-        "url" : this.url_
+        //"copyrighted" : this.copyrighted_,
+        //"url" : this.url_
+        "html" : Melown.simpleWikiLinks(this.notice_)
     };
 };

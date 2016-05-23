@@ -1099,5 +1099,15 @@ Melown["Math"]["mat4ToMat3"] = Melown.mat4.toMat3;
 Melown["Math"]["mat4ToInverseMat3"] = Melown.mat4.toInverseMat3;
 Melown["Math"]["mat4Transpose"] = Melown.mat4.transpose;
 Melown["Math"]["mat3Transpose"] = Melown.mat3.transpose;
+Melown["Math"]["vec3Normalize"] = Melown.vec3.normalize;
+Melown["Math"]["vec3Dot"] = Melown.vec3.dot;
+Melown["Math"]["vec3Cross"] = Melown.vec3.cross;
+Melown["Math"]["vec3Length"] = Melown.vec3.length;
 
+/*
+Melown["Math"]["vec3Scale"] = Melown.vec3.normalize;
+Melown["Math"]["vec3Mul"] = Melown.vec3.normalize;
+Melown["Math"]["vec3Add"] = Melown.vec3.normalize;
+Melown["Math"]["vec3Sub"] = Melown.vec3.normalize;
+*/
 
