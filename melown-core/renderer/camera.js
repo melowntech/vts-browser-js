@@ -150,7 +150,7 @@ Melown.Camera.prototype.pointVisible = function(point_, shift_) {
     if (this.dirty_) this.update();
 
     if (shift_) {
-        var p = [ point_[0] - shift_[0], point_[1] - shift_[0], point_[2] - shift_[0], 1 ];
+        var p = [ point_[0] - shift_[0], point_[1] - shift_[1], point_[2] - shift_[2], 1 ];
     } else {
         var p = [ point_[0], point_[1], point_[2], 1 ];
     }

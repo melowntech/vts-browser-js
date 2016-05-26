@@ -1,6 +1,6 @@
 Melown.Http = {};
 
-Melown.Http.loadImageFormUrl = function(image_, url_, withCredentials_) {
+Melown.Http.loadImageFormUrl = function(image_, url_, withCredentials_, direct_) {
     if (!image_ instanceof Image || typeof url_ !== 'string') {
         return;
     }
@@ -15,17 +15,21 @@ Melown.Http.loadImageFormUrl = function(image_, url_, withCredentials_) {
         image_.crossOrigin = Melown.Url.isSameOrigin(url_) ? 
                             "use-credentials" : "anonymous";
     }*/
-    
-    image_.crossOrigin = withCredentials_ ? "use-credentials" : "anonymous";
+
+    if (!direct_){
+        image_.crossOrigin = withCredentials_ ? "use-credentials" : "anonymous";
+    } //else {
+        //image_.crossOrigin = "anonymous";
+    //}   
 
     image_.src = url_;
 };
 
-Melown.Http.imageFactory = function(url_, onload_, onerror_, withCredentials_) {
+Melown.Http.imageFactory = function(url_, onload_, onerror_, withCredentials_, direct_) {
     var image_ = new Image();
     image_.onerror = onerror_;
     image_.onload = onload_;
-    Melown.Http.loadImageFormUrl(image_, url_, withCredentials_);
+    Melown.Http.loadImageFormUrl(image_, url_, withCredentials_, direct_);
     return image_;
 };
 

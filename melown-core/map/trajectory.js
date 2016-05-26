@@ -10,7 +10,6 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     this.p2_.pos_[5] = this.p2_.pos_[5] < 0 ? (360 + (this.p2_.pos_[5] % 360)) : (this.p2_.pos_[5] % 360);  
     
     this.pp1_ = this.p1_.clone();
-    this.pp2_ = this.p2_.clone();
       
     //this.pp1_.convertHeightMode("fix", true);
     //this.pp2_.convertHeightMode("fix", true);
@@ -18,21 +17,63 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     //this.pp2_.convertViewMode("subj");
 
     this.mode_ = options_["mode"] || "auto";
-    this.maxHeight_ = options_["maxHeight"] || 100000;
+    this.submode_ = "piha";//options_["submode"] || "none";
+//    this.submode_ = "none";
+    this.maxHeight_ = options_["maxHeight"] || 10000000;
     this.maxDuration_ = options_["maxDuration"] || 10000;
     this.samplePeriod_ = options_["samplePeriod"] || 10;
 
-    //get distance and azimut
-    var res_ = this.map_.getDistance(this.pp1_.getCoords(), this.pp2_.getCoords());
-    this.distance_ = res_[0];
-    this.azimut_ = (res_[1] - 90) % 360;
-    this.azimut_ = (this.azimut_ < 0) ? (360 + this.azimut_) : this.azimut_;
-    
-    //console.log("azim: " + Math.round(this.azimut_) + " p1: " + this.p1_.pos_[5]  + " p2: " + this.p2_.pos_[5]);
-
     if (!this.map_.getNavigationSrs().isProjected()) {
-        this.geodesic_ = this.getGeodesic(); 
+        this.geodesic_ = this.map_.getGeodesic();
+    } 
+    
+    if (options_["distanceAzimuth"]) {
+        this.distanceAzimuth_ = true;
+        
+        this.pp2_ = this.p1_.clone();
+        if (options_["destHeight"]) {
+            this.pp2_.setHeight(options_["destHeight"]);
+        }
+
+        if (options_["destOrientation"]) {
+            this.pp2_.setHeight(options_["destOrientation"]);
+        }
+        
+        if (options_["destFov"]) {
+            this.pp2_.setHeight(options_["destFov"]);
+        }
+
+        this.pv_ = options_["pv"] || 0.15;
+
+        this.geoAzimuth_ = options_["azimuth"] || 0; 
+        this.geoDistance_ = options_["distance"] || 100;
+        this.distance_ = this.geoDistance_; 
+        this.azimuth_ = this.geoAzimuth_ % 360;
+        this.azimuth_ = (this.azimuth_ < 0) ? (360 + this.azimuth_) : this.azimuth_;
+
+    } else {
+        this.distanceAzimuth_ = false;
+            
+        this.pp2_ = this.p2_.clone();
+
+        //get distance and azimut
+        var res_ = this.map_.getDistance(this.pp1_.getCoords(), this.pp2_.getCoords());
+        this.distance_ = res_[0];
+        this.azimuth_ = (res_[1] - 90) % 360;
+        this.azimuth_ = (this.azimuth_ < 0) ? (360 + this.azimuth_) : this.azimuth_;
+
+        if (!this.map_.getNavigationSrs().isProjected()) {
+            var res_ = this.geodesic_["Inverse"](this.pp1_.pos_[2], this.pp1_.pos_[1], this.pp2_.pos_[2], this.pp2_.pos_[1]);
+            this.geoAzimuth_ = res_["azi1"]; 
+            this.geoDistance_ = res_["s12"];
+            this.azimuth_ = this.geoAzimuth_ % 360;
+            this.azimuth_ = (this.azimuth_ < 0) ? (360 + this.azimuth_) : this.azimuth_;
+        }
+
     }
+    
+    //console.log("azim: " + Math.round(this.azimuth_) + " p1: " + this.p1_.pos_[5]  + " p2: " + this.p2_.pos_[5]);
+
     
     this.detectMode();
     this.detectDuration();
@@ -99,7 +140,7 @@ Melown.MapTrajectory.prototype.detectDuration = function() {
 };
     
 Melown.MapTrajectory.prototype.generate = function() {
-    var samples_ = new Array(Math.ceil(this.duration_ / this.samplePeriod_)+1);
+    var samples_ = new Array(Math.ceil(this.duration_ / this.samplePeriod_)+(this.distanceAzimuth_?0:1));
     var index_ = 0;
     
     for (var time_ = 0; time_ <= this.duration_; time_ += this.samplePeriod_) {
@@ -130,9 +171,38 @@ Melown.MapTrajectory.prototype.generate = function() {
 
             //factor2 includes slow start and end of flight
             factor2_ =  this.getSmoothFactor(time_);
+            
+            if (this.submode_ == "piha") {
+                
+                var distanceFactor_ = (this.distance_ / this.duration_ * (time_ - this.duration_ / (2 * Math.PI) * Math.sin(2 * Math.PI / this.duration_ * time_))) / this.distance_;
 
-            p.setCoords(this.getInterpolatedCoords(factor2_));
-            p.setHeight(this.getSineHeight(factor_));            
+                //var f = (time_ / this.duration_) * Math.PI * 2;
+                //var distanceFactor_ = ((f - Math.sin(f)) / (2 * Math.PI));
+                
+                var pv_ = this.pv_;
+                var h1_ = this.pp1_.getCoords()[2]; 
+                var h2_ = this.pp2_.getCoords()[2]; 
+
+                var height_ = this.distance_ / ((this.duration_*0.001) * pv_ * Math.tan(Melown.radians(this.pp1_.getFov()) * 0.5))
+                              * (1 - Math.cos(2 * Math.PI * time_ / this.duration_))
+                              + h1_ + (h2_ - h1_) * time_  / this.duration_;
+
+                var coords_ = this.getInterpolatedCoords(distanceFactor_);
+
+                p.setCoords(coords_);
+                p.setHeight(height_);            
+            } else {
+
+                var coords_ = this.getInterpolatedCoords(factor2_);
+    
+                p.setCoords(coords_);
+                p.setHeight(this.getSineHeight(factor_));            
+            }
+            
+            if (coords_[3] != null) { //used for correction in planet mode
+                this.azimuth_ = coords_[3];
+            }
+
             p.setOrientation(this.getFlightOrienation(time_));
             p.setFov(this.getInterpolatedFov(factor_));
             p.setViewExtent(this.getInterpolatedViewExtent(factor_));
@@ -146,7 +216,9 @@ Melown.MapTrajectory.prototype.generate = function() {
         }
     }
     
-    samples_[index_] = this.p2_.clone().pos_;
+    if (!this.distanceAzimuth_) {
+        samples_[index_] = this.p2_.clone().pos_;
+    }
 
     //console.log("pos2: " + this.p2_.toString());
 
@@ -158,7 +230,19 @@ Melown.MapTrajectory.prototype.getInterpolatedCoords = function(factor_) {
     var c2_ = this.pp2_.getCoords(); 
 
     if (!this.map_.getNavigationSrs().isProjected()) {
-        //this.geodesic_ = ; 
+        var res_ = this.geodesic_["Direct"](c1_[1], c1_[0], this.geoAzimuth_, this.geoDistance_ * factor_);
+
+        var azimut_ = res_["azi1"] - res_["azi2"];
+
+        //var azimut_ = (azimut_ - 90) % 360;
+        azimut_ = (this.azimuth_ < 0) ? (360 + azimut_) : azimut_;
+
+        //azimut_ = this.azimuth_;
+
+
+        return [ res_["lon2"], res_["lat2"],
+                 c1_[2] + (c2_[2] - c1_[2]) * factor_, azimut_];
+
     } else {
         return [ c1_[0] + (c2_[0] - c1_[0]) * factor_,
                  c1_[1] + (c2_[1] - c1_[1]) * factor_,
@@ -232,7 +316,7 @@ Melown.MapTrajectory.prototype.getFlightOrienation = function(time_) {
     var factor_ = 0;
 
     //get fly direction angle
-    fo_[0] = this.azimut_ % 360;
+    fo_[0] = this.azimuth_ % 360;
 
     if (fo_[0] < 0) {
         fo_[0] = 360 - Math.abs(fo_[0]);

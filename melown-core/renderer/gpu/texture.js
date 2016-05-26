@@ -164,16 +164,25 @@ Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
 
         this.createFromImage(this.image_, this.filter_, this.repeat_);
         this.image_ = null;
+
+        if (onLoaded_) {
+            onLoaded_();
+        }
+
     }).bind(this), (function () {
 
         if (this.core_ != null && this.core_.killed_ == true) {
             return;
         }
 
-        if (onError_ != null) {
+        if (onError) {
             onError_();
         }
-    }).bind(this));
+    }).bind(this),
+     
+     null, direct_
+     
+     );
 
 };
 

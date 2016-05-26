@@ -414,6 +414,7 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
         if (depth_ == null) {
             gl_.disable(gl_.DEPTH_TEST);
         } else {
+            gl_.depthFunc(gl_.LEQUAL);
             gl_.enable(gl_.DEPTH_TEST);
         }
     }

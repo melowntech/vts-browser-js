@@ -321,19 +321,19 @@ Melown.Map.prototype.getDistance = function(coords_, coords2_, includingHeight_)
     var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
 
     if (!this.getNavigationSrs().isProjected()) {
-        var geod = new GeographicLib["Geodesic"]["Geodesic"](navigationSrsInfo_["a"],
-                                                       (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
+        var geod = this.getGeodesic(); //new GeographicLib["Geodesic"]["Geodesic"](navigationSrsInfo_["a"],
+                                       //                   (navigationSrsInfo_["a"] / navigationSrsInfo_["b"]) - 1.0);
 
-        var r = geod["Inverse"](coords_[1], coords_[0], coords2_[0], coords2_[0]);
+        var r = geod["Inverse"](coords_[1], coords_[0], coords2_[1], coords2_[0]);
 
         if (d > (navigationSrsInfo_["a"] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
             if (includingHeight_) {
                 return [Math.sqrt(r["s12"]*r["s12"] + dz_*dz_), r.az1];
             } else {
-                return [r["s12"], r["az1"]];
+                return [r["s12"], r["azi1"]];
             }
         } else {
-            return [d, r["az1"]];
+            return [d, r["azi1"]];
         }
 
     } else {

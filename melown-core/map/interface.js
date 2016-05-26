@@ -226,6 +226,14 @@ Melown.MapInterface.prototype.generateTrajectory = function(p1_, p2_, options_) 
     return (new Melown.MapTrajectory(this.map_, p1_, p2_, options_)).generate();
 };
 
+Melown.MapInterface.prototype.generatePIHTrajectory = function(position_, azimuth_, distance_, options_) {
+    var p_ = new Melown.MapPosition(this.map_, position_);
+    options_["distance"] = distance_;
+    options_["azimuth"] = azimuth_;
+    options_["distanceAzimuth"] = true;
+    return (new Melown.MapTrajectory(this.map_, p_, p_, options_)).generate();
+};
+
 Melown.RendererInterface.prototype.setConfigParams = function(params_) {
     this.map_.setConfigParams(params_);
     return this;
