@@ -15,6 +15,18 @@ Melown.Autopilot = function(browser_) {
     this.fov_ = 90;
 };
 
+Melown.Autopilot.prototype.flyToDAH = function(distance_, azimuth_, height_, options_) {
+    var map_ = this.browser_.getCore().getMap();
+    if (!map_) {
+        return;
+    }
+    
+    options_ = options_ || {};
+    
+    var trajectory_ = map_.generatePIHTrajectory(map_.getPosition(), distance_, azimuth_, height_, options_);
+    this.setTrajectory(trajectory_, options_["samplePeriod"] || 10, options_); 
+};
+
 Melown.Autopilot.prototype.flyTo = function(position_, options_) {
     var map_ = this.browser_.getCore().getMap();
     if (!map_) {
@@ -28,7 +40,7 @@ Melown.Autopilot.prototype.flyTo = function(position_, options_) {
 
 Melown.Autopilot.prototype.flyTrajectory = function(trajectory_, sampleDuration_) {
     var options_ = {};
-    this.setTrajectory(trajectory_, sampleDuration_, options_);
+    this.setTrajectory(trajectory_, sampleDuration_ || 10, {});
 };
 
 Melown.Autopilot.prototype.cancelFlight = function() {

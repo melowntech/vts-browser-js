@@ -342,6 +342,7 @@ Melown.BrowserInterface.prototype.getGpuCache = function() {
 };
 
 Melown.BrowserInterface.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
+    if(!this.map_) return;
     return this.map_.getHitCoords(screenX_, screenY_, mode_, lod_);
 };
 
@@ -349,6 +350,16 @@ Melown.BrowserInterface.prototype.flyTo = function(position_, options_) {
     if(!this.map_) return;
     this.autopilot_.flyTo(position_, options_); 
     return this;    
+};
+
+Melown.BrowserInterface.prototype.generateTrajectory = function(p1_, p2_, options_) {
+    if(!this.map_) return;
+    return this.map_.generateTrajectory(p1_, p2_, options_);
+};
+
+Melown.BrowserInterface.prototype.generatePIHTrajectory = function(position_, azimuth_, distance_, options_) {
+    if(!this.map_) return;
+    return this.map_.generatePIHTrajectory(position_, azimuth_, distance_, options_);
 };
 
 Melown.BrowserInterface.prototype.flyTrajectory = function(trajectory_, sampleDuration_) {
