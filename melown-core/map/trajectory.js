@@ -19,9 +19,11 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     this.mode_ = options_["mode"] || "auto";
     this.submode_ = "piha";//options_["submode"] || "none";
 //    this.submode_ = "none";
-    this.maxHeight_ = options_["maxHeight"] || 10000000;
+    this.maxHeight_ = options_["maxHeight"] || 1000000000;
     this.maxDuration_ = options_["maxDuration"] || 10000;
     this.samplePeriod_ = options_["samplePeriod"] || 10;
+
+    this.pv_ = options_["pv"] || 0.15;
 
     if (!this.map_.getNavigationSrs().isProjected()) {
         this.geodesic_ = this.map_.getGeodesic();
@@ -42,8 +44,6 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
         if (options_["destFov"]) {
             this.pp2_.setHeight(options_["destFov"]);
         }
-
-        this.pv_ = options_["pv"] || 0.15;
 
         this.geoAzimuth_ = options_["azimuth"] || 0; 
         this.geoDistance_ = options_["distance"] || 100;
