@@ -73,6 +73,13 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
 };
 
 Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
+    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
+    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
+    
+    if (doNotUseGpu_) {
+        doNotUseGpu_ = doNotUseGpu_;
+    }
+
     if (this.loadState_ == 2) { //loaded
         this.map_.resourcesCache_.updateItem(this.cacheItem_);
 
@@ -82,6 +89,10 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
             }
 
             if (this.stats_.renderBuild_ > 1000 / 20) {
+                return false;
+            }
+
+            if (doNotUseGpu_) {
                 return false;
             }
 
@@ -95,7 +106,9 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
             this.stats_.renderBuild_ += performance.now() - t; 
         }
 
-        this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+        if (!doNotLoad_) {
+            this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+        }
         return true;
     } else {
         if (this.loadState_ == 0) { 

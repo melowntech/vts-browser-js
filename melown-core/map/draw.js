@@ -6,6 +6,7 @@ Melown.Map.prototype.draw = function() {
     this.maxGpuUsed_ = this.gpuCache_.getMaxCost() * 0.9; 
     this.cameraCenter_ = this.position_.getCoords();
     this.stats_.renderBuild_ = 0;
+    this.drawTileCounter_ = 0;
 
     this.tree_.draw();
 
@@ -22,10 +23,6 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
         
         switch (command_.type_) {
             case "submesh":
-
-                if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
-                    return false;
-                }
                 
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_; 
@@ -50,6 +47,8 @@ Melown.Map.prototype.applyCredits = function(tile_) {
 
 Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, priority_, doNotLoad_) {
     //var commands_ = tile_.drawCommands_;
+
+    this.drawTileCounter_++;
     
     for (var i = 0, li = commands_.length; i < li; i++) {
         var command_ = commands_[i];
@@ -60,11 +59,6 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
                 break;
 
             case "submesh":
-            
-                if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
-                    break;
-                }
-
                 //this.renderer_.gpu_.setState(this.drawBlendedTileState_);
                 
                 var mesh_ = command_.mesh_; 
@@ -704,6 +698,12 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [0,255,0,255], pos_[2]);
     }
 
+    //draw order
+    if (this.drawOrder_) {
+        var text_ = "" + this.drawTileCounter_;
+        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [0,255,0,255], pos_[2]);
+    }
+
     if (this.drawSurfaces_) {
         var text_ = JSON.stringify(tile_.surface_.id_);
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
@@ -752,7 +752,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
 
     //draw distance
     if (this.drawDistance_) {
-        var text_ = "" + pixelSize_[1].toFixed(2) + "  " + pixelSize_[0].toFixed(2) + "  " + node_.pixelSize_.toFixed(2);
+        var text_ = "" + pixelSize_[1].toFixed(2) + "  " + pixelSize_[0].toFixed(3) + "  " + node_.pixelSize_.toFixed(3);
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
     }
 

@@ -90,6 +90,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawBoundLayers_ = false;
     this.drawSurfaces_ = false;
     this.drawCredits_ = false;
+    this.drawOrder_ = false;
+    this.drawTileCounter_ = 0;
 
     this.ignoreTexelSize_ = false;
     this.drawFog_ = this.config_.mapFog_;
@@ -519,7 +521,6 @@ Melown.Map.prototype.drawMap = function() {
     }
 
     //this.renderer_.paintGL();
-
     this.draw();
 
     if (!this.getNavigationSrs().isProjected()) {    
@@ -582,9 +583,9 @@ Melown.Map.prototype.update = function() {
         //this.renderer_.drawImage(300, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
         //this.renderer_.drawImage(558, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
 
+        console.log("" + this.stats_.gpuRenderUsed_);
     }
 
     this.stats_.end(dirty_);
-
 };
 

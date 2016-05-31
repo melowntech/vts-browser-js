@@ -123,6 +123,10 @@ Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
     var camPos_ = this.map_.cameraPosition_;  
     var camVec_ = this.map_.cameraVector_;
     
+    if (tile_.id_[0] == 18) {
+        tile_ = tile_;
+    }
+    
     for (var i = 0; i < 4; i++) {
         var child_ = tile_.children_[i];
         
@@ -133,10 +137,12 @@ Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
                 var pos_ = child_.metanode_.bbox_.center();
                 var vec_ = [pos_[0] - camPos_[0], pos_[1] - camPos_[1], pos_[2] - camPos_[2]];
                 var d = Melown.vec3.length(vec_);
+                var res_ = this.tilePixelSize(child_.metanode_.bbox_, 1, camPos_, camPos_, true);
                 //vec_ = Melown.vec3.normalize(vec_);
                 //angle_ = (2-(Melown.vec3.dot(camVec_, vec_) + 1)) * d;
                 //angle_ = (2-(Melown.vec3.dot(camVec_, vec_) + 1));
                 angle_ = d;
+                angle_ = res_[1];
             }
                         
             angles_.push([i, angle_]);    
@@ -156,6 +162,8 @@ Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
         }
         
     } while(!sorted_);
+
+    //console.log(JSON.stringify(tile_.id_) + "   " + JSON.stringify(angles_));
 
 /*
     var seq_ = [];
@@ -259,7 +267,12 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
     //}
 
     //HACK
-    this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY;
+    //this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY;
+
+    if (this.map_.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
+        node_ = node_;
+    }
+
 
     if (node_.hasChildren() == false || pixelSize_[0] < this.config_.mapTexelSizeFit_) {
 
@@ -267,7 +280,9 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
         if (log_) { console.log("draw-tile: drawn"); }
 
           
-        if (this.config_.mapAllowHires_ && node_.hasChildren() && this.canDrawDetailedLod(tile_)) {
+        if (this.config_.mapAllowHires_ && node_.hasChildren() &&
+            (this.map_.stats_.gpuRenderUsed_ < this.maxGpuUsed_) &&
+            this.canDrawDetailedLod(tile_, priority_, preventLoad_)) {
             this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, priority_, true, preventLoad_);
             return [true, preventRedener_, true];
         } else {
@@ -291,13 +306,13 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
     return [true, preventRedener_, preventLoad_];
 };
 
-Melown.MapTree.prototype.canDrawDetailedLod = function(tile_, priority_) {
+Melown.MapTree.prototype.canDrawDetailedLod = function(tile_, priority_, preventLoad_) {
     if (tile_.lastRenderState_) {
         //debugger;
     }
 	var channel_ = this.map_.drawChannel_;
 	
-    return !(tile_.drawCommands_[channel_].length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_)) && !tile_.lastRenderState_;
+    return !(tile_.drawCommands_[channel_].length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) && !tile_.lastRenderState_;
 };
 
 Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_, childrenSequence_, priority_) {
