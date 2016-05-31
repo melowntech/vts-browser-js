@@ -1,3 +1,5 @@
+CLOSURECOMPILER=../externals/closure-compiler/current/compiler.jar
+
 mkdir build 
 
 cd melown-core
@@ -87,7 +89,7 @@ cat utils/libs/proj4.js \
     ../build/melown-core-v1-merge-tmp.js > ../build/melown-core-v1-merge.js
 
 # minify lib
-java -jar ../../test-app/compiler/compiler.jar --compilation_level ADVANCED_OPTIMIZATIONS --js _minify.js ../build/melown-core-v1-merge-tmp.js --js_output_file ../build/melown-core-v1-tmp.js
+java -jar ${CLOSURECOMPILER} --compilation_level ADVANCED_OPTIMIZATIONS --js _minify.js ../build/melown-core-v1-merge-tmp.js --js_output_file ../build/melown-core-v1-tmp.js
 cat utils/libs/proj4.js \
     utils/libs/geographics-nomini.js \
     ../build/melown-core-v1-tmp.js > ../build/melown-core-v1-inspector-mini.js
@@ -164,7 +166,7 @@ cat utils/matrix.js \
     update.js > ../build/melown-core-v1-merge-tmp2.js
 
 # minify lib2
-java -jar ../../test-app/compiler/compiler.jar --compilation_level ADVANCED_OPTIMIZATIONS --js _minify.js ../build/melown-core-v1-merge-tmp2.js --js_output_file ../build/melown-core-v1-tmp2.js
+java -jar ${CLOSURECOMPILER} --compilation_level ADVANCED_OPTIMIZATIONS --js _minify.js ../build/melown-core-v1-merge-tmp2.js --js_output_file ../build/melown-core-v1-tmp2.js
 cat utils/libs/proj4.js \
     utils/libs/geographics-nomini.js \
     ../build/melown-core-v1-tmp2.js > ../build/melown-core-v1-mini.js
@@ -176,8 +178,3 @@ rm ../build/geodata-worker-tmp.js
 # rm ../build/melown-core-v1-merge-tmp2.js
 
 cd ..
-
-
-
-
-
