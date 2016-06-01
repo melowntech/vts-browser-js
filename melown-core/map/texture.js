@@ -62,6 +62,10 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
         //this.tile_.validate();
     }
 
+    if (this.mask_) {
+        this.mask_.killImage(); 
+    }
+
     this.loadState_ = 0;
     this.cacheItem_ = null;
 };
@@ -73,6 +77,10 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
 
         this.stats_.graphsFluxTexture_[1][0]++;
         this.stats_.graphsFluxTexture_[1][1] += this.gpuTexture_.size_;
+
+        if (this.mask_) {
+            this.mask_.killGpuTexture(); 
+        }
     }
 
     this.gpuTexture_ = null;
@@ -293,7 +301,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
 
                 if (this.stats_.renderBuild_ > 1000 / 20) {
                     //console.log("testure resource build overflow");
-                    return false;
+                    //return false;
                 }
                 
                 if (doNotUseGpu_) {

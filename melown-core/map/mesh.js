@@ -93,7 +93,7 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
             }
 
             if (this.stats_.renderBuild_ > 1000 / 20) {
-                return false;
+                //return false;
             }
 
             if (doNotUseGpu_) {
