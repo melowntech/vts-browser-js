@@ -4,7 +4,7 @@ Melown.Core.prototype.initConfig = function() {
     this.config_ = {
         map_ : null,
         mapCache_ : 900,
-        mapGPUCache_ : 160,
+        mapGPUCache_ : 360,
         mapMetatileCache_ : 60,
         mapTexelSizeFit_ : 1.1,
         mapTexelSizeTolerance_ : 2.2,

@@ -27,8 +27,8 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_; 
                 
-                if (!(mesh_ && mesh_.isReady(doNotLoad_, priority_) &&
-                      (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_)))) ) {
+                if (!(mesh_ && mesh_.isReady(doNotLoad_, priority_, true) &&
+                      (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_, true)))) ) {
                      return false;   
                 }
                 

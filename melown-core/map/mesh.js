@@ -72,7 +72,7 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     this.gpuCacheItem_ = null;
 };
 
-Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
+Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {
     var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
     doNotLoad_ = doNotLoad_ || doNotUseGpu_;
     
@@ -82,6 +82,10 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
 
     if (this.loadState_ == 2) { //loaded
         this.map_.resourcesCache_.updateItem(this.cacheItem_);
+        
+        if (doNotCheckGpu_) {
+            return true;
+        }
 
         if (this.gpuSubmeshes_.length == 0) {
             if (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_) {
