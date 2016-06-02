@@ -16,14 +16,17 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
     this.currentAlpha_ = 1.0;
     this.creditsNumbers_ = [];
 
-/*
-    json_["availability"] = {
-            "type" : "negative-type",
-            "mime": "image/png"
-//            "type" : "negative-code",
-//            "codes": [301, 302, 404]
-        };  
-*/
+    if (id_ == "esri-world-imagery") {
+        json_["availability"] = {
+             // "type" : "negative-type",
+             // "mime": "image/png"
+             // "type" : "negative-code",
+             // "codes": [301, 302, 404]
+              "type" : "negative-size",
+              "size": 2521
+            };  
+    }
+
 
     this.availability_ = json_["availability"] ? {} : null;
 
@@ -32,6 +35,7 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
         this.availability_.type_ = p["type"];
         this.availability_.mime_ = p["mime"];
         this.availability_.codes_ = p["codes"];
+        this.availability_.size_ = p["size"];
         //this.availability_.coverageUrl_ = p["coverageUrl"];
     }
 

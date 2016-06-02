@@ -9,7 +9,7 @@ Melown.Core.prototype.initConfig = function() {
         mapTexelSizeFit_ : 1.1,
         mapTexelSizeTolerance_ : 2.2,
         mapDownloadThreads_ : 6,
-        mapMaxProcessingTime_ : 1000/20,
+        mapMaxProcessingTime_ : 1000*20,
         mapMobileMode_ : false,
         mapMobileTexelDegradation_ : 2,
         mapNavSamplesPerViewExtent_ : 4,

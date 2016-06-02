@@ -28,6 +28,7 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
             switch (this.checkType_) {
                 case "negative-type": this.checkValue_ = layer_.availability_.mime_; break;
                 case "negative-code": this.checkValue_ = layer_.availability_.codes_; break;
+                case "negative-size": this.checkValue_ = layer_.availability_.size_; break;
             }
         }       
     }
@@ -239,10 +240,11 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
 
         case "negative-type":
         case "negative-code":
+        case "negative-size":
         
             if (this.checkStatus_ != 2) {
                 if (this.checkStatus_ == 0) {
-                    this.scheduleHeadRequest(priority_);
+                    this.scheduleHeadRequest(priority_, (this.checkType_ == "negative-size"));
                 } else if (this.checkStatus_ == -1) {
             
                     if (this.extraInfo_) {
@@ -387,18 +389,18 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
     this.mapLoaderCallLoaded_();
 };
 
-Melown.MapTexture.prototype.scheduleHeadRequest = function(priority_) {
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this), priority_);
+Melown.MapTexture.prototype.scheduleHeadRequest = function(priority_, downloadAll_) {
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this, downloadAll_), priority_);
 };
 
 //Melown.onlyOneHead_ = false;
 
-Melown.MapTexture.prototype.onLoadHead = function(url_, onLoaded_, onError_) {
+Melown.MapTexture.prototype.onLoadHead = function(downloadAll_, url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    var onerror_ = this.onLoadHeadError.bind(this);
-    var onload_ = this.onHeadLoaded.bind(this);
+    var onerror_ = this.onLoadHeadError.bind(this, downloadAll_);
+    var onload_ = this.onHeadLoaded.bind(this, downloadAll_);
 
     this.checkStatus_ = 1;
 /*
@@ -410,10 +412,15 @@ Melown.MapTexture.prototype.onLoadHead = function(url_, onLoaded_, onError_) {
 
     //url_ = "http://m2.mapserver.mapy.cz/ophoto0203-m/20-568396-351581";
 */
-    Melown.Http.headRequest(url_, onload_, onerror_);
+    if (downloadAll_) {
+        Melown.loadBinary(url_, onload_, onerror_);
+    } else {
+        Melown.Http.headRequest(url_, onload_, onerror_);
+    }
+
 };
 
-Melown.MapTexture.prototype.onLoadHeadError = function() {
+Melown.MapTexture.prototype.onLoadHeadError = function(downloadAll_) {
     if (this.map_.killed_ == true){
         return;
     }
@@ -421,7 +428,7 @@ Melown.MapTexture.prototype.onLoadHeadError = function() {
     this.mapLoaderCallError_();
 };
 
-Melown.MapTexture.prototype.onHeadLoaded = function(data_, status_) {
+Melown.MapTexture.prototype.onHeadLoaded = function(downloadAll_, data_, status_) {
     if (this.map_.killed_ == true){
         return;
     }
@@ -442,7 +449,16 @@ Melown.MapTexture.prototype.onHeadLoaded = function(data_, status_) {
     }*/
     
     switch (this.checkType_) {
+        case "negative-size":
+            if (data_) {
+                if (data_.byteLength == this.checkValue_) {
+                    this.checkStatus_ = -1;
+                }
+            }
+            break;
+            
         case "negative-type":
+        case "negative-size":
             if (data_) {
                 if (data_.indexOf(this.checkValue_) != -1) {
                     this.checkStatus_ = -1;
