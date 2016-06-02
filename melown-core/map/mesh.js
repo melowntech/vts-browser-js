@@ -92,8 +92,9 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
                 return false;
             }
 
-            if (this.stats_.renderBuild_ > 1000 / 20) {
-                //return false;
+            if (this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
+                this.map_.markDirty();
+                return false;
             }
 
             if (doNotUseGpu_) {

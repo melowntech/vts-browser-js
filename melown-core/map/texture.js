@@ -299,9 +299,10 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
                     return false;
                 }
 
-                if (this.stats_.renderBuild_ > 1000 / 20) {
+                if (this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
                     //console.log("testure resource build overflow");
-                    //return false;
+                    this.map_.markDirty();
+                    return false;
                 }
                 
                 if (doNotUseGpu_) {

@@ -32,6 +32,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.freeLayers_ = [];
     this.boundLayers_ = [];
     this.dynamicLayers_ = [];
+    this.tileBuffer_ = new Array(500);
 
     this.initialView_ = null;
     this.currentView_ = new Melown.MapView(this, {});
@@ -416,9 +417,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
         case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 2.2); break;
         case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;
-        case "mapMeshProcessingFactor":       this.config_.mapMeshProcessingFactor_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1); break;
-        case "mapTextureProcessingFactor":    this.config_.mapTextureProcessingFactor_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1); break;
-        case "mapMetatileProcessingFactor":   this.config_.mapMetatileProcessingFactor_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
+        case "mapMaxProcessingTime":          this.config_.mapMaxProcessingTime_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1000/20); break;
         case "mapMobileMode":                 this.config_.mapMobileMode_ = Melown.validateBool(value_, false); break;
         case "mapMobileTexelDegradation":     this.config_.mapMobileTexelDegradation_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
         case "mapNavSamplesPerViewExtent":    this.config_.mapNavSamplesPerViewExtent_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 10); break;
@@ -442,9 +441,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapTexelSizeFit":               return this.config_.mapTexelSizeFit_;
         case "mapTexelSizeTolerance":         return this.config_.mapTexelSizeTolerance_;
         case "mapDownloadThreads":            return this.config_.mapDownloadThreads_;
-        case "mapMeshProcessingFactor":       return this.config_.mapMeshProcessingFactor_;
-        case "mapTexturesProcessingFactor":   return this.config_.mapTextureProcessingFactor_;
-        case "mapMetatileProcessingFactor":   return this.config_.mapMetatileProcessingFactor_;
+        case "mapMaxProcessingTime":          return this.config_.mapMaxProcessingTime_;
         case "mapMobileMode":                 return this.config_.mapMobileMode_;
         case "mapMobileTexelDegradation":     return this.config_.mapMobileTexelDegradation_;
         case "mapNavSamplesPerViewExtent":    return this.config_.mapNavSamplesPerViewExtent_;

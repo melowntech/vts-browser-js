@@ -7,8 +7,27 @@ Melown.Map.prototype.draw = function() {
     this.cameraCenter_ = this.position_.getCoords();
     this.stats_.renderBuild_ = 0;
     this.drawTileCounter_ = 0;
+    
+    for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+        this.tileBuffer_[i] = null;    
+    }
 
     this.tree_.draw();
+    
+    var cameraPos_ = this.cameraPosition_;
+    
+    for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+        var tiles_ = this.tileBuffer_[i];
+        
+        if (tiles_) {
+            for (var j = 0, lj = tiles_.length; j < lj; j++) {
+                var tile_ = tiles_[j];
+                
+                this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+            }
+        } 
+    }
+    
 
     //loop currently used free layers
     for (var i = 0, li = this.freeLayers_.length; i < li; i++) {
@@ -48,7 +67,9 @@ Melown.Map.prototype.applyCredits = function(tile_) {
 Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, priority_, doNotLoad_) {
     //var commands_ = tile_.drawCommands_;
 
-    this.drawTileCounter_++;
+    if (commands_.length > 0) {
+        this.drawTileCounter_++;
+    }
     
     for (var i = 0, li = commands_.length; i < li; i++) {
         var command_ = commands_[i];
