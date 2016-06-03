@@ -1,7 +1,9 @@
-// Presentation constructor
+/**
+ * @constructor
+ */
 
 Melown.Presentation = function(browser_) {
-    this.presentation_ = 'test';
+    this.browser_ = browser_;
 };
 
 Melown.Presentation.prototype.add = function(id_, source_) {
