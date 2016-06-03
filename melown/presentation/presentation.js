@@ -1,3 +1,4 @@
+// Presentation module goes here
 /**
  * @constructor
  */
@@ -45,3 +46,4 @@ Melown.Presentation.prototype.Utils = {
     animTime : 600, // Default css transition time
     activeToolbox : 'panel' // Default active toolbox (panel | subtitles)
 };
+

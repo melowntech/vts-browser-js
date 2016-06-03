@@ -1,3 +1,5 @@
+// All Utilities needed for proper presentation working
+
 Melown.Presentation.prototype.Utils.init = function(HTMLtemplate) {
     var templateSwitcher = '<div id="templateSwitcher"><p onclick="useToolbox(\'panel\')">Use right panel</p><p onclick="useToolbox(\'subtitles\')">Use subtitles</p></div>';
     var templatePanelPrefix = '<div class="panelContainer"><div class="swipeControl top"></div><div class="toolboxContainer">';
@@ -169,3 +171,4 @@ Melown.Presentation.prototype.Utils.useToolbox = function(which) {
         handleSubtitlesPosition(0);
     }
 }
+

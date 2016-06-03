@@ -1,3 +1,5 @@
+// Rendering of DOM elements for presentations
+
 Melown.Presentation.prototype.Utils.renderControl = function() {
     // Set every <section> tag excluding the first one to not to be displayed
     sectionTags = document.getElementsByClassName('toolboxContainer')[0].querySelectorAll('section');
@@ -41,3 +43,4 @@ Melown.Presentation.prototype.Utils.getElementsTrueHeight = function(elems) {
         elems[i].style.height = maxHeight + 'px';
     }
 }
+

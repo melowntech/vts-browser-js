@@ -1,3 +1,5 @@
+// Presentation handlers of events
+
 Melown.Presentation.prototype.Utils.handleArticle = function(node) {
     
     var rightPanel = document.getElementsByClassName('toolboxContainer')[0];
@@ -136,3 +138,4 @@ Melown.Presentation.prototype.Utils.showSections = function(elem) {
         }, 50);    
     }, animTime);
 }
+
