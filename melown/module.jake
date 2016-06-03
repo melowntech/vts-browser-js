@@ -6,7 +6,16 @@ var files = [
     'skydome.jpg',
     
     'presentation/presentation.js',
-    'presentation/htmlLoader.js',
+    'presentation/utils.js',
+    'presentation/render.js',
+    'presentation/handlers.js',
+    'presentation/css/main.css',
+    'presentation/css/panel.css',
+    'presentation/css/subtitles.css',
+    'presentation/css/img/up.png',
+    'presentation/css/img/right.png',
+    'presentation/css/img/dw.png',
+    'presentation/css/img/left.png',
 
     'autopilot/autopilot.js',
 

@@ -1,0 +1,129 @@
+.panelContainer {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 355px;
+    min-height: 50px;
+    background-color: rgba(255,255,255,0.9);
+    border-radius: 3px;
+    overflow: hidden;
+    opacity: 0;
+    -webkit-transition: opacity 1s ease;
+    -moz-transition: opacity 1s ease;
+    transition: opacity 1s ease;   
+}
+
+.toolboxContainer {
+    position: absolute;
+    min-height: 50px;
+    overflow: hidden;
+    height: 0;
+    opacity: 1;
+    padding: 0 25px;
+    -webkit-transition: all 0.6s ease;
+    -moz-transition: all 0.6s ease;
+    transition: all 0.6s ease;
+}
+
+.toolboxContainer article {
+    position: relative;
+    padding: 0;
+    margin-top: 20px;
+    top: 0;
+    -webkit-transition: all 0.6s ease;
+    -moz-transition: all 0.6s ease;
+    transition: all 0.6s ease;
+}
+
+.toolboxContainer article.nonFirst {
+    margin-top: -60px;
+}
+
+.toolboxContainer section {
+    font-family: 'Open Sans',Verdana,Arial,Tahoma,Calibri,Geneva,sans-serif;
+    font-weight: 300;
+    font-size: 13px;
+    width: 305px;
+    min-height: 200px;
+    max-height: 800px;
+    margin: 0;
+    position: relative;
+    vertical-align: top;
+}
+
+.panelContainer div.swipeControl {
+    position: absolute;
+    top: 70px;
+    height: 60px;
+    width: 355px;
+    text-align: center;
+    opacity: 0;
+    overflow: hidden;
+    -webkit-transition: all 0.6s ease;
+    -moz-transition: all 0.6s ease;
+    transition: all 0.6s ease;
+}
+
+.panelContainer div.swipeControl.top {
+    top : 0;
+}
+
+.toolboxContainer img {
+    max-width: 295px;
+    border-radius: 3px;
+    border: double 5px rgb(216, 216, 216);
+}
+
+#btnUp {
+    background-image: url('../img/arrowup.png');
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    margin-left: -70px;
+}
+
+#btnDw {
+    background-image: url('../img/arrowdw.png');
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    margin-left: -70px;
+}
+
+#btnUp:hover {
+    background-position: 50% 30%;
+}
+
+#btnDw:hover {
+    background-position: 50% 80%;
+}
+
+.toolboxContainer section.hidden {
+    max-height: 0px;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+.toolboxContainer section h3 {
+    font-weight: 300;
+    font-size: 18px;
+    margin: 0;
+    padding: 15px 0 15px;
+}
+
+.toolboxContainer section h4 {
+    margin: 0;
+    padding: 10px 0 10px 0;
+    font-size: 15px;
+}
+
+.toolboxContainer section a, .toolboxContainer section p a {
+    color: #0066ff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.toolboxContainer section a:hover, .toolboxContainer section p a:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}

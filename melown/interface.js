@@ -13,6 +13,7 @@ Melown.BrowserInterface = function(element_, config_) {
     this.map_ = null;//this.core_.getMap();
     this.ui_ = this.browser_.ui_;
     this.autopilot_ = this.browser_.autopilot_;
+    this.presentation_ = this.browser_.presentation_;
     this.core_.on("map-loaded", (function(){ this.map_ = this.core_.getMap(); }).bind(this));
     this.core_.on("map-unloaded", (function(){ this.map_ = null; }).bind(this));    
 };
