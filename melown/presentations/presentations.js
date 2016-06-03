@@ -1,7 +1,7 @@
 // Presentation constructor
 
 Melown.Presentation = function(browser_) {
-    this.presentation = 
+    this.presentation_ = 'test';
 };
 
 Melown.Presentation.prototype.add = function(id_, source_) {
