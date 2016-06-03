@@ -6,6 +6,7 @@ var files = [
     'skydome.jpg',
     
     'presentations/presentations.js',
+    'presentations/htmlLoader.js',
 
     'autopilot/autopilot.js',
 
