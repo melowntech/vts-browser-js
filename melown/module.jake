@@ -4,6 +4,8 @@ var files = [
     'browser.js',
     'browser.css',
     'skydome.jpg',
+    
+    'presentations/presentations.js',
 
     'autopilot/autopilot.js',
 
