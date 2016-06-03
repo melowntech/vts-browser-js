@@ -20,6 +20,7 @@ Melown.MapSubmesh = function(mesh_, stream_) {
     this.undulationDeltas_ = null;
     this.mesh_ = mesh_;
     this.statsCounter_ = 0;
+    this.valid_ = true;
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
@@ -124,6 +125,10 @@ struct VerticesBlock {
     var index_ = stream_.index_;
 
     var numVertices_ = data_.getUint16(stream_.index_, true); index_ += 2;
+
+    if (!numVertices_) {
+        this.valid_ = false;
+    }
 
     var externalUVs_ = null;
     var undulationDeltas_ = null;

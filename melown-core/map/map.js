@@ -580,7 +580,7 @@ Melown.Map.prototype.update = function() {
         //this.renderer_.drawImage(300, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
         //this.renderer_.drawImage(558, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
 
-        console.log("" + this.stats_.gpuRenderUsed_);
+        //console.log("" + this.stats_.gpuRenderUsed_);
     }
 
     this.stats_.end(dirty_);

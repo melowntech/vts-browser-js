@@ -197,16 +197,26 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
     };
 */
 
-    this.parseMeshHeader(stream_);
-
-    this.submeshes_ = new Array(this.numSubmeshes_);
-
-    for (var i = 0, li = this.numSubmeshes_; i < li; i++) {
-        this.submeshes_[i] = new Melown.MapSubmesh(this, stream_);
-        this.size_ += this.submeshes_[i].size_;
-        this.faces_ += this.submeshes_[i].faces_;
+    if (!this.parseMeshHeader(stream_)) {
+        return;
     }
 
+    //if (!this.numSubmeshes_) {
+        //debugger;
+    //}
+
+    this.submeshes_ = [];
+
+    for (var i = 0, li = this.numSubmeshes_; i < li; i++) {
+        var submesh_ = new Melown.MapSubmesh(this, stream_);
+        if (submesh_.valid_) {
+            this.submeshes_.push(submesh_); 
+            this.size_ += this.submeshes_[i].size_;
+            this.faces_ += this.submeshes_[i].faces_;
+        }
+    }
+    
+    this.numSubmeshes_ = this.submeshes_.length;
 };
 
 Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
@@ -217,17 +227,19 @@ Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
     magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
 
     if (magic_ != "ME") {
-        return;
+        return false;
     }
 
     this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
 
     if (this.version_ > 2) {
-        return;
+        return false;
     }
 
     this.meanUndulation_ = streamData_.getFloat64(stream_.index_, true); stream_.index_ += 8;
     this.numSubmeshes_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    
+    return true;
 };
 
 Melown.MapMesh.prototype.addSubmesh = function(submesh_) {
