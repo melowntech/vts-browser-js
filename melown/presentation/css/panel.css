@@ -75,7 +75,7 @@
 }
 
 #btnUp {
-    background-image: url('../img/arrowup.png');
+    background-image: url('./img/arrowup.png');
     position: absolute;
     bottom: 15px;
     left: 50%;
@@ -83,7 +83,7 @@
 }
 
 #btnDw {
-    background-image: url('../img/arrowdw.png');
+    background-image: url('./img/arrowdw.png');
     position: absolute;
     top: 15px;
     left: 50%;
