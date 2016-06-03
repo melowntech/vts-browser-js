@@ -5,8 +5,8 @@ var files = [
     'browser.css',
     'skydome.jpg',
     
-    'presentations/presentations.js',
-    'presentations/htmlLoader.js',
+    'presentation/presentation.js',
+    'presentation/htmlLoader.js',
 
     'autopilot/autopilot.js',
 
