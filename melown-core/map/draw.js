@@ -609,16 +609,28 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
             }
 
             //filter out extra bounds if they are not needed
+            //and remove all layer after first FullAndOpaque 
             if (fullAndOpaqueCounter_ > 0) {
+                var newSequence_ = [];
+                var firstFull_ = false; 
+                
                 for (var i = bound_.sequence_.length - 1; i >= 0; i--) {
-                    if (!sequenceFullAndOpaque_[i]) {
-                        var texture_ = tile_.boundTextures_[bound_.sequence_[i]];
-                        
-                        if (texture_ && texture_.extraBound_) {
-                            //bound_.sequence_.splice(i, 1);
+                    var layerId_ = bound_.sequence_[i];
+                    
+                    if (sequenceFullAndOpaque_[i]) {
+                        newSequence_.unshift(layerId_);    
+                        break;
+                    } else {
+                        var texture_ = tile_.boundTextures_[layerId_];
+
+                        if (bound_.alpha_[layerId_][1] < 1.0 ||
+                            (texture_.getMaskTexture() && !texture_.extraBound_)) {
+                            newSequence_.unshift(layerId_);    
                         }
                     }
                 }
+                
+                bound_.sequence_ = newSequence_; 
             }
             
         }
