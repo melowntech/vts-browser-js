@@ -243,7 +243,7 @@ Melown.Renderer.prototype.initImage = function() {
 Melown.Renderer.prototype.initSkydome = function() {
     var meshData_ = Melown.RendererGeometry.buildSkydome(32, 64);
     this.skydomeMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
-    this.skydomeTexture_ = new Melown.GpuTexture(this.gpu_, this.core_.coreConfig_.skydomeTexture_, this.core_);
+    this.skydomeTexture_ = new Melown.GpuTexture(this.gpu_, "./skydome.jpg", this.core_);
 
     var meshData_ = Melown.RendererGeometry.buildSkydome(128, 256);
     this.atmoMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);

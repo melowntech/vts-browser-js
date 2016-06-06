@@ -549,7 +549,8 @@ Melown.Renderer.prototype.fogSetup = function(program_, fogDensity_) {
     // is visible; from this it is easy to calculate the correct fog density
 
     //var density_ = Math.log(0.05) / this.core_.coreConfig_.cameraVisibility_;
-    var density_ = Math.log(0.05) / (this.core_.coreConfig_.cameraVisibility_ * 10*(Math.max(5,-this.camera_.getOrientation()[1])/90));
+	var cameraVisibility_ = 1200000.0;
+    var density_ = Math.log(0.05) / (cameraVisibility_ * 10*(Math.max(5,-this.camera_.getOrientation()[1])/90));
     density_ *= (5.0) / (Math.min(50000, Math.max(this.cameraDistance_, 1000)) /5000);
 
     if (this.drawFog_ == false) {

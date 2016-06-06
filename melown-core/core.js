@@ -8,7 +8,6 @@ Melown.Core = function(element_, config_, interface_) {
     this.element_ = element_;
     this.interface_ = interface_;
     //this.options_ = options_;
-    this.coreConfig_ = new Melown.CoreConfig({}); //TODO: remove this CoreConfig
     this.ready_ = false;
     this.killed_ = false;
     this.listeners_ = [];

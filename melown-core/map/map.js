@@ -311,6 +311,13 @@ Melown.Map.prototype.getView = function() {
     return this.currentView_.getInfo();
 };
 
+Melown.Map.prototype.refreshView = function() {
+    this.viewCounter_++;
+    this.generateSurfaceSequence();
+    this.generateBoundLayerSequence();
+    this.markDirty();
+};
+
 Melown.Map.prototype.searchArrayIndexById = function(array_, id_) {
     for (var i = 0, li = array_.length; i < li; i++) {
         if (array_[i].id_ == id_) {
