@@ -1,17 +1,15 @@
 // All Utilities needed for proper presentation working
 
 Melown.Presentation.prototype.Utils.init = function(id_, HTMLtemplate_) {
-    var localThis = this;
-    console.log('Starting init of presentation...');
-    console.log(localThis);
-    var templateSwitcher = '<div id="templateSwitcher"><p onclick="useToolbox(\'panel\')">Use right panel</p><p onclick="useToolbox(\'subtitles\')">Use subtitles</p></div>';
+    var obj = this;    
+    var templateSwitcher = '<div id="templateSwitcher"></div>';
     var templatePanelPrefix = '<div class="panelContainer"><div class="swipeControl top"></div><div class="toolboxContainer">';
     var templatePanelSuffix = '</div><div class="swipeControl"></div></div>';
     var templatePanel = templatePanelPrefix + HTMLtemplate_ + templatePanelSuffix;
     var templateSubtitlesPrefix = '<div class="subtitlesContainer"><button type="button"></button><button type="button"></button>'
                                     + '<div class="swipeSubtitles"></div><div class="swipeSubtitles"></div><div class="innerContainer">';
     var templateSubtitlesSuffix = '</div></div>';
-    var templateSubtitles = templateSubtitlesPrefix + document.getElementById('HTMLtemplate').innerHTML + templateSubtitlesSuffix;
+    var templateSubtitles = templateSubtitlesPrefix + HTMLtemplate_ + templateSubtitlesSuffix;
     var template = templateSwitcher + templatePanel + templateSubtitles;
     var ctrlDelve = this.browser_.addControl(id_, template);
     this.id_.push(id_);
@@ -19,12 +17,10 @@ Melown.Presentation.prototype.Utils.init = function(id_, HTMLtemplate_) {
     // Set all <a> tags to have onclick
     this.aTags = document.getElementsByTagName('a');
     for(var i = 0; i < this.aTags.length; i++){
-        this.aTags[i].setAttribute('onclick','linksDecode(this)');
+        this.aTags[i].onclick = function() { obj.linksDecode(this); }
     }        
-    console.log('Init done. Running render...');
-    var obj = this;
+    
     setTimeout(function(){
-        console.log(obj);
         obj.renderControl();
     }, 200);
 }
@@ -96,7 +92,6 @@ Melown.Presentation.prototype.Utils.linksDecode = function(obj) {
     }
     
     if(obj.getAttribute('data-mln-position') === null){
-        console.log('This article has no default flyTo data.');
         return false;
     }
     
@@ -111,10 +106,12 @@ Melown.Presentation.prototype.Utils.linksDecode = function(obj) {
         transition = obj.getAttribute('data-mln-transition');
     }
     
+    /*
     console.log('position: ' + position);
     console.log('autorotate: ' + autorotate);
     console.log('transition type: ' + transition); 
-    console.log('navigate: ' + navigate)   
+    console.log('navigate: ' + navigate)
+    */   
     
     // For testing purposes, I put return here so the map doesn't fly all the time
     //return;
@@ -152,7 +149,6 @@ Melown.Presentation.prototype.Utils.nextArticle = function(node, init, lastNode)
         node = 0;
     }
     this.actualNode = this.actualNode + node;
-    console.log('Actual node:' + this.actualNode);
     
     if(this.actualNode >= 0 && this.actualNode < this.maxNodes) {
      
@@ -180,8 +176,8 @@ Melown.Presentation.prototype.Utils.useToolbox = function(which) {
     this.activeToolbox = which;
     
     if(which == 'panel') {
-        subtitles.style.display = 'none';
-        subtitles.style.opacity = 0;
+        subtitles.setAttribute('style', 'opacity: 0;');
+        subtitles.setAttribute('class', 'subtitlesContainer');
         rightPanel.style.display = 'block';
         setTimeout(function() {
             rightPanel.style.opacity = 1;
@@ -205,7 +201,7 @@ Melown.Presentation.prototype.Utils.useToolbox = function(which) {
         for(var i = 0; i < this.sectionTags.length; i++){ // Set height to auto so we can dynamicaly adjust subtitles height
             this.sectionTags[i].style.height = 'auto';
         }
-        this.handleSubtitlesPosition(0);
+        this.handleSubtitlesPosition(0, true);
     }
 }
 

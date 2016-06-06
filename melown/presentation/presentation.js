@@ -21,10 +21,15 @@ Melown.Presentation.prototype.add = function(id_, source_) {
 };
 
 Melown.Presentation.prototype.remove = function(id_) {
-    if(typeof id_ !== 'undefined')
+    if(typeof id_ !== 'undefined') {
         delete this.Utils.config_.presentation[id_]
-    else
-        this.Utils.config_ = null; // Remove all presentations
+        if(this.active() === id_)
+            this.Utils.active_ = null;
+    }
+    else {
+        this.Utils.config_ = {}; // Remove all presentations
+        this.Utils.active_ = null;
+    }
     return true;
 };
 
@@ -33,20 +38,47 @@ Melown.Presentation.prototype.active = function() {
 };
 
 Melown.Presentation.prototype.play = function(id_) {
-    this.Utils.active_ = id_;
-    this.Utils.readTextInput(id_);
+    if(this.Utils.config_.presentation_autoplay !== undefined && typeof id_ === 'undefined')
+        id_ = this.Utils.config_.presentation_autoplay;
+    else if(typeof id_ === 'undefined' && this.Utils.config_.presentation !== undefined && Object.keys(this.Utils.config_.presentation).length > 0) {
+        for(var key in this.Utils.config_.presentation) {
+            id_ = key;
+            break;
+        }
+    }
+    
+    if(typeof id_ !== 'undefined') {
+        this.Utils.active_ = id_;
+        this.Utils.readTextInput(id_);
+        return true;
+    }
+    else
+        return false;
 };
 
-Melown.Presentation.prototype.stop = function() { // To be implemented
-        
+Melown.Presentation.prototype.stop = function() {
+    var active = this.active();
+    if(active !== null) {
+        //this.remove(id_);
+        this.Utils.active_ = null;
+        this.Utils.browser_.removeControl(active);
+        document.getElementsByTagName('article')[0].parentNode.parentNode.parentNode.remove();
+        return true;
+    }
+    return false;    
 };
 
 Melown.Presentation.prototype.list = function(id_) {
-    //  var list = [];
-    //  for(var key in this.Utils.config_.presentation)
-    //     list.push(key);
-    //  return list;
-    return this.Utils.config_.presentation;
+    if(Object.keys(this.Utils.config_).length === 0 || Object.keys(this.Utils.config_.presentation).length === 0)
+        return 'No presentations present';
+    if(typeof id_ !== 'undefined') {
+        var list = [];
+        for(var key in this.Utils.config_.presentation) {
+            if(id_ == key) return this.Utils.config_.presentation[key];
+        }
+    }
+    else
+        return this.Utils.config_.presentation;
 };
 
 Melown.Presentation.prototype.Utils = {

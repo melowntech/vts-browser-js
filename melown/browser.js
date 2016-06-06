@@ -45,6 +45,10 @@ Melown.Browser.prototype.getUI = function() {
     return this.ui_;
 };
 
+Melown.Browser.prototype.getPresentation = function() {
+    return this.presentation_;
+};
+
 Melown.Browser.prototype.getControlMode = function() {
     return this.controlMode_;
 };
