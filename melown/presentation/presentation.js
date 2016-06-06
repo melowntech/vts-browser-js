@@ -8,6 +8,8 @@ Melown.Presentation = function(browser_, config_) {
     this.Utils.id_ = [];
     this.Utils.config_ = config_ || {};
     this.Utils.active_ = null;
+    if(typeof config_ !== 'undefined')
+        this.play();
 };
 
 Melown.Presentation.prototype.add = function(id_, source_) {
@@ -22,11 +24,15 @@ Melown.Presentation.prototype.add = function(id_, source_) {
 
 Melown.Presentation.prototype.remove = function(id_) {
     if(typeof id_ !== 'undefined') {
+        if(this.active() == id_)
+            this.stop();
         delete this.Utils.config_.presentation[id_]
         if(this.active() === id_)
             this.Utils.active_ = null;
     }
     else {
+        if(this.active() !== null)
+            this.stop();
         this.Utils.config_ = {}; // Remove all presentations
         this.Utils.active_ = null;
     }
