@@ -53,7 +53,9 @@ Melown.Autopilot.prototype.setTrajectory = function(trajectory_, sampleDuration_
     }
 
     this.speed_ = options_["speed"] || 1.0;
-    this.lastControlMode_ = this.browser_.getControlMode().getCurrentControlMode(); 
+    if (this.finished_) {
+        this.lastControlMode_ = this.browser_.getControlMode().getCurrentControlMode(); 
+    }
     this.browser_.getControlMode().setCurrentControlMode("disabled");
 
     this.trajectory_ = trajectory_;

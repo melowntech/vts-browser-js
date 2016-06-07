@@ -14,13 +14,14 @@ Melown.UIControlCredits = function(ui_, visible_) {
 };
 
 Melown.UIControlCredits.prototype.getCreditsString = function(array_) {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     var html_ = "";
     var copyright_ = "&copy;" + (new Date().getFullYear());
 
     for (var i = 0, li = array_.length; i < li; i++) {
         var creditInfo_ = map_.getCreditInfo(array_[i]);
         
+        /*
         if (creditInfo_["copyrighted"]) {
             html_ += copyright_;        
         }
@@ -29,6 +30,10 @@ Melown.UIControlCredits.prototype.getCreditsString = function(array_) {
             html_ += " <a href='" + creditInfo_["notice"] + "'>" + creditInfo_["notice"] + "</a>";        
         } else {
             html_ += " " + creditInfo_["notice"];        
+        }*/
+        
+        if (creditInfo_["html"]) {
+            html_ += creditInfo_["html"];
         }
 
         if (i + 1 < li) {
@@ -40,7 +45,7 @@ Melown.UIControlCredits.prototype.getCreditsString = function(array_) {
 };
 
 Melown.UIControlCredits.prototype.update = function() {
-    var map_ = this.browser_.getCore().getMap();
+    var map_ = this.browser_.getMap();
     if (map_ == null) {
         return;
     }

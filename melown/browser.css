@@ -54,6 +54,10 @@
     text-shadow: 0 0 2px #000;
 }
 
+.melown-credits ul li a {
+    color: #FFFFFF;
+}
+
 #vadstena-engine-credits a {
     color: #FFFFFF;
     text-decoration: none;

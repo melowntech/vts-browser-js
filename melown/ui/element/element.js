@@ -36,7 +36,7 @@ Melown.UIElement.prototype.getClass = function() {
     return this;
 };
 
-Melown.UIElement.prototype.hasClass = function(name__) {
+Melown.UIElement.prototype.hasClass = function(name_) {
     return Melown.Utils.hasClass(this.element_, name_);
 };
 
