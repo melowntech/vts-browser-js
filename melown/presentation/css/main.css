@@ -21,6 +21,7 @@ div.top-toolbox {
     font-size: 13px;
     font-family: 'Open Sans',Verdana,Arial,Tahoma,Calibri,Geneva,sans-serif;
     border-right: solid 4px #649DF4;
+    opacity: 0;
     -webkit-transition: all 0.6s ease;
     -moz-transition: all 0.6s ease;
     transition: all 0.6s ease;

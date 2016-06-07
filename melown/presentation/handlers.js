@@ -1,7 +1,6 @@
 // Presentation handlers of events
 
 Melown.Presentation.prototype.Utils.handleArticle = function(node) {
-    
     var rightPanel = document.getElementsByClassName('toolboxContainer')[0];
     var articleClass = function(a) {
         document.getElementsByClassName('toolboxContainer')[0].querySelectorAll('article')[0].setAttribute('class',a);
@@ -11,10 +10,12 @@ Melown.Presentation.prototype.Utils.handleArticle = function(node) {
     
     document.getElementById('btnUp').setAttribute('class','');
     document.getElementById('btnDw').setAttribute('class','');
+
     if(node === 0)
         document.getElementById('btnUp').setAttribute('class','hidden');
     else if(node === this.maxNodes-1)
         document.getElementById('btnDw').setAttribute('class','hidden');
+        
     document.getElementsByTagName('article')[0].setAttribute('style','top: '+actualHeight+'px');
     
     if(this.actualNode === 0){
@@ -87,6 +88,7 @@ Melown.Presentation.prototype.Utils.handleSubtitlesPosition = function(node, ini
         swipeSubtitles[0].style.cursor = 'default';
         swipeSubtitles[1].style.cursor = 'default';
         
+        
         if(node === 0) {
             leftButton.setAttribute('class', 'hidden');
             rightButton.setAttribute('class', '');
@@ -99,12 +101,14 @@ Melown.Presentation.prototype.Utils.handleSubtitlesPosition = function(node, ini
         else if(node === sections.length - 2) { // One more before end
             leftButton.setAttribute('class', '');
             leftButton.onclick = function () {
+                
                 obj.nextArticle('-1');
             }
             //leftButton.setAttribute('onclick','nextArticle(\'-1\');');
             leftButton.innerHTML = 'Back';
             rightButton.setAttribute('class', '');
             rightButton.onclick = function () {
+                
                 obj.nextArticle('+1');
             }
             //rightButton.setAttribute('onclick','nextArticle(\'+1\');');

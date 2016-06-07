@@ -111,10 +111,7 @@ Melown.Presentation.prototype.Utils.linksDecode = function(obj) {
     console.log('autorotate: ' + autorotate);
     console.log('transition type: ' + transition); 
     console.log('navigate: ' + navigate)
-    */   
-    
-    // For testing purposes, I put return here so the map doesn't fly all the time
-    //return;
+    */
 
     if(transition === null) {
         this.browser_.flyTo(position);
@@ -153,9 +150,9 @@ Melown.Presentation.prototype.Utils.nextArticle = function(node, init, lastNode)
     if(this.actualNode >= 0 && this.actualNode < this.maxNodes) {
      
         if(!init) {
-            if(this.activeToolbox == 'panel')
+            if(this.activeToolbox == 'right')
                 this.handleArticle(this.actualNode);
-            else if(this.activeToolbox == 'subtitles')
+            else if(this.activeToolbox == 'wide')
                 this.handleSubtitlesPosition(this.actualNode);
         }
         if(typeof lastNode !== 'undefined') this.maxNodes = lastNode;
@@ -167,17 +164,26 @@ Melown.Presentation.prototype.Utils.nextArticle = function(node, init, lastNode)
     return false;
 }
 
-Melown.Presentation.prototype.Utils.useToolbox = function(which) {
+Melown.Presentation.prototype.Utils.useToolbox = function() {
+    
+    var templSwitch = document.getElementById('templateSwitcher');
+    var type = document.getElementsByTagName('article')[0].getAttribute('data-mln-style');
+
+    if(templSwitch !== null)
+        templSwitch.remove();
+    
+    if(type === null)
+        type = 'right';
     
     var rightPanel = document.getElementsByClassName('panelContainer')[0];
     var toolboxContainer = document.getElementsByClassName('toolboxContainer')[0];
     var subtitles = document.getElementsByClassName('subtitlesContainer')[0];
     var swipeControl = document.getElementsByClassName('swipeControl');
-    this.activeToolbox = which;
+    this.activeToolbox = type;
     
-    if(which == 'panel') {
-        subtitles.setAttribute('style', 'opacity: 0;');
-        subtitles.setAttribute('class', 'subtitlesContainer');
+    subtitles.setAttribute('style', 'opacity: 0;');
+    subtitles.setAttribute('class', 'subtitlesContainer');
+    if(type == 'right') {
         rightPanel.style.display = 'block';
         setTimeout(function() {
             rightPanel.style.opacity = 1;
@@ -187,9 +193,9 @@ Melown.Presentation.prototype.Utils.useToolbox = function(which) {
         for(var i = 0; i < this.sectionTags.length; i++){ // Set maxHeight back as there is no dynamic rescaling of rightPanel
             this.sectionTags[i].style.height = this.maxHeight + 'px';
         }
-        this.nextArticle(0); //, false, sectionTags.length);
+        this.nextArticle(0);
     }
-    else if(which == 'subtitles') {
+    else if(type == 'wide') {
         subtitles.style.display = 'block';
         setTimeout(function() {
             subtitles.style.opacity = 1;

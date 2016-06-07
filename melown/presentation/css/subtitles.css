@@ -138,6 +138,15 @@
     font-size: 30px;
 }
 
+.subtitlesContainer .innerContainer p {
+    font-size: 27px;
+}
+
+.subtitlesContainer.mini .innerContainer section p {
+    font-size: 14px;
+    text-align: center;
+}
+
 .subtitlesContainer img {
     margin: 10px 0;
     border-radius: 3px;

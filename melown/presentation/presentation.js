@@ -2,7 +2,6 @@
 /**
  * @constructor
  */
-
 Melown.Presentation = function(browser_, config_) {
     this.Utils.browser_ = browser_;
     this.Utils.id_ = [];
@@ -10,6 +9,7 @@ Melown.Presentation = function(browser_, config_) {
     this.Utils.active_ = null;
     if(typeof config_ !== 'undefined')
         this.play();
+    this.Utils.core_ = this;
 };
 
 Melown.Presentation.prototype.add = function(id_, source_) {
@@ -44,6 +44,7 @@ Melown.Presentation.prototype.active = function() {
 };
 
 Melown.Presentation.prototype.play = function(id_) {
+    this.stop();
     if(this.Utils.config_.presentation_autoplay !== undefined && typeof id_ === 'undefined')
         id_ = this.Utils.config_.presentation_autoplay;
     else if(typeof id_ === 'undefined' && this.Utils.config_.presentation !== undefined && Object.keys(this.Utils.config_.presentation).length > 0) {
@@ -64,6 +65,7 @@ Melown.Presentation.prototype.play = function(id_) {
 
 Melown.Presentation.prototype.stop = function() {
     var active = this.active();
+    this.Utils.activeToolbox = 'right';
     if(active !== null) {
         //this.remove(id_);
         this.Utils.active_ = null;
@@ -100,6 +102,6 @@ Melown.Presentation.prototype.Utils = {
     actualNode : 0,
     maxNodes : 1,
     animTime : 600, // Default css transition time
-    activeToolbox : 'panel' // Default active toolbox (panel | subtitles)
+    activeToolbox : 'right' // Default active toolbox (right | wide)
 };
 
