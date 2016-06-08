@@ -100,7 +100,7 @@ Melown.Presentation.prototype.Utils.linksDecode = function(obj) {
     position = this.getNumbers(obj.getAttribute('data-mln-position').split(','));
     
     if(obj.getAttribute('data-mln-autorotate') !== null) {
-        autorotate = this.getNumbers(obj.getAttribute('data-mln-autorotate').split(','));
+        autorotate = this.getNumbers(obj.getAttribute('data-mln-autorotate'));
     }
     if(obj.getAttribute('data-mln-transition') !== null) {
         transition = obj.getAttribute('data-mln-transition');
@@ -124,16 +124,33 @@ Melown.Presentation.prototype.Utils.linksDecode = function(obj) {
         // Feature to be considered
         // browser.flyTo(position, {mode : transition});
     }
+    if(autorotate !== null) {
+        console.log('Autorotate type: ' + typeof autorotate);
+        console.log(autorotate);
+        this.browser_.setAutorotate(autorotate);
+    }
     return position;
 }
 
 // parseFloat here
 Melown.Presentation.prototype.Utils.getNumbers = function(obj) {
     var obj = obj;
+
+    console.log('obj type: ' + typeof obj);
+    console.log(obj);
+
     for(var i = 0; i < obj.length; i++){
+        if(typeof obj == 'string' && parseFloat(obj)) {
+            obj = parseFloat(obj);
+            break;
+        }
         if (parseFloat(obj[i]))
-            obj[i] = parseFloat(obj[i]);
+            obj[i] = parseFloat(obj[i]); // toFixed might be added here
     }
+
+    console.log('obj type after: ' + typeof obj);
+    console.log(obj);
+    
     return obj;
 }
 
