@@ -16,7 +16,6 @@ Melown.Browser = function(element_, config_) {
     this.autopilot_ = new Melown.Autopilot(this);
     this.rois_ = new Melown.Rois(this);
     this.controlMode_ = new Melown.ControlMode(this, this.ui_);
-    this.presentation_ = new Melown.Presentation(this);
 
     this.on("map-loaded", this.onMapLoaded.bind(this));
     this.on("map-unloaded", this.onMapUnloaded.bind(this));

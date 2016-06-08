@@ -5,8 +5,14 @@
 Melown.Presentation = function(browser_, config_) {
     this.Utils.browser_ = browser_;
     this.Utils.id_ = [];
-    this.Utils.config_ = config_ || {};
     this.Utils.active_ = null;
+
+    for (var key_ in config_) {
+        if(key_ != 'presentation' && key_ != 'presentation_autoplay')
+            delete config_[key_];
+    }
+    this.Utils.config_ = config_ || {};
+
     if(typeof config_ !== 'undefined')
         this.play();
     this.Utils.core_ = this;
