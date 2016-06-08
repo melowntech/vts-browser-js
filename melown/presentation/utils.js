@@ -124,21 +124,15 @@ Melown.Presentation.prototype.Utils.linksDecode = function(obj) {
         // Feature to be considered
         // browser.flyTo(position, {mode : transition});
     }
-    if(autorotate !== null) {
-        console.log('Autorotate type: ' + typeof autorotate);
-        console.log(autorotate);
+    if(autorotate !== null)
         this.browser_.setAutorotate(autorotate);
-    }
+        
     return position;
 }
 
 // parseFloat here
 Melown.Presentation.prototype.Utils.getNumbers = function(obj) {
     var obj = obj;
-
-    console.log('obj type: ' + typeof obj);
-    console.log(obj);
-
     for(var i = 0; i < obj.length; i++){
         if(typeof obj == 'string' && parseFloat(obj)) {
             obj = parseFloat(obj);
@@ -147,10 +141,6 @@ Melown.Presentation.prototype.Utils.getNumbers = function(obj) {
         if (parseFloat(obj[i]))
             obj[i] = parseFloat(obj[i]); // toFixed might be added here
     }
-
-    console.log('obj type after: ' + typeof obj);
-    console.log(obj);
-    
     return obj;
 }
 
