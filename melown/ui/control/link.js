@@ -13,7 +13,7 @@ Melown.UIControlLink = function(ui_, visible_) {
 
         + '<div id="melown-link-text-holder" class="melown-link-text-holder">'
             + '<div class="melown-link-text">'
-              + '<input id="melown-link-text-input" type="text" readonly>'
+              + '<textarea id="melown-link-text-input" rows="4" cols="50" wrap="hard"></textarea>'
             + '</div>'
         + '</div>'
         
@@ -57,7 +57,7 @@ Melown.UIControlLink.prototype.updateLink = function() {
     var s = "";
     s += map_.getPositionViewMode(p) + ",";
     var c = map_.getPositionCoords(p);
-    s += c[0] + "," + c[1] + "," + map_.getPositionHeightMode(p) + "," + c[2].toFixed(2) + ",";
+    s += c[0].toFixed(6) + "," + c[1].toFixed(6) + "," + map_.getPositionHeightMode(p) + "," + c[2].toFixed(2) + ",";
     var o = map_.getPositionOrientation(p);
     s += o[0].toFixed(2) + "," + o[1].toFixed(2) + "," + o[2].toFixed(2) + ",";
     s += map_.getPositionViewExtent(p).toFixed(2) + "," + map_.getPositionFov(p).toFixed(2);

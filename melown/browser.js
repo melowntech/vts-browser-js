@@ -62,6 +62,10 @@ Melown.Browser.prototype.callListener = function(name_, event_) {
 };
 
 Melown.Browser.prototype.onMapLoaded = function() {
+    if (this.autopilot_) {
+        this.autopilot_.setAutorotate(this.config_.autoRotate_);
+        this.autopilot_.setAutopan(this.config_.autoPan_[0], this.config_.autoPan_[1]);
+    }
 };
 
 Melown.Browser.prototype.onMapUnloaded = function() {

@@ -332,7 +332,9 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
 
     //set new position
     if (update_) {
-        this.setPosition(pos_);        
+        this.setPosition(pos_);    
+        
+            
     }
     
 };

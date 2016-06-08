@@ -19,7 +19,7 @@ Melown.Utils.validateBool = function(value_, defaultValue_) {
 };
 
 Melown.Utils.validateNumber = function(value_, minValue, maxValue, defaultValue_) {
-    if (typeof value_ === "boolean") {
+    if (typeof value_ === "number") {
         return Melown.clamp(value_, minValue, maxValue);
     } else {
         return defaultValue_;

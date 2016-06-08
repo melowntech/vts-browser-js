@@ -8,11 +8,32 @@ Melown.Autopilot = function(browser_) {
     this.flightTime_ = 0;
     this.trajectoryIndex_ = 0;
     this.finished_ = true;
+    this.autoMovement_ = false;
+    this.autoRotate_ = 0;
+    this.autoPan_ = 0;
+    this.autoPanAzimuth_ = 0;
 
     this.center_ = [0,0,0];
     this.orientation_ = [0,0,0];
     this.viewHeight_ = 0;
     this.fov_ = 90;
+};
+
+Melown.Autopilot.prototype.setAutorotate = function(speed_) {
+    this.autoRotate_ = speed_;
+};
+
+Melown.Autopilot.prototype.getAutorotate = function() {
+    return this.autoRotate_;
+};
+
+Melown.Autopilot.prototype.setAutopan = function(speed_, azimuth_) {
+    this.autoPan_ = speed_;
+    this.autoPanAzimuth_ = azimuth_;
+};
+
+Melown.Autopilot.prototype.getAutopan = function() {
+    return [this.autoPan_, this.autoPanAzimuth_];
 };
 
 Melown.Autopilot.prototype.flyToDAH = function(distance_, azimuth_, height_, options_) {
@@ -52,6 +73,9 @@ Melown.Autopilot.prototype.setTrajectory = function(trajectory_, sampleDuration_
         return;
     }
 
+    this.setAutorotate(0);
+    this.setAutopan(0,0);
+
     this.speed_ = options_["speed"] || 1.0;
     if (this.finished_) {
         this.lastControlMode_ = this.browser_.getControlMode().getCurrentControlMode(); 
@@ -72,12 +96,26 @@ Melown.Autopilot.prototype.setTrajectory = function(trajectory_, sampleDuration_
 };
 
 Melown.Autopilot.prototype.tick = function() {
-    if (this.finished_ || !this.trajectory_) {
+    var map_ = this.browser_.getMap();
+    if (!map_) {
         return;
     }
 
-    var map_ = this.browser_.getMap();
-    if (!map_) {
+    if (this.autoRotate_ != 0) {
+        var pos_ = map_.getPosition();
+        var o = map_.getPositionOrientation(pos_);
+        o[0] = (o[0] + this.autoRotate_) % 360;
+        pos_ = map_.setPositionOrientation(pos_, o);
+        map_.setPosition(pos_);
+    }
+    
+    if (this.autoPan_ != 0) {
+        var pos_ = map_.getPosition();
+        pos_ = map_.movePositionCoordsTo(pos_, this.autoPanAzimuth_, this.autoPan_, 1);
+        map_.setPosition(pos_);
+    }
+
+    if (this.finished_ || !this.trajectory_) {
         return;
     }
     
@@ -94,7 +132,7 @@ Melown.Autopilot.prototype.tick = function() {
                                                     });
 
     } else {
-        map_.setPosition(this.trajectory_[totalSamples_]);        
+        map_.setPosition(this.trajectory_[totalSamples_]);
     } 
     
     if (sampleIndex_ >= this.trajectory_.length) {

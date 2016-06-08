@@ -375,6 +375,28 @@ Melown.BrowserInterface.prototype.cancelFlight = function() {
     return this;    
 }; 
 
+Melown.BrowserInterface.prototype.setAutorotate = function(speed_) {
+    if(!this.map_) return;
+    this.autopilot_.setAutorotate(speed_);
+    return this;
+};
+
+Melown.BrowserInterface.prototype.getAutorotate = function() {
+    if(!this.map_) return;
+    return this.autopilot_.getAutorotate();
+};
+
+Melown.BrowserInterface.prototype.setAutopan = function(speed_, azimuth_) {
+    if(!this.map_) return;
+    this.autopilot_.setAutopan(speed_, azimuth_);
+    return this;
+};
+
+Melown.BrowserInterface.prototype.getAutopan = function() {
+    if(!this.map_) return;
+    return this.autopilot_.getAutopan();
+};
+
 Melown.BrowserInterface.prototype.on = function(eventName_, call_) {
     this.core_.on(eventName_, call_);
     return this;    
@@ -483,6 +505,10 @@ Melown.BrowserInterface.prototype["getGpuCache"] = Melown.BrowserInterface.proto
 Melown.BrowserInterface.prototype["getHitCoords"] = Melown.BrowserInterface.prototype.getHitCoords;
 Melown.BrowserInterface.prototype["flyTo"] = Melown.BrowserInterface.prototype.flyTo; 
 Melown.BrowserInterface.prototype["flyTrajectory"] = Melown.BrowserInterface.prototype.flyTrajectory; 
+Melown.BrowserInterface.prototype["setAutorotate"] = Melown.BrowserInterface.prototype.setAutorotate; 
+Melown.BrowserInterface.prototype["getAutorotate"] = Melown.BrowserInterface.prototype.getAutorotate; 
+Melown.BrowserInterface.prototype["setAutopan"] = Melown.BrowserInterface.prototype.setAutopan; 
+Melown.BrowserInterface.prototype["getAutopan"] = Melown.BrowserInterface.prototype.getAutopan; 
 Melown.BrowserInterface.prototype["cancelFlight"] = Melown.BrowserInterface.prototype.cancelFlight; 
 Melown.BrowserInterface.prototype["on"] = Melown.BrowserInterface.prototype.on; 
 Melown.BrowserInterface.prototype["getMapElement"] = Melown.BrowserInterface.prototype.getMapElement; 

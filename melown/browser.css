@@ -256,8 +256,10 @@
     background-color: #fff;
 }
 
-.melown-link-text input {
+.melown-link-text textarea {
     border: solid 1px #ddd;
+    resize: none;
+    padding: 5px;
 }
 
 

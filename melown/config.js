@@ -11,7 +11,9 @@ Melown.Browser.prototype.initConfig = function(data_) {
         controlSpace_ : true,
         controlMeasure_ : false,
         controlScale_ : true,
-        controlLayers_ : false
+        controlLayers_ : false,
+        autoRotate_ : 0,
+        autoPan_ : [0,0]
     };
 };
 
@@ -49,6 +51,18 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
         case "controlSpace":       this.config_.controlSpace_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);    break;
         case "controlLink":        this.config_.controlLink_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);     break;
         case "controlLogo":        this.config_.controlLogo_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);     break;
+        case "rotate":             this.config_.autoRotate_ = Melown.Utils.validateNumber(value_, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, 0); break;
+        case "pan":
+        
+                if (Array.isArray(value_) && value_.length == 2){
+                    this.config_.autoPan_ = [
+                        Melown.Utils.validateNumber(value_[0], Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, 0),
+                        Melown.Utils.validateNumber(value_[1], -360, 360, 0)
+                    ];
+                }
+        
+            break;
+
     }
 
     if (ignoreCore_ == true) {
@@ -64,6 +78,7 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
 
 Melown.Browser.prototype.getConfigParam = function(key_) {
     switch (key_) {
+        case "pos":
         case "position":           return this.config_.position_;
         case "view":               return this.config_.view_;
         case "panAllowed":         return this.config_.panAllowed_;
@@ -79,6 +94,8 @@ Melown.Browser.prototype.getConfigParam = function(key_) {
         case "controlSpace":       return this.config_.controlSpace_;
         case "controlLink":        return this.config_.controlLink_;
         case "controlLogo":        return this.config_.controlLogo_;
+        case "rotate":             return this.config_.autoRotate_;
+        case "pan":                return this.config_.autoPan_;
     }
 
     if (ignoreCore_ == true) {

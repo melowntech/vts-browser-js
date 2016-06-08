@@ -94,6 +94,7 @@ Melown.ControlMode.prototype.getCurrentControlMode = function() {
 // Event callbacks
 
 Melown.ControlMode.prototype.onDrag = function(event_) {
+    this._checkAutopilot();
     if (typeof this._currentController()[Melown_ControlMode_Drag]
         === 'function') {
         this._currentController()[Melown_ControlMode_Drag](event_);
@@ -101,6 +102,7 @@ Melown.ControlMode.prototype.onDrag = function(event_) {
 };
 
 Melown.ControlMode.prototype.onDown = function(event_) {
+    this._checkAutopilot();
     this._updateModifierKeys(event_);
     if (typeof this._currentController()[Melown_ControlMode_Down]
         === 'function') {
@@ -117,6 +119,7 @@ Melown.ControlMode.prototype.onUp = function(event_) {
 };
 
 Melown.ControlMode.prototype.onWheel = function(event_) {
+    this._checkAutopilot();
     if (typeof this._currentController()[Melown_ControlMode_Wheel]
         === 'function') {
         this._currentController()[Melown_ControlMode_Wheel](event_);
@@ -171,3 +174,11 @@ Melown.ControlMode.prototype._updateModifierKeys = function(event_) {
 Melown.ControlMode.prototype._currentController = function() {
     return this.controlModes_[this.currentControlMode_];
 };
+
+Melown.ControlMode.prototype._checkAutopilot = function() {
+    if (this.browser_.autopilot_) {
+        this.browser_.autopilot_.setAutorotate(0);
+        this.browser_.autopilot_.setAutopan(0,0);
+    }
+};
+

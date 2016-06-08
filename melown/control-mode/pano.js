@@ -83,7 +83,7 @@ Melown.ControlMode.Pano.prototype.tick = function(event_) {
     if (map_ == null) {
         return;
     }
-
+    
     var pos_ = map_.getPosition();
     pos_[5] -= this.velocity_[0];
     pos_[6] -= this.velocity_[1];
