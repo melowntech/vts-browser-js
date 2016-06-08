@@ -385,12 +385,14 @@ Melown.MapTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_) {
         var bmax_ = bbox_.max_;
         var bmin_ = bbox_.min_;
         var edge_ = -0.5;
+        
+        var camDistance_ = Math.max(this.cameraHeight_, this.map_.cameraDistance_); 
 
-        if (this.map_.cameraDistance_ < 1000000) {
+        if (camDistance_ < 1000000) {
             edge_ = -0.9;
         } 
         
-        if (this.map_.cameraDistance_ < 100000) {
+        if (camDistance_ < 100000) {
             edge_ = -0.991;
         } 
         
