@@ -1,4 +1,4 @@
-/**
+/** 
  * @constructor
  */
 Melown.Browser = function(element_, config_) {
