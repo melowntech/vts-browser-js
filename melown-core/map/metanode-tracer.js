@@ -59,17 +59,21 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
         
     if (!processFlag2_) {
     
+   
         //provide surface for tile
-        if ((tile_.surface_ == null && tile_.virtualSurfaces_.length == 0) ) { //|| tile_.virtualSurfacesUncomplete_) {
+        if (tile_.virtualSurfacesUncomplete_ || (tile_.surface_ == null && tile_.virtualSurfaces_.length == 0) ) { //|| tile_.virtualSurfacesUncomplete_) {
             this.checkTileSurface(tile_, priority_);
         }
    
         //provide metanode for tile
         if (tile_.metanode_ == null || tile_.lastMetanode_) {
-            var ret_ = this.checkTileMetanode(tile_, priority_);
             
-            if (!ret_ && !(tile_.metanode_ != null && tile_.lastMetanode_)) { //metanode is not ready yet
-                return;
+            if (!tile_.virtualSurfacesUncomplete_) {
+                var ret_ = this.checkTileMetanode(tile_, priority_);
+                
+                if (!ret_ && !(tile_.metanode_ != null && tile_.lastMetanode_)) { //metanode is not ready yet
+                    return;
+                }
             }
             
             if (tile_.lastMetanode_) {
