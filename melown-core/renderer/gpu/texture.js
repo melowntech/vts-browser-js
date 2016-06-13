@@ -175,7 +175,7 @@ Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_)
             return;
         }
 
-        if (onError) {
+        if (onError_) {
             onError_();
         }
     }).bind(this),

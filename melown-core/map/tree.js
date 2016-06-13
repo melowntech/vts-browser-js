@@ -181,6 +181,12 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
         return [false, preventRedener_, preventLoad_];
     }
 
+    if (tile_.id_[0] == Melown.debugId_[0] &&
+        tile_.id_[1] == Melown.debugId_[1] &&
+        tile_.id_[2] == Melown.debugId_[2]) {
+            tile_ = tile_;
+    }
+
     var node_ = tile_.metanode_;
     var cameraPos_ = this.map_.cameraPosition_;
 
@@ -268,6 +274,7 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
 
     //HACK
     //this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY;
+    this.config_.mapTexelSizeTolerance_ = 2.2;
 
     //if (this.map_.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         //node_ = node_;

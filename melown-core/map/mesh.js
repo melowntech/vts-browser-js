@@ -19,6 +19,10 @@ Melown.MapMesh = function(map_, url_) {
 
     this.submeshes_ = [];
     this.gpuSubmeshes_ = [];
+    
+    if (url_ == "http://condrieu:8888/bl-demo/bl-demo/stage/tilesets/cities/9-138-87.bin?0"){
+        url_ = url_;
+    }
 };
 
 Melown.MapMesh.prototype.kill = function() {

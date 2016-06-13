@@ -36,6 +36,12 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
         return;
     }
 
+    if (tile_.id_[0] == Melown.debugId_[0] &&
+        tile_.id_[1] == Melown.debugId_[1] &&
+        tile_.id_[2] == Melown.debugId_[2]) {
+            tile_ = tile_;
+    }
+
     if (tile_.metastorage_ == null) {  //metastorage stores metatiles
         tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
     }
@@ -54,7 +60,7 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
     if (!processFlag2_) {
     
         //provide surface for tile
-        if (tile_.surface_ == null && tile_.virtualSurfaces_.length == 0) {
+        if ((tile_.surface_ == null && tile_.virtualSurfaces_.length == 0) ) { //|| tile_.virtualSurfacesUncomplete_) {
             this.checkTileSurface(tile_, priority_);
         }
    
@@ -78,23 +84,6 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
         return;
     }
 
-//6,16,11
-//5,8,5
-
-    if (tile_.id_[0] == 13 &&
-        tile_.id_[1] == 2205 &&
-        tile_.id_[2] == 1388) {
-        tile_ = tile_;
-        //debugger;
-    }
-/*
-    if (tile_.id_[0] == 5 &&
-        tile_.id_[1] == 8 &&
-        tile_.id_[2] == 5) {
-        tile_ = tile_;
-        //debugger;
-    }
-*/
     tile_.metanode_.metatile_.used();
 
     if (tile_.lastSurface_ && tile_.lastSurface_ == tile_.surface_) {
@@ -103,14 +92,6 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
         //return;
     }
         
-    //if (tile_.id_[0] == 17) {
-        //tile_ = tile_;
-    //}
-
-    //if (tile_.id_[0] == 16 && tile_.id_[1] == 32592 && tile_.id_[2] == 32288) {
-      //  tile_ = tile_;
-    //}
-
     var childrenSequence_ = null;
 
     //get children sequence (render path only)
@@ -137,10 +118,12 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
     tile_.virtual_ = false;
     tile_.virtualReady_ = false;
     tile_.virtualSurfaces_ = [];
+    tile_.virtualSurfacesUncomplete_ = false;
 
     var sequence_ = this.map_.surfaceSequence_;
     
     //only one surface
+    //TODO: remove this code
     if (sequence_.length == 1000000) {  //1000000 is hack old value is 1
         if (sequence_[0].hasMetatile(tile_.id_) == true) {
             var surface_ = sequence_[0];
@@ -160,13 +143,6 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
         return;        
     }
 
-    if (tile_.id_[0] == 14 /*&&
-        tile_.id_[1] == 30 &&
-        tile_.id_[2] == 22*/) {
-        tile_ = tile_;
-        //debugger;
-    }
-
     //multiple surfaces
     //build virtual surfaces array
     //find surfaces with content
@@ -183,7 +159,13 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
                 var parent_ = tile_.parent_;
                 if (parent_ != null && parent_.metastorage_ != null) {
                     var metatile_ = parent_.metastorage_.getMetatile(surface_);
-                    if (metatile_ && metatile_.isReady(priority_)) {
+                    if (metatile_) {
+                        
+                        if (!metatile_.isReady(priority_)) {
+                            tile_.virtualSurfacesUncomplete_ = true;
+                            continue;
+                        }
+                        
                         var node_ = metatile_.getNode(parent_.id_);
                         if (node_) {
                             if (!node_.hasChildById(tile_.id_)) {
@@ -202,6 +184,10 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
             tile_.virtualSurfaces_.push(surface_);        
         }
     }
+
+  //  if (tile_.virtualSurfacesUncomplete_) {
+  //      tile_.metanode_ = null;
+  //  }
 
     //
     if (tile_.virtualSurfaces_.length > 1) {
@@ -246,10 +232,6 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_, priority_
         }
 
         if (tile_.metanode_ != null) {
-            /*
-            if (tile_.id_[0] == 15) {
-                tile_ = tile_;
-            }*/
 
             tile_.metanode_.tile_ = tile_; //used only for validate
             tile_.lastMetanode_ = null;
@@ -274,12 +256,6 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_, priority_
 Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_, priority_) {
     var surfaces_ = tile_.virtualSurfaces_;
     var readyCount_ = 0;
-
-    if (tile_.id_[0] == 7 &&
-        tile_.id_[1] == 30 &&
-        tile_.id_[2] == 22) {
-        tile_ = tile_;
-    }
 
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i];
@@ -306,18 +282,7 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
     var surfaces_ = tile_.virtualSurfaces_;
     var first_ = false;
     var node_ = null;
-    
-    if (tile_.id_[0] == 16 &&
-        tile_.id_[1] == 17647 &&
-        tile_.id_[2] == 11107) {
-        tile_ = tile_;
-      //  debugger;
-    }
-
-    //if (tile_.id_[0] == 20) {
-        //debugger;
-    //}
-
+   
 
     //get top most existing surface
     for (var i = 0, li = surfaces_.length; i < li; i++) {
@@ -359,12 +324,6 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
             }
         }
     }
-
-    //if (tile_.id_[0] == 13 &&
-      //  tile_.id_[1] == 4075 &&
-      //  tile_.id_[2] == 4034) {
-        //debugger;
-    //}
 
     //extend bbox and children flags by other surfaces
     for (var i = 0, li = surfaces_.length; i < li; i++) {

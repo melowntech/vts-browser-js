@@ -304,7 +304,15 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
 
     this.generateSurfaceSequence();
     this.generateBoundLayerSequence();
+
+    //if (this.viewCounter_ > 2) {
+      //  this.drawMap(); 
+//        this.viewCounter_++;
+  //  }
+
     this.markDirty();
+    
+    
 };
 
 Melown.Map.prototype.getView = function() {
@@ -525,6 +533,9 @@ Melown.Map.prototype.drawMap = function() {
     }
 
     //this.renderer_.paintGL();
+    //this.config_.mapTexelSizeFit_ = 10.1;
+    //this.draw();
+    //this.config_.mapTexelSizeFit_ = 1.1;
     this.draw();
 
     if (!this.getNavigationSrs().isProjected()) {    

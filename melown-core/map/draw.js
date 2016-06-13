@@ -115,12 +115,6 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             tile_ = tile_;
     }
 
-    if (tile_.id_[0] == 14 /*&&
-        tile_.id_[1] == 548 &&
-        tile_.id_[2] == 343*/) {
-            tile_ = tile_;
-    }
-
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         return;
     }

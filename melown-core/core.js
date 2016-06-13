@@ -1,3 +1,5 @@
+Melown["useCredentials"] = true;
+ 
 /**
  * @constructor
  */
