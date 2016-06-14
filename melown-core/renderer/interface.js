@@ -258,7 +258,7 @@ Melown.RendererInterface.prototype.drawImage = function(options_) {
     var rect_ = options_["rect"];
     var color_ = options_["color"] || [255,255,255,255];
     var depth_ = (options_["depth"] != null) ? options_["depth"] : 0;
-    var depthTest_ = (options_["depth-test"] != null) ? (options_["depth-test"] != null) : false;
+    var depthTest_ = (options_["depth-test"] != null) ? options_["depth-test"] : false;
     var blend_ = (options_["blend"] != null) ? options_["blend"] : false;
     var writeDepth_ = (options_["write-depth"] != null) ? options_["write-depth"] : false;
     var useState_ = (options_["use-state"] != null) ? options_["use-state"] : false;
@@ -278,7 +278,7 @@ Melown.RendererInterface.prototype.drawBillboard = function(options_) {
 
     var mvp_ = options_["mvp"];
     var color_ = options_["color"] || [255,255,255,255];
-    var depthTest_ = (options_["depth-test"] != null) ? (options_["depth-test"] != null) : false;
+    var depthTest_ = (options_["depth-test"] != null) ? options_["depth-test"] : false;
     var blend_ = (options_["blend"] != null) ? options_["blend"] : false;
     var writeDepth_ = (options_["write-depth"] != null) ? options_["write-depth"] : false;
     var useState_ = (options_["use-state"] != null) ? options_["use-state"] : false;
@@ -299,12 +299,12 @@ Melown.RendererInterface.prototype.drawLineString = function(options_) {
     var points_ = options_["points"];
     var color_ = options_["color"] || [255,255,255,255];
     var size_ = options_["size"] || 2;
-    var depthTest_ = (options_["depth-test"] != null) ? (options_["depth-test"] != null) : false;
+    var depthTest_ = (options_["depth-test"] != null) ? options_["depth-test"] : false;
     var blend_ = (options_["blend"] != null) ? options_["blend"] : false;
     var writeDepth_ = (options_["write-depth"] != null) ? options_["write-depth"] : false;
     var useState_ = (options_["use-state"] != null) ? options_["use-state"] : false;
 
-    this.renderer_.drawLineString(points_, size_, color_, depthTest_, blend_, useState_);
+    this.renderer_.drawLineString(points_, size_, color_, depthTest_, blend_, writeDepth_, useState_);
     return this;    
 };
 

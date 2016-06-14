@@ -340,6 +340,17 @@ Melown.MapPosition.prototype.getCameraCoords = function(heightMode_) {
     }
 };
 
+Melown.MapPosition.prototype.getPhysCoords = function(lod_) {
+    var coords_ = this.getCoords();
+
+    if (this.getHeightMode() == "float") {
+        lod_ =  (lod_ != null) ? lod_ : this.map_.getOptimalHeightLod(this.getCoords(), this.getViewExtent(), this.map_.config_.mapNavSamplesPerViewExtent_);
+        var surfaceHeight_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
+        coords_[2] += surfaceHeight_[0]; 
+    }
+
+    return this.map_.convertCoords(coords_, "navigation", "physical");
+};
 
 Melown.MapPosition.prototype.getCameraSpaceCoords = function(lod_) {
     var coords_ = this.getCoords();
