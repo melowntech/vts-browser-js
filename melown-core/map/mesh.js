@@ -19,6 +19,10 @@ Melown.MapMesh = function(map_, url_) {
 
     this.submeshes_ = [];
     this.gpuSubmeshes_ = [];
+    
+    if (url_ == "http://condrieu:8888/bl-demo/bl-demo/stage/tilesets/cities/9-138-87.bin?0"){
+        url_ = url_;
+    }
 };
 
 Melown.MapMesh.prototype.kill = function() {
@@ -72,16 +76,32 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
     this.gpuCacheItem_ = null;
 };
 
-Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
+Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {
+    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
+    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
+    
+    if (doNotUseGpu_) {
+        doNotUseGpu_ = doNotUseGpu_;
+    }
+
     if (this.loadState_ == 2) { //loaded
         this.map_.resourcesCache_.updateItem(this.cacheItem_);
+        
+        if (doNotCheckGpu_) {
+            return true;
+        }
 
         if (this.gpuSubmeshes_.length == 0) {
             if (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_) {
                 return false;
             }
 
-            if (this.stats_.renderBuild_ > 1000 / 20) {
+            if (this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
+                this.map_.markDirty();
+                return false;
+            }
+
+            if (doNotUseGpu_) {
                 return false;
             }
 
@@ -95,7 +115,9 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_) {
             this.stats_.renderBuild_ += performance.now() - t; 
         }
 
-        this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+        if (!doNotLoad_) {
+            this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+        }
         return true;
     } else {
         if (this.loadState_ == 0) { 
@@ -179,16 +201,26 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
     };
 */
 
-    this.parseMeshHeader(stream_);
-
-    this.submeshes_ = new Array(this.numSubmeshes_);
-
-    for (var i = 0, li = this.numSubmeshes_; i < li; i++) {
-        this.submeshes_[i] = new Melown.MapSubmesh(this, stream_);
-        this.size_ += this.submeshes_[i].size_;
-        this.faces_ += this.submeshes_[i].faces_;
+    if (!this.parseMeshHeader(stream_)) {
+        return;
     }
 
+    //if (!this.numSubmeshes_) {
+        //debugger;
+    //}
+
+    this.submeshes_ = [];
+
+    for (var i = 0, li = this.numSubmeshes_; i < li; i++) {
+        var submesh_ = new Melown.MapSubmesh(this, stream_);
+        if (submesh_.valid_) {
+            this.submeshes_.push(submesh_); 
+            this.size_ += this.submeshes_[i].size_;
+            this.faces_ += this.submeshes_[i].faces_;
+        }
+    }
+    
+    this.numSubmeshes_ = this.submeshes_.length;
 };
 
 Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
@@ -199,17 +231,19 @@ Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
     magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
 
     if (magic_ != "ME") {
-        return;
+        return false;
     }
 
     this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
 
     if (this.version_ > 2) {
-        return;
+        return false;
     }
 
     this.meanUndulation_ = streamData_.getFloat64(stream_.index_, true); stream_.index_ += 8;
     this.numSubmeshes_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    
+    return true;
 };
 
 Melown.MapMesh.prototype.addSubmesh = function(submesh_) {

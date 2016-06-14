@@ -32,6 +32,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.freeLayers_ = [];
     this.boundLayers_ = [];
     this.dynamicLayers_ = [];
+    this.tileBuffer_ = new Array(500);
 
     this.initialView_ = null;
     this.currentView_ = new Melown.MapView(this, {});
@@ -90,6 +91,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawBoundLayers_ = false;
     this.drawSurfaces_ = false;
     this.drawCredits_ = false;
+    this.drawOrder_ = false;
+    this.drawTileCounter_ = 0;
 
     this.ignoreTexelSize_ = false;
     this.drawFog_ = this.config_.mapFog_;
@@ -301,11 +304,26 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
 
     this.generateSurfaceSequence();
     this.generateBoundLayerSequence();
+
+    //if (this.viewCounter_ > 2) {
+      //  this.drawMap(); 
+//        this.viewCounter_++;
+  //  }
+
     this.markDirty();
+    
+    
 };
 
 Melown.Map.prototype.getView = function() {
     return this.currentView_.getInfo();
+};
+
+Melown.Map.prototype.refreshView = function() {
+    this.viewCounter_++;
+    this.generateSurfaceSequence();
+    this.generateBoundLayerSequence();
+    this.markDirty();
 };
 
 Melown.Map.prototype.searchArrayIndexById = function(array_, id_) {
@@ -414,9 +432,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
         case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 2.2); break;
         case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;
-        case "mapMeshProcessingFactor":       this.config_.mapMeshProcessingFactor_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1); break;
-        case "mapTextureProcessingFactor":    this.config_.mapTextureProcessingFactor_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1); break;
-        case "mapMetatileProcessingFactor":   this.config_.mapMetatileProcessingFactor_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
+        case "mapMaxProcessingTime":          this.config_.mapMaxProcessingTime_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1000/20); break;
         case "mapMobileMode":                 this.config_.mapMobileMode_ = Melown.validateBool(value_, false); break;
         case "mapMobileTexelDegradation":     this.config_.mapMobileTexelDegradation_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
         case "mapNavSamplesPerViewExtent":    this.config_.mapNavSamplesPerViewExtent_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 10); break;
@@ -440,9 +456,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapTexelSizeFit":               return this.config_.mapTexelSizeFit_;
         case "mapTexelSizeTolerance":         return this.config_.mapTexelSizeTolerance_;
         case "mapDownloadThreads":            return this.config_.mapDownloadThreads_;
-        case "mapMeshProcessingFactor":       return this.config_.mapMeshProcessingFactor_;
-        case "mapTexturesProcessingFactor":   return this.config_.mapTextureProcessingFactor_;
-        case "mapMetatileProcessingFactor":   return this.config_.mapMetatileProcessingFactor_;
+        case "mapMaxProcessingTime":          return this.config_.mapMaxProcessingTime_;
         case "mapMobileMode":                 return this.config_.mapMobileMode_;
         case "mapMobileTexelDegradation":     return this.config_.mapMobileTexelDegradation_;
         case "mapNavSamplesPerViewExtent":    return this.config_.mapNavSamplesPerViewExtent_;
@@ -519,7 +533,9 @@ Melown.Map.prototype.drawMap = function() {
     }
 
     //this.renderer_.paintGL();
-
+    //this.config_.mapTexelSizeFit_ = 10.1;
+    //this.draw();
+    //this.config_.mapTexelSizeFit_ = 1.1;
     this.draw();
 
     if (!this.getNavigationSrs().isProjected()) {    
@@ -582,9 +598,9 @@ Melown.Map.prototype.update = function() {
         //this.renderer_.drawImage(300, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
         //this.renderer_.drawImage(558, 0, 256, 256, this.renderer_.hitmapTexture_, null, null, null, false);
 
+        //console.log("" + this.stats_.gpuRenderUsed_);
     }
 
     this.stats_.end(dirty_);
-
 };
 

@@ -50,13 +50,10 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.dirty_ = true;
     this.cameraVector_ = [0,1,0];
     //this.texelSizeLimit_ = this.core_.mapConfig_.texelSize_ * Melown.texelSizeFactor_;
-    this.gsd_ = 0.02;
-    this.noForwardMovement_ = true;
-    this.heightLod_ = this.core_.coreConfig_.heightLod_;
 
     this.gpu_ = new Melown.GpuDevice(div_, this.curSize_, this.config_.rendererAllowScreenshots_, this.config_.rendererAntialiasing_);
 
-    this.camera_ = new Melown.Camera(this, this.core_.coreConfig_.cameraFOV_, 2, this.core_.coreConfig_.cameraVisibility_);
+    this.camera_ = new Melown.Camera(this, 45, 2, 1200000.0);
 
     //reduce garbage collection
     this.drawTileMatrix_ = Melown.mat4.create();
@@ -64,8 +61,6 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.drawTileVec_ = [0,0,0];
     this.drawTileWorldMatrix_ = Melown.mat4.create();
     this.pixelTileSizeMatrix_ = Melown.mat4.create();
-
-    //this.gpuCache_ = new Melown.GpuCache(this.gpu_, this.core_, this.core_.coreConfig_.gpuCacheSize_);
 
     this.heightmapMesh_ = null;
     this.heightmapTexture_ = null;
@@ -75,7 +70,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
 
     this.hitmapTexture_ = null;
     this.geoHitmapTexture_ = null;
-    this.hitmapSize_ = this.core_.coreConfig_.hitTextureSize_;
+    this.hitmapSize_ = 1024;
     this.updateHitmap_ = true;
     this.updateGeoHitmap_ = true;
 
@@ -568,8 +563,7 @@ Melown.Renderer.prototype.hitTestOld = function(screenX_, screenY_, mode_) {
 };
 
 
-Melown.Renderer.prototype.saveScreenshot = function()
-{
+Melown.Renderer.prototype.saveScreenshot = function() {
     //this.updateHitmap_ = true;
 
     var gl_ = this.gpu_.gl_;

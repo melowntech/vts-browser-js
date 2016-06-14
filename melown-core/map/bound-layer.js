@@ -4,6 +4,47 @@
 Melown.MapBoundLayer = function(map_, json_, id_) {
     this.map_ = map_;
     this.id_ = id_;
+    this.currentAlpha_ = 1.0;
+    this.creditsNumbers_ = [];
+
+    this.tileSize_ = [256,256];
+    this.lodRange_ = [0,100];
+    this.credits_ = [];
+    this.tileRange_ = [[0,0],[0,0]];
+    this.ready_ = false;
+
+    //hack
+    if (id_ == "esri-world-imagery") {
+        json_["availability"] = {
+             // "type" : "negative-type",
+             // "mime": "image/png"
+             // "type" : "negative-code",
+             // "codes": [301, 302, 404]
+              "type" : "negative-size",
+              "size": 2521
+            };  
+    }
+    
+    if (typeof json_ === "string") {
+        this.url_ = json_;
+        
+        var onLoaded_ = (function(data_){
+            this.parseJson(data_);            
+            this.ready_ = true;
+            this.map_.refreshView();
+        }).bind(this);
+        
+        var onError_ = (function(){ }).bind(this);
+        
+        Melown.loadJSON(this.url_, onLoaded_, onError_, null, Melown["useCredentials"]);
+    } else {
+        this.parseJson(json_);
+        this.ready_ = true;
+    }
+    
+};
+
+Melown.MapBoundLayer.prototype.parseJson = function(json_) {
     this.numberId_ = json_["id"] || null;
     this.type_ = json_["type"] || "raster";
     this.url_ = json_["url"] || "";
@@ -13,17 +54,7 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.metaUrl_ = json_["metaUrl"] || null;
     this.maskUrl_ = json_["maskUrl"] || null;
-    this.currentAlpha_ = 1.0;
-    this.creditsNumbers_ = [];
 
-/*
-    json_["availability"] = {
-            "type" : "negative-type",
-            "mime": "image/png"
-//            "type" : "negative-code",
-//            "codes": [301, 302, 404]
-        };  
-*/
 
     this.availability_ = json_["availability"] ? {} : null;
 
@@ -32,6 +63,7 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
         this.availability_.type_ = p["type"];
         this.availability_.mime_ = p["mime"];
         this.availability_.codes_ = p["codes"];
+        this.availability_.size_ = p["size"];
         //this.availability_.coverageUrl_ = p["coverageUrl"];
     }
 
@@ -41,17 +73,13 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
         };
     }
 
-
-    //console.log("REMOVE HACK!");
-    //this.lodRange_[1] = 14;
-
-
     for (var i = 0, li = this.credits_.length; i < li; i++) {
-        var credit_ = map_.getCreditById(this.credits_[i]);
+        var credit_ = this.map_.getCreditById(this.credits_[i]);
         if (credit_) {
             this.creditsNumbers_.push(credit_.id_); 
         }
     }
+
 };
 
 Melown.MapBoundLayer.prototype.getInfo = function() {

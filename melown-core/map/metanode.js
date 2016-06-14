@@ -152,6 +152,15 @@ struct Metanode {
 
     this.pixelSize_ = Melown.decodeFloat16( streamData_.getUint16(stream_.index_, true) ); stream_.index_ += 2;
     this.displaySize_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    
+    //HACK FOR DEBUG !!!!!!!!!!!!!!!!!! REMOVE!!!!!!!
+    /*
+    if (this.id_[0] == 19) this.pixelSize_ = 0.05;
+    if (this.id_[0] == 18) this.pixelSize_ = 0.10;
+    if (this.id_[0] == 17) this.pixelSize_ = 0.20;
+    if (this.id_[0] == 16) this.pixelSize_ = 0.40;
+    if (this.id_[0] == 15) this.pixelSize_ = 0.80;
+    */
 
     if ((this.flags_ & (1 << 2)) == 0) {
         this.pixelSize_ = Number.POSITIVE_INFINITY;

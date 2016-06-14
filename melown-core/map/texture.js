@@ -28,6 +28,7 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
             switch (this.checkType_) {
                 case "negative-type": this.checkValue_ = layer_.availability_.mime_; break;
                 case "negative-code": this.checkValue_ = layer_.availability_.codes_; break;
+                case "negative-size": this.checkValue_ = layer_.availability_.size_; break;
             }
         }       
     }
@@ -62,6 +63,10 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
         //this.tile_.validate();
     }
 
+    if (this.mask_) {
+        this.mask_.killImage(); 
+    }
+
     this.loadState_ = 0;
     this.cacheItem_ = null;
 };
@@ -73,6 +78,10 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
 
         this.stats_.graphsFluxTexture_[1][0]++;
         this.stats_.graphsFluxTexture_[1][1] += this.gpuTexture_.size_;
+
+        if (this.mask_) {
+            this.mask_.killGpuTexture(); 
+        }
     }
 
     this.gpuTexture_ = null;
@@ -103,7 +112,9 @@ Melown.MapTexture.prototype.setBoundTexture = function(tile_, layer_) {
     }
 };
 
-Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
+Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {
+    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
+    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
     
     if (this.extraInfo_) {
         if (this.extraInfo_.tile_.id_[0] == Melown.debugId_[0] &&
@@ -131,7 +142,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
                 this.setBoundTexture(parent_, this.extraBound_.layer_);
             }
             
-            var ready_ = this.extraBound_.texture_.isReady(doNotLoad_, priority_);
+            var ready_ = this.extraBound_.texture_.isReady(doNotLoad_, priority_, doNotCheckGpu_);
             
             if (ready_ && this.checkMask_) {
                 this.extraBound_.tile_.resetDrawCommands_ = (this.extraBound_.texture_.getMaskTexture() != null);
@@ -170,11 +181,11 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
                         }
                         
                         if (this.mask_) {
-                            if (this.mask_.isReady()) {
+                            if (this.mask_.isReady(doNotLoad_, priority_, doNotCheckGpu_)) {
                                 this.checkStatus_ = 2;
                             }
                         } else {
-                            if (texture_.isReady()) {
+                            if (texture_.isReady(doNotLoad_, priority_, doNotCheckGpu_)) {
                                 var tile_ = this.extraInfo_.tile_;
                                 var value_ = texture_.getHeightMapValue(tile_.id_[1] & 255, tile_.id_[2] & 255);
                                 this.checkStatus_ = (value_ & 128) ? 2 : -1;
@@ -229,10 +240,11 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
 
         case "negative-type":
         case "negative-code":
+        case "negative-size":
         
             if (this.checkStatus_ != 2) {
                 if (this.checkStatus_ == 0) {
-                    this.scheduleHeadRequest(priority_);
+                    this.scheduleHeadRequest(priority_, (this.checkType_ == "negative-size"));
                 } else if (this.checkStatus_ == -1) {
             
                     if (this.extraInfo_) {
@@ -261,7 +273,23 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
     }
 
     if (this.loadState_ == 2) { //loaded
-        this.map_.resourcesCache_.updateItem(this.cacheItem_);
+        if (!doNotLoad_) {
+            this.map_.resourcesCache_.updateItem(this.cacheItem_);
+        }
+
+        if (doNotCheckGpu_) {
+            if (this.heightMap_) {
+                if (this.imageData_ == null) {
+                    this.buildHeightMap();
+                }
+            }
+
+            if (this.mask_) {
+                return this.mask_.isReady(doNotLoad_, priority_, doNotCheckGpu_);
+            }
+        
+            return true;
+        }
 
         if (this.heightMap_) {
             if (this.imageData_ == null) {
@@ -273,8 +301,13 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
                     return false;
                 }
 
-                if (this.stats_.renderBuild_ > 1000 / 20) {
+                if (this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
                     //console.log("testure resource build overflow");
+                    this.map_.markDirty();
+                    return false;
+                }
+                
+                if (doNotUseGpu_) {
                     return false;
                 }
 
@@ -287,11 +320,13 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_) {
                 this.stats_.renderBuild_ += performance.now() - t; 
             }
 
-            this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+            if (!doNotLoad_) {
+                this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+            }
         }
         
         if (this.mask_) {
-            return this.mask_.isReady();
+            return this.mask_.isReady(doNotLoad_, priority_, doNotCheckGpu_);
         }
         
         return true;
@@ -354,18 +389,18 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
     this.mapLoaderCallLoaded_();
 };
 
-Melown.MapTexture.prototype.scheduleHeadRequest = function(priority_) {
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this), priority_);
+Melown.MapTexture.prototype.scheduleHeadRequest = function(priority_, downloadAll_) {
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this, downloadAll_), priority_);
 };
 
 //Melown.onlyOneHead_ = false;
 
-Melown.MapTexture.prototype.onLoadHead = function(url_, onLoaded_, onError_) {
+Melown.MapTexture.prototype.onLoadHead = function(downloadAll_, url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    var onerror_ = this.onLoadHeadError.bind(this);
-    var onload_ = this.onHeadLoaded.bind(this);
+    var onerror_ = this.onLoadHeadError.bind(this, downloadAll_);
+    var onload_ = this.onHeadLoaded.bind(this, downloadAll_);
 
     this.checkStatus_ = 1;
 /*
@@ -377,10 +412,15 @@ Melown.MapTexture.prototype.onLoadHead = function(url_, onLoaded_, onError_) {
 
     //url_ = "http://m2.mapserver.mapy.cz/ophoto0203-m/20-568396-351581";
 */
-    Melown.Http.headRequest(url_, onload_, onerror_);
+    if (downloadAll_) {
+        Melown.loadBinary(url_, onload_, onerror_);
+    } else {
+        Melown.Http.headRequest(url_, onload_, onerror_);
+    }
+
 };
 
-Melown.MapTexture.prototype.onLoadHeadError = function() {
+Melown.MapTexture.prototype.onLoadHeadError = function(downloadAll_) {
     if (this.map_.killed_ == true){
         return;
     }
@@ -388,7 +428,7 @@ Melown.MapTexture.prototype.onLoadHeadError = function() {
     this.mapLoaderCallError_();
 };
 
-Melown.MapTexture.prototype.onHeadLoaded = function(data_, status_) {
+Melown.MapTexture.prototype.onHeadLoaded = function(downloadAll_, data_, status_) {
     if (this.map_.killed_ == true){
         return;
     }
@@ -409,7 +449,16 @@ Melown.MapTexture.prototype.onHeadLoaded = function(data_, status_) {
     }*/
     
     switch (this.checkType_) {
+        case "negative-size":
+            if (data_) {
+                if (data_.byteLength == this.checkValue_) {
+                    this.checkStatus_ = -1;
+                }
+            }
+            break;
+            
         case "negative-type":
+        case "negative-size":
             if (data_) {
                 if (data_.indexOf(this.checkValue_) != -1) {
                     this.checkStatus_ = -1;

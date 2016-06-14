@@ -16,9 +16,12 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
         if (surface_) {
             vsurfaceCount_++;
             vsurfaces_[key_] = surface_.index_ + 1; //add one to avoid zero 
-            list_.push(["" + (surface_.index_ + 1), surface_, true]);    
+            //list_.push(["" + (surface_.index_ + 1), surface_, true]);    
+            list_.push([ [(surface_.index_ + 1)], surface_, true]);    
         }
     }
+
+    //debugger;
 
     //add glues to the list
     for (var key_ in this.glues_) {
@@ -37,11 +40,13 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
             }
 
             if (!missed_) {
-                var listId_ = "";
+                //var listId_ = "";
+                var listId_ = [];
                 
                 //create glue id in reverse order for sorting
                 for (var j = 0, lj = id_.length; j < lj; j++) {
-                    listId_ = vsurfaces_[id_[j]] + (j ? "." : "") + listId_;
+                    //listId_ = vsurfaces_[id_[j]] + (j ? "." : "") + listId_;
+                    listId_.unshift(vsurfaces_[id_[j]]);
                 }
 
                 list_.push([listId_, glue_, false]);    
@@ -56,7 +61,20 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
         var sorted_ = true;
         
         for (var i = 0, li = list_.length - 1; i < li; i++) {
-            if (list_[i][0] < list_[i+1][0]) {
+            var a1 = list_[i][0];
+            var a2 = list_[i+1][0];
+            
+            var lesser_ = false;
+            
+            for (var j = 0, lj = Math.min(a1.length, a2.length); j < lj; j++) {
+                if (a1[j] < a2[j] || (j == (lj -1) && a1[j] == a2[j] && a2.length > a1.length)) {
+                    lesser_ = true;
+                    break;                    
+                }
+            }
+            
+            //if (list_[i][0] < list_[i+1][0]) {
+            if (lesser_) {
                 var t = list_[i];
                 list_[i] = list_[i+1];
                 list_[i+1] = t;
@@ -83,10 +101,9 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
         }
     }
 
-//    this.generateSurfaceSequence2();
+    //this.generateSurfaceSequenceOld();
     
 };
-
 
 Melown.Map.prototype.generateBoundLayerSequence = function() {
     var view_ = this.currentView_;

@@ -123,6 +123,10 @@ Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
     var camPos_ = this.map_.cameraPosition_;  
     var camVec_ = this.map_.cameraVector_;
     
+    if (tile_.id_[0] == 18) {
+        tile_ = tile_;
+    }
+    
     for (var i = 0; i < 4; i++) {
         var child_ = tile_.children_[i];
         
@@ -133,10 +137,12 @@ Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
                 var pos_ = child_.metanode_.bbox_.center();
                 var vec_ = [pos_[0] - camPos_[0], pos_[1] - camPos_[1], pos_[2] - camPos_[2]];
                 var d = Melown.vec3.length(vec_);
+                var res_ = this.tilePixelSize(child_.metanode_.bbox_, 1, camPos_, camPos_, true);
                 //vec_ = Melown.vec3.normalize(vec_);
                 //angle_ = (2-(Melown.vec3.dot(camVec_, vec_) + 1)) * d;
                 //angle_ = (2-(Melown.vec3.dot(camVec_, vec_) + 1));
                 angle_ = d;
+                angle_ = res_[1];
             }
                         
             angles_.push([i, angle_]);    
@@ -157,6 +163,8 @@ Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
         
     } while(!sorted_);
 
+    //console.log(JSON.stringify(tile_.id_) + "   " + JSON.stringify(angles_));
+
 /*
     var seq_ = [];
 
@@ -171,6 +179,12 @@ Melown.MapTree.prototype.traceChildSequenceViewBased = function(tile_) {
 Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequence_, priority_, preventRedener_, preventLoad_) {
     if (tile_ == null || tile_.metanode_ == null) {
         return [false, preventRedener_, preventLoad_];
+    }
+
+    if (tile_.id_[0] == Melown.debugId_[0] &&
+        tile_.id_[1] == Melown.debugId_[1] &&
+        tile_.id_[2] == Melown.debugId_[2]) {
+            tile_ = tile_;
     }
 
     var node_ = tile_.metanode_;
@@ -259,7 +273,14 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
     //}
 
     //HACK
-    this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY;
+    //this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY;
+    this.config_.mapTexelSizeTolerance_ = 2.2;
+
+    //if (this.map_.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
+        //node_ = node_;
+    //}
+
+    var channel_ = this.map_.drawChannel_;
 
     if (node_.hasChildren() == false || pixelSize_[0] < this.config_.mapTexelSizeFit_) {
 
@@ -267,11 +288,34 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
         if (log_) { console.log("draw-tile: drawn"); }
 
           
-        if (this.config_.mapAllowHires_ && node_.hasChildren() && this.canDrawDetailedLod(tile_)) {
-            this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, priority_, true, preventLoad_);
+        if (this.config_.mapAllowHires_ && node_.hasChildren() &&
+            /*(this.map_.stats_.gpuRenderUsed_ < this.maxGpuUsed_) &&*/
+            this.canDrawDetailedLod(tile_, priority_, preventLoad_)) {
+            
+            //if (tile_.drawCommands_[channel_].length <= 0) {
+                this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, priority_, true, preventLoad_);
+            //}
             return [true, preventRedener_, true];
         } else {
-            this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_);
+            //this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_);
+            
+            if (!preventRedener_) {
+                var d = Math.min(499, Math.round(Math.log(pixelSize_[1]) / Math.log(1.04)));
+                var buffer_ = this.map_.tileBuffer_;
+                
+                if (!buffer_[d]) { 
+                    buffer_[d] = [];
+                }
+                
+                buffer_[d].push({
+                    tile_ : tile_,
+                    node_ : node_,
+                    pixelSize_ : pixelSize_,
+                    priority_ : priority_
+                });
+            }
+            
+            ///this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
         }
 
         return [false, preventRedener_, preventLoad_];
@@ -291,13 +335,13 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
     return [true, preventRedener_, preventLoad_];
 };
 
-Melown.MapTree.prototype.canDrawDetailedLod = function(tile_, priority_) {
+Melown.MapTree.prototype.canDrawDetailedLod = function(tile_, priority_, preventLoad_) {
     if (tile_.lastRenderState_) {
         //debugger;
     }
 	var channel_ = this.map_.drawChannel_;
 	
-    return !(tile_.drawCommands_[channel_].length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_)) && !tile_.lastRenderState_;
+    return !(tile_.drawCommands_[channel_].length > 0  && this.map_.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) && !tile_.lastRenderState_;
 };
 
 Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_, childrenSequence_, priority_) {
@@ -326,7 +370,9 @@ Melown.MapTree.prototype.canDrawCoarserLod = function(tile_, node_, cameraPos_, 
 
                 if (!(childTile_.drawCommands_[channel_].length > 0 && this.map_.areDrawCommandsReady(childTile_.drawCommands_[channel_], priority_))) {
                     //load data for child tile
-                    this.map_.drawSurfaceTile(childTile_, childTile_.metanode_, cameraPos_, 1, priority_, true, false);            
+                    //if (childTile_.drawCommands_[channel_].length >= 0) {
+                        this.map_.drawSurfaceTile(childTile_, childTile_.metanode_, cameraPos_, 1, priority_, true, false);            
+                    //}
                     ret_ = true;
                     continue;
                 }
@@ -346,12 +392,14 @@ Melown.MapTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_) {
         var bmax_ = bbox_.max_;
         var bmin_ = bbox_.min_;
         var edge_ = -0.5;
+        
+        var camDistance_ = Math.max(this.cameraHeight_, this.map_.cameraDistance_); 
 
-        if (this.map_.cameraDistance_ < 1000000) {
+        if (camDistance_ < 1000000) {
             edge_ = -0.9;
         } 
         
-        if (this.map_.cameraDistance_ < 100000) {
+        if (camDistance_ < 100000) {
             edge_ = -0.991;
         } 
         
@@ -503,14 +551,14 @@ Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, camer
     var factor_ = 0;
 
     //find bbox sector
-    if (0 < tilePos_[1]) { //top row
+    if (0 < tilePos_[1]) { //top row - zero means camera position in y
         if (0 < tilePos_[0]) { // left top corner
             if (0 > h2_) { // hi
                 factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], h2_], returnDistance_);
             } else if (0 < h1_) { // low
                 factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], (h1_ + h2_)*0.5], returnDistance_);
             }
         } else if (0 > tilePos2_[0]) { // right top corner
             if (0 > h2_) { // hi
@@ -518,15 +566,15 @@ Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, camer
             } else if (0 < h1_) { // low
                 factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], (h1_ + h2_)*0.5], returnDistance_);
             }
         } else { //top side
             if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], h2_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos_[0] + tilePos2_[0])*0.5, tilePos2_[1], h2_], returnDistance_);
             } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], h1_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos_[0] + tilePos2_[0])*0.5, tilePos2_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([0, tilePos2_[1], 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos_[0] + tilePos2_[0])*0.5, tilePos2_[1], (h1_ + h2_)*0.5], returnDistance_);
             }
         }
     } else if (0 > tilePos4_[1]) { //bottom row
@@ -536,7 +584,7 @@ Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, camer
             } else if (0 < h1_) { // low
                 factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], (h1_ + h2_)*0.5], returnDistance_);
             }
         } else if (0 > tilePos3_[0]) { // right bottom corner
             if (0 > h2_) { // hi
@@ -544,41 +592,41 @@ Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, camer
             } else if (0 < h1_) { // low
                 factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], (h1_ + h2_)*0.5], returnDistance_);
             }
         } else { //bottom side
             if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], h2_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos4_[0] + tilePos3_[0])*0.5, tilePos3_[1], h2_], returnDistance_);
             } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], h1_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos4_[0] + tilePos3_[0])*0.5, tilePos3_[1], h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([0, tilePos3_[1], 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos4_[0] + tilePos3_[0])*0.5, tilePos3_[1], (h1_ + h2_)*0.5], returnDistance_);
             }
         }
     } else { //middle row
         if (0 < tilePos4_[0]) { // left side
             if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, h2_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos_[0], (tilePos2_[1] + tilePos3_[1])*0.5, h2_], returnDistance_);
             } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, h1_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos_[0], (tilePos2_[1] + tilePos3_[1])*0.5, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos_[0], 0, 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos_[0], (tilePos2_[1] + tilePos3_[1])*0.5, (h1_ + h2_)*0.5], returnDistance_);
             }
         } else if (0 > tilePos3_[0]) { // right side
             if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, h2_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], (tilePos2_[1] + tilePos3_[1])*0.5, h2_], returnDistance_);
             } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, h1_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], (tilePos2_[1] + tilePos3_[1])*0.5, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], 0, 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([tilePos2_[0], (tilePos2_[1] + tilePos3_[1])*0.5, (h1_ + h2_)*0.5], returnDistance_);
             }
         } else { //center
             if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([0, 0, h2_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos_[1] + tilePos2_[1])*0.5, (tilePos2_[1] + tilePos3_[1])*0.5, h2_], returnDistance_);
             } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([0, 0, h1_], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos_[1] + tilePos2_[1])*0.5, (tilePos2_[1] + tilePos3_[1])*0.5, h1_], returnDistance_);
             } else { // middle
-                factor_ = this.camera_.scaleFactor([0, 0, 0], returnDistance_);
+                factor_ = this.camera_.scaleFactor([(tilePos_[1] + tilePos2_[1])*0.5, (tilePos2_[1] + tilePos3_[1])*0.5, (h1_ + h2_)*0.5], returnDistance_);
             }
         }
     }

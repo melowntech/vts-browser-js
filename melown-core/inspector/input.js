@@ -294,6 +294,10 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 case 99:
                     map_.drawCredits_ = !map_.drawCredits_; break; //key C pressed
 
+                case 79:
+                case 111:
+                    map_.drawOrder_ = !map_.drawOrder_; break; //key O pressed
+
                 case 69:
                 case 101:
                     map_.debugTextSize_ = (map_.debugTextSize_ == 2.0) ? 3.0 : 2.0; break; //key S pressed
