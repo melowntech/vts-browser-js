@@ -17,6 +17,7 @@ Melown.Autopilot = function(browser_) {
     this.orientation_ = [0,0,0];
     this.viewHeight_ = 0;
     this.fov_ = 90;
+    this.lastTime_ = 0;
 };
 
 Melown.Autopilot.prototype.setAutorotate = function(speed_) {
@@ -101,25 +102,30 @@ Melown.Autopilot.prototype.tick = function() {
         return;
     }
 
+    var time_ = performance.now();
+    var timeFactor_ =  (time_ - this.lastTime_) / 1000; 
+    this.lastTime_ = time_;
+
     if (this.autoRotate_ != 0) {
         var pos_ = map_.getPosition();
         var o = map_.getPositionOrientation(pos_);
-        o[0] = (o[0] + this.autoRotate_) % 360;
+        o[0] = (o[0] + this.autoRotate_*timeFactor_) % 360;
         pos_ = map_.setPositionOrientation(pos_, o);
         map_.setPosition(pos_);
     }
     
     if (this.autoPan_ != 0) {
         var pos_ = map_.getPosition();
-        pos_ = map_.movePositionCoordsTo(pos_, this.autoPanAzimuth_, this.autoPan_, 1);
+        pos_ = map_.movePositionCoordsTo(pos_, this.autoPanAzimuth_, map_.getPositionViewExtent(pos_)*(this.autoPan_*0.01)*timeFactor_, 0);
         map_.setPosition(pos_);
     }
+
 
     if (this.finished_ || !this.trajectory_) {
         return;
     }
     
-    var time_ = performance.now() - this.timeStart_;
+    time_ = time_ - this.timeStart_;
     var sampleIndex_ =  Math.floor((time_ / this.sampleDuration_)*this.speed_);
     var totalSamples_ = this.trajectory_.length - 1; 
 

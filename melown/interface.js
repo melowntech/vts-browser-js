@@ -151,6 +151,11 @@ Melown.BrowserInterface.prototype.convertCoords = function(sourceSrs_, destinati
     return this.map_.convertCoords(sourceSrs_, destinationSrs_, coords_);
 };
 
+Melown.BrowserInterface.prototype.convertCoordsFromNavToPhys = function(coords_, heightMode_, lod_) {
+    if(!this.map_) return;
+    return this.map_.convertCoordsFromNavToPhys(coords_, heightMode_, lod_);
+};
+
 Melown.BrowserInterface.prototype.convertCoordsFromNavToCanvas = function(coords_, heightMode_, lod_) {
     if(!this.map_) return;
     return this.map_.convertCoordsFromNavToCanvas(coords_, heightMode_, lod_);
@@ -161,9 +166,14 @@ Melown.BrowserInterface.prototype.convertCoordsFromPhysToCanvas = function(coord
     return this.map_.convertCoordsFromPhysToCanvas(coords_);
 };
 
-Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace = function(coords_, heightMode_, lod_) { //remove
+Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace = function(coords_, heightMode_, lod_) {
     if(!this.map_) return;
     return this.map_.convertCoordsFromNavToCameraSpace(coords_, heightMode_, lod_);
+};
+
+Melown.BrowserInterface.prototype.convertCoordsFromPhysToCameraSpace = function(coords_, heightMode_, lod_) {
+    if(!this.map_) return;
+    return this.map_.convertCoordsFromPhysToCameraSpace(coords_, heightMode_, lod_);
 };
 
 Melown.BrowserInterface.prototype.clonePosition = function(position_) {
@@ -467,7 +477,8 @@ Melown.BrowserInterface.prototype["convertPositionHeightMode"] = Melown.BrowserI
 Melown.BrowserInterface.prototype["convertCoords"] = Melown.BrowserInterface.prototype.convertCoords; 
 Melown.BrowserInterface.prototype["convertCoordsFromNavToCanvas"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCanvas; 
 Melown.BrowserInterface.prototype["convertCoordsFromPhysToCanvas"] = Melown.BrowserInterface.prototype.convertCoordsFromPhysToCanvas; 
-Melown.BrowserInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace; //remove
+Melown.BrowserInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace;
+Melown.BrowserInterface.prototype["convertCoordsFromPhysToCameraSpace"] = Melown.BrowserInterface.prototype.convertCoordsFromPhysToCameraSpace;
 Melown.BrowserInterface.prototype["clonePosition"] = Melown.BrowserInterface.prototype.clonePosition; 
 Melown.BrowserInterface.prototype["arePositionsSame"] = Melown.BrowserInterface.prototype.arePositionsSame; 
 Melown.BrowserInterface.prototype["setPositionCoords"] = Melown.BrowserInterface.prototype.setPositionCoords; 
