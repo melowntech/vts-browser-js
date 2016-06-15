@@ -2,12 +2,12 @@
 
 Melown.Presentation.prototype.Utils.init = function(id_, HTMLtemplate_) {
     var obj = this;    
-    var templateSwitcher = '<div id="templateSwitcher"></div>';
-    var templatePanelPrefix = '<div class="panelContainer"><div class="swipeControl top"></div><div class="toolboxContainer">';
-    var templatePanelSuffix = '</div><div class="swipeControl"></div></div>';
+    var templateSwitcher = '<div id="melown-presentations-templateSwitcher"></div>';
+    var templatePanelPrefix = '<div class="melown-presentations panelContainer"><div class="melown-presentations swipeControl top"></div><div class="melown-presentations toolboxContainer">';
+    var templatePanelSuffix = '</div><div class="melown-presentations swipeControl"></div></div>';
     var templatePanel = templatePanelPrefix + HTMLtemplate_ + templatePanelSuffix;
-    var templateSubtitlesPrefix = '<div class="subtitlesContainer"><button type="button"></button><button type="button"></button>'
-                                    + '<div class="swipeSubtitles"></div><div class="swipeSubtitles"></div><div class="innerContainer">';
+    var templateSubtitlesPrefix = '<div class="melown-presentations subtitlesContainer"><button type="button"></button><button type="button"></button>'
+                                    + '<div class="melown-presentations swipeSubtitles"></div><div class="melown-presentations swipeSubtitles"></div><div class="melown-presentations innerContainer">';
     var templateSubtitlesSuffix = '</div></div>';
     var templateSubtitles = templateSubtitlesPrefix + HTMLtemplate_ + templateSubtitlesSuffix;
     var template = templateSwitcher + templatePanel + templateSubtitles;
@@ -173,7 +173,7 @@ Melown.Presentation.prototype.Utils.nextArticle = function(node, init, lastNode)
 
 Melown.Presentation.prototype.Utils.useToolbox = function() {
     
-    var templSwitch = document.getElementById('templateSwitcher');
+    var templSwitch = document.getElementById('melown-presentations-templateSwitcher');
     var type = document.getElementsByTagName('article')[0].getAttribute('data-mln-style');
 
     if(templSwitch !== null)
@@ -182,14 +182,14 @@ Melown.Presentation.prototype.Utils.useToolbox = function() {
     if(type === null)
         type = 'right';
     
-    var rightPanel = document.getElementsByClassName('panelContainer')[0];
-    var toolboxContainer = document.getElementsByClassName('toolboxContainer')[0];
-    var subtitles = document.getElementsByClassName('subtitlesContainer')[0];
-    var swipeControl = document.getElementsByClassName('swipeControl');
+    var rightPanel = document.getElementsByClassName('melown-presentations panelContainer')[0];
+    var toolboxContainer = document.getElementsByClassName('melown-presentations toolboxContainer')[0];
+    var subtitles = document.getElementsByClassName('melown-presentations subtitlesContainer')[0];
+    var swipeControl = document.getElementsByClassName('melown-presentations swipeControl');
     this.activeToolbox = type;
     
     subtitles.setAttribute('style', 'opacity: 0;');
-    subtitles.setAttribute('class', 'subtitlesContainer');
+    subtitles.setAttribute('class', 'melown-presentations subtitlesContainer');
     if(type == 'right') {
         rightPanel.style.display = 'block';
         setTimeout(function() {

@@ -1,8 +1,8 @@
-body {
+/*body {
     font-family: Helvetica;
-}
+}*/
 
-div.top-toolbox {
+div.melown-presentations.top-toolbox {
     position: absolute;
     top: 10px;
     height: 26px;
@@ -10,7 +10,7 @@ div.top-toolbox {
     left: 10px;
 }
 
-#templateSwitcher {
+#melown-presentations-templateSwitcher {
     position: absolute;
     top: 30px;
     left: -150px;
@@ -27,20 +27,20 @@ div.top-toolbox {
     transition: all 0.6s ease;
 }
 
-#templateSwitcher:hover {
+#melown-presentations-templateSwitcher:hover {
     left: 0px;
 }
 
-#templateSwitcher p {
+#melown-presentations-templateSwitcher p {
     cursor: pointer;
     color: #0066ff
 }
 
-#templateSwitcher p:hover {
+#melown-presentations-templateSwitcher p:hover {
     text-decoration: underline;
 }
 
-button {
+.melown-presentations button {
     position: relative;
     width: 140px;
     height: 26px;
@@ -53,22 +53,22 @@ button {
     opacity: 1;
 }
 
-button.hidden {
+.melown-presentations button.hidden {
     opacity: 0;
     cursor: default;
 }
 
-div.top-toolbox button {
+div.melown-presentations.top-toolbox button {
     float: left;
 }
 
-div.widget .input-wrap {
+div.melown-presentations.widget .input-wrap {
     margin: 10px 10px 0px 10px;
     width: 180px;
     min-height: 16px;
 }
 
-div.widget .input-wrap label {
+div.melown-presentations.widget .input-wrap label {
     font-size: 12px;
     height: 20px;
     width: 144px;
@@ -78,34 +78,34 @@ div.widget .input-wrap label {
     font-weight: bold;
 }
 
-.input-wrap input[type='range'] {
+.melown-presentations.input-wrap input[type='range'] {
     margin-right: 10px;
     width: 80px;
     display: block;
     float: left;
 }
 
-.input-wrap span.value {
+.melown-presentations.input-wrap span.value {
     font-size: 12px;
     width: 20px;
     display: block;
 }
 
-div.widget .input-wrap.nested {
+div.melown-presentations.widget .input-wrap.nested {
     margin-left: 24px;
     width: 166px;
 }
 
-div.widget .input-wrap.nested label {
+div.melown-presentations.widget .input-wrap.nested label {
     width: 130px;
     font-weight: normal;
 }
 
-.section {
+.melown-presentations.section {
     margin: 0px 0px 26px 0px;
 }
 
-button, button:hover {
+.melown-presentations button, .melown-presentations button:hover {
     -webkit-transition: all 0.4s ease;
     -moz-transition: all 0.4s ease;
     transition: all 0.4s ease;

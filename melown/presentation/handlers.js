@@ -1,20 +1,20 @@
 // Presentation handlers of events
 
 Melown.Presentation.prototype.Utils.handleArticle = function(node) {
-    var rightPanel = document.getElementsByClassName('toolboxContainer')[0];
+    var rightPanel = document.getElementsByClassName('melown-presentations toolboxContainer')[0];
     var articleClass = function(a) {
-        document.getElementsByClassName('toolboxContainer')[0].querySelectorAll('article')[0].setAttribute('class',a);
+        document.getElementsByClassName('melown-presentations toolboxContainer')[0].querySelectorAll('article')[0].setAttribute('class',a);
     }
     
     var actualHeight = this.maxHeight * this.actualNode * -1;
     
-    document.getElementById('btnUp').setAttribute('class','');
-    document.getElementById('btnDw').setAttribute('class','');
+    document.getElementById('melown-presentations-btnUp').setAttribute('class','');
+    document.getElementById('melown-presentations-btnDw').setAttribute('class','');
 
     if(node === 0)
-        document.getElementById('btnUp').setAttribute('class','hidden');
+        document.getElementById('melown-presentations-btnUp').setAttribute('class','melown-presentations hidden');
     else if(node === this.maxNodes-1)
-        document.getElementById('btnDw').setAttribute('class','hidden');
+        document.getElementById('melown-presentations-btnDw').setAttribute('class','melown-presentations hidden');
         
     document.getElementsByTagName('article')[0].setAttribute('style','top: '+actualHeight+'px');
     
@@ -22,9 +22,9 @@ Melown.Presentation.prototype.Utils.handleArticle = function(node) {
         /* handle right panel stuff */
         rightPanel.style.height = (this.maxHeight + this.swipeOffset) + 'px';
         rightPanel.style.top = 0;
-        articleClass('');
+        articleClass('melown-presentations');
         /* done - now add some cosmetic attributes */
-        document.getElementsByClassName('swipeControl')[0].style.height = 0;
+        document.getElementsByClassName('melown-presentations swipeControl')[0].style.height = 0;
         document.getElementsByTagName('article')[0].style.top = 0;
         document.getElementsByTagName('section')[0].style.height = (this.maxHeight + (this.swipeOffset - this.firstTitleMargin)) + 'px';
     }
@@ -32,9 +32,9 @@ Melown.Presentation.prototype.Utils.handleArticle = function(node) {
         /* handle right panel stuff */
         rightPanel.style.height = this.maxHeight + 'px';
         rightPanel.style.top = this.swipeOffset + 'px';
-        articleClass('nonFirst');
+        articleClass('melown-presentations nonFirst');
         /* done - now add some cosmetic attributes */
-        document.getElementsByClassName('swipeControl')[0].style.height = this.swipeOffset + 'px';
+        document.getElementsByClassName('melown-presentations swipeControl')[0].style.height = this.swipeOffset + 'px';
         document.getElementsByTagName('section')[0].style.height = (this.maxHeight + this.swipeOffset) + 'px';
     }
     
@@ -45,17 +45,17 @@ Melown.Presentation.prototype.Utils.handleSubtitlesPosition = function(node, ini
     if(typeof node === 'undefined') node = 0;
     
     var obj = this;
-    var subtitlesContainer = document.getElementsByClassName('subtitlesContainer')[0];
+    var subtitlesContainer = document.getElementsByClassName('melown-presentations subtitlesContainer')[0];
     var leftButton = subtitlesContainer.childNodes[0];
     var rightButton = subtitlesContainer.childNodes[1];
     var sections = subtitlesContainer.childNodes[4].querySelectorAll('article')[0].querySelectorAll('section');
-    var swipeSubtitles = document.getElementsByClassName('swipeSubtitles');
+    var swipeSubtitles = document.getElementsByClassName('melown-presentations swipeSubtitles');
     
     this.linksDecode(sections[node]);
     
     // clean all previous states
     sections[node].removeAttribute('style');
-    subtitlesContainer.setAttribute('class','subtitlesContainer');
+    subtitlesContainer.setAttribute('class','melown-presentations subtitlesContainer');
     subtitlesContainer.removeAttribute('onclick');
     swipeSubtitles[0].removeAttribute('onclick');
     swipeSubtitles[1].removeAttribute('onclick');
@@ -63,8 +63,8 @@ Melown.Presentation.prototype.Utils.handleSubtitlesPosition = function(node, ini
     swipeSubtitles[1].removeAttribute('style');
     leftButton.removeAttribute('onclick');
     rightButton.removeAttribute('onclick');
-    leftButton.setAttribute('class', 'hidden');
-    rightButton.setAttribute('class', 'hidden');
+    leftButton.setAttribute('class', 'melown-presentations hidden');
+    rightButton.setAttribute('class', 'melown-presentations hidden');
     
     for(var i = 0; i < sections.length; i++) {
         sections[i].style.opacity = 0;
@@ -90,8 +90,8 @@ Melown.Presentation.prototype.Utils.handleSubtitlesPosition = function(node, ini
         
         
         if(node === 0) {
-            leftButton.setAttribute('class', 'hidden');
-            rightButton.setAttribute('class', '');
+            leftButton.setAttribute('class', 'melown-presentations hidden');
+            rightButton.setAttribute('class', 'melown-presentations');
             rightButton.onclick = function() {
                 obj.nextArticle(1);
             }
@@ -99,14 +99,14 @@ Melown.Presentation.prototype.Utils.handleSubtitlesPosition = function(node, ini
             rightButton.innerHTML = 'Continue';
         }
         else if(node === sections.length - 2) { // One more before end
-            leftButton.setAttribute('class', '');
+            leftButton.setAttribute('class', 'melown-presentations');
             leftButton.onclick = function () {
                 
                 obj.nextArticle('-1');
             }
             //leftButton.setAttribute('onclick','nextArticle(\'-1\');');
             leftButton.innerHTML = 'Back';
-            rightButton.setAttribute('class', '');
+            rightButton.setAttribute('class', 'melown-presentations');
             rightButton.onclick = function () {
                 
                 obj.nextArticle('+1');
@@ -116,7 +116,7 @@ Melown.Presentation.prototype.Utils.handleSubtitlesPosition = function(node, ini
         }
         if(typeof init === 'undefined')
             subtitlesContainer.setAttribute('style', 'display: block;');
-        subtitlesContainer.setAttribute('class','subtitlesContainer full');
+        subtitlesContainer.setAttribute('class','melown-presentations subtitlesContainer full');
     }
     else if(sectionType == 'title') {
         swipeSubtitles[0].style.opacity = 1;
@@ -129,18 +129,18 @@ Melown.Presentation.prototype.Utils.handleSubtitlesPosition = function(node, ini
         }
         //swipeSubtitles[0].setAttribute('onclick','nextArticle(\'-1\');');
         //swipeSubtitles[1].setAttribute('onclick','nextArticle(\'+1\');');
-        leftButton.setAttribute('class', 'hidden');
-        rightButton.setAttribute('class', 'hidden');
+        leftButton.setAttribute('class', 'melown-presentations hidden');
+        rightButton.setAttribute('class', 'melown-presentations hidden');
         //subtitlesContainer.setAttribute('style', 'display: block;');
         subtitlesContainer.style.height = this.subtitlesHeights[node] + 'px';
-        subtitlesContainer.setAttribute('class','subtitlesContainer title');
+        subtitlesContainer.setAttribute('class','melown-presentations subtitlesContainer title');
        
     }
     else if(sectionType == 'mini') {
         subtitlesContainer.setAttribute('style', 'display: block;');
-        subtitlesContainer.setAttribute('class','subtitlesContainer mini');
-        leftButton.setAttribute('class', 'hidden');
-        rightButton.setAttribute('class', 'hidden');
+        subtitlesContainer.setAttribute('class','melown-presentations subtitlesContainer mini');
+        leftButton.setAttribute('class', 'melown-presentations hidden');
+        rightButton.setAttribute('class', 'melown-presentations hidden');
     }
 }
 

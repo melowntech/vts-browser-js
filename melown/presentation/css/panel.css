@@ -1,4 +1,4 @@
-.panelContainer {
+.melown-presentations.panelContainer {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -13,7 +13,7 @@
     transition: opacity 1s ease;   
 }
 
-.toolboxContainer {
+.melown-presentations.toolboxContainer {
     position: absolute;
     min-height: 50px;
     overflow: hidden;
@@ -25,7 +25,7 @@
     transition: all 0.6s ease;
 }
 
-.toolboxContainer article {
+.melown-presentations.toolboxContainer article {
     position: relative;
     padding: 0;
     margin-top: 20px;
@@ -35,11 +35,11 @@
     transition: all 0.6s ease;
 }
 
-.toolboxContainer article.nonFirst {
+.melown-presentations.toolboxContainer article.nonFirst {
     margin-top: -60px;
 }
 
-.toolboxContainer section {
+.melown-presentations.toolboxContainer section {
     font-family: 'Open Sans',Verdana,Arial,Tahoma,Calibri,Geneva,sans-serif;
     font-weight: 300;
     font-size: 13px;
@@ -51,7 +51,7 @@
     vertical-align: top;
 }
 
-.panelContainer div.swipeControl {
+.melown-presentations.panelContainer div.swipeControl {
     position: absolute;
     top: 70px;
     height: 60px;
@@ -64,17 +64,17 @@
     transition: all 0.6s ease;
 }
 
-.panelContainer div.swipeControl.top {
+.melown-presentations.panelContainer div.swipeControl.top {
     top : 0;
 }
 
-.toolboxContainer img {
+.melown-presentations.toolboxContainer img {
     max-width: 295px;
     border-radius: 3px;
     border: double 5px rgb(216, 216, 216);
 }
 
-#btnUp {
+#melown-presentations-btnUp {
     background-image: url('./img/up.png');
     position: absolute;
     bottom: 15px;
@@ -82,7 +82,7 @@
     margin-left: -70px;
 }
 
-#btnDw {
+#melown-presentations-btnDw {
     background-image: url('./img/dw.png');
     position: absolute;
     top: 15px;
@@ -90,40 +90,40 @@
     margin-left: -70px;
 }
 
-#btnUp:hover {
+#melown-presentations-btnUp:hover {
     background-position: 50% 30%;
 }
 
-#btnDw:hover {
+#melown-presentations-btnDw:hover {
     background-position: 50% 80%;
 }
 
-.toolboxContainer section.hidden {
+.melown-presentations.toolboxContainer section.hidden {
     max-height: 0px;
     margin-bottom: 0;
     margin-top: 0;
 }
 
-.toolboxContainer section h3 {
+.melown-presentations.toolboxContainer section h3 {
     font-weight: 300;
     font-size: 18px;
     margin: 0;
     padding: 15px 0 15px;
 }
 
-.toolboxContainer section h4 {
+.melown-presentations.toolboxContainer section h4 {
     margin: 0;
     padding: 10px 0 10px 0;
     font-size: 15px;
 }
 
-.toolboxContainer section a, .toolboxContainer section p a {
+.melown-presentations.toolboxContainer section a, .melown-presentations.toolboxContainer section p a {
     color: #0066ff;
     text-decoration: none;
     cursor: pointer;
 }
 
-.toolboxContainer section a:hover, .toolboxContainer section p a:hover {
+.melown-presentations.toolboxContainer section a:hover, .melown-presentations.toolboxContainer section p a:hover {
     text-decoration: underline;
     cursor: pointer;
 }
