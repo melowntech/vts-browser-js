@@ -397,14 +397,14 @@ Melown.tileVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
-    "uniform float uFogDensity;\n"+
+    "uniform vec4 uParams;\n"+    //[zfactor, fogDensity, 0, 0]
     "varying vec2 vTexCoord;\n"+
     "varying float vFogFactor;\n"+
     "void main() {\n"+
         "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
-        "gl_Position = uProj * camSpacePos;\n"+
+        "gl_Position = uProj * camSpacePos; gl_Position.z+=uParams[0];\n"+
         "float camDist = length(camSpacePos.xyz);\n"+
-        "vFogFactor = exp(uFogDensity * camDist);\n"+
+        "vFogFactor = exp(uParams[1] * camDist);\n"+
         "vTexCoord = aTexCoord;\n"+
     "}";
 
@@ -423,15 +423,15 @@ Melown.tile2VertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord2;\n"+
     "uniform mat4 uMV, uProj;\n"+
-    "uniform float uFogDensity;\n"+
+    "uniform vec4 uParams;\n"+    //[zfactor, fogDensity, 0, 0]
     "uniform vec4 uTransform;\n"+
     "varying vec2 vTexCoord;\n"+
     "varying float vFogFactor;\n"+
     "void main() {\n"+
         "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
-        "gl_Position = uProj * camSpacePos;\n"+
+        "gl_Position = uProj * camSpacePos; gl_Position.z+=uParams[0];\n"+
         "float camDist = length(camSpacePos.xyz);\n"+
-        "vFogFactor = exp(uFogDensity * camDist);\n"+
+        "vFogFactor = exp(uParams[1] * camDist);\n"+
         "vTexCoord = vec2(uTransform[0] * aTexCoord2[0] + uTransform[2], uTransform[1] * aTexCoord2[1] + uTransform[3]);\n"+
     "}";
 

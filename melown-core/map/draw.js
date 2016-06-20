@@ -557,7 +557,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
             
             for (var j = 0, lj = surface_.boundLayerSequence_.length; j < lj; j++) {
                 var layer_ = surface_.boundLayerSequence_[j][0];
-                if (layer_ && layer_.hasTileOrInfluence(tile_.id_) && surface_.boundLayerSequence_[j][1] > 0) {
+                if (layer_ && layer_.ready_ && layer_.hasTileOrInfluence(tile_.id_) && surface_.boundLayerSequence_[j][1] > 0) {
                     var extraBound_ = null; 
                     
                     if (tile_.id_[0] > layer_.lodRange_[1]) {

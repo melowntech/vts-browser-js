@@ -98,6 +98,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawFog_ = this.config_.mapFog_;
     this.debugTextSize_ = 2.0;
     this.fogDensity_ = 0;
+    this.zFactor_ = 1;
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});
@@ -431,6 +432,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
                                               this.metatileCache_.setMaxCost(this.config_.mapMetatileCache_); break;
         case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
         case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 2.2); break;
+        case "mapLowresBackground":           this.config_.mapLowresBackground_ = Melown.validateBool(value_, false); break;
         case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;
         case "mapMaxProcessingTime":          this.config_.mapMaxProcessingTime_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1000/20); break;
         case "mapMobileMode":                 this.config_.mapMobileMode_ = Melown.validateBool(value_, false); break;
@@ -455,6 +457,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapMetatileCache":              return this.config_.mapMetatileCache_;
         case "mapTexelSizeFit":               return this.config_.mapTexelSizeFit_;
         case "mapTexelSizeTolerance":         return this.config_.mapTexelSizeTolerance_;
+        case "mapLowresBackground":           return this.config_.mapLowresBackground_;
         case "mapDownloadThreads":            return this.config_.mapDownloadThreads_;
         case "mapMaxProcessingTime":          return this.config_.mapMaxProcessingTime_;
         case "mapMobileMode":                 return this.config_.mapMobileMode_;
@@ -532,10 +535,16 @@ Melown.Map.prototype.drawMap = function() {
         this.renderer_.drawSkydome(this.renderer_.blackTexture_, this.renderer_.progStardome_);
     }
 
-    //this.renderer_.paintGL();
-    //this.config_.mapTexelSizeFit_ = 10.1;
-    //this.draw();
-    //this.config_.mapTexelSizeFit_ = 1.1;
+    if (this.config_.mapLowresBackground_) {
+        this.zFactor_ = 0.9;
+        this.config_.mapTexelSizeFit_ = 10.1;
+        this.config_.mapTexelSizeTolerance_ = this.config_.mapTexelSizeFit_ * 2;
+        this.draw();
+        this.config_.mapTexelSizeFit_ = 1.1;
+        this.config_.mapTexelSizeTolerance_ = 2.2;
+    }
+    
+    this.zFactor_ = 0;
     this.draw();
 
     if (!this.getNavigationSrs().isProjected()) {    

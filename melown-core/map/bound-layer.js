@@ -11,6 +11,8 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
     this.lodRange_ = [0,100];
     this.credits_ = [];
     this.tileRange_ = [[0,0],[0,0]];
+    this.jsonUrl_ = null;
+    this.baseUrl_ = "";
     this.ready_ = false;
 
     //hack
@@ -26,7 +28,8 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
     }
     
     if (typeof json_ === "string") {
-        this.url_ = json_;
+        this.jsonUrl_ = json_;
+        this.baseUrl_ = json_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
         
         var onLoaded_ = (function(data_){
             this.parseJson(data_);            
@@ -35,8 +38,9 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
         }).bind(this);
         
         var onError_ = (function(){ }).bind(this);
-        
-        Melown.loadJSON(this.url_, onLoaded_, onError_, null, Melown["useCredentials"]);
+
+        Melown.loadJSON(this.jsonUrl_, onLoaded_, onError_, (Melown["useCredentials"] ? (this.jsonUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+        //Melown.loadJSON(this.url_, onLoaded_, onError_, null, Melown["useCredentials"]);
     } else {
         this.parseJson(json_);
         this.ready_ = true;
@@ -47,13 +51,13 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
 Melown.MapBoundLayer.prototype.parseJson = function(json_) {
     this.numberId_ = json_["id"] || null;
     this.type_ = json_["type"] || "raster";
-    this.url_ = json_["url"] || "";
+    this.url_ = (this.baseUrl_ + json_["url"]) || "";
     this.tileSize_ = json_["tileSize"] || [256,256];
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.credits_ = json_["credits"] || [];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
-    this.metaUrl_ = json_["metaUrl"] || null;
-    this.maskUrl_ = json_["maskUrl"] || null;
+    this.metaUrl_ = (this.baseUrl_ + json_["metaUrl"]) || null;
+    this.maskUrl_ = (this.baseUrl_ + json_["maskUrl"]) || null;
 
 
     this.availability_ = json_["availability"] ? {} : null;

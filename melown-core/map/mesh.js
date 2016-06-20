@@ -396,22 +396,26 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         switch(type_) {
             case "internal":
             case "fog":
-                program_.setFloat("uFogDensity", this.map_.fogDensity_);
+                //program_.setFloat("uFogDensity", this.map_.fogDensity_);
+                program_.setVec4("uParams", [this.map_.zFactor_, this.map_.fogDensity_, 0, 0]);
                 break;
 
             case "internal-nofog":
-                program_.setFloat("uFogDensity", 0);
+                //program_.setFloat("uFogDensity", 0);
+                program_.setVec4("uParams", [this.map_.zFactor_, 0, 0, 0]);
                 break;
 
             case "external":
                 program_.setFloat("uAlpha", 1);
-                program_.setFloat("uFogDensity", this.map_.fogDensity_);
+                //program_.setFloat("uFogDensity", this.map_.fogDensity_);
+                program_.setVec4("uParams", [this.map_.zFactor_, this.map_.fogDensity_, 0, 0]);
                 program_.setVec4("uTransform", texture_.getTransform());
                 break;
 
             case "external-nofog":
                 program_.setFloat("uAlpha", alpha_);
-                program_.setFloat("uFogDensity", 0);
+                //program_.setFloat("uFogDensity", 0);
+                program_.setVec4("uParams", [this.map_.zFactor_, 0, 0, 0]);
                 program_.setVec4("uTransform", texture_.getTransform());
                 break;
         }
