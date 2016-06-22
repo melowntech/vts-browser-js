@@ -187,6 +187,19 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
 
     skipBaseUrl_ = (url_.indexOf("://") != -1);
 
+    /* //useful for debug
+    var tmp_;
+
+    if (skipBaseUrl_) {
+        tmp_ =  url_;
+    } else {
+        tmp_ = this.baseURL_ + url_;
+    }
+
+    if (tmp_ == "http://pomerol.internal:8870/j8.pp/tilesets/jenstejn-hf/undefined") {
+        tmp_ = tmp_;
+    }*/
+
     if (skipBaseUrl_) {
         return url_;
     } else {

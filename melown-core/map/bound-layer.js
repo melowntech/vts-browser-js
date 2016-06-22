@@ -51,13 +51,14 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
 Melown.MapBoundLayer.prototype.parseJson = function(json_) {
     this.numberId_ = json_["id"] || null;
     this.type_ = json_["type"] || "raster";
-    this.url_ = (this.baseUrl_ + json_["url"]) || "";
+    this.url_ = json_["url"] ? (this.baseUrl_ + json_["url"]) : "";
     this.tileSize_ = json_["tileSize"] || [256,256];
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.credits_ = json_["credits"] || [];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
-    this.metaUrl_ = (this.baseUrl_ + json_["metaUrl"]) || null;
-    this.maskUrl_ = (this.baseUrl_ + json_["maskUrl"]) || null;
+    this.metaUrl_ = json_["metaUrl"] ? (this.baseUrl_ + json_["metaUrl"]) : null;
+    this.maskUrl_ = json_["maskUrl"] ? (this.baseUrl_ + json_["maskUrl"]) : null;
+    this.isTransparent_ = json_["isTransparent"] || false;
 
 
     this.availability_ = json_["availability"] ? {} : null;
@@ -93,7 +94,10 @@ Melown.MapBoundLayer.prototype.getInfo = function() {
         "tileSize" : this.tileSize_,
         "credits" : this.credits_,
         "lodRange" : this.lodRange_,
-        "tileRange" : this.tileRange_
+        "tileRange" : this.tileRange_,
+        "mataUrl" : this.metaUrl_,
+        "maskUrl" : this.maskUrl_,
+        "isTransparent" : this.isTransparent_
     };
 };
 

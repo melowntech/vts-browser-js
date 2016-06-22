@@ -45,6 +45,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.surfaceSequence_ = [];
     this.surfaceOnlySequence_ = [];
     this.boundLayerSequence_ = [];
+    this.freeLayerSequence_ = [];
 
     this.visibleCredits_ = {
       imagery_ : [],
@@ -299,12 +300,22 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
     if (string_ != this.currentViewString_ || forceRefresh_) {
         this.currentView_.parse(view_);
         this.currentViewString_ = string_;
-        this.freeLayers_ = this.currentView_.freeLayers_;
         this.viewCounter_++;
     }
 
     this.generateSurfaceSequence();
     this.generateBoundLayerSequence();
+
+    var freeLayers_ = this.currentView_.freeLayers_;
+    this.freeLayerSequence_ = [];
+
+    for (var i = 0, li = freeLayers_.length; i < li; i++) {
+        var freeLayer_ = this.getFreeLayer(freeLayers_[i]);
+        
+        if (freeLayer_) {
+            this.freeLayerSequence_.push(freeLayer_);     
+        }
+    }
 
     //if (this.viewCounter_ > 2) {
       //  this.drawMap(); 
@@ -312,8 +323,6 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
   //  }
 
     this.markDirty();
-    
-    
 };
 
 Melown.Map.prototype.getView = function() {
@@ -536,10 +545,15 @@ Melown.Map.prototype.drawMap = function() {
     }
 
     if (this.config_.mapLowresBackground_) {
-        this.zFactor_ = 0.9;
-        this.config_.mapTexelSizeFit_ = 10.1;
-        this.config_.mapTexelSizeTolerance_ = this.config_.mapTexelSizeFit_ * 2;
+        this.zFactor_ = 0.8;
+        this.config_.mapTexelSizeFit_ = Number.POSITIVE_INFINITY;//500000000.1;
+        this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY; //this.config_.mapTexelSizeFit_ * 2;
         this.draw();
+
+        //this.zFactor_ = 0.9;
+        //this.config_.mapTexelSizeFit_ = 10.1;
+        //this.config_.mapTexelSizeTolerance_ = this.config_.mapTexelSizeFit_ * 2;
+        //this.draw();
         this.config_.mapTexelSizeFit_ = 1.1;
         this.config_.mapTexelSizeTolerance_ = 2.2;
     }

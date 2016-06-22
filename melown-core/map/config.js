@@ -110,7 +110,7 @@ Melown.Map.prototype.parseGlues = function() {
     }
 
     for (var i = 0, li = glues_.length; i < li; i++) {
-        var surface_ = new Melown.MapGlue(this, glues_[i], true);
+        var surface_ = new Melown.MapGlue(this, glues_[i], "glue");
         this.addGlue(surface_.id_.join(";"), surface_);
     }
 
@@ -142,7 +142,7 @@ Melown.Map.prototype.parseFreeLayers = function() {
     }
 
     for (var key_ in layers_) {
-        var layer_ = new Melown.MapFreeLayer(this, layers_[key_]);
+        var layer_ = new Melown.MapFreeLayer(this, layers_[key_], "free");
         this.addFreeLayer(key_, layer_);
     }
 

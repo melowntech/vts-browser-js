@@ -586,7 +586,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                     
                     var texture_ = tile_.boundTextures_[layer_.id_];
                     
-                    var fullAndOpaque_ = !((surface_.boundLayerSequence_[j][1] < 1.0) || texture_.extraBound_ || texture_.getMaskTexture());
+                    var fullAndOpaque_ = !((surface_.boundLayerSequence_[j][1] < 1.0) || texture_.extraBound_ || texture_.getMaskTexture() || layer_.isTransparent_);
                     if (fullAndOpaque_) {
                         fullAndOpaqueCounter_++;
                     }
@@ -596,7 +596,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                     bound_.sequence_.push(layer_.id_);
                     bound_.alpha_[layer_.id_] = surface_.boundLayerSequence_[j];
                     tile_.boundLayers_[layer_.id_] = layer_;
-                    if (bound_.alpha_[layer_.id_][1] < 1.0) {
+                    if (bound_.alpha_[layer_.id_][1] < 1.0 || layer_.isTransparent_) {
                         bound_.transparent_ = true;
                     }
                 }
@@ -618,6 +618,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
                         var texture_ = tile_.boundTextures_[layerId_];
 
                         if (bound_.alpha_[layerId_][1] < 1.0 ||
+                            tile_.boundLayers_[layerId_].isTransparent_ ||
                             (texture_.getMaskTexture() && !texture_.extraBound_)) {
                             newSequence_.unshift(layerId_);    
                         }

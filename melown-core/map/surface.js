@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapSurface = function(map_, json_, glue_) {
+Melown.MapSurface = function(map_, json_, type_) {
     this.map_ = map_;
     this.id_ = json_["id"] || null;
     this.metaBinaryOrder_ = json_["metaBinaryOrder"] || 1;
@@ -14,7 +14,9 @@ Melown.MapSurface = function(map_, json_, glue_) {
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.textureLayer_ = json_["textureLayer"] || null;
     this.boundLayerSequence_ = [];
-    this.glue_ = glue_ || false;
+    this.glue_ = (type_ == "glue");
+    this.free_ = (type_ == "free");
+    this.tree_ = null; //used for free layers
     //this.flatId_ = id_;
 
     this.surfaceReference_ = [];
