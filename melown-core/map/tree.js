@@ -300,7 +300,7 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
             //this.map_.drawSurfaceTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_);
             
             if (!preventRedener_) {
-                var d = Math.min(499, Math.round(Math.log(pixelSize_[1]) / Math.log(1.04)));
+                var d = Math.max(0,Math.min(499, Math.round(Math.log(pixelSize_[1]) / Math.log(1.04))));
                 var buffer_ = this.map_.tileBuffer_;
                 
                 if (!buffer_[d]) { 

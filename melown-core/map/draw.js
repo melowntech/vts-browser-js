@@ -22,7 +22,6 @@ Melown.Map.prototype.draw = function() {
         if (tiles_) {
             for (var j = 0, lj = tiles_.length; j < lj; j++) {
                 var tile_ = tiles_[j];
-                
                 this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
             }
         } 
