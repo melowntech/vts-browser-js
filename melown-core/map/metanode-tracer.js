@@ -125,36 +125,15 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
     tile_.virtualSurfacesUncomplete_ = false;
 
     var sequence_ = this.map_.surfaceSequence_;
-    
-    //only one surface
-    //TODO: remove this code
-    if (sequence_.length == 1000000) {  //1000000 is hack old value is 1
-        if (sequence_[0].hasMetatile(tile_.id_) == true) {
-            var surface_ = sequence_[0];
-
-            //reset tile data
-            /*
-            if (tile_.surface_ != surface_) {
-                tile_.surfaceMesh_ = null;
-                tile_.surfaceTexture_ = null;
-                tile_.surfaceGeodata_ = null;
-                tile_.heightMap_ = null;
-            }*/
-
-            tile_.surface_ = surface_;
-        }
-        
-        return;        
-    }
 
     //multiple surfaces
     //build virtual surfaces array
     //find surfaces with content
     for (var i = 0, li = sequence_.length; i < li; i++) {
-        var res_ = sequence_[i].hasTile2(tile_.id_);
-        if (res_[0] == true) {
+        var surface_ = sequence_[i][0];
 
-            var surface_ = sequence_[i];
+        var res_ = surface_.hasTile2(tile_.id_);
+        if (res_[0] == true) {
             
             //check if tile exist
             if (tile_.id_[0] > 0) { //surface_.lodRange_[0]) {

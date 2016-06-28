@@ -53,22 +53,23 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
             }
         }
     }
-/*
+
     //add aliens to the list
-    for (var i = 0, li = list_.length; i < li; i++) {
-        var item_ = list_[i];
-        var surface_ = item_[0];
-        //is it glue?
-        if (!item_[1]) { 
-            
-            //remove first surface from id
-            var listId_ = item_[0].slice(1)l;
-                        
-            //add same glue as alien
-            list_.push([listId_, item_[1], false, true]); //[surfaceId, surface, isSurface, isAlien]   
+    if (true) {
+        for (var i = 0, li = list_.length; i < li; i++) {
+            var item_ = list_[i];
+            var surface_ = item_[0];
+            //is it glue?
+            if (!item_[1]) { 
+                
+                //remove first surface from id
+                var listId_ = item_[0].slice(1);
+                            
+                //add same glue as alien
+                list_.push([listId_, item_[1], false, true]); //[surfaceId, surface, isSurface, isAlien]   
+            }
         }
     }
-*/
 
     //debugger;
 
@@ -89,7 +90,6 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
                 }
             }
             
-            //if (list_[i][0] < list_[i+1][0]) {
             if (lesser_) {
                 var t = list_[i];
                 list_[i] = list_[i+1];
@@ -108,8 +108,8 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
 
     //convert list to surface sequence
     for (var i = 0, li = list_.length; i < li; i++) {
-        //this.surfaceSequence_.push([list_[i][1], list_[i][3]]); //[surface, isAlien]
-        this.surfaceSequence_.push(list_[i][1]); 
+        this.surfaceSequence_.push([list_[i][1], list_[i][3]]); //[surface, isAlien]
+        //this.surfaceSequence_.push(list_[i][1]); 
         list_[i][1].viewSurfaceIndex_ = lastIndex_; 
         
         if (list_[i][2]) {
