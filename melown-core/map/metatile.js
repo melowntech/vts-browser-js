@@ -153,9 +153,9 @@ Melown.MapMetatile.prototype.parseMetatatile = function(stream_) {
         return;
     }
 
-    var version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
 
-    if (version_ > 1) {
+    if (this.version_ > 2) {
         return;
     }
 
@@ -169,13 +169,39 @@ Melown.MapMetatile.prototype.parseMetatatile = function(stream_) {
 
     this.sizex_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
     this.sizey_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    
+    this.flagPlanes_ = new Array(8);
 
-    this.nodeSize_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+    if (this.version_ < 2) {
+        this.nodeSize_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+    } else {
+        this.flags_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+        this.creditCount_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+        this.parseFlagPlanes(stream_);
+    }
 
     this.parseMetatatileCredits(stream_);
     this.parseMetatatileNodes(stream_);
 };
 
+
+Melown.MapMetatile.prototype.parseFlagPlanes = function(stream_) {
+    //rounded to bytes
+    var bitplaneSize_ = ((this.sizex_ * this.sizey_ + 7) >> 3);
+
+    for (var i = 0; i < 8; i++) {
+        if ((this.flags_ & (1 << i)) != 0) {
+
+            var bitplane_ = new Uint8Array(bitplaneSize_);
+    
+            for (var j = 0; j < bitplaneSize_; j++) {
+                bitplane_[j] = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+            }
+    
+            this.flagPlanes_[i] = bitplane_; 
+        }
+    }
+};
 
 Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
 
@@ -187,10 +213,12 @@ Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
 */
 
     var streamData_ = stream_.data_;
-
-    this.creditCount_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
-    this.creditSize_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-
+    
+    if (this.version_ < 2) {
+        this.creditCount_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+        this.creditSize_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    }
+    
     if (this.creditCount_ == 0) {
         this.credits_ = [];
         return;
@@ -212,6 +240,32 @@ Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
         this.credits_[i] = { creditId_ : creditId_, creditMask_: bitfield_};
     }
 
+};
+
+Melown.MapMetatile.prototype.applyMetatatileBitplanes = function() {
+    for (var i = 0; i < 1; i++) {
+        if (this.flagPlanes_[i]) {
+            
+            bitplane_ = this.flagPlanes_[i]; 
+    
+            for (var y = 0; y < this.sizey_; y++) {
+                for (var x = 0; x < this.sizex_; x++) {
+                    var byteIndex_ = this.sizex_ * y + x;
+                    var bitIndex_ = byteIndex_ & 7;
+                    var bitMask_ = 1 << bitIndex_;
+                    byteIndex_ >>= 3;
+                    
+                    if (bitplane_[byteIndex_] & bitMask_) {
+                        switch(i) {
+                            case 0:
+                                this.nodes_[y*this.sizex_+x].alien_ = true;
+                                break;       
+                        }
+                    }
+                }
+            }
+        }
+    }
 };
 
 Melown.MapMetatile.prototype.applyMetatatileCredits = function() {

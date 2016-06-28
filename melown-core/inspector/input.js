@@ -225,16 +225,16 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 case 43:
                 case 107:
                     if (this.radarLod_ == null) { this.radarLod_ = 8;}
-                    this.radarLod_++; console.log("radarLOD: " + this.radarLod_); break; //key mun + pressed
+                    this.radarLod_++; /*console.log("radarLOD: " + this.radarLod_);*/ break; //key mun + pressed
 
                 case 45:
                 case 109:
                     if (this.radarLod_ == null) { this.radarLod_ = 8;}
-                    this.radarLod_ = Math.max(0,this.radarLod_-1); console.log("radarLOD: " + this.radarLod_); break; //key mun - pressed
+                    this.radarLod_ = Math.max(0,this.radarLod_-1); /*console.log("radarLOD: " + this.radarLod_);*/ break; //key mun - pressed
 
                 case 42:
                 case 106:
-                    this.radarLod_ = null; console.log("radarLOD: auto"); break; //key mun * pressed
+                    this.radarLod_ = null; /*console.log("radarLOD: auto");*/ break; //key mun * pressed
 
                 default:
                     blockHit_ = false;

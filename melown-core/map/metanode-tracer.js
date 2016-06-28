@@ -329,7 +329,7 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
         }
     }
 
-    //extend bbox and children flags by other surfaces
+    //extend bbox, credits and children flags by other surfaces
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i];
         var metatile_ = tile_.metastorage_.getMetatile(surface_);
@@ -353,8 +353,13 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
                 } else {
                     node_.flags_ |= metanode_.flags_ & ((15)<<4); 
 
+                    for (var j = 0, lj = metanode_.credits_.length; j <lj; j++) {
+                        if (node_.credits_.indexOf(metanode_.credits_[j]) == -1) {
+                            node_.credits_.push(metanode_.credits_[j]);
+                        } 
+                    }
+
                     //!!!!!!removed for debug
-                    
                     node_.bbox_.min_[0] = Math.min(node_.bbox_.min_[0], metanode_.bbox_.min_[0]); 
                     node_.bbox_.min_[1] = Math.min(node_.bbox_.min_[1], metanode_.bbox_.min_[1]); 
                     node_.bbox_.min_[2] = Math.min(node_.bbox_.min_[2], metanode_.bbox_.min_[2]); 

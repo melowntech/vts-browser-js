@@ -291,7 +291,7 @@ Melown.Renderer.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_)
         var pixel_ = this.geoHitmapTexture_.readFramebufferPixels(x_, this.hitmapSize_ - y_ - 1, 1, 1);
 
         //convert rgb values into depth
-        var id_ = (pixel_[0]) + (pixel_[1]*255.0) + (pixel_[2]*65025.0);// + (pixel_[3]*16581375.0);
+        var id_ = (pixel_[0]) + (pixel_[1]<<8) + (pixel_[2]<<16);// + (pixel_[3]*16581375.0);
 
         var surfaceHit_ = !(pixel_[0] == 255 && pixel_[1] == 255 && pixel_[2] == 255 && pixel_[3] == 255);
 

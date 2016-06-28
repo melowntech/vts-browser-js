@@ -44,7 +44,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_) {
             }
            
             if (this.config_.mapHeightLodBlend_ && metanode_.id_[0] > 0 &&
-                params_.parent_ && params_.parent_.heightMap_) {
+                params_.parent_ && params_.parent_.heightMap_ && lod_ <= metanode_.id_[0]) {
                 var height1_ = this.getHeightmapValue(nodeCoords_, params_.parent_.metanode_, params_.parent_);  
                 var height2_ = this.getHeightmapValue(nodeCoords_, metanode_, params_);  
                 var factor_ = lod_ - Math.floor(lod_);

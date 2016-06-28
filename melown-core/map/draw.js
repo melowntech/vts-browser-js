@@ -13,9 +13,18 @@ Melown.Map.prototype.draw = function() {
     }
 
     this.tree_.draw();
+
+    //draw free layers    
+    for (var i = 0, li = this.freeLayerSequence_.legnth; i < li; i++) {
+        var tree_ = this.freeLayerSequence_[i];
+        if (tree_) {
+            tree_.draw();
+        }
+    }
     
     var cameraPos_ = this.cameraPosition_;
     
+    //draw tiles stored in buffer
     for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
         var tiles_ = this.tileBuffer_[i];
         
@@ -25,12 +34,6 @@ Melown.Map.prototype.draw = function() {
                 this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
             }
         } 
-    }
-    
-
-    //loop currently used free layers
-    for (var i = 0, li = this.freeLayers_.length; i < li; i++) {
-        this.freeLayers_[i].draw();
     }
 
 };
@@ -209,6 +212,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                 tile_.credits_ = {};
                 tile_.boundsDebug_ = {}; //used for inspector
 
+                //set credits
+                for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                    tile_.credits_[node_.credits_[k]] = true;  
+                }
+
+
 /*
                 if (tile_.drawCommands_[channel_].length > 0) {
                     this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_]);
@@ -249,11 +258,6 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                                 if (tile_.surfaceTextures_[i] == null) {
                                                     var path_ = tile_.surface_.getTexureUrl(tile_.id_, i);
                                                     tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
-                                                }
-
-                                                //set credits
-                                                for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-                                                    tile_.credits_[node_.credits_[k]] = true;  
                                                 }
                                                         
                                                 tile_.drawCommands_[0].push({
@@ -377,11 +381,6 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                                     var path_ = tile_.surface_.getTexureUrl(tile_.id_, i);
                                                     tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                                                 }
-                                                
-                                                //set credits
-                                                for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-                                                    tile_.credits_[node_.credits_[k]] = true;  
-                                                }
     
                                                 //draw mesh
                                                 tile_.drawCommands_[0].push({
@@ -402,11 +401,6 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                                         var path_ = tile_.surface_.getTexureUrl(tile_.id_, i);
                                         tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                                     } else {
-                                        //set credits
-                                        for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-                                            tile_.credits_[node_.credits_[k]] = true;  
-                                        }
-                                        
                                         tile_.drawCommands_[0].push({
                                             type_ : "submesh",
                                             mesh_ : tile_.surfaceMesh_,
@@ -424,11 +418,6 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
                             var path_ = tile_.surface_.getTexureUrl(tile_.id_, i);
                             tile_.surfaceTextures_[i] = new Melown.MapTexture(this, path_);
                         } else {
-                            //set credits
-                            for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-                                tile_.credits_[node_.credits_[k]] = true;  
-                            }
-                            
                             tile_.drawCommands_[0].push({
                                 type_ : "submesh",
                                 mesh_ : tile_.surfaceMesh_,
