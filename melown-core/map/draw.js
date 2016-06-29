@@ -722,6 +722,9 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
 
     if (this.drawSurfaces_) {
         var text_ = JSON.stringify(tile_.surface_.id_);
+        if (node_.alien_) {
+            text_ = "[A]" + text_;
+        }
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
     }
 

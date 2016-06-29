@@ -200,7 +200,7 @@ Melown.MapTree.prototype.traceTileRender = function(tile_, params_, childrenSequ
         var vs = tile_.virtualSurfaces_;
         var s = "";
         for (var i = 0, li = vs.length; i < li; i++) {
-            s += vs[i].id_ + "|";
+            s += vs[i][0].id_ + "|";
         }
         
         console.log("bbox: " + JSON.stringify(node_.bbox_));

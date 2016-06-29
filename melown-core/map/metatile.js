@@ -186,6 +186,8 @@ Melown.MapMetatile.prototype.parseMetatatile = function(stream_) {
 
 
 Melown.MapMetatile.prototype.parseFlagPlanes = function(stream_) {
+    var streamData_ = stream_.data_;
+
     //rounded to bytes
     var bitplaneSize_ = ((this.sizex_ * this.sizey_ + 7) >> 3);
 
@@ -298,5 +300,6 @@ Melown.MapMetatile.prototype.parseMetatatileNodes = function(stream_) {
     }
     
     this.applyMetatatileCredits();
+    this.applyMetatatileBitplanes();
 };
 

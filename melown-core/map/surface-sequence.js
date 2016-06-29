@@ -22,8 +22,10 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
     }
 
     //debugger;
+    
+    var glues_ = [];
 
-    //add glues to the list
+    //add proper glues to the list
     for (var key_ in this.glues_) {
         var glue_ = this.glues_[key_];
         
@@ -49,25 +51,29 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
                     listId_.unshift(vsurfaces_[id_[j]]);
                 }
 
-                list_.push([listId_, glue_, false, false]); //[surfaceId, surface, isSurface, isAlien]   
+                glues_.push([listId_, glue_, false, false]); //[surfaceId, surface, isSurface, isAlien]   
             }
         }
     }
 
-    //add aliens to the list
-    if (true) {
-        for (var i = 0, li = list_.length; i < li; i++) {
-            var item_ = list_[i];
-            var surface_ = item_[0];
-            //is it glue?
-            if (!item_[1]) { 
+    //process glue flags
+    for (var i = 0, li = glues_.length; i < li; i++) {
+        var item_ = glues_[i];
+        var glue_ = item_[1];
+
+        glue_.flagProper_ = true;
+        glue_.flagAlien_ = true;
+
+        if (glue_.flagProper_) {
+            list_.push(item_);  
+        }
                 
-                //remove first surface from id
-                var listId_ = item_[0].slice(1);
-                            
-                //add same glue as alien
-                list_.push([listId_, item_[1], false, true]); //[surfaceId, surface, isSurface, isAlien]   
-            }
+        if (glue_.flagAlien_) {
+            //remove first surface from id
+            var listId_ = item_[0].slice(1);
+                        
+            //add same glue as alien
+            list_.push([listId_, item_[1], false, true]); //[surfaceId, surface, isSurface, isAlien]   
         }
     }
 

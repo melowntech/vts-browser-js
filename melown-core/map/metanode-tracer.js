@@ -131,6 +131,7 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
     //find surfaces with content
     for (var i = 0, li = sequence_.length; i < li; i++) {
         var surface_ = sequence_[i][0];
+        var alien_ = sequence_[i][1];
 
         var res_ = surface_.hasTile2(tile_.id_);
         if (res_[0] == true) {
@@ -164,7 +165,7 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
             }
     
             //store surface
-            tile_.virtualSurfaces_.push(surface_);        
+            tile_.virtualSurfaces_.push([surface_, alien_]);        
         }
     }
 
@@ -176,7 +177,7 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
     if (tile_.virtualSurfaces_.length > 1) {
         tile_.virtual_ = true;
     } else {
-        tile_.surface_ = tile_.virtualSurfaces_[0];
+        tile_.surface_ = tile_.virtualSurfaces_[0][0];
     }
 
 };
@@ -241,7 +242,7 @@ Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_, prio
     var readyCount_ = 0;
 
     for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = surfaces_[i];
+        var surface_ = surfaces_[i][0];
         var metatile_ = tile_.metastorage_.getMetatile(surface_);
 
         if (metatile_ == null) {
@@ -269,16 +270,21 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
 
     //get top most existing surface
     for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = surfaces_[i];
+        var surface_ = surfaces_[i][0];
+        var alien_ = surfaces_[i][1];
         var metatile_ = tile_.metastorage_.getMetatile(surface_);
 
         if (metatile_.isReady(priority_) == true) {
             var metanode_ = metatile_.getNode(tile_.id_);
 
             if (metanode_ != null) {
+                if (alien_ != metanode_.alien_) {
+                    continue;
+                }
+
                 //does metanode have surface reference?
                 //internalTextureCount is reference to surface
-                if (surface_.glue_ && !metanode_.hasGeometry() &&
+                if (!alien_ && surface_.glue_ && !metanode_.hasGeometry() &&
                     metanode_.internalTextureCount_ > 0) {
                     
                     var desiredSurfaceIndex_ = metanode_.internalTextureCount_ - 1;
@@ -310,7 +316,7 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
 
     //extend bbox, credits and children flags by other surfaces
     for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = surfaces_[i];
+        var surface_ = surfaces_[i][0];
         var metatile_ = tile_.metastorage_.getMetatile(surface_);
 
         if (metatile_.isReady(priority_) == true) {
