@@ -110,4 +110,23 @@ div.melown-presentations.widget .input-wrap.nested label {
     -moz-transition: all 0.4s ease;
     transition: all 0.4s ease;
 }
+/* Ready for arrows using css only = no images needed anymore */
+.melown-presentations .arrow {
+    position: absolute;
+    bottom: 260px;
+    left: 140px;
+    width: 47px;
+    height: 83px;
+    overflow: hidden;
+}
+.melown-presentations .arrow .innerPart {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #f00;
+    width: 60px;
+    height: 60px;
+    border-radius: 5px;
+    transform: rotate(45deg);
+}
 

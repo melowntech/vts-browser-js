@@ -1,220 +1,207 @@
-// All Utilities needed for proper presentation working
+// All Utilities needed for proper Presenter working
 
-Melown.Presentation.prototype.Utils.init = function(id_, HTMLtemplate_) {
-    var obj = this;    
-    var templateSwitcher = '<div id="melown-presentations-templateSwitcher"></div>';
-    var templatePanelPrefix = '<div class="melown-presentations panelContainer"><div class="melown-presentations swipeControl top"></div><div class="melown-presentations toolboxContainer">';
-    var templatePanelSuffix = '</div><div class="melown-presentations swipeControl"></div></div>';
-    var templatePanel = templatePanelPrefix + HTMLtemplate_ + templatePanelSuffix;
-    var templateSubtitlesPrefix = '<div class="melown-presentations subtitlesContainer"><button type="button"></button><button type="button"></button>'
+Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
+    var obj_ = this;    
+    var templateSwitcher_ = '<div id="melown-presentations-templateSwitcher"></div>';
+    var templatePanelPrefix_ = '<div class="melown-presentations panelContainer"><div class="melown-presentations swipeControl top"></div><div class="melown-presentations toolboxContainer">';
+    var templatePanelSuffix_ = '</div><div class="melown-presentations swipeControl"></div></div>';
+    var templatePanel_ = templatePanelPrefix_ + HTMLtemplate_ + templatePanelSuffix_;
+    var templateSubtitlesPrefix_ = '<div class="melown-presentations subtitlesContainer"><button type="button"></button><button type="button"></button>'
                                     + '<div class="melown-presentations swipeSubtitles"></div><div class="melown-presentations swipeSubtitles"></div><div class="melown-presentations innerContainer">';
-    var templateSubtitlesSuffix = '</div></div>';
-    var templateSubtitles = templateSubtitlesPrefix + HTMLtemplate_ + templateSubtitlesSuffix;
-    var template = templateSwitcher + templatePanel + templateSubtitles;
-    var ctrlDelve = this.browser_.addControl(id_, template);
+    var templateSubtitlesSuffix_ = '</div></div>';
+    var templateSubtitles_ = templateSubtitlesPrefix_ + HTMLtemplate_ + templateSubtitlesSuffix_;
+    var template_ = templateSwitcher_ + templatePanel_ + templateSubtitles_;
+    var ctrlDelve_ = this.browser_.addControl(id_, template_);
     this.id_.push(id_);
 
     // Set all <a> tags to have onclick
-    this.aTags = document.getElementsByTagName('a');
-    for(var i = 0; i < this.aTags.length; i++){
-        this.aTags[i].onclick = function() { obj.linksDecode(this); }
-    }        
+    this.aTags_ = document.getElementsByTagName('a');
+    for(var i = 0; i < this.aTags_.length; i++){
+        this.aTags_[i].onclick = function() { obj_.linksDecode(this); };
+    };
     
     setTimeout(function(){
-        obj.renderControl();
+        obj_.renderControl();
     }, 200);
-}
+};
 
-Melown.Presentation.prototype.Utils.readTextInput = function(id_) {
-    var presentation = {
+Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
+    var presentation_ = {
         htmlDataStorage : this.config_.presentation[id_],
         id : id_,
         checkID : function() {
-            var url = /^(ftp|http|https):\/\/[^ "]+$/;
-            var hash = /^#.*$/;
-            if(url.test(this.htmlDataStorage))
+            var url_ = /^(ftp|http|https):\/\/[^ "]+$/;
+            var hash_ = /^#.*$/;
+            if(url_.test(this.htmlDataStorage)) {
                 return 'url';
-            else if(hash.test(this.htmlDataStorage))
+            }
+            else if(hash_.test(this.htmlDataStorage)) {
                 return 'hash';
-            else
+            }
+            else {
                 return 'string';
+            };
         }
     }
     
-    var mode = presentation.checkID();
+    var mode_ = presentation_.checkID();
     
     if(mode == 'url') {
-        var rawFile = new XMLHttpRequest();
-        var obj = this;
-        rawFile.open("GET", presentation.htmlDataStorage, false);
-        rawFile.onreadystatechange = function ()
-        {
-            if(rawFile.readyState === 4)
-            {
-                if(rawFile.status === 200 || rawFile.status == 0)
-                {
-                    var allText = rawFile.responseText;
-                    obj.html = allText;
-                    obj.init(presentation.id, obj.html);
+        var rawFile_ = new XMLHttpRequest();
+        var obj_ = this;
+        rawFile_.open("GET", presentation_.htmlDataStorage, false);
+        rawFile_.onreadystatechange = function() {
+            if(rawFile_.readyState === 4) {
+                if(rawFile_.status === 200 || rawFile_.status == 0) {
+                    var allText_ = rawFile_.responseText;
+                    obj_.html = allText;
+                    obj_.init(presentation_.id, obj_.html);
                 }
                 else {
-                    obj.file = 'undefined';
-                }
-            }
-        }
-        rawFile.send(null); 
+                    obj_.file = 'undefined';
+                };
+            };
+        };
+        rawFile_.send(null); 
     }
     else if(mode == 'hash') {
-        var obj = document.getElementById(presentation.htmlDataStorage).innerHTML;
-        this.init(presentation.id, obj);
+        var obj_ = document.getElementById(presentation_.htmlDataStorage).innerHTML;
+        this.init(presentation_.id, obj_);
     }
     else if(mode == 'string') {
-        this.init(presentation.id, presentation.htmlDataStorage);
-    }
-}
+        this.init(presentation_.id, presentation_.htmlDataStorage);
+    };
+};
 
-Melown.Presentation.prototype.Utils.linksDecode = function(obj) {
-    var position = null;
-    var autorotate = null;
-    var transition = null;
-    var navigate = null;
+Melown.Presenter.prototype.Utils.linksDecode = function(obj_) {
+    var position_ = null;
+    var autorotate_ = null;
+    var transition_ = null;
+    var navigate_ = null;
     
-    if(obj.getAttribute('data-mln-navigate') !== null) {
-        navigate = obj.getAttribute('data-mln-navigate');
-        if(navigate !== null) {
-            if(navigate == 'prev') this.nextArticle('-1');
-            else if(navigate == 'next') this.nextArticle('+1');
-            else if(navigate == 'first') this.nextArticle(0);
-            else if(navigate == 'last') this.nextArticle(this.maxNodes-1)
-            else this.nextArticle(navigate);        
-            return;
-        }
-    }
+    if(obj_.getAttribute('data-mln-navigate') !== null) {
+        navigate_ = obj_.getAttribute('data-mln-navigate');
+        if(navigate_ !== null) {
+            if(navigate_ == 'prev') { this.nextArticle('-1'); }
+            else if(navigate_ == 'next') { this.nextArticle('+1'); }
+            else if(navigate_ == 'first') { this.nextArticle(0); }
+            else if(navigate_ == 'last') { this.nextArticle(this.maxNodes_-1); }
+            else { this.nextArticle(navigate_); };        
+            return 'navigation:true';
+        };
+    };
     
-    if(obj.getAttribute('data-mln-position') === null){
-        return false;
-    }
-    
-    
+    if(obj_.getAttribute('data-mln-position') === null){
+        return 'position:false';
+    };
 
-    position = this.getNumbers(obj.getAttribute('data-mln-position').split(','));
+    position_ = this.getNumbers(obj_.getAttribute('data-mln-position').split(','));
     
-    if(obj.getAttribute('data-mln-autorotate') !== null) {
-        autorotate = this.getNumbers(obj.getAttribute('data-mln-autorotate'));
-    }
-    if(obj.getAttribute('data-mln-transition') !== null) {
-        transition = obj.getAttribute('data-mln-transition');
-    }
+    if(obj_.getAttribute('data-mln-autorotate') !== null) {
+        autorotate_ = this.getNumbers(obj_.getAttribute('data-mln-autorotate'));
+    };
+    if(obj_.getAttribute('data-mln-transition') !== null) {
+        transition_ = obj_.getAttribute('data-mln-transition');
+    };
     
-    /*
-    console.log('position: ' + position);
-    console.log('autorotate: ' + autorotate);
-    console.log('transition type: ' + transition); 
-    console.log('navigate: ' + navigate)
-    */
-
-    if(transition === null) {
-        this.browser_.flyTo(position);
+    if(transition_ === null) {
+        this.browser_.flyTo(position_);
     }
-    else if(transition == 'teleport') {
-        this.browser_.setPosition(position);
+    else if(transition_ == 'teleport') {
+        this.browser_.setPosition(position_);
     }
     else {
-        this.browser_.flyTo(position);
+        this.browser_.flyTo(position_);
         // Feature to be considered
         // browser.flyTo(position, {mode : transition});
-    }
-    if(autorotate !== null)
-        this.browser_.setAutorotate(autorotate);
+    };
+    if(autorotate_ !== null) {
+        this.browser_.setAutorotate(autorotate_);
+    };
         
-    return position;
-}
+    return 'Moving to position: ' + position_;
+};
 
 // parseFloat here
-Melown.Presentation.prototype.Utils.getNumbers = function(obj) {
-    var obj = obj;
-    for(var i = 0; i < obj.length; i++){
-        if(typeof obj == 'string' && parseFloat(obj)) {
-            obj = parseFloat(obj);
+Melown.Presenter.prototype.Utils.getNumbers = function(obj_) {
+    var obj_ = obj_;
+    for(var i = 0; i < obj_.length; i++){
+        if(typeof obj_ == 'string' && parseFloat(obj_)) {
+            obj_ = parseFloat(obj_);
             break;
         }
-        if (parseFloat(obj[i]))
-            obj[i] = parseFloat(obj[i]); // toFixed might be added here
+        if (parseFloat(obj_[i]))
+            obj_[i] = parseFloat(obj_[i]); // toFixed might be added here
     }
-    return obj;
-}
+    return obj_;
+};
 
-Melown.Presentation.prototype.Utils.nextArticle = function(node, init, lastNode) {
+Melown.Presenter.prototype.Utils.nextArticle = function(node_, init_, lastNode_) {
     // fly to whatever node we wish
-    if(node === '+1') node = 1;
-    else if(node === '-1') node = -1;
+    if(node_ === '+1') { node_ = 1; }
+    else if(node_ === '-1') { node_ = -1; }
     else {
-        this.actualNode = node;
-        node = 0;
-    }
-    this.actualNode = this.actualNode + node;
+        this.actualNode_ = node_;
+        node_ = 0;
+    };
+    this.actualNode_ = this.actualNode_ + node_;
     
-    if(this.actualNode >= 0 && this.actualNode < this.maxNodes) {
-     
-        if(!init) {
-            if(this.activeToolbox == 'right')
-                this.handleArticle(this.actualNode);
-            else if(this.activeToolbox == 'wide')
-                this.handleSubtitlesPosition(this.actualNode);
-        }
-        if(typeof lastNode !== 'undefined') this.maxNodes = lastNode;
-        this.linksDecode(document.getElementsByTagName('section')[this.actualNode]);
+    if(this.actualNode_ >= 0 && this.actualNode_ < this.maxNodes_) {
+        if(!init_) {
+            if(this.activeToolbox_ == 'right') { this.handleArticle(this.actualNode_); }
+            else if(this.activeToolbox_ == 'wide') { this.handleSubtitlesPosition(this.actualNode_); };
+        };
+        if(typeof lastNode_ !== 'undefined') { this.maxNodes_ = lastNode_; };
+        this.linksDecode(document.getElementsByTagName('section')[this.actualNode_]);
         return true;
     
     }
-    else this.actualNode = this.actualNode - node;
+    else { this.actualNode_ = this.actualNode_ - node_; };
     return false;
-}
+};
 
-Melown.Presentation.prototype.Utils.useToolbox = function() {
+Melown.Presenter.prototype.Utils.useToolbox = function() {
     
-    var templSwitch = document.getElementById('melown-presentations-templateSwitcher');
-    var type = document.getElementsByTagName('article')[0].getAttribute('data-mln-style');
+    var templSwitch_ = document.getElementById('melown-presentations-templateSwitcher');
+    var type_ = document.getElementsByTagName('article')[0].getAttribute('data-mln-style');
 
-    if(templSwitch !== null)
-        templSwitch.remove();
+    if(templSwitch_ !== null) { templSwitch_.remove(); };
     
-    if(type === null)
-        type = 'right';
+    if(type_ === null) { type_ = 'right'; };
     
-    var rightPanel = document.getElementsByClassName('melown-presentations panelContainer')[0];
-    var toolboxContainer = document.getElementsByClassName('melown-presentations toolboxContainer')[0];
-    var subtitles = document.getElementsByClassName('melown-presentations subtitlesContainer')[0];
-    var swipeControl = document.getElementsByClassName('melown-presentations swipeControl');
-    this.activeToolbox = type;
+    var rightPanel_ = document.getElementsByClassName('melown-presentations panelContainer')[0];
+    var toolboxContainer_ = document.getElementsByClassName('melown-presentations toolboxContainer')[0];
+    var subtitles_ = document.getElementsByClassName('melown-presentations subtitlesContainer')[0];
+    var swipeControl_ = document.getElementsByClassName('melown-presentations swipeControl');
+    this.activeToolbox_ = type_;
     
-    subtitles.setAttribute('style', 'opacity: 0;');
-    subtitles.setAttribute('class', 'melown-presentations subtitlesContainer');
-    if(type == 'right') {
-        rightPanel.style.display = 'block';
+    subtitles_.setAttribute('style', 'opacity: 0;');
+    subtitles_.setAttribute('class', 'melown-presentations subtitlesContainer');
+    if(type_ == 'right') {
+        rightPanel_.style.display = 'block';
         setTimeout(function() {
-            rightPanel.style.opacity = 1;
+            rightPanel_.style.opacity = 1;
         }, 20);
-        swipeControl[0].style.display = 'block';
-        swipeControl[1].style.display = 'block';
-        for(var i = 0; i < this.sectionTags.length; i++){ // Set maxHeight back as there is no dynamic rescaling of rightPanel
-            this.sectionTags[i].style.height = this.maxHeight + 'px';
-        }
+        swipeControl_[0].style.display = 'block';
+        swipeControl_[1].style.display = 'block';
+        for(var i = 0; i < this.sectionTags_.length; i++){ // Set maxHeight back as there is no dynamic rescaling of rightPanel_
+            this.sectionTags_[i].style.height = this.maxHeight_ + 'px';
+        };
         this.nextArticle(0);
     }
-    else if(type == 'wide') {
-        subtitles.style.display = 'block';
+    else if(type_ == 'wide') {
+        subtitles_.style.display = 'block';
         setTimeout(function() {
-            subtitles.style.opacity = 1;
+            subtitles_.style.opacity = 1;
         }, 20);
-        rightPanel.style.display = 'none';
-        rightPanel.style.opacity = 0;
-        swipeControl[0].style.display = 'none';
-        swipeControl[1].style.display = 'none';
-        for(var i = 0; i < this.sectionTags.length; i++){ // Set height to auto so we can dynamicaly adjust subtitles height
-            this.sectionTags[i].style.height = 'auto';
-        }
+        rightPanel_.style.display = 'none';
+        rightPanel_.style.opacity = 0;
+        swipeControl_[0].style.display = 'none';
+        swipeControl_[1].style.display = 'none';
+        for(var i = 0; i < this.sectionTags_.length; i++){ // Set height to auto so we can dynamicaly adjust subtitles height
+            this.sectionTags_[i].style.height = 'auto';
+        };
         this.handleSubtitlesPosition(0, true);
-    }
-}
+    };
+};
 
