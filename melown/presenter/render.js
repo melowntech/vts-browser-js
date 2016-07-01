@@ -6,7 +6,6 @@ Melown.Presenter.prototype.Utils.renderControl = function() {
     
     var swipeControlUp_ = this.container_.getElementsByClassName('melown-presentations swipeControl')[0];
     var swipeControlDw_ = this.container_.getElementsByClassName('melown-presentations swipeControl')[1];
-    var templateSwitcher_ = document.getElementById('melown-presentations-templateSwitcher');
     var obj_ = this;
 
     var nextButton_ = document.createElement('button');

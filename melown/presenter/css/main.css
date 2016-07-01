@@ -20,17 +20,17 @@
     cursor: default;
 }
 
-div.melown-presentations.top-toolbox button {
+.melown-presentations.top-toolbox button {
     float: left;
 }
 
-div.melown-presentations.widget .input-wrap {
+.melown-presentations.widget .input-wrap {
     margin: 10px 10px 0px 10px;
     width: 180px;
     min-height: 16px;
 }
 
-div.melown-presentations.widget .input-wrap label {
+.melown-presentations.widget .input-wrap label {
     font-size: 12px;
     height: 20px;
     width: 144px;
@@ -53,12 +53,12 @@ div.melown-presentations.widget .input-wrap label {
     display: block;
 }
 
-div.melown-presentations.widget .input-wrap.nested {
+.melown-presentations.widget .input-wrap.nested {
     margin-left: 24px;
     width: 166px;
 }
 
-div.melown-presentations.widget .input-wrap.nested label {
+.melown-presentations.widget .input-wrap.nested label {
     width: 130px;
     font-weight: normal;
 }

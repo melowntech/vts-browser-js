@@ -2,7 +2,6 @@
 
 Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
     var obj_ = this;    
-    var templateSwitcher_ = '<div id="melown-presentations-templateSwitcher"></div>';
     var templatePanelPrefix_ = '<div class="melown-presentations panelContainer"><div class="melown-presentations swipeControl top"></div><div class="melown-presentations toolboxContainer">';
     var templatePanelSuffix_ = '</div><div class="melown-presentations swipeControl"></div></div>';
     var templatePanel_ = templatePanelPrefix_ + HTMLtemplate_ + templatePanelSuffix_;
@@ -10,7 +9,7 @@ Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
                                     + '<div class="melown-presentations swipeSubtitles"><div><div></div></div></div><div class="melown-presentations swipeSubtitles"><div><div></div></div></div><div class="melown-presentations innerContainer">';
     var templateSubtitlesSuffix_ = '</div></div>';
     var templateSubtitles_ = templateSubtitlesPrefix_ + HTMLtemplate_ + templateSubtitlesSuffix_;
-    var template_ = templateSwitcher_ + templatePanel_ + templateSubtitles_;
+    var template_ = templatePanel_ + templateSubtitles_;
     var ctrlDelve_ = this.browser_.addControl(id_, template_);
     this.id_.push(id_);
     this.setContainer(ctrlDelve_);
@@ -163,10 +162,7 @@ Melown.Presenter.prototype.Utils.nextArticle = function(node_, init_, lastNode_)
 
 Melown.Presenter.prototype.Utils.useToolbox = function() {
     
-    var templSwitch_ = document.getElementById('melown-presentations-templateSwitcher');
     var type_ = this.container_.getElementsByTagName('article')[0].getAttribute('data-mln-style');
-
-    if(templSwitch_ !== null) { templSwitch_.remove(); };
     
     if(type_ === null) { type_ = 'right'; };
     
