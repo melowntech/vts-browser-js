@@ -10,7 +10,7 @@ Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
     var templateSubtitlesSuffix_ = '</div></div>';
     var templateSubtitles_ = templateSubtitlesPrefix_ + HTMLtemplate_ + templateSubtitlesSuffix_;
     var template_ = templatePanel_ + templateSubtitles_;
-    var ctrlDelve_ = this.browser_.addControl(id_, template_);
+    var ctrlDelve_ = this.browser_.ui_.addControl(id_, template_);
     this.id_.push(id_);
     this.setContainer(ctrlDelve_);
 
@@ -27,7 +27,7 @@ Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
 
 Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
     var presentation_ = {
-        htmlDataStorage : this.config_.presentation[id_],
+        htmlDataStorage : this.config_.presenter[id_],
         id : id_,
         checkID : function() {
             var url_ = /^(ftp|http|https):\/\/[^ "]+$/;
@@ -105,18 +105,18 @@ Melown.Presenter.prototype.Utils.linksDecode = function(obj_) {
     };
     
     if(transition_ === null) {
-        this.browser_.flyTo(position_);
+        this.browser_.autopilot_.flyTo(position_);
     }
     else if(transition_ == 'teleport') {
-        this.browser_.setPosition(position_);
+        this.browser_.core_.getMap().setPosition(position_);
     }
     else {
-        this.browser_.flyTo(position_);
+        this.browser_.autopilot_.flyTo(position_);
         // Feature to be considered
         // browser.flyTo(position, {mode_ : transition});
     };
     if(autorotate_ !== null) {
-        this.browser_.setAutorotate(autorotate_);
+        this.browser_.autopilot_.setAutorotate(autorotate_);
     };
         
     return 'Moving to position: ' + position_;
