@@ -77,10 +77,6 @@
     margin-left: -50px;
     width: 35px;
     height: 60px;
-    background-image: url('./img/right.png');
-    background-position: right;
-    background-size: contain;
-    background-repeat: no-repeat;
     opacity: 0;
     -webkit-transition: all 0.3s ease;
     -moz-transition: all 0.3s ease;
@@ -88,11 +84,31 @@
     cursor: pointer;
 }
 
+.melown-presentations.subtitlesContainer .swipeSubtitles div {
+    position: absolute;
+    width: 35px;
+    height: 59px;
+    overflow: hidden;
+}
+
+.melown-presentations.subtitlesContainer .swipeSubtitles div div {
+    width: 60px;
+    height: 60px;
+    background-color: #000;
+    transform: rotate(45deg);
+    border-radius: 5px;
+    position: absolute;
+    left: -40px;
+    top: 0px;
+}
+
 .melown-presentations.subtitlesContainer .swipeSubtitles:nth-of-type(1) {
-    background-image: url('./img/left.png');
-    background-position: left;
     left: 20px;
     margin-left: 0;
+}
+
+.melown-presentations.subtitlesContainer .swipeSubtitles:nth-of-type(1) div div {
+    left: 15px;
 }
 
 .melown-presentations.subtitlesContainer .swipeSubtitles:hover {

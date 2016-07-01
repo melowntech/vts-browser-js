@@ -2,23 +2,23 @@
 
 Melown.Presenter.prototype.Utils.renderControl = function() {
     // Set every <section> tag excluding the first one to not to be displayed
-    this.sectionTags_ = document.getElementsByClassName('melown-presentations toolboxContainer')[0].querySelectorAll('section');
+    this.sectionTags_ = this.container_.getElementsByClassName('melown-presentations toolboxContainer')[0].querySelectorAll('section');
     
-    var swipeControlUp_ = document.getElementsByClassName('melown-presentations swipeControl')[0];
-    var swipeControlDw_ = document.getElementsByClassName('melown-presentations swipeControl')[1];
+    var swipeControlUp_ = this.container_.getElementsByClassName('melown-presentations swipeControl')[0];
+    var swipeControlDw_ = this.container_.getElementsByClassName('melown-presentations swipeControl')[1];
     var templateSwitcher_ = document.getElementById('melown-presentations-templateSwitcher');
     var obj_ = this;
 
     var nextButton_ = document.createElement('button');
-        nextButton_.innerHTML = '';
+        nextButton_.innerHTML = '<div><div></div></div>';
         nextButton_.setAttribute('type','button');
-        nextButton_.setAttribute('id','melown-presentations-btnDw');
+        nextButton_.setAttribute('class','melown-presentations-btnDw');
         nextButton_.onclick = function(){ obj_.nextArticle('+1'); };
         
     var prevButton_ = document.createElement('button');
-        prevButton_.innerHTML = '';
+        prevButton_.innerHTML = '<div><div></div></div>';
         prevButton_.setAttribute('type','button');
-        prevButton_.setAttribute('id','melown-presentations-btnUp');
+        prevButton_.setAttribute('class','melown-presentations-btnUp');
         prevButton_.onclick = function(){ obj_.nextArticle('-1'); };
 
     // End of all buttons and other controllers
@@ -30,10 +30,10 @@ Melown.Presenter.prototype.Utils.renderControl = function() {
 
     var offsetTop_ = this.maxHeight_ + this.swipeOffset_;
 
-    document.getElementsByClassName('melown-presentations panelContainer')[0].style.height = (offsetTop_ + this.swipeOffset_) + 'px';
-    document.getElementsByClassName('melown-presentations swipeControl')[1].style.top = offsetTop_ +'px';
-    document.getElementsByClassName('melown-presentations swipeControl')[0].style.opacity = '1';
-    document.getElementsByClassName('melown-presentations swipeControl')[1].style.opacity = '1';
+    this.container_.getElementsByClassName('melown-presentations panelContainer')[0].style.height = (offsetTop_ + this.swipeOffset_) + 'px';
+    this.container_.getElementsByClassName('melown-presentations swipeControl')[1].style.top = offsetTop_ +'px';
+    this.container_.getElementsByClassName('melown-presentations swipeControl')[0].style.opacity = '1';
+    this.container_.getElementsByClassName('melown-presentations swipeControl')[1].style.opacity = '1';
     
     // init now
     setTimeout(function() {

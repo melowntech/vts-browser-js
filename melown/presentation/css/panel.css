@@ -74,28 +74,62 @@
     border: double 5px rgb(216, 216, 216);
 }
 
-#melown-presentations-btnUp {
-    background-image: url('./img/up.png');
+.melown-presentations .melown-presentations-btnUp {
     position: absolute;
     bottom: 15px;
     left: 50%;
     margin-left: -70px;
 }
 
-#melown-presentations-btnDw {
-    background-image: url('./img/dw.png');
+.melown-presentations .melown-presentations-btnUp div, .melown-presentations .melown-presentations-btnDw div {
     position: absolute;
-    top: 15px;
+    top: 0;
+    width: 100%;
+    height: 18px;
+    overflow: hidden;
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.melown-presentations .melown-presentations-btnUp div div, .melown-presentations .melown-presentations-btnDw div div {
+    background-color: #000;
+    width: 20px;
+    height: 20px;
+    transform: rotate(45deg);
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    margin-left: -10px;
+    border-radius: 1px;
+    box-shadow: 0 0 2px #000;
+}
+
+.melown-presentations .melown-presentations-btnUp div div {
+    top: 6px;
+}
+
+.melown-presentations .melown-presentations-btnUp div:hover {
+    top: -2px;
+}
+
+.melown-presentations .melown-presentations-btnDw div:hover {
+    top: 2px;
+}
+
+.melown-presentations .melown-presentations-btnUp div div:hover {
+    top: 6px;
+}
+
+.melown-presentations .melown-presentations-btnDw div div:hover {
+    top: -8px;
+}
+
+.melown-presentations .melown-presentations-btnDw {
+    position: absolute;
+    top: 23px;
     left: 50%;
     margin-left: -70px;
-}
-
-#melown-presentations-btnUp:hover {
-    background-position: 50% 30%;
-}
-
-#melown-presentations-btnDw:hover {
-    background-position: 50% 80%;
 }
 
 .melown-presentations.toolboxContainer section.hidden {

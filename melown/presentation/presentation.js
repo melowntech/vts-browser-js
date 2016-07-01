@@ -8,7 +8,7 @@ Melown.Presenter = function(browser_, config_) {
     this.Utils.active_ = null;
 
     for (var key_ in config_) {
-        if(key_ != 'presentation' && key_ != 'presentation_autoplay') {
+        if(key_ != 'presentation' && key_ != 'presentationAutoplay') {
             delete config_[key_];
         };
     };
@@ -53,13 +53,17 @@ Melown.Presenter.prototype.presentationActive = function() {
     return this.Utils.active_;
 };
 
+Melown.Presenter.prototype.presentationActiveType = function() {
+    return this.Utils.activeToolbox_;
+};
+
 Melown.Presenter.prototype.presentationPlay = function(id_) {
     this.presentationStop();
     if(this.Utils.config_.presentationAutoplay !== undefined && typeof id_ === 'undefined') {
         id_ = this.Utils.config_.presentationAutoplay;
     }
-    else if(typeof id_ === 'undefined' && this.Utils.config_.presentations !== undefined && Object.keys(this.Utils.config_.presentations).length > 0) {
-        for(var key in this.Utils.config_.presentations) {
+    else if(typeof id_ === 'undefined' && this.Utils.config_.presentation !== undefined && Object.keys(this.Utils.config_.presentation).length > 0) {
+        for(var key in this.Utils.config_.presentation) {
             id_ = key;
             break;
         };
@@ -82,14 +86,14 @@ Melown.Presenter.prototype.presentationStop = function() {
         //this.remove(id_);
         this.Utils.active_ = null;
         this.Utils.browser_.removeControl(active_);
-        document.getElementsByTagName('article')[0].parentNode.parentNode.parentNode.remove();
+        this.Utils.container_.getElementsByTagName('article')[0].parentNode.parentNode.parentNode.remove();
         return true;
     };
     return false;    
 };
 
 Melown.Presenter.prototype.presentationList = function(id_) {
-    if(Object.keys(this.Utils.config_).length === 0 || Object.keys(this.Utils.config_.presentations).length === 0) {
+    if(Object.keys(this.Utils.config_).length === 0 || Object.keys(this.Utils.config_.presentation).length === 0) {
         return 'No presentations present';
     };
     if(typeof id_ !== 'undefined') {
@@ -98,11 +102,20 @@ Melown.Presenter.prototype.presentationList = function(id_) {
         };
     }
     else {
-        return this.Utils.config_.presentations;
+        return this.Utils.config_.presentation;
     };
 };
 
+// Delete this function if it has no more use...
+Melown.Presenter.prototype.getContainer = function() {
+    this.Utils.container_ = this.Utils.browser_.ui_.controls_[this.presentationActive()].element_.childNodes[this.presentationActiveType() === 'right' ? 0 : 1];
+};
+
 Melown.Presenter.prototype.Utils = {
+    container_ : null,
+    setContainer : function(c) {
+        this.container_ = c.element_;
+    },
     aTags_ : null,
     sectionTags_ : null,
     defaultHeight_ : 0, // Changes based on presentation's height
