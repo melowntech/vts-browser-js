@@ -2,44 +2,6 @@
     font-family: Helvetica;
 }*/
 
-div.melown-presentations.top-toolbox {
-    position: absolute;
-    top: 10px;
-    height: 26px;
-    right: 200px;
-    left: 10px;
-}
-
-#melown-presentations-templateSwitcher {
-    position: absolute;
-    top: 30px;
-    left: -150px;
-    width: 120px;
-    background-color: rgba(255,255,255,0.8);
-    border-radius: 3px;
-    padding: 5px 20px 5px 10px;
-    font-size: 13px;
-    font-family: 'Open Sans',Verdana,Arial,Tahoma,Calibri,Geneva,sans-serif;
-    border-right: solid 4px #649DF4;
-    opacity: 0;
-    -webkit-transition: all 0.6s ease;
-    -moz-transition: all 0.6s ease;
-    transition: all 0.6s ease;
-}
-
-#melown-presentations-templateSwitcher:hover {
-    left: 0px;
-}
-
-#melown-presentations-templateSwitcher p {
-    cursor: pointer;
-    color: #0066ff
-}
-
-#melown-presentations-templateSwitcher p:hover {
-    text-decoration: underline;
-}
-
 .melown-presentations button {
     position: relative;
     width: 140px;
