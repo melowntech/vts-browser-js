@@ -14,7 +14,7 @@ Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
     var ctrlDelve_ = this.browser_.addControl(id_, template_);
     this.id_.push(id_);
     this.setContainer(ctrlDelve_);
-    //obj_.browser_.getPresenter().getContainer();
+
     // Set all <a> tags to have onclick
     this.aTags_ = this.container_.getElementsByTagName('a');
     for(var i = 0; i < this.aTags_.length; i++){
@@ -175,7 +175,6 @@ Melown.Presenter.prototype.Utils.useToolbox = function() {
     var subtitles_ = this.container_.getElementsByClassName('melown-presentations subtitlesContainer')[0];
     var swipeControl_ = this.container_.getElementsByClassName('melown-presentations swipeControl');
     this.activeToolbox_ = type_;
-    //this.container_ = this.container_.childNodes[type_ === 'right' ? 0 : 1];
     
     subtitles_.setAttribute('style', 'opacity: 0;');
     subtitles_.setAttribute('class', 'melown-presentations subtitlesContainer');

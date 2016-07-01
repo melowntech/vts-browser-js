@@ -83,7 +83,6 @@ Melown.Presenter.prototype.presentationStop = function() {
     var active_ = this.presentationActive();
     this.Utils.activeToolbox_ = 'right';
     if(active_ !== null) {
-        //this.remove(id_);
         this.Utils.active_ = null;
         this.Utils.browser_.removeControl(active_);
         this.Utils.container_.getElementsByTagName('article')[0].parentNode.parentNode.parentNode.remove();
