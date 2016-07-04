@@ -84,7 +84,7 @@ Melown.Presenter.prototype.stopPresentation = function() {
     this.Utils.activeToolbox_ = 'right';
     if(active_ !== null) {
         this.Utils.active_ = null;
-        this.Utils.browser_.removeControl(active_);
+        this.Utils.browser_.ui_.removeControl(active_);
         this.Utils.container_.getElementsByTagName('article')[0].parentNode.parentNode.parentNode.remove();
         return true;
     };

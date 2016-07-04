@@ -32,18 +32,20 @@ Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
         checkID : function() {
             var url_ = /^(ftp|http|https):\/\/[^ "]+$/;
             var relative_ = /.*\/+.*/;
-            var level_ = /(\.\.)/g;
+            var level_ = /(\.\.\/|\.\/)/g;
             var hash_ = /^#.*$/;
-            if(url_.test(this.htmlDataStorage) || this.htmlDataStorage.indexOf("./") != -1) {
+            if(url_.test(this.htmlDataStorage)) {
                 return 'url';
             }
             else if(relative_.test(this.htmlDataStorage)) {
+                console.log('relative url');
                 var getLevel_;
+                var l_ = 0;
                 while((getLevel_ = level_.exec(this.htmlDataStorage)) !== null) {
-                    
+                    l_++;
                 };
-                console.log(getLevel_);
-                return 'relative:';
+                console.log(l_);
+                return 'relative:'+l_;
             }
             else if(hash_.test(this.htmlDataStorage)) {
                 return 'hash';
