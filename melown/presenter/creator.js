@@ -1,6 +1,6 @@
 // All Utilities needed for proper Presenter working
 
-Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
+Melown.Presenter.prototype.init = function(id_, HTMLtemplate_) {
     var obj_ = this;    
     var templatePanelPrefix_ = '<div class="melown-presentations panelContainer"><div class="melown-presentations swipeControl top"></div><div class="melown-presentations toolboxContainer">';
     var templatePanelSuffix_ = '</div><div class="melown-presentations swipeControl"></div></div>';
@@ -17,53 +17,65 @@ Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
     // Set all <a> tags to have onclick
     this.aTags_ = this.container_.getElementsByTagName('a');
     for(var i = 0; i < this.aTags_.length; i++){
-        this.aTags_[i].onclick = function() { obj_.linksDecode(this); };
-    };
+        this.aTags_[i].onclick = function() {
+            obj_.linksDecode(this);
+        };
+    }
     
     setTimeout(function(){
         obj_.renderControl();
     }, 200);
 };
 
-Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
+Melown.Presenter.prototype.readTextInput = function(id_) {
     var presentation_ = {
-        htmlDataStorage : this.config_['presenter'][id_],
+        htmlDataStorage : this.presenter[id_],
         id : id_,
         checkID : function() {
             var url_ = /^(ftp|http|https):\/\/[^ "]+$/;
             var relative_ = /.*\/+.*/;
             var level_ = /(\.\.\/|\.\/)/g;
             var hash_ = /^#.*$/;
-            if(url_.test(this.htmlDataStorage)) {
+            var str_ = /(<article)/g;
+            if(str_.test(this.htmlDataStorage)) {
+                return 'string';
+            } else if(url_.test(this.htmlDataStorage)) {
                 return 'url';
-            }
-            else if(relative_.test(this.htmlDataStorage)) {
-                console.log('relative url');
+            } else if(relative_.test(this.htmlDataStorage)) {
                 var getLevel_;
                 var l_ = 0;
+                var split_ = '';
+                var loc_ = window.location.href.split('/');
+                var path_ = '';
                 while((getLevel_ = level_.exec(this.htmlDataStorage)) !== null) {
+                    split_ = split_ + getLevel_[0];
+                    if(getLevel_[0] === './') {
+                        break;     
+                    }
                     l_++;
-                };
-                console.log(l_);
-                return 'relative:'+l_;
-            }
-            else if(hash_.test(this.htmlDataStorage)) {
+                }
+                l_++;
+                for(var i = 0; i < (loc_.length-l_); i++) {
+                    path_ = path_ + loc_[i] + '/';
+                }
+                path_ = path_ + this.htmlDataStorage.split(split_)[1];
+                console.log('Final path:');
+                console.log(path_);
+                this.htmlDataStorage = path_;
+                return 'url';
+            } else if(hash_.test(this.htmlDataStorage)) {
                 return 'hash';
-            }
-            else {
+            } else {
                 return 'string';
-            };
+            }
         }
     };
     
     var mode_ = presentation_.checkID();
     
-    if(mode_ == 'url' || mode_ == 'relative') {
+    if(mode_ == 'url') {
         var rawFile_ = new XMLHttpRequest();
         var obj_ = this;
-        if(mode_ == 'relative') {
-            presentation_.htmlDataStorage = window.location.href + presentation_.htmlDataStorage;
-        };
         rawFile_.open("GET", presentation_.htmlDataStorage, false);
         rawFile_.onreadystatechange = function() {
             if(rawFile_.readyState === 4) {
@@ -71,24 +83,21 @@ Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
                     var allText_ = rawFile_.responseText;
                     obj_.html = allText_;
                     obj_.init(presentation_.id, obj_.html);
-                }
-                else {
+                } else {
                     obj_.file = 'undefined';
-                };
-            };
+                }
+            }
         };
         rawFile_.send(null); 
-    }
-    else if(mode_ == 'hash') {
+    } else if(mode_ == 'hash') {
         var obj_ = document.getElementById(presentation_.htmlDataStorage).innerHTML;
         this.init(presentation_.id, obj_);
-    }
-    else if(mode_ == 'string') {
+    } else if(mode_ == 'string') {
         this.init(presentation_.id, presentation_.htmlDataStorage);
-    };
+    }
 };
 
-Melown.Presenter.prototype.Utils.linksDecode = function(obj_) {
+Melown.Presenter.prototype.linksDecode = function(obj_) {
     var position_ = null;
     var autorotate_ = null;
     var transition_ = null;
@@ -97,95 +106,110 @@ Melown.Presenter.prototype.Utils.linksDecode = function(obj_) {
     if(obj_.getAttribute('data-mln-navigate') !== null) {
         navigate_ = obj_.getAttribute('data-mln-navigate');
         if(navigate_ !== null) {
-            if(navigate_ == 'prev') { this.nextArticle('-1'); }
-            else if(navigate_ == 'next') { this.nextArticle('+1'); }
-            else if(navigate_ == 'first') { this.nextArticle(0); }
-            else if(navigate_ == 'last') { this.nextArticle(this.maxNodes_-1); }
-            else { this.nextArticle(navigate_); };        
+            if(navigate_ == 'prev') {
+                this.nextArticle('-1');
+            } else if(navigate_ == 'next') {
+                this.nextArticle('+1');
+            } else if(navigate_ == 'first') {
+                this.nextArticle(0);
+            } else if(navigate_ == 'last') {
+                this.nextArticle(this.maxNodes_-1);
+            } else {
+                this.nextArticle(navigate_);
+            }        
             return 'navigation:true';
-        };
-    };
+        }
+    }
     
     if(obj_.getAttribute('data-mln-position') === null){
         return 'position:false';
-    };
+    }
 
     position_ = this.getNumbers(obj_.getAttribute('data-mln-position').split(','));
     
     if(obj_.getAttribute('data-mln-autorotate') !== null) {
         autorotate_ = this.getNumbers(obj_.getAttribute('data-mln-autorotate'));
-    };
+    }
     if(obj_.getAttribute('data-mln-transition') !== null) {
         transition_ = obj_.getAttribute('data-mln-transition');
-    };
+    }
     
     if(transition_ === null) {
         this.browser_.autopilot_.flyTo(position_);
-    }
-    else if(transition_ == 'teleport') {
+    } else if(transition_ == 'teleport') {
         this.browser_.core_.getMap().setPosition(position_);
-    }
-    else {
+    } else {
         this.browser_.autopilot_.flyTo(position_);
         // Feature to be considered
         // browser.flyTo(position, {mode_ : transition});
-    };
+    }
     if(autorotate_ !== null) {
         this.browser_.autopilot_.setAutorotate(autorotate_);
-    };
+    }
         
     return 'Moving to position: ' + position_;
 };
 
 // parseFloat here
-Melown.Presenter.prototype.Utils.getNumbers = function(obj_) {
+Melown.Presenter.prototype.getNumbers = function(obj_) {
     var obj_ = obj_;
     for(var i = 0; i < obj_.length; i++){
         if(typeof obj_ == 'string' && parseFloat(obj_)) {
             obj_ = parseFloat(obj_);
             break;
         }
-        if (parseFloat(obj_[i]))
+        if (parseFloat(obj_[i])) {
             obj_[i] = parseFloat(obj_[i]); // toFixed might be added here
+        }
     }
     return obj_;
 };
 
-Melown.Presenter.prototype.Utils.nextArticle = function(node_, init_, lastNode_) {
+Melown.Presenter.prototype.nextArticle = function(node_, init_, lastNode_) {
     // fly to whatever node we wish
-    if(node_ === '+1') { node_ = 1; }
-    else if(node_ === '-1') { node_ = -1; }
-    else {
+    if(node_ === '+1') {
+        node_ = 1;
+    } else if(node_ === '-1') {
+        node_ = -1;
+    } else {
         this.actualNode_ = node_;
         node_ = 0;
-    };
+    }
     this.actualNode_ = this.actualNode_ + node_;
     
     if(this.actualNode_ >= 0 && this.actualNode_ < this.maxNodes_) {
         if(!init_) {
-            if(this.activeToolbox_ == 'right') { this.handleArticle(this.actualNode_); }
-            else if(this.activeToolbox_ == 'wide') { this.handleSubtitlesPosition(this.actualNode_); };
-        };
-        if(typeof lastNode_ !== 'undefined') { this.maxNodes_ = lastNode_; };
+            if(this.currentToolbox_ == 'right') {
+                this.handleArticle(this.actualNode_);
+            } else if(this.currentToolbox_ == 'wide') {
+                this.handleSubtitlesPosition(this.actualNode_);
+            }
+        }
+        if(typeof lastNode_ !== 'undefined') {
+            this.maxNodes_ = lastNode_;
+        }
         this.linksDecode(this.container_.getElementsByTagName('section')[this.actualNode_]);
         return true;
     
+    } else {
+        this.actualNode_ = this.actualNode_ - node_;
     }
-    else { this.actualNode_ = this.actualNode_ - node_; };
     return false;
 };
 
-Melown.Presenter.prototype.Utils.useToolbox = function() {
+Melown.Presenter.prototype.useToolbox = function() {
     
     var type_ = this.container_.getElementsByTagName('article')[0].getAttribute('data-mln-style');
     
-    if(type_ === null) { type_ = 'right'; };
+    if(type_ === null) {
+        type_ = 'right';
+    }
     
     var rightPanel_ = this.container_.getElementsByClassName('melown-presentations panelContainer')[0];
     var toolboxContainer_ = this.container_.getElementsByClassName('melown-presentations toolboxContainer')[0];
     var subtitles_ = this.container_.getElementsByClassName('melown-presentations subtitlesContainer')[0];
     var swipeControl_ = this.container_.getElementsByClassName('melown-presentations swipeControl');
-    this.activeToolbox_ = type_;
+    this.currentToolbox_ = type_;
     
     subtitles_.setAttribute('style', 'opacity: 0;');
     subtitles_.setAttribute('class', 'melown-presentations subtitlesContainer');
@@ -198,10 +222,9 @@ Melown.Presenter.prototype.Utils.useToolbox = function() {
         swipeControl_[1].style.display = 'block';
         for(var i = 0; i < this.sectionTags_.length; i++){ // Set maxHeight back as there is no dynamic rescaling of rightPanel_
             this.sectionTags_[i].style.height = this.maxHeight_ + 'px';
-        };
+        }
         this.nextArticle(0);
-    }
-    else if(type_ == 'wide') {
+    } else if(type_ == 'wide') {
         subtitles_.style.display = 'block';
         setTimeout(function() {
             subtitles_.style.opacity = 1;
@@ -212,8 +235,8 @@ Melown.Presenter.prototype.Utils.useToolbox = function() {
         swipeControl_[1].style.display = 'none';
         for(var i = 0; i < this.sectionTags_.length; i++){ // Set height to auto so we can dynamicaly adjust subtitles height
             this.sectionTags_[i].style.height = 'auto';
-        };
+        }
         this.handleSubtitlesPosition(0, true);
-    };
+    }
 };
 

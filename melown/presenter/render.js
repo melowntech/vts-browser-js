@@ -1,6 +1,6 @@
 // Rendering of DOM elements for Presenter
 
-Melown.Presenter.prototype.Utils.renderControl = function() {
+Melown.Presenter.prototype.renderControl = function() {
     // Set every <section> tag excluding the first one to not to be displayed
     this.sectionTags_ = this.container_.getElementsByClassName('melown-presentations toolboxContainer')[0].querySelectorAll('section');
     
@@ -12,13 +12,17 @@ Melown.Presenter.prototype.Utils.renderControl = function() {
         nextButton_.innerHTML = '<div><div></div></div>';
         nextButton_.setAttribute('type','button');
         nextButton_.setAttribute('class','melown-presentations-btnDw');
-        nextButton_.onclick = function(){ obj_.nextArticle('+1'); };
+        nextButton_.onclick = function(){
+            obj_.nextArticle('+1');
+        };
         
     var prevButton_ = document.createElement('button');
         prevButton_.innerHTML = '<div><div></div></div>';
         prevButton_.setAttribute('type','button');
         prevButton_.setAttribute('class','melown-presentations-btnUp');
-        prevButton_.onclick = function(){ obj_.nextArticle('-1'); };
+        prevButton_.onclick = function(){
+            obj_.nextArticle('-1');
+        };
 
     // End of all buttons and other controllers
     
@@ -41,15 +45,15 @@ Melown.Presenter.prototype.Utils.renderControl = function() {
     this.nextArticle(0, false, this.sectionTags_.length);
 };
 
-Melown.Presenter.prototype.Utils.getElementsTrueHeight = function(elems_) {
+Melown.Presenter.prototype.getElementsTrueHeight = function(elems_) {
     for(var i = 0; i < elems_.length; i++){
         if(elems_[i].offsetHeight > this.maxHeight_) {
             this.maxHeight_ = elems_[i].offsetHeight;
-        };
-    };
+        }
+    }
     
     for(var i = 0; i < elems_.length; i++){
         elems_[i].style.height = this.maxHeight_ + 'px';
-    };
+    }
 };
 
