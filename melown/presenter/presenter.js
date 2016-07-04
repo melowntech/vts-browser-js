@@ -49,11 +49,11 @@ Melown.Presenter.prototype.removePresentation = function(id_) {
     };
 };
 
-Melown.Presenter.prototype.activePresentation = function() {
+Melown.Presenter.prototype.getCurrentPresentation = function() {
     return this.Utils.active_;
 };
 
-Melown.Presenter.prototype.activePresentationType = function() {
+Melown.Presenter.prototype.getCurrentPresentationType = function() {
     return this.Utils.activeToolbox_;
 };
 
@@ -91,7 +91,7 @@ Melown.Presenter.prototype.stopPresentation = function() {
     return false;    
 };
 
-Melown.Presenter.prototype.listPresentation = function(id_) {
+Melown.Presenter.prototype.listPresentationw = function(id_) {
     if(Object.keys(this.Utils.config_).length === 0 || Object.keys(this.Utils.config_['presenter']).length === 0) {
         return 'No presentations present';
     };
@@ -104,6 +104,17 @@ Melown.Presenter.prototype.listPresentation = function(id_) {
         return this.Utils.config_['presenter'];
     };
 };
+
+//prevent minification
+Melown.Presenter.prototype["addPresentation"] = Melown.Presenter.prototype.addPresentation;
+Melown.Presenter.prototype["removePresentation"] = Melown.Presenter.prototype.removePresentation;
+Melown.Presenter.prototype["getCurrentPresentation"] = Melown.Presenter.prototype.getCurrentPresentation;
+Melown.Presenter.prototype["getCurrentPresentationType"] = Melown.Presenter.prototype.getCurrentPresentationType;
+Melown.Presenter.prototype["playPresentation"] = Melown.Presenter.prototype.playPresentation;
+Melown.Presenter.prototype["stopPresentation"] = Melown.Presenter.prototype.stopPresentation;
+Melown.Presenter.prototype["listPresentations"] = Melown.Presenter.prototype.listPresentations;
+
+
 
 Melown.Presenter.prototype.Utils = {
     container_ : null,

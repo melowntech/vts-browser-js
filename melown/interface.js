@@ -454,6 +454,7 @@ Melown.getBrowserVersion = function() {
 //prevent minification
 Melown["MapBrowser"] = Melown.MapBrowser;
 Melown.BrowserInterface.prototype["getRenderer"] = Melown.BrowserInterface.prototype.getRenderer; 
+Melown.BrowserInterface.prototype["getPresenter"] = Melown.BrowserInterface.prototype.getPresenter; 
 Melown.BrowserInterface.prototype["getProj4"] = Melown.BrowserInterface.prototype.getProj4; 
 Melown.BrowserInterface.prototype["getUI"] = Melown.BrowserInterface.prototype.getUI; 
 Melown.BrowserInterface.prototype["setControlMode"] = Melown.BrowserInterface.prototype.setControlMode;
