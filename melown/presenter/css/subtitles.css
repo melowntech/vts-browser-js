@@ -1,4 +1,4 @@
-.melown-presentations.subtitlesContainer {
+.melown-presenter.subtitlesContainer {
     display: none;
     position: absolute;
     left: 10%;
@@ -15,7 +15,7 @@
     transition: all 0.6s ease;
 }
 
-.melown-presentations.subtitlesContainer.full {
+.melown-presenter.subtitlesContainer.full {
     left: 10%;
     bottom: 5%;
     width: 76%;
@@ -23,14 +23,14 @@
     padding: 2%;
 }
 
-.melown-presentations.subtitlesContainer.title {
+.melown-presenter.subtitlesContainer.title {
     bottom : 10%;
     width: 76%;
     height: 50%;
     padding: 2%;
 }
 
-.melown-presentations.subtitlesContainer.mini {
+.melown-presenter.subtitlesContainer.mini {
     left: 50%;
     bottom: 5%;
     width: 260px;
@@ -40,7 +40,7 @@
     cursor: pointer;
 }
 
-.melown-presentations.subtitlesContainer button {
+.melown-presenter.subtitlesContainer button {
     min-width: 200px;
     width: auto;
     height: auto;
@@ -58,18 +58,18 @@
     transition-delay: 0.4s;
 }
 
-.melown-presentations.subtitlesContainer button:nth-of-type(1) {
+.melown-presenter.subtitlesContainer button:nth-of-type(1) {
     left: 5%;
 }
 
-.melown-presentations.subtitlesContainer button.hidden {
+.melown-presenter.subtitlesContainer button.hidden {
     bottom: -70px;
     -webkit-transition-delay: 0s;
     -moz-transition-delay: 0s;
     transition-delay: 0s;
 }
 
-.melown-presentations.subtitlesContainer .swipeSubtitles {
+.melown-presenter.subtitlesContainer .swipeSubtitles {
     position: absolute;
     top: 50%;
     margin-top: -30px;
@@ -84,14 +84,14 @@
     cursor: pointer;
 }
 
-.melown-presentations.subtitlesContainer .swipeSubtitles div {
+.melown-presenter.subtitlesContainer .swipeSubtitles div {
     position: absolute;
     width: 35px;
     height: 59px;
     overflow: hidden;
 }
 
-.melown-presentations.subtitlesContainer .swipeSubtitles div div {
+.melown-presenter.subtitlesContainer .swipeSubtitles div div {
     width: 60px;
     height: 60px;
     background-color: #000;
@@ -102,68 +102,68 @@
     top: 0px;
 }
 
-.melown-presentations.subtitlesContainer .swipeSubtitles:nth-of-type(1) {
+.melown-presenter.subtitlesContainer .swipeSubtitles:nth-of-type(1) {
     left: 20px;
     margin-left: 0;
 }
 
-.melown-presentations.subtitlesContainer .swipeSubtitles:nth-of-type(1) div div {
+.melown-presenter.subtitlesContainer .swipeSubtitles:nth-of-type(1) div div {
     left: 15px;
 }
 
-.melown-presentations.subtitlesContainer .swipeSubtitles:hover {
+.melown-presenter.subtitlesContainer .swipeSubtitles:hover {
     margin-left: -45px;
 } 
 
-.melown-presentations.subtitlesContainer .swipeSubtitles:nth-of-type(1):hover {
+.melown-presenter.subtitlesContainer .swipeSubtitles:nth-of-type(1):hover {
     left : 15px;
     margin-left: 0;
 } 
 
-.melown-presentations.subtitlesContainer .swipeSubtitles.hidden {
+.melown-presenter.subtitlesContainer .swipeSubtitles.hidden {
     opacity: 0;
     cursor: default;
 }
 
-.melown-presentations.subtitlesContainer .innerContainer {
+.melown-presenter.subtitlesContainer .innerContainer {
     padding: 0 40px;
 }
 
-.melown-presentations.subtitlesContainer article {
+.melown-presenter.subtitlesContainer article {
     position: relative;
     top: 0;
 }
 
-.melown-presentations.subtitlesContainer section {
+.melown-presenter.subtitlesContainer section {
     opacity: 0;
     -webkit-transition: all 0.3s ease;
     -moz-transition: all 0.3s ease;
     transition: all 0.3s ease;
 }
 
-.melown-presentations.subtitlesContainer .innerContainer h3 {
+.melown-presenter.subtitlesContainer .innerContainer h3 {
     text-align: center;
     margin: 15px 0;
     font-size: 40px;
 }
 
-.melown-presentations.subtitlesContainer .innerContainer h4 {
+.melown-presenter.subtitlesContainer .innerContainer h4 {
     text-align: center;
     margin: 10px 0;
     font-weight: normal;
     font-size: 30px;
 }
 
-.melown-presentations.subtitlesContainer .innerContainer p {
+.melown-presenter.subtitlesContainer .innerContainer p {
     font-size: 27px;
 }
 
-.melown-presentations.subtitlesContainer.mini .innerContainer section p {
+.melown-presenter.subtitlesContainer.mini .innerContainer section p {
     font-size: 14px;
     text-align: center;
 }
 
-.melown-presentations.subtitlesContainer img {
+.melown-presenter.subtitlesContainer img {
     margin: 10px 0;
     border-radius: 3px;
     width: 550px;
@@ -172,14 +172,14 @@
     margin-left: -275px;
 }
 
-.melown-presentations.subtitlesContainer section a, .melown-presentations.subtitlesContainer section p a {
+.melown-presenter.subtitlesContainer section a, .melown-presenter.subtitlesContainer section p a {
     color: #002266;
     border-bottom: dotted 2px #003399;
     text-decoration: none;
     cursor: pointer;
 }
 
-.melown-presentations.subtitlesContainer section a:hover, .melown-presentations.subtitlesContainer section p a:hover {
+.melown-presenter.subtitlesContainer section a:hover, .melown-presenter.subtitlesContainer section p a:hover {
     cursor: pointer;
 }
 

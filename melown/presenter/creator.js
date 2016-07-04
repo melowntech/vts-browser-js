@@ -2,11 +2,11 @@
 
 Melown.Presenter.prototype.init = function(id_, HTMLtemplate_) {
     var obj_ = this;    
-    var templatePanelPrefix_ = '<div class="melown-presentations panelContainer"><div class="melown-presentations swipeControl top"></div><div class="melown-presentations toolboxContainer">';
-    var templatePanelSuffix_ = '</div><div class="melown-presentations swipeControl"></div></div>';
+    var templatePanelPrefix_ = '<div class="melown-presenter panelContainer"><div class="melown-presenter swipeControl top"></div><div class="melown-presenter toolboxContainer">';
+    var templatePanelSuffix_ = '</div><div class="melown-presenter swipeControl"></div></div>';
     var templatePanel_ = templatePanelPrefix_ + HTMLtemplate_ + templatePanelSuffix_;
-    var templateSubtitlesPrefix_ = '<div class="melown-presentations subtitlesContainer"><button type="button"></button><button type="button"></button>'
-                                    + '<div class="melown-presentations swipeSubtitles"><div><div></div></div></div><div class="melown-presentations swipeSubtitles"><div><div></div></div></div><div class="melown-presentations innerContainer">';
+    var templateSubtitlesPrefix_ = '<div class="melown-presenter subtitlesContainer"><button type="button"></button><button type="button"></button>'
+                                    + '<div class="melown-presenter swipeSubtitles"><div><div></div></div></div><div class="melown-presenter swipeSubtitles"><div><div></div></div></div><div class="melown-presenter innerContainer">';
     var templateSubtitlesSuffix_ = '</div></div>';
     var templateSubtitles_ = templateSubtitlesPrefix_ + HTMLtemplate_ + templateSubtitlesSuffix_;
     var template_ = templatePanel_ + templateSubtitles_;
@@ -205,14 +205,14 @@ Melown.Presenter.prototype.useToolbox = function() {
         type_ = 'right';
     }
     
-    var rightPanel_ = this.container_.getElementsByClassName('melown-presentations panelContainer')[0];
-    var toolboxContainer_ = this.container_.getElementsByClassName('melown-presentations toolboxContainer')[0];
-    var subtitles_ = this.container_.getElementsByClassName('melown-presentations subtitlesContainer')[0];
-    var swipeControl_ = this.container_.getElementsByClassName('melown-presentations swipeControl');
+    var rightPanel_ = this.container_.getElementsByClassName('melown-presenter panelContainer')[0];
+    var toolboxContainer_ = this.container_.getElementsByClassName('melown-presenter toolboxContainer')[0];
+    var subtitles_ = this.container_.getElementsByClassName('melown-presenter subtitlesContainer')[0];
+    var swipeControl_ = this.container_.getElementsByClassName('melown-presenter swipeControl');
     this.currentToolbox_ = type_;
     
     subtitles_.setAttribute('style', 'opacity: 0;');
-    subtitles_.setAttribute('class', 'melown-presentations subtitlesContainer');
+    subtitles_.setAttribute('class', 'melown-presenter subtitlesContainer');
     if(type_ == 'right') {
         rightPanel_.style.display = 'block';
         setTimeout(function() {
