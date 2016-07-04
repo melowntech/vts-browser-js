@@ -22,11 +22,11 @@ Melown.Presenter = function(browser_, config_) {
 
 Melown.Presenter.prototype.addPresentation = function(id_, source_) {
     if(Object.keys(this.Utils.config_).length !== 0) {
-        this.Utils.config_.presenter[id_] = source_;
+        this.Utils.config_['presenter'][id_] = source_;
     }
     else if(typeof id_ !== 'undefined') {
         this.Utils.config_['presenter'] = {};
-        this.Utils.config_.presenter[id_] = source_;
+        this.Utils.config_['presenter'][id_] = source_;
     };
 };
 
@@ -36,7 +36,7 @@ Melown.Presenter.prototype.removePresentation = function(id_) {
             this.stopPresentation();
             this.Utils.active_ = null;
         };
-        delete this.Utils.config_.presenter[id_];
+        delete this.Utils.config_['presenter'][id_];
         return('Removed presentation id: '+id_);            
     }
     else {
@@ -59,11 +59,11 @@ Melown.Presenter.prototype.activePresentationType = function() {
 
 Melown.Presenter.prototype.playPresentation = function(id_) {
     this.stopPresentation();
-    if(this.Utils.config_.presenterAutoplay !== undefined && typeof id_ === 'undefined') {
-        id_ = this.Utils.config_.presenterAutoplay;
+    if(this.Utils.config_['presenterAutoplay'] !== undefined && typeof id_ === 'undefined') {
+        id_ = this.Utils.config_['presenterAutoplay'];
     }
-    else if(typeof id_ === 'undefined' && this.Utils.config_.presenter !== undefined && Object.keys(this.Utils.config_.presenter).length > 0) {
-        for(var key in this.Utils.config_.presenter) {
+    else if(typeof id_ === 'undefined' && this.Utils.config_['presenter'] !== undefined && Object.keys(this.Utils.config_['presenter']).length > 0) {
+        for(var key in this.Utils.config_['presenter']) {
             id_ = key;
             break;
         };
@@ -92,16 +92,16 @@ Melown.Presenter.prototype.stopPresentation = function() {
 };
 
 Melown.Presenter.prototype.listPresentation = function(id_) {
-    if(Object.keys(this.Utils.config_).length === 0 || Object.keys(this.Utils.config_.presenter).length === 0) {
+    if(Object.keys(this.Utils.config_).length === 0 || Object.keys(this.Utils.config_['presenter']).length === 0) {
         return 'No presentations present';
     };
     if(typeof id_ !== 'undefined') {
-        for(var key in this.Utils.config_.presenter) {
-            if(id_ == key) return this.Utils.config_.presenter[key];
+        for(var key in this.Utils.config_['presenter']) {
+            if(id_ == key) return this.Utils.config_['presenter'][key];
         };
     }
     else {
-        return this.Utils.config_.presenter;
+        return this.Utils.config_['presenter'];
     };
 };
 

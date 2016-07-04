@@ -27,12 +27,12 @@ Melown.Presenter.prototype.Utils.init = function(id_, HTMLtemplate_) {
 
 Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
     var presentation_ = {
-        htmlDataStorage : this.config_.presenter[id_],
+        htmlDataStorage : this.config_['presenter'][id_],
         id : id_,
         checkID : function() {
             var url_ = /^(ftp|http|https):\/\/[^ "]+$/;
             var hash_ = /^#.*$/;
-            if(url_.test(this.htmlDataStorage)) {
+            if(url_.test(this.htmlDataStorage) || this.htmlDataStorage.indexOf("./") != -1) {
                 return 'url';
             }
             else if(hash_.test(this.htmlDataStorage)) {
@@ -42,7 +42,7 @@ Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
                 return 'string';
             };
         }
-    }
+    };
     
     var mode_ = presentation_.checkID();
     
