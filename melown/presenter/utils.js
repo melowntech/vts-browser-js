@@ -31,9 +31,19 @@ Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
         id : id_,
         checkID : function() {
             var url_ = /^(ftp|http|https):\/\/[^ "]+$/;
+            var relative_ = /.*\/+.*/;
+            var level_ = /(\.\.)/g;
             var hash_ = /^#.*$/;
             if(url_.test(this.htmlDataStorage) || this.htmlDataStorage.indexOf("./") != -1) {
                 return 'url';
+            }
+            else if(relative_.test(this.htmlDataStorage)) {
+                var getLevel_;
+                while((getLevel_ = level_.exec(this.htmlDataStorage)) !== null) {
+                    
+                };
+                console.log(getLevel_);
+                return 'relative:';
             }
             else if(hash_.test(this.htmlDataStorage)) {
                 return 'hash';
@@ -46,9 +56,12 @@ Melown.Presenter.prototype.Utils.readTextInput = function(id_) {
     
     var mode_ = presentation_.checkID();
     
-    if(mode_ == 'url') {
+    if(mode_ == 'url' || mode_ == 'relative') {
         var rawFile_ = new XMLHttpRequest();
         var obj_ = this;
+        if(mode_ == 'relative') {
+            presentation_.htmlDataStorage = window.location.href + presentation_.htmlDataStorage;
+        };
         rawFile_.open("GET", presentation_.htmlDataStorage, false);
         rawFile_.onreadystatechange = function() {
             if(rawFile_.readyState === 4) {
