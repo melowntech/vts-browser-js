@@ -18,7 +18,6 @@ Melown.Presenter = function(browser_, config_) {
     this.animTime_ = 600; // Default css transition time
     this.currentToolbox_ = 'right'; // Default toolbox (right | wide)
 
-
     this.browser_ = browser_;
     this.id_ = [];
     this.current_ = null;

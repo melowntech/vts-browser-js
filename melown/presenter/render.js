@@ -8,20 +8,20 @@ Melown.Presenter.prototype.renderControl = function() {
     var swipeControlDw_ = this.container_.getElementsByClassName('melown-presenter swipeControl')[1];
 
     var nextButton_ = document.createElement('button');
-        nextButton_.innerHTML = '<div><div></div></div>';
-        nextButton_.setAttribute('type','button');
-        nextButton_.setAttribute('class','melown-presenter-btnDw');
-        nextButton_.onclick = (function(){
-            this.nextArticle('+1');
-        }).bind(this);
+    nextButton_.innerHTML = '<div><div></div></div>';
+    nextButton_.setAttribute('type','button');
+    nextButton_.setAttribute('class','melown-presenter-btnDw');
+    nextButton_.onclick = (function(){
+        this.nextArticle('+1');
+    }).bind(this);
         
     var prevButton_ = document.createElement('button');
-        prevButton_.innerHTML = '<div><div></div></div>';
-        prevButton_.setAttribute('type','button');
-        prevButton_.setAttribute('class','melown-presenter-btnUp');
-        prevButton_.onclick = (function(){
-            this.nextArticle('-1');
-        }).bind(this);
+    prevButton_.innerHTML = '<div><div></div></div>';
+    prevButton_.setAttribute('type','button');
+    prevButton_.setAttribute('class','melown-presenter-btnUp');
+    prevButton_.onclick = (function(){
+        this.nextArticle('-1');
+    }).bind(this);
 
     // End of all buttons and other controllers
     
