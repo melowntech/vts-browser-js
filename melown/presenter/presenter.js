@@ -4,43 +4,40 @@
  */
 Melown.Presenter = function(browser_, config_) {
 
-    this.container_ = null,
-    this.setContainer = function(c) {
-        this.container_ = c.element_;
-    },
-    this.aTags_ = null,
-    this.sectionTags_ = null,
-    this.defaultHeight_ = 0, // Changes based on presentation's height
-    this.maxHeight_ = 0, // Height of inner container to be set
-    this.subtitlesHeights_ = [], // Set of heights after init() for subtitles
+    this.container_ = null;
+    this.aTags_ = null;
+    this.sectionTags_ = null
+    this.defaultHeight_ = 0; // Changes based on presentation's height
+    this.maxHeight_ = 0; // Height of inner container to be set
+    this.subtitlesHeights_ = []; // Set of heights after init() for subtitles
 
-    this.firstTitleMargin_ = 20, // First slide of presentation has some css margin-top, so here we use it
-    this.swipeOffset_ = 60, // Height of swipeControl
+    this.firstTitleMargin_ = 20; // First slide of presentation has some css margin-top, so here we use it
+    this.swipeOffset_ = 60; // Height of swipeControl
 
-    this.actualNode_ = 0,
-    this.maxNodes_ = 1,
-    this.animTime_ = 600, // Default css transition time
-    this.currentToolbox_ = 'right' // Default toolbox (right | wide)
+    this.actualNode_ = 0;
+    this.maxNodes_ = 1;
+    this.animTime_ = 600; // Default css transition time
+    this.currentToolbox_ = 'right'; // Default toolbox (right | wide)
 
 
     this.browser_ = browser_;
     this.id_ = [];
     this.current_ = null;
 
-    this.presenter = config_['presenter'];
-    this.presenterAutoplay = config_['presenterAutoplay'];
+    this.presenter_ = config_['presenter'];
+    this.presenterAutoplay_ = config_['presenterAutoplay'];
 
-    if(typeof this.presenter !== 'undefined') {
+    if(typeof this.presenter_ !== 'undefined') {
         this.playPresentation();
     }
 };
 
 Melown.Presenter.prototype.addPresentation = function(id_, source_) {
-    if(Object.keys(this.presenter).length !== 0) {
-        this.presenter[id_] = source_;
+    if(Object.keys(this.presenter_).length !== 0) {
+        this.presenter_[id_] = source_;
     } else if(typeof id_ !== 'undefined') {
-        this.presenter = {};
-        this.presenter[id_] = source_;
+        this.presenter_ = {};
+        this.presenter_[id_] = source_;
     }
 };
 
@@ -50,14 +47,14 @@ Melown.Presenter.prototype.removePresentation = function(id_) {
             this.stopPresentation();
             this.current_ = null;
         }
-        delete this.presenter[id_];
+        delete this.presenter_[id_];
         return('Removed presentation id: '+id_);            
     } else {
         if(this.getCurrentPresentation() !== null) {
             this.stopPresentation();
         }
-        this.presenter = {}; // Remove all presentations
-        this.presenterAutoplay = '';
+        this.presenter_ = {}; // Remove all presentations
+        this.presenterAutoplay_ = '';
         this.current_ = null;
         return('All presentations removed.');
     }
@@ -73,16 +70,16 @@ Melown.Presenter.prototype.getCurrentPresentationType = function() {
 
 Melown.Presenter.prototype.playPresentation = function(id_) {
     this.stopPresentation();
-    if(this.presenterAutoplay !== undefined && typeof id_ === 'undefined') {
-        id_ = this.presenterAutoplay;
-    } else if(typeof id_ === 'undefined' && this.presenter !== undefined && Object.keys(this.presenter).length > 0) {
-        for(var key in this.presenter) {
+    if(this.presenterAutoplay_ !== undefined && typeof id_ === 'undefined') {
+        id_ = this.presenterAutoplay_;
+    } else if(typeof id_ === 'undefined' && this.presenter_ !== undefined && Object.keys(this.presenter_).length > 0) {
+        for(var key in this.presenter_) {
             id_ = key;
             break;
         }
     }
     
-    if(typeof id_ !== 'undefined' && Object.keys(this.presenter).indexOf(id_) != -1) {
+    if(typeof id_ !== 'undefined' && Object.keys(this.presenter_).indexOf(id_) != -1) {
         this.current_ = id_;
         this.readTextInput(id_);
         return true;
@@ -104,17 +101,17 @@ Melown.Presenter.prototype.stopPresentation = function() {
 };
 
 Melown.Presenter.prototype.listPresentations = function(id_) {
-    if(Object.keys(this.presenter).length === 0) {
+    if(Object.keys(this.presenter_).length === 0) {
         return 'No presentations present';
     }
     if(typeof id_ !== 'undefined') {
-        for(var key in this.presenter) {
+        for(var key in this.presenter_) {
             if(id_ == key) {
-                return this.presenter[key];
+                return this.presenter_[key];
             }
         }
     } else {
-        return this.presenter;
+        return this.presenter_;
     }
 };
 

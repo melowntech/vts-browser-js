@@ -29,7 +29,7 @@ Melown.Presenter.prototype.init = function(id_, HTMLtemplate_) {
 
 Melown.Presenter.prototype.readTextInput = function(id_) {
     var presentation_ = {
-        htmlDataStorage : this.presenter[id_],
+        htmlDataStorage : this.presenter_[id_],
         id : id_,
         checkID : function() {
             var url_ = /^(ftp|http|https):\/\/[^ "]+$/;
@@ -239,4 +239,8 @@ Melown.Presenter.prototype.useToolbox = function() {
         this.handleSubtitlesPosition(0, true);
     }
 };
+
+Melown.Presenter.prototype.setContainer = function(c) {
+    this.container_ = c.element_;
+},
 
