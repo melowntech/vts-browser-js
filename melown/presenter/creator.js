@@ -75,19 +75,19 @@ Melown.Presenter.prototype.readTextInput = function(id_) {
     
     if(mode_ == 'url') {
         var rawFile_ = new XMLHttpRequest();
-        var obj_ = this;
+        //var obj_ = this;
         rawFile_.open("GET", presentation_.htmlDataStorage, false);
-        rawFile_.onreadystatechange = function() {
+        rawFile_.onreadystatechange = (function() {
             if(rawFile_.readyState === 4) {
                 if(rawFile_.status === 200 || rawFile_.status == 0) {
                     var allText_ = rawFile_.responseText;
-                    obj_.html = allText_;
-                    obj_.init(presentation_.id, obj_.html);
+                    this.html = allText_;
+                    this.init(presentation_.id, this.html);
                 } else {
-                    obj_.file = 'undefined';
+                    this.file = 'undefined';
                 }
             }
-        };
+        }).bind(this);
         rawFile_.send(null); 
     } else if(mode_ == 'hash') {
         var obj_ = document.getElementById(presentation_.htmlDataStorage).innerHTML;
@@ -198,7 +198,6 @@ Melown.Presenter.prototype.nextArticle = function(node_, init_, lastNode_) {
 };
 
 Melown.Presenter.prototype.useToolbox = function() {
-    
     var type_ = this.container_.getElementsByTagName('article')[0].getAttribute('data-mln-style');
     
     if(type_ === null) {

@@ -3,10 +3,9 @@
  * @constructor
  */
 Melown.Presenter = function(browser_, config_) {
-
     this.container_ = null;
     this.aTags_ = null;
-    this.sectionTags_ = null
+    this.sectionTags_ = null;
     this.defaultHeight_ = 0; // Changes based on presentation's height
     this.maxHeight_ = 0; // Height of inner container to be set
     this.subtitlesHeights_ = []; // Set of heights after init() for subtitles

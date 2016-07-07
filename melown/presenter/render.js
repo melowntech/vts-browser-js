@@ -34,9 +34,9 @@ Melown.Presenter.prototype.renderControl = function() {
     var offsetTop_ = this.maxHeight_ + this.swipeOffset_;
 
     this.container_.getElementsByClassName('melown-presenter panelContainer')[0].style.height = (offsetTop_ + this.swipeOffset_) + 'px';
-    this.container_.getElementsByClassName('melown-presenter swipeControl')[1].style.top = offsetTop_ +'px';
-    this.container_.getElementsByClassName('melown-presenter swipeControl')[0].style.opacity = '1';
-    this.container_.getElementsByClassName('melown-presenter swipeControl')[1].style.opacity = '1';
+    swipeControlDw_.style.top = offsetTop_ +'px';
+    swipeControlUp_.style.opacity = '1';
+    swipeControlDw_.style.opacity = '1';
     
     // init now
     setTimeout(function() {
