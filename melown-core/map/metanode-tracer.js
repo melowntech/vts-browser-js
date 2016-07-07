@@ -177,7 +177,7 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
     if (tile_.virtualSurfaces_.length > 1) {
         tile_.virtual_ = true;
     } else {
-        tile_.surface_ = tile_.virtualSurfaces_[0][0];
+        tile_.surface_ = (tile_.virtualSurfaces_[0]) ? tile_.virtualSurfaces_[0][0] : null;
     }
 
 };

@@ -549,15 +549,17 @@ Melown.MapTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, camer
     var h2_ = max_[2] - cameraPos_[2];
     
     //camera inside bbox
-    if (cameraPos_[0] > min_[0] && cameraPos_[0] < max_[0] &&
-        cameraPos_[1] > min_[1] && cameraPos_[1] < max_[1] &&
-        cameraPos_[2] > min_[2] && cameraPos_[2] < max_[2]) {
-
-        if (returnDistance_ == true) {
-            return [Number.POSITIVE_INFINITY, 0.1];
-        }
+    if (!this.map_.config_.mapLowresBackground_) {
+        if (cameraPos_[0] > min_[0] && cameraPos_[0] < max_[0] &&
+            cameraPos_[1] > min_[1] && cameraPos_[1] < max_[1] &&
+            cameraPos_[2] > min_[2] && cameraPos_[2] < max_[2]) {
     
-        return Number.POSITIVE_INFINITY;
+            if (returnDistance_ == true) {
+                return [Number.POSITIVE_INFINITY, 0.1];
+            }
+        
+            return Number.POSITIVE_INFINITY;
+        }
     }
 
     var factor_ = 0;

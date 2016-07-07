@@ -51,13 +51,13 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
 Melown.MapBoundLayer.prototype.parseJson = function(json_) {
     this.numberId_ = json_["id"] || null;
     this.type_ = json_["type"] || "raster";
-    this.url_ = json_["url"] ? (this.baseUrl_ + json_["url"]) : "";
+    this.url_ = this.processUrl(this.baseUrl_, json_["url"], "");
     this.tileSize_ = json_["tileSize"] || [256,256];
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.credits_ = json_["credits"] || [];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
-    this.metaUrl_ = json_["metaUrl"] ? (this.baseUrl_ + json_["metaUrl"]) : null;
-    this.maskUrl_ = json_["maskUrl"] ? (this.baseUrl_ + json_["maskUrl"]) : null;
+    this.metaUrl_ = this.processUrl(this.baseUrl_, json_["metaUrl"]);
+    this.maskUrl_ = this.processUrl(this.baseUrl_, json_["maskUrl"]);
     this.isTransparent_ = json_["isTransparent"] || false;
 
 
@@ -99,6 +99,19 @@ Melown.MapBoundLayer.prototype.getInfo = function() {
         "maskUrl" : this.maskUrl_,
         "isTransparent" : this.isTransparent_
     };
+};
+
+Melown.MapBoundLayer.prototype.processUrl = function(baseUrl_, url_, fallback_) {
+    if (!url_) {
+        return fallback_;
+    }
+    
+    //is url absolute
+    if (url_.indexOf("://") != -1) {
+        return url_;
+    } else {
+        return baseUrl_ + url_; 
+    }
 };
 
 Melown.MapBoundLayer.prototype.hasTile = function(id_) {
