@@ -100,16 +100,16 @@ Melown.Presenter.prototype.stopPresentation = function() {
 
 Melown.Presenter.prototype.listPresentations = function(id_) {
     if (Object.keys(this.presenter_).length === 0) {
-        return "No presentations present";
+        return "[]";
     }
     if (typeof id_ !== "undefined") {
-        for (var key in this.presenter_) {
-            if (id_ == key) {
-                return this.presenter_[key];
-            }
+        if (this.presenter_[id_] !== "undefined") {
+            return "[{\"" + id_ + "\":\"" + this.presenter_[id_] + "\"}]";
+        } else {
+            return "[]"
         }
     } else {
-        return this.presenter_;
+        return "[" + JSON.stringify(browser.getPresenter().presenter_) + "]";
     }
 };
 
