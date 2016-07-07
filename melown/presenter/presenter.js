@@ -6,7 +6,7 @@ Melown.Presenter = function(browser_, config_) {
     this.container_ = null;
     this.aTags_ = null;
     this.sectionTags_ = null;
-    this.defaultHeight_ = 0; // Changes based on presentation's height
+    this.defaultHeight_ = 0; // Changes based on presentation"s height
     this.maxHeight_ = 0; // Height of inner container to be set
     this.subtitlesHeights_ = []; // Set of heights after init() for subtitles
 
@@ -16,16 +16,16 @@ Melown.Presenter = function(browser_, config_) {
     this.actualNode_ = 0;
     this.maxNodes_ = 1;
     this.animTime_ = 600; // Default css transition time
-    this.currentToolbox_ = 'right'; // Default toolbox (right | wide)
+    this.currentToolbox_ = "right"; // Default toolbox (right | wide)
 
     this.browser_ = browser_;
     this.id_ = [];
     this.current_ = null;
 
-    this.presenter_ = config_['presenter'];
-    this.presenterAutoplay_ = config_['presenterAutoplay'];
+    this.presenter_ = config_["presenter"];
+    this.presenterAutoplay_ = config_["presenterAutoplay"];
 
-    if (typeof this.presenter_ !== 'undefined') {
+    if (typeof this.presenter_ !== "undefined") {
         this.playPresentation();
     }
 };
@@ -33,28 +33,28 @@ Melown.Presenter = function(browser_, config_) {
 Melown.Presenter.prototype.addPresentation = function(id_, source_) {
     if (Object.keys(this.presenter_).length !== 0) {
         this.presenter_[id_] = source_;
-    } else if (typeof id_ !== 'undefined') {
+    } else if (typeof id_ !== "undefined") {
         this.presenter_ = {};
         this.presenter_[id_] = source_;
     }
 };
 
 Melown.Presenter.prototype.removePresentation = function(id_) {
-    if (typeof id_ !== 'undefined') {
+    if (typeof id_ !== "undefined") {
         if (this.getCurrentPresentation() == id_) {
             this.stopPresentation();
             this.current_ = null;
         }
         delete this.presenter_[id_];
-        return('Removed presentation id: '+id_);            
+        return("Removed presentation id: "+id_);            
     } else {
         if (this.getCurrentPresentation() !== null) {
             this.stopPresentation();
         }
         this.presenter_ = {}; // Remove all presentations
-        this.presenterAutoplay_ = '';
+        this.presenterAutoplay_ = "";
         this.current_ = null;
-        return('All presentations removed.');
+        return("All presentations removed.");
     }
 };
 
@@ -68,16 +68,16 @@ Melown.Presenter.prototype.getCurrentPresentationType = function() {
 
 Melown.Presenter.prototype.playPresentation = function(id_) {
     this.stopPresentation();
-    if (this.presenterAutoplay_ !== undefined && typeof id_ === 'undefined') {
+    if (this.presenterAutoplay_ !== undefined && typeof id_ === "undefined") {
         id_ = this.presenterAutoplay_;
-    } else if (typeof id_ === 'undefined' && this.presenter_ !== undefined && Object.keys(this.presenter_).length > 0) {
+    } else if (typeof id_ === "undefined" && this.presenter_ !== undefined && Object.keys(this.presenter_).length > 0) {
         for (var key in this.presenter_) {
             id_ = key;
             break;
         }
     }
     
-    if (typeof id_ !== 'undefined' && Object.keys(this.presenter_).indexOf(id_) != -1) {
+    if (typeof id_ !== "undefined" && Object.keys(this.presenter_).indexOf(id_) != -1) {
         this.current_ = id_;
         this.readTextInput(id_);
         return true;
@@ -88,11 +88,11 @@ Melown.Presenter.prototype.playPresentation = function(id_) {
 
 Melown.Presenter.prototype.stopPresentation = function() {
     var current_ = this.getCurrentPresentation();
-    this.currentToolbox_ = 'right';
+    this.currentToolbox_ = "right";
     if (current_ !== null) {
         this.current_ = null;
         this.browser_.ui_.removeControl(current_);
-        this.container_.getElementsByTagName('article')[0].parentNode.parentNode.parentNode.remove();
+        this.container_.getElementsByTagName("article")[0].parentNode.parentNode.parentNode.remove();
         return true;
     }
     return false;    
@@ -100,9 +100,9 @@ Melown.Presenter.prototype.stopPresentation = function() {
 
 Melown.Presenter.prototype.listPresentations = function(id_) {
     if (Object.keys(this.presenter_).length === 0) {
-        return 'No presentations present';
+        return "No presentations present";
     }
-    if (typeof id_ !== 'undefined') {
+    if (typeof id_ !== "undefined") {
         for (var key in this.presenter_) {
             if (id_ == key) {
                 return this.presenter_[key];
