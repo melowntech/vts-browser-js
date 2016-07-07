@@ -14,15 +14,15 @@ Melown.Presenter.prototype.handleArticle = function(node_) {
     btnUp_.setAttribute('class','melown-presenter-btnUp');
     btnDw_.setAttribute('class','melown-presenter-btnDw');
 
-    if(node_ === 0) {
+    if (node_ === 0) {
         btnUp_.setAttribute('class','melown-presenter-btnUp melown-presenter hidden');
-    } else if(node_ === this.maxNodes_-1) {
+    } else if (node_ === this.maxNodes_-1) {
         btnDw_.setAttribute('class','melown-presenter-btnDw melown-presenter hidden');
     }
         
     this.container_.getElementsByTagName('article')[0].setAttribute('style','top: '+actualHeight_+'px');
     
-    if(this.actualNode_ === 0) {
+    if (this.actualNode_ === 0) {
         /* handle right panel stuff */
         rightPanel_.style.height = (this.maxHeight_ + this.swipeOffset_) + 'px';
         rightPanel_.style.top = 0;
@@ -44,7 +44,7 @@ Melown.Presenter.prototype.handleArticle = function(node_) {
 };
 
 Melown.Presenter.prototype.handleSubtitlesPosition = function(node_, init_) {
-    if(typeof node_ === 'undefined') {
+    if (typeof node_ === 'undefined') {
         node_ = 0;
     }
     
@@ -69,38 +69,38 @@ Melown.Presenter.prototype.handleSubtitlesPosition = function(node_, init_) {
     leftButton_.setAttribute('class', 'melown-presenter hidden');
     rightButton_.setAttribute('class', 'melown-presenter hidden');
     
-    for(var i = 0; i < sections_.length; i++) {
+    for (var i = 0; i < sections_.length; i++) {
         sections_[i].style.opacity = 0;
-        if(this.subtitlesHeights_[i] === undefined) {
+        if (this.subtitlesHeights_[i] === undefined) {
             sections_[i].style.display = 'block';
             this.subtitlesHeights_[i] = sections_[i].offsetHeight;
             sections_[i].style.display = 'none';
         }
-        if(i !== node_) {
+        if (i !== node_) {
             this.hideSections(sections_[i]);
         }
     }
     this.showSections(sections_[node_]);
     
     var sectionType_ = sections_[node_].getAttribute('data-mln-style');
-    if(sectionType_ == undefined) {
+    if (sectionType_ == undefined) {
         sectionType_ = 'full';
     }
     
-    if(sectionType_ == 'full') {
+    if (sectionType_ == 'full') {
         swipeSubtitles_[0].style.opacity = 0;
         swipeSubtitles_[1].style.opacity = 0;
         swipeSubtitles_[0].style.cursor = 'default';
         swipeSubtitles_[1].style.cursor = 'default';
         
-        if(node_ === 0) {
+        if (node_ === 0) {
             leftButton_.setAttribute('class', 'melown-presenter hidden');
             rightButton_.setAttribute('class', 'melown-presenter');
             rightButton_.onclick = (function() {
                 this.nextArticle(1);
             }).bind(this);
             rightButton_.innerHTML = 'Continue';
-        } else if(node_ === sections_.length - 2) { // One more before end
+        } else if (node_ === sections_.length - 2) { // One more before end
             leftButton_.setAttribute('class', 'melown-presenter');
             leftButton_.onclick = (function() {  
                 this.nextArticle('-1');
@@ -112,11 +112,11 @@ Melown.Presenter.prototype.handleSubtitlesPosition = function(node_, init_) {
             }).bind(this);
             rightButton_.innerHTML = 'Explore';
         }
-        if(typeof init_ === 'undefined') {
+        if (typeof init_ === 'undefined') {
             subtitlesContainer_.setAttribute('style', 'display: block;');
         }
         subtitlesContainer_.setAttribute('class','melown-presenter subtitlesContainer full');
-    } else if(sectionType_ == 'title') {
+    } else if (sectionType_ == 'title') {
         swipeSubtitles_[0].style.opacity = 1;
         swipeSubtitles_[1].style.opacity = 1;
         swipeSubtitles_[0].onclick = (function() {
@@ -130,7 +130,7 @@ Melown.Presenter.prototype.handleSubtitlesPosition = function(node_, init_) {
         subtitlesContainer_.style.height = this.subtitlesHeights_[node_] + 'px';
         subtitlesContainer_.setAttribute('class','melown-presenter subtitlesContainer title');
        
-    } else if(sectionType_ == 'mini') {
+    } else if (sectionType_ == 'mini') {
         subtitlesContainer_.setAttribute('style', 'display: block;');
         subtitlesContainer_.setAttribute('class','melown-presenter subtitlesContainer mini');
         leftButton_.setAttribute('class', 'melown-presenter hidden');

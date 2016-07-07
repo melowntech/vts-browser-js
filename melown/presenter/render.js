@@ -6,7 +6,6 @@ Melown.Presenter.prototype.renderControl = function() {
     
     var swipeControlUp_ = this.container_.getElementsByClassName('melown-presenter swipeControl')[0];
     var swipeControlDw_ = this.container_.getElementsByClassName('melown-presenter swipeControl')[1];
-    var obj_ = this;
 
     var nextButton_ = document.createElement('button');
         nextButton_.innerHTML = '<div><div></div></div>';
@@ -40,19 +39,19 @@ Melown.Presenter.prototype.renderControl = function() {
     
     // init now
     setTimeout(function() {
-        obj_.useToolbox();
-    }, this.animTime_);
+        this.useToolbox();
+    }, this.animTime_).bind(this);
     this.nextArticle(0, false, this.sectionTags_.length);
 };
 
 Melown.Presenter.prototype.getElementsTrueHeight = function(elems_) {
-    for(var i = 0; i < elems_.length; i++){
-        if(elems_[i].offsetHeight > this.maxHeight_) {
+    for (var i = 0; i < elems_.length; i++) {
+        if (elems_[i].offsetHeight > this.maxHeight_) {
             this.maxHeight_ = elems_[i].offsetHeight;
         }
     }
     
-    for(var i = 0; i < elems_.length; i++){
+    for (var i = 0; i < elems_.length; i++) {
         elems_[i].style.height = this.maxHeight_ + 'px';
     }
 };

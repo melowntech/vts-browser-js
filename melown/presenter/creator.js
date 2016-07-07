@@ -16,15 +16,15 @@ Melown.Presenter.prototype.init = function(id_, HTMLtemplate_) {
 
     // Set all <a> tags to have onclick
     this.aTags_ = this.container_.getElementsByTagName('a');
-    for(var i = 0; i < this.aTags_.length; i++){
+    for (var i = 0; i < this.aTags_.length; i++) {
         this.aTags_[i].onclick = function() {
             obj_.linksDecode(this);
         };
     }
     
     setTimeout(function(){
-        obj_.renderControl();
-    }, 200);
+        this.renderControl();
+    }, 200).bind(this);
 };
 
 Melown.Presenter.prototype.readTextInput = function(id_) {
@@ -37,25 +37,25 @@ Melown.Presenter.prototype.readTextInput = function(id_) {
             var level_ = /(\.\.\/|\.\/)/g;
             var hash_ = /^#.*$/;
             var str_ = /(<article)/g;
-            if(str_.test(this.htmlDataStorage)) {
+            if (str_.test(this.htmlDataStorage)) {
                 return 'string';
-            } else if(url_.test(this.htmlDataStorage)) {
+            } else if (url_.test(this.htmlDataStorage)) {
                 return 'url';
-            } else if(relative_.test(this.htmlDataStorage)) {
+            } else if (relative_.test(this.htmlDataStorage)) {
                 var getLevel_;
                 var l_ = 0;
                 var split_ = '';
                 var loc_ = window.location.href.split('/');
                 var path_ = '';
-                while((getLevel_ = level_.exec(this.htmlDataStorage)) !== null) {
+                while ((getLevel_ = level_.exec(this.htmlDataStorage)) !== null) {
                     split_ = split_ + getLevel_[0];
-                    if(getLevel_[0] === './') {
+                    if (getLevel_[0] === './') {
                         break;     
                     }
                     l_++;
                 }
                 l_++;
-                for(var i = 0; i < (loc_.length-l_); i++) {
+                for (var i = 0; i < (loc_.length-l_); i++) {
                     path_ = path_ + loc_[i] + '/';
                 }
                 path_ = path_ + this.htmlDataStorage.split(split_)[1];
@@ -63,7 +63,7 @@ Melown.Presenter.prototype.readTextInput = function(id_) {
                 console.log(path_);
                 this.htmlDataStorage = path_;
                 return 'url';
-            } else if(hash_.test(this.htmlDataStorage)) {
+            } else if (hash_.test(this.htmlDataStorage)) {
                 return 'hash';
             } else {
                 return 'string';
@@ -73,13 +73,13 @@ Melown.Presenter.prototype.readTextInput = function(id_) {
     
     var mode_ = presentation_.checkID();
     
-    if(mode_ == 'url') {
+    if (mode_ == 'url') {
         var rawFile_ = new XMLHttpRequest();
         //var obj_ = this;
         rawFile_.open("GET", presentation_.htmlDataStorage, false);
         rawFile_.onreadystatechange = (function() {
-            if(rawFile_.readyState === 4) {
-                if(rawFile_.status === 200 || rawFile_.status == 0) {
+            if (rawFile_.readyState === 4) {
+                if (rawFile_.status === 200 || rawFile_.status == 0) {
                     var allText_ = rawFile_.responseText;
                     this.html = allText_;
                     this.init(presentation_.id, this.html);
@@ -89,10 +89,10 @@ Melown.Presenter.prototype.readTextInput = function(id_) {
             }
         }).bind(this);
         rawFile_.send(null); 
-    } else if(mode_ == 'hash') {
+    } else if (mode_ == 'hash') {
         var obj_ = document.getElementById(presentation_.htmlDataStorage).innerHTML;
         this.init(presentation_.id, obj_);
-    } else if(mode_ == 'string') {
+    } else if (mode_ == 'string') {
         this.init(presentation_.id, presentation_.htmlDataStorage);
     }
 };
@@ -103,16 +103,16 @@ Melown.Presenter.prototype.linksDecode = function(obj_) {
     var transition_ = null;
     var navigate_ = null;
     
-    if(obj_.getAttribute('data-mln-navigate') !== null) {
+    if (obj_.getAttribute('data-mln-navigate') !== null) {
         navigate_ = obj_.getAttribute('data-mln-navigate');
-        if(navigate_ !== null) {
-            if(navigate_ == 'prev') {
+        if (navigate_ !== null) {
+            if (navigate_ == 'prev') {
                 this.nextArticle('-1');
-            } else if(navigate_ == 'next') {
+            } else if (navigate_ == 'next') {
                 this.nextArticle('+1');
-            } else if(navigate_ == 'first') {
+            } else if (navigate_ == 'first') {
                 this.nextArticle(0);
-            } else if(navigate_ == 'last') {
+            } else if (navigate_ == 'last') {
                 this.nextArticle(this.maxNodes_-1);
             } else {
                 this.nextArticle(navigate_);
@@ -121,29 +121,29 @@ Melown.Presenter.prototype.linksDecode = function(obj_) {
         }
     }
     
-    if(obj_.getAttribute('data-mln-position') === null){
+    if (obj_.getAttribute('data-mln-position') === null){
         return 'position:false';
     }
 
     position_ = this.getNumbers(obj_.getAttribute('data-mln-position').split(','));
     
-    if(obj_.getAttribute('data-mln-autorotate') !== null) {
+    if (obj_.getAttribute('data-mln-autorotate') !== null) {
         autorotate_ = this.getNumbers(obj_.getAttribute('data-mln-autorotate'));
     }
-    if(obj_.getAttribute('data-mln-transition') !== null) {
+    if (obj_.getAttribute('data-mln-transition') !== null) {
         transition_ = obj_.getAttribute('data-mln-transition');
     }
     
-    if(transition_ === null) {
+    if (transition_ === null) {
         this.browser_.autopilot_.flyTo(position_);
-    } else if(transition_ == 'teleport') {
+    } else if (transition_ == 'teleport') {
         this.browser_.core_.getMap().setPosition(position_);
     } else {
         this.browser_.autopilot_.flyTo(position_);
         // Feature to be considered
         // browser.flyTo(position, {mode_ : transition});
     }
-    if(autorotate_ !== null) {
+    if (autorotate_ !== null) {
         this.browser_.autopilot_.setAutorotate(autorotate_);
     }
         
@@ -153,8 +153,8 @@ Melown.Presenter.prototype.linksDecode = function(obj_) {
 // parseFloat here
 Melown.Presenter.prototype.getNumbers = function(obj_) {
     var obj_ = obj_;
-    for(var i = 0; i < obj_.length; i++){
-        if(typeof obj_ == 'string' && parseFloat(obj_)) {
+    for (var i = 0; i < obj_.length; i++){
+        if (typeof obj_ == 'string' && parseFloat(obj_)) {
             obj_ = parseFloat(obj_);
             break;
         }
@@ -167,9 +167,9 @@ Melown.Presenter.prototype.getNumbers = function(obj_) {
 
 Melown.Presenter.prototype.nextArticle = function(node_, init_, lastNode_) {
     // fly to whatever node we wish
-    if(node_ === '+1') {
+    if (node_ === '+1') {
         node_ = 1;
-    } else if(node_ === '-1') {
+    } else if (node_ === '-1') {
         node_ = -1;
     } else {
         this.actualNode_ = node_;
@@ -177,15 +177,15 @@ Melown.Presenter.prototype.nextArticle = function(node_, init_, lastNode_) {
     }
     this.actualNode_ = this.actualNode_ + node_;
     
-    if(this.actualNode_ >= 0 && this.actualNode_ < this.maxNodes_) {
-        if(!init_) {
-            if(this.currentToolbox_ == 'right') {
+    if (this.actualNode_ >= 0 && this.actualNode_ < this.maxNodes_) {
+        if (!init_) {
+            if (this.currentToolbox_ == 'right') {
                 this.handleArticle(this.actualNode_);
-            } else if(this.currentToolbox_ == 'wide') {
+            } else if (this.currentToolbox_ == 'wide') {
                 this.handleSubtitlesPosition(this.actualNode_);
             }
         }
-        if(typeof lastNode_ !== 'undefined') {
+        if (typeof lastNode_ !== 'undefined') {
             this.maxNodes_ = lastNode_;
         }
         this.linksDecode(this.container_.getElementsByTagName('section')[this.actualNode_]);
@@ -200,7 +200,7 @@ Melown.Presenter.prototype.nextArticle = function(node_, init_, lastNode_) {
 Melown.Presenter.prototype.useToolbox = function() {
     var type_ = this.container_.getElementsByTagName('article')[0].getAttribute('data-mln-style');
     
-    if(type_ === null) {
+    if (type_ === null) {
         type_ = 'right';
     }
     
@@ -212,18 +212,18 @@ Melown.Presenter.prototype.useToolbox = function() {
     
     subtitles_.setAttribute('style', 'opacity: 0;');
     subtitles_.setAttribute('class', 'melown-presenter subtitlesContainer');
-    if(type_ == 'right') {
+    if (type_ == 'right') {
         rightPanel_.style.display = 'block';
         setTimeout(function() {
             rightPanel_.style.opacity = 1;
         }, 20);
         swipeControl_[0].style.display = 'block';
         swipeControl_[1].style.display = 'block';
-        for(var i = 0; i < this.sectionTags_.length; i++){ // Set maxHeight back as there is no dynamic rescaling of rightPanel_
+        for (var i = 0; i < this.sectionTags_.length; i++) { // Set maxHeight back as there is no dynamic rescaling of rightPanel_
             this.sectionTags_[i].style.height = this.maxHeight_ + 'px';
         }
         this.nextArticle(0);
-    } else if(type_ == 'wide') {
+    } else if (type_ == 'wide') {
         subtitles_.style.display = 'block';
         setTimeout(function() {
             subtitles_.style.opacity = 1;
@@ -232,7 +232,7 @@ Melown.Presenter.prototype.useToolbox = function() {
         rightPanel_.style.opacity = 0;
         swipeControl_[0].style.display = 'none';
         swipeControl_[1].style.display = 'none';
-        for(var i = 0; i < this.sectionTags_.length; i++){ // Set height to auto so we can dynamicaly adjust subtitles height
+        for (var i = 0; i < this.sectionTags_.length; i++) { // Set height to auto so we can dynamicaly adjust subtitles height
             this.sectionTags_[i].style.height = 'auto';
         }
         this.handleSubtitlesPosition(0, true);
