@@ -241,5 +241,5 @@ Melown.Presenter.prototype.useToolbox = function() {
 
 Melown.Presenter.prototype.setContainer = function(c) {
     this.container_ = c.element_;
-},
+};
 
