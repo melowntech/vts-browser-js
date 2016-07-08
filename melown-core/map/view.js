@@ -9,19 +9,25 @@ Melown.MapView = function(map_, json_) {
 
 Melown.MapView.prototype.parse = function(json_) {
     this.description_ = json_["description"] || "";
-    this.boundLayers_ = json_["boundLayers"] || [];
-    this.freeLayers_ = json_["freeLayers"] || [];
+    //this.boundLayers_ = json_["boundLayers"] || [];
+    this.freeLayers_ = json_["freeLayers"] || {};
     this.surfaces_ = {};    
 
     if (json_["surfaces"]) {
         var surfaces_ = json_["surfaces"]; 
-        if (Array.isArray(surfaces_)) { //convert old version
+        if (Array.isArray(surfaces_)) { //convert from old version
             for (var i = 0, li = surfaces_.length; i < li; i++) {
                 this.surfaces_[surfaces_[i]] = [];
             }
         } else {
             this.surfaces_ = surfaces_;            
         }
+    }
+
+    if (this.freeLayers_ && Array.isArray(this.freeLayers_)) { //convert from old version
+        this.freeLayers_ = {};
+    } else {
+        this.freeLayers_ = JSON.parse(JSON.stringify(this.freeLayers_));
     }
     
     this.surfaces_ = JSON.parse(JSON.stringify(this.surfaces_));

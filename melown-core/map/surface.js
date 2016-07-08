@@ -4,6 +4,7 @@
 Melown.MapSurface = function(map_, json_, type_) {
     this.map_ = map_;
     this.id_ = json_["id"] || null;
+    this.type_ = json_["type"] || "basic";
     this.metaBinaryOrder_ = json_["metaBinaryOrder"] || 1;
     this.metaUrl_ = json_["metaUrl"] || "";
     this.navUrl_ = json_["navUrl"] || "";
@@ -16,8 +17,12 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.boundLayerSequence_ = [];
     this.glue_ = (type_ == "glue");
     this.free_ = (type_ == "free");
-    this.tree_ = null; //used for free layers
-    //this.flatId_ = id_;
+    
+    if (this.free_) { //each free layer has its own data tree
+        this.tree_ = new Melown.MapTree(this.map_, true, this);
+    } else {
+        this.tree_ = null;
+    }
 
     this.surfaceReference_ = [];
     if (this.glue_) {

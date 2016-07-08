@@ -1,11 +1,12 @@
 /**
  * @constructor
  */
-Melown.MapTree = function(map_, freeLayer_) {
+Melown.MapTree = function(map_, freeLayer_, freeLayerSurface_) {
     this.map_ = map_;
     this.camera_ = map_.camera_;
     this.rootId_ = [0,0,0];
     this.freeLayer_ = freeLayer_;
+    this.freeLayerSurface_ = freeLayerSurface_;
     this.metaBinaryOrder_ = this.map_.referenceFrame_.params_.metaBinaryOrder_;
     this.initialized_ = false;
     this.geocent_ = !this.map_.getNavigationSrs().isProjected();
