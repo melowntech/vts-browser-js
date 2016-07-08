@@ -22,7 +22,7 @@ Melown.Presenter = function(browser_, config_) {
     this.id_ = [];
     this.current_ = null;
 
-    this.presenter_ = config_["presenter"];
+    this.presenter_ = JSON.parse(JSON.stringify(config_["presenter"]));
     this.presenterAutoplay_ = config_["presenterAutoplay"];
 
     if (typeof this.presenter_ !== "undefined") {
