@@ -1,9 +1,15 @@
 
-Melown.Map.prototype.generateSurfaceSequence = function() {
+Melown.Map.prototype.generateSurfaceSequence = function(tree_, surfaces_) {
     var view_ = this.currentView_;
-    this.surfaceSequence_ = [];
-    this.surfaceSequenceIndices_ = []; //probably not used
-    this.surfaceOnlySequence_ = [];
+    var tree_ = this.tree_;
+    
+    if (!tree_) {
+        return;
+    }
+    
+    tree_.surfaceSequence_ = [];
+    tree_.surfaceSequenceIndices_ = []; //probably not used
+    tree_.surfaceOnlySequence_ = [];
 
     var vsurfaces_ = {}; 
     var vsurfaceCount_ = 0;
@@ -114,13 +120,13 @@ Melown.Map.prototype.generateSurfaceSequence = function() {
 
     //convert list to surface sequence
     for (var i = 0, li = list_.length; i < li; i++) {
-        this.surfaceSequence_.push([list_[i][1], list_[i][3]]); //[surface, isAlien]
+        tree_.surfaceSequence_.push([list_[i][1], list_[i][3]]); //[surface, isAlien]
         //this.surfaceSequence_.push(list_[i][1]); 
         list_[i][1].viewSurfaceIndex_ = lastIndex_; 
         
         if (list_[i][2]) {
             lastIndex_--;
-            this.surfaceOnlySequence_.push(list_[i][1]);
+            tree_.surfaceOnlySequence_.push(list_[i][1]);
         }
     }
 
@@ -132,6 +138,7 @@ Melown.Map.prototype.generateBoundLayerSequence = function() {
     var view_ = this.currentView_;
     var surfaces_ = [];
     
+    //surfaces
     for (var key_ in view_.surfaces_) {
         var surfaceLayers_ = view_.surfaces_[key_];
         var surface_ = this.getSurface(key_);
@@ -161,4 +168,39 @@ Melown.Map.prototype.generateBoundLayerSequence = function() {
             }
         }
     }
+
+    //free layers
+    for (var key_ in view_.freeLayers_) {
+        var surfaceLayers_ = view_.freeLayers_[key_];
+        var surface_ = this.getSurface(key_);
+        if (surface_ != null) {
+            surface_.boundLayerSequence_ = [];
+            
+            for (var i = 0, li = surfaceLayers_.length; i < li; i++) {
+                var item_ = surfaceLayers_[i];
+        
+                if (typeof item_ === "string") {
+                    var layer_ = this.getBoundLayerById(item_);
+                    if (layer_) {
+                        surface_.boundLayerSequence_.push([layer_, 1]);
+                    }
+                } else {
+                    var layer_ = this.getBoundLayerById(item_["id"]);
+                    if (layer_) {
+
+                        var alpha_ = 1;
+                        if (typeof item_["alpha"] !== "undefined") {
+                            alpha_ = item_["alpha"];
+                        }
+
+                        surface_.boundLayerSequence_.push([layer_, alpha_]);
+                    }
+                }
+            }
+        }
+    }
+
 };
+
+
+

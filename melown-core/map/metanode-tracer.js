@@ -3,6 +3,7 @@
  */
 Melown.MapMetanodeTracer = function(mapTree_, surface_, nodeProcessingFunction_, childSelectingFunction_) {
     this.map_ = mapTree_.map_;
+	this.tree_ = mapTree_;
     this.surfaceTree_ = mapTree_.surfaceTree_;
     this.metastorageTree_ = mapTree_.metastorageTree_;
     this.metaBinaryOrder_ = mapTree_.metaBinaryOrder_;
@@ -129,7 +130,7 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
         return; 
     }
 
-    var sequence_ = this.map_.surfaceSequence_;
+    var sequence_ = this.tree_.surfaceSequence_;
 
     //multiple surfaces
     //build virtual surfaces array

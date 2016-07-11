@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Melown.MapTile = function(map_, parent_, id_) {
+Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.map_ = map_;
     this.id_ = id_;
     this.parent_ = parent_;
@@ -40,7 +40,7 @@ Melown.MapTile = function(map_, parent_, id_) {
     this.children_ = [null, null, null, null];
 };
 
-Melown.MapTile.prototype.kill = function() {
+Melown.MapSurfaceTile.prototype.kill = function() {
     //kill children
     for (var i = 0; i < 4; i++) {
         if (this.children_[i] != null) {
@@ -109,14 +109,14 @@ Melown.MapTile.prototype.kill = function() {
     }
 };
 
-Melown.MapTile.prototype.validate = function() {
+Melown.MapSurfaceTile.prototype.validate = function() {
     //is tile empty?
     if (this.metastorage_ == null || !this.metastorage_.getMetatile(this.surface_)) {
         //this.kill();
     }
 };
 
-Melown.MapTile.prototype.viewSwitched = function() {
+Melown.MapSurfaceTile.prototype.viewSwitched = function() {
     //store last state for view switching
     this.lastSurface_ = this.surface_;
     this.lastState_ = {
@@ -173,7 +173,7 @@ Melown.MapTile.prototype.viewSwitched = function() {
     this.credits_ = {};
 };
 
-Melown.MapTile.prototype.restoreLastState = function() {
+Melown.MapSurfaceTile.prototype.restoreLastState = function() {
     if (!this.lastState_) {
         return;
     }
@@ -185,7 +185,7 @@ Melown.MapTile.prototype.restoreLastState = function() {
     this.lastState_ = null;
 };
 
-Melown.MapTile.prototype.addChild = function(index_) {
+Melown.MapSurfaceTile.prototype.addChild = function(index_) {
     if (this.children_[index_]) {
         return;
     }
@@ -199,17 +199,17 @@ Melown.MapTile.prototype.addChild = function(index_) {
         case 3: childId_[1]++; childId_[2]++; break;
     }
 
-    this.children_[index_] = new Melown.MapTile(this.map_, this, childId_);
+    this.children_[index_] = new Melown.MapSurfaceTile(this.map_, this, childId_);
 };
 
-Melown.MapTile.prototype.removeChildByIndex = function(index_) {
+Melown.MapSurfaceTile.prototype.removeChildByIndex = function(index_) {
     if (this.children_[index_] != null) {
         this.children_[index_].kill();
         this.children_[index_] = null;
     }
 };
 
-Melown.MapTile.prototype.removeChild = function(tile_) {
+Melown.MapSurfaceTile.prototype.removeChild = function(tile_) {
     for (var i = 0; i < 4; i++) {
         if (this.children_[i] == tile_) {
             this.children_[i].kill();

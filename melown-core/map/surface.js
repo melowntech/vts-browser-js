@@ -19,7 +19,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.free_ = (type_ == "free");
     
     if (this.free_) { //each free layer has its own data tree
-        this.tree_ = new Melown.MapTree(this.map_, true, this);
+        this.tree_ = new Melown.MapSurfaceTree(this.map_, true, this);
     } else {
         this.tree_ = null;
     }

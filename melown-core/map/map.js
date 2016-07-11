@@ -42,9 +42,6 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawChannel_ = 0;
     this.drawChannelNames_ = ["base", "hit"];
 
-    this.surfaceSequence_ = [];
-    this.surfaceOnlySequence_ = [];
-    this.boundLayerSequence_ = [];
     this.freeLayerSequence_ = [];
 
     this.visibleCredits_ = {
@@ -70,7 +67,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
 
     this.parseConfig(this.mapConfig_);
 
-    this.tree_ = new Melown.MapTree(this, false);
+    this.tree_ = new Melown.MapSurfaceTree(this, false);
 
     this.updateCoutner_ = 0;
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
