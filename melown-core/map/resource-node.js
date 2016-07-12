@@ -9,7 +9,6 @@ Melown.MapResourceNode = function(map_, parent_, id_) {
     this.metatiles_ = {};
     this.meshes_ = {};
     this.textures_ = {};
-    this.heightmaps_ = {};
     this.geodata_ = {};
     this.credits_ = {};
 
@@ -32,6 +31,8 @@ Melown.MapResourceNode.prototype.kill = function() {
     if (parent_ != null) {
         parent_.removeChild(this);
     }
+    
+    //kill resources?
 };
 
 Melown.MapResourceNode.prototype.addChild = function(index_) {
@@ -66,4 +67,71 @@ Melown.MapResourceNode.prototype.removeChild = function(tile_) {
         }
     }
 };
+
+// Meshes ---------------------------------
+
+Melown.MapResourceNode.prototype.getMesh = function(path_) {
+    var texture_ = this.textures_[path_];
+    
+    if (!texture_) {
+        texture_ = new Melown.MapMesh(this.map_, path_);
+        this.textures_[path_] = texture_;
+    }
+    
+    return texture_;
+};
+
+// Textures ---------------------------------
+
+Melown.MapResourceNode.prototype.getTexture = function(path_, heightMap_, extraBound_, extraInfo_) {
+    var texture_ = this.textures_[path_];
+    
+    if (!texture_) {
+        texture_ = new Melown.MapTexture(this.map_, path_, heightMap_, extraBound_, extraInfo_);
+        this.textures_[path_] = texture_;
+    }
+    
+    return texture_;
+};
+
+// Metatiles ---------------------------------
+
+Melown.MapResourceNode.prototype.addMetatile = function(path_, metatile_) {
+    this.metatiles_[path_] = metatile_;
+};
+
+Melown.MapResourceNode.prototype.removeMetatile = function(metatile_) {
+    for (var key_ in metatiles_) {
+        if (this.metatiles_[key_] == metatile_) {
+            delete this.metatiles_[key_];
+        }
+    }
+};
+
+Melown.MapResourceNode.prototype.getMetatile = function(surface_, allowCreation_) {
+    var metatiles_ = this.metatiles_; 
+    for (var key_ in metatiles_) {
+        if (metatiles_[key_].surface_) {
+            return metatiles_[key_];
+        } 
+    }
+    
+    var path_ = surface_.getMetaUrl(this.id_);
+
+    if (metatiles_[path_]) {
+        var metatile_ = metatiles_[path_].clone(surface_);
+        this.addMetatile(path_, metatile_);
+        return metatile_;
+    }
+
+    if (allowCreation_) {
+        var metatile_ = new Melown.MapMetatile(this, surface_);
+        this.addMetatile(path_, metatile_);
+        return metatile_; 
+    } else {
+        return null;
+    }
+};
+
+
 

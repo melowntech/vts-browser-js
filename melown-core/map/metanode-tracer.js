@@ -43,10 +43,6 @@ Melown.MapMetanodeTracer.prototype.traceTile = function(tile_, priority_, proces
             tile_ = tile_;
     }
 
-    if (tile_.metastorage_ == null) {  //metastorage stores metatiles
-        tile_.metastorage_ = Melown.FindMetastorage(this.map_, this.metastorageTree_, this.rootId_, tile_, this.metaBinaryOrder_);
-    }
-
     //has map view changed?
     if (this.map_.viewCounter_ != tile_.viewCoutner_) {
         tile_.viewSwitched();
@@ -147,8 +143,8 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
                 //!!!!!!removed for debug
                 ///* ????????
                 var parent_ = tile_.parent_;
-                if (parent_ != null && parent_.metastorage_ != null) {
-                    var metatile_ = parent_.metastorage_.getMetatile(surface_);
+                if (parent_ != null && parent_.metaresources_ != null) {
+                    var metatile_ = parent_.metaresources_.getMetatile(surface_);
                     if (metatile_) {
                         
                         if (!metatile_.isReady(priority_)) {
@@ -206,12 +202,7 @@ Melown.MapMetanodeTracer.prototype.checkTileMetanode = function(tile_, priority_
         return false;
     }
 
-    var metatile_ = tile_.metastorage_.getMetatile(surface_);
-
-    if (metatile_ == null) {
-        metatile_ = new Melown.MapMetatile(tile_.metastorage_, surface_);
-        tile_.metastorage_.addMetatile(metatile_);
-    }
+    var metatile_ = tile_.metaresources_.getMetatile(surface_, true);
 
     if (metatile_.isReady(priority_) == true) {
 
@@ -249,12 +240,7 @@ Melown.MapMetanodeTracer.prototype.isVirtualMetanodeReady = function(tile_, prio
 
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i][0];
-        var metatile_ = tile_.metastorage_.getMetatile(surface_);
-
-        if (metatile_ == null) {
-            metatile_ = new Melown.MapMetatile(tile_.metastorage_, surface_);
-            tile_.metastorage_.addMetatile(metatile_);
-        }
+        var metatile_ = tile_.metaresources_.getMetatile(surface_, true);
 
         if (metatile_.isReady(priority_) == true) {
             readyCount_++;
@@ -278,7 +264,7 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i][0];
         var alien_ = surfaces_[i][1];
-        var metatile_ = tile_.metastorage_.getMetatile(surface_);
+        var metatile_ = tile_.metaresources_.getMetatile(surface_);
 
         if (metatile_.isReady(priority_) == true) {
             var metanode_ = metatile_.getNode(tile_.id_);
@@ -323,7 +309,7 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
     //extend bbox, credits and children flags by other surfaces
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i][0];
-        var metatile_ = tile_.metastorage_.getMetatile(surface_);
+        var metatile_ = tile_.metaresources_.getMetatile(surface_);
 
         if (metatile_.isReady(priority_) == true) {
             var metanode_ = metatile_.getNode(tile_.id_);

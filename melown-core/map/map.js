@@ -64,6 +64,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.cameraHeight_ = 0;
 
     this.stats_ = new Melown.MapStats(this);
+    this.resourcesTree_ = new Melown.MapResourceTree(this);
 
     this.parseConfig(this.mapConfig_);
 
@@ -108,6 +109,14 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
 
 Melown.Map.prototype.kill = function() {
     this.killed_ = true;
+    
+    this.tree_.kill();
+
+    for (var key_ in freeLayers_) {
+        this.getFreeLayer(key_).tree_.kill();
+    }
+
+    thi    
 
     if (this.renderer_ != null) {
         this.renderer_.kill();

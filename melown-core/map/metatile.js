@@ -1,19 +1,14 @@
 /**
  * @constructor
  */
-Melown.MapMetatile = function(metastorage_, surface_) {
-    this.metastorage_= metastorage_; //this is metastorage tile
-    this.map_ = metastorage_.map_;
+Melown.MapMetatile = function(metaResource_, surface_) {
+    this.metaResource_= metaResource_; //this is metastorage tile
+    this.map_ = metaResource_.map_;
     this.surface_ = surface_;
-    this.id_ = metastorage_.id_;
+    this.id_ = metaResource_.id_;
     this.nodes_ = [];
     this.loadState_ = 0;
     this.size_ = 0;
-    
-    //if (!metastorage_) {
-        //this.size_ = this.size_; // debug        
-    //}
-
     this.cacheItem_ = null;
 };
 
@@ -22,24 +17,27 @@ Melown.MapMetatile.prototype.kill = function(killedByCache_) {
         this.map_.metatileCache_.remove(this.cacheItem_);
     }
 
-    if (this.metastorage_) {
-        //this.size_ = this.size_; // debug        
-        this.metastorage_.removeMetatile(this);
-        this.metastorage_.validate();
-        this.metastorage_ = null;
+    if (this.metaResource_) {
+        this.metaResource_.removeMetatile(this);
+        //this.metaResource_.validate();
+        //this.metaResource_ = null;
     }
 
     this.loadState_ = 0;
     this.surface_ = 0;
     this.cacheItem_ = null;
-/* ????
-    for (var i = 0, li = this.nodes_.length; i < li; i++) {
-        if (this.nodes_.tile_ != null) {
-            this.nodes_.tile_.validate();
-        }
-    }
-*/
+
     this.nodes_ = [];
+};
+
+Melown.MapMetatile.prototype.clone = function(surface_) {
+    var metatile_ = new Melown.MapMetatile(this.metaResource_, surface_);
+    metatile_.nodes_ = this.nodes_;
+    metatile_.loadState_ = this.loadState_;
+    metatile_.nodes_ = this.nodes_;
+    metatile_this.loadState_ = 0;
+    metatile_.size_ = this.size_;
+    metatile_.cacheItem_= this.map_.metatileCache_.insert(metatile_.kill.bind(metatile_, true), metatile_.size_);
 };
 
 Melown.MapMetatile.prototype.isReady = function () {
@@ -82,13 +80,8 @@ Melown.MapMetatile.prototype.getNode = function(id_) {
 
 Melown.MapMetatile.prototype.scheduleLoad = function() {
     if (this.mapLoaderUrl_ == null) {
-        this.mapLoaderUrl_ = this.map_.makeUrl(this.surface_.metaUrl_, {lod_:this.id_[0], ix_:this.id_[1], iy_:this.id_[2] });
+        this.mapLoaderUrl_ = this.surface_.getMetaUrl(this.id_);
     }
-
-    //if (this.mapLoaderUrl_ == "http://condrieu:8888/bl-demo/bl-demo/stage/glues/middle-europe_alps/14-4320-2848.meta?0") {
-    //if (this.mapLoaderUrl_ == "http://pomerol.internal:8870/j8.pp/tilesets/jenstejn-hf/undefined") {
-      //  this.mapLoaderUrl_ = this.mapLoaderUrl_;
-    //}
 
     this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), null);
 };

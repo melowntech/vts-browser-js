@@ -102,7 +102,7 @@ Melown.MapTexture.prototype.setBoundTexture = function(tile_, layer_) {
         if (!tile_.boundTextures_[layer_.id_]) {
             tile_.boundLayers_[layer_.id_] = layer_;
             var path_ = layer_.getUrl(tile_.id_);
-            tile_.boundTextures_[layer_.id_] = new Melown.MapTexture(this.map_, path_, null, null, {tile_: tile_, layer_: layer_});
+            tile_.boundTextures_[layer_.id_] = tile_.resources_.getTexture(path_, null, null, {tile_: tile_, layer_: layer_});
         }
 
         this.extraBound_.texture_ = tile_.boundTextures_[layer_.id_]; 
@@ -164,21 +164,21 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
             if (this.checkStatus_ != 2) {
                 if (this.checkStatus_ == 0) {
                     if (this.extraInfo_ && this.extraInfo_.tile_) {
-                        var metastorage_ = this.extraInfo_.tile_.boundMetastorage_;
-                        if (!metastorage_) {
-                            metastorage_ = Melown.FindMetastorage(this.map_, this.map_.tree_.metastorageTree_,
-                                                                  this.map_.tree_.rootId_, this.extraInfo_.tile_, 8);
-                            this.extraInfo_.tile_.boundMetastorage_ = metastorage_;
+                        var metaresources_ = this.extraInfo_.tile_.boundmetaresources_;
+                        if (!metaresources_) {
+							metaresources_ = this.map_.tree_.findAgregatedNode(this.extraInfo_.tile_.id_, 8);
+                            this.extraInfo_.tile_.boundmetaresources_ = metaresources_;
                         }
                         
                         var layer_ = this.extraInfo_.layer_;
-                        var texture_ = metastorage_.metatiles_[layer_.id_];
-                        
-                        if (!metastorage_.metatiles_[layer_.id_]) {
-                            var path_ = layer_.getMetatileUrl(metastorage_.id_);
-                            texture_ = new Melown.MapTexture(this.map_, path_, true, null, null);
-                            metastorage_.metatiles_[layer_.id_] = texture_;
-                        }
+						var path_ = this.extraInfo_.metaPath_;
+						
+						if(!this.extraInfo_.metaPath_) {
+							var path_ = layer_.getMetatileUrl(metaresources_.id_);	
+							this.extraInfo_.metaPath_ = path_;
+						}
+						
+                        var texture_ = metaresources_.getTexture(path_, true, null, null);
                         
                         if (this.mask_) {
                             if (this.mask_.isReady(doNotLoad_, priority_, doNotCheckGpu_)) {
@@ -194,7 +194,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
                                 if (this.checkStatus_ == 2) {
                                     if (!(value_ & 64)) { //load mask
                                         var path_ = layer_.getMaskUrl(tile_.id_);
-                                        this.mask_ = new Melown.MapTexture(this.map_, path_, null, null, null);
+                                        this.mask_ = tile_.resources_.getTexture(path_, null, null, null);
                                         this.checkStatus_ = 0;
                                         tile_.resetDrawCommands_ = true;
                                         this.map_.markDirty();

@@ -61,7 +61,6 @@ cat utils/matrix.js \
     map/mesh.js \
     map/metanode-tracer.js \
     map/metanode.js \
-    map/metastorage.js \
     map/metatile.js \
     map/division-node.js \
     map/refframe.js \
@@ -129,6 +128,8 @@ cat utils/matrix.js \
     ../build/geodata-worker-tmp.js \
     map/geodata/processor.js \
     map/bound-layer.js \
+    map/resource-tree.js \
+    map/resource-node.js \
     map/cache.js \
     map/position.js \
     map/camera.js \
@@ -142,7 +143,6 @@ cat utils/matrix.js \
     map/mesh.js \
     map/metanode-tracer.js \
     map/metanode.js \
-    map/metastorage.js \
     map/metatile.js \
     map/division-node.js \
     map/refframe.js \
@@ -156,8 +156,8 @@ cat utils/matrix.js \
     map/free-layer.js \
     map/glue.js \
     map/texture.js \
-    map/tile.js \
-    map/tree.js \
+    map/surface-tile.js \
+    map/surface-tree.js \
     map/url.js \
     map/view.js \
     core.js \

@@ -10,9 +10,8 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.renderReady_ = false;
 
     this.metanode_ = null;  //[metanode, cacheItem]
-    this.metastorage_ = null; //link to surface metatile storage
-    this.boundMetastorage_ = null; //link to bound layers metatile storage
     this.lastMetanode_ = null;
+    this.boundmetaresources_ = null; //link to bound layers metatile storage
 
     this.surface_ = null; //surface or glue
     this.surfaceMesh_ = null;
@@ -36,6 +35,9 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.heightMap_ = null;
     this.drawCommands_ = [[], [], []];
     this.credits_ = [];
+    
+    this.resources_ = this.map_.resourcesTree_.findNode(id_, true);   // link to resource tree
+    this.metaresources_ = this.map_.resourcesTree_.findAgregatedNode(id_, 8, true); //link to meta resource tree
 
     this.children_ = [null, null, null, null];
 };
@@ -47,7 +49,7 @@ Melown.MapSurfaceTile.prototype.kill = function() {
             this.children_[i].kill();
         }
     }
-
+/*
     if (this.surfaceMesh_ != null) {
         this.surfaceMesh_.kill();
     }
@@ -71,9 +73,10 @@ Melown.MapSurfaceTile.prototype.kill = function() {
             this.boundTextures_[key_].kill();
         }
     }
-
+*/
+    this.resources_ = null;
+    this.metaresources_ = null;
     this.metanode_ = null;
-    this.metastorage_ = null;
 
     this.surface_ = null;
     this.surfaceMesh_ = null;
@@ -111,7 +114,7 @@ Melown.MapSurfaceTile.prototype.kill = function() {
 
 Melown.MapSurfaceTile.prototype.validate = function() {
     //is tile empty?
-    if (this.metastorage_ == null || !this.metastorage_.getMetatile(this.surface_)) {
+    if (this.metaresources_ == null || !this.metaresources_.getMetatile(this.surface_)) {
         //this.kill();
     }
 };
@@ -207,6 +210,8 @@ Melown.MapSurfaceTile.prototype.removeChildByIndex = function(index_) {
         this.children_[index_].kill();
         this.children_[index_] = null;
     }
+    
+    //remove resrource node?
 };
 
 Melown.MapSurfaceTile.prototype.removeChild = function(tile_) {

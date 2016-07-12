@@ -12,8 +12,7 @@ Melown.MapSurfaceTree = function(map_, freeLayer_, freeLayerSurface_) {
     this.geocent_ = !this.map_.getNavigationSrs().isProjected();
 
     this.surfaceTree_ = new Melown.MapSurfaceTile(this.map_, null, this.rootId_);
-    this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
-    this.boundMetastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
+    //this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
 
     this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTileRender.bind(this), this.traceChildSequenceViewBased.bind(this));
 
@@ -38,13 +37,12 @@ Melown.MapSurfaceTree = function(map_, freeLayer_, freeLayerSurface_) {
 Melown.MapSurfaceTree.prototype.kill = function() {
     this.surfaceTree_ = null;
     this.metastorageTree_ = null;
-    this.boundMetastorageTree_ = null;
     this.surfaceTracer_ = null;
     this.heightTracer_ = null;
 };
 
 Melown.MapSurfaceTree.prototype.init = function() {
-    var url_ = this.map_.makeUrl(surface.metaUrl_, {lod_:result_[0], ix_:result_[1], iy_:result_[2] });
+    var url_ = this.map_.makeUrl(surface.metaUrl_, {lod_:result_[0], ix_:result_[1], iy_:result_[2] });  //result???
     map_.loader_.load(url_, metatile_.load_.bind(metatile_, url_));
 
     this.metatileTree_.load();
@@ -492,7 +490,7 @@ Melown.MapSurfaceTree.prototype.traceTileHeight = function(tile_, params_, child
         if (!tile_.heightMap_) {
             if (!preventLoad_) {
                 var path_ = tile_.surface_.getNavUrl(tile_.id_);
-                tile_.heightMap_ = new Melown.MapTexture(this.map_, path_, true);
+                tile_.heightMap_ = tile_.resources_.getTexture(path_, true);
             }
         } else {
             if (tile_.heightMap_.isReady() == true) {
