@@ -37,7 +37,8 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.credits_ = [];
     
     this.resources_ = this.map_.resourcesTree_.findNode(id_, true);   // link to resource tree
-    this.metaresources_ = this.map_.resourcesTree_.findAgregatedNode(id_, 8, true); //link to meta resource tree
+    this.metaresources_ = this.map_.resourcesTree_.findAgregatedNode(id_, 5, true); //link to meta resource tree
+    this.boundresources_ = this.map_.resourcesTree_.findAgregatedNode(id_, 8, true); //link to meta resource tree
 
     this.children_ = [null, null, null, null];
 };
