@@ -1,11 +1,11 @@
 /**
  * @constructor
  */
-Melown.MapMetatile = function(metaResource_, surface_) {
-    this.metaResource_= metaResource_; //this is metastorage tile
-    this.map_ = metaResource_.map_;
+Melown.MapMetatile = function(metaresources_, surface_) {
+    this.metaresources_= metaresources_; //this is metastorage tile
+    this.map_ = metaresources_.map_;
     this.surface_ = surface_;
-    this.id_ = metaResource_.id_;
+    this.id_ = metaresources_.id_;
     this.nodes_ = [];
     this.loadState_ = 0;
     this.size_ = 0;
@@ -17,10 +17,10 @@ Melown.MapMetatile.prototype.kill = function(killedByCache_) {
         this.map_.metatileCache_.remove(this.cacheItem_);
     }
 
-    if (this.metaResource_) {
-        this.metaResource_.removeMetatile(this);
-        //this.metaResource_.validate();
-        //this.metaResource_ = null;
+    if (this.metaresources_) {
+        this.metaresources_.removeMetatile(this);
+        //this.metaresources_.validate();
+        //this.metaresources_ = null;
     }
 
     this.loadState_ = 0;
@@ -31,7 +31,7 @@ Melown.MapMetatile.prototype.kill = function(killedByCache_) {
 };
 
 Melown.MapMetatile.prototype.clone = function(surface_) {
-    var metatile_ = new Melown.MapMetatile(this.metaResource_, surface_);
+    var metatile_ = new Melown.MapMetatile(this.metaresources_, surface_);
     metatile_.nodes_ = this.nodes_;
     metatile_.loadState_ = this.loadState_;
     metatile_.nodes_ = this.nodes_;

@@ -66,9 +66,10 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.stats_ = new Melown.MapStats(this);
     this.resourcesTree_ = new Melown.MapResourceTree(this);
 
-    this.parseConfig(this.mapConfig_);
+    this.parseConfig();
 
     this.tree_ = new Melown.MapSurfaceTree(this, false);
+    this.afterConfigParsed();
 
     this.updateCoutner_ = 0;
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;

@@ -111,7 +111,7 @@ Melown.MapResourceNode.prototype.removeMetatile = function(metatile_) {
 Melown.MapResourceNode.prototype.getMetatile = function(surface_, allowCreation_) {
     var metatiles_ = this.metatiles_; 
     for (var key_ in metatiles_) {
-        if (metatiles_[key_].surface_) {
+        if (metatiles_[key_].surface_ == surface_) {
             return metatiles_[key_];
         } 
     }

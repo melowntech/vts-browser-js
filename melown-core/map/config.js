@@ -11,7 +11,9 @@ Melown.Map.prototype.parseConfig = function() {
           this.parseParams() && this.parseBrowserOptions() )) {
         //wrong config file
     }
+};
 
+Melown.Map.prototype.afterConfigParsed = function() {
     if (this.mapConfig_["position"] != null) {
         this.setPosition(this.mapConfig_["position"], false);
     }

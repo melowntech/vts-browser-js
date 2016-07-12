@@ -143,7 +143,7 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
                 //!!!!!!removed for debug
                 ///* ????????
                 var parent_ = tile_.parent_;
-                if (parent_ != null && parent_.metaresources_ != null) {
+                if (parent_ != null) { 
                     var metatile_ = parent_.metaresources_.getMetatile(surface_);
                     if (metatile_) {
                         

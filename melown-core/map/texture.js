@@ -166,7 +166,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
                     if (this.extraInfo_ && this.extraInfo_.tile_) {
                         var metaresources_ = this.extraInfo_.tile_.boundmetaresources_;
                         if (!metaresources_) {
-							metaresources_ = this.map_.tree_.findAgregatedNode(this.extraInfo_.tile_.id_, 8);
+							metaresources_ = this.map_.resourcesTree_.findAgregatedNode(this.extraInfo_.tile_.id_, 8);
                             this.extraInfo_.tile_.boundmetaresources_ = metaresources_;
                         }
                         
