@@ -24,7 +24,7 @@ Melown.MapView.prototype.parse = function(json_) {
         }
     }
 
-    if (this.freeLayers_ && Array.isArray(this.freeLayers_)) { //convert from old version
+    if (!this.freeLayers_ || Array.isArray(this.freeLayers_)) { //convert from old version
         this.freeLayers_ = {};
     } else {
         this.freeLayers_ = JSON.parse(JSON.stringify(this.freeLayers_));

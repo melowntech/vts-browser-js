@@ -121,8 +121,8 @@ Melown.MapMetanodeTracer.prototype.checkTileSurface = function(tile_, priority_)
     tile_.virtualSurfaces_ = [];
     tile_.virtualSurfacesUncomplete_ = false;
     
-    if (this.freeLayerSurface_) {  //free layer has only one surface
-        tile_.surface_ = this.freeLayerSurface_;
+    if (this.tree_.freeLayerSurface_) {  //free layer has only one surface
+        tile_.surface_ = this.tree_.freeLayerSurface_;
         return; 
     }
 

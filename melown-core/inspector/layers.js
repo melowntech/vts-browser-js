@@ -163,7 +163,7 @@ Melown.Inspector.prototype.initViews = function() {
     var id_ = "--initial--";
     this.layersViews_[id_] = {
             surfaces_ : {},
-            freelayers_ : {},
+            freeLayers_ : {},
             original_ : JSON.parse(JSON.stringify(map_.getView()))
         };
 
@@ -171,7 +171,7 @@ Melown.Inspector.prototype.initViews = function() {
         var view_ = views_[i];
         this.layersViews_[view_] = {
             surfaces_ : {},
-            freelayers_ : {},
+            freeLayers_ : {},
             original_ : JSON.parse(JSON.stringify(map_.getNamedView(view_).getInfo()))
         };
     }
@@ -210,8 +210,9 @@ Melown.Inspector.prototype.initViews = function() {
         for (var i = 0, li = freeLayers_.length; i < li; i++) {
             var id_ = freeLayers_[i];
             
-            view_.freelayers_[id_] = {
-                enabled_ : false
+            view_.freeLayers_[id_] = {
+                enabled_ : false,
+                options_ : {}
             };
         }
         
@@ -241,21 +242,45 @@ Melown.Inspector.prototype.initViews = function() {
                         }    
                     }
                 }
-                
-                surface_.enabled_ = true;
             }
         }
 
-        var viewFreeLayers_ = view_.original_["freeLayers"];
+        var viewfreeLayers_ = view_.original_["freeLayers"];
         
-        for (var skey_ in viewFreeLayers_) {
-            var layers_ = viewFreeLayers_[skey_];
+        for (var skey_ in viewfreeLayers_) {
+            var freeLayerProperties_ = viewfreeLayers_[skey_];
             
-            if (view_.freelayers_[skey_]) {
-                view_.freelayers_[skey_].eanbled_ = true; 
+            if (view_.freeLayers_[skey_]) {
+                var freeLayer_ = view_.freeLayers_[skey_]; 
+                freeLayer_.enabled_ = true;
+                //freeLayer_.style_ = freeLayerProperties_["style"];
+                //freeLayer_.layers_ = [];
+                freeLayer_.options_ = {};//JSON.stringify(freeLayerProperties_);
+
+                /*                
+                var layers_ = freeLayerProperties_["boundLayers"] || [];
+                freeLayer_.layers_ = layers_;
+                
+                for (var i = 0, li = layers_.length; i < li; i++) {
+                    if (typeof layers_[i] === "string") {
+                        var index_ = this.findIdInArray(surface_.layers_, layers_[i]);
+                        if (index_ != -1 && surface_.layers_[index_]) {
+                            surface_.layers_[index_].enabled_ = true;
+                            surface_.layers_.splice(i, 0, surface_.layers_.splice(index_, 1)[0]);
+                        }    
+                    } else {
+                        var id_ = layers_[i]["id"];
+                        var index_ = this.findIdInArray(surface_.layers_, id_);
+                        if (index_ != -1 && surface_.layers_[index_]) {
+                            surface_.layers_[index_].enabled_ = true;
+                            surface_.layers_[index_].alpha_ = layers_[i]["alpha"] ? (parseFloat(layers_[i]["alpha"])*100) : 100;
+                            surface_.layers_.splice(i, 0, surface_.layers_.splice(index_, 1)[0]);
+                        }    
+                    }
+                }
+                */
             }
-        }
-                 
+        }        
     }
 };
 
@@ -366,17 +391,24 @@ Melown.Inspector.prototype.buildBoundLayers = function(id_) {
 
 Melown.Inspector.prototype.buildFreeLayers = function() {
     var view_ = this.layersViews_[this.layersCurrentView_];
-    var layers_ = view_.freelayers_;
+    var layers_ = view_.freeLayers_;
     var html_ = "";
-    
-    for (var i = 0, li = layers_.length; i < li; i++) {
-        var id_ = layers_[i];
-        var layer_ = map_.getFreeLayer(id_);
-        
-        html_ += '<input id="melown-freelayer-checkbox-' + id_ + '" type="checkbox" ' + (layers_[i].enabled_ ? "checked" : "") + '/>' + id_ + '<br />';
+
+    for (var key_ in layers_) {
+        var layer_ = layers_[key_];
+        html_ += '<div class="melown-surface-item" id="melown-freelayer-item-' + key_
+                  + '"><input id="melown-freelayer-checkbox-' + key_ + '" type="checkbox" '
+                  + (layers_[key_].enabled_ ? "checked" : "") + '/><span title=' + key_ + '>' + key_ + '</span></div>';
     }
 
     this.layersFreeLayersItems_.innerHTML = html_;
+
+    for (var key_ in layers_) {
+        var htmlId_ = "melown-freelayer-checkbox-" + key_;
+        document.getElementById(htmlId_).onchange = this.switchFreeLayer.bind(this, key_, htmlId_);
+        var htmlId_ = "melown-freelayer-item-" + key_;
+        //document.getElementById(htmlId_).onclick = this.switchFreeLayer.bind(this, key_);
+    }
 };
 
 Melown.Inspector.prototype.selectView = function(id_) {
@@ -479,6 +511,13 @@ Melown.Inspector.prototype.selectSurface = function(id_, htmlId_) {
     this.buildBoundLayers(this.layersCurrentSurface_);
 };
 
+Melown.Inspector.prototype.switchFreeLayer = function(id_, htmlId_) {
+    var element_ = document.getElementById(htmlId_);
+    var view_ = this.layersViews_[this.layersCurrentView_];
+    view_.freeLayers_[id_].enabled_ = element_.checked;
+    this.applyMapView();
+};
+
 Melown.Inspector.prototype.switchBoundLayer = function(id_, htmlId_, action_) {
     var element_ = document.getElementById(htmlId_);
     var view_ = this.layersViews_[this.layersCurrentView_];
@@ -513,7 +552,7 @@ Melown.Inspector.prototype.switchBoundLayer = function(id_, htmlId_, action_) {
 Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
     var view_ = {
         "surfaces" : {},
-        "freelayers" : []
+        "freeLayers" : {}
     };
 
     var sourceView_ = this.layersViews_[this.layersCurrentView_];
@@ -522,7 +561,7 @@ Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
     for (var key_ in surfaces_) {
         if (surfaces_[key_].enabled_) {
             var viewLayers_ = [];
-            var layers_ = surfaces_[key_].layers_;
+            var layers_ = surfaces_[key_].layers_; //bound layers
             
             for (var i = 0, li = layers_.length; i < li; i++) {
                 if (layers_[i].enabled_) {
@@ -538,6 +577,31 @@ Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
             view_["surfaces"][key_] = viewLayers_;
         }
     }
+
+    var freeLayers_ = sourceView_.freeLayers_;
+    
+    for (var key_ in freeLayers_) {
+        if (freeLayers_[key_].enabled_) {
+            
+            /*
+            var viewLayers_ = [];
+            var layers_ = surfaces_[key_].layers_; //bound layers
+            
+            for (var i = 0, li = layers_.length; i < li; i++) {
+                if (layers_[i].enabled_) {
+                    
+                    if (layers_[i].alpha_ < 100) {
+                        viewLayers_.push({"id":layers_[i].id_, "alpha":(layers_[i].alpha_*0.01).toFixed(2)});
+                    } else {
+                        viewLayers_.push(layers_[i].id_);
+                    }
+                }
+            }*/
+            
+            view_["freeLayers"][key_] = freeLayers_[key_].options_;
+        }
+    }
+
 
     this.layersJsonText_.value = JSON.stringify(view_, null, '  ');
 

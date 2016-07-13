@@ -117,8 +117,6 @@ Melown.Map.prototype.kill = function() {
         this.getFreeLayer(key_).tree_.kill();
     }
 
-    thi    
-
     if (this.renderer_ != null) {
         this.renderer_.kill();
         this.renderer_ = null;
@@ -259,7 +257,11 @@ Melown.Map.prototype.getFreeLayer = function(id_) {
 };
 
 Melown.Map.prototype.getFreeLayers = function() {
-    return this.getMapKeys(this.freeLayers_);
+    var keys_ = [];
+    for (var i = 0, li = this.freeLayers_.length; i < li; i++) {
+        keys_.push(this.freeLayers_[i].id_);
+    }
+    return keys_;
 };
 
 Melown.Map.prototype.getMapsSrs = function(srs_) {

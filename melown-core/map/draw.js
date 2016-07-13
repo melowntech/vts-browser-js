@@ -15,8 +15,8 @@ Melown.Map.prototype.draw = function() {
     this.tree_.draw();
 
     //draw free layers    
-    for (var i = 0, li = this.freeLayerSequence_.legnth; i < li; i++) {
-        var tree_ = this.freeLayerSequence_[i];
+    for (var i = 0, li = this.freeLayerSequence_.length; i < li; i++) {
+        var tree_ = this.freeLayerSequence_[i].tree_;
         if (tree_) {
             tree_.draw();
         }

@@ -131,7 +131,13 @@ Melown.Map.prototype.generateSurfaceSequence = function(tree_, surfaces_) {
     }
 
     //this.generateSurfaceSequenceOld();
-    
+
+    //free layers
+    for (var key_ in view_.freeLayers_) {
+        var freeLayer_ = this.getFreeLayer(key_);
+        freeLayer_.surfaceSequence_ = [freeLayer_];
+        freeLayer_.surfaceOnlySequence_ = [freeLayer_];
+    }    
 };
 
 Melown.Map.prototype.generateBoundLayerSequence = function() {
@@ -172,7 +178,7 @@ Melown.Map.prototype.generateBoundLayerSequence = function() {
     //free layers
     for (var key_ in view_.freeLayers_) {
         var surfaceLayers_ = view_.freeLayers_[key_];
-        var surface_ = this.getSurface(key_);
+        var surface_ = this.getFreeLayer(key_);
         if (surface_ != null) {
             surface_.boundLayerSequence_ = [];
             
