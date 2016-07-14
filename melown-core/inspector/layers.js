@@ -36,12 +36,12 @@ Melown.Inspector.prototype.initLayersPanel = function() {
             + "border: 1px solid #ddd;"
         + "}"
         
-        + "#melown-layers-left-panel {"
+        + "#melown-layers-surfaces-panel {"
             + "margin-top: 5px;"
             + "float: left;"
         + "}"        
         
-        + "#melown-layers-left-items {"
+        + "#melown-layers-surfaces-items {"
             + "width: 150px;"
             + "overflow-y: scroll;"
             + "overflow-x: hidden;"
@@ -50,12 +50,12 @@ Melown.Inspector.prototype.initLayersPanel = function() {
             + "border-bottom: 1px solid #ddd;"
         + "}"
          
-        + "#melown-layers-middle-panel {"
+        + "#melown-layers-boundlayers-panel {"
             + "margin-top: 5px;"
             + "float: left;"
         + "}"
 
-        + "#melown-layers-middle-items {"
+        + "#melown-layers-boundlayers-items {"
             + "width: 250px;"
             + "overflow-y: scroll;"
             + "overflow-x: hidden;"
@@ -64,17 +64,31 @@ Melown.Inspector.prototype.initLayersPanel = function() {
             + "border-right: none;"
         + "}"
 
-        + "#melown-layers-right-panel {"
+        + "#melown-layers-freelayers-panel {"
             + "margin-top: 5px;"
             + "float: left;"
         + "}"
 
-        + "#melown-layers-right-items {"
+        + "#melown-layers-freelayers-items {"
             + "width: 150px;"
             + "overflow-y: scroll;"
             + "overflow-x: hidden;"
             + "height: 200px;"
             + "border: 1px solid #ddd;"
+        + "}"
+
+        + "#melown-layers-fl-properties-panel {"
+            + "margin-top: 5px;"
+            + "float: left;"
+        + "}"
+
+        + "#melown-layers-fl-properties-items {"
+            + "width: 250px;"
+            + "overflow-y: scroll;"
+            + "overflow-x: hidden;"
+            + "height: 200px;"
+            + "border: 1px solid #ddd;"
+            + "border-right: none;"
         + "}"
 
         + "#melown-layers-json-panel {"
@@ -83,10 +97,11 @@ Melown.Inspector.prototype.initLayersPanel = function() {
         + "}"
 
         + "#melown-layers-json-text {"
-            + "width: 250px;"
+            + "width: 200px;"
             + "resize: none;"
             + "height: 200px;"
             + "border: 1px solid #ddd;"
+            + "white-space: nowrap;"
         + "}"
 
         
@@ -125,20 +140,23 @@ Melown.Inspector.prototype.initLayersPanel = function() {
     this.layersElement_.innerHTML = ""
         + '<div id="melown-layers-views-panel"><p class="melown-layers-panel-title">Named Views:</p>'
            + '<div id="melown-layers-views-items"></div></div>'
-        + '<div id="melown-layers-left-panel"><p class="melown-layers-panel-title">Surfaces:</p>'
-           + '<div id="melown-layers-left-items"></div></div>'
-        + '<div id="melown-layers-middle-panel"><p class="melown-layers-panel-title">Bound Layers:</p>'
-           + '<div id="melown-layers-middle-items"></div></div>'
-        + '<div id="melown-layers-right-panel"><p class="melown-layers-panel-title">Free Layers:</p>'
-           + '<div id="melown-layers-right-items"></div></div>'
+        + '<div id="melown-layers-surfaces-panel"><p class="melown-layers-panel-title">Surfaces:</p>'
+           + '<div id="melown-layers-surfaces-items"></div></div>'
+        + '<div id="melown-layers-boundlayers-panel"><p class="melown-layers-panel-title">Surface Bound Layers:</p>'
+           + '<div id="melown-layers-boundlayers-items"></div></div>'
+        + '<div id="melown-layers-freelayers-panel"><p class="melown-layers-panel-title">Free Layers:</p>'
+           + '<div id="melown-layers-freelayers-items"></div></div>'
+        + '<div id="melown-layers-fl-properties-panel"><p class="melown-layers-panel-title">Free Layes Properties:</p>'
+           + '<div id="melown-layers-fl-properties-items"></div></div>'
         + '<div id="melown-layers-json-panel"><p class="melown-layers-panel-title">Definition:</p>'
            + '<textarea id="melown-layers-json-text" cols="50"></textarea></div>';
 
     this.core_.element_.appendChild(this.layersElement_);
     this.layersViewItems_ = document.getElementById("melown-layers-views-items");
-    this.layersSurfacesItems_ = document.getElementById("melown-layers-left-items");
-    this.layersBoundLayersItems_ = document.getElementById("melown-layers-middle-items");
-    this.layersFreeLayersItems_ = document.getElementById("melown-layers-right-items");
+    this.layersSurfacesItems_ = document.getElementById("melown-layers-surfaces-items");
+    this.layersBoundLayersItems_ = document.getElementById("melown-layers-boundlayers-items");
+    this.layersFreeLayersItems_ = document.getElementById("melown-layers-freelayers-items");
+    this.layersFreeLayersPropertiesItems_ = document.getElementById("melown-layers-fl-properties-items");
     this.layersJsonText_ = document.getElementById("melown-layers-json-text");
 
     this.layersElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
@@ -151,6 +169,7 @@ Melown.Inspector.prototype.initLayersPanel = function() {
     this.layersPanelInitialized_ = false;
     this.layersCurrentView_ = "";
     this.layersCurrentSurface_ = "";
+    this.layersCurrentFreeLayer_ = "";
 };
 
 Melown.Inspector.prototype.initViews = function() {
@@ -209,10 +228,25 @@ Melown.Inspector.prototype.initViews = function() {
         
         for (var i = 0, li = freeLayers_.length; i < li; i++) {
             var id_ = freeLayers_[i];
+
+            var layers_ = map_.getBoundLayers();
+            var states_ = []; 
+    
+            for (var j = 0, lj = layers_.length; j < lj; j++) {
+                var layer_ = map_.getBoundLayerById(layers_[j]);
+                
+                states_.push({
+                    id_ : layers_[j],
+                    alpha_ : 100,
+                    enabled_ : false
+                });
+            }
             
             view_.freeLayers_[id_] = {
                 enabled_ : false,
-                options_ : {}
+                style_ : null,
+                z_ : null,
+                layers_ : states_ 
             };
         }
         
@@ -253,32 +287,28 @@ Melown.Inspector.prototype.initViews = function() {
             if (view_.freeLayers_[skey_]) {
                 var freeLayer_ = view_.freeLayers_[skey_]; 
                 freeLayer_.enabled_ = true;
-                //freeLayer_.style_ = freeLayerProperties_["style"];
-                //freeLayer_.layers_ = [];
-                freeLayer_.options_ = {};//JSON.stringify(freeLayerProperties_);
-
-                /*                
-                var layers_ = freeLayerProperties_["boundLayers"] || [];
+                
+                var layers_ = [];
                 freeLayer_.layers_ = layers_;
                 
                 for (var i = 0, li = layers_.length; i < li; i++) {
                     if (typeof layers_[i] === "string") {
-                        var index_ = this.findIdInArray(surface_.layers_, layers_[i]);
-                        if (index_ != -1 && surface_.layers_[index_]) {
-                            surface_.layers_[index_].enabled_ = true;
-                            surface_.layers_.splice(i, 0, surface_.layers_.splice(index_, 1)[0]);
+                        var index_ = this.findIdInArray(freeLayer_.layers_, layers_[i]);
+                        if (index_ != -1 && freeLayer_.layers_[index_]) {
+                            freeLayer_.layers_[index_].enabled_ = true;
+                            freeLayer_.layers_.splice(i, 0, freeLayer_.layers_.splice(index_, 1)[0]);
                         }    
                     } else {
                         var id_ = layers_[i]["id"];
-                        var index_ = this.findIdInArray(surface_.layers_, id_);
+                        var index_ = this.findIdInArray(freeLayer_.layers_, id_);
                         if (index_ != -1 && surface_.layers_[index_]) {
-                            surface_.layers_[index_].enabled_ = true;
-                            surface_.layers_[index_].alpha_ = layers_[i]["alpha"] ? (parseFloat(layers_[i]["alpha"])*100) : 100;
-                            surface_.layers_.splice(i, 0, surface_.layers_.splice(index_, 1)[0]);
+                            freeLayer_.layers_[index_].enabled_ = true;
+                            freeLayer_.layers_[index_].alpha_ = layers_[i]["alpha"] ? (parseFloat(layers_[i]["alpha"])*100) : 100;
+                            freeLayer_.layers_.splice(i, 0, surface_.layers_.splice(index_, 1)[0]);
                         }    
                     }
                 }
-                */
+                
             }
         }        
     }
@@ -407,7 +437,39 @@ Melown.Inspector.prototype.buildFreeLayers = function() {
         var htmlId_ = "melown-freelayer-checkbox-" + key_;
         document.getElementById(htmlId_).onchange = this.switchFreeLayer.bind(this, key_, htmlId_);
         var htmlId_ = "melown-freelayer-item-" + key_;
-        //document.getElementById(htmlId_).onclick = this.switchFreeLayer.bind(this, key_);
+        document.getElementById(htmlId_).onclick = this.selectFreeLayer.bind(this, key_);
+    }
+};
+
+Melown.Inspector.prototype.buildFreeLayerProperties = function(id_) {
+    var view_ = this.layersViews_[this.layersCurrentView_];
+    var layers_ = view_.freeLayers_[id_].layers_;
+    var html_ = "";
+
+    html_ += '<div class="melown-layers-item"><div class="melown-layers-name">' + "BoundLayers:" + '</div></div>';
+
+    for (var i = 0, li = layers_.length; i < li; i++) {
+        var layer_ = layers_[i];
+
+        html_ += '<div class="melown-layers-item"><input id="melown-fl-properties-checkbox-' + layer_.id_ + '" type="checkbox" ' + (layer_.enabled_ ? "checked" : "")   + '/>'
+                 + '<div class="melown-layers-name">' + layer_.id_ + '</div>'
+                 + '<input id="melown-fl-properties-spinner-' + layer_.id_ + '" type="number" title="Alpha" min="0" max="100" step="10" value="' + layer_.alpha_ + '">'
+                 + '<button id="melown-fl-properties-ubutton-' + layer_.id_ + '" type="button" title="Move Above">&uarr;</button>' 
+                 + '<button id="melown-fl-properties-dbutton-' + layer_.id_ + '" type="button" title="Move Bellow">&darr;</button>' 
+                 + '</div>';
+    }
+
+    this.layersFreeLayersPropertiesItems_.innerHTML = html_;
+
+    for (var i = 0, li = layers_.length; i < li; i++) {
+        var htmlId_ = "melown-fl-properties-checkbox-" + layers_[i].id_;
+        document.getElementById(htmlId_).onchange = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "enable");
+        htmlId_ = "melown-fl-properties-spinner-" + layers_[i].id_;
+        document.getElementById(htmlId_).onchange = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "alpha");
+        htmlId_ = "melown-fl-properties-ubutton-" + layers_[i].id_;
+        document.getElementById(htmlId_).onclick = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "up");
+        htmlId_ = "melown-fl-properties-dbutton-" + layers_[i].id_;
+        document.getElementById(htmlId_).onclick = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "down");
     }
 };
 
@@ -511,13 +573,6 @@ Melown.Inspector.prototype.selectSurface = function(id_, htmlId_) {
     this.buildBoundLayers(this.layersCurrentSurface_);
 };
 
-Melown.Inspector.prototype.switchFreeLayer = function(id_, htmlId_) {
-    var element_ = document.getElementById(htmlId_);
-    var view_ = this.layersViews_[this.layersCurrentView_];
-    view_.freeLayers_[id_].enabled_ = element_.checked;
-    this.applyMapView();
-};
-
 Melown.Inspector.prototype.switchBoundLayer = function(id_, htmlId_, action_) {
     var element_ = document.getElementById(htmlId_);
     var view_ = this.layersViews_[this.layersCurrentView_];
@@ -549,6 +604,59 @@ Melown.Inspector.prototype.switchBoundLayer = function(id_, htmlId_, action_) {
     this.applyMapView();
 };
 
+Melown.Inspector.prototype.switchFreeLayer = function(id_, htmlId_) {
+    var element_ = document.getElementById(htmlId_);
+    var view_ = this.layersViews_[this.layersCurrentView_];
+    view_.freeLayers_[id_].enabled_ = element_.checked;
+    this.applyMapView();
+};
+
+Melown.Inspector.prototype.selectFreeLayer = function(id_, htmlId_) {
+    //deselect previous
+    if (this.layersCurrentFreeLayer_) {
+        var element_ = document.getElementById("melown-freelayer-item-" + this.layersCurrentFreeLayer_);
+        element_.style.backgroundColor = "initial";
+    }
+
+    //select new one
+    var element_ = document.getElementById("melown-freelayer-item-" + id_);
+    element_.style.backgroundColor = "#ddd";
+    this.layersCurrentFreeLayer_ = id_;
+    this.buildFreeLayerProperties(this.layersCurrentFreeLayer_);
+};
+
+Melown.Inspector.prototype.switchFreeLayerBoundLayer = function(id_, htmlId_, action_) {
+    var element_ = document.getElementById(htmlId_);
+    var view_ = this.layersViews_[this.layersCurrentView_];
+    var layers_ = view_.freeLayers_[this.layersCurrentFreeLayer_].layers_;
+    
+    for (var i = 0, li = layers_.length; i < li; i++) {
+        if (layers_[i].id_ == id_) {
+            switch(action_) {
+                case "enable":
+                    layers_[i].enabled_ = element_.checked;
+                    break;
+                case "alpha":
+                    layers_[i].alpha_ = parseInt(element_.value, 10);
+                    break;
+                case "up":
+                    layers_.splice(Math.max(0,i-1), 0, layers_.splice(i, 1)[0]);
+                    this.selectFreeLayer(this.layersCurrentFreeLayer_);
+                    break;
+                case "down":
+                    layers_.splice(Math.max(0,i+1), 0, layers_.splice(i, 1)[0]);
+                    this.selectFreeLayer(this.layersCurrentFreeLayer_);
+                    break;
+            }
+            
+            break;
+        }
+    }
+    
+    this.applyMapView();
+};
+
+
 Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
     var view_ = {
         "surfaces" : {},
@@ -560,21 +668,21 @@ Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
     
     for (var key_ in surfaces_) {
         if (surfaces_[key_].enabled_) {
-            var viewLayers_ = [];
+            var surfaceBoundLayers_ = [];
             var layers_ = surfaces_[key_].layers_; //bound layers
             
             for (var i = 0, li = layers_.length; i < li; i++) {
                 if (layers_[i].enabled_) {
                     
                     if (layers_[i].alpha_ < 100) {
-                        viewLayers_.push({"id":layers_[i].id_, "alpha":(layers_[i].alpha_*0.01).toFixed(2)});
+                        surfaceBoundLayers_.push({"id":layers_[i].id_, "alpha":(layers_[i].alpha_*0.01).toFixed(2)});
                     } else {
-                        viewLayers_.push(layers_[i].id_);
+                        surfaceBoundLayers_.push(layers_[i].id_);
                     }
                 }
             }
             
-            view_["surfaces"][key_] = viewLayers_;
+            view_["surfaces"][key_] = surfaceBoundLayers_;
         }
     }
 
@@ -582,23 +690,22 @@ Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
     
     for (var key_ in freeLayers_) {
         if (freeLayers_[key_].enabled_) {
-            
-            /*
-            var viewLayers_ = [];
-            var layers_ = surfaces_[key_].layers_; //bound layers
+            var freeLayerBoundLayers_ = [];
+            var layers_ = freeLayers_[key_].layers_; //bound layers
             
             for (var i = 0, li = layers_.length; i < li; i++) {
                 if (layers_[i].enabled_) {
                     
                     if (layers_[i].alpha_ < 100) {
-                        viewLayers_.push({"id":layers_[i].id_, "alpha":(layers_[i].alpha_*0.01).toFixed(2)});
+                        freeLayerBoundLayers_.push({"id":layers_[i].id_, "alpha":(layers_[i].alpha_*0.01).toFixed(2)});
                     } else {
-                        viewLayers_.push(layers_[i].id_);
+                        freeLayerBoundLayers_.push(layers_[i].id_);
                     }
                 }
-            }*/
+            }
             
-            view_["freeLayers"][key_] = freeLayers_[key_].options_;
+            view_["freeLayers"][key_] = {};
+            view_["freeLayers"][key_]["boundLayers"] = freeLayerBoundLayers_;
         }
     }
 

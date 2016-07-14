@@ -177,32 +177,40 @@ Melown.Map.prototype.generateBoundLayerSequence = function() {
 
     //free layers
     for (var key_ in view_.freeLayers_) {
-        var surfaceLayers_ = view_.freeLayers_[key_];
-        var surface_ = this.getFreeLayer(key_);
-        if (surface_ != null) {
-            surface_.boundLayerSequence_ = [];
+        var freeLayersProperties_ = view_.freeLayers_[key_];
+        var freeLayer_ = this.getFreeLayer(key_);
+        if (freeLayer_ != null) {
+            freeLayer_.boundLayerSequence_ = [];
             
-            for (var i = 0, li = surfaceLayers_.length; i < li; i++) {
-                var item_ = surfaceLayers_[i];
-        
-                if (typeof item_ === "string") {
-                    var layer_ = this.getBoundLayerById(item_);
-                    if (layer_) {
-                        surface_.boundLayerSequence_.push([layer_, 1]);
-                    }
-                } else {
-                    var layer_ = this.getBoundLayerById(item_["id"]);
-                    if (layer_) {
+            var boundLayers_ = freeLayersProperties_["boundLayers"];
+            
+            if (boundLayers_ && Array.isArray(boundLayers_)) {
 
-                        var alpha_ = 1;
-                        if (typeof item_["alpha"] !== "undefined") {
-                            alpha_ = item_["alpha"];
+                for (var i = 0, li = boundLayers_.length; i < li; i++) {
+                    var item_ = boundLayers_[i];
+            
+                    if (typeof item_ === "string") {
+                        var layer_ = this.getBoundLayerById(item_);
+                        if (layer_) {
+                            freeLayer_.boundLayerSequence_.push([layer_, 1]);
                         }
-
-                        surface_.boundLayerSequence_.push([layer_, alpha_]);
+                    } else {
+                        var layer_ = this.getBoundLayerById(item_["id"]);
+                        if (layer_) {
+    
+                            var alpha_ = 1;
+                            if (typeof item_["alpha"] !== "undefined") {
+                                alpha_ = item_["alpha"];
+                            }
+    
+                            freeLayer_.boundLayerSequence_.push([layer_, alpha_]);
+                        }
                     }
                 }
+
+                
             }
+            
         }
     }
 

@@ -329,11 +329,6 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
         }
     }
 
-    //if (this.viewCounter_ > 2) {
-      //  this.drawMap(); 
-//        this.viewCounter_++;
-  //  }
-
     this.markDirty();
 };
 
