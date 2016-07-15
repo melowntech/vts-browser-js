@@ -35,9 +35,28 @@ Melown.MapMetatile.prototype.clone = function(surface_) {
     metatile_.nodes_ = this.nodes_;
     metatile_.loadState_ = this.loadState_;
     metatile_.nodes_ = this.nodes_;
-    metatile_this.loadState_ = 0;
     metatile_.size_ = this.size_;
+
+    metatile_.lod_ = this.lod_;
+    metatile_.metatileIdx_ = this.metatileIdx_;
+    metatile_.metatileIdy_ = this.metatileIdy_;
+    metatile_.offsetx_ = this.offsetx_;
+    metatile_.offsety_ = this.offsety_;
+    metatile_.sizex_ = this.sizex_;
+    metatile_.sizey_ = this.sizey_;
+    metatile_.version_ = this.version_;
+    metatile_.credits_ = this.credits_;
+
+    if (this.version_ < 2) {
+        metatile_.nodeSize_ = this.nodeSize_;
+    } else {
+        metatile_.flags_ = this.flags_;
+        metatile_.creditCount_ = this.creditCount_;
+        metatile_.flagPlanes_ = this.flagPlanes_;
+    }
+
     metatile_.cacheItem_= this.map_.metatileCache_.insert(metatile_.kill.bind(metatile_, true), metatile_.size_);
+    return metatile_;
 };
 
 Melown.MapMetatile.prototype.isReady = function () {

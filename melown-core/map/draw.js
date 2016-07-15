@@ -12,7 +12,9 @@ Melown.Map.prototype.draw = function() {
         this.tileBuffer_[i] = null;    
     }
 
-    this.tree_.draw();
+    if (this.tree_.surfaceSequence_.length > 0) {
+        this.tree_.draw();
+    }
 
     //draw free layers    
     for (var i = 0, li = this.freeLayerSequence_.length; i < li; i++) {
@@ -31,7 +33,12 @@ Melown.Map.prototype.draw = function() {
         if (tiles_) {
             for (var j = 0, lj = tiles_.length; j < lj; j++) {
                 var tile_ = tiles_[j];
+                
+                var tmp_ = this.zFactor_;
+                this.zFactor_ += tile_.tile_.surface_.zFactor_;
+                
                 this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                this.zFactor_ = tmp_;
             }
         } 
     }

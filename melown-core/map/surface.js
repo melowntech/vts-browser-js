@@ -17,6 +17,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.boundLayerSequence_ = [];
     this.glue_ = (type_ == "glue");
     this.free_ = (type_ == "free");
+    this.zFactor_ = 0;
     
     if (this.free_) { //each free layer has its own data tree
         this.tree_ = new Melown.MapSurfaceTree(this.map_, true, this);
@@ -34,6 +35,7 @@ Melown.MapSurface = function(map_, json_, type_) {
 
 Melown.MapSurface.prototype.getInfo = function() {
     return {
+        "type" : this.type_,
         "metaUrl" : this.metaUrl_,
         "navUrl" : this.navUrl_,
         "meshUrl" : this.meshUrl_,

@@ -19,10 +19,6 @@ Melown.MapMesh = function(map_, url_) {
 
     this.submeshes_ = [];
     this.gpuSubmeshes_ = [];
-    
-    if (url_ == "http://condrieu:8888/bl-demo/bl-demo/stage/tilesets/cities/9-138-87.bin?0"){
-        url_ = url_;
-    }
 };
 
 Melown.MapMesh.prototype.kill = function() {
@@ -57,11 +53,6 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
         this.stats_.gpuMeshes_ -= size_;
         this.stats_.graphsFluxMesh_[1][0]++;
         this.stats_.graphsFluxMesh_[1][1] += size_;
-
-        //if (this.stats_.graphsFluxMesh_[1][0] > 60) {
-          //  debugger;
-        //}
-
     }
 
     this.gpuSubmeshes_ = [];
@@ -104,11 +95,6 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
             if (doNotUseGpu_) {
                 return false;
             }
-
-            /*
-            if (this.stats_.graphsFluxMesh_[0][0] > 2) {
-                return false;
-            }*/
 
             var t = performance.now();
             this.buildGpuSubmeshes();
@@ -281,19 +267,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     if (gpuSubmesh_ == null) {
         return;
     }
-/*
-    if (renderer_.onlyDepth_ == true) {
-        program_ = this.progDepthTile_; //for hit test use different program
-    } else {
-        switch (renderer_.drawWireframe_) {
-            case 0:
-            default: program_ = renderer_.progTile_; break;
-            case 1: program_ = renderer_.progWireframeTile_; break;
-            case 2: program_ = renderer_.progWireframeTile2_; break;
-            case 3: program_ = renderer_.progFlatShadeTile_; break;
-        }
-    }
-*/
+
     var renderer_ = this.map_.renderer_;
     var program_ = null;
     var gpuMask_ = null; 

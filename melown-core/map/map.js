@@ -323,6 +323,9 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
         var freeLayer_ = this.getFreeLayer(key_);
         
         if (freeLayer_) {
+            
+            freeLayer_.zFactor_ = freeLayers_[key_]["depthShift"] || 0;
+            
             this.freeLayerSequence_.push(freeLayer_);
             
             //TODO: generate bound layer seqence for      
