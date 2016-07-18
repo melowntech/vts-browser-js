@@ -4,7 +4,6 @@
 //---------------------------------------------------
 
 var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventInfo_) {
-
     var points_ = pointArray_["points"] || [];
 
     if (points_.length == 0) {
@@ -240,7 +239,6 @@ var getOriginOffset = function(origin_, width_, height_) {
 };
 
 var processIcon = function(point_, iconData_) {
-
     var icon_ = iconData_.source_;
 
     if (icon_ == null) {
@@ -289,7 +287,6 @@ var processIcon = function(point_, iconData_) {
 
 
 var processLabel = function(point_, labelData_) {
-
     if (labelData_.source_ == null || labelData_.source_ == "" || Math.abs(labelData_.size_) < 0.0001) {
         return;
     }

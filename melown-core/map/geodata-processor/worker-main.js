@@ -4,7 +4,6 @@
 //---------------------------------------------------
 
 var processFeaturePass = function(type_, feature_, lod_, style_, zIndex_, eventInfo_) {
-
     switch(type_) {
         case "line-string":
             if (getStylePropertyValue(style_, "point", feature_, lod_) ||
@@ -29,7 +28,6 @@ var processFeaturePass = function(type_, feature_, lod_, style_, zIndex_, eventI
 };
 
 var processFeature= function(type_, feature_, lod_, featureIndex_) {
-
     var style_ = getStyle(feature_["style"], type_, featureIndex_);
     var visible_ = getStylePropertyValue(style_, "visible", feature_, lod_);
     var zIndex_ = getStylePropertyValue(style_, "z-index", feature_, lod_);
@@ -92,7 +90,6 @@ var processFeature= function(type_, feature_, lod_, featureIndex_) {
 
 
 var processGroup = function(group_, lod_) {
-
     var points_ = group_["points"] || [];
 
     if (group_["origin"] == null && (tileX_ != 0 && tileY_ != 0)) {
@@ -109,7 +106,6 @@ var processGroup = function(group_, lod_) {
     } else {
         forceScale_ = null;
     }
-
 
     postMessage({"command":"beginGroup", "id": group_["id"], "bbox": group_["bbox"], "origin": group_["origin"]});
 
@@ -130,7 +126,6 @@ var processGroup = function(group_, lod_) {
 
 
 var processGeodata = function(data_, lod_) {
-
     //console.log("processGeodata");
 
     //create object from JSON

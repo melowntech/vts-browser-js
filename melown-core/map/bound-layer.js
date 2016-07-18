@@ -60,7 +60,6 @@ Melown.MapBoundLayer.prototype.parseJson = function(json_) {
     this.maskUrl_ = this.processUrl(this.baseUrl_, json_["maskUrl"]);
     this.isTransparent_ = json_["isTransparent"] || false;
 
-
     this.availability_ = json_["availability"] ? {} : null;
 
     if (this.availability_) {

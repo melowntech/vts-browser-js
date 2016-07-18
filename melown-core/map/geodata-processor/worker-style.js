@@ -14,7 +14,6 @@ var getStyle = function(styleId_, featureType_, index_) {
 };
 
 var getStylePropertyValue = function(style_, key_, feature_, lod_) {
-
     var value_ = style_[key_];
 
     switch(typeof value_) {
@@ -151,7 +150,6 @@ var getStylePropertyValue = function(style_, key_, feature_, lod_) {
 };
 
 var inheritStyle = function(styleId_, style_, styleData_, layerStylesData_, depth_) {
-
     if (depth_ > 100) {
         logError("custom", "infinite inherit loop in style: " + styleId_);
         return;
@@ -181,7 +179,6 @@ var inheritStyle = function(styleId_, style_, styleData_, layerStylesData_, dept
 };
 
 var copyStyle = function(styleId_, style_, styleData_, layerStylesData_) {
-
     //do we need inherite style?
     if (styleData_["inherit"] != null) {
         inheritStyle(styleId_, style_, styleData_, layerStylesData_, 0);
@@ -248,7 +245,6 @@ var logError = function(errorType_, styleId_, key_, value_, index_, subkey_) {
 };
 
 var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, max_) {
-
     //check interpolator
     if (value_ != null && (typeof value_) == "object" && (value_["discrete"] != null || value_["linear"] != null || value_["lod-scaled"] != null)) {
 
@@ -484,7 +480,6 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
 };
 
 var validateStylePropertyValue = function(styleId_, key_, value_) {
-
     //console.log("vall:"+styleId_+"."+key_+"."+value_);
     //debugger;
 
@@ -604,7 +599,6 @@ var getDefaultStylePropertyValue = function(key_) {
 
 
 var processStyle = function(styleId_, styleData_, layerStylesData_) {
-
     var style_ = {};
 
     //copy style and inherit style if needed
@@ -656,7 +650,6 @@ var processStyle = function(styleId_, styleData_, layerStylesData_) {
 };
 
 var processStyles = function(layerStylesData_) {
-
     layerBitmaps_ = {};
 
     //get bitmaps

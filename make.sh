@@ -5,7 +5,7 @@ mkdir build
 cd melown-core
 
 # merge geodata workers
-echo "Melown.geodataProcessorWorker = function() { " | cat - map/geodata/worker-globals.js map/geodata/worker-style.js map/geodata/worker-linestring.js map/geodata/worker-pointarray.js map/geodata/worker-text.js map/geodata/worker-main.js > ../build/geodata-worker-tmp.js
+echo "Melown.geodataProcessorWorker = function() { " | cat - map/geodata-processor/worker-globals.js map/geodata-processor/worker-style.js map/geodata-processor/worker-linestring.js map/geodata-processor/worker-pointarray.js map/geodata-processor/worker-text.js map/geodata-processor/worker-main.js > ../build/geodata-worker-tmp.js
 echo "};">> ../build/geodata-worker-tmp.js 
 
 # merge melown-core 
@@ -44,7 +44,7 @@ cat utils/matrix.js \
     renderer/init.js \
     map/map.js \
     ../build/geodata-worker-tmp.js \
-    map/geodata/processor.js \
+    map/geodata-processor/processor.js \
     map/bound-layer.js \
     map/resource-tree.js \
     map/resource-node.js \
@@ -58,6 +58,7 @@ cat utils/matrix.js \
     map/loader.js \
     map/measure.js \
     map/trajectory.js \
+    map/geodata.js \
     map/mesh.js \
     map/metanode-tracer.js \
     map/metanode.js \
@@ -126,7 +127,7 @@ cat utils/matrix.js \
     renderer/init.js \
     map/map.js \
     ../build/geodata-worker-tmp.js \
-    map/geodata/processor.js \
+    map/geodata-processor/processor.js \
     map/bound-layer.js \
     map/resource-tree.js \
     map/resource-node.js \
@@ -140,6 +141,7 @@ cat utils/matrix.js \
     map/loader.js \
     map/measure.js \
     map/trajectory.js \
+    map/geodata.js \
     map/mesh.js \
     map/metanode-tracer.js \
     map/metanode.js \

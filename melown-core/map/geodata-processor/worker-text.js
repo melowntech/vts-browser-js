@@ -4,7 +4,6 @@
 //---------------------------------------------------
 
 var setFont = function(fontData_) {
-
     fonts_["default"] = {
         chars_ : fontData_["chars"],
         space_ : fontData_["space"],
@@ -47,8 +46,7 @@ vec3Length = function (a) {
 };
 
 
-var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index2_, textVector_, font_, vertexBuffer_, texcoordsBuffer_)
-{
+var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index2_, textVector_, font_, vertexBuffer_, texcoordsBuffer_) {
     //normal to dir
     var n = [-dir_[1],dir_[0],0];
 
@@ -155,8 +153,7 @@ var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index
 };
 
 
-var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoordsBuffer_)
-{
+var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoordsBuffer_) {
     var textVector_ = [0,1];
     var index_ = vertexBuffer_.length;
     var index2_ = texcoordsBuffer_.length;
@@ -167,8 +164,7 @@ var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoords
     var s = [pos_[0], pos_[1], pos_[2]];
     var p1 = [pos_[0], pos_[1], pos_[2]];
 
-    for (var i = 0, li = text_.length; i < li; i++)
-    {
+    for (var i = 0, li = text_.length; i < li; i++) {
         var char_ = text_.charCodeAt(i);
 
         if (char_ == 10) { //new line
@@ -188,8 +184,7 @@ var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoords
 };
 
 
-var addTextOnPath = function(points_, distance_, text_, size_, textVector_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_)
-{
+var addTextOnPath = function(points_, distance_, text_, size_, textVector_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_) {
     if (textVector_ == null) {
         textVector_ = [0,1];
     }
@@ -209,8 +204,7 @@ var addTextOnPath = function(points_, distance_, text_, size_, textVector_, font
     var p1 = [p1[0], p1[1], p1[2]];
     var l = distance_;
 
-    for (var i = 0, li = text_.length; i < li; i++)
-    {
+    for (var i = 0, li = text_.length; i < li; i++) {
         var char_ = text_.charCodeAt(i);
 
         if (char_ == 10) { //new line
@@ -250,8 +244,7 @@ var addTextOnPath = function(points_, distance_, text_, size_, textVector_, font
 
 };
 
-var addStreetTextOnPath = function(points_, text_, size_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_)
-{
+var addStreetTextOnPath = function(points_, text_, size_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_) {
     var factor_ = size_ / font_.size_;
     var textLength_ = getTextLength(text_, factor_, font_);
     var pathLength_ = getPathLength(points_);
@@ -269,24 +262,20 @@ var addStreetTextOnPath = function(points_, text_, size_, font_, verticalOffset_
     addTextOnPath(points_, shift_, text_, size_, textVector_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_);
 };
 
-var getFontFactor = function(size_, font_)
-{
+var getFontFactor = function(size_, font_) {
     return size_ / font_.size_;
 };
 
-var getLineHeight = function(size_, font_)
-{
+var getLineHeight = function(size_, font_) {
     var factor_ = size_ / font_.size_;
     return font_.space_ * factor_;
 };
 
-var getTextLength = function(text_, factor_, font_)
-{
+var getTextLength = function(text_, factor_, font_) {
     var l = 0;
     var chars_ = font_.chars_;
 
-    for (var i = 0, li = text_.length; i < li; i++)
-    {
+    for (var i = 0, li = text_.length; i < li; i++) {
         var char_ = text_.charCodeAt(i);
 
         if (char_ == 10) { //new line
@@ -307,13 +296,11 @@ var getTextLength = function(text_, factor_, font_)
     return l;
 };
 
-var getSplitIndex = function(text_, width_, factor_, font_)
-{
+var getSplitIndex = function(text_, width_, factor_, font_) {
     var l = 0;
     var chars_ = font_.chars_;
 
-    for (var i = 0, li = text_.length; i < li; i++)
-    {
+    for (var i = 0, li = text_.length; i < li; i++) {
         var char_ = text_.charCodeAt(i);
 
         if (l > width_ && (char_ == 10 || char_ == 9 || char_ == 32)) {
@@ -353,14 +340,12 @@ var getPathLength = function(points_) {
     return l;
 };
 
-var getPathPositionAndDirection = function(points_, distance_)
-{
+var getPathPositionAndDirection = function(points_, distance_) {
     var l = 0;
     var p1 = [0,0,0];
     var dir_ = [1,0,0];
 
-    for (var i = 0, li = points_.length-1; i < li; i++)
-    {
+    for (var i = 0, li = points_.length-1; i < li; i++) {
         p1 = points_[i];
         var p2 = points_[i+1];
         dir_ = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
@@ -385,8 +370,7 @@ var getPathPositionAndDirection = function(points_, distance_)
     return [p1, dir_];
 };
 
-var getPathTextVector = function(points_, shift_, text_, factor_, font_)
-{
+var getPathTextVector = function(points_, shift_, text_, factor_, font_) {
     var l = 0;
     var p1 = [0,0,0];
     var dir_ = [1,0,0];
@@ -394,8 +378,7 @@ var getPathTextVector = function(points_, shift_, text_, factor_, font_)
     var textStart_ = shift_;
     var textEnd_ = shift_ + getTextLength(text_, factor_, font_);
 
-    for (var i = 0, li = points_.length-1; i < li; i++)
-    {
+    for (var i = 0, li = points_.length-1; i < li; i++) {
         p1 = points_[i];
         var p2 = points_[i+1];
         dir_ = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];

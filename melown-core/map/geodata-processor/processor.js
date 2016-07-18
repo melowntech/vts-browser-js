@@ -1,5 +1,5 @@
 
-Melown.geodataProcessor = function(layer_, listener_) {
+Melown.MapGeodataProcessor = function(layer_, listener_) {
     this.layer_ = layer_;
     this.core_ = layer_.core_;
     this.killed_ = false;
@@ -11,7 +11,7 @@ Melown.geodataProcessor = function(layer_, listener_) {
         //strigify function
         var windowURL_ = window.URL || window.webkitURL;
         var blob_;
-        var stringified_ = Melown.stringifyFunction(Melown.geodataProcessorWorker);
+        var stringified_ = Melown.stringifyFunction(Melown.MapGeodataProcessorWorker);
 
         //convert string to blob
         try {
@@ -34,7 +34,7 @@ Melown.geodataProcessor = function(layer_, listener_) {
     this.processWorker_.onmessage = this.onMessage.bind(this);
 };
 
-Melown.geodataProcessor.prototype.kill = function() {
+Melown.MapGeodataProcessor.prototype.kill = function() {
     if (this.killed_ == true) {
         return;
     }
@@ -46,12 +46,11 @@ Melown.geodataProcessor.prototype.kill = function() {
     }
 };
 
-Melown.geodataProcessor.prototype.isReady = function(listener_) {
+Melown.MapGeodataProcessor.prototype.isReady = function(listener_) {
     return this.ready_ || this.killed_;
 };
 
-Melown.geodataProcessor.prototype.onMessage = function(message_) {
-
+Melown.MapGeodataProcessor.prototype.onMessage = function(message_) {
     if (this.killed_ == true) {
         return;
     }
@@ -70,12 +69,11 @@ Melown.geodataProcessor.prototype.onMessage = function(message_) {
     }
 };
 
-Melown.geodataProcessor.prototype.setListener = function(listener_) {
+Melown.MapGeodataProcessor.prototype.setListener = function(listener_) {
     this.listener_ = listener_;
 };
 
-Melown.geodataProcessor.prototype.sendCommand = function(command_, data_, id_, autoLod_) {
-
+Melown.MapGeodataProcessor.prototype.sendCommand = function(command_, data_, id_, autoLod_) {
     if (this.killed_ == true) {
         return;
     }

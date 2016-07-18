@@ -4,7 +4,6 @@
 //---------------------------------------------------
 
 var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventInfo_) {
-
     var points_ = lineString_["points"] || [];
 
     if (points_.length == 0) {
@@ -470,7 +469,6 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
 };
 
 var processLineLabel = function(lineLabelPoints_, lineLabelPoints2_, lineString_, center_, lod_, style_, zIndex_, eventInfo_) {
-
     var labelColor_ = getStylePropertyValue(style_, "line-label-color", lineString_, lod_);
     var labelSource_ = getStylePropertyValue(style_, "line-label-source", lineString_, lod_);
     var labelSize_ = getStylePropertyValue(style_, "line-label-size", lineString_, lod_);
@@ -506,7 +504,6 @@ var processLineLabel = function(lineLabelPoints_, lineLabelPoints2_, lineString_
                   "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                   "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
                   "lod":(autoLod_ ? null : tileLod_) });
-
 };
 
 

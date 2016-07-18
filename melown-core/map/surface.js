@@ -3,6 +3,50 @@
  */
 Melown.MapSurface = function(map_, json_, type_) {
     this.map_ = map_;
+    this.id_ = null;
+    this.type_ = "basic";
+    this.metaBinaryOrder_ = 1;
+    this.metaUrl_ = "";
+    this.navUrl_ = "";
+    this.navDelta_ = 1;
+    this.meshUrl_ = "";
+    this.textureUrl_ = "";
+    this.lodRange_ = [0,0];
+    this.tileRange_ = [[0,0],[0,0]];
+    this.textureLayer_ = null;
+    this.boundLayerSequence_ = [];
+    this.glue_ = (type_ == "glue");
+    this.free_ = (type_ == "free");
+    this.zFactor_ = 0;
+    this.ready_ = false;
+    
+    if (this.free_) { //each free layer has its own data tree
+        this.tree_ = new Melown.MapSurfaceTree(this.map_, true, this);
+    } else {
+        this.tree_ = null;
+    }
+    
+    if (typeof json_ === "string") {
+        this.jsonUrl_ = json_;
+        this.baseUrl_ = json_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
+        
+        var onLoaded_ = (function(data_){
+            this.parseJson(data_);            
+            this.ready_ = true;
+            this.map_.refreshView();
+        }).bind(this);
+        
+        var onError_ = (function(){ }).bind(this);
+
+        Melown.loadJSON(this.jsonUrl_, onLoaded_, onError_, (Melown["useCredentials"] ? (this.jsonUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+        //Melown.loadJSON(this.url_, onLoaded_, onError_, null, Melown["useCredentials"]);
+    } else {
+        this.parseJson(json_);
+        this.ready_ = true;
+    }
+};
+
+Melown.MapSurface.prototype.parseJson = function(json_) {
     this.id_ = json_["id"] || null;
     this.type_ = json_["type"] || "basic";
     this.metaBinaryOrder_ = json_["metaBinaryOrder"] || 1;
@@ -14,15 +58,17 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.textureLayer_ = json_["textureLayer"] || null;
-    this.boundLayerSequence_ = [];
-    this.glue_ = (type_ == "glue");
-    this.free_ = (type_ == "free");
-    this.zFactor_ = 0;
+    this.geodata_ = (this.type_ == "geodata" || this.type_ == "geodata-tiles");
     
-    if (this.free_) { //each free layer has its own data tree
-        this.tree_ = new Melown.MapSurfaceTree(this.map_, true, this);
-    } else {
-        this.tree_ = null;
+    var credits_ = json_["credits"];
+    if (json_["credits"]) {
+        if (this.type_ == "geodata") {
+            this.credits_ = json_["credits"];
+        } else if (json_["credits"]) {
+            for (var key_ in json_["credits"]){
+                this.map_.addCredit(key_, new Melown.MapCredit(this, credits_[key_]));
+            }
+        }
     }
 
     this.surfaceReference_ = [];

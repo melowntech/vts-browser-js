@@ -179,7 +179,7 @@ Melown.Map.prototype.generateBoundLayerSequence = function() {
     for (var key_ in view_.freeLayers_) {
         var freeLayersProperties_ = view_.freeLayers_[key_];
         var freeLayer_ = this.getFreeLayer(key_);
-        if (freeLayer_ != null) {
+        if (freeLayer_ != null && freeLayer_.ready_) {
             freeLayer_.boundLayerSequence_ = [];
             
             var boundLayers_ = freeLayersProperties_["boundLayers"];

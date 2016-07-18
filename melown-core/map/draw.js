@@ -18,9 +18,9 @@ Melown.Map.prototype.draw = function() {
 
     //draw free layers    
     for (var i = 0, li = this.freeLayerSequence_.length; i < li; i++) {
-        var tree_ = this.freeLayerSequence_[i].tree_;
-        if (tree_) {
-            tree_.draw();
+        var layer_ = this.freeLayerSequence_[i];
+        if (layer_.ready_ && layer_.tree_) {
+            layer_.tree_.draw();
         }
     }
     
@@ -136,12 +136,7 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
 Melown.debugId_ = [144, 8880, 5492];
 
 Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
-    //free tile resources when map view changed
-    //if (this.viewCounter_ != tile_.viewCoutner_) {
-      //  tile_.kill();
-    //}
-    
-    if (tile_.id_[0] == Melown.debugId_[0] &&
+    if (tile_.id_[0] == Melown.debugId_[0] && //debuf stufff
         tile_.id_[1] == Melown.debugId_[1] &&
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
@@ -152,345 +147,326 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
     }
 
     tile_.renderReady_ = false;
-
-	var channel_ = this.drawChannel_;
     
     if (tile_.surface_ != null) {
-
         if (node_.hasGeometry()) {
-
-            if (tile_.surfaceMesh_ == null) {
-                var path_ = tile_.surface_.getMeshUrl(tile_.id_);
-                tile_.surfaceMesh_ = tile_.resources_.getMesh(path_);
-            }
-
-            if (this.drawBBoxes_ && !preventRedener_) {
-                this.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
-            }
-            
-            this.stats_.renderedLods_[tile_.id_[0]]++;
-            this.stats_.drawnTiles_++;
-            
-            /*
-            var sid_ = "" + tile_.id_[0] + "." + tile_.id_[1] + "." + tile_.id_[2];
-            
-            if (sid_ == "20.282345.177720") {
-                sid_ = sid_;
-                //debugger;
-            }
-            
-            if (!this.stats_.debugIds_[sid_]) {
-                this.stats_.debugIds_[sid_] = true; 
+            if (!tile_.surface_.geodata_) {
+                this.drawMeshTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_);
             } else {
-                sid_ = sid_;
-                //debugger; 
+                this.drawGeodataTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_);
             }
-            */
+        }
+    } else {
+        if (!preventRedener_ && tile_.lastRenderState_) {
+            var channel_ = this.drawChannel_;
+            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
+            this.applyCredits(tile_);
+        }
+    }
+};
 
-            if (tile_.resetDrawCommands_) {
-                tile_.drawCommands_ = [[], [], []];
-                tile_.updateBounds_ = true;
+Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
+    if (tile_.surfaceMesh_ == null) {
+        var path_ = tile_.surface_.getMeshUrl(tile_.id_);
+        tile_.surfaceMesh_ = tile_.resources_.getMesh(path_);
+    }
 
-                if (tile_.bounds_) {
-                    for (var key_ in tile_.bounds_) {
-                        tile_.bounds_[key_].viewCoutner_ = 0; 
-                    }
+    if (this.drawBBoxes_ && !preventRedener_) {
+        this.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
+    }
+    
+    this.stats_.renderedLods_[tile_.id_[0]]++;
+    this.stats_.drawnTiles_++;
+
+    var channel_ = this.drawChannel_;
+    
+    if (tile_.resetDrawCommands_) {
+        tile_.drawCommands_ = [[], [], []];
+        tile_.updateBounds_ = true;
+
+        if (tile_.bounds_) {
+            for (var key_ in tile_.bounds_) {
+                tile_.bounds_[key_].viewCoutner_ = 0; 
+            }
+        }
+        
+        tile_.resetDrawCommands_ = false;
+    }
+
+    if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
+        if (!preventRedener_) {
+            this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_], priority_);
+            this.applyCredits(tile_);
+        }
+        tile_.lastRenderState_ = null;
+        return;
+    } else if (tile_.lastRenderState_){
+
+        if (tile_.surfaceMesh_.isReady(true, priority_) == true) {
+            if (tile_.drawCommands_[channel_].length > 0) {
+                if (!preventRedener_) {
+                    this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
+                    this.applyCredits(tile_);
+                }
+                return;
+            }
+        } else {
+            if (!preventRedener_) {
+                this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
+                this.applyCredits(tile_);
+            }
+        }
+    }
+
+
+    if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
+        var submeshes_ = tile_.surfaceMesh_.submeshes_;
+
+        if (tile_.id_[0] == 11 &&
+            tile_.id_[1] == 546 &&
+            tile_.id_[2] == 344) {
+                tile_ = tile_;
+        }
+
+        tile_.drawCommands_ = [[], [], []]; //??
+        tile_.credits_ = {};
+        tile_.boundsDebug_ = {}; //used for inspector
+
+        //set credits
+        for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+            tile_.credits_[node_.credits_[k]] = true;  
+        }
+
+        for (var i = 0, li = submeshes_.length; i < li; i++) {
+            var submesh_ = submeshes_[i];
+            
+            //debug bbox
+            if (this.drawBBoxes_ && this.drawMeshBBox_ && !preventRedener_) {
+                submesh_.drawBBox(cameraPos_);
+            }
+
+            if (submesh_.externalUVs_) {
+                if (tile_.updateBounds_) {
+                    tile_.updateBounds_ = false;
+                    
+                    this.updateTileBounds(tile_, submeshes_);
                 }
                 
-                tile_.resetDrawCommands_ = false;
-            }
-
-            //var drawLastRenderState_ = false;
-
-            if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
-                if (!preventRedener_) {
-                    this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_], priority_);
-                    this.applyCredits(tile_);
-                }
-                tile_.lastRenderState_ = null;
-                return;
-            } else if (tile_.lastRenderState_){
-                //drawLastRenderState_ = true;
-
-                if (tile_.surfaceMesh_.isReady(true, priority_) == true) {
-                    if (tile_.drawCommands_[channel_].length > 0) {
-                        if (!preventRedener_) {
-                            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
-                            this.applyCredits(tile_);
-                        }
-                        return;
-                    }
-                } else {
-                    if (!preventRedener_) {
-                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
-                        this.applyCredits(tile_);
-                    }
-                }
-            }
-
-
-            if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
-                var submeshes_ = tile_.surfaceMesh_.submeshes_;
-
-                if (tile_.id_[0] == 11 &&
-                    tile_.id_[1] == 546 &&
-                    tile_.id_[2] == 344) {
-                        tile_ = tile_;
+                var surface_ = tile_.surface_;
+                if (surface_.glue_ /*&& submesh_.surfaceReference_ != 0*/) { //glue have multiple surfaces per tile
+                    surface_ = tile_.surface_.getSurfaceReference(submesh_.surfaceReference_);
                 }
 
-                tile_.drawCommands_ = [[], [], []]; //??
-                tile_.credits_ = {};
-                tile_.boundsDebug_ = {}; //used for inspector
-
-                //set credits
-                for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-                    tile_.credits_[node_.credits_[k]] = true;  
-                }
-
-
-/*
-                if (tile_.drawCommands_[channel_].length > 0) {
-                    this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_]);
-                    this.applyCredits(tile_);
-                    return;
-                }
-*/
-                for (var i = 0, li = submeshes_.length; i < li; i++) {
-                    var submesh_ = submeshes_[i];
+                if (surface_ != null) {
+                    var bounds_ = tile_.bounds_[surface_.id_];
                     
-                    //debug bbox
-                    if (this.drawBBoxes_ && this.drawMeshBBox_ && !preventRedener_) {
-                        submesh_.drawBBox(cameraPos_);
-                    }
+                    if (bounds_) {
+                        if (submesh_.externalUVs_) {
 
-                    if (submesh_.externalUVs_) {
-                        if (tile_.updateBounds_) {
-                            tile_.updateBounds_ = false;
-                            
-                            this.updateTileBounds(tile_, submeshes_);
-                        }
-                        
-                        var surface_ = tile_.surface_;
-                        if (surface_.glue_ /*&& submesh_.surfaceReference_ != 0*/) { //glue have multiple surfaces per tile
-                            surface_ = tile_.surface_.getSurfaceReference(submesh_.surfaceReference_);
-                        }
+                            //draw bound layers
+                            if (bounds_.sequence_.length > 0) {
+                                if (bounds_.transparent_) {
+                                    if (submesh_.internalUVs_) {  //draw surface
+                                        if (tile_.surfaceTextures_[i] == null) {
+                                            var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
+                                            tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
+                                        }
+                                                
+                                        tile_.drawCommands_[0].push({
+                                            type_ : "submesh",
+                                            mesh_ : tile_.surfaceMesh_,
+                                            submesh_ : i,
+                                            texture_ : tile_.surfaceTextures_[i],
+                                            material_ : "internal-nofog"
+                                        });
+                                    }
+    
+                                    tile_.drawCommands_[0].push({
+                                        type_ : "state",
+                                        state_ : this.drawBlendedTileState_
+                                    });            
+                                    
+                                    var layers_ = bounds_.sequence_;
+                                    for (var j = 0, lj = layers_.length; j < lj; j++) {
+                                        var texture_ = tile_.boundTextures_[layers_[j]];
+                                        if (texture_) {
 
-                        if (surface_ != null) {
-                            var bounds_ = tile_.bounds_[surface_.id_];
-                            
-                            if (bounds_) {
-                                if (submesh_.externalUVs_) {
-
-                                    //draw bound layers
-                                    if (bounds_.sequence_.length > 0) {
-                                        if (bounds_.transparent_) {
-                                            if (submesh_.internalUVs_) {  //draw surface
-                                                if (tile_.surfaceTextures_[i] == null) {
-                                                    var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
-                                                    tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
-                                                }
-                                                        
-                                                tile_.drawCommands_[0].push({
-                                                    type_ : "submesh",
-                                                    mesh_ : tile_.surfaceMesh_,
-                                                    submesh_ : i,
-                                                    texture_ : tile_.surfaceTextures_[i],
-                                                    material_ : "internal-nofog"
-                                                });
+                                            //debug stuff
+                                            if (!tile_.boundsDebug_[surface_.id_]) {
+                                                tile_.boundsDebug_[surface_.id_] = [];
                                             }
-            
-                                            tile_.drawCommands_[0].push({
-                                                type_ : "state",
-                                                state_ : this.drawBlendedTileState_
-                                            });            
-                                            
-                                            var layers_ = bounds_.sequence_;
-                                            for (var j = 0, lj = layers_.length; j < lj; j++) {
-                                                var texture_ = tile_.boundTextures_[layers_[j]];
-                                                if (texture_) {
+                                            tile_.boundsDebug_[surface_.id_].push(layers_[j]);
 
-                                                    //debug stuff
-                                                    if (!tile_.boundsDebug_[surface_.id_]) {
-                                                        tile_.boundsDebug_[surface_.id_] = [];
-                                                    }
-                                                    tile_.boundsDebug_[surface_.id_].push(layers_[j]);
-
-                                                    //set credits
-                                                    var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
-                                                    for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                                        tile_.credits_[credits_[k]] = true;  
-                                                    }
-
-                                                    tile_.drawCommands_[0].push({
-                                                        type_ : "submesh",
-                                                        mesh_ : tile_.surfaceMesh_,
-                                                        submesh_ : i,
-                                                        texture_ : texture_,
-                                                        material_ : "external-nofog",
-                                                        alpha_ : bounds_.alpha_[layers_[j]][1]
-                                                    });
-                                                }
+                                            //set credits
+                                            var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
+                                            for (var k = 0, lk = credits_.length; k < lk; k++) {
+                                                tile_.credits_[credits_[k]] = true;  
                                             }
-                                            
+
                                             tile_.drawCommands_[0].push({
                                                 type_ : "submesh",
                                                 mesh_ : tile_.surfaceMesh_,
                                                 submesh_ : i,
-                                                texture_ : null,
-                                                material_ : "fog"
-                                            });                                                
-
-                                            tile_.drawCommands_[0].push({
-                                                type_ : "state",
-                                                state_ : this.drawTileState_
-                                            });  
-                                        } else {
-                                            var layerId_ = bounds_.sequence_[bounds_.sequence_.length-1];
-                                            var texture_ = tile_.boundTextures_[layerId_];
-                                            if (texture_) {
-
-                                                //debug stuff
-                                                if (!tile_.boundsDebug_[surface_.id_]) {
-                                                    tile_.boundsDebug_[surface_.id_] = [];
-                                                }
-                                                tile_.boundsDebug_[surface_.id_].push(layerId_);
-                                                
-                                                //set credits
-                                                var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;
-                                                for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                                    tile_.credits_[credits_[k]] = true;  
-                                                }
-                                                
-                                                tile_.drawCommands_[0].push({
-                                                    type_ : "submesh",
-                                                    mesh_ : tile_.surfaceMesh_,
-                                                    submesh_ : i,
-                                                    texture_ : texture_,
-                                                    material_ : "external"
-                                                });
-                                            }
-                                        }
-                                       
-                                    } else {
-                                        if (submesh_.textureLayer_) {
-                                            
-                                            var layer_ = this.getBoundLayerByNumber(submesh_.textureLayer_);
-                                            
-                                            if (layer_) {
-                                                var texture_ = tile_.boundTextures_[layer_.id_];
-                                                
-                                                if (texture_) {
-                                                    
-                                                    //debug stuff
-                                                    if (!tile_.boundsDebug_[surface_.id_]) {
-                                                        tile_.boundsDebug_[surface_.id_] = [];
-                                                    }
-                                                    tile_.boundsDebug_[surface_.id_].push(layer_.id_);
-                                                    
-                                                    //set credits
-                                                    var credits_ = tile_.boundLayers_[layer_.id_].creditsNumbers_;
-                                                    for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                                        tile_.credits_[credits_[k]] = true;  
-                                                    }
-                                                    
-                                                    //draw mesh
-                                                    tile_.drawCommands_[0].push({
-                                                        type_ : "submesh",
-                                                        mesh_ : tile_.surfaceMesh_,
-                                                        submesh_ : i,
-                                                        texture_ : texture_,
-                                                        material_ : "external"
-                                                    });
-                                                }
-                                            }
-                                           
-                                        } else {
-            
-                                            if (submesh_.internalUVs_) {  //draw surface
-                                                if (tile_.surfaceTextures_[i] == null) {
-                                                    var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
-                                                    tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
-                                                }
-    
-                                                //draw mesh
-                                                tile_.drawCommands_[0].push({
-                                                    type_ : "submesh",
-                                                    mesh_ : tile_.surfaceMesh_,
-                                                    submesh_ : i,
-                                                    texture_ : tile_.surfaceTextures_[i],
-                                                    material_ : "internal"
-                                                });
-                                            }
-            
+                                                texture_ : texture_,
+                                                material_ : "external-nofog",
+                                                alpha_ : bounds_.alpha_[layers_[j]][1]
+                                            });
                                         }
                                     }
-            
-                                } else if (submesh_.internalUVs_) {
-            
-                                    if (tile_.surfaceTextures_[i] == null) {
-                                        var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
-                                        tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
-                                    } else {
+                                    
+                                    tile_.drawCommands_[0].push({
+                                        type_ : "submesh",
+                                        mesh_ : tile_.surfaceMesh_,
+                                        submesh_ : i,
+                                        texture_ : null,
+                                        material_ : "fog"
+                                    });                                                
+
+                                    tile_.drawCommands_[0].push({
+                                        type_ : "state",
+                                        state_ : this.drawTileState_
+                                    });  
+                                } else {
+                                    var layerId_ = bounds_.sequence_[bounds_.sequence_.length-1];
+                                    var texture_ = tile_.boundTextures_[layerId_];
+                                    if (texture_) {
+
+                                        //debug stuff
+                                        if (!tile_.boundsDebug_[surface_.id_]) {
+                                            tile_.boundsDebug_[surface_.id_] = [];
+                                        }
+                                        tile_.boundsDebug_[surface_.id_].push(layerId_);
+                                        
+                                        //set credits
+                                        var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;
+                                        for (var k = 0, lk = credits_.length; k < lk; k++) {
+                                            tile_.credits_[credits_[k]] = true;  
+                                        }
+                                        
+                                        tile_.drawCommands_[0].push({
+                                            type_ : "submesh",
+                                            mesh_ : tile_.surfaceMesh_,
+                                            submesh_ : i,
+                                            texture_ : texture_,
+                                            material_ : "external"
+                                        });
+                                    }
+                                }
+                               
+                            } else {
+                                if (submesh_.textureLayer_) {
+                                    
+                                    var layer_ = this.getBoundLayerByNumber(submesh_.textureLayer_);
+                                    
+                                    if (layer_) {
+                                        var texture_ = tile_.boundTextures_[layer_.id_];
+                                        
+                                        if (texture_) {
+                                            
+                                            //debug stuff
+                                            if (!tile_.boundsDebug_[surface_.id_]) {
+                                                tile_.boundsDebug_[surface_.id_] = [];
+                                            }
+                                            tile_.boundsDebug_[surface_.id_].push(layer_.id_);
+                                            
+                                            //set credits
+                                            var credits_ = tile_.boundLayers_[layer_.id_].creditsNumbers_;
+                                            for (var k = 0, lk = credits_.length; k < lk; k++) {
+                                                tile_.credits_[credits_[k]] = true;  
+                                            }
+                                            
+                                            //draw mesh
+                                            tile_.drawCommands_[0].push({
+                                                type_ : "submesh",
+                                                mesh_ : tile_.surfaceMesh_,
+                                                submesh_ : i,
+                                                texture_ : texture_,
+                                                material_ : "external"
+                                            });
+                                        }
+                                    }
+                                   
+                                } else {
+    
+                                    if (submesh_.internalUVs_) {  //draw surface
+                                        if (tile_.surfaceTextures_[i] == null) {
+                                            var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
+                                            tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
+                                        }
+
+                                        //draw mesh
                                         tile_.drawCommands_[0].push({
                                             type_ : "submesh",
                                             mesh_ : tile_.surfaceMesh_,
                                             submesh_ : i,
                                             texture_ : tile_.surfaceTextures_[i],
                                             material_ : "internal"
-                                        });                                                
+                                        });
                                     }
+    
                                 }
-                            }                            
+                            }
+    
+                        } else if (submesh_.internalUVs_) {
+    
+                            if (tile_.surfaceTextures_[i] == null) {
+                                var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
+                                tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
+                            } else {
+                                tile_.drawCommands_[0].push({
+                                    type_ : "submesh",
+                                    mesh_ : tile_.surfaceMesh_,
+                                    submesh_ : i,
+                                    texture_ : tile_.surfaceTextures_[i],
+                                    material_ : "internal"
+                                });                                                
+                            }
                         }
-                    } else if (submesh_.internalUVs_) {
+                    }                            
+                }
+            } else if (submesh_.internalUVs_) {
 
-                        if (tile_.surfaceTextures_[i] == null) {
-                            var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
-                            tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
-                        } else {
-                            tile_.drawCommands_[0].push({
-                                type_ : "submesh",
-                                mesh_ : tile_.surfaceMesh_,
-                                submesh_ : i,
-                                texture_ : tile_.surfaceTextures_[i],
-                                material_ : "internal"
-                            });                                                
-                        }
-                    }
-                    
-                    //depth path
-                    tile_.drawCommands_[1].push({
+                if (tile_.surfaceTextures_[i] == null) {
+                    var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
+                    tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
+                } else {
+                    tile_.drawCommands_[0].push({
                         type_ : "submesh",
                         mesh_ : tile_.surfaceMesh_,
                         submesh_ : i,
-                        material_ : "depth"
-                    });
-                    
+                        texture_ : tile_.surfaceTextures_[i],
+                        material_ : "internal"
+                    });                                                
                 }
+            }
+            
+            //depth path
+            tile_.drawCommands_[1].push({
+                type_ : "submesh",
+                mesh_ : tile_.surfaceMesh_,
+                submesh_ : i,
+                material_ : "depth"
+            });
+            
+        }
 
-                if (this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
-                    if (!preventRedener_) {
-                        this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_], priority_);
-                        this.applyCredits(tile_);
-                    }
-                    
-                    tile_.lastRenderState_ = null;
-                } else if (tile_.lastRenderState_) {
-                    if (!preventRedener_) {
-                        this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
-                        this.applyCredits(tile_);
-                    }
-                }
-                
-                
+        if (this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
+            if (!preventRedener_) {
+                this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_], priority_);
+                this.applyCredits(tile_);
+            }
+            
+            tile_.lastRenderState_ = null;
+        } else if (tile_.lastRenderState_) {
+            if (!preventRedener_) {
+                this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
+                this.applyCredits(tile_);
             }
         }
-    } else {
-        if (!preventRedener_ && tile_.lastRenderState_) {
-            this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
-            this.applyCredits(tile_);
-        }
     }
+};
+
+Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
 
 };
 
