@@ -13,6 +13,7 @@ Melown.MapLoader = function(map_, numThreads_) {
 
 
     this.downloading_ = [];
+    this.downloadingTime_ = [];
 };
 
 Melown.MapLoader.prototype.load = function(path_, downloadFunction_, priority_) {
@@ -70,6 +71,22 @@ Melown.MapLoader.prototype.update = function() {
         this.pending_[i].priority_ *= 19/20;
     }
 
+    var timer_ = performance.now();
+
+    //this.downloadingTime_.push(item_.id_);
+    if (this.map_.config_.mapLowresBackground_) {
+        for (var i = 0; i < this.downloading_.length; i++) {
+            if ((timer_ - this.downloadingTime_[i]) > 3000) {
+                this.downloading_.splice(i, 1);
+                this.downloadingTime_.splice(i, 1);
+                this.usedThreads_--;
+                i--;
+
+                this.map_.markDirty();
+            }
+        }
+    }
+    
     //if (this.pending_.length > 0) {
         //if (this.usedThreads_ < this.numThreads_) {
         while (this.pending_.length > 0 && this.usedThreads_ < this.numThreads_) {
@@ -83,13 +100,16 @@ Melown.MapLoader.prototype.update = function() {
                 //console.log("MapLoader.prototype.download:" + hashId_);
 
                 this.downloading_.push(item_.id_);
+                this.downloadingTime_.push(timer_);
                 this.usedThreads_++;
 
                 var onLoaded_ = (function(path_){
 
                     //console.log("MapLoader.prototype.downloadDONE:" + this.cache_.hash(originalID_));
-
-                    this.downloading_.splice(this.downloading_.indexOf(item_.id_), 1);
+                    
+                    var index_ = this.downloading_.indexOf(item_.id_);
+                    this.downloading_.splice(index_, 1);
+                    this.downloadingTime_.splice(index_, 1);
                     this.usedThreads_--;
 
                     this.map_.markDirty();
@@ -100,7 +120,9 @@ Melown.MapLoader.prototype.update = function() {
 
                     //console.log("MapLoader.prototype.downloadERROR:" + this.cache_.hash(originalID_));
 
-                    this.downloading_.splice(this.downloading_.indexOf(item_.id_), 1);
+                    var index_ = this.downloading_.indexOf(item_.id_);
+                    this.downloading_.splice(index_, 1);
+                    this.downloadingTime_.splice(index_, 1);
                     this.usedThreads_--;
 
                 }).bind(this);

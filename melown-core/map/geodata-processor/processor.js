@@ -1,7 +1,7 @@
 
-Melown.MapGeodataProcessor = function(layer_, listener_) {
-    this.layer_ = layer_;
-    this.core_ = layer_.core_;
+Melown.MapGeodataProcessor = function(surface_, listener_) {
+    this.layer_ = surface_;
+    this.map_ = surface_.map_;
     this.killed_ = false;
     this.listener_ = listener_;
     this.ready_ = true;
@@ -28,7 +28,7 @@ Melown.MapGeodataProcessor = function(layer_, listener_) {
     } else {
 
         //debug worker
-        this.processWorker_ = new Worker("./browser/geoWorkerDebug.js");
+        this.processWorker_ = new Worker("./geodata-processor/worker-debug.js");
     }
 
     this.processWorker_.onmessage = this.onMessage.bind(this);
@@ -81,14 +81,14 @@ Melown.MapGeodataProcessor.prototype.sendCommand = function(command_, data_, id_
     this.ready_ = false;
 
     if (id_ == null) {
-        id_ = new Melown.TileId(this.core_, 0, 0, 0);
+        id_ = [0,0,0];//new Melown.TileId(this.core_, 0, 0, 0);
     }
 
     var worldParams_ = id_.getWorldParams();
     var tileSize_ = worldParams_[2];
     //console.log("command: " + command_ + " data: " + data_);
 
-    this.processWorker_.postMessage({"command": command_, "data":data_, "x":worldParams_[0], "y":worldParams_[1], "lod": id_.lod_, "autoLod":autoLod_});
+    this.processWorker_.postMessage({"command": command_, "data":data_, "x":worldParams_[0], "y":worldParams_[1], "lod": id_[2], "autoLod":autoLod_});
 };
 
 
