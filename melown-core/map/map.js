@@ -53,9 +53,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.resourcesCache_ = new Melown.MapCache(this, this.config_.mapCache_*1024*1024);
     this.metatileCache_ = new Melown.MapCache(this, this.config_.mapMetatileCache_*1024*1024);
 
-    this.lowResLoader_ = new Melown.MapLoader(this, this.config_.mapDownloadThreads_);
-    this.highResLoader_ = new Melown.MapLoader(this, this.config_.mapDownloadThreads_);
-    this.loader_ = this.highResLoader_;
+    this.loader_ = new Melown.MapLoader(this, this.config_.mapDownloadThreads_);
 
     this.renderer_ = this.core_.renderer_;//new Melown.Renderer(this.core_, this.core_.div_);
     this.camera_ = this.renderer_.camera_;
@@ -560,7 +558,7 @@ Melown.Map.prototype.drawMap = function() {
         this.zFactor_ = 0.8;
         this.config_.mapTexelSizeFit_ = Number.POSITIVE_INFINITY;//500000000.1;
         this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY; //this.config_.mapTexelSizeFit_ * 2;
-        this.loader_ = this.lowResLoader_;
+        this.loader_.setChannel(1); //1 = lowres channel
         this.draw();
 
         //this.zFactor_ = 0.9;
@@ -573,7 +571,7 @@ Melown.Map.prototype.drawMap = function() {
 
     //if (this.loader_.pending_.length > 0) {
 
-    this.loader_ = this.highResLoader_;
+    this.loader_.setChannel(0); //0 = hires channel
     this.zFactor_ = 0;
     this.draw();
 
@@ -622,11 +620,14 @@ Melown.Map.prototype.update = function() {
     this.stats_.begin(dirty_);
 
     if (!this.loaderSuspended_) {
-        if (!(this.config_.mapLowresBackground_ && this.lowResLoader_.pending_.length > 0)) {
-            this.loader_.update();
+        /*        
+        if (!(this.config_.mapLowresBackground_ && this.loader_.pending_[1].length > 0)) {
+            this.loader_.setChannel(0); //0 = hires channel
         } else {
-            this.lowResLoader_.update();
-        }
+            this.loader_.setChannel(1); //1 = lowres channel
+        }*/
+
+        this.loader_.update();
     }
 
     if (this.dirty_) {
