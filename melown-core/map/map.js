@@ -544,14 +544,20 @@ Melown.Map.prototype.drawMap = function() {
     this.renderer_.drawFog_ = this.drawFog_;
 
    
-    this.renderer_.gpu_.clear(true, false);
+    if (this.drawChannel_ != 1) {
+        this.renderer_.gpu_.clear(true, false);
+    } else { //dender depth map
+        this.renderer_.gpu_.clear(true, true, [255,255,255,255]);
+    }
 
     this.renderer_.gpu_.setState(this.drawTileState_);
 
-    if (this.getNavigationSrs().isProjected()) {    
-        this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.renderer_.progSkydome_);
-    } else {
-        this.renderer_.drawSkydome(this.renderer_.blackTexture_, this.renderer_.progStardome_);
+    if (this.drawChannel_ != 1) {
+        //if (this.getNavigationSrs().isProjected()) {    
+            //this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.renderer_.progSkydome_);
+        //} else {
+            this.renderer_.drawSkydome(this.renderer_.blackTexture_, this.renderer_.progStardome_);
+        //}
     }
 
     if (this.config_.mapLowresBackground_) {

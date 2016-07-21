@@ -10,7 +10,11 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     this.p2_.pos_[5] = this.p2_.pos_[5] < 0 ? (360 + (this.p2_.pos_[5] % 360)) : (this.p2_.pos_[5] % 360);  
     
     this.pp1_ = this.p1_.clone();
-      
+
+    if (this.p1_.getHeightMode() != this.p2_.getHeightMode()) {
+        this.p2_.convertHeightMode(this.p1_.getHeightMode(), true);
+    } 
+     
     //this.pp1_.convertHeightMode("fix", true);
     //this.pp2_.convertHeightMode("fix", true);
     //this.pp1_.convertViewMode("subj");

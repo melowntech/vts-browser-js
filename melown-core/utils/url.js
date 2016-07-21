@@ -24,15 +24,17 @@ Melown.Url.getParamsFromUrl = function(url_) {
     var queryString_ = {};
     var query_ = parser_['search'].substring(1);
     var vars_ = query_.split("&");
-    for (var i=0; i < vars_.length; i++) {
-        var pair_ = vars_[i].split("=");
-        if (typeof queryString_[pair_[0]] === "undefined") {
-            queryString_[pair_[0]] = pair_[1];
-        } else if (typeof queryString_[pair_[0]] === "string") {
-            var arr_ = [ queryString_[pair_[0]], pair_[1] ];
-            queryString_[pair_[0]] = arr_;
-        } else {
-            queryString_[pair_[0]].push(pair_[1]);
+    if (!(vars_.length == 1 && vars_[0] == "")) {
+        for (var i=0; i < vars_.length; i++) {
+            var pair_ = vars_[i].split("=");
+            if (typeof queryString_[pair_[0]] === "undefined") {
+                queryString_[pair_[0]] = pair_[1];
+            } else if (typeof queryString_[pair_[0]] === "string") {
+                var arr_ = [ queryString_[pair_[0]], pair_[1] ];
+                queryString_[pair_[0]] = arr_;
+            } else {
+                queryString_[pair_[0]].push(pair_[1]);
+            }
         }
     }
     return queryString_;

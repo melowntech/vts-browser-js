@@ -137,12 +137,12 @@ Melown.Renderer.prototype.kill = function() {
 
     this.gpuCache_.reset();
 
-    if (this.heightmapMesh_ != null) this.heightmapMesh_.kill();
-    if (this.heightmapTexture_ != null) this.heightmapTexture_.kill();
-    if (this.skydomeMesh_ != null) this.skydomeMesh_.kill();
-    if (this.skydomeTexture_ != null) this.skydomeTexture_.kill();
-    if (this.hitmapTexture_ != null) this.hitmapTexture_.kill();
-    if (this.geoHitmapTexture_ != null) this.geoHitmapTexture_.kill();
+    if (this.heightmapMesh_) this.heightmapMesh_.kill();
+    if (this.heightmapTexture_) this.heightmapTexture_.kill();
+    if (this.skydomeMesh_) this.skydomeMesh_.kill();
+    if (this.skydomeTexture_) this.skydomeTexture_.kill();
+    if (this.hitmapTexture_) this.hitmapTexture_.kill();
+    if (this.geoHitmapTexture_) this.geoHitmapTexture_.kill();
 
     this.div_.removeChild(this.gpu_.getCanvas());
 };
