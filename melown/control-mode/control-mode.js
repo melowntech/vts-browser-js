@@ -19,6 +19,7 @@ Melown.ControlMode = function(browser_) {
     this.mapElement_.on('keyup', this.onKeyUp.bind(this), window);
     this.mapElement_.on('keydown', this.onKeyDown.bind(this), window);
     this.mapElement_.on('keypress', this.onKeyPress.bind(this), window);
+    this.mapElement_.on('dblclick', this.onDoubleClick.bind(this), window);
     this.browser_.on('tick', this.onTick.bind(this));
 
     this.controlModes_ = {};
@@ -43,6 +44,7 @@ Melown.ControlMode = function(browser_) {
 /** @const */ Melown_ControlMode_Wheel = 'wheel';
 /** @const */ Melown_ControlMode_Tick = 'tick';
 /** @const */ Melown_ControlMode_Reset = 'reset';
+/** @const */ Melown_ControlMode_DoubleClick = 'doubleclick';
 
 // Public methods
 
@@ -147,6 +149,14 @@ Melown.ControlMode.prototype.onKeyPress = function(event_) {
     if (typeof this._currentController()[Melown_ControlMode_KeyPress]
         === 'function') {
         this._currentController()[Melown_ControlMode_KeyPress](event_);
+    }
+};
+
+Melown.ControlMode.prototype.onDoubleClick = function(event_) {
+    this._updateModifierKeys(event_);
+    if (typeof this._currentController()[Melown_ControlMode_DoubleClick]
+        === 'function') {
+        this._currentController()[Melown_ControlMode_DoubleClick](event_);
     }
 };
 

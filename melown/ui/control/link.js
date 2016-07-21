@@ -48,22 +48,7 @@ Melown.UIControlLink.prototype.update = function() {
 };
 
 Melown.UIControlLink.prototype.updateLink = function() {
-    var map_ = this.browser_.getMap();
-    if (!map_  || !this.linkVisible_) {
-        return;
-    }
-
-    var p = map_.getPosition();
-    var s = "";
-    s += map_.getPositionViewMode(p) + ",";
-    var c = map_.getPositionCoords(p);
-    s += c[0].toFixed(6) + "," + c[1].toFixed(6) + "," + map_.getPositionHeightMode(p) + "," + c[2].toFixed(2) + ",";
-    var o = map_.getPositionOrientation(p);
-    s += o[0].toFixed(2) + "," + o[1].toFixed(2) + "," + o[2].toFixed(2) + ",";
-    s += map_.getPositionViewExtent(p).toFixed(2) + "," + map_.getPositionFov(p).toFixed(2);
-    
-    var linkValue_ =  window.location.href + "?pos=" + s;
-
+    var linkValue_ =  this.browser_.getLinkWithCurrentPos();
     if (this.link_.getElement().value != linkValue_) {
         this.link_.getElement().value = linkValue_;
     }

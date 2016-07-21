@@ -77,6 +77,7 @@ Melown.UIEvent.prototype.getMouseCoords = function(absolute_) {
         case "mousedown":
         case "mouseup":
         case "mousemove":
+        case "dblclick":
         case "dragstart":
         case "dragend":
         case "drag":

@@ -16,11 +16,12 @@ Melown.ControlMode.MapObserver = function(browser_) {
     this["keyup"] = this.keyup;
     this["keydown"] = this.keydown;
     this["keypress"] = this.keypress;
+    this["doubleclick"] = this.doubleclick;
 };
 
 Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     var map_ = this.browser_.getMap();
-    if (map_ == null) {
+    if (!map_) {
         return;
     }
 
@@ -90,6 +91,29 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     
     this.viewExtentDeltas_.push(factor_);
     this.reduceFloatingHeight(0.8);
+};
+
+Melown.ControlMode.MapObserver.prototype.doubleclick = function(event_) {
+    var map_ = this.browser_.getMap();
+    if (!map_ || !this.config_.jumpAllowed_) {
+        return;
+    }
+
+    var coords_ = event_.getMouseCoords();
+
+    //get hit coords with fixed height
+    var mapCoords_ = map_.getHitCoords(coords_[0], coords_[1], "fix");
+    
+    if (mapCoords_) {
+        var pos_ = map_.getPosition();
+        pos_ = map_.setPositionCoords(pos_, mapCoords_);
+        pos_ = map_.convertPositionHeightMode(pos_, "fix");
+        pos_ = map_.setPositionHeight(pos_, mapCoords_[2]);
+        //pos_ = map_.convertPositionHeightMode(pos_, "fix");
+        //pos_ = map_.setPositionHeight(pos_, 0);
+        
+        this.browser_.autopilot_.flyTo(pos_, {"mode" : "direct", "maxDuration" : 2000 });
+    }
 };
 
 Melown.ControlMode.MapObserver.prototype.keyup = function(event_) {

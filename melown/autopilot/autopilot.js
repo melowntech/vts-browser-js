@@ -132,6 +132,7 @@ Melown.Autopilot.prototype.tick = function() {
     if (sampleIndex_ < totalSamples_) {
         //interpolate
         map_.setPosition(this.trajectory_[sampleIndex_]);        
+        //console.log(JSON.stringify(this.trajectory_[sampleIndex_]));
 
         this.browser_.callListener("fly-progress", { "position" : this.trajectory_[sampleIndex_],
                                                      "progress" : 100 * (sampleIndex_ / totalSamples_)
@@ -139,6 +140,7 @@ Melown.Autopilot.prototype.tick = function() {
 
     } else {
         map_.setPosition(this.trajectory_[totalSamples_]);
+        //console.log(JSON.stringify(this.trajectory_[totalSamples_]));
     } 
     
     if (sampleIndex_ >= this.trajectory_.length) {

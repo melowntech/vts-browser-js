@@ -50,6 +50,11 @@ Melown.Utils.preventDefault = function(e) {
     }
 };
 
+Melown.Utils.stopPropagation = function(e) {
+    e = e instanceof Melown.UIEvent ? e.event_ : e;
+    e.stopPropagation();
+};
+
 Melown.Utils.disableTextSelection = function() {
     window.addEventListener("selectstart", Melown.Utils.preventDefault);
 };

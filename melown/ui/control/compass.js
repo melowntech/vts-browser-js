@@ -80,6 +80,8 @@ Melown.UIControlCompass.prototype.onDoubleClick = function(event_) {
     pos_ = map_.setPositionOrientation(pos_, orientation_);
 
     map_.setPosition(pos_);
+    
+    Melown.Utils.stopPropagation(event_);    
 };
 
 
