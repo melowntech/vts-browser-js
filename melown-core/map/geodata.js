@@ -1,10 +1,11 @@
 /**
  * @constructor
  */
-Melown.MapGeodata = function(map_, url_) {
+Melown.MapGeodata = function(map_, url_, extraInfo_) {
     this.map_ = map_;
     this.stats_ = map_.stats_;
     this.mapLoaderUrl_  = url_;
+    this.extraInfo_ = extraInfo_;
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
@@ -87,8 +88,77 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    //Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+    //Melown.MapGeodataProcessor = function(surface_, listener_)
+
+    Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+
     this.loadState_ = 1;
+    
+    return;
+
+    var tile_ = this.extraInfo_.tile_;    
+
+    if (tile_ && tile_.metanode_) {
+        var bbox_ = tile_.metanode_.bbox_;
+
+        this.onLoaded({
+            
+            "version": 1,
+            "groups": [{
+                "bbox": [
+                    bbox_.min_,
+                    bbox_.max_
+                ],
+                "resolution": 4096,
+    
+                "points": [{
+                    "points": [
+                        [0, 0, 0],
+                        [4096, 0, 0],
+                        [4096, 4096, 0],
+                        [0, 4096, 0],
+
+                        [0, 0, 4096],
+                        [4096, 0, 4096],
+                        [4096, 4096, 4096],
+                        [0, 4096, 4096]
+                    ],
+        
+                    "properties": {
+                        "kind": "restaurant",
+                        "name": "U Bílého Lva"
+                    }   
+                }],
+        
+                "lines": [{
+                    "lines" : [
+                        [
+                            [0, 0, 0],
+                            [4096, 0, 0],
+                            [4096, 4096, 0],
+                            [0, 4096, 0]
+                        ],
+                        
+                        [
+                            [0, 0, 4096],
+                            [4096, 0, 4096],
+                            [4096, 4096, 4096],
+                            [0, 4096, 4096]
+                        ]
+                    ],
+        
+                    "properties": {
+                        "kind": "road",
+                        "name": "Na Bělidle"
+                    }   
+                }]
+        
+            }]
+            
+        });
+        
+    }
+
 };
 
 Melown.MapGeodata.prototype.onLoadError = function() {

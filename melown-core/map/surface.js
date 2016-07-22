@@ -19,6 +19,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.free_ = (type_ == "free");
     this.zFactor_ = 0;
     this.ready_ = false;
+    this.geodataProcessor_ = null;
     
     if (this.free_) { //each free layer has its own data tree
         this.tree_ = new Melown.MapSurfaceTree(this.map_, true, this);
@@ -55,6 +56,7 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
     this.navDelta_ = json_["navDelta"] || 1;
     this.meshUrl_ = json_["meshUrl"] || "";
     this.textureUrl_ = json_["textureUrl"] || "";
+    this.geodataUrl_ = json_["geodataUrl"] || "";
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.textureLayer_ = json_["textureLayer"] || null;
@@ -86,6 +88,7 @@ Melown.MapSurface.prototype.getInfo = function() {
         "navUrl" : this.navUrl_,
         "meshUrl" : this.meshUrl_,
         "textureUrl" : this.textureUrl_,
+        "geodataUrl" : this.geodataUrl_,
         "lodRange" : this.lodRange_,
         "tileRange" : this.tileRange_,
         "textureLayer" : this.textureLayer_
@@ -189,6 +192,10 @@ Melown.MapSurface.prototype.getMeshUrl = function(id_, skipBaseUrl_) {
 
 Melown.MapSurface.prototype.getTextureUrl = function(id_, subId_, skipBaseUrl_) {
     return this.map_.makeUrl(this.textureUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, subId_, skipBaseUrl_);
+};
+
+Melown.MapSurface.prototype.getGeodataUrl = function(id_, subId_, skipBaseUrl_) {
+    return this.map_.makeUrl(this.geodataUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, subId_, skipBaseUrl_);
 };
 
 
