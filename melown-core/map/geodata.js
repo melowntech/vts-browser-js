@@ -10,10 +10,8 @@ Melown.MapGeodata = function(map_, url_, extraInfo_) {
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
     this.fileSize_ = 0;
-    this.faces_ = 0;
 
-    this.cacheItem_ = null;  //store killSubmeshes
-    this.gpuCacheItem_ = null; //store killGpuSubmeshes
+    this.cacheItem_ = null;
 
     this.loadState_ = 0;
 };
@@ -22,41 +20,9 @@ Melown.MapGeodata.prototype.kill = function() {
     this.bbox_ = null;
 };
 
-Melown.MapGeodata.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {
-    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
-    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
-    
-    if (doNotUseGpu_) {
-        doNotUseGpu_ = doNotUseGpu_;
-    }
-
+Melown.MapGeodata.prototype.isReady = function(doNotLoad_, priority_) {
     if (this.loadState_ == 2) { //loaded
         this.map_.resourcesCache_.updateItem(this.cacheItem_);
-        
-        if (doNotCheckGpu_) {
-            return true;
-        }
-
-        if (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_) {
-            return false;
-        }
-
-        if (this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
-            this.map_.markDirty();
-            return false;
-        }
-
-        if (doNotUseGpu_) {
-            return false;
-        }
-
-        var t = performance.now();
-        this.buildGpuSubmeshes();
-        this.stats_.renderBuild_ += performance.now() - t; 
-
-        if (!doNotLoad_) {
-            this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
-        }
         return true;
     } else {
         if (this.loadState_ == 0) { 
@@ -90,11 +56,11 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
 
     //Melown.MapGeodataProcessor = function(surface_, listener_)
 
-    Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+    //Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
 
     this.loadState_ = 1;
     
-    return;
+    //return;
 
     var tile_ = this.extraInfo_.tile_;    
 
@@ -175,15 +141,6 @@ Melown.MapGeodata.prototype.onLoaded = function(data_) {
         return;
     }
 
-    /*
-    this.fileSize_= data_.byteLength;
-
-    var stream_ = {data_:data_, index_:0};
-    this.parseMapMesh(stream_);
-
-    this.cacheItem_ = this.map_.resourcesCache_.insert(this.killSubmeshes.bind(this, true), this.size_);
-    */
-
     this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
 };
@@ -195,10 +152,6 @@ Melown.MapGeodata.prototype.size = function () {
 
 Melown.MapGeodata.prototype.fileSize = function () {
     return this.fileSize_;
-};
-
-Melown.MapGeodata.prototype.draw = function () {
-    //TODO:
 };
 
 

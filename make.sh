@@ -23,7 +23,6 @@ cat utils/matrix.js \
     renderer/gpu/bbox.js \
     renderer/gpu/device.js \
     renderer/gpu/font.js \
-    renderer/gpu/geodata.js \
     renderer/gpu/group.js \
     renderer/gpu/line.js \
     renderer/gpu/mesh.js \
@@ -58,7 +57,9 @@ cat utils/matrix.js \
     map/loader.js \
     map/measure.js \
     map/trajectory.js \
+    map/stylesheet.js \
     map/geodata.js \
+    map/geodata-view.js \
     map/mesh.js \
     map/metanode-tracer.js \
     map/metanode.js \
@@ -106,7 +107,6 @@ cat utils/matrix.js \
     renderer/gpu/bbox.js \
     renderer/gpu/device.js \
     renderer/gpu/font.js \
-    renderer/gpu/geodata.js \
     renderer/gpu/group.js \
     renderer/gpu/line.js \
     renderer/gpu/mesh.js \
@@ -141,7 +141,9 @@ cat utils/matrix.js \
     map/loader.js \
     map/measure.js \
     map/trajectory.js \
+    map/stylesheet.js \
     map/geodata.js \
+    map/geodata-view.js \
     map/mesh.js \
     map/metanode-tracer.js \
     map/metanode.js \

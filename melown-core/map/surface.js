@@ -20,6 +20,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.zFactor_ = 0;
     this.ready_ = false;
     this.geodataProcessor_ = null;
+    this.stylesheet_ = null;
     
     if (this.free_) { //each free layer has its own data tree
         this.tree_ = new Melown.MapSurfaceTree(this.map_, true, this);
@@ -171,6 +172,10 @@ Melown.MapSurface.prototype.hasMetatile = function(id_) {
     }
 
     return true;
+};
+
+Melown.MapSurface.prototype.setStylesheet = function(stylesheet_) {
+    this.stylesheet_ = stylesheet_;
 };
 
 //used only for glues

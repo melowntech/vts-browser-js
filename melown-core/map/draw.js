@@ -468,7 +468,48 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
 };
 
 Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
+    if (tile_.surfaceGeodata_ == null) {
+        var path_ = tile_.surface_.getGeodataUrl(tile_.id_);
+        tile_.surfaceGeodata_ = tile_.resources_.getGeodata(path_, {tile_:tile_, surface_:tile_.surface_});
+    }
 
+    var channel_ = this.drawChannel_;
+
+    if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
+        if (!preventRedener_) {
+            this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_], priority_);
+            this.applyCredits(tile_);
+        }
+        tile_.lastRenderState_ = null;
+        return;
+    } else if (tile_.lastRenderState_){
+
+        if (tile_.surfaceGeodata_.isReady(true, priority_) == true) {
+            if (tile_.drawCommands_[channel_].length > 0) {
+                if (!preventRedener_) {
+                    this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
+                    this.applyCredits(tile_);
+                }
+                return;
+            }
+        } else {
+            if (!preventRedener_) {
+                this.processDrawCommands(cameraPos_, tile_.lastRenderState_.drawCommands_[channel_], priority_, true);
+                this.applyCredits(tile_);
+            }
+        }
+    }
+
+    if (tile_.surfaceGeodata_.isReady(preventLoad_, priority_) && !preventLoad_) {
+
+        if (!tile_.surfaceGeodataView_) {
+            tile_.surfaceGeodataView_ = new Melown.MapGeodataView(this.map_, tile_.surfaceGeodata_, {tile_:tile_, surface_:tile_.surface_});
+        }
+
+        if (tile_.surfaceGeodataView_.isReady(preventLoad_, priority_) && !preventLoad_) {
+
+        }        
+    }
 };
 
 Melown.Map.prototype.updateTileRenderCommands = function(tile_, submeshes_) {

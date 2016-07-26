@@ -335,6 +335,16 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
     this.markDirty();
 };
 
+Melown.Map.prototype.setStylesheetData = function(id_, data_) {
+    var stylesheet_ = this.getFreeLayer(id_);
+    
+    if (stylesheet_) {
+        stylesheet_.data_ = data_;
+    }
+    
+    //TODO: reset geodatview in free layers
+};
+
 Melown.Map.prototype.getView = function() {
     return this.currentView_.getInfo();
 };

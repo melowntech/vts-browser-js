@@ -81,6 +81,19 @@ Melown.MapResourceNode.prototype.getMesh = function(path_) {
     return texture_;
 };
 
+// GEodata ---------------------------------
+
+Melown.MapResourceNode.prototype.getGeodata = function(path_, extraInfo_) {
+    var geodata_ = this.geodata_[path_];
+    
+    if (!geodata_) {
+        geodata_ = new Melown.MapGeodata(this.map_, path_, extraInfo_);
+        this.geodata_[path_] = geodata_;
+    }
+    
+    return geodata_;
+};
+
 // Textures ---------------------------------
 
 Melown.MapResourceNode.prototype.getTexture = function(path_, heightMap_, extraBound_, extraInfo_) {

@@ -15,7 +15,8 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
 
     this.surface_ = null; //surface or glue
     this.surfaceMesh_ = null;
-    this.surfaceGeodata_ = null; //probably only used in free layers
+    this.surfaceGeodata_ = null;     //probably only used in free layers
+    this.surfaceGeodataView_ = null; //probably only used in free layers
     this.surfaceTextures_ = [];
 
     this.virtual_ = false;
@@ -25,8 +26,6 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.resetDrawCommands_ = false;
     this.drawCommands_ = [[], [], []];
     
-    //this.empty_ = true;
-
     this.bounds_ = {};
     this.boundLayers_ = {};
     this.boundTextures_ = {};
@@ -65,6 +64,10 @@ Melown.MapSurfaceTile.prototype.kill = function() {
         this.surfaceGeodata_.kill();
     }
 
+    if (this.surfaceGeodataView_ != null) {
+        this.surfaceGeodataView_.kill();
+    }
+
     if (this.heightMap_ != null) {
         this.heightMap_.kill();
     }
@@ -83,6 +86,7 @@ Melown.MapSurfaceTile.prototype.kill = function() {
     this.surfaceMesh_ = null;
     this.surfaceTextures_ = [];
     this.surfaceGeodata_ = null;
+    this.surfaceGeodataView_ = null;
 
     this.bounds_ = {};
     this.boundLayers_ = {};
@@ -127,7 +131,8 @@ Melown.MapSurfaceTile.prototype.viewSwitched = function() {
         surfaceMesh_ : this.surfaceMesh_,
         surfaceTextures_ : this.surfaceTextures_,
         boundTextures_ : this.boundTextures_,
-        surfaceGeodata_ : this.surfaceGeodata_
+        surfaceGeodata_ : this.surfaceGeodata_,
+        surfaceGeodataView_ : this.surfaceGeodataView_
     };    
 
     if (this.drawCommands_[0].length > 0) {  // check only visible chanel
@@ -168,6 +173,7 @@ Melown.MapSurfaceTile.prototype.viewSwitched = function() {
     this.surfaceMesh_ = null;
     this.surfaceTextures_ = [];
     this.surfaceGeodata_ = null;
+    this.surfaceGeodataView_ = null;
     
     this.virtual_ = false;
     this.virtualReady_ = false;
@@ -185,6 +191,7 @@ Melown.MapSurfaceTile.prototype.restoreLastState = function() {
     this.surfaceTextures_ = this.lastState_.surfaceTextures_; 
     this.boundTextures_ = this.lastState_.boundTextures_;
     this.surfaceGeodata_ = this.lastState_.surfaceGeodata_;
+    this.surfaceGeodataView_ = this.lastState_.surfaceGeodataView_;
     this.lastSurface_ = null;
     this.lastState_ = null;
 };
