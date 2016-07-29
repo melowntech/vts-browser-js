@@ -254,6 +254,8 @@ Melown.Renderer.prototype.initSkydome = function() {
 Melown.Renderer.prototype.initBBox = function() {
     this.bboxMesh_ = new Melown.GpuBBox(this.gpu_);
 
+    this.font_ = new Melown.GpuFont(this.gpu_, this.core_);
+
     if (this.displayDrawTest_ != true) {
         return;
     }
@@ -308,6 +310,7 @@ Melown.Renderer.prototype.initBBox = function() {
     var placemark_ = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAKTSURBVHjavNfPS1RBAAfwL6nbocMebDe79UMFQyG3Tit2EjatLhZkmluYGwZlJoJZUuy2BUGuSCAWFkgnCRIrfxyk3ZMtHpT+gbq8UgLrtGD43ny7vKnJLH2zu29gLnv4fj/zdnbeLEjCyQRwBsAUgI8AvtvzE4BZAM2O8xwUhwG8B0A5PUVF3OnxUP0MwCKASE4BAO7IAr/Px7v9/UzPz/OzYfCLYXAhnea9aJQlJSUq5EFOAACuytCL4TB/rK1RCMGNQwhBc32dlyMRFdGTFQDAPhl2vbOTlmVxq2FZFvt6e1VEVTaAhwB4rLZ2W+Uq4ngopCIKHQMAnJQBszMzdDpSyaQKaNIBJACwrLSUuqOqslICnugAJgGwualp00231RBC8FJbmwS80QHMAOCVjg5twI2uLgmY1gG8BsDzLS3agEh7uwS81QE8BsBDFRXaeyBQXS0Bz3QAZ+UuTiWTjssX0mn1VxDWARTKgBP1DY7OAdM0ebqxUQXs0j2IqmRIPBbbFsI0TQ4mEmp5MNt3wS0Z9nRk5L8Iy7L4YmxMLY/m6m34SIa+m5v7J2BpcYkFOwpk+VCu7wPDAFheVsZMJrPp6mtramT5cD4uJLvtywbvx+N/nQ3PR0fVR1+ec4CNiADgHr+f31ZX/9h4RwIBWd6XlyuZglgAwMTAwC/A9NSUuvrifAOuAWBNMEjLsiiE4IXWVsfffTaA/XK1K8vLJMm9v++CDXkH2IgUAE5OTPDryor6+D1uAaIAODQ4yJfj47L8lVaWJuAcAPZ0dzMei0nATTcBRwEwVFfHU/X1EtDoJuAAABZ7vSz2eiXgsJsA/4a/YwRw0E2AZxOAzzWAjfiglBvaOVkAOmyEAeC2bs7PAQBlCgrhBHN4PQAAAABJRU5ErkJggg==";
     this.placemarkTexture_ = new Melown.GpuTexture(this.gpu_, placemark_, this.core_, null, true);
     */
+
 };
 
 

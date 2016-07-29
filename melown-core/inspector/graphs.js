@@ -73,6 +73,11 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
     document.getElementById("melown-graphs-cache").onmousemove = this.onGraphsMouseMove.bind(this);
     document.getElementById("melown-graphs-cache").onmouseout = this.onGraphsMouseOut.bind(this);
 
+    this.graphsElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
+    this.graphsElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
+    this.graphsElement_.addEventListener("mousewheel", this.doNothing.bind(this), false);
+    this.graphsElement_.addEventListener("dblclick", this.doNothing.bind(this), false);
+
 
     this.graphsZoom_ = "max";
     this.graphsGraph_ = "Cache";

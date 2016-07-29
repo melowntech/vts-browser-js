@@ -11,6 +11,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.navDelta_ = 1;
     this.meshUrl_ = "";
     this.textureUrl_ = "";
+    this.baseUrl_ = "";
     this.lodRange_ = [0,0];
     this.tileRange_ = [[0,0],[0,0]];
     this.textureLayer_ = null;
@@ -29,7 +30,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     }
     
     if (typeof json_ === "string") {
-        this.jsonUrl_ = json_;
+        this.jsonUrl_ = this.map_.processUrl(json_);
         this.baseUrl_ = json_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
         
         var onLoaded_ = (function(data_){
@@ -52,12 +53,12 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
     this.id_ = json_["id"] || null;
     this.type_ = json_["type"] || "basic";
     this.metaBinaryOrder_ = json_["metaBinaryOrder"] || 1;
-    this.metaUrl_ = json_["metaUrl"] || "";
-    this.navUrl_ = json_["navUrl"] || "";
+    this.metaUrl_ = this.processUrl(this.baseUrl_, json_["metaUrl"], "");
+    this.navUrl_ = this.processUrl(this.baseUrl_, json_["navUrl"], "");
     this.navDelta_ = json_["navDelta"] || 1;
-    this.meshUrl_ = json_["meshUrl"] || "";
-    this.textureUrl_ = json_["textureUrl"] || "";
-    this.geodataUrl_ = json_["geodataUrl"] || "";
+    this.meshUrl_ = this.processUrl(this.baseUrl_, json_["meshUrl"], "");
+    this.textureUrl_ = this.processUrl(this.baseUrl_, json_["textureUrl"], "");
+    this.geodataUrl_ = this.processUrl(this.baseUrl_, json_["geodataUrl"], "");
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.textureLayer_ = json_["textureLayer"] || null;
@@ -70,6 +71,20 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
         } else if (json_["credits"]) {
             for (var key_ in json_["credits"]){
                 this.map_.addCredit(key_, new Melown.MapCredit(this, credits_[key_]));
+            }
+        }
+    }
+
+    //load stylesheet
+    if (this.geodata_) {
+        var style_ = json_["style"];
+        
+        if (style_) {
+            this.stylesheet_ = this.map_.getStylesheet(style_);
+            
+            if (!this.stylesheet_) {
+                this.stylesheet_ = new Melown.MapStylesheet(this.map_, json_["style"], json_["style"]);
+                this.map_.addStylesheet(json_["style"], this.stylesheet_); 
             }
         }
     }
@@ -94,6 +109,19 @@ Melown.MapSurface.prototype.getInfo = function() {
         "tileRange" : this.tileRange_,
         "textureLayer" : this.textureLayer_
     };
+};
+
+Melown.MapSurface.prototype.processUrl = function(baseUrl_, url_, fallback_) {
+    if (!url_) {
+        return fallback_;
+    }
+    
+    //is url absolute
+    if (url_.indexOf("://") != -1) {
+        return url_;
+    } else {
+        return baseUrl_ + url_; 
+    }
 };
 
 Melown.MapSurface.prototype.hasTile = function(id_) {

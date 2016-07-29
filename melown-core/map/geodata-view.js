@@ -14,9 +14,9 @@ Melown.MapGeodataView = function(map_, geodata_, extraInfo_) {
 
     if (!this.surface_.geodataProcessor_) {
         var processor_ = new Melown.MapGeodataProcessor(this, this.onGeodataProcessorMessage.bind(this));
-        processor_.sendCommand("setStyle", this.stylesheet_.data_);
+        processor_.sendCommand("setStylesheet", this.surface_.stylesheet_.data_);
         processor_.sendCommand("setFont", {"chars" : this.renderer_.font_.chars_, "space" : this.renderer_.font_.space_, "size" : this.renderer_.font_.size_});
-        this.geodataProcessor_ = processor_;
+        this.surface_.geodataProcessor_ = processor_;
     }
 
     this.geodataProcessor_ = this.surface_.geodataProcessor_;
@@ -44,7 +44,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
         switch (message_["command"]) {
 
             case "beginGroup":
-                this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.tile_.core_, this.tile_.layer_);
+                this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.renderer_);
                 this.gpuGroups_.push(this.currentGpuGroup_);
                 break;
 

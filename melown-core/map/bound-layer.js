@@ -28,7 +28,7 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
     }
     
     if (typeof json_ === "string") {
-        this.jsonUrl_ = json_;
+        this.jsonUrl_ = this.map_.processUrl(json_);
         this.baseUrl_ = json_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
         
         var onLoaded_ = (function(data_){

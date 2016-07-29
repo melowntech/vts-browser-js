@@ -19,6 +19,7 @@ cat utils/matrix.js \
     inspector/input.js \
     inspector/stats.js \
     inspector/layers.js \
+    inspector/stylesheets.js \
     inspector/graphs.js \
     renderer/gpu/bbox.js \
     renderer/gpu/device.js \

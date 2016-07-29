@@ -54,6 +54,7 @@ Melown.Inspector.prototype.initStatsPanel = function() {
     this.statsElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
     this.statsElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
     this.statsElement_.addEventListener("mousewheel", this.doNothing.bind(this), false);
+    this.statsElement_.addEventListener("dblclick", this.doNothing.bind(this), false);
 
     this.statsPanelVisible_ = false;
 };

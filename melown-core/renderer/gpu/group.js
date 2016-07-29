@@ -2,15 +2,13 @@
 /**
  * @constructor
  */
-Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, core_, layer_) {
+Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, renderer_) {
     this.id_ = id_;
     this.bbox_ = null;
     this.origin_ = origin_ || [0,0,0];
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
-    this.renderer_ = core_.renderer_;
-    this.core_ = core_;
-    this.layer_ = layer_;
+    this.renderer_ = renderer_;
     this.jobs_ = [];
 
     if (bbox_ != null && bbox_[0] != null && bbox_[1] != null) {
@@ -120,7 +118,6 @@ Melown.GpuGroup.prototype.addExtentedLineJob = function(data_) {
     job_.state_ = data_["state"];
     job_.center_ = data_["center"];
     job_.lod_ = data_["lod"];
-    job_.layer_ = this.layer_;
     job_.lineWidth_ = data_["line-width"];
     job_.zbufferOffset_ = data_["zbuffer-offset"];
 
@@ -441,9 +438,9 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
                     if (job_.type_ == "flat-tline") {
                         textureParams_[0] = 1/job_.lineWidth_/(texture_.width_/t[2]);
                     } else {
-                        var lod_ = job_.lod_ || job_.layer_.currentLod_;
-                        var tileSize_ = job_.layer_.core_.mapConfig_.tileSize(lod_);
-                        var tilePixelSize_ = tileSize_ / job_.layer_.tilePixels_;
+                        var lod_ = job_.lod_; // || job_.layer_.currentLod_;
+                        var tileSize_ = 256;//job_.layer_.core_.mapConfig_.tileSize(lod_);
+                        var tilePixelSize_ = tileSize_ / 256;//job_.layer_.tilePixels_;
                         textureParams_[0] = 1/texture_.width_/tilePixelSize_;
                     }
                 }

@@ -3,18 +3,18 @@
 // into one function in case of minification process
 //---------------------------------------------------
 
-var getStyle = function(styleId_, featureType_, index_) {
-    var style_ = layerStyles_.styles_[styleId_];
-    if (style_ == null) {
-        logError("wrong-style", styleId_, null, null, index_, featureType_);
+var getLayer = function(layerId_, featureType_, index_) {
+    var layer_ = stylesheetLayers_.layers_[layerId_];
+    if (layer_ == null) {
+        logError("wrong-Layer", layerId_, null, null, index_, featureType_);
         return {};
     } else {
-        return style_;
+        return layer_;
     }
 };
 
-var getStylePropertyValue = function(style_, key_, feature_, lod_) {
-    var value_ = style_[key_];
+var getLayerPropertyValue = function(layer_, key_, feature_, lod_) {
+    var value_ = layer_[key_];
 
     switch(typeof value_) {
         case "string":
@@ -26,8 +26,8 @@ var getStylePropertyValue = function(style_, key_, feature_, lod_) {
                     if (finalValue_ != null) {
                         return finalValue_;
                     } else {
-                        logError("wrong-object", style_["$$style-id"], key_, value_, null, "feature-property");
-                        getDefaultStylePropertyValue(key_);
+                        logError("wrong-object", layer_["$$Layer-id"], key_, value_, null, "feature-property");
+                        getDefaultLayerPropertyValue(key_);
                     }
                 }
             }
@@ -40,15 +40,15 @@ var getStylePropertyValue = function(style_, key_, feature_, lod_) {
 
             //is it null?
             if (value_ == null) {
-                return getDefaultStylePropertyValue(key_);
+                return getDefaultLayerPropertyValue(key_);
             }
 
             //is it array (rgb, rgba, vec2)?
             if (Array.isArray(value_) == true) {
 
-                if (key_ == "icon-source" && layerBitmaps_[value_[0]] == null) {
-                    logError("wrong-object", style_["$$style-id"], key_, value_, null, "bitmap");
-                    return getDefaultStylePropertyValue(key_);
+                if (key_ == "icon-source" && stylesheetBitmaps_[value_[0]] == null) {
+                    logError("wrong-object", layer_["$$Layer-id"], key_, value_, null, "bitmap");
+                    return getDefaultLayerPropertyValue(key_);
                 }
 
                 return value_;
@@ -146,105 +146,91 @@ var getStylePropertyValue = function(style_, key_, feature_, lod_) {
             return value_;
     }
 
-    return getDefaultStylePropertyValue(key_);
+    return getDefaultLayerPropertyValue(key_);
 };
 
-var inheritStyle = function(styleId_, style_, styleData_, layerStylesData_, depth_) {
+var inheritLayer = function(layerId_, layer_, layerData_, stylesheetLayersData_, depth_) {
     if (depth_ > 100) {
-        logError("custom", "infinite inherit loop in style: " + styleId_);
+        logError("custom", "infinite inherit loop in Layer: " + layerId_);
         return;
     }
 
-    //do we need inherite style?
-    if (styleData_["inherit"] != null) {
-        //get inherited style
-        var styleToInherit_ = layerStylesData_["styles"][styleData_["inherit"]];
+    //do we need inherite Layer?
+    if (layerData_["inherit"] != null) {
+        //get inherited Layer
+        var LayerToInherit_ = stylesheetLayersData_["Layers"][layerData_["inherit"]];
 
-        if (styleToInherit_ != null) {
+        if (LayerToInherit_ != null) {
 
-            if (styleToInherit_["inherit"] != null) {
-                inheritStyle(styleData_["inherit"], style_, styleToInherit_, layerStylesData_, depth_++);
+            if (LayerToInherit_["inherit"] != null) {
+                inheritLayer(layerData_["inherit"], layer_, LayerToInherit_, stylesheetLayersData_, depth_++);
             }
 
-            //copy inherited style properties
-            for (var key_ in styleToInherit_) {
-                style_[key_] = styleToInherit_[key_];
+            //copy inherited Layer properties
+            for (var key_ in LayerToInherit_) {
+                layer_[key_] = LayerToInherit_[key_];
             }
         } else {
-            logError("wrong-object", styleId_, "inherit", styleToInherit_, "style");
-            return getDefaultStylePropertyValue(key_);
+            logError("wrong-object", layerId_, "inherit", LayerToInherit_, "Layer");
+            return getDefaultLayerPropertyValue(key_);
         }
     }
 
 };
 
-var copyStyle = function(styleId_, style_, styleData_, layerStylesData_) {
-    //do we need inherite style?
-    if (styleData_["inherit"] != null) {
-        inheritStyle(styleId_, style_, styleData_, layerStylesData_, 0);
-
-        /*
-        //get inherited style
-        var styleToInherit_ = layerStylesData_["styles"][styleData_["inherit"]];
-
-        if (styleToInherit_ != null) {
-            //copy inherited style properties
-            for (var key_ in styleToInherit_) {
-                style_[key_] = styleToInherit_[key_];
-            }
-        } else {
-            logError("wrong-object", styleId_, "inherit", styleToInherit_, "style");
-            return getDefaultStylePropertyValue(key_);
-        }*/
+var copyLayer = function(layerId_, layer_, layerData_, stylesheetLayersData_) {
+    //do we need inherite Layer?
+    if (layerData_["inherit"] != null) {
+        inheritLayer(layerId_, layer_, layerData_, stylesheetLayersData_, 0);
     }
 
-    //copy style properties
+    //copy Layer properties
     //if inherited properties are present then they will be overwriten
-    for (var key_ in styleData_) {
-        style_[key_] = styleData_[key_];
+    for (var key_ in layerData_) {
+        layer_[key_] = layerData_[key_];
     }
 
-    //store style id
-    style_["$$style-id"] = styleId_;
+    //store Layer id
+    layer_["$$Layer-id"] = layerId_;
 };
 
-var logError = function(errorType_, styleId_, key_, value_, index_, subkey_) {
+var logError = function(errorType_, layerId_, key_, value_, index_, subkey_) {
     if ((typeof value_) == "object") {
         value_ = JSON.stringify(value_);
     }
 
     switch(errorType_) {
         case "wrong-property-value":
-            console.log("Error: wrong style property " + (subkey_ ? ("'" + subkey_ + "'") : "") + ": " + styleId_ + "." + key_ + " = " + value_);
+            console.log("Error: wrong Layer property " + (subkey_ ? ("'" + subkey_ + "'") : "") + ": " + layerId_ + "." + key_ + " = " + value_);
             break;
 
         case "wrong-property-value[]":
-            console.log("Error: wrong style property " + (subkey_ ? ("'" + subkey_ + "'") : "") + "["+index_+"]: " + styleId_ + "." + key_ + " = " + value_);
+            console.log("Error: wrong Layer property " + (subkey_ ? ("'" + subkey_ + "'") : "") + "["+index_+"]: " + layerId_ + "." + key_ + " = " + value_);
             break;
 
         case "wrong-object":
-            console.log("Error: reffered "+ subkey_ + " does not exist: " + styleId_ + "." + key_ + " = " + value_);
+            console.log("Error: reffered "+ subkey_ + " does not exist: " + layerId_ + "." + key_ + " = " + value_);
             break;
 
         case "wrong-object[]":
-            console.log("Error: reffered "+ subkey_ + " does not exist: " + styleId_ + "." + key_ + "["+index_+"] = " + value_);
+            console.log("Error: reffered "+ subkey_ + " does not exist: " + layerId_ + "." + key_ + "["+index_+"] = " + value_);
             break;
 
-        case "wrong-style":
-            console.log("Error: reffered "+ subkey_ + " style does not exist: " + subkey_ + "["+index_+"].style = " + styleId_);
+        case "wrong-Layer":
+            console.log("Error: reffered "+ subkey_ + " Layer does not exist: " + subkey_ + "["+index_+"].Layer = " + layerId_);
             break;
 
         case "wrong-bitmap":
-            console.log("Error: wrong definition of bitmap: " + styleId_);
+            console.log("Error: wrong definition of bitmap: " + layerId_);
             break;
 
         case "custom":
-            console.log("Error: " + styleId_);
+            console.log("Error: " + layerId_);
             break;
     }
 };
 
-var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, max_) {
+var validateValue = function(layerId_, key_, value_, type_, arrayLength_, min_, max_) {
     //check interpolator
     if (value_ != null && (typeof value_) == "object" && (value_["discrete"] != null || value_["linear"] != null || value_["lod-scaled"] != null)) {
 
@@ -256,8 +242,8 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
             var array_ = value_["lod-scaled"];
 
             if (!((typeof array_) == "object" && Array.isArray(array_) && array_.length >= 2)) {
-                logError("wrong-property-value", styleId_, key_, value_, null, "[]");
-                return getDefaultStylePropertyValue(key_);
+                logError("wrong-property-value", layerId_, key_, value_, null, "[]");
+                return getDefaultLayerPropertyValue(key_);
             }
 
             if (array_[2] == null) {
@@ -265,8 +251,8 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
             }
 
             if (!((typeof array_[0]) == "number" && (typeof array_[2]) == "number")) {
-                logError("wrong-property-value", styleId_, key_, value_, null, "[]");
-                return getDefaultStylePropertyValue(key_);
+                logError("wrong-property-value", layerId_, key_, value_, null, "[]");
+                return getDefaultLayerPropertyValue(key_);
             }
 
             if ((typeof array_[1]) == "number") {
@@ -282,8 +268,8 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
 
         //if stops exist then check if they are array
         if (stops_ == null || !((typeof stops_) == "object" && Array.isArray(stops_) && stops_.length > 0)) {
-            logError("wrong-property-value", styleId_, key_, value_, null, "[]");
-            return getDefaultStylePropertyValue(key_);
+            logError("wrong-property-value", layerId_, key_, value_, null, "[]");
+            return getDefaultLayerPropertyValue(key_);
         }
 
 
@@ -302,22 +288,22 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
                         stopsValueType_ = typeof stopItem_[1];
 
                         if (lodScaled_ == true && stopsValueType_ != "number") {
-                            logError("wrong-property-value[]", styleId_, key_, value_, i, "[]");
-                            return getDefaultStylePropertyValue(key_);
+                            logError("wrong-property-value[]", layerId_, key_, value_, i, "[]");
+                            return getDefaultLayerPropertyValue(key_);
                         }
                     }
 
                     //check lod value and type of value
                     if(!((typeof stopItem_[0]) == "number" && (typeof stopItem_[1]) == stopsValueType_)) {
-                        logError("wrong-property-value[]", styleId_, key_, value_, i, "[]");
-                        return getDefaultStylePropertyValue(key_);
+                        logError("wrong-property-value[]", layerId_, key_, value_, i, "[]");
+                        return getDefaultLayerPropertyValue(key_);
                     }
 
                     //check number value
                     if (stopsValueType_ == "number") {
                         if (stopItem_[1] > max_ || stopItem_[1] < min_) {
-                            logError("wrong-property-value[]", styleId_, key_, value_, i, "[]");
-                            return getDefaultStylePropertyValue(key_);
+                            logError("wrong-property-value[]", layerId_, key_, value_, i, "[]");
+                            return getDefaultLayerPropertyValue(key_);
                         }
                     }
                 }
@@ -328,14 +314,14 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
         return value_;
     }
 
-    //console.log("validate."+styleId_+"."+key_+"."+value_);
+    //console.log("validate."+layerId_+"."+key_+"."+value_);
 
     //check value type
     if ((typeof value_) != type_) {
         //check for exceptions
         if (!(value_ === null && (key_ == "icon-source" || key_ == "visibility"))) {
-            logError("wrong-property-value", styleId_, key_, value_);
-            return getDefaultStylePropertyValue(key_);
+            logError("wrong-property-value", layerId_, key_, value_);
+            return getDefaultLayerPropertyValue(key_);
         }
     }
 
@@ -362,19 +348,19 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
                             typeof valueItem_[0] == "number" &&
                             typeof valueItem_[1] == "string") {
 
-                            if (layerStylesData_["styles"][valueItem_[1]] == null) {
+                            if (stylesheetLayersData_["Layers"][valueItem_[1]] == null) {
 
                             }
 
                         } else {
-                            logError("wrong-property-value[]", styleId_, key_, value_, i);
-                            return getDefaultStylePropertyValue(key_);
+                            logError("wrong-property-value[]", layerId_, key_, value_, i);
+                            return getDefaultLayerPropertyValue(key_);
                         }
                     }
 
                 } else {
-                    logError("wrong-property-value", styleId_, key_, value_);
-                    return getDefaultStylePropertyValue(key_);
+                    logError("wrong-property-value", layerId_, key_, value_);
+                    return getDefaultLayerPropertyValue(key_);
                 }
             }
 
@@ -387,13 +373,13 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
 
                     if (key_ == "icon-source" || key_ == "line-style-texture") {
                         if (typeof value_[0] != "string") {
-                            logError("wrong-property-value[]", styleId_, key_, value_, 0);
-                            return getDefaultStylePropertyValue(key_);
+                            logError("wrong-property-value[]", layerId_, key_, value_, 0);
+                            return getDefaultLayerPropertyValue(key_);
                         }
 
-                        if (layerBitmaps_[value_[0]] == null) {
-                            logError("wrong-object", styleId_, key_, value_, null, "bitmap");
-                            return getDefaultStylePropertyValue(key_);
+                        if (stylesheetBitmaps_[value_[0]] == null) {
+                            logError("wrong-object", layerId_, key_, value_, null, "bitmap");
+                            return getDefaultLayerPropertyValue(key_);
                         }
 
                         i = 1;
@@ -401,15 +387,15 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
 
                     for (li = value_.length; i < li; i++) {
                         if (typeof value_[i] != "number") {
-                            logError("wrong-property-value[]", styleId_, key_, value_, i);
-                            return getDefaultStylePropertyValue(key_);
+                            logError("wrong-property-value[]", layerId_, key_, value_, i);
+                            return getDefaultLayerPropertyValue(key_);
                         }
                     }
 
                     return value_;
                 } else {
-                    logError("wrong-property-value", styleId_, key_, value_);
-                    return getDefaultStylePropertyValue(key_);
+                    logError("wrong-property-value", layerId_, key_, value_);
+                    return getDefaultLayerPropertyValue(key_);
                 }
             }
 
@@ -417,14 +403,14 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
 
         case "string":
 
-            //validate line style enum
+            //validate line Layer enum
             if (key_ == "line-style") {
                 switch(value_) {
                     case "solid":
                     case "texture": return value_;
                     default:
-                        logError("wrong-property-value", styleId_, key_, value_);
-                        return getDefaultStylePropertyValue(key_);
+                        logError("wrong-property-value", layerId_, key_, value_);
+                        return getDefaultLayerPropertyValue(key_);
                 }
             }
 
@@ -441,8 +427,8 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
                     case "bottom-right":
                     case "bottom-center":   return value_;
                     default:
-                        logError("wrong-property-value", styleId_, key_, value_);
-                        return getDefaultStylePropertyValue(key_);
+                        logError("wrong-property-value", layerId_, key_, value_);
+                        return getDefaultLayerPropertyValue(key_);
                 }
             }
 
@@ -453,8 +439,8 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
                     case "right":
                     case "center":  return value_;
                     default:
-                        logError("wrong-property-value", styleId_, key_, value_);
-                        return getDefaultStylePropertyValue(key_);
+                        logError("wrong-property-value", layerId_, key_, value_);
+                        return getDefaultLayerPropertyValue(key_);
                 }
             }
 
@@ -465,8 +451,8 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
             //console.log("num2");
 
             if (value_ > max_ || value_ < min_) {
-                logError("wrong-property-value", styleId_, key_, value_);
-                return getDefaultStylePropertyValue(key_);
+                logError("wrong-property-value", layerId_, key_, value_);
+                return getDefaultLayerPropertyValue(key_);
             }
 
             //console.log("num3");
@@ -479,70 +465,74 @@ var validateValue = function(styleId_, key_, value_, type_, arrayLength_, min_, 
 
 };
 
-var validateStylePropertyValue = function(styleId_, key_, value_) {
-    //console.log("vall:"+styleId_+"."+key_+"."+value_);
+var validateLayerPropertyValue = function(layerId_, key_, value_) {
+    //console.log("vall:"+layerId_+"."+key_+"."+value_);
     //debugger;
 
     switch(key_) {
-       case "inherit" :    return validateValue(styleId_, key_, value_, "string"); break;
+       //case "filter" :    return validateValue(layerId_, key_, value_, "string"); break;
 
-       case "line":        return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "line-flat":   return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "line-width":  return validateValue(styleId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "line-color":  return validateValue(styleId_, key_, value_, "object", 4, 0, 255); break;
-       case "line-style":  return validateValue(styleId_, key_, value_, "string"); break;
-       case "line-style-texture":    return validateValue(styleId_, key_, value_, "object", 3, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "line-style-background": return validateValue(styleId_, key_, value_, "object", 4, 0, 255); break;
+       case "inherit" :    return validateValue(layerId_, key_, value_, "string"); break;
 
-       case "line-label":         return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "line-label-source":  return validateValue(styleId_, key_, value_, "string"); break;
-       case "line-label-color":   return validateValue(styleId_, key_, value_, "object", 4, 0, 255); break;
-       case "line-label-size":    return validateValue(styleId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "line-label-offset":  return validateValue(styleId_, key_, value_, "number", null, -Number.MAX_VALUE, Number.MAX_VALUE); break;
+       case "line":        return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "line-flat":   return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "line-width":  return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "line-color":  return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
+       case "line-style":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "line-style-texture":    return validateValue(layerId_, key_, value_, "object", 3, -Number.MAX_VALUE, Number.MAX_VALUE); break;
+       case "line-style-background": return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
 
-       case "point":        return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "point-flat":   return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "point-radius": return validateValue(styleId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "point-style":  return validateValue(styleId_, key_, value_, "string"); break;
+       case "line-label":         return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "line-label-source":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "line-label-color":   return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
+       case "line-label-size":    return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "line-label-offset":  return validateValue(layerId_, key_, value_, "number", null, -Number.MAX_VALUE, Number.MAX_VALUE); break;
 
-       case "point-color":  return validateValue(styleId_, key_, value_, "object", 4, 0, 255); break;
+       case "point":        return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "point-flat":   return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "point-radius": return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "point-Layer":  return validateValue(layerId_, key_, value_, "string"); break;
 
-       case "icon":         return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "icon-source":  return validateValue(styleId_, key_, value_, "object", 5, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "icon-scale":   return validateValue(styleId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "icon-offset":  return validateValue(styleId_, key_, value_, "object", 2, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "icon-origin":  return validateValue(styleId_, key_, value_, "string"); break;
-       case "icon-color":   return validateValue(styleId_, key_, value_, "object", 4, 0, 255); break;
+       case "point-color":  return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
 
-       case "label":         return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "label-color":   return validateValue(styleId_, key_, value_, "object", 4, 0, 255); break;
-       case "label-source":  return validateValue(styleId_, key_, value_, "string"); break;
-       case "label-size":    return validateValue(styleId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "label-offset":  return validateValue(styleId_, key_, value_, "object", 2, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "label-origin":  return validateValue(styleId_, key_, value_, "string"); break;
-       case "label-align":   return validateValue(styleId_, key_, value_, "string"); break;
-       case "label-width":   return validateValue(styleId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "icon":         return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "icon-source":  return validateValue(layerId_, key_, value_, "object", 5, -Number.MAX_VALUE, Number.MAX_VALUE); break;
+       case "icon-scale":   return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "icon-offset":  return validateValue(layerId_, key_, value_, "object", 2, -Number.MAX_VALUE, Number.MAX_VALUE); break;
+       case "icon-origin":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "icon-color":   return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
 
-       case "z-index":        return validateValue(styleId_, key_, value_, "number", null, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "zbuffer-offset": return validateValue(styleId_, key_, value_, "object", 3, 0, Number.MAX_VALUE); break;
+       case "label":         return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "label-color":   return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
+       case "label-source":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "label-size":    return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "label-offset":  return validateValue(layerId_, key_, value_, "object", 2, -Number.MAX_VALUE, Number.MAX_VALUE); break;
+       case "label-origin":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "label-align":   return validateValue(layerId_, key_, value_, "string"); break;
+       case "label-width":   return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
 
-       case "hover-event":  return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "hover-style":  return validateValue(styleId_, key_, value_, "string"); break;
-       case "enter-event":  return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "leave-event":  return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "click-event":  return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "draw-event":   return validateValue(styleId_, key_, value_, "boolean"); break;
+       case "z-index":        return validateValue(layerId_, key_, value_, "number", null, -Number.MAX_VALUE, Number.MAX_VALUE); break;
+       case "zbuffer-offset": return validateValue(layerId_, key_, value_, "object", 3, 0, Number.MAX_VALUE); break;
 
-       case "visible":     return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "visibility":  return validateValue(styleId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "multi-pass":  return validateValue(styleId_, key_, value_, "object"); break;
+       case "hover-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "hover-Layer":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "enter-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "leave-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "click-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "draw-event":   return validateValue(layerId_, key_, value_, "boolean"); break;
+
+       case "visible":     return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "visibility":  return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "multi-pass":  return validateValue(layerId_, key_, value_, "object"); break;
     }
 
     return value_; //custom property
 };
 
-var getDefaultStylePropertyValue = function(key_) {
+var getDefaultLayerPropertyValue = function(key_) {
     switch(key_) {
+       case "filter": return null;
+
        case "inherit": return "";
 
        case "line":       return false;
@@ -562,7 +552,7 @@ var getDefaultStylePropertyValue = function(key_) {
        case "point":        return false;
        case "point-flat":   return false;
        case "point-radius": return 1;
-       case "point-style":  return "solid";
+       case "point-Layer":  return "solid";
        case "point-color":  return [255,255,255,255];
 
        case "icon":        return false;
@@ -585,7 +575,7 @@ var getDefaultStylePropertyValue = function(key_) {
        case "zbuffer-offset": return [1,1,1];
 
        case "hover-event": return false;
-       case "hover-style": return "";
+       case "hover-Layer": return "";
        case "enter-event": return false;
        case "leave-event": return false;
        case "click-event": return false;
@@ -598,18 +588,18 @@ var getDefaultStylePropertyValue = function(key_) {
 };
 
 
-var processStyle = function(styleId_, styleData_, layerStylesData_) {
-    var style_ = {};
+var processLayer = function(layerId_, layerData_, stylesheetLayersData_) {
+    var layer_ = {};
 
-    //copy style and inherit style if needed
-    copyStyle(styleId_, style_, styleData_, layerStylesData_);
+    //copy Layer and inherit Layer if needed
+    copyLayer(layerId_, layer_, layerData_, stylesheetLayersData_);
 
-    //console.log(JSON.stringify(style_));
+    //console.log(JSON.stringify(layer_));
 
     //replace constants and validate properties
-    for (var key_ in style_) {
+    for (var key_ in layer_) {
 
-        var value_ = style_[key_];
+        var value_ = layer_[key_];
 
         //replace constant with value
         if ((typeof value_) == "string") {
@@ -617,43 +607,43 @@ var processStyle = function(styleId_, styleData_, layerStylesData_) {
                 //is it constant?
                 if (value_.charAt(0) == "@") {
 
-                    if (layerStylesData_["constants"] != null) {
-                        if (layerStylesData_["constants"][value_] != null) {
+                    if (stylesheetLayersData_["constants"] != null) {
+                        if (stylesheetLayersData_["constants"][value_] != null) {
 
                             //replace constant with value
-                            style_[key_] = layerStylesData_["constants"][value_];
+                            layer_[key_] = stylesheetLayersData_["constants"][value_];
                         } else {
-                            logError("wrong-object", styleId_, key_, value_, null, "constant");
+                            logError("wrong-object", layerId_, key_, value_, null, "constant");
 
                             //replace constant with deafault value
-                            style_[key_] = getDefaultStylePropertyValue(key_);
+                            layer_[key_] = getDefaultLayerPropertyValue(key_);
                         }
                     } else {
-                        logError("wrong-object", styleId_, key_, value_, null, "constant");
+                        logError("wrong-object", layerId_, key_, value_, null, "constant");
 
                         //replace constant with deafault value
-                        style_[key_] = getDefaultStylePropertyValue(key_);
+                        layer_[key_] = getDefaultLayerPropertyValue(key_);
                     }
                 }
             }
         }
 
-        //console.log("process."+styleId_+"."+key_+"."+value_);
-        //console.log("out1: "+JSON.stringify(style_[key_]));
+        //console.log("process."+layerId_+"."+key_+"."+value_);
+        //console.log("out1: "+JSON.stringify(layer_[key_]));
 
-        style_[key_] = validateStylePropertyValue(styleId_, key_, style_[key_]);
+        layer_[key_] = validateLayerPropertyValue(layerId_, key_, layer_[key_]);
 
-        //console.log("out2: "+JSON.stringify(style_[key_]));
+        //console.log("out2: "+JSON.stringify(layer_[key_]));
     }
 
-    return style_;
+    return layer_;
 };
 
-var processStyles = function(layerStylesData_) {
-    layerBitmaps_ = {};
+var processStylesheet = function(stylesheetLayersData_) {
+    stylesheetBitmaps_ = {};
 
     //get bitmaps
-    var bitmaps_ = layerStylesData_["bitmaps"] || {};
+    var bitmaps_ = stylesheetLayersData_["bitmaps"] || {};
 
     //build map
     for (var key_ in bitmaps_) {
@@ -671,27 +661,27 @@ var processStyles = function(layerStylesData_) {
         }
 
         if (skip_ != true) {
-            layerBitmaps_[key_] = bitmap_;
+            stylesheetBitmaps_[key_] = bitmap_;
         }
     }
 
     //load bitmaps
-    postMessage({"command":"loadBitmaps", "bitmaps": layerBitmaps_});
+    postMessage({"command":"loadBitmaps", "bitmaps": stylesheetBitmaps_});
 
     //get layers
-    layerStyles_ = {
-        styles_ : {}
+    stylesheetLayers_ = {
+        layers_ : {}
     };
 
-    var styles_ = layerStylesData_["styles"] || {};
+    var layers_ = stylesheetLayersData_["layers"] || {};
 
-    //console.log(JSON.stringify(styles_));
+    //console.log(JSON.stringify(Layers_));
 
     //process layers
-    for (var key_ in styles_) {
-        layerStyles_.styles_[key_] = processStyle(key_, styles_[key_], layerStylesData_);
+    for (var key_ in layers_) {
+        stylesheetLayers_.layers_[key_] = processLayer(key_, layers_[key_], stylesheetLayersData_);
 
-        //console.log(JSON.stringify(layerStyles_.styles_[key_]));
+        //console.log(JSON.stringify(stylesheetLayers_.layers_[key_]));
     }
 };
 

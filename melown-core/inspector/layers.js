@@ -162,6 +162,7 @@ Melown.Inspector.prototype.initLayersPanel = function() {
     this.layersElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
     this.layersElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
     this.layersElement_.addEventListener("mousewheel", this.doNothing.bind(this), false);
+    this.layersElement_.addEventListener("dblclick", this.doNothing.bind(this), false);
 
     this.layersViews_ = [];
     
@@ -750,7 +751,7 @@ Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
     }
 
 
-    this.layersJsonText_.value = JSON.stringify(view_, null, '  ');
+    this.layersJsonText_.value = JSON.stringify(view_, null, "  ");
 
     if (!jsonOnly_) {
         var map_ = this.core_.getMap();

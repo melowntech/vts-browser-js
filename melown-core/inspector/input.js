@@ -150,6 +150,10 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 118:
                         this.switchLayersPanel(); break; //key V pressed
 
+                    case 69:
+                    case 101:
+                        this.switchStylesheetsPanel(); break; //key E pressed
+
                     case 66:
                     case 98:
                         map_.drawBBoxes_ = !map_.drawBBoxes_; break; //key B pressed
@@ -300,7 +304,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                 case 69:
                 case 101:
-                    map_.debugTextSize_ = (map_.debugTextSize_ == 2.0) ? 3.0 : 2.0; break; //key S pressed
+                    map_.debugTextSize_ = (map_.debugTextSize_ == 2.0) ? 3.0 : 2.0; break; //key E pressed
 
                 default:
                     blockHit_ = false;

@@ -135,8 +135,10 @@ Melown.Map.prototype.generateSurfaceSequence = function(tree_, surfaces_) {
     //free layers
     for (var key_ in view_.freeLayers_) {
         var freeLayer_ = this.getFreeLayer(key_);
-        freeLayer_.surfaceSequence_ = [freeLayer_];
-        freeLayer_.surfaceOnlySequence_ = [freeLayer_];
+        if (freeLayer_) {
+            freeLayer_.surfaceSequence_ = [freeLayer_];
+            freeLayer_.surfaceOnlySequence_ = [freeLayer_];
+        }
     }    
 };
 

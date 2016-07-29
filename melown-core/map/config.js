@@ -5,10 +5,10 @@ Melown.Map.prototype.parseConfig = function() {
     //}
 
     if (!(this.parseSrses() && this.parseReferenceFrame() &&
-          this.parseCredits() && this.parseSurfaces() &&
-          this.parseGlues() && this.parseBoundLayers() &&
-          this.parseFreeLayers() && this.parseViews() &&
-          this.parseParams() && this.parseBrowserOptions() )) {
+          this.parseCredits() && this.parseStylesheets() && 
+          this.parseSurfaces() && this.parseGlues() && 
+          this.parseBoundLayers() && this.parseFreeLayers() && 
+          this.parseViews() && this.parseParams() && this.parseBrowserOptions() )) {
         //wrong config file
     }
 };
@@ -146,6 +146,22 @@ Melown.Map.prototype.parseFreeLayers = function() {
     for (var key_ in layers_) {
         var layer_ = new Melown.MapSurface(this, layers_[key_], "free");
         this.addFreeLayer(key_, layer_);
+    }
+
+    return true;
+};
+
+Melown.Map.prototype.parseStylesheets = function() {
+    var styles_ = this.mapConfig_["stylesheets"];
+    this.stylesheets_ = [];
+
+    if (styles_ == null) {
+        return true;
+    }
+
+    for (var key_ in styles_) {
+        var style_ = new Melown.MapStylesheet(this, key_, styles_[key_]);
+        this.addStylesheet(key_, style_);
     }
 
     return true;

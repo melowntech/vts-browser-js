@@ -8,6 +8,7 @@ Melown.Inspector = function(core_) {
     this.initStatsPanel();
     this.initGraphsPanel();
     this.initLayersPanel();
+    this.initStylesheetsPanel();
 
     //keyboard events
     document.addEventListener("keyup", this.onKeyUp.bind(this), false);

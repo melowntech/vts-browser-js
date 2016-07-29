@@ -3,9 +3,9 @@
 // into one function in case of minification process
 //---------------------------------------------------
 
-var layerStyles_ = {};
 var layerId_ = {};
-var layerBitmaps_ = {};
+var stylesheetLayers_ = {};
+var stylesheetBitmaps_ = {};
 var forceOrigin_ = false;
 var tileX_ = 0;
 var tileY_ = 0;

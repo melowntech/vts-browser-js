@@ -1,17 +1,27 @@
 /**
  * @constructor
  */
-Melown.MapStylesheet = function(map_, url_) {
+Melown.MapStylesheet = function(map_, id_, url_) {
     this.generateLines_ = true;
     this.map_ = map_;
     this.stats_ = map_.stats_;
-    this.url_  = url_;
+    this.id_  = id_;
+    this.url_  = null;
     this.data_ = null;
-
+    this.loadState_ = 0;
     this.size_ = 0;
     this.fileSize_ = 0;
+    
+    if (typeof url_ === "object") {
+        this.data_ = url_;
+        this.loadState_ = 2;
+    } else {
+        this.url_ = this.map_.processUrl(url_);
 
-    this.loadState_ = 0;
+        //load style directly
+        Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.url_.indexOf(this.map_.baseURL_) != -1) : false));
+        this.loadState_ = 1;
+    }
 };
 
 Melown.MapStylesheet.prototype.kill = function() {
@@ -44,10 +54,10 @@ Melown.MapStylesheet.prototype.scheduleLoad = function(priority_) {
 };
 
 Melown.MapStylesheet.prototype.onLoad = function(url_, onLoaded_, onError_) {
-    this.mapLoaderCallLoaded_ = onLoaded_;
-    this.mapLoaderCallError_ = onError_;
+    //this.mapLoaderCallLoaded_ = onLoaded_;
+    //this.mapLoaderCallError_ = onError_;
 
-    Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+    //Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
     this.loadState_ = 1;
 };
 
@@ -56,7 +66,7 @@ Melown.MapStylesheet.prototype.onLoadError = function() {
         return;
     }
 
-    this.mapLoaderCallError_();
+    //this.mapLoaderCallError_();
     //this.loadState_ = 2;
 };
 
@@ -67,7 +77,7 @@ Melown.MapStylesheet.prototype.onLoaded = function(data_) {
     
     this.data_ = data_;
 
-    this.mapLoaderCallLoaded_();
+    //this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
 };
 

@@ -59,7 +59,8 @@ Melown.MapInterface.prototype.getFreeLayers = function() {
 };
 
 Melown.MapInterface.prototype.getFreeLayerInfo = function(layerId_) {
-    return this.map_.getFreeLayers(layerId_);
+    var layer_ = this.map_.getFreeLayer(layerId_);
+    return layer_ ? layer_.getInfo() : {};
 };
 
 Melown.MapInterface.prototype.getSurfaces = function() {
@@ -67,7 +68,8 @@ Melown.MapInterface.prototype.getSurfaces = function() {
 };
 
 Melown.MapInterface.prototype.getSurfaceInfo = function(surfaceId_) {
-    return this.map_.getSurfacesInfo(srsId_);
+    var surface_ = this.map_.getFreeLayer(surfaceId_);
+    return surface_ ? surface_.getInfo() : {};
 };
 
 Melown.MapInterface.prototype.getSrses = function() {

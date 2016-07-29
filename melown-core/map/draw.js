@@ -19,7 +19,8 @@ Melown.Map.prototype.draw = function() {
     //draw free layers    
     for (var i = 0, li = this.freeLayerSequence_.length; i < li; i++) {
         var layer_ = this.freeLayerSequence_[i];
-        if (layer_.ready_ && layer_.tree_) {
+        if (layer_.ready_ && layer_.tree_ && 
+            (!layer_.geodata_ || (layer_.stylesheet_ && layer_.stylesheet_.isReady())) ) {
             layer_.tree_.draw();
         }
     }
@@ -503,7 +504,7 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
     if (tile_.surfaceGeodata_.isReady(preventLoad_, priority_) && !preventLoad_) {
 
         if (!tile_.surfaceGeodataView_) {
-            tile_.surfaceGeodataView_ = new Melown.MapGeodataView(this.map_, tile_.surfaceGeodata_, {tile_:tile_, surface_:tile_.surface_});
+            tile_.surfaceGeodataView_ = new Melown.MapGeodataView(this, tile_.surfaceGeodata_, {tile_:tile_, surface_:tile_.surface_});
         }
 
         if (tile_.surfaceGeodataView_.isReady(preventLoad_, priority_) && !preventLoad_) {

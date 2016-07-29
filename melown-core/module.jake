@@ -11,6 +11,7 @@ var files = [
     'inspector/input.js',
     'inspector/inspector.js',
     'inspector/stats.js',
+    'inspector/stylesheets.js',
 
     'map/bound-layer.js',
     'map/resource-tree.js',

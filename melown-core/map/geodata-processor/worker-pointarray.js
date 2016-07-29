@@ -204,7 +204,7 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
     if (icon_ == true && iconData_.vertexBuffer_.length > 0) {
         postMessage({"command":"addRenderJob", "type": "icon", "vertexBuffer": iconData_.vertexBuffer_,
                      "originBuffer": iconData_.originBuffer_, "texcoordsBuffer": iconData_.texcoordsBuffer_,
-                     "icon":layerBitmaps_[iconData_.source_[0]], "color":iconData_.color_, "z-index":zIndex_,
+                     "icon":stylesheetBitmaps_[iconData_.source_[0]], "color":iconData_.color_, "z-index":zIndex_,
                      "visibility": visibility_, "center": center_,
                      "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                      "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,

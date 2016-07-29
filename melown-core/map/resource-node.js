@@ -71,14 +71,14 @@ Melown.MapResourceNode.prototype.removeChild = function(tile_) {
 // Meshes ---------------------------------
 
 Melown.MapResourceNode.prototype.getMesh = function(path_) {
-    var texture_ = this.textures_[path_];
+    var mesh_ = this.meshes_[path_];
     
-    if (!texture_) {
-        texture_ = new Melown.MapMesh(this.map_, path_);
-        this.textures_[path_] = texture_;
+    if (!mesh_) {
+        mesh_ = new Melown.MapMesh(this.map_, path_);
+        this.meshes_[path_] = mesh_;
     }
     
-    return texture_;
+    return mesh_;
 };
 
 // GEodata ---------------------------------

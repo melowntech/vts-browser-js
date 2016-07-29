@@ -32,6 +32,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.freeLayers_ = [];
     this.boundLayers_ = [];
     this.dynamicLayers_ = [];
+    this.stylesheets_ = [];
     this.tileBuffer_ = new Array(500);
 
     this.initialView_ = null;
@@ -252,16 +253,16 @@ Melown.Map.prototype.addFreeLayer = function(id_, layer_) {
 };
 
 Melown.Map.prototype.getFreeLayer = function(id_) {
-    //return this.freeLayers_[id_];
-    return this.searchArrayById(this.freeLayers_, id_);
+    return this.freeLayers_[id_];
+    //return this.searchArrayById(this.freeLayers_, id_);
 };
 
 Melown.Map.prototype.getFreeLayers = function() {
     var keys_ = [];
-    for (var i = 0, li = this.freeLayers_.length; i < li; i++) {
-        keys_.push(this.freeLayers_[i].id_);
+    for (var key_ in this.freeLayers_) {
+        keys_.push(key_);
     }
-    return keys_;
+    return keys_;    
 };
 
 Melown.Map.prototype.getMapsSrs = function(srs_) {
@@ -333,6 +334,34 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
     }
 
     this.markDirty();
+};
+
+Melown.Map.prototype.addStylesheet = function(id_, style_) {
+    this.stylesheets_[id_] = style_;
+};
+
+Melown.Map.prototype.getStylesheet = function(id_) {
+    return this.stylesheets_[id_];
+    //return this.searchArrayById(this.stylesheets_, id_);
+};
+
+Melown.Map.prototype.getStylesheets = function() {
+    var keys_ = [];
+
+    for (var key_ in this.stylesheets_) {
+        keys_.push(key_);
+    }
+    return keys_;
+};
+
+Melown.Map.prototype.getStylesheetData = function(id_, data_) {
+    var stylesheet_ = this.getFreeLayer(id_);
+
+    if (stylesheet_) {
+        return stylesheet_.get;
+    }
+    
+    return {"url":null, "data":{}};
 };
 
 Melown.Map.prototype.setStylesheetData = function(id_, data_) {
@@ -448,6 +477,19 @@ Melown.Map.prototype.getAzimuthCorrection = function(coords_, coords2_) {
         return ret_; 
     }
     return 0;
+};
+
+Melown.Map.prototype.processUrl = function(url_, fallback_) {
+    if (!url_) {
+        return fallback_;
+    }
+    
+    //is url absolute
+    if (url_.indexOf("://") != -1) {
+        return url_;
+    } else {
+        return this.baseURL_ + url_; 
+    }
 };
 
 Melown.Map.prototype.setConfigParam = function(key_, value_) {

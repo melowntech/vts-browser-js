@@ -28,7 +28,12 @@ Melown.MapGeodataProcessor = function(surface_, listener_) {
     } else {
 
         //debug worker
-        this.processWorker_ = new Worker("./geodata-processor/worker-debug.js");
+        this.processWorker_ = new Worker("../melown-core-api/melown-core/map/geodata-processor/worker-debug.js");
+        
+        this.processWorker_.onerror = function(event){
+            throw new Error(event.message + " (" + event.filename + ":" + event.lineno + ")");
+        };
+        
     }
 
     this.processWorker_.onmessage = this.onMessage.bind(this);
@@ -84,8 +89,10 @@ Melown.MapGeodataProcessor.prototype.sendCommand = function(command_, data_, id_
         id_ = [0,0,0];//new Melown.TileId(this.core_, 0, 0, 0);
     }
 
-    var worldParams_ = id_.getWorldParams();
-    var tileSize_ = worldParams_[2];
+    //var worldParams_ = id_.getWorldParams();
+    var worldParams_ = [0,0,0];
+    
+    var tileSize_ = 256; //worldParams_[2];
     //console.log("command: " + command_ + " data: " + data_);
 
     this.processWorker_.postMessage({"command": command_, "data":data_, "x":worldParams_[0], "y":worldParams_[1], "lod": id_[2], "autoLod":autoLod_});

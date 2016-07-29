@@ -452,7 +452,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
 
     if (texturedLine_ == true) {
         if (lineStyleTexture_ != null) {
-            messageData_["texture"] = [layerBitmaps_[lineStyleTexture_[0]], lineStyleTexture_[1], lineStyleTexture_[2]];
+            messageData_["texture"] = [stylesheetBitmaps_[lineStyleTexture_[0]], lineStyleTexture_[1], lineStyleTexture_[2]];
             messageData_["background"] = lineStyleBackground_;
         }
     }

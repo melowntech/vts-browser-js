@@ -141,7 +141,7 @@ var processGeodata = function(data_, lod_) {
 
     if (geodata_) {
 
-        var groups_ = geodata_["layers"] || geodata_["groups"] || [];
+        var groups_ = geodata_["groups"] || [];
 
         //process layers
         for (var i = 0, li = groups_.length; i < li; i++) {
@@ -157,10 +157,12 @@ self.onmessage = function (e) {
     var command_ = message_["command"];
     var data_ = message_["data"];
 
+    console.log("worker_onmessage: " + command_);
+
     switch(command_) {
 
-        case "setStyles":
-            processStyles(data_);
+        case "setStylesheet":
+            processStylesheet(data_);
             postMessage("ready");
             break;
 
