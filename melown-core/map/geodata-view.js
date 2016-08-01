@@ -61,7 +61,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
 
         switch (message_) {
             case "allProcessed":
-                this.tile_.core_.renderer_.dirty_ = true;
+                this.map_.markDirty();
                 this.ready_ = true;
                 break;
 
@@ -75,12 +75,8 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
 
 Melown.MapGeodataView.prototype.isReady = function() {
     if (this.ready_ == false && this.geodataProcessor_.isReady() == true) {
-        switch(this.type_){
-            case "geodata":
-                this.geodataProcessor_.setListener(this.onGeodataProcessorMessage.bind(this));
-                this.geodataProcessor_.sendCommand("processGeodata", this.tile_.geodata_, this.tile_.id_, this.tile_.layer_.autoLods_);
-                break;
-        }
+        this.geodataProcessor_.setListener(this.onGeodataProcessorMessage.bind(this));
+        this.geodataProcessor_.sendCommand("processGeodata", this.geodata_.geodata_, this.tile_.id_, null);
     }
 
     return this.ready_;
@@ -89,12 +85,8 @@ Melown.MapGeodataView.prototype.isReady = function() {
 
 Melown.MapGeodataView.prototype.draw = function(mv_, mvp_, applyOrigin_) {
     if (this.ready_ == true) {
-        switch(this.type_){
-            case "geodata":
-                for (var i = 0, li = this.gpuGroups_.length; i < li; i++) {
-                    this.gpuGroups_[i].draw(mv_, mvp_, applyOrigin_);
-                }
-                break;
+        for (var i = 0, li = this.gpuGroups_.length; i < li; i++) {
+            this.gpuGroups_[i].draw(mv_, mvp_, applyOrigin_);
         }
     }
     return this.ready_;

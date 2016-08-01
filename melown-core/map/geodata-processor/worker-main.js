@@ -3,23 +3,23 @@
 // into one function in case of minification process
 //---------------------------------------------------
 
-var processFeaturePass = function(type_, feature_, lod_, style_, zIndex_, eventInfo_) {
+var processLayerFeaturePass = function(type_, feature_, lod_, layer_, zIndex_, eventInfo_) {
     switch(type_) {
         case "line-string":
-            if (getStylePropertyValue(style_, "point", feature_, lod_) ||
-                getStylePropertyValue(style_, "label", feature_, lod_)) {
-                processPointArrayPass(feature_, lod_, style_, zIndex_, eventInfo_);
+            if (getLayerPropertyValue(layer_, "point", feature_, lod_) ||
+                getLayerPropertyValue(layer_, "label", feature_, lod_)) {
+                processPointArrayPass(feature_, lod_, layer_, zIndex_, eventInfo_);
             }
 
-            processLineStringPass(feature_, lod_, style_, zIndex_, eventInfo_);
+            processLineStringPass(feature_, lod_, layer_, zIndex_, eventInfo_);
             break;
 
         case "point-array":
-            processPointArrayPass(feature_, lod_, style_, zIndex_, eventInfo_);
+            processPointArrayPass(feature_, lod_, layer_, zIndex_, eventInfo_);
 
-            if (getStylePropertyValue(style_, "line", feature_, lod_) ||
-                getStylePropertyValue(style_, "line-label", feature_, lod_)) {
-                processLineStringPass(feature_, lod_, style_, zIndex_, eventInfo_);
+            if (getLayerPropertyValue(layer_, "line", feature_, lod_) ||
+                getLayerPropertyValue(layer_, "line-label", feature_, lod_)) {
+                processLineStringPass(feature_, lod_, layer_, zIndex_, eventInfo_);
             }
 
             break;
@@ -27,87 +27,107 @@ var processFeaturePass = function(type_, feature_, lod_, style_, zIndex_, eventI
 
 };
 
-var processFeature= function(type_, feature_, lod_, featureIndex_) {
-    var style_ = getStyle(feature_["style"], type_, featureIndex_);
-    var visible_ = getStylePropertyValue(style_, "visible", feature_, lod_);
-    var zIndex_ = getStylePropertyValue(style_, "z-index", feature_, lod_);
+var processLayerFeature = function(type_, feature_, lod_, layer_, featureIndex_) {
+    //var layer_ = getLayer(feature_["style"], type_, featureIndex_);
+    var visible_ = getLayerPropertyValue(layer_, "visible", feature_, lod_);
+    var zIndex_ = getLayerPropertyValue(layer_, "z-index", feature_, lod_);
 
     if (visible_ == false) {
         return;
     }
 
-    var eventInfo_ = {};
+    feature_.properties_ = feature_["properties"] || {};
 
-    for (var key_ in feature_) {
-        if (key_ != "points" && key_ != "d-points") {
-            eventInfo_[key_] = feature_[key_];
-        }
-    }
+    var eventInfo_ = feature_.properties_;
 
-    var hoverStyleId_ = getStylePropertyValue(style_, "hover-style", feature_, lod_);
-    var hoverStyle_ = (hoverStyleId_ != "") ? getStyle(hoverStyleId_, type_, featureIndex_) : null;
+    var hoverLayerId_ = getLayerPropertyValue(layer_, "hover-style", feature_, lod_);
+    var hoverlayer_ = (hoverLayerId_ != "") ? getLayer(hoverLayerId_, type_, featureIndex_) : null;
 
-    if (hoverStyle_ != null) {
+    if (hoverlayer_ != null) {
         hitState_ = 1;
-        processFeaturePass(type_, feature_, lod_, style_, zIndex_, eventInfo_);
+        processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
         hitState_ = 2;
-        processFeaturePass(type_, feature_, lod_, hoverStyle_, zIndex_, eventInfo_);
+        processLayerFeaturePass(type_, feature_, lod_, hoverlayer_, zIndex_, eventInfo_);
     } else {
         hitState_ = 0;
-        processFeaturePass(type_, feature_, lod_, style_, zIndex_, eventInfo_);
+        processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
     }
 
 
-    var multiPass_ = getStylePropertyValue(style_, "multi-pass", feature_, lod_);
+    var multiPass_ = getLayerPropertyValue(layer_, "multi-pass", feature_, lod_);
 
     if (multiPass_ != null) {
         for (var i = 0, li = multiPass_.length; i < li; i++) {
             var zIndex_ = multiPass_[i][0];
-            var style_ = getStyle(multiPass_[i][1], type_, featureIndex_);
+            var layer_ = getLayer(multiPass_[i][1], type_, featureIndex_);
 
-            visible_ = getStylePropertyValue(style_, "visible", feature_, lod_);
+            visible_ = getLayerPropertyValue(layer_, "visible", feature_, lod_);
 
             if (visible_ == false) {
                 continue;
             }
 
-            hoverStyleId_ = getStylePropertyValue(style_, "hover-style", feature_, lod_);
-            hoverStyle_ = (hoverStyleId_ != "") ? getStyle(hoverStyleId_, type_, featureIndex_) : null;
+            hoverLayerId_ = getLayerPropertyValue(layer_, "hover-style", feature_, lod_);
+            hoverlayer_ = (hoverLayerId_ != "") ? getLayer(hoverLayerId_, type_, featureIndex_) : null;
 
-            if (hoverStyle_ != null) {
+            if (hoverlayer_ != null) {
                 hitState_ = 1;
-                processFeaturePass(type_, feature_, lod_, style_, zIndex_, eventInfo_);
+                processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
                 hitState_ = 2;
-                processFeaturePass(type_, feature_, lod_, hoverStyle_, zIndex_, eventInfo_);
+                processLayerFeaturePass(type_, feature_, lod_, hoverlayer_, zIndex_, eventInfo_);
             } else {
                 hitState_ = 0;
-                processFeaturePass(type_, feature_, lod_, style_, zIndex_, eventInfo_);
+                processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
             }
         }
     }
 
 };
 
+var processFeature = function(type_, feature_, lod_, featureIndex_) {
+    
+    //loop layers
+    for (var key_ in stylesheetLayers_) {
+        var layer_ = stylesheetLayers_[key_];
+        var filter_ =  getLayerPropertyValue(layer_, "filter", feature_, lod_);
+        
+        if (true || !filter_ || getFilterResult(filter_, feature_, lod_, featureIndex_)) {
+            processLayerFeature(type_, feature_, lod_, layer_, featureIndex_);
+        }
+    }
+    
+};
+
 
 var processGroup = function(group_, lod_) {
-    var points_ = group_["points"] || [];
-
+    /*
     if (group_["origin"] == null && (tileX_ != 0 && tileY_ != 0)) {
         group_["origin"] = [tileX_, tileY_, 0];
         forceOrigin_ = true;
     } else {
         forceOrigin_ = false;
-    }
+    }*/
 
-    groupOrigin_ = group_["origin"];
+    var bbox_ = group_["bbox"];
+    bboxMin_ = bbox_[0];
+    bboxMax_ = bbox_[1];
+    bboxDelta_ = [bbox_[1][0] - bbox_[0][0],
+                  bbox_[1][1] - bbox_[0][1],
+                  bbox_[1][2] - bbox_[0][2]];
+    bboxResolution_ = group_["resolution"] || 4096;
+    
+    console.log(JSON.stringify(bboxMin_));
+    console.log(JSON.stringify(bboxDelta_));
+    console.log(JSON.stringify(bboxResolution_));
 
-    if (group_["scale"] != null) {
-        forceScale_ = group_["scale"];
-    } else {
-        forceScale_ = null;
-    }
+    groupOrigin_ = [0,0,0];
+    forceScale_ = [bboxDelta_[0] / bboxResolution_,
+                   bboxDelta_[1] / bboxResolution_,
+                   bboxDelta_[2] / bboxResolution_];
 
-    postMessage({"command":"beginGroup", "id": group_["id"], "bbox": group_["bbox"], "origin": group_["origin"]});
+    postMessage({"command":"beginGroup", "id": group_["id"], "bbox": [bboxMin_, bboxMax_], "origin": bboxMin_});
+
+    var points_ = group_["points"] || [];
 
     //process points
     for (var i = 0, li = points_.length; i < li; i++) {
@@ -172,12 +192,6 @@ self.onmessage = function (e) {
             break;
 
         case "processGeodata":
-
-            tileX_ = message_["x"] || 0;
-            tileY_ = message_["y"] || 0;
-            tileLod_ = message_["lod"] || 1;
-            autoLod_ = message_["autoLod"] || false;
-
             processGeodata(data_, tileLod_);
             postMessage("allProcessed");
             postMessage("ready");

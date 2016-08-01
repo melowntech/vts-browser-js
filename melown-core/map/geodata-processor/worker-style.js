@@ -4,7 +4,7 @@
 //---------------------------------------------------
 
 var getLayer = function(layerId_, featureType_, index_) {
-    var layer_ = stylesheetLayers_.layers_[layerId_];
+    var layer_ = stylesheetData_.layers_[layerId_];
     if (layer_ == null) {
         logError("wrong-Layer", layerId_, null, null, index_, featureType_);
         return {};
@@ -22,11 +22,11 @@ var getLayerPropertyValue = function(layer_, key_, feature_, lod_) {
             if (value_.length > 0) {
                 //is it feature property?
                 if (value_.charAt(0) == "$") {
-                    var finalValue_ = feature_[value_.substr(1)];
+                    var finalValue_ = feature_.properties_[value_.substr(1)];
                     if (finalValue_ != null) {
                         return finalValue_;
                     } else {
-                        logError("wrong-object", layer_["$$Layer-id"], key_, value_, null, "feature-property");
+                        logError("wrong-object", layer_["$$layer-id"], key_, value_, null, "feature-property");
                         getDefaultLayerPropertyValue(key_);
                     }
                 }
@@ -47,7 +47,7 @@ var getLayerPropertyValue = function(layer_, key_, feature_, lod_) {
             if (Array.isArray(value_) == true) {
 
                 if (key_ == "icon-source" && stylesheetBitmaps_[value_[0]] == null) {
-                    logError("wrong-object", layer_["$$Layer-id"], key_, value_, null, "bitmap");
+                    logError("wrong-object", layer_["$$layer-id"], key_, value_, null, "bitmap");
                     return getDefaultLayerPropertyValue(key_);
                 }
 
@@ -190,44 +190,48 @@ var copyLayer = function(layerId_, layer_, layerData_, stylesheetLayersData_) {
         layer_[key_] = layerData_[key_];
     }
 
-    //store Layer id
-    layer_["$$Layer-id"] = layerId_;
+    //store layer id
+    layer_["$$layer-id"] = layerId_;
 };
 
 var logError = function(errorType_, layerId_, key_, value_, index_, subkey_) {
     if ((typeof value_) == "object") {
         value_ = JSON.stringify(value_);
     }
+    
+    var str_ = "";
 
     switch(errorType_) {
         case "wrong-property-value":
-            console.log("Error: wrong Layer property " + (subkey_ ? ("'" + subkey_ + "'") : "") + ": " + layerId_ + "." + key_ + " = " + value_);
+            str_ = "Error: wrong layer property " + (subkey_ ? ("'" + subkey_ + "'") : "") + ": " + layerId_ + "." + key_ + " = " + value_;
             break;
 
         case "wrong-property-value[]":
-            console.log("Error: wrong Layer property " + (subkey_ ? ("'" + subkey_ + "'") : "") + "["+index_+"]: " + layerId_ + "." + key_ + " = " + value_);
+            str_ = "Error: wrong layer property " + (subkey_ ? ("'" + subkey_ + "'") : "") + "["+index_+"]: " + layerId_ + "." + key_ + " = " + value_;
             break;
 
         case "wrong-object":
-            console.log("Error: reffered "+ subkey_ + " does not exist: " + layerId_ + "." + key_ + " = " + value_);
+            str_ = "Error: reffered "+ subkey_ + " does not exist: " + layerId_ + "." + key_ + " = " + value_;
             break;
 
         case "wrong-object[]":
-            console.log("Error: reffered "+ subkey_ + " does not exist: " + layerId_ + "." + key_ + "["+index_+"] = " + value_);
+            str_ = "Error: reffered "+ subkey_ + " does not exist: " + layerId_ + "." + key_ + "["+index_+"] = " + value_;
             break;
 
         case "wrong-Layer":
-            console.log("Error: reffered "+ subkey_ + " Layer does not exist: " + subkey_ + "["+index_+"].Layer = " + layerId_);
+            str_ = "Error: reffered "+ subkey_ + " Layer does not exist: " + subkey_ + "["+index_+"].Layer = " + layerId_;
             break;
 
         case "wrong-bitmap":
-            console.log("Error: wrong definition of bitmap: " + layerId_);
+            str_ = "Error: wrong definition of bitmap: " + layerId_;
             break;
 
         case "custom":
-            console.log("Error: " + layerId_);
+            str_ = "Error: " + layerId_;
             break;
     }
+    
+    console.log(str_);
 };
 
 var validateValue = function(layerId_, key_, value_, type_, arrayLength_, min_, max_) {
@@ -515,7 +519,7 @@ var validateLayerPropertyValue = function(layerId_, key_, value_) {
        case "zbuffer-offset": return validateValue(layerId_, key_, value_, "object", 3, 0, Number.MAX_VALUE); break;
 
        case "hover-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "hover-Layer":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "hover-style":  return validateValue(layerId_, key_, value_, "string"); break;
        case "enter-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
        case "leave-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
        case "click-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
@@ -575,7 +579,7 @@ var getDefaultLayerPropertyValue = function(key_) {
        case "zbuffer-offset": return [1,1,1];
 
        case "hover-event": return false;
-       case "hover-Layer": return "";
+       case "hover-style": return "";
        case "enter-event": return false;
        case "leave-event": return false;
        case "click-event": return false;
@@ -669,7 +673,7 @@ var processStylesheet = function(stylesheetLayersData_) {
     postMessage({"command":"loadBitmaps", "bitmaps": stylesheetBitmaps_});
 
     //get layers
-    stylesheetLayers_ = {
+    stylesheetData_ = {
         layers_ : {}
     };
 
@@ -677,11 +681,13 @@ var processStylesheet = function(stylesheetLayersData_) {
 
     //console.log(JSON.stringify(Layers_));
 
+    stylesheetLayers_ = stylesheetData_.layers_;
+
     //process layers
     for (var key_ in layers_) {
-        stylesheetLayers_.layers_[key_] = processLayer(key_, layers_[key_], stylesheetLayersData_);
+        stylesheetData_.layers_[key_] = processLayer(key_, layers_[key_], stylesheetLayersData_);
 
-        //console.log(JSON.stringify(stylesheetLayers_.layers_[key_]));
+        //console.log(JSON.stringify(stylesheetData_.layers_[key_]));
     }
 };
 

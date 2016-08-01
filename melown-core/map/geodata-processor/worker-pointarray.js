@@ -11,45 +11,45 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
     }
 
     //debugger
-    var visibility_ = getStylePropertyValue(style_, "visibility", pointArray_, lod_);
-    var hoverEvent_ = getStylePropertyValue(style_, "hover-event", pointArray_, lod_);
-    var clickEvent_ = getStylePropertyValue(style_, "click-event", pointArray_, lod_);
-    var drawEvent_ = getStylePropertyValue(style_, "draw-event", pointArray_, lod_);
-    var enterEvent_ = getStylePropertyValue(style_, "enter-event", pointArray_, lod_);
-    var leaveEvent_ = getStylePropertyValue(style_, "leave-event", pointArray_, lod_);
+    var visibility_ = getLayerPropertyValue(style_, "visibility", pointArray_, lod_);
+    var hoverEvent_ = getLayerPropertyValue(style_, "hover-event", pointArray_, lod_);
+    var clickEvent_ = getLayerPropertyValue(style_, "click-event", pointArray_, lod_);
+    var drawEvent_ = getLayerPropertyValue(style_, "draw-event", pointArray_, lod_);
+    var enterEvent_ = getLayerPropertyValue(style_, "enter-event", pointArray_, lod_);
+    var leaveEvent_ = getLayerPropertyValue(style_, "leave-event", pointArray_, lod_);
 
-    var zbufferOffset_ = getStylePropertyValue(style_, "zbuffer-offset", pointArray_, lod_);
+    var zbufferOffset_ = getLayerPropertyValue(style_, "zbuffer-offset", pointArray_, lod_);
 
-    var point_ = getStylePropertyValue(style_, "point", pointArray_, lod_);
-    var pointFlat_ = getStylePropertyValue(style_, "point-flat", pointArray_, lod_);
-    var pointColor_ = getStylePropertyValue(style_, "point-color", pointArray_, lod_);
-    var pointRadius_ = 0.5 * getStylePropertyValue(style_, "point-radius", pointArray_, lod_);
-    //zIndex_ = (zIndex_ !== null) ? zIndex_ : getStylePropertyValue(style_, "z-index", pointArray_, lod_);
+    var point_ = getLayerPropertyValue(style_, "point", pointArray_, lod_);
+    var pointFlat_ = getLayerPropertyValue(style_, "point-flat", pointArray_, lod_);
+    var pointColor_ = getLayerPropertyValue(style_, "point-color", pointArray_, lod_);
+    var pointRadius_ = 0.5 * getLayerPropertyValue(style_, "point-radius", pointArray_, lod_);
+    //zIndex_ = (zIndex_ !== null) ? zIndex_ : getLayerPropertyValue(style_, "z-index", pointArray_, lod_);
 
-    var icon_ = getStylePropertyValue(style_, "icon", pointArray_, lod_);
+    var icon_ = getLayerPropertyValue(style_, "icon", pointArray_, lod_);
     if (icon_ == true) {
         var iconData_ = {
-            color_ : getStylePropertyValue(style_, "icon-color", pointArray_, lod_),
-            scale_ : getStylePropertyValue(style_, "icon-scale", pointArray_, lod_),
-            offset_ : getStylePropertyValue(style_, "icon-offset", pointArray_, lod_),
-            origin_ : getStylePropertyValue(style_, "icon-origin", pointArray_, lod_),
-            source_ : getStylePropertyValue(style_, "icon-source", pointArray_, lod_),
+            color_ : getLayerPropertyValue(style_, "icon-color", pointArray_, lod_),
+            scale_ : getLayerPropertyValue(style_, "icon-scale", pointArray_, lod_),
+            offset_ : getLayerPropertyValue(style_, "icon-offset", pointArray_, lod_),
+            origin_ : getLayerPropertyValue(style_, "icon-origin", pointArray_, lod_),
+            source_ : getLayerPropertyValue(style_, "icon-source", pointArray_, lod_),
             vertexBuffer_ : [],
             originBuffer_ : [],
             texcoordsBuffer_ : []
         };
     }
 
-    var label_ = getStylePropertyValue(style_, "label", pointArray_, lod_);
+    var label_ = getLayerPropertyValue(style_, "label", pointArray_, lod_);
     if (label_ == true) {
         var labelData_ = {
-            color_ : getStylePropertyValue(style_, "label-color", pointArray_, lod_),
-            size_ : getStylePropertyValue(style_, "label-size", pointArray_, lod_),
-            offset_ : getStylePropertyValue(style_, "label-offset", pointArray_, lod_),
-            origin_ : getStylePropertyValue(style_, "label-origin", pointArray_, lod_),
-            align_ : getStylePropertyValue(style_, "label-align", pointArray_, lod_),
-            source_ : getStylePropertyValue(style_, "label-source", pointArray_, lod_),
-            width_ : getStylePropertyValue(style_, "label-width", pointArray_, lod_),
+            color_ : getLayerPropertyValue(style_, "label-color", pointArray_, lod_),
+            size_ : getLayerPropertyValue(style_, "label-size", pointArray_, lod_),
+            offset_ : getLayerPropertyValue(style_, "label-offset", pointArray_, lod_),
+            origin_ : getLayerPropertyValue(style_, "label-origin", pointArray_, lod_),
+            align_ : getLayerPropertyValue(style_, "label-align", pointArray_, lod_),
+            source_ : getLayerPropertyValue(style_, "label-source", pointArray_, lod_),
+            width_ : getLayerPropertyValue(style_, "label-width", pointArray_, lod_),
             vertexBuffer_ : [],
             originBuffer_ : [],
             texcoordsBuffer_ : []

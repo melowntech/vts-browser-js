@@ -10,6 +10,7 @@ Melown.MapGeodata = function(map_, url_, extraInfo_) {
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
     this.fileSize_ = 0;
+    this.geodata_ = null;
 
     this.cacheItem_ = null;
 
@@ -140,6 +141,8 @@ Melown.MapGeodata.prototype.onLoaded = function(data_) {
     if (this.map_.killed_ == true){
         return;
     }
+
+    this.geodata_ = data_;
 
     this.mapLoaderCallLoaded_();
     this.loadState_ = 2;

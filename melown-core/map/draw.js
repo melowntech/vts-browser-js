@@ -509,6 +509,10 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
 
         if (tile_.surfaceGeodataView_.isReady(preventLoad_, priority_) && !preventLoad_) {
 
+            if (!preventRedener_) {
+                tile_.surfaceGeodataView_.draw();                
+            }
+                
         }        
     }
 };
