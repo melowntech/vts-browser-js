@@ -541,6 +541,150 @@ Melown.Renderer.prototype.getTextSize = function(size_, text_) {
     return x;
 };
 
+
+Melown.Renderer.prototype.drawGpuJobs = function() {
+    var gpu_ = this.gpu_;
+    var gl_ = gpu_.gl_;
+
+    //setup stencil
+    gl_.stencilMask(0xFF);
+    gl_.clear(gl_.STENCIL_BUFFER_BIT);
+
+    gl_.stencilFunc(gl_.EQUAL, 0, 0xFF);
+    gl_.stencilOp(gl_.KEEP, gl_.KEEP, gl_.INCR);
+
+    /*
+    var distance_ = this.position_[2];
+    distance_ = distance_ * Math.tan(Vadstena.radians(this.camera_.getFov()));
+    var distanceFactor_ = (500/Math.max(10.0,distance_));
+    this.distanceFactor_ = (distanceFactor_ * distanceFactor_ * distanceFactor_)*0.5;
+    this.tiltFactor_ = 0.5 + 0.5 * (Math.abs(this.orientation_[1]/-90));
+
+    var zoffset_ = this.getZoffsetFactor([1,1,1]);
+
+    Vadstena.StencilLineState_ = this.gpu_.createState({blend_:true, stencil_:true, zoffset_:zoffset_, culling_: false});
+    Vadstena.LineLabelState_ = this.gpu_.createState({blend_:true, zoffset_:zoffset_, culling_: false});
+    */
+
+    Melown.StencilLineState_ = this.gpu_.createState({blend_:true, stencil_:true, culling_: false});
+    Melown.LineLabelState_ = this.gpu_.createState({blend_:true, culling_: false});
+
+    var screenPixelSize_ = [1.0/this.curSize_[0], 1.0/this.curSize_[1]];
+
+    //this.updateGeoHitmap_ = this.dirty_;
+
+    var clearPass_ = 513;
+    var clearPassIndex_ = 0;
+
+    if (this.clearStencilPasses_.length > 0) {
+        clearPass_ = this.clearStencilPasses_[0];
+        clearPassIndex_++;
+    }
+
+    //draw job buffer and also clean buffer
+    for (var i = 0, li = this.jobZBuffer_.length; i < li; i++) {
+        var lj = this.jobZBufferSize_[i];
+        var buffer_ = this.jobZBuffer_[i];
+
+        if (lj > 0 && i >= clearPass_) {
+            gl_.clear(gl_.STENCIL_BUFFER_BIT);
+
+            if (this.clearStencilPasses_.length > clearPassIndex_) {
+                clearPass_ = this.clearStencilPasses_[clearPassIndex_];
+                clearPassIndex_++;
+            } else {
+                clearPass_ = 513;
+            }
+        }
+
+        for (var j = 0; j < lj; j++) {
+            Melown.drawGpuJob(gpu_, gl_, this, buffer_[j], screenPixelSize_);
+            //buffer_[j] = null;
+        }
+
+        //this.jobZBufferSize_[i] = 0;
+    }
+};
+
+
+Melown.Renderer.prototype.drawHitmapGpuJobs = function() {
+    var gpu_ = this.gpu_;
+    var gl_ = gpu_.gl_;
+
+    this.hoverFeatureCounter_ = 0;
+
+    var size_ = this.hitmapSize_;
+
+    //set texture framebuffer
+    this.gpu_.setFramebuffer(this.geoHitmapTexture_);
+
+    var oldSize_ = [ this.curSize_[0], this.curSize_[1] ];
+
+    var width_ = size_;
+    var height_ = size_;
+
+    gl_.clearColor(1.0,1.0, 1.0, 1.0);
+    gl_.enable(gl_.DEPTH_TEST);
+
+    //clear screen
+    gl_.viewport(0, 0, size_, size_);
+    gl_.clear(gl_.COLOR_BUFFER_BIT | gl_.DEPTH_BUFFER_BIT);
+
+    this.curSize_ = [width_, height_];
+
+    //render scene
+    this.onlyHitLayers_ = true;
+    //this.paintGL();
+
+    this.gpu_.clear();
+    this.updateCamera();
+
+    //this.camera_.update();
+    this.drawGpuJobs(this);
+
+    this.onlyHitLayers_ = false;
+
+    //return screen framebuffer
+    width_ = oldSize_[0];
+    height_ = oldSize_[1];
+
+    gl_.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    this.gpu_.setFramebuffer(null);
+
+    this.camera_.setAspect(width_ / height_);
+    this.curSize_ = [width_, height_];
+    this.gpu_.resize(this.curSize_, true);
+    this.camera_.update();
+    this.updateCamera();
+
+/*
+    var m = [];
+    m[0] = 2.0/width_; m[1] = 0; m[2] = 0; m[3] = 0;
+    m[4] = 0; m[5] = -2.0/height_; m[6] = 0; m[7] = 0;
+    m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
+    m[12] = -width_*0.5*m[0]; m[13] = -height_*0.5*m[5]; m[14] = 0; m[15] = 1;
+    this.imageProjectionMatrix_ = m;
+*/
+
+};
+
+Melown.Renderer.prototype.clearJobBuffer = function() {
+
+    //clean job buffer
+    for (var i = 0, li = this.jobZBuffer_.length; i < li; i++) {
+        var lj = this.jobZBufferSize_[i];
+        var buffer_ = this.jobZBuffer_[i];
+
+        for (var j = 0; j < lj; j++) {
+            buffer_[j] = null;
+        }
+
+        this.jobZBufferSize_[i] = 0;
+    }
+
+};
+
 Melown.Renderer.prototype.fogSetup = function(program_, fogDensity_) {
     // the fog equation is: exp(-density*distance), this gives the fraction
     // of the original color that is still visible at some distance

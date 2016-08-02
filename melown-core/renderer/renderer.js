@@ -83,6 +83,14 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.font_ = null;
     this.fogDensity_ = 0;
 
+    this.jobZBuffer_ = new Array(512);
+    this.jobZBufferSize_ = new Array(512);
+    
+    for (var i = 0, li = this.jobZBuffer_.length; i < li; i++) {
+        this.jobZBuffer_[i] = [];
+        this.jobZBufferSize_[i] = 0;
+    }
+        
     //hack for melown maps
     //this.melownHack_ = true;
     //this.melownHack_ = false;

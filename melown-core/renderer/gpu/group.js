@@ -319,11 +319,11 @@ Melown.GpuGroup.prototype.draw = function(mv_, mvp_, applyOrigin_) {
     var gl_ = this.gl_;
     var gpu_ = this.gpu_;
 
-    var planet_ = this.renderer_.getPlanet();
-    var cameraPos_ = this.renderer_.cameraPosition();
-
-    var jobZBuffer_ = planet_.jobZBuffer_;
-    var jobZBufferSize_ = planet_.jobZBufferSize_;
+    //var cameraPos_ = this.renderer_.cameraPosition();
+    var cameraPos_ = this.renderer_.camera_.getPosition();
+    
+    var jobZBuffer_ = this.renderer_.jobZBuffer_;
+    var jobZBufferSize_ = this.renderer_.jobZBufferSize_;
 
     var onlyHitable_ = this.renderer_.onlyHitLayers_;
 
@@ -394,7 +394,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
     switch(job_.type_) {
         case "flat-line":
 
-            gpu_.setState(Melown.StencilLineState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.StencilLineState_, 0); //renderer_.getZoffsetFactor(job_.zbufferOffset_));
             var prog_ = renderer_.progLine_;
 
             gpu_.useProgram(prog_, "aPosition", null, null, null);
@@ -416,7 +416,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
         case "pixel-line":
         case "pixel-tline":
 
-            gpu_.setState(Melown.StencilLineState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.StencilLineState_, 0);//renderer_.getZoffsetFactor(job_.zbufferOffset_));
             var prog_ = job_.program_;
             var texture_ = null;
             var textureParams_ = [0,0,0,0];

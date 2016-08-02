@@ -66,6 +66,8 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
                 break;
 
             case "ready":
+                this.map_.markDirty();
+                //this.ready_ = true;
                 break;
 
         }
@@ -82,11 +84,41 @@ Melown.MapGeodataView.prototype.isReady = function() {
     return this.ready_;
 };
 
+Melown.MapGeodataView.prototype.getWorldMatrix = function(bbox_, geoPos_, matrix_) {
+    var m = matrix_;
 
-Melown.MapGeodataView.prototype.draw = function(mv_, mvp_, applyOrigin_) {
+    if (m != null) {/*
+        m[0] = bbox_.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
+        m[4] = 0; m[5] = bbox_.side(1); m[6] = 0; m[7] = 0;
+        m[8] = 0; m[9] = 0; m[10] = bbox_.side(2); m[11] = 0;
+        m[12] = this.bbox_.min_[0] - geoPos_[0]; m[13] = this.bbox_.min_[1] - geoPos_[1]; m[14] = this.bbox_.min_[2] - geoPos_[2]; m[15] = 1;*/
+    } else {
+        var m = Melown.mat4.create();
+
+        Melown.mat4.multiply( Melown.translationMatrix(bbox_.min_[0] - geoPos_[0], bbox_.min_[1] - geoPos_[1], bbox_.min_[2] - geoPos_[2]),
+                       Melown.scaleMatrix(1, 1, 1), m);
+    }
+
+    return m;
+};
+
+
+Melown.MapGeodataView.prototype.draw = function(cameraPos_) {
     if (this.ready_ == true) {
+        var renderer_ = this.renderer_;
+
         for (var i = 0, li = this.gpuGroups_.length; i < li; i++) {
-            this.gpuGroups_[i].draw(mv_, mvp_, applyOrigin_);
+            var group_ = this.gpuGroups_[i]; 
+
+            var mvp_ = Melown.mat4.create();
+            var mv_ = Melown.mat4.create();
+        
+            Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), this.getWorldMatrix(group_.bbox_, cameraPos_), mv_);
+        
+            var proj_ = renderer_.camera_.getProjectionMatrix();
+            Melown.mat4.multiply(proj_, mv_, mvp_);
+            
+            group_.draw(mv_, mvp_);
         }
     }
     return this.ready_;
