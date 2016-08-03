@@ -9,7 +9,7 @@ Melown.MapGeodataView = function(map_, geodata_, extraInfo_) {
     this.renderer_ = this.map_.renderer_;
     this.gpuGroups_ = [];
     this.curerntGpuGroup_ = null;
-    this.tile_ = extraInfo_.tile_;
+    /*this.tile_ = extraInfo_.tile_;*/
     this.surface_ = extraInfo_.surface_;
 
     if (!this.surface_.geodataProcessor_) {
@@ -78,7 +78,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
 Melown.MapGeodataView.prototype.isReady = function() {
     if (this.ready_ == false && this.geodataProcessor_.isReady() == true) {
         this.geodataProcessor_.setListener(this.onGeodataProcessorMessage.bind(this));
-        this.geodataProcessor_.sendCommand("processGeodata", this.geodata_.geodata_, this.tile_.id_, null);
+        this.geodataProcessor_.sendCommand("processGeodata", this.geodata_.geodata_ /*, this.tile_.id_, null*/);
     }
 
     return this.ready_;

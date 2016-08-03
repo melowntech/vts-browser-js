@@ -44,10 +44,11 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawChannelNames_ = ["base", "hit"];
 
     this.freeLayerSequence_ = [];
+    this.freeLayersHaveGeodata_ = false;
 
     this.visibleCredits_ = {
-      imagery_ : [],
-      mapdata_ : []
+        imagery_ : [],
+        mapdata_ : []
     };
 
     this.gpuCache_ = new Melown.MapCache(this, this.config_.mapGPUCache_*1024*1024);
@@ -355,22 +356,40 @@ Melown.Map.prototype.getStylesheets = function() {
 };
 
 Melown.Map.prototype.getStylesheetData = function(id_, data_) {
-    var stylesheet_ = this.getFreeLayer(id_);
+    var stylesheet_ = this.getStylesheet(id_);
 
     if (stylesheet_) {
-        return stylesheet_.get;
+        return {"url":stylesheet_.url_, "data": stylesheet_.data_} 
     }
     
     return {"url":null, "data":{}};
 };
 
 Melown.Map.prototype.setStylesheetData = function(id_, data_) {
-    var stylesheet_ = this.getFreeLayer(id_);
+    var stylesheet_ = this.getStylesheet(id_);
     
     if (stylesheet_) {
         stylesheet_.data_ = data_;
     }
-    
+
+    if (stylesheet_) {
+        stylesheet_.setData(data_);
+
+        for (var key_ in this.freeLayers_) {
+            var freeLayer_ = this.getFreeLayer(key_);
+            if (freeLayer_ && freeLayer_.geodata_ && freeLayer_.stylesheet_ == stylesheet_) {
+                
+                if (freeLayer_.geodataProcessor_) {
+                    freeLayer_.geodataProcessor_.sendCommand("setStylesheet", freeLayer_.stylesheet_.data_);
+                }
+
+                freeLayer_.geodataCounter_++;
+            }
+        }
+    }
+
+    this.markDirty();
+        
     //TODO: reset geodatview in free layers
 };
 

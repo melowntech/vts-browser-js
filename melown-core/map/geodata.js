@@ -44,9 +44,9 @@ Melown.MapGeodata.prototype.isReady = function(doNotLoad_, priority_) {
 };
 
 Melown.MapGeodata.prototype.scheduleLoad = function(priority_) {
-    if (this.mapLoaderUrl_ == null) {
-        this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.surface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
-    }
+    //if (this.mapLoaderUrl_ == null) {
+        //this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.surface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
+    //}
 
     this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_);
 };
@@ -65,16 +65,80 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
 
     var tile_ = this.extraInfo_.tile_;    
 
-    if (tile_ && tile_.metanode_) {
-        var bbox_ = tile_.metanode_.bbox_;
+    if (tile_) {
+
+        if (tile_.metanode_) {
+            var bbox_ = tile_.metanode_.bbox_;
+    
+            this.onLoaded({
+                
+                "version": 1,
+                "groups": [{
+                    "bbox": [
+                        bbox_.min_,
+                        bbox_.max_
+                    ],
+                    "resolution": 4096,
+        
+                    "points": [{
+                        "points": [
+                            [0, 0, 0],
+                            [4096, 0, 0],
+                            [4096, 4096, 0],
+                            [0, 4096, 0],
+    
+                            [0, 0, 4096],
+                            [4096, 0, 4096],
+                            [4096, 4096, 4096],
+                            [0, 4096, 4096]
+                        ],
+            
+                        "properties": {
+                            "kind": "restaurant",
+                            "name": "U Bílého Lva"
+                        }   
+                    }],
+            
+                    "lines": [{
+                        "lines" : [
+                            [
+                                [0, 0, 0],
+                                [4096, 0, 0],
+                                [4096, 4096, 0],
+                                [0, 4096, 0]
+                            ],
+                            
+                            [
+                                [0, 0, 4096],
+                                [4096, 0, 4096],
+                                [4096, 4096, 4096],
+                                [0, 4096, 4096]
+                            ]
+                        ],
+            
+                        "properties": {
+                            "kind": "road",
+                            "name": "Na Bělidle"
+                        }   
+                    }]
+            
+                }]
+                
+            });
+            
+        }
+        
+    } else {
+        
+        //monolitic
 
         this.onLoaded({
             
             "version": 1,
             "groups": [{
                 "bbox": [
-                    bbox_.min_,
-                    bbox_.max_
+                    [472143,5555696,225],
+                    [472303,5555760,245]
                 ],
                 "resolution": 4096,
     
@@ -123,7 +187,6 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
             }]
             
         });
-        
     }
 
 };

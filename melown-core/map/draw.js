@@ -21,7 +21,12 @@ Melown.Map.prototype.draw = function() {
         var layer_ = this.freeLayerSequence_[i];
         if (layer_.ready_ && layer_.tree_ && 
             (!layer_.geodata_ || (layer_.stylesheet_ && layer_.stylesheet_.isReady())) ) {
-            layer_.tree_.draw();
+            
+            if (layer_.type_ == "geodata") {
+                this.drawMonoliticGeodata(layer_);
+            } else {
+                layer_.tree_.draw();
+            }
         }
     }
     
@@ -67,8 +72,10 @@ Melown.Map.prototype.draw = function() {
         }
     }
 
-    this.renderer_.drawGpuJobs();
-    this.renderer_.clearJobBuffer();
+    if (this.freeLayersHaveGeodata_) {
+        this.renderer_.drawGpuJobs();
+        this.renderer_.clearJobBuffer();
+    }
 };
 
 Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNotLoad_) {
@@ -246,11 +253,12 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
     if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
         var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
+        /*
         if (tile_.id_[0] == 11 &&
             tile_.id_[1] == 546 &&
             tile_.id_[2] == 344) {
                 tile_ = tile_;
-        }
+        }*/
 
         tile_.drawCommands_ = [[], [], []]; //??
         tile_.credits_ = {};
@@ -497,6 +505,12 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
     }
 
     var channel_ = this.drawChannel_;
+    
+    if (tile_.geodataCounter_ != tile_.surface_.geodataCounter_) {
+        tile_.drawCommands_ = [[],[],[]];
+        tile_.surfaceGeodataView_ = null;
+        tile_.geodataCounter_ = tile_.surface_.geodataCounter_;
+    }
 
     if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
         if (!preventRedener_) {
@@ -531,12 +545,63 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
             tile_.surfaceGeodataView_ = new Melown.MapGeodataView(this, tile_.surfaceGeodata_, {tile_:tile_, surface_:tile_.surface_});
         }
 
+        tile_.credits_ = {};
+
+        //set credits
+        for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+            tile_.credits_[node_.credits_[k]] = true;  
+        }
+
         //if (tile_.drawCommands_[channel_].length == 0) {
             tile_.drawCommands_[channel_][0] = {
                 type_ : "geodata",
                 geodata_ : tile_.surfaceGeodataView_ 
             };
         //}
+    }
+};
+
+Melown.Map.prototype.drawMonoliticGeodata = function(surface_) {
+    if (!surface_) {
+        return;
+    }
+
+    if (!surface_.tree_.bboxVisible([0,0,0], surface_.extents_, this.cameraPosition_)) {
+        return;
+    }
+
+    if (surface_.monoGeodata_ == null) {
+        var path_ = surface_.getMonoGeodataUrl(surface_.id_);
+        surface_.monoGeodata_ = new Melown.MapGeodata(this, path_, {tile_:null, surface_:surface_});
+    }
+
+    var channel_ = this.drawChannel_;
+    
+    if (surface_.monoGeodataCounter_ != surface_.geodataCounter_) {
+        surface_.monoGeodataView_ = null;
+        surface_.monoGeodataCounter_ = surface_.geodataCounter_;
+    }
+
+    if (surface_.monoGeodata_.isReady()) {
+
+        if (!surface_.monoGeodataView_) {
+            surface_.monoGeodataView_ = new Melown.MapGeodataView(this, surface_.monoGeodata_, {tile_:null, surface_:surface_});
+        }
+        
+        if (surface_.monoGeodataView_.isReady()) {
+            surface_.monoGeodataView_.draw(this.cameraPosition_);
+        }
+
+        /*
+        surface_.credits_ = {};
+
+        //set credits
+        for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+            surface_.credits_[node_.credits_[k]] = true;  
+        }
+
+        this.applyCredits(surface_);
+        */
     }
 };
 

@@ -5,7 +5,7 @@ mkdir build
 cd melown-core
 
 # merge geodata workers
-echo "Melown.geodataProcessorWorker = function() { " | cat - map/geodata-processor/worker-globals.js map/geodata-processor/worker-style.js map/geodata-processor/worker-linestring.js map/geodata-processor/worker-pointarray.js map/geodata-processor/worker-text.js map/geodata-processor/worker-main.js > ../build/geodata-worker-tmp.js
+echo "Melown.geodataProcessorWorker = function() { " | cat - map/geodata-processor/worker-globals.js map/geodata-processor/worker-style.js map/geodata-processor/worker-linestring.js map/geodata-processor/worker-pointarray.js map/geodata-processor/worker-polygon.js map/geodata-processor/worker-text.js map/geodata-processor/worker-main.js > ../build/geodata-worker-tmp.js
 echo "};">> ../build/geodata-worker-tmp.js 
 
 # merge melown-core 

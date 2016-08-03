@@ -23,6 +23,10 @@ var processLayerFeaturePass = function(type_, feature_, lod_, layer_, zIndex_, e
             }
 
             break;
+            
+        case "polygon":
+            processPolygonPass(feature_, lod_, style_, zIndex_, eventInfo_);
+            break;     
     }
 
 };
@@ -117,6 +121,7 @@ var processGroup = function(group_, lod_) {
     bboxResolution_ = group_["resolution"] || 4096;
     
     console.log(JSON.stringify(bboxMin_));
+    console.log(JSON.stringify(bboxMax_));
     console.log(JSON.stringify(bboxDelta_));
     console.log(JSON.stringify(bboxResolution_));
 
@@ -139,6 +144,13 @@ var processGroup = function(group_, lod_) {
     //process lines
     for (var i = 0, li = lines_.length; i < li; i++) {
         processFeature("line-string", lines_[i], lod_, i);
+    }
+
+    var polygons_ = group_["polygons"] || [];
+
+    //process polygons
+    for (var i = 0, li = polygons_.length; i < li; i++) {
+        processFeature("polygon", polygons_[i], lod_, i);
     }
 
     postMessage({"command":"endGroup"});

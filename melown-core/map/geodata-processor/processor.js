@@ -78,20 +78,21 @@ Melown.MapGeodataProcessor.prototype.setListener = function(listener_) {
     this.listener_ = listener_;
 };
 
-Melown.MapGeodataProcessor.prototype.sendCommand = function(command_, data_, tile_) {
+Melown.MapGeodataProcessor.prototype.sendCommand = function(command_, data_ /*, tile_*/) {
     if (this.killed_ == true) {
         return;
     }
     
+    /*
     if (tile_ && tile_.metanode_) {
         var bbox_ = [tile_.metanode_.bbox_.min_, tile_.metanode_.bbox_.max_]; 
     } else {
         var bbox_ = [[0,0,0], [1,1,1]]; 
-    }
+    }*/
 
     this.ready_ = false;
 
-    this.processWorker_.postMessage({"command": command_, "data":data_, "bbox": bbox_});
+    this.processWorker_.postMessage({"command": command_, "data":data_ /*, "bbox": bbox_*/});
 };
 
 

@@ -8,6 +8,7 @@ importScripts("./worker-globals.js",
               "./worker-style.js",
               "./worker-linestring.js",
               "./worker-pointarray.js",
+              "./worker-polygon.js",
               "./worker-text.js",
               "./worker-main.js");
 

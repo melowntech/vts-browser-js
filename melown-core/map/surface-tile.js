@@ -8,6 +8,7 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.viewCounter_ = map_.viewCounter_;
     this.renderCounter_ = 0;
     this.renderReady_ = false;
+    this.geodataCounter_ = 0;
 
     this.metanode_ = null;  //[metanode, cacheItem]
     this.lastMetanode_ = null;

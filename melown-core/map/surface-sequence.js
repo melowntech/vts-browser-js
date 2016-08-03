@@ -132,14 +132,23 @@ Melown.Map.prototype.generateSurfaceSequence = function(tree_, surfaces_) {
 
     //this.generateSurfaceSequenceOld();
 
+    this.freeLayersHaveGeodata_ = false;
+
     //free layers
     for (var key_ in view_.freeLayers_) {
         var freeLayer_ = this.getFreeLayer(key_);
         if (freeLayer_) {
             freeLayer_.surfaceSequence_ = [freeLayer_];
             freeLayer_.surfaceOnlySequence_ = [freeLayer_];
+            
+            if (freeLayer_.geodata_) {
+                this.freeLayersHaveGeodata_ = true;
+            }
         }
     }    
+
+    //just in case
+    this.renderer_.clearJobBuffer();
 };
 
 Melown.Map.prototype.generateBoundLayerSequence = function() {

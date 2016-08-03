@@ -515,6 +515,9 @@ var validateLayerPropertyValue = function(layerId_, key_, value_) {
        case "label-align":   return validateValue(layerId_, key_, value_, "string"); break;
        case "label-width":   return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
 
+       case "polygon":         return validateValue(styleId_, key_, value_, "boolean"); break;
+       case "polygon-color":   return validateValue(styleId_, key_, value_, "object", 4, 0, 255); break;
+
        case "z-index":        return validateValue(layerId_, key_, value_, "number", null, -Number.MAX_VALUE, Number.MAX_VALUE); break;
        case "zbuffer-offset": return validateValue(layerId_, key_, value_, "object", 3, 0, Number.MAX_VALUE); break;
 
@@ -574,6 +577,9 @@ var getDefaultLayerPropertyValue = function(key_) {
        case "label-origin":  return "bottom-center";
        case "label-align":   return "center";
        case "label-width":   return 200;
+       
+       case "polygon":         return false;
+       case "polygon-color":   return [255,255,255,255];
 
        case "z-index":        return 0;
        case "zbuffer-offset": return [1,1,1];

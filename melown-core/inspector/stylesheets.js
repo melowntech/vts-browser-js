@@ -58,6 +58,8 @@ Melown.Inspector.prototype.initStylesheetsPanel = function() {
     this.stylesheetsOptionsElement_.onchange = this.onStylesheetsComboSwitched.bind(this);
 
     this.stylesheetsTextElement_ = document.getElementById("melown-stylesheets-panel-text");
+    
+    document.getElementById("melown-stylesheets-panel-button").onclick = this.onStylesheetsUpdate.bind(this);
 
     this.stylesheetsElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
     this.stylesheetsElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
@@ -102,8 +104,7 @@ Melown.Inspector.prototype.onStylesheetsUpdate = function() {
         return;
     }
 
-
-    map_.setStylesheetData(this.stylesheetsOptionsElement_.value, JSON.eval(this.stylesheetsTextElement_.value));
+    map_.setStylesheetData(this.stylesheetsOptionsElement_.value, JSON.parse(this.stylesheetsTextElement_.value));
 };
 
 Melown.Inspector.prototype.buildStylesheetsCombo = function() {

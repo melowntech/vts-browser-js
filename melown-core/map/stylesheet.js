@@ -27,6 +27,10 @@ Melown.MapStylesheet = function(map_, id_, url_) {
 Melown.MapStylesheet.prototype.kill = function() {
 };
 
+Melown.MapStylesheet.prototype.setData = function(data_) {
+    this.data_ = data_;
+    this.loadState_ = 2;
+};
 
 Melown.MapStylesheet.prototype.isReady = function(doNotLoad_, priority_) {
     if (this.loadState_ == 2) { //loaded

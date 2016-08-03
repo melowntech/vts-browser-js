@@ -54,11 +54,12 @@ Melown.MapBoundLayer.prototype.parseJson = function(json_) {
     this.url_ = this.processUrl(this.baseUrl_, json_["url"], "");
     this.tileSize_ = json_["tileSize"] || [256,256];
     this.lodRange_ = json_["lodRange"] || [0,0];
-    this.credits_ = json_["credits"] || [];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.metaUrl_ = this.processUrl(this.baseUrl_, json_["metaUrl"]);
     this.maskUrl_ = this.processUrl(this.baseUrl_, json_["maskUrl"]);
     this.isTransparent_ = json_["isTransparent"] || false;
+    this.credits_ = json_["credits"] || [];
+    this.creditsUrl_ = null;
 
     this.availability_ = json_["availability"] ? {} : null;
 
@@ -77,11 +78,30 @@ Melown.MapBoundLayer.prototype.parseJson = function(json_) {
         };
     }
 
-    for (var i = 0, li = this.credits_.length; i < li; i++) {
-        var credit_ = this.map_.getCreditById(this.credits_[i]);
-        if (credit_) {
-            this.creditsNumbers_.push(credit_.id_); 
-        }
+    switch(typeof this.credits_) {
+        case "string":
+            this.creditsUrl_ = this.credits_;
+            this.credits_ = [];
+            break;
+
+        case "object":
+        
+            if (!Array.isArray(this.credits_)) {
+                var credits_ = this.credits_;
+                this.credits_ = [];
+                
+                for (var key_ in credits_){
+                    this.map_.addCredit(key_, new Melown.MapCredit(this.map_, credits_[key_]));
+                    this.credits_.push(key_);
+                }
+            }
+
+            for (var i = 0, li = this.credits_.length; i < li; i++) {
+                var credit_ = this.map_.getCreditById(this.credits_[i]);
+                this.creditsNumbers_.push(credit_ ? credit_.id_ : null); 
+            }
+        
+            break;
     }
 
 };
