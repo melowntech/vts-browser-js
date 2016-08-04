@@ -17,10 +17,10 @@ var processLayerFeaturePass = function(type_, feature_, lod_, layer_, zIndex_, e
         case "point-array":
             processPointArrayPass(feature_, lod_, layer_, zIndex_, eventInfo_);
 
-            if (getLayerPropertyValue(layer_, "line", feature_, lod_) ||
+            /*if (getLayerPropertyValue(layer_, "line", feature_, lod_) ||
                 getLayerPropertyValue(layer_, "line-label", feature_, lod_)) {
                 processLineStringPass(feature_, lod_, layer_, zIndex_, eventInfo_);
-            }
+            }*/
 
             break;
             
@@ -88,14 +88,14 @@ var processLayerFeature = function(type_, feature_, lod_, layer_, featureIndex_)
 
 };
 
-var processFeature = function(type_, feature_, lod_, featureIndex_) {
+var processFeature = function(type_, feature_, lod_, featureIndex_, featureType_, group_) {
     
     //loop layers
     for (var key_ in stylesheetLayers_) {
         var layer_ = stylesheetLayers_[key_];
         var filter_ =  getLayerPropertyValue(layer_, "filter", feature_, lod_);
         
-        if (true || !filter_ || getFilterResult(filter_, feature_, lod_, featureIndex_)) {
+        if (!filter_ || getFilterResult(filter_, feature_, featureType_)) {
             processLayerFeature(type_, feature_, lod_, layer_, featureIndex_);
         }
     }
@@ -112,6 +112,8 @@ var processGroup = function(group_, lod_) {
         forceOrigin_ = false;
     }*/
 
+    var groupId_ = group_["id"] || "";
+
     var bbox_ = group_["bbox"];
     bboxMin_ = bbox_[0];
     bboxMax_ = bbox_[1];
@@ -120,10 +122,12 @@ var processGroup = function(group_, lod_) {
                   bbox_[1][2] - bbox_[0][2]];
     bboxResolution_ = group_["resolution"] || 4096;
     
+    /*
     console.log(JSON.stringify(bboxMin_));
     console.log(JSON.stringify(bboxMax_));
     console.log(JSON.stringify(bboxDelta_));
     console.log(JSON.stringify(bboxResolution_));
+    */
 
     groupOrigin_ = [0,0,0];
     forceScale_ = [bboxDelta_[0] / bboxResolution_,
@@ -136,21 +140,21 @@ var processGroup = function(group_, lod_) {
 
     //process points
     for (var i = 0, li = points_.length; i < li; i++) {
-        processFeature("point-array", points_[i], lod_, i);
+        processFeature("point-array", points_[i], lod_, i, "point", groupId_);
     }
 
     var lines_ = group_["lines"] || [];
 
     //process lines
     for (var i = 0, li = lines_.length; i < li; i++) {
-        processFeature("line-string", lines_[i], lod_, i);
+        processFeature("line-string", lines_[i], lod_, i, "line", groupId_);
     }
 
     var polygons_ = group_["polygons"] || [];
 
     //process polygons
     for (var i = 0, li = polygons_.length; i < li; i++) {
-        processFeature("polygon", polygons_[i], lod_, i);
+        processFeature("polygon", polygons_[i], lod_, i, "polygon", groupId_);
     }
 
     postMessage({"command":"endGroup"});

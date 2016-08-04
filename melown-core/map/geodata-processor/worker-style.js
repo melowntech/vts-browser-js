@@ -562,12 +562,12 @@ var getDefaultLayerPropertyValue = function(key_) {
        case "point-Layer":  return "solid";
        case "point-color":  return [255,255,255,255];
 
-       case "icon":        return false;
-       case "icon-source": return null;
-       case "icon-scale":  return 1;
-       case "icon-offset": return [0,0];
-       case "icon-origin": return "bottom-center";
-       case "icon-color":  return [255,255,255,255];
+       case "icon":         return false;
+       case "icon-source":  return null;
+       case "icon-scale":   return 1;
+       case "icon-offset":  return [0,0];
+       case "icon-origin":  return "bottom-center";
+       case "icon-color":   return [255,255,255,255];
 
        case "label":         return false;
        case "label-color":   return [255,255,255,255];
@@ -578,8 +578,8 @@ var getDefaultLayerPropertyValue = function(key_) {
        case "label-align":   return "center";
        case "label-width":   return 200;
        
-       case "polygon":         return false;
-       case "polygon-color":   return [255,255,255,255];
+       case "polygon":        return false;
+       case "polygon-color":  return [255,255,255,255];
 
        case "z-index":        return 0;
        case "zbuffer-offset": return [1,1,1];
@@ -597,6 +597,59 @@ var getDefaultLayerPropertyValue = function(key_) {
     }
 };
 
+function getFilterResult(filter_, feature_, featureType_, group_) {
+    if (!filter_ || !Array.isArray(filter_)) {
+        return false;
+    }
+
+    switch(filter_[0]) {
+        case "all": return (getFilterResult(filter_[1], feature_, lod_, featureIndex_) &&
+                            getFilterResult(filter_[2], feature_, lod_, featureIndex_));
+        case "any": return (getFilterResult(filter_[1], feature_, lod_, featureIndex_) ||
+                            getFilterResult(filter_[2], feature_, lod_, featureIndex_));
+        case "none": return !(getFilterResult(filter_[1], feature_, lod_, featureIndex_) ||
+                              getFilterResult(filter_[2], feature_, lod_, featureIndex_));
+    }
+
+    var value_;
+
+    switch(filter_[1]) {
+        case "#type":  value_ = featureType_; break;   
+        case "#group": value_ = group_;       break;
+        default:   
+            value_ = feature_.properties_[filter_[1]];
+    }
+
+    switch(filter_[0]) {
+        case "==": return (value_ == filter_[2]);
+        case "!=": return (value_ != filter_[2]);
+        case ">=": return (value_ >= filter_[2]);
+        case "<=": return (value_ <= filter_[2]);
+        case ">": return (value_ > filter_[2]);
+        case ">": return (value_ < filter_[2]);
+        
+        case "has": return (typeof value_ != "undefined");
+        case "!has": return (typeof value_ == "undefined");
+        
+        case "in":
+            for (var i = 2, li = filter_.length; i < li; i++) {
+                if (filter_[i] == value_) {
+                    return true;
+                }
+            } 
+            return false;
+        
+        case "!in":
+            for (var i = 2, li = filter_.length; i < li; i++) {
+                if (filter_[i] == value_) {
+                    return false;
+                }
+            } 
+            return true;
+    }            
+
+    return false;    
+};
 
 var processLayer = function(layerId_, layerData_, stylesheetLayersData_) {
     var layer_ = {};

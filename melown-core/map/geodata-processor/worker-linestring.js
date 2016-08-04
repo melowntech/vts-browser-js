@@ -86,6 +86,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
         var joinParams_ = Array(totalPoints_);
     }
 
+    var center_ = [0,0,0];
 
     for (var ii = 0; ii < lines_.length; ii++) {
         if (!Array.isArray(lines_[ii]) || !lines_[ii].length) {
@@ -332,7 +333,6 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
         }
     
         var p1 = [p[0], p[1], p[2]];
-        var center_ = [0,0,0];
     
         var lindex_ = index_; //debug only
         var lindex2_ = index2_; //debug only
@@ -438,7 +438,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
         }
     }
 
-    if (li > 0) {
+    if (totalPoints_ > 0) {
         center_[0] /= totalPoints_;
         center_[1] /= totalPoints_;
         center_[2] /= totalPoints_;
