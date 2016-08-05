@@ -404,6 +404,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
 
     gpuSubmesh_.draw(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
     this.stats_.drawnFaces_ += this.faces_;
+    this.stats_.drawCalls_ ++;
 };
 
 

@@ -91,6 +91,7 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
 //            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +
 //            "viewHeight: " + Math.round(this.core_.getOption("viewHeight")) + " m<br/>" +
 //            "distance: " + Math.round(this.core_.renderer_.cameraDistance_) + " m<br/>" +
+            "Draw calls: " + (stats_.drawCalls_) + "<br/>" +
             "Polygons: " + (stats_.drawnFaces_) + "<br/><br/>" +
             "Terrain Height: " + (stats_.heightTerrain_.toFixed(2)) + "<br/>" +
             "- float: " + (stats_.heightDelta_.toFixed(2)) + "<br/>" +

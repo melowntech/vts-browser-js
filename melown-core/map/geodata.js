@@ -57,10 +57,9 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
 
     //Melown.MapGeodataProcessor = function(surface_, listener_)
 
-    //Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
-
     this.loadState_ = 1;
     
+    //Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
     //return;
 
     var tile_ = this.extraInfo_.tile_;    

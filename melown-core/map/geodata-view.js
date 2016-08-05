@@ -4,6 +4,7 @@
  */
 Melown.MapGeodataView = function(map_, geodata_, extraInfo_) {
     this.map_ = map_;
+    this.stats_ = map_.stats_;
     this.geodata_ = geodata_;
     this.gpu_ = this.map_.renderer_.gpu_;
     this.renderer_ = this.map_.renderer_;
@@ -119,6 +120,9 @@ Melown.MapGeodataView.prototype.draw = function(cameraPos_) {
             Melown.mat4.multiply(proj_, mv_, mvp_);
             
             group_.draw(mv_, mvp_);
+
+            this.stats_.drawnFaces_ += group_.polygons_;
+            this.stats_.drawCalls_ ++;
         }
     }
     return this.ready_;

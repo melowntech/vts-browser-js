@@ -25,6 +25,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.monoGeodata_ = null;
     this.monoGeodataView_ = null;
     this.monoGeodataCounter_ = -1;
+    this.creditsNumbers_ = [];
 
     this.stylesheet_ = null;
     

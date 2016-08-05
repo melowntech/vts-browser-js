@@ -90,6 +90,9 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
         this.jobZBuffer_[i] = [];
         this.jobZBufferSize_[i] = 0;
     }
+    
+    this.layerGroupVisible_ = [];
+    this.bitmaps_ = {};
         
     //hack for melown maps
     //this.melownHack_ = true;

@@ -50,18 +50,24 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
 
     var label_ = getLayerPropertyValue(style_, "label", pointArray_, lod_);
     if (label_ == true) {
-        var labelData_ = {
-            color_ : getLayerPropertyValue(style_, "label-color", pointArray_, lod_),
-            size_ : getLayerPropertyValue(style_, "label-size", pointArray_, lod_),
-            offset_ : getLayerPropertyValue(style_, "label-offset", pointArray_, lod_),
-            origin_ : getLayerPropertyValue(style_, "label-origin", pointArray_, lod_),
-            align_ : getLayerPropertyValue(style_, "label-align", pointArray_, lod_),
-            source_ : getLayerPropertyValue(style_, "label-source", pointArray_, lod_),
-            width_ : getLayerPropertyValue(style_, "label-width", pointArray_, lod_),
-            vertexBuffer_ : [],
-            originBuffer_ : [],
-            texcoordsBuffer_ : []
-        };
+        var source_ = getLayerPropertyValue(style_, "label-source", pointArray_, lod_);
+        var text_ = getLayerExpresionValue(style_, source_, pointArray_, lod_);
+        
+        if (text_) {
+            var labelData_ = {
+                color_ : getLayerPropertyValue(style_, "label-color", pointArray_, lod_),
+                size_ : getLayerPropertyValue(style_, "label-size", pointArray_, lod_),
+                offset_ : getLayerPropertyValue(style_, "label-offset", pointArray_, lod_),
+                origin_ : getLayerPropertyValue(style_, "label-origin", pointArray_, lod_),
+                align_ : getLayerPropertyValue(style_, "label-align", pointArray_, lod_),
+                text_ : text_,
+                width_ : getLayerPropertyValue(style_, "label-width", pointArray_, lod_),
+                vertexBuffer_ : [],
+                originBuffer_ : [],
+                texcoordsBuffer_ : []
+            };
+        }
+        
     }
 
     var index_ = 0;
@@ -313,7 +319,7 @@ var processIcon = function(point_, iconData_) {
 
 
 var processLabel = function(point_, labelData_) {
-    if (labelData_.source_ == null || labelData_.source_ == "" || Math.abs(labelData_.size_) < 0.0001) {
+    if (!labelData_ || labelData_.text_ == "" || Math.abs(labelData_.size_) < 0.0001) {
         return;
     }
 
@@ -323,8 +329,8 @@ var processLabel = function(point_, labelData_) {
     var vertexBufferSize_ = vertexBuffer_.length;
 
     //debugger
-
-    var text_ = labelData_.source_;
+    
+    var text_ = "" + labelData_.text_;
 
     //split by new line
     var lines_ = text_.match(/[^\r\n]+/g);

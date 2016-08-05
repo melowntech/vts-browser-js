@@ -95,7 +95,7 @@ var processFeature = function(type_, feature_, lod_, featureIndex_, featureType_
         var layer_ = stylesheetLayers_[key_];
         var filter_ =  getLayerPropertyValue(layer_, "filter", feature_, lod_);
         
-        if (!filter_ || getFilterResult(filter_, feature_, featureType_)) {
+        if (!filter_ || getFilterResult(filter_, feature_, featureType_, group_)) {
             processLayerFeature(type_, feature_, lod_, layer_, featureIndex_);
         }
     }
@@ -114,7 +114,11 @@ var processGroup = function(group_, lod_) {
 
     var groupId_ = group_["id"] || "";
 
-    var bbox_ = group_["bbox"];
+    var bbox_ = group_["bbox"];    
+    if (!bbox_) {
+        return;
+    }
+          
     bboxMin_ = bbox_[0];
     bboxMax_ = bbox_[1];
     bboxDelta_ = [bbox_[1][0] - bbox_[0][0],

@@ -13,6 +13,31 @@ var getLayer = function(layerId_, featureType_, index_) {
     }
 };
 
+var getLayerExpresionValue = function(layer_, value_, feature_, lod_) {
+
+    switch(typeof value_) {
+        case "string":
+
+            if (value_.length > 0) {
+                //is it feature property?
+                switch (value_.charAt(0)) {
+
+                    case "$":
+                        var finalValue_ = feature_.properties_[value_.substr(1)];
+                        if (typeof finalValue_ == "undefined") {
+                            logError("wrong-expresion", layer_["$$layer-id"], value_, value_, null, "feature-property");
+                        }
+                        
+                        return finalValue_;
+                }
+            }
+
+            break;
+    }
+    
+    return value_;
+};
+
 var getLayerPropertyValue = function(layer_, key_, feature_, lod_) {
     var value_ = layer_[key_];
 
@@ -571,7 +596,7 @@ var getDefaultLayerPropertyValue = function(key_) {
 
        case "label":         return false;
        case "label-color":   return [255,255,255,255];
-       case "label-source":  return "name";
+       case "label-source":  return "$name";
        case "label-size":    return 10;
        case "label-offset":  return [0,0];
        case "label-origin":  return "bottom-center";
