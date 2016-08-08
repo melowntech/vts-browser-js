@@ -26,8 +26,11 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.monoGeodataView_ = null;
     this.monoGeodataCounter_ = -1;
     this.creditsNumbers_ = [];
-
+    
+    this.style_ = null;
     this.stylesheet_ = null;
+    this.originalStyle_ = null;
+    this.originalStylesheet_ = null;
     
     if (this.free_) { //each free layer has its own data tree
         this.tree_ = new Melown.MapSurfaceTree(this.map_, true, this);
@@ -110,14 +113,11 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
     //load stylesheet
     if (this.geodata_) {
         var style_ = json_["style"];
+        this.originalStyle_ = style_;
         
         if (style_) {
-            this.stylesheet_ = this.map_.getStylesheet(style_);
-            
-            if (!this.stylesheet_) {
-                this.stylesheet_ = new Melown.MapStylesheet(this.map_, json_["style"], json_["style"]);
-                this.map_.addStylesheet(json_["style"], this.stylesheet_); 
-            }
+            this.setStyle(style_);
+            this.originalStylesheet_ = this.stylesheet_;
         }
     }
 
@@ -130,17 +130,27 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
 };
 
 Melown.MapSurface.prototype.getInfo = function() {
-    return {
-        "type" : this.type_,
-        "metaUrl" : this.metaUrl_,
-        "navUrl" : this.navUrl_,
-        "meshUrl" : this.meshUrl_,
-        "textureUrl" : this.textureUrl_,
-        "geodataUrl" : this.geodataUrl_,
-        "lodRange" : this.lodRange_,
-        "tileRange" : this.tileRange_,
-        "textureLayer" : this.textureLayer_
-    };
+    if (this.geodata_) {
+        return {
+            "type" : this.type_,
+            "metaUrl" : this.metaUrl_,
+            "geodataUrl" : this.geodataUrl_,
+            "lodRange" : this.lodRange_,
+            "tileRange" : this.tileRange_,
+            "style" : this.originalStyle_
+        };
+    } else {
+        return {
+            "type" : this.type_,
+            "metaUrl" : this.metaUrl_,
+            "navUrl" : this.navUrl_,
+            "meshUrl" : this.meshUrl_,
+            "textureUrl" : this.textureUrl_,
+            "lodRange" : this.lodRange_,
+            "tileRange" : this.tileRange_,
+            "textureLayer" : this.textureLayer_
+        };
+    }
 };
 
 Melown.MapSurface.prototype.processUrl = function(baseUrl_, url_, fallback_) {
@@ -234,8 +244,19 @@ Melown.MapSurface.prototype.hasMetatile = function(id_) {
     return true;
 };
 
-Melown.MapSurface.prototype.setStylesheet = function(stylesheet_) {
-    this.stylesheet_ = stylesheet_;
+Melown.MapSurface.prototype.setStyle = function(style_) {
+    if (this.style_ == style_) {
+        return;
+    } 
+    
+    this.stylesheet_ = this.map_.getStylesheet(style_);
+    
+    if (!this.stylesheet_) {
+        this.stylesheet_ = new Melown.MapStylesheet(this.map_, style_, style_);
+        this.map_.addStylesheet(style_, this.stylesheet_); 
+    }
+    
+    this.geodataCounter_++;
 };
 
 //used only for glues

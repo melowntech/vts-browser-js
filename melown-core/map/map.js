@@ -330,6 +330,10 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
             
             this.freeLayerSequence_.push(freeLayer_);
             
+            if (freeLayers_[key_]["style"]) {
+                freeLayer_.setStyle(freeLayers_[key_]["style"]);
+            }
+            
             //TODO: generate bound layer seqence for      
         }
     }
@@ -359,7 +363,7 @@ Melown.Map.prototype.getStylesheetData = function(id_, data_) {
     var stylesheet_ = this.getStylesheet(id_);
 
     if (stylesheet_) {
-        return {"url":stylesheet_.url_, "data": stylesheet_.data_} 
+        return {"url":stylesheet_.url_, "data": stylesheet_.data_};
     }
     
     return {"url":null, "data":{}};

@@ -126,6 +126,11 @@ Melown.Inspector.prototype.initLayersPanel = function() {
             + "white-space: nowrap;"       
         + "}"          
 
+        + "#melown-layers-fl-properties-style {"
+            + "width: 175px;"
+            + "height: 21px;"
+        + "}"
+
         + ".melown-surface-item {"
             + "width: 100%;"
             + "overflow: hidden;"
@@ -246,6 +251,7 @@ Melown.Inspector.prototype.initViews = function() {
             view_.freeLayers_[id_] = {
                 enabled_ : false,
                 style_ : null,
+                originalStyle_ : null,
                 depthShift_ : 0,
                 layers_ : states_ 
             };
@@ -290,6 +296,8 @@ Melown.Inspector.prototype.initViews = function() {
                 freeLayer_.enabled_ = true;
                 freeLayer_.depthShift_ = freeLayerProperties_["depthShift"] || 0;
                 freeLayer_.depthShift_ *= 100;
+                freeLayer_.style_ = freeLayerProperties_["style"];
+                freeLayer_.originalStyle_ = freeLayer_.style_;
                 
                 var layers_ = [];
                 freeLayer_.layers_ = layers_;
@@ -457,40 +465,70 @@ Melown.Inspector.prototype.buildFreeLayerProperties = function(id_) {
     var layerInfo_ = map_.getFreeLayer(id_).getInfo();
     var layerType_ = layerInfo_["type"]; 
 
-    if (layerType_ == "mesh" || layerType_ == "mesh-tiles") {
-        html_ += '<div class="melown-layers-item"><div class="melown-layers-name" style="width:185px">' + "DepthShift:" + '</div>'
-                 + '<input id="melown-fl-properties-depth-shift" type="number" min="-100" max="100" step="1" value="' + view_.freeLayers_[id_].depthShift_ + '">'
-                 + '</div>';
+    switch(layerType_) {
+        case "mesh":
+        case "mesh-tiles":
 
-        html_ += '<div class="melown-layers-item"><div class="melown-layers-name">' + "BoundLayers:" + '</div></div>';
-    
-        for (var i = 0, li = layers_.length; i < li; i++) {
-            var layer_ = layers_[i];
-    
-            html_ += '<div class="melown-layers-item"><input id="melown-fl-properties-checkbox-' + layer_.id_ + '" type="checkbox" ' + (layer_.enabled_ ? "checked" : "")   + '/>'
-                     + '<div class="melown-layers-name">' + layer_.id_ + '</div>'
-                     + '<input id="melown-fl-properties-spinner-' + layer_.id_ + '" type="number" title="Alpha" min="0" max="100" step="10" value="' + layer_.alpha_ + '">'
-                     + '<button id="melown-fl-properties-ubutton-' + layer_.id_ + '" type="button" title="Move Above">&uarr;</button>' 
-                     + '<button id="melown-fl-properties-dbutton-' + layer_.id_ + '" type="button" title="Move Bellow">&darr;</button>' 
+            html_ += '<div class="melown-layers-item"><div class="melown-layers-name" style="width:185px">' + "DepthShift:" + '</div>'
+                     + '<input id="melown-fl-properties-depth-shift" type="number" min="-100" max="100" step="1" value="' + view_.freeLayers_[id_].depthShift_ + '">'
                      + '</div>';
-        }
     
-        this.layersFreeLayersPropertiesItems_.innerHTML = html_;
+            html_ += '<div class="melown-layers-item"><div class="melown-layers-name">' + "BoundLayers:" + '</div></div>';
+        
+            for (var i = 0, li = layers_.length; i < li; i++) {
+                var layer_ = layers_[i];
+        
+                html_ += '<div class="melown-layers-item"><input id="melown-fl-properties-checkbox-' + layer_.id_ + '" type="checkbox" ' + (layer_.enabled_ ? "checked" : "")   + '/>'
+                         + '<div class="melown-layers-name">' + layer_.id_ + '</div>'
+                         + '<input id="melown-fl-properties-spinner-' + layer_.id_ + '" type="number" title="Alpha" min="0" max="100" step="10" value="' + layer_.alpha_ + '">'
+                         + '<button id="melown-fl-properties-ubutton-' + layer_.id_ + '" type="button" title="Move Above">&uarr;</button>' 
+                         + '<button id="melown-fl-properties-dbutton-' + layer_.id_ + '" type="button" title="Move Bellow">&darr;</button>' 
+                         + '</div>';
+            }
+        
+            this.layersFreeLayersPropertiesItems_.innerHTML = html_;
+    
+            var htmlId_ = "melown-fl-properties-depth-shift";
+            document.getElementById(htmlId_).onchange = this.switchFreeLayerProperty.bind(this, htmlId_, "depthShift");
+        
+            for (var i = 0, li = layers_.length; i < li; i++) {
+                var htmlId_ = "melown-fl-properties-checkbox-" + layers_[i].id_;
+                document.getElementById(htmlId_).onchange = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "enable");
+                htmlId_ = "melown-fl-properties-spinner-" + layers_[i].id_;
+                document.getElementById(htmlId_).onchange = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "alpha");
+                htmlId_ = "melown-fl-properties-ubutton-" + layers_[i].id_;
+                document.getElementById(htmlId_).onclick = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "up");
+                htmlId_ = "melown-fl-properties-dbutton-" + layers_[i].id_;
+                document.getElementById(htmlId_).onclick = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "down");
+            }
+            
+            break;
 
-        var htmlId_ = "melown-fl-properties-depth-shift";
-        document.getElementById(htmlId_).onchange = this.switchFreeLayerProperty.bind(this, htmlId_, "depthShift");
-    
-        for (var i = 0, li = layers_.length; i < li; i++) {
-            var htmlId_ = "melown-fl-properties-checkbox-" + layers_[i].id_;
-            document.getElementById(htmlId_).onchange = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "enable");
-            htmlId_ = "melown-fl-properties-spinner-" + layers_[i].id_;
-            document.getElementById(htmlId_).onchange = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "alpha");
-            htmlId_ = "melown-fl-properties-ubutton-" + layers_[i].id_;
-            document.getElementById(htmlId_).onclick = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "up");
-            htmlId_ = "melown-fl-properties-dbutton-" + layers_[i].id_;
-            document.getElementById(htmlId_).onclick = this.switchFreeLayerBoundLayer.bind(this, layers_[i].id_, htmlId_, "down");
-        }
+        case "geodata":
+        case "geodata-tiles":
+
+            html_ += '<div class="melown-layers-item"><div class="melown-layers-name" style="width:50px">' + "Style:" + '</div>'
+                    + '<select id="melown-layers-fl-properties-style">';
+                    
+            var styles_ = map_.getStylesheets();
+            var index_ = styles_.indexOf(view_.freeLayers_[id_].style_); // || layerInfo_["style"]); 
+            
+            for (var i = 0, li = styles_.length; i < li; i++) {
+                html_ += '<option value="' + styles_[i] + '" ' + ((i == index_) ? "selected" : "") + '>' + styles_[i] + '</option>';
+            }
+                    
+            html_ += '</select>'
+                    + '</div>';
+
+            this.layersFreeLayersPropertiesItems_.innerHTML = html_;
+
+            var htmlId_ = "melown-layers-fl-properties-style";
+            document.getElementById(htmlId_).onchange = this.switchFreeLayerProperty.bind(this, htmlId_, "style");
+       
+            break;
+        
     }
+
 };
 
 Melown.Inspector.prototype.selectView = function(id_) {
@@ -685,6 +723,9 @@ Melown.Inspector.prototype.switchFreeLayerProperty = function(htmlId_, action_) 
         case "depthShift":
             layer_.depthShift_ = parseInt(element_.value, 10);
             break;
+        case "style":
+            layer_.style_ = element_.value;
+            break;
     }
     
     this.applyMapView();
@@ -741,6 +782,10 @@ Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
             
             if (freeLayerBoundLayers_.length > 0) {
                 view_["freeLayers"][key_]["boundLayers"] = freeLayerBoundLayers_;
+            }
+
+            if (freeLayers_[key_].style_ && freeLayers_[key_].style_ != freeLayers_[key_].originalStyle_) {
+                view_["freeLayers"][key_]["style"] = freeLayers_[key_].style_;
             }
             
             if (freeLayers_[key_].depthShift_ != 0) {
