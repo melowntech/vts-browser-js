@@ -360,12 +360,12 @@ var validateValue = function(layerId_, key_, value_, type_, arrayLength_, min_, 
         case "object":
 
             //accepted cases for null value
-            if (value_ === null && (key_ == "line-style-texture" || key_ == "icon-source" || key_ == "visibility" || key_ == "multi-pass")) {
+            if (value_ === null && (key_ == "line-style-texture" || key_ == "icon-source" || key_ == "visibility" || key_ == "next-pass")) {
                 return value_;
             }
 
             //check multipasss
-            if (key_ == "multi-pass") {
+            if (key_ == "next-pass") {
                 if (Array.isArray(value_) == true && value_.length > 0) {
 
                     for (var i = 0; i < li; i++) {
@@ -529,6 +529,7 @@ var validateLayerPropertyValue = function(layerId_, key_, value_) {
        case "icon-scale":   return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
        case "icon-offset":  return validateValue(layerId_, key_, value_, "object", 2, -Number.MAX_VALUE, Number.MAX_VALUE); break;
        case "icon-origin":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "icon-stick":   return validateValue(layerId_, key_, value_, "object", 7, -Number.MAX_VALUE, Number.MAX_VALUE); break;
        case "icon-color":   return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
 
        case "label":         return validateValue(layerId_, key_, value_, "boolean"); break;
@@ -538,6 +539,7 @@ var validateLayerPropertyValue = function(layerId_, key_, value_) {
        case "label-offset":  return validateValue(layerId_, key_, value_, "object", 2, -Number.MAX_VALUE, Number.MAX_VALUE); break;
        case "label-origin":  return validateValue(layerId_, key_, value_, "string"); break;
        case "label-align":   return validateValue(layerId_, key_, value_, "string"); break;
+       case "label-stick":   return validateValue(layerId_, key_, value_, "object", 7, -Number.MAX_VALUE, Number.MAX_VALUE); break;
        case "label-width":   return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
 
        case "polygon":         return validateValue(styleId_, key_, value_, "boolean"); break;
@@ -555,7 +557,7 @@ var validateLayerPropertyValue = function(layerId_, key_, value_) {
 
        case "visible":     return validateValue(layerId_, key_, value_, "boolean"); break;
        case "visibility":  return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "multi-pass":  return validateValue(layerId_, key_, value_, "object"); break;
+       case "next-pass":   return validateValue(layerId_, key_, value_, "object"); break;
     }
 
     return value_; //custom property
@@ -577,7 +579,7 @@ var getDefaultLayerPropertyValue = function(key_) {
 
        case "line-label":        return false;
        case "line-label-color":  return [255,255,255,255];
-       case "line-label-source": return "name";
+       case "line-label-source": return "$name";
        case "line-label-size":   return 1;
        case "line-label-offset": return 0;
 
@@ -592,6 +594,7 @@ var getDefaultLayerPropertyValue = function(key_) {
        case "icon-scale":   return 1;
        case "icon-offset":  return [0,0];
        case "icon-origin":  return "bottom-center";
+       case "icon-stick":   return [0,0,0,255,255,255,255];
        case "icon-color":   return [255,255,255,255];
 
        case "label":         return false;
@@ -601,6 +604,7 @@ var getDefaultLayerPropertyValue = function(key_) {
        case "label-offset":  return [0,0];
        case "label-origin":  return "bottom-center";
        case "label-align":   return "center";
+       case "label-stick":   return [0,0,0,255,255,255,255];
        case "label-width":   return 200;
        
        case "polygon":        return false;
@@ -618,7 +622,7 @@ var getDefaultLayerPropertyValue = function(key_) {
 
        case "visible":    return true;
        case "visibility": return 0;
-       case "multi-pass": return null;
+       case "next-pass":  return null;
     }
 };
 
@@ -634,6 +638,7 @@ function getFilterResult(filter_, feature_, featureType_, group_) {
                             getFilterResult(filter_[2], feature_, lod_, featureIndex_));
         case "none": return !(getFilterResult(filter_[1], feature_, lod_, featureIndex_) ||
                               getFilterResult(filter_[2], feature_, lod_, featureIndex_));
+        case "skip": return false; 
     }
 
     var value_;

@@ -18,6 +18,11 @@ Melown.MapGeodataView = function(map_, geodata_, extraInfo_) {
         processor_.sendCommand("setStylesheet", this.surface_.stylesheet_.data_);
         processor_.sendCommand("setFont", {"chars" : this.renderer_.font_.chars_, "space" : this.renderer_.font_.space_, "size" : this.renderer_.font_.size_});
         this.surface_.geodataProcessor_ = processor_;
+    } else {
+        if (this.surface_.styleChanged_) {
+            this.surface_.geodataProcessor_.sendCommand("setStylesheet", this.surface_.stylesheet_.data_);
+            this.surface_.styleChanged_ = false;
+        }
     }
 
     this.geodataProcessor_ = this.surface_.geodataProcessor_;

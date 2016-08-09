@@ -214,6 +214,7 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     var texcoords_ = data_["texcoordsBuffer"];
     var origins_ = data_["originBuffer"];
     var color_ = data_["color"];
+    var s = data_["stick"];
     var f = 1.0/255;
 
     var job_ = {};
@@ -222,7 +223,6 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     job_.color_ = [color_[0]*f, color_[1]*f, color_[2]*f, color_[3]*f];
     job_.zIndex_ = data_["z-index"] + 256;
     job_.visibility_ = data_["visibility"];
-    job_.center_ = data_["center"];
     job_.clickEvent_ = data_["click-event"];
     job_.hoverEvent_ = data_["hover-event"];
     job_.enterEvent_ = data_["enter-event"];
@@ -231,6 +231,7 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     job_.eventInfo_ = data_["eventInfo"];
     job_.state_ = data_["state"];
     job_.center_ = data_["center"];
+    job_.stick_ = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f];
     job_.lod_ = data_["lod"];
     job_.zbufferOffset_ = data_["zbuffer-offset"];
 
@@ -319,8 +320,7 @@ Melown.GpuGroup.prototype.draw = function(mv_, mvp_, applyOrigin_) {
     var gl_ = this.gl_;
     var gpu_ = this.gpu_;
 
-    //var cameraPos_ = this.renderer_.cameraPosition();
-    var cameraPos_ = this.renderer_.camera_.getPosition();
+    var cameraPos_ = this.renderer_.cameraPosition_;
     
     var jobZBuffer_ = this.renderer_.jobZBuffer_;
     var jobZBufferSize_ = this.renderer_.jobZBufferSize_;
@@ -394,7 +394,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
     switch(job_.type_) {
         case "flat-line":
 
-            gpu_.setState(Melown.StencilLineState_, 0); //renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.StencilLineState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
             var prog_ = renderer_.progLine_;
 
             gpu_.useProgram(prog_, "aPosition", null, null, null);
@@ -485,7 +485,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
 
             var texture_ = hitmapRender_ ? renderer_.whiteTexture_ : renderer_.font_.texture_;
 
-            var yaw_ = Melown.radians(renderer_.orientation_[0]);
+            var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
             var forward_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0];
 
             gpu_.setState(Melown.LineLabelState_, 0);//renderer_.getZoffsetFactor(job_.zbufferOffset_));
@@ -524,13 +524,30 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
             if (texture_.loaded_ == false) {
                 return;
             }
-
+            
             //value larger then 0 means that visibility is tested
             //if (job_.visibility_ != 0) {
                 //job_.visibility_
             //}
 
             gpu_.setState(Melown.LineLabelState_, 0);//renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            
+            var stickShift_ = 0;
+
+            if (job_.stick_[0] != 0) {
+                var s = job_.stick_;
+                stickShift_ = renderer_.cameraTiltFator_ * s[0];
+                
+                if (stickShift_ < s[1]) {
+                    stickShift_ = 0;
+                } else if (s[2] != 0) {
+                    var pp_ = renderer_.project2(job_.center_, mvp_);
+                    pp_[0] = Math.round(pp_[0]);
+
+                    renderer_.drawLineString([[pp_[0], pp_[1], pp_[2]], [pp_[0], pp_[1]-stickShift_, pp_[2]]], s[2], [s[3], s[4], s[5], s[6]], null, null, null, true);
+                }
+            }
+
             var prog_ = renderer_.progIcon_;
 
             gpu_.bindTexture(texture_);
@@ -538,7 +555,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
             gpu_.useProgram(prog_, "aPosition", "aTexCoord", null, "aOrigin");
             prog_.setSampler("uSampler", 0);
             prog_.setMat4("uMVP", mvp_);
-            prog_.setVec4("uScale", [screenPixelSize_[0], screenPixelSize_[1], (job_.type_ == "label" ? 1.0 : 1.0 / texture_.width_), 0]);
+            prog_.setVec4("uScale", [screenPixelSize_[0], screenPixelSize_[1], (job_.type_ == "label" ? 1.0 : 1.0 / texture_.width_), stickShift_*2]);
             prog_.setVec4("uColor", color_);
             //prog_.setVec2("uScale", screenPixelSize_);
 

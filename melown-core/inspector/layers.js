@@ -248,10 +248,13 @@ Melown.Inspector.prototype.initViews = function() {
                 });
             }
             
+            var freeLayer_ = map_.getFreeLayer(id_);
+            var freeLayerInfo_ = freeLayer_.getInfo(); 
+            
             view_.freeLayers_[id_] = {
                 enabled_ : false,
                 style_ : null,
-                originalStyle_ : null,
+                originalStyle_ : freeLayerInfo_["style"],
                 depthShift_ : 0,
                 layers_ : states_ 
             };
@@ -297,7 +300,7 @@ Melown.Inspector.prototype.initViews = function() {
                 freeLayer_.depthShift_ = freeLayerProperties_["depthShift"] || 0;
                 freeLayer_.depthShift_ *= 100;
                 freeLayer_.style_ = freeLayerProperties_["style"];
-                freeLayer_.originalStyle_ = freeLayer_.style_;
+                //freeLayer_.originalStyle_ = freeLayer_.style_;
                 
                 var layers_ = [];
                 freeLayer_.layers_ = layers_;

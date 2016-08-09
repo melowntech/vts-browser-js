@@ -81,7 +81,7 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
         
                     "points": [{
                         "points": [
-                            [0, 0, 0],
+                            [0, 0, 0] /*,
                             [4096, 0, 0],
                             [4096, 4096, 0],
                             [0, 4096, 0],
@@ -89,7 +89,7 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
                             [0, 0, 4096],
                             [4096, 0, 4096],
                             [4096, 4096, 4096],
-                            [0, 4096, 4096]
+                            [0, 4096, 4096]*/
                         ],
             
                         "properties": {
@@ -105,14 +105,14 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
                                 [4096, 0, 0],
                                 [4096, 4096, 0],
                                 [0, 4096, 0]
-                            ],
+                            ]/*,
                             
                             [
                                 [0, 0, 4096],
                                 [4096, 0, 4096],
                                 [4096, 4096, 4096],
                                 [0, 4096, 4096]
-                            ]
+                            ]*/
                         ],
             
                         "properties": {

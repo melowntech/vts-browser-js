@@ -332,6 +332,8 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
             
             if (freeLayers_[key_]["style"]) {
                 freeLayer_.setStyle(freeLayers_[key_]["style"]);
+            } else {
+                freeLayer_.setStyle(freeLayer_.originalStyle_);
             }
             
             //TODO: generate bound layer seqence for      
@@ -618,6 +620,13 @@ Melown.Map.prototype.drawMap = function() {
     this.renderer_.dirty_ = true;
     this.renderer_.drawFog_ = this.drawFog_;
 
+    this.renderer_.cameraPosition_ = this.cameraPosition_;
+    this.renderer_.cameraOrientation_ = this.position_.getOrientation();
+    this.renderer_.cameraTiltFator_ = Math.cos(Melown.radians(this.renderer_.cameraOrientation_[1])); 
+   
+    var distanceFactor_ = (500/Math.max(10.0,this.cameraDistance_));
+    this.renderer_.distanceFactor_ = (distanceFactor_ * distanceFactor_ * distanceFactor_)*0.5;
+    this.renderer_.tiltFactor_ = 0.5 + 0.5 * (Math.abs(this.renderer_.cameraOrientation_[1]/-90));
    
     if (this.drawChannel_ != 1) {
         this.renderer_.gpu_.clear(true, false);

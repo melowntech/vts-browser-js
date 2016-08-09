@@ -93,7 +93,14 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     
     this.layerGroupVisible_ = [];
     this.bitmaps_ = {};
-        
+    
+    this.cameraPosition_ = [0,0,0];
+    this.cameraOrientation_ = [0,0,0];
+    this.cameraTiltFator_ = 1;
+    this.distanceFactor_ = 1;
+    this.tiltFactor_ = 1;
+
+            
     //hack for melown maps
     //this.melownHack_ = true;
     //this.melownHack_ = false;
@@ -573,6 +580,10 @@ Melown.Renderer.prototype.hitTestOld = function(screenX_, screenY_, mode_) {
     return [this.lastHitPosition_[0], this.lastHitPosition_[1], this.lastHitPosition_[2], surfaceHit_];
 };
 
+Melown.Renderer.prototype.getZoffsetFactor = function(params_) {
+    var offsetFactor_ = 1.0 + this.distanceFactor_*params_[1]*((1-params_[2])+params_[2]*this.tiltFactor_);
+    return -Math.round(2000 * offsetFactor_ * params_[0]);
+};
 
 Melown.Renderer.prototype.saveScreenshot = function() {
     //this.updateHitmap_ = true;

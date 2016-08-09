@@ -31,6 +31,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.stylesheet_ = null;
     this.originalStyle_ = null;
     this.originalStylesheet_ = null;
+    this.styleChanged_ = true;
     
     if (this.free_) { //each free layer has its own data tree
         this.tree_ = new Melown.MapSurfaceTree(this.map_, true, this);
@@ -254,9 +255,12 @@ Melown.MapSurface.prototype.setStyle = function(style_) {
     if (!this.stylesheet_) {
         this.stylesheet_ = new Melown.MapStylesheet(this.map_, style_, style_);
         this.map_.addStylesheet(style_, this.stylesheet_); 
-    }
-    
+    } 
+
+    this.styleChanged_ = true;
     this.geodataCounter_++;
+    
+    this.map_.markDirty();
 };
 
 //used only for glues

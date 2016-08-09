@@ -35,11 +35,6 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     var lineLabel_ = getLayerPropertyValue(style_, "line-label", lineString_, lod_);
     var lineLabelSize_ = getLayerPropertyValue(style_, "line-label-size", lineString_, lod_);
 
-    if (lineLabel_ == true) {
-        var lineLabelPoints_ = new Array(points_.length);
-        var lineLabelPoints2_ = new Array(points_.length);
-    }
-
     //console.log("lineflat: "+lineFlat_);
     //var lineWidth_ = Math.pow(2, 23 - lod_) / 32;
 
@@ -76,17 +71,18 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     var joinVertices_ = circleSides_ * (texturedLine_ || !lineFlat_? 4 : 3) * 3;
     var vertexBuffer_ = new Array(totalPoints_ * lineVertices_ + totalPoints_ * joinVertices_);
 
-    if (lineFlat_ == false || texturedLine_ == true) {
+    if (!lineFlat_ || texturedLine_) {
         var lineNormals_ = 3 * 4 * 2;
         var joinNormals_ = circleSides_ * 3 * 4;
         var normalBuffer_ = new Array(totalPoints_ * lineNormals_ + totalPoints_ * joinNormals_);
     }
 
-    if (texturedLine_ == true) {
+    if (texturedLine_) {
         var joinParams_ = Array(totalPoints_);
     }
 
     var center_ = [0,0,0];
+    var lineLabelStack_ = [];
 
     for (var ii = 0; ii < lines_.length; ii++) {
         if (!Array.isArray(lines_[ii]) || !lines_[ii].length) {
@@ -95,10 +91,17 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
         
         var points_ = lines_[ii];
 
+        if (lineLabel_) {
+            var lineLabelPoints_ = new Array(points_.length);
+            var lineLabelPoints2_ = new Array(points_.length);
+            
+            lineLabelStack_.push({points_: lineLabelPoints_, points2_ :lineLabelPoints2_});
+        }
+    
         var p = points_[0];
         var p1 = [p[0], p[1], p[2]];
     
-        if (forceOrigin_ == true) {
+        if (forceOrigin_) {
             p1 = [p1[0] - tileX_, p1[1] - tileY_, p1[2]];
         }
     
@@ -116,11 +119,11 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
         //add lines
         for (var i = 0, li = points_.length - 1; i < li; i++) {
     
-            if (dlines_ == true) {
+            if (dlines_) {
                 var p2 = points_[i+1];
                 p2 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
     
-                if (forceOrigin_ == true) {
+                if (forceOrigin_) {
                     p2 = [p2[0] - tileX_, p2[1] - tileY_, p2[2]];
                 }
     
@@ -132,7 +135,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
                 p1 = points_[i];
                 var p2 = points_[i+1];
     
-                if (forceOrigin_ == true) {
+                if (forceOrigin_) {
                     p1 = [p1[0] - tileX_, p1[1] - tileY_, p1[2]];
                     p2 = [p2[0] - tileX_, p2[1] - tileY_, p2[2]];
                 }
@@ -144,7 +147,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
             }
     
     
-            if (lineFlat_ == true && !texturedLine_) {
+            if (lineFlat_ && !texturedLine_) {
     
                 //direction vector
                 var v = [p2[0] - p1[0], p2[1] - p1[1], 0];
@@ -196,7 +199,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     
                 //console.log("distance("+i+"): " + distance_ + " " + distance2_);
     
-                if (lineFlat_ == true) {
+                if (lineFlat_) {
     
                     //normalize vector to line width and rotate 90 degrees
                     l = (l != 0) ? (lineWidth_ / l) : 0;
@@ -340,7 +343,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
         //add joins
         for (var i = 0, li = points_.length; i < li; i++) {
     
-            if (forceOrigin_ == true) {
+            if (forceOrigin_) {
                 p1 = [p1[0] - tileX_, p1[1] - tileY_, p1[2]];
             }
     
@@ -356,7 +359,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     
             for (var j = 0; j < circleSides_; j++) {
     
-                if (lineFlat_ == true && !texturedLine_) {
+                if (lineFlat_ && !texturedLine_) {
     
                     //add polygon
                     vertexBuffer_[index_] = p1[0];
@@ -423,13 +426,13 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     
             }
     
-            if (lineLabel_ == true) {
+            if (lineLabel_) {
                 var p = [p1[0], p1[1], p1[2] + lineLabelSize_*0.1];
                 lineLabelPoints_[i] = p;
                 lineLabelPoints2_[li - i - 1] = p;
             }
     
-            if (dlines_ == true) {
+            if (dlines_) {
                 var p2 = points_[i+1];
                 p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
             } else {
@@ -461,13 +464,13 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
                         "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                         "line-width":lineWidth_*2, "lod":(autoLod_ ? null : tileLod_) };
 
-    if (lineFlat_ == true) {
+    if (lineFlat_) {
         messageData_["type"] = (texturedLine_ == true) ? "flat-tline" : "flat-line";
     } else {
         messageData_["type"] = (texturedLine_ == true) ? "pixel-tline" : "pixel-line";
     }
 
-    if (texturedLine_ == true) {
+    if (texturedLine_) {
         if (lineStyleTexture_ != null) {
             messageData_["texture"] = [stylesheetBitmaps_[lineStyleTexture_[0]], lineStyleTexture_[1], lineStyleTexture_[2]];
             messageData_["background"] = lineStyleBackground_;
@@ -479,8 +482,10 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     //debugger
     var lineLabel_ = getLayerPropertyValue(style_, "line-label", lineString_, lod_);
 
-    if (lineLabel_ == true) {
-        processLineLabel(lineLabelPoints_, lineLabelPoints2_, lineString_, center_, lod_, style_, zIndex_, eventInfo_);
+    if (lineLabel_) {
+        for (var i = 0, li = lineLabelStack_.length; i < li; i++) {
+            processLineLabel(lineLabelStack_[i].points_, lineLabelStack_[i].points2_, lineString_, center_, lod_, style_, zIndex_, eventInfo_);
+        }
     }
 
 };
@@ -493,7 +498,14 @@ var processLineLabel = function(lineLabelPoints_, lineLabelPoints2_, lineString_
 
     //console.log("label size: " + lod_ + "   " + labelSize_);
 
-    if (labelSource_ == null || labelSource_ == "" || Math.abs(labelSize_) < 0.0001) {
+    if (Math.abs(labelSize_) < 0.0001) {
+    //if (labelSource_ == null || labelSource_ == "" || Math.abs(labelSize_) < 0.0001) {
+        return;
+    }
+
+    var labelText_ = getLayerExpresionValue(style_, labelSource_, lineString_, lod_);
+
+    if (labelText_ == null || labelText_ == "") {
         return;
     }
 
@@ -512,8 +524,8 @@ var processLineLabel = function(lineLabelPoints_, lineLabelPoints2_, lineString_
 
     var hitable_ = hoverEvent_ || clickEvent_ || enterEvent_ || leaveEvent_;
 
-    addStreetTextOnPath(lineLabelPoints_, labelSource_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_);
-    addStreetTextOnPath(lineLabelPoints2_, labelSource_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_);
+    addStreetTextOnPath(lineLabelPoints_, labelText_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_);
+    addStreetTextOnPath(lineLabelPoints2_, labelText_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_);
 
     postMessage({"command":"addRenderJob", "type": "line-label", "vertexBuffer": vertexBuffer_,
                   "texcoordsBuffer": texcoordsBuffer_, "color":labelColor_, "z-index":zIndex_, "center": center_,

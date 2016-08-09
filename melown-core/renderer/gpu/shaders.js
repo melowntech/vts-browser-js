@@ -206,7 +206,7 @@ Melown.iconVertexShader =
         "vTexCoord = aTexCoord.xy * uScale[2];\n"+
         "vec4 pos = (uMVP * vec4(aOrigin, 1.0));\n"+
         //"pos.xy = pos.xy / pos.w;\n"+
-        "gl_Position = pos + vec4(aPosition.x*uScale.x*pos.w, aPosition.y*uScale.y*pos.w, 0.0, 0.0);\n"+
+        "gl_Position = pos + vec4(aPosition.x*uScale.x*pos.w, (aPosition.y+uScale.w)*uScale.y*pos.w, 0.0, 0.0);\n"+
     "}";
 
 Melown.textFragmentShader = "precision mediump float;\n"+

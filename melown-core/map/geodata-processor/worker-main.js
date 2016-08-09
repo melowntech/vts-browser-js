@@ -58,7 +58,7 @@ var processLayerFeature = function(type_, feature_, lod_, layer_, featureIndex_)
     }
 
 
-    var multiPass_ = getLayerPropertyValue(layer_, "multi-pass", feature_, lod_);
+    var multiPass_ = getLayerPropertyValue(layer_, "next-pass", feature_, lod_);
 
     if (multiPass_ != null) {
         for (var i = 0, li = multiPass_.length; i < li; i++) {
