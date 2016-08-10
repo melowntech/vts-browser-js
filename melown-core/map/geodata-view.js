@@ -9,7 +9,7 @@ Melown.MapGeodataView = function(map_, geodata_, extraInfo_) {
     this.gpu_ = this.map_.renderer_.gpu_;
     this.renderer_ = this.map_.renderer_;
     this.gpuGroups_ = [];
-    this.curerntGpuGroup_ = null;
+    this.currentGpuGroup_ = null;
     /*this.tile_ = extraInfo_.tile_;*/
     this.surface_ = extraInfo_.surface_;
 
@@ -47,6 +47,8 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
 
     if (message_["command"] != null) {
 
+        //console.log("worker-reply: " + message_["command"]);
+
         switch (message_["command"]) {
 
             case "beginGroup":
@@ -55,15 +57,25 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
                 break;
 
             case "addRenderJob":
-                this.currentGpuGroup_.addRenderJob(message_);
+                if (this.currentGpuGroup_) {
+                    this.currentGpuGroup_.addRenderJob(message_);
+                } else {
+                    message_ = message_;
+                }
                 break;
 
             case "endGroup":
-                this.size += this.currentGpuGroup_.size();
+                if (this.currentGpuGroup_) {
+                    this.size += this.currentGpuGroup_.size();
+                } else {
+                    message_ = message_;
+                }
                 break;
         }
 
     } else {
+
+        //console.log("worker-reply: " + message_);
 
         switch (message_) {
             case "allProcessed":

@@ -416,7 +416,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
         case "pixel-line":
         case "pixel-tline":
 
-            gpu_.setState(Melown.StencilLineState_, 0);//renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.StencilLineState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
             var prog_ = job_.program_;
             var texture_ = null;
             var textureParams_ = [0,0,0,0];
@@ -488,7 +488,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
             var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
             var forward_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0];
 
-            gpu_.setState(Melown.LineLabelState_, 0);//renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.LineLabelState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
             var prog_ = renderer_.progText_;
 
             gpu_.bindTexture(texture_);
@@ -530,7 +530,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
                 //job_.visibility_
             //}
 
-            gpu_.setState(Melown.LineLabelState_, 0);//renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.LineLabelState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
             
             var stickShift_ = 0;
 

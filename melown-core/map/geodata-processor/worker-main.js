@@ -40,8 +40,6 @@ var processLayerFeature = function(type_, feature_, lod_, layer_, featureIndex_)
         return;
     }
 
-    feature_.properties_ = feature_["properties"] || {};
-
     var eventInfo_ = feature_.properties_;
 
     var hoverLayerId_ = getLayerPropertyValue(layer_, "hover-style", feature_, lod_);
@@ -94,6 +92,8 @@ var processFeature = function(type_, feature_, lod_, featureIndex_, featureType_
     for (var key_ in stylesheetLayers_) {
         var layer_ = stylesheetLayers_[key_];
         var filter_ =  getLayerPropertyValue(layer_, "filter", feature_, lod_);
+
+        feature_.properties_ = feature_["properties"] || {};
         
         if (!filter_ || getFilterResult(filter_, feature_, featureType_, group_)) {
             processLayerFeature(type_, feature_, lod_, layer_, featureIndex_);

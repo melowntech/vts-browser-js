@@ -632,12 +632,12 @@ function getFilterResult(filter_, feature_, featureType_, group_) {
     }
 
     switch(filter_[0]) {
-        case "all": return (getFilterResult(filter_[1], feature_, lod_, featureIndex_) &&
-                            getFilterResult(filter_[2], feature_, lod_, featureIndex_));
-        case "any": return (getFilterResult(filter_[1], feature_, lod_, featureIndex_) ||
-                            getFilterResult(filter_[2], feature_, lod_, featureIndex_));
-        case "none": return !(getFilterResult(filter_[1], feature_, lod_, featureIndex_) ||
-                              getFilterResult(filter_[2], feature_, lod_, featureIndex_));
+        case "all": return (getFilterResult(filter_[1], feature_, featureType_, group_) &&
+                            getFilterResult(filter_[2], feature_, featureType_, group_));
+        case "any": return (getFilterResult(filter_[1], feature_, featureType_, group_) ||
+                            getFilterResult(filter_[2], feature_, featureType_, group_));
+        case "none": return !(getFilterResult(filter_[1], feature_, featureType_, group_) ||
+                              getFilterResult(filter_[2], feature_, featureType_, group_));
         case "skip": return false; 
     }
 

@@ -514,7 +514,7 @@ Melown.Inspector.prototype.buildFreeLayerProperties = function(id_) {
                     + '<select id="melown-layers-fl-properties-style">';
                     
             var styles_ = map_.getStylesheets();
-            var index_ = styles_.indexOf(view_.freeLayers_[id_].style_); // || layerInfo_["style"]); 
+            var index_ = styles_.indexOf(view_.freeLayers_[id_].style_ || view_.freeLayers_[id_].originalStyle_); // || layerInfo_["style"]); 
             
             for (var i = 0, li = styles_.length; i < li; i++) {
                 html_ += '<option value="' + styles_[i] + '" ' + ((i == index_) ? "selected" : "") + '>' + styles_[i] + '</option>';
