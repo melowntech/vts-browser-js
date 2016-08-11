@@ -178,14 +178,16 @@ Melown.GpuDevice.prototype.setState = function(state_, directOffset_) {
     if (this.currentState_ == state_) {
 
         if (directOffset_ != null) {
-            if (directOffset_ != this.currentOffset_) {
+            //if (directOffset_ != this.currentOffset_) {
                 this.currentOffset_ = directOffset_;
                 this.gl_.polygonOffset(-1.0, directOffset_);
-            }
+            //}
         }
 
         return;
     }
+
+    this.gl_.polygonOffset(-1.0, 0);
 
     var gl_ = this.gl_;
     var currentState_ = this.currentState_;

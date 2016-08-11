@@ -12,6 +12,7 @@ var bboxMin_ = [0,0,0];
 var bboxMax_ = [1,1,1];
 var bboxDelta_ = [1,1,1];
 var bboxResolution_ = 4096;
+var geocent_ = false;
 var tileX_ = 0;
 var tileY_ = 0;
 var tileLod_ = 0;

@@ -10,17 +10,17 @@ Melown.MapGeodataView = function(map_, geodata_, extraInfo_) {
     this.renderer_ = this.map_.renderer_;
     this.gpuGroups_ = [];
     this.currentGpuGroup_ = null;
-    /*this.tile_ = extraInfo_.tile_;*/
+    this.tile_ = extraInfo_.tile_;
     this.surface_ = extraInfo_.surface_;
 
     if (!this.surface_.geodataProcessor_) {
         var processor_ = new Melown.MapGeodataProcessor(this, this.onGeodataProcessorMessage.bind(this));
-        processor_.sendCommand("setStylesheet", this.surface_.stylesheet_.data_);
+        processor_.sendCommand("setStylesheet", { "data" : this.surface_.stylesheet_.data_, "geocent" : (!this.map_.getNavigationSrs().isProjected()) } );
         processor_.sendCommand("setFont", {"chars" : this.renderer_.font_.chars_, "space" : this.renderer_.font_.space_, "size" : this.renderer_.font_.size_});
         this.surface_.geodataProcessor_ = processor_;
     } else {
         if (this.surface_.styleChanged_) {
-            this.surface_.geodataProcessor_.sendCommand("setStylesheet", this.surface_.stylesheet_.data_);
+            this.surface_.geodataProcessor_.sendCommand("setStylesheet", { "data" : this.surface_.stylesheet_.data_, "geocent" : (!this.map_.getNavigationSrs().isProjected()) } );
             this.surface_.styleChanged_ = false;
         }
     }
@@ -45,7 +45,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
         return;
     }
 
-    if (message_["command"] != null) {
+    if (typeof message_ !== "string" && message_["command"] != null) {
 
         //console.log("worker-reply: " + message_["command"]);
 
@@ -96,7 +96,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
 Melown.MapGeodataView.prototype.isReady = function() {
     if (this.ready_ == false && this.geodataProcessor_.isReady() == true) {
         this.geodataProcessor_.setListener(this.onGeodataProcessorMessage.bind(this));
-        this.geodataProcessor_.sendCommand("processGeodata", this.geodata_.geodata_ /*, this.tile_.id_, null*/);
+        this.geodataProcessor_.sendCommand("processGeodata", this.geodata_.geodata_, this.tile_);
     }
 
     return this.ready_;

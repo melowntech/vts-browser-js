@@ -632,12 +632,30 @@ function getFilterResult(filter_, feature_, featureType_, group_) {
     }
 
     switch(filter_[0]) {
-        case "all": return (getFilterResult(filter_[1], feature_, featureType_, group_) &&
-                            getFilterResult(filter_[2], feature_, featureType_, group_));
-        case "any": return (getFilterResult(filter_[1], feature_, featureType_, group_) ||
-                            getFilterResult(filter_[2], feature_, featureType_, group_));
-        case "none": return !(getFilterResult(filter_[1], feature_, featureType_, group_) ||
-                              getFilterResult(filter_[2], feature_, featureType_, group_));
+        case "all": 
+            var result_ = true;
+            for (var i = 1, li = filter_.length; i < li; i++) {
+                result_ = result_ && getFilterResult(filter_[i], feature_, featureType_, group_);
+            }
+           
+            return result_;                         
+
+        case "any":
+            var result_ = false;
+            for (var i = 1, li = filter_.length; i < li; i++) {
+                result_ = result_ || getFilterResult(filter_[i], feature_, featureType_, group_);
+            }
+           
+            return result_;                         
+
+        case "none":
+            var result_ = true;
+            for (var i = 1, li = filter_.length; i < li; i++) {
+                result_ = result_ && getFilterResult(filter_[i], feature_, featureType_, group_);
+            }
+           
+            return (!result_);                         
+                              
         case "skip": return false; 
     }
 

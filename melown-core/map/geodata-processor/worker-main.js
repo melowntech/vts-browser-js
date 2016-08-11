@@ -202,7 +202,10 @@ self.onmessage = function (e) {
     switch(command_) {
 
         case "setStylesheet":
-            processStylesheet(data_);
+            if (data_) {
+                geocent_ = data_["geocent"] || false;
+                processStylesheet(data_["data"]);
+            }
             postMessage("ready");
             break;
 
@@ -212,6 +215,8 @@ self.onmessage = function (e) {
             break;
 
         case "processGeodata":
+            tileLod_ = message_["lod"] || 0;
+            
             processGeodata(data_, tileLod_);
             postMessage("allProcessed");
             postMessage("ready");

@@ -256,6 +256,13 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
             pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
         } else {
             pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
+            
+            if (node_.usedDisplaySize()) { //MEGA HACK!!!!!!! use view distance as tile distance
+                if (pixelSize_[1] < this.map_.cameraDistance_) {
+                    var factor_ = this.camera_.scaleFactor2(this.map_.cameraDistance_);
+                    pixelSize_ = [factor_ * screenPixelSize_, this.map_.cameraDistance_];
+                }
+            }
         }
     } else {
         pixelSize_ = [Number.POSITIVE_INFINITY, 99999];

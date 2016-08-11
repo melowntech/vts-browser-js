@@ -206,6 +206,8 @@ Melown.MapGeodata.prototype.onLoaded = function(data_) {
 
     this.geodata_ = data_;
 
+    this.map_.markDirty();
+
     this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
 };

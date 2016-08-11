@@ -257,6 +257,7 @@ Melown.MapSurface.prototype.setStyle = function(style_) {
         this.map_.addStylesheet(style_, this.stylesheet_); 
     } 
 
+    this.style_ = style_;
     this.styleChanged_ = true;
     this.geodataCounter_++;
     

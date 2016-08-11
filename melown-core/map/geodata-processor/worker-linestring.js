@@ -11,8 +11,9 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     }
 
     var line_ = getLayerPropertyValue(style_, "line", lineString_, lod_);
+    var lineLabel_ = getLayerPropertyValue(style_, "line-label", lineString_, lod_);
 
-    if (line_ == false) {
+    if (!line_ && !lineLabel_) {
         return;
     }
 
@@ -203,6 +204,9 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     
                     //normalize vector to line width and rotate 90 degrees
                     l = (l != 0) ? (lineWidth_ / l) : 0;
+                    
+                    //if (geocent_)
+                    
                     var n = [-v[1]*l, v[0]*l,0];
     
                     if (joinParams_ != null) {
@@ -457,30 +461,31 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
 
     var hitable_ = hoverEvent_ || clickEvent_ || enterEvent_ || leaveEvent_;
 
-    var messageData_ = {"command":"addRenderJob", "vertexBuffer": vertexBuffer_,
-                        "color":lineColor_, "z-index":zIndex_, "center": center_, "normalBuffer": normalBuffer_,
-                        "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                        "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                        "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                        "line-width":lineWidth_*2, "lod":(autoLod_ ? null : tileLod_) };
-
-    if (lineFlat_) {
-        messageData_["type"] = (texturedLine_ == true) ? "flat-tline" : "flat-line";
-    } else {
-        messageData_["type"] = (texturedLine_ == true) ? "pixel-tline" : "pixel-line";
-    }
-
-    if (texturedLine_) {
-        if (lineStyleTexture_ != null) {
-            messageData_["texture"] = [stylesheetBitmaps_[lineStyleTexture_[0]], lineStyleTexture_[1], lineStyleTexture_[2]];
-            messageData_["background"] = lineStyleBackground_;
+    if (line_) {
+        var messageData_ = {"command":"addRenderJob", "vertexBuffer": vertexBuffer_,
+                            "color":lineColor_, "z-index":zIndex_, "center": center_, "normalBuffer": normalBuffer_,
+                            "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
+                            "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
+                            "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
+                            "line-width":lineWidth_*2, "lod":(autoLod_ ? null : tileLod_) };
+    
+        if (lineFlat_) {
+            messageData_["type"] = (texturedLine_ == true) ? "flat-tline" : "flat-line";
+        } else {
+            messageData_["type"] = (texturedLine_ == true) ? "pixel-tline" : "pixel-line";
         }
+    
+        if (texturedLine_) {
+            if (lineStyleTexture_ != null) {
+                messageData_["texture"] = [stylesheetBitmaps_[lineStyleTexture_[0]], lineStyleTexture_[1], lineStyleTexture_[2]];
+                messageData_["background"] = lineStyleBackground_;
+            }
+        }
+    
+        postMessage(messageData_);
     }
-
-    postMessage(messageData_);
 
     //debugger
-    var lineLabel_ = getLayerPropertyValue(style_, "line-label", lineString_, lod_);
 
     if (lineLabel_) {
         for (var i = 0, li = lineLabelStack_.length; i < li; i++) {

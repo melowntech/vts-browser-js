@@ -139,6 +139,11 @@ Melown.Camera.prototype.scaleFactor = function(worldPos_, returnDist_) {
     return this.projection_[0] / dist_;
 };
 
+Melown.Camera.prototype.scaleFactor2 = function(dist_) {
+    if (dist_ < this.near_) return Number.POSITIVE_INFINITY;
+    return this.projection_[0] / dist_;
+};
+
 Melown.Camera.prototype.distance = function(worldPos_) {
     var delta_ = Melown.vec3.create();
     Melown.vec3.subtract(this.position_, worldPos_, delta_);

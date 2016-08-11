@@ -386,7 +386,7 @@ Melown.Map.prototype.setStylesheetData = function(id_, data_) {
             if (freeLayer_ && freeLayer_.geodata_ && freeLayer_.stylesheet_ == stylesheet_) {
                 
                 if (freeLayer_.geodataProcessor_) {
-                    freeLayer_.geodataProcessor_.sendCommand("setStylesheet", freeLayer_.stylesheet_.data_);
+                    freeLayer_.geodataProcessor_.sendCommand("setStylesheet", { "data" : freeLayer_.stylesheet_.data_, "geocent" : (!this.map_.getNavigationSrs().isProjected()) });
                 }
 
                 freeLayer_.geodataCounter_++;
