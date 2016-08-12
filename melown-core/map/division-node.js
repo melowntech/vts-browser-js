@@ -18,6 +18,10 @@ Melown.MapDivisionNode.prototype.getOuterCoords = function (coords_) {
     return this.srs_.convertCoordsTo(coords_, this.map_.getNavigationSrs());
 };
 
+Melown.MapDivisionNode.prototype.getPhysicalCoords = function (coords_) {
+    return this.srs_.convertCoordsTo(coords_, this.map_.getPhysicalSrs());
+};
+
 Melown.MapDivisionNode.prototype.getExtents = function (coords_) {
     return this.srs_.convertCoordsFrom(coords_, this.map_.getNavigationSrs());
 };

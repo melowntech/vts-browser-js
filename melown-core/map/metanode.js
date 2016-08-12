@@ -168,6 +168,21 @@ struct Metanode {
     this.alien_ = false;
 
     var nodeSize2_ = stream_.index_ - lastIndex_;
+    
+    if (this.map_.config_.mapGeocentCulling_) {
+        var node_ = this.map_.getSpatialDivisionNodeById(this.id_);
+        
+        var ll_ = node_.extents_.ll_;
+        var ur_ = node_.extents_.ur_;
+        
+        var minddle_ = [(ur[0] - ll[0])* 0.5, (ur[1] - ll[1])* 0.5, 0];
+        var normal_ = [0,0,0];
+        
+        this.diskPos_ = node_.getPhysicalCoords(minddle_);
+        Melown.vec3.normalize(this.diskPos_, normal_);
+        this.diskNormal_ = normal_;   
+        //this.diskAngle_ =   
+    }
 
 //    console.log("node size: " + JSON.stringify(this.id_) + "  " + nodeSize2_ + "  " + this.metatile_.nodeSize_ + "  " + this.flags_.toString(2));
     //console.log("node size: " + JSON.stringify(this.id_) + "  " + this.pixelSize_);

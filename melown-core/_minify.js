@@ -11,6 +11,7 @@ window["Melown"] = Melown;
 window["ga"] = (window["ga"] != null) ? window["ga"] : {}; //google analytics
 window["MelownMap_"] = (window["MelownMap_"] != null) ? window["MelownMap_"] : null;
 window["Q"] = (window["Q"] != null) ? window["Q"] : {}; //google analytics
+window["$"] = (window["$"] != null) ? window["$"] : {}; //jquery, ...
 
 
 //demo

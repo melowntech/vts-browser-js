@@ -11,7 +11,7 @@ window["Melown"] = Melown;
 window["ga"] = (window["ga"] != null) ? window["ga"] : {}; //google analytics
 window["MelownMap_"] = (window["MelownMap_"] != null) ? window["MelownMap_"] : null;
 window["Q"] = (window["Q"] != null) ? window["Q"] : {}; //google analytics
-
+window["$"] = (window["$"] != null) ? window["$"] : {}; //jquery, ...
 
 //demo
 //cat init.js matrix.js math.js utility.js config.js bbox.js cache.js camera.js geometry.js gpuDevice.js gpuMesh.js gpuProgram.js gpuShaders.js gpuTexture.js gpuTile.js mesh.js metatile.js renderer.js tile.js tileid.js browser.js demo.js > minifiedViewer.js

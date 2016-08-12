@@ -99,6 +99,8 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.cameraTiltFator_ = 1;
     this.distanceFactor_ = 1;
     this.tiltFactor_ = 1;
+    this.cameraVector_ = [0,0,0];
+    this.labelVector_ = [0,0,0];
 
             
     //hack for melown maps

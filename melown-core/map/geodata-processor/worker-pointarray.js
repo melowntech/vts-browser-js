@@ -288,18 +288,18 @@ var processIcon = function(point_, iconData_) {
     var vertexBufferSize_ = vertexBuffer_.length;
 
     //add polygon
-    vertexBuffer_.push(0, 0, 0,
-                       width_, 0, 0,
-                       width_, -height_, 0);
+    vertexBuffer_.push(0, 0, 0, 0,
+                       width_, 0, 0, 0,
+                       width_, -height_, 0, 0);
 
     texcoordsBuffer_.push(icon_[1], icon_[2], 0, 0,
                           icon_[1]+icon_[3], icon_[2], 0, 0,
                           icon_[1]+icon_[3], icon_[2]+icon_[4], 0, 0);
 
     //add polygon
-    vertexBuffer_.push(0, 0, 0,
-                       0, -height_, 0,
-                       width_, -height_, 0);
+    vertexBuffer_.push(0, 0, 0, 0,
+                       0, -height_, 0, 0,
+                       width_, -height_, 0, 0);
 
     texcoordsBuffer_.push(icon_[1], icon_[2], 0, 0,
                           icon_[1], icon_[2]+icon_[4], 0, 0,
@@ -311,7 +311,7 @@ var processIcon = function(point_, iconData_) {
     originOffset_[1] = originOffset_[1] + iconData_.offset_[1];
 
     //set origin buffer and apply offset
-    for (var i = vertexBufferSize_, li = vertexBuffer_.length; i < li; i+=3) {
+    for (var i = vertexBufferSize_, li = vertexBuffer_.length; i < li; i+=4) {
         originBuffer_.push(point_[0], point_[1], point_[2]);
 
         vertexBuffer_[i] +=  originOffset_[0];
@@ -384,7 +384,7 @@ var processLabel = function(point_, labelData_) {
             case "center": x = (maxWidth_ - textWidth_)*0.5; break;
         }
 
-        addText([x,y,0], [1,0,0], lines2_[i], labelData_.size_, fonts_["default"], vertexBuffer_, texcoordsBuffer_);
+        addText([x,y,0], [1,0,0], lines2_[i], labelData_.size_, fonts_["default"], vertexBuffer_, texcoordsBuffer_, true);
         y -= lineHeight_;
     }
 
@@ -394,7 +394,7 @@ var processLabel = function(point_, labelData_) {
     originOffset_[1] = originOffset_[1] + labelData_.offset_[1];
 
     //set origin buffer and apply offset
-    for (var i = vertexBufferSize_, li = vertexBuffer_.length; i < li; i+=3) {
+    for (var i = vertexBufferSize_, li = vertexBuffer_.length; i < li; i+=4) {
         originBuffer_.push(point_[0], point_[1], point_[2]);
 
         vertexBuffer_[i] +=  originOffset_[0];

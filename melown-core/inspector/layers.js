@@ -19,6 +19,11 @@ Melown.Inspector.prototype.initLayersPanel = function() {
             + "padding: 10px;"
         + "}"
 
+        + "#melown-layers-panel button {"
+            + "max-width: 23px;"
+            + "max-height: 21px;"
+        + "}"
+
         + "#melown-layers-panel-title {"
             + "margin-bottom: 3px;"
         + "}"
@@ -126,6 +131,14 @@ Melown.Inspector.prototype.initLayersPanel = function() {
             + "white-space: nowrap;"       
         + "}"          
 
+        + ".melown-layers-name2 {"
+            + "width: 126px;"
+            + "display: inline-block;"
+            + "overflow: hidden;"
+            + "text-overflow: ellipsis;"
+            + "white-space: nowrap;"       
+        + "}"
+         
         + "#melown-layers-fl-properties-style {"
             + "width: 175px;"
             + "height: 21px;"
@@ -349,7 +362,7 @@ Melown.Inspector.prototype.buildViews = function() {
 
     for (var key_ in views_) {
         html_ += '<div class="melown-views-item" id="melown-views-item-' + key_ + '">'
-                 + '<div class="melown-layers-name">' + key_ + '</div>'
+                 + '<div class="melown-layers-name2">' + key_ + '</div>'
                  + '<button id="melown-views-cbutton-' + key_ + '" type="button" title="Clone">C</button>' 
                  + '<button id="melown-views-xbutton-' + key_ + '" type="button" title="Remove">X</button>' 
                  + '</div>';

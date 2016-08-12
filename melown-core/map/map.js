@@ -539,6 +539,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapAllowHires":                 this.config_.mapAllowHires_ = Melown.validateBool(value_, true); break;
         case "mapAllowLowres":                this.config_.mapAllowLowres_ = Melown.validateBool(value_, true); break;
         case "mapAllowSmartSwitching":        this.config_.mapAllowSmartSwitching_ = Melown.validateBool(value_, true); break;
+        case "mapGeocentCulling":             this.config_.mapGeocentCulling_ = Melown.validateBool(value_, false); break;
         case "mapHeightLodBlend":             this.config_.mapHeightLodBlend_ = Melown.validateBool(value_, true); break;
         case "mapHeightNodeBlend":            this.config_.mapHeightNodeBlend_ = Melown.validateBool(value_, true); break;
         case "mapBasicTileSequence":          this.config_.mapBasicTileSequence_ = Melown.validateBool(value_, true); break;
@@ -564,6 +565,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapAllowHires":                 return this.config_.mapAllowHires_;
         case "mapAllowLowres":                return this.config_.mapAllowLowres_;
         case "mapAllowSmartSwitching":        return this.config_.mapAllowSmartSwitching_;
+        case "mapGeocentCulling":             return this.config_.mapGeocentCulling_;
         case "mapHeightLodBlend":             return this.config_.mapHeightLodBlend_;
         case "mapHeightNodeBlend":            return this.config_.mapHeightNodeBlend_;
         case "mapBasicTileSequence":          return this.config_.mapBasicTileSequence_;
@@ -616,13 +618,29 @@ Melown.Map.prototype.drawMap = function() {
       mapdata_ : []
     };
 
+    var projected_ = this.getNavigationSrs().isProjected();
+
+    if (!projected_) {
+        //why calling this function distorts camera? why I have call it before update camera< 
+        var camInfo_ = this.position_.getCameraInfo(this.getNavigationSrs().isProjected(), true); //
+    }
+
     this.updateCamera();
     this.renderer_.dirty_ = true;
     this.renderer_.drawFog_ = this.drawFog_;
 
     this.renderer_.cameraPosition_ = this.cameraPosition_;
     this.renderer_.cameraOrientation_ = this.position_.getOrientation();
-    this.renderer_.cameraTiltFator_ = Math.cos(Melown.radians(this.renderer_.cameraOrientation_[1])); 
+    this.renderer_.cameraTiltFator_ = Math.cos(Melown.radians(this.renderer_.cameraOrientation_[1]));
+    this.renderer_.cameraVector_ = this.cameraVector_; 
+
+    if (projected_) {
+        var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
+        this.renderer_.labelVector_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0, 0];
+    } else {
+        var v = camInfo_.vector_;
+        this.renderer_.labelVector_ = [v[0], v[1], v[2], 0]; 
+    }
    
     var distanceFactor_ = (500/Math.max(10.0,this.cameraDistance_));
     this.renderer_.distanceFactor_ = (distanceFactor_ * distanceFactor_ * distanceFactor_)*0.5;
@@ -665,7 +683,7 @@ Melown.Map.prototype.drawMap = function() {
     this.zFactor_ = 0;
     this.draw();
 
-    if (!this.getNavigationSrs().isProjected()) {    
+    if (!projected_) {    
 
         //var camInfo_ = this.position_.getCameraInfo(true);
         //this.cameraPosition_;

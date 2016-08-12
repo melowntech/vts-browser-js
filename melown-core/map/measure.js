@@ -265,6 +265,34 @@ Melown.Map.prototype.getSpatialDivisionNode = function(coords_) {
     return [bestNode_, bestCoords_];
 };
 
+Melown.Map.prototype.getSpatialDivisionNodeById = function(id_) {
+    var nodes_ = this.referenceFrame_.getSpatialDivisionNodes();
+
+    var bestNode_ = null;
+    var bestLod_ = -1;
+    var bestCoords_ = [0,0];
+
+    for (var i = 0, li = nodes_.length; i < li; i++) {
+        var node_ = nodes_[i];
+            
+        //has division node this tile node 
+        var shift_ = node_.id_[0] - this.lodRange_[0];
+
+        if (shift_ >= 0) {
+            var x = id_[1] >> shift_;
+            var y = id_[2] >> shift_;
+            
+            if (node_.id_[1] == x && node_.id_[2] == y) {
+                bestNode_ = node_;
+                bestLod_ = node_.id_[0];
+            }
+        }
+    }
+
+    return bestNode_;
+};
+
+
 Melown.Map.prototype.getOptimalHeightLodBySampleSize = function(coords_, desiredSamplesSize_) {
     var result_ = this.getSpatialDivisionNode(coords_);
     var node_ = result_[0];

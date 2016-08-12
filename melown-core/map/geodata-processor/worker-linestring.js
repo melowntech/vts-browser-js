@@ -149,43 +149,64 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     
     
             if (lineFlat_ && !texturedLine_) {
-    
-                //direction vector
-                var v = [p2[0] - p1[0], p2[1] - p1[1], 0];
-    
-                //get line length
-                var l = Math.sqrt(v[0]*v[0] + v[1]*v[1]);
-                distance2_ += l;
-    
+
                 //normalize vector to line width and rotate 90 degrees
-                l = (l != 0) ? (lineWidth_ / l) : 0;
-                var n = [-v[1]*l, v[0]*l,0];
-    
+                if (geocent_) {
+                    //direction vector
+                    var v = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+        
+                    //get line length
+                    var l = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+                    distance2_ += l;
+        
+                    l = (l != 0) ? (1 / l) : 0;
+
+                    var vv = [v[0]*l, v[1]*l, v[2]*l];
+                    var n = [0,0,0];
+                    var nn = [0,0,0];
+                    
+                    vec3Normalize(bboxMin_, nn);
+                    vec3Cross(nn, vv, n);
+                    
+                    n = [n[0] * lineWidth_, n[1] * lineWidth_, n[2] * lineWidth_];
+                } else {
+                    //direction vector
+                    var v = [p2[0] - p1[0], p2[1] - p1[1], 0];
+        
+                    //get line length
+                    var l = Math.sqrt(v[0]*v[0] + v[1]*v[1]);
+                    distance2_ += l;
+        
+                    l = (l != 0) ? (lineWidth_ / l) : 0;
+
+                    var n = [-v[1]*l, v[0]*l, 0];
+                }
+                        
                 //add polygon
                 vertexBuffer_[index_] = p1[0] + n[0];
                 vertexBuffer_[index_+1] = p1[1] + n[1];
-                vertexBuffer_[index_+2] = p1[2];
+                vertexBuffer_[index_+2] = p1[2] + n[2];
     
                 vertexBuffer_[index_+3] = p1[0] - n[0];
                 vertexBuffer_[index_+4] = p1[1] - n[1];
-                vertexBuffer_[index_+5] = p1[2];
+                vertexBuffer_[index_+5] = p1[2] - n[2];
     
                 vertexBuffer_[index_+6] = p2[0] + n[0];
                 vertexBuffer_[index_+7] = p2[1] + n[1];
-                vertexBuffer_[index_+8] = p2[2];
+                vertexBuffer_[index_+8] = p2[2] + n[2];
     
                 //add polygon
                 vertexBuffer_[index_+9] = p1[0] - n[0];
                 vertexBuffer_[index_+10] = p1[1] - n[1];
-                vertexBuffer_[index_+11] = p1[2];
+                vertexBuffer_[index_+11] = p1[2] - n[2];
     
                 vertexBuffer_[index_+12] = p2[0] - n[0];
                 vertexBuffer_[index_+13] = p2[1] - n[1];
-                vertexBuffer_[index_+14] = p2[2];
+                vertexBuffer_[index_+14] = p2[2] - n[2];
     
                 vertexBuffer_[index_+15] = p2[0] + n[0];
                 vertexBuffer_[index_+16] = p2[1] + n[1];
-                vertexBuffer_[index_+17] = p2[2];
+                vertexBuffer_[index_+17] = p2[2] + n[2];
     
                 index_ += 18;
     
@@ -204,9 +225,6 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     
                     //normalize vector to line width and rotate 90 degrees
                     l = (l != 0) ? (lineWidth_ / l) : 0;
-                    
-                    //if (geocent_)
-                    
                     var n = [-v[1]*l, v[0]*l,0];
     
                     if (joinParams_ != null) {
@@ -360,24 +378,48 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
             center_[2] += p1[2];
     
             var angleShift_ = (joinParams_ != null) ? joinParams_[i] : 0;
+
+            if (geocent_) {
+                var vv = [0,0,0];
+                var nn = [0,0,0];
+                vec3Normalize(bboxMin_, nn);
+                vec3AnyPerpendicular(nn, vv);
+                vec3Normalize(vv);
+                vec3Cross(nn, vv, nn);
+            }
     
             for (var j = 0; j < circleSides_; j++) {
     
                 if (lineFlat_ && !texturedLine_) {
-    
-                    //add polygon
+
                     vertexBuffer_[index_] = p1[0];
                     vertexBuffer_[index_+1] = p1[1];
                     vertexBuffer_[index_+2] = p1[2];
     
-                    vertexBuffer_[index_+3] = p1[0] + circleBuffer_[j][0] * lineWidth_;
-                    vertexBuffer_[index_+4] = p1[1] + circleBuffer_[j][1] * lineWidth_;
-                    vertexBuffer_[index_+5] = p1[2];
-    
-                    vertexBuffer_[index_+6] = p1[0] + circleBuffer_[j+1][0] * lineWidth_;
-                    vertexBuffer_[index_+7] = p1[1] + circleBuffer_[j+1][1] * lineWidth_;
-                    vertexBuffer_[index_+8] = p1[2];
-    
+                    //add polygon
+                    if (geocent_) {
+                        var dx = circleBuffer_[j][0];
+                        var dy = circleBuffer_[j][1];
+                        vertexBuffer_[index_+3] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth_;
+                        vertexBuffer_[index_+4] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth_;
+                        vertexBuffer_[index_+5] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth_;
+        
+                        dx = circleBuffer_[j+1][0];
+                        dy = circleBuffer_[j+1][1];
+                        vertexBuffer_[index_+6] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth_;
+                        vertexBuffer_[index_+7] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth_;
+                        vertexBuffer_[index_+8] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth_;
+                    } else {
+        
+                        vertexBuffer_[index_+3] = p1[0] + circleBuffer_[j][0] * lineWidth_;
+                        vertexBuffer_[index_+4] = p1[1] + circleBuffer_[j][1] * lineWidth_;
+                        vertexBuffer_[index_+5] = p1[2];
+        
+                        vertexBuffer_[index_+6] = p1[0] + circleBuffer_[j+1][0] * lineWidth_;
+                        vertexBuffer_[index_+7] = p1[1] + circleBuffer_[j+1][1] * lineWidth_;
+                        vertexBuffer_[index_+8] = p1[2];
+                    }
+        
                     index_ += 9;
     
                 } else {

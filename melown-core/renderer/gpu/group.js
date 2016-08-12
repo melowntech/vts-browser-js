@@ -190,8 +190,8 @@ Melown.GpuGroup.prototype.addLineLabelJob = function(data_) {
     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
 
     gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-    job_.vertexPositionBuffer_.itemSize = 3;
-    job_.vertexPositionBuffer_.numItems = vertices_.length / 3;
+    job_.vertexPositionBuffer_.itemSize = 4;
+    job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
 
     //create normal buffer
     job_.vertexTexcoordBuffer_ = gl_.createBuffer();
@@ -247,8 +247,8 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
 
     gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-    job_.vertexPositionBuffer_.itemSize = 3;
-    job_.vertexPositionBuffer_.numItems = vertices_.length / 3;
+    job_.vertexPositionBuffer_.itemSize = 4;
+    job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
 
     //create normal buffer
     job_.vertexTexcoordBuffer_ = gl_.createBuffer();
@@ -268,7 +268,7 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
 
     this.jobs_.push(job_);
 
-    this.size_ += job_.vertexPositionBuffer_.numItems * 3 * 4 +
+    this.size_ += job_.vertexPositionBuffer_.numItems * 4 * 4 +
                   job_.vertexOriginBuffer_.numItems * 3 * 4 +
                   job_.vertexTexcoordBuffer_.numItems * 4 * 4;
     this.polygons_ += job_.vertexPositionBuffer_.numItems / 3;
@@ -333,8 +333,8 @@ Melown.GpuGroup.prototype.draw = function(mv_, mvp_, applyOrigin_) {
         if ((job_.type_ == "icon" || job_.type_ == "label") && job_.visibility_ > 0) {
             var center_ = job_.center_;
             if (Melown.vec3.length([center_[0]-cameraPos_[0],
-                                      center_[1]-cameraPos_[1],
-                                      center_[2]-cameraPos_[2]]) > job_.visibility_) {
+                                    center_[1]-cameraPos_[1],
+                                    center_[2]-cameraPos_[2]]) > job_.visibility_) {
                 continue;
             }
         }
@@ -484,9 +484,9 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
         case "line-label":
 
             var texture_ = hitmapRender_ ? renderer_.whiteTexture_ : renderer_.font_.texture_;
-
-            var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
-            var forward_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0];
+            
+            //var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
+            //var forward_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0];
 
             gpu_.setState(Melown.LineLabelState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
             var prog_ = renderer_.progText_;
@@ -496,7 +496,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
             gpu_.useProgram(prog_, "aPosition", "aTexCoord", null, null);
             prog_.setSampler("uSampler", 0);
             prog_.setMat4("uMVP", mvp_);
-            prog_.setVec4("uVec", forward_);
+            prog_.setVec4("uVec", renderer_.labelVector_);
             prog_.setVec4("uColor", color_);
             //prog_.setVec2("uScale", screenPixelSize_);
 

@@ -168,17 +168,17 @@ Melown.polygonFragmentShader = "precision mediump float;\n"+
     "}";
 
 Melown.textVertexShader =
-    "attribute vec3 aPosition;\n"+
+    "attribute vec4 aPosition;\n"+
     "attribute vec4 aTexCoord;\n"+
     "uniform mat4 uMVP;\n"+
     "uniform vec4 uVec;\n"+
     "varying vec2 vTexCoord;\n"+
     "void main(){ \n"+
         "vTexCoord = aTexCoord.xy;\n"+
-        "if (dot(uVec.xy, aTexCoord.zw) < 0.0) {\n"+
+        "if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n"+
             "gl_Position = uMVP * vec4(2.0, 0.0, 0.0, 1.0);\n"+
         "}else{\n"+
-            "gl_Position = uMVP * vec4(aPosition, 1.0);\n"+
+            "gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n"+
         "}\n"+
     "}";
 
@@ -196,7 +196,7 @@ Melown.textVertexShader2 =
     "}";
 
 Melown.iconVertexShader =
-    "attribute vec3 aPosition;\n"+
+    "attribute vec4 aPosition;\n"+
     "attribute vec4 aTexCoord;\n"+
     "attribute vec3 aOrigin;\n"+
     "uniform mat4 uMVP;\n"+

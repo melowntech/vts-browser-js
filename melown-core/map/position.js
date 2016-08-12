@@ -441,10 +441,14 @@ Melown.MapPosition.prototype.getNED = function() {
 
 };
 
-Melown.MapPosition.prototype.getCameraInfo = function(projected_) {
+Melown.MapPosition.prototype.getCameraInfo = function(projected_, clampTilt_) {
     var position_ = [0,0,0];
     var orientation_ = this.getOrientation();
     var distance_ = this.getViewDistance();
+    
+    if (clampTilt_) { //used for street labels
+        orientation_[1] = Melown.clamp(orientation_[1], -89.0, 90.0);
+    }
     
     var tmpMatrix_ = Melown.mat4.create();
     Melown.mat4.multiply(Melown.rotationMatrix(2, Melown.radians(orientation_[0])), Melown.rotationMatrix(0, Melown.radians(orientation_[1])), tmpMatrix_);
@@ -681,7 +685,7 @@ Melown.MapPosition.prototype.getCameraInfo = function(projected_) {
 
         ret_.vector2_ = [-spaceMatrix_[8], -spaceMatrix_[9], -spaceMatrix_[10]]; //vector2 is probably hack for tree.js bboxVisible 
 
-        var ray_ = this.map_.renderer_.getScreenRay(800,400);
+        //var ray_ = this.map_.renderer_.getScreenRay(800,400);
 
         //get camera direction
         Melown.mat4.inverse(rotationMatrix_, spaceMatrix_);

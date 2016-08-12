@@ -12,43 +12,18 @@ var setFont = function(fontData_) {
 
 };
 
-vec3Normalize = function (a, b) {
-    b || (b = a);
-    var c = a[0],
-        d = a[1],
-        e = a[2],
-        g = Math.sqrt(c * c + d * d + e * e);
-    if (g) {
-        if (g == 1) {
-            b[0] = c;
-            b[1] = d;
-            b[2] = e;
-            return b;
-        }
-    } else {
-        b[0] = 0;
-        b[1] = 0;
-        b[2] = 0;
-        return b;
-    }
-    g = 1 / g;
-    b[0] = c * g;
-    b[1] = d * g;
-    b[2] = e * g;
-    return b;
-};
-
-vec3Length = function (a) {
-    var b = a[0],
-        c = a[1];
-    a = a[2];
-    return Math.sqrt(b * b + c * c + a * a);
-};
-
-
-var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index2_, textVector_, font_, vertexBuffer_, texcoordsBuffer_) {
+var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index2_, textVector_, font_, vertexBuffer_, texcoordsBuffer_, flat_) {
     //normal to dir
-    var n = [-dir_[1],dir_[0],0];
+
+    if (geocent_ && !flat_) {
+        var n = [0,0,0];
+        var nn = [0,0,0];
+        
+        vec3Normalize(bboxMin_, nn);
+        vec3Cross(nn, dir_, n);
+    } else {
+        var n = [-dir_[1],dir_[0],0];
+    }
 
     var p1 = [pos_[0], pos_[1], pos_[2]];
     var p2 = [p1[0], p1[1], p1[2]];
@@ -59,6 +34,7 @@ var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index
     var l = 0;
     var nx = textVector_[0];
     var ny = textVector_[1];
+    var nz = textVector_[2];
 
     if (char_ == 9 || char_ == 32) {  //tab or space
         fc = chars_[32]; //space
@@ -84,24 +60,27 @@ var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index
             vertexBuffer_[index_] = p1[0] - n2[0];
             vertexBuffer_[index_+1] = p1[1] - n2[1];
             vertexBuffer_[index_+2] = p1[2] - n2[2];
+            vertexBuffer_[index_+3] = nz;
 
             texcoordsBuffer_[index2_] = fc.u1;
             texcoordsBuffer_[index2_+1] = fc.v1;
             texcoordsBuffer_[index2_+2] = nx;
             texcoordsBuffer_[index2_+3] = ny;
 
-            vertexBuffer_[index_+3] = p1[0] - n3[0];
-            vertexBuffer_[index_+4] = p1[1] - n3[1];
-            vertexBuffer_[index_+5] = p1[2] - n3[2];
+            vertexBuffer_[index_+4] = p1[0] - n3[0];
+            vertexBuffer_[index_+5] = p1[1] - n3[1];
+            vertexBuffer_[index_+6] = p1[2] - n3[2];
+            vertexBuffer_[index_+7] = nz;
 
             texcoordsBuffer_[index2_+4] = fc.u1;
             texcoordsBuffer_[index2_+5] = fc.v2;
             texcoordsBuffer_[index2_+6] = nx;
             texcoordsBuffer_[index2_+7] = ny;
 
-            vertexBuffer_[index_+6] = p2[0] - n2[0];
-            vertexBuffer_[index_+7] = p2[1] - n2[1];
-            vertexBuffer_[index_+8] = p2[2] - n2[2];
+            vertexBuffer_[index_+8] = p2[0] - n2[0];
+            vertexBuffer_[index_+9] = p2[1] - n2[1];
+            vertexBuffer_[index_+10] = p2[2] - n2[2];
+            vertexBuffer_[index_+11] = nz;
 
             texcoordsBuffer_[index2_+8] = fc.u2;
             texcoordsBuffer_[index2_+9] = fc.v1;
@@ -110,34 +89,37 @@ var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index
 
 
             //next polygon
-            vertexBuffer_[index_+9] = p1[0] - n3[0];
-            vertexBuffer_[index_+10] = p1[1] - n3[1];
-            vertexBuffer_[index_+11] = p1[2] - n3[2];
+            vertexBuffer_[index_+12] = p1[0] - n3[0];
+            vertexBuffer_[index_+13] = p1[1] - n3[1];
+            vertexBuffer_[index_+14] = p1[2] - n3[2];
+            vertexBuffer_[index_+15] = nz;
 
             texcoordsBuffer_[index2_+12] = fc.u1;
             texcoordsBuffer_[index2_+13] = fc.v2;
             texcoordsBuffer_[index2_+14] = nx;
             texcoordsBuffer_[index2_+15] = ny;
 
-            vertexBuffer_[index_+12] = p2[0] - n3[0];
-            vertexBuffer_[index_+13] = p2[1] - n3[1];
-            vertexBuffer_[index_+14] = p2[2] - n3[2];
+            vertexBuffer_[index_+16] = p2[0] - n3[0];
+            vertexBuffer_[index_+17] = p2[1] - n3[1];
+            vertexBuffer_[index_+18] = p2[2] - n3[2];
+            vertexBuffer_[index_+19] = nz;
 
             texcoordsBuffer_[index2_+16] = fc.u2;
             texcoordsBuffer_[index2_+17] = fc.v2;
             texcoordsBuffer_[index2_+18] = nx;
             texcoordsBuffer_[index2_+19] = ny;
 
-            vertexBuffer_[index_+15] = p2[0] - n2[0];
-            vertexBuffer_[index_+16] = p2[1] - n2[1];
-            vertexBuffer_[index_+17] = p2[2] - n2[2];
+            vertexBuffer_[index_+20] = p2[0] - n2[0];
+            vertexBuffer_[index_+21] = p2[1] - n2[1];
+            vertexBuffer_[index_+22] = p2[2] - n2[2];
+            vertexBuffer_[index_+23] = nz;
 
             texcoordsBuffer_[index2_+20] = fc.u2;
             texcoordsBuffer_[index2_+21] = fc.v1;
             texcoordsBuffer_[index2_+22] = nx;
             texcoordsBuffer_[index2_+23] = ny;
 
-            index_ += 18;
+            index_ += 24;
             index2_ += 24;
             //polygons_ += 2;
 
@@ -153,8 +135,8 @@ var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index
 };
 
 
-var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoordsBuffer_) {
-    var textVector_ = [0,1];
+var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoordsBuffer_, flat_) {
+    var textVector_ = [0,1,0];
     var index_ = vertexBuffer_.length;
     var index2_ = texcoordsBuffer_.length;
 
@@ -174,7 +156,7 @@ var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoords
             continue;
         }
 
-        var shift_ = addChar(p1, dir_, 0, char_, factor_, index_, index2_, textVector_, font_, vertexBuffer_, texcoordsBuffer_);
+        var shift_ = addChar(p1, dir_, 0, char_, factor_, index_, index2_, textVector_, font_, vertexBuffer_, texcoordsBuffer_, flat_);
 
         p1 = shift_[0];
         index_ = shift_[1];
@@ -186,7 +168,7 @@ var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoords
 
 var addTextOnPath = function(points_, distance_, text_, size_, textVector_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_) {
     if (textVector_ == null) {
-        textVector_ = [0,1];
+        textVector_ = [0,1,0];
     }
 
     var p1 = points_[0];
@@ -394,7 +376,15 @@ var getPathTextVector = function(points_, shift_, text_, factor_, font_) {
 
         if (l > textEnd_) {
             vec3Normalize(textDir_);
-            return [-textDir_[1], textDir_[0],0];
+
+            if (geocent_) {
+                var nn = [0,0,0];
+                vec3Normalize(bboxMin_, nn);
+                vec3Cross(nn, textDir_, nn);
+                return nn;
+            } else {
+                return [-textDir_[1], textDir_[0],0];
+            }
         }
     }
 
