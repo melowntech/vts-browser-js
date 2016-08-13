@@ -66,7 +66,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
             this.coordsDeltas_.push(forward_);
             this.reduceFloatingHeight(0.9);
         }
-    } else if ((event_.getDragButton("right") || modifierKey_) 
+    } else if ((event_.getDragButton("right") || event_.getDragButton("middle") || modifierKey_) 
                && this.config_.rotationAllowed_) { //rotate
                    
         var sensitivity_ = 0.4;
