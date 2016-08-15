@@ -684,8 +684,13 @@ function checkProj(item) {
   }
   return proj(item);
 }
-function _mproj4_(fromProj, toProj, coord) {
+function _mproj4_(fromProj, toProj, coord, onlyProj_) {
   fromProj = checkProj(fromProj);
+
+    if (onlyProj_) {
+        return fromProj;
+    }  
+  
   var single = false;
   var obj;
   if (typeof toProj === 'undefined') {

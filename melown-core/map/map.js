@@ -527,7 +527,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapMetatileCache":              this.config_.mapMetatileCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 60)*1024*1024;
                                               this.metatileCache_.setMaxCost(this.config_.mapMetatileCache_); break;
         case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
-        case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 2.2); break;
+        case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= 2.2; break; ///Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 2.2); break;
         case "mapLowresBackground":           this.config_.mapLowresBackground_ = Melown.validateBool(value_, false); break;
         case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;
         case "mapMaxProcessingTime":          this.config_.mapMaxProcessingTime_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1000/20); break;
@@ -658,7 +658,7 @@ Melown.Map.prototype.drawMap = function() {
         //if (this.getNavigationSrs().isProjected()) {    
             //this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.renderer_.progSkydome_);
         //} else {
-            this.renderer_.drawSkydome(this.renderer_.blackTexture_, this.renderer_.progStardome_);
+            this.renderer_.drawSkydome(this.renderer_.whiteTexture_, this.renderer_.progStardome_);
         //}
     }
 

@@ -265,18 +265,20 @@ Melown.Map.prototype.getSpatialDivisionNode = function(coords_) {
     return [bestNode_, bestCoords_];
 };
 
-Melown.Map.prototype.getSpatialDivisionNodeById = function(id_) {
+Melown.Map.prototype.getSpatialDivisionNodeAndExtents = function(id_) {
     var nodes_ = this.referenceFrame_.getSpatialDivisionNodes();
 
     var bestNode_ = null;
     var bestLod_ = -1;
     var bestCoords_ = [0,0];
+    var bestExtents_ = {ll_:[0,0], ur_:[1,1]};
 
     for (var i = 0, li = nodes_.length; i < li; i++) {
         var node_ = nodes_[i];
             
         //has division node this tile node 
-        var shift_ = node_.id_[0] - this.lodRange_[0];
+        //var shift_ = node_.id_[0] - this.lodRange_[0];
+        var shift_ = id_[0] - node_.id_[0];
 
         if (shift_ >= 0) {
             var x = id_[1] >> shift_;
@@ -285,11 +287,23 @@ Melown.Map.prototype.getSpatialDivisionNodeById = function(id_) {
             if (node_.id_[1] == x && node_.id_[2] == y) {
                 bestNode_ = node_;
                 bestLod_ = node_.id_[0];
+                bestExtents_ = node_.extents_;
             }
         }
     }
+    
+    var shift_ = id_[0] - bestNode_.id_[0];;
+    
+    var factor_ = 1.0 / Math.pow(2, shift_);
+    var ur_ = bestNode_.extents_.ur_;
+    var ll_ = bestNode_.extents_.ll_;
+    
+    //extents ll ur but tiles are ul lr!!!! 
+    
+    var dx_ = (ur_[0] - ll_[0]) * factor_; 
+    var dy_ = (ll_[1] - ur_[1]) * factor_;
 
-    return bestNode_;
+    return [bestNode_, [[ll_[0] + dx_ * id_[1], ur_[1] + dy_ * id_[2]], [ll_[0] + dx_ * (id_[1]+1), ur_[1] + dy_ * (id_[2]+1)] ]];
 };
 
 

@@ -231,7 +231,7 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
       //  this.map_.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
     //}
 
-    if (this.bboxVisible(tile_.id_, node_.bbox_, cameraPos_) != true) {
+    if (this.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_) != true) {
         return [false, preventRedener_, preventLoad_];
         //return true;
     }
@@ -375,7 +375,7 @@ Melown.MapSurfaceTree.prototype.canDrawCoarserLod = function(tile_, node_, camer
             }
 
             if (childTile_.metanode_.hasGeometry() /*&&
-                this.bboxVisible(childTile_.id_, childTile_.metanode_.bbox_, cameraPos_)*/) {
+                this.bboxVisible(childTile_.id_, childTile_.metanode_.bbox_, cameraPos_, node_)*/) {
 
                 if (!(childTile_.drawCommands_[channel_].length > 0 && this.map_.areDrawCommandsReady(childTile_.drawCommands_[channel_], priority_))) {
                     //load data for child tile
@@ -392,47 +392,142 @@ Melown.MapSurfaceTree.prototype.canDrawCoarserLod = function(tile_, node_, camer
     return ret_;
 };
 
-Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_) {
+Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, node_) {
     var skipGeoTest_ = false;
-
-    if (!skipGeoTest_ && this.geocent_ && id_[0] > 0 && id_[0] < 12) {
-        var hit_ = false;
-        var cv_ = this.map_.cameraVector2_; //why vector2???!!!!!
-        var bmax_ = bbox_.max_;
-        var bmin_ = bbox_.min_;
-        var edge_ = -0.5;
+    
+    if (id_[0] >= 6) {
+        id_ = id_;
         
-        var camDistance_ = Math.max(this.cameraHeight_, this.map_.cameraDistance_); 
-
-        if (camDistance_ < 1000000) {
-            edge_ = -0.9;
-        } 
-        
-        if (camDistance_ < 100000) {
-            edge_ = -0.991;
-        } 
-        
-        switch(id_[0]) {
-            case 1: edge_ = 1; break;
-            case 2: edge_ = 0; break;
-            case 3: edge_ = -0.4; break;
-            case 4: edge_ = -0.45; break;
-            case 5: edge_ = -0.45; break;
-        }
-       
-        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmax_[2]])) < edge_);
-        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmax_[2]])) < edge_);
-        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmax_[2]])) < edge_);
-        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmax_[2]])) < edge_);
-
-        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmin_[2]])) < edge_);
-        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmin_[2]])) < edge_);
-        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmin_[2]])) < edge_);
-        hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmin_[2]])) < edge_);
-        
-        if (!hit_) {
+        if (!node_.hasGeometry()) {
             return false;
         }
+        
+        //node_.pixelSize_ = 0.000001;
+        
+        //return false;
+    }
+
+    if (id_[0] == 4 && id_[1] == 0 && id_[2] == 0) {
+        node_ = node_;
+    }
+
+
+    if (!skipGeoTest_ && this.geocent_) {
+
+
+        if (this.map_.config_.mapGeocentCulling_) {
+
+            if (node_) {
+                if (!node_.diskNormal_) {
+                    node_ = node_;
+                }
+                
+                if (this.map_.config_.mapGeocentCulling2_) {
+                    var p2_ = node_.diskPos_;
+                    var p1_ = this.map_.cameraPosition_;
+                    var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
+                    Melown.vec3.normalize(camVec_);
+                    
+                    var a = Melown.vec3.dot(camVec_, node_.diskNormal_);
+                } else {
+                    var a = Melown.vec3.dot(this.map_.cameraVector_, node_.diskNormal_);
+                }
+                
+                if (a > node_.diskAngle_) {
+                    
+                    var ignore_ = false;
+
+                    if (false && this.map_.config_.mapGeocentCulling2_) {
+                        var p1_ = this.map_.cameraPosition_;
+
+                        var p2_ = node_.diskP1_;
+                        var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
+                        Melown.vec3.normalize(camVec_);
+                        a = Melown.vec3.dot(camVec_, node_.diskV1_);
+                        
+                        if (a < node_.diskAngle_) {
+                            ignore_ = true;   
+                        } else {
+                            var p2_ = node_.diskP2_;
+                            var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
+                            Melown.vec3.normalize(camVec_);
+                            a = Melown.vec3.dot(camVec_, node_.diskV2_);
+                            
+                            if (a < node_.diskAngle_) {
+                                ignore_ = true;   
+                            } else {
+                                var p2_ = node_.diskP3_;
+                                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
+                                Melown.vec3.normalize(camVec_);
+                                a = Melown.vec3.dot(camVec_, node_.diskV3_);
+
+                                if (a < node_.diskAngle_) {
+                                    ignore_ = true;   
+                                } else {
+                                    var p2_ = node_.diskP4_;
+                                    var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
+                                    Melown.vec3.normalize(camVec_);
+                                    a = Melown.vec3.dot(camVec_, node_.diskV4_);
+
+                                    if (a < node_.diskAngle_) {
+                                        ignore_ = true;   
+                                    }
+                                }
+                            }
+                        }
+
+
+                    }
+
+                    if (!ignore_) {
+                        return false;
+                    }
+                }
+            }
+            
+        } else if (id_[0] > 0 && id_[0] < 12) {
+
+            var hit_ = false;
+            var cv_ = this.map_.cameraVector2_; //why vector2???!!!!!
+            var bmax_ = bbox_.max_;
+            var bmin_ = bbox_.min_;
+            var edge_ = -0.5;
+            
+            var camDistance_ = Math.max(this.cameraHeight_, this.map_.cameraDistance_); 
+    
+            if (camDistance_ < 1000000) {
+                edge_ = -0.9;
+            } 
+            
+            if (camDistance_ < 100000) {
+                edge_ = -0.991;
+            } 
+            
+            switch(id_[0]) {
+                case 1: edge_ = 1; break;
+                case 2: edge_ = 0; break;
+                case 3: edge_ = -0.4; break;
+                case 4: edge_ = -0.45; break;
+                case 5: edge_ = -0.45; break;
+            }
+           
+            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmax_[2]])) < edge_);
+            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmax_[2]])) < edge_);
+            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmax_[2]])) < edge_);
+            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmax_[2]])) < edge_);
+    
+            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmin_[2]])) < edge_);
+            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmin_[2]])) < edge_);
+            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmin_[2]])) < edge_);
+            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmin_[2]])) < edge_);
+            
+            if (!hit_) {
+                return false;
+            }
+            
+        }
+
+
     }
     
     return this.camera_.bboxVisible(bbox_, cameraPos_);

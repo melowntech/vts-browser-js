@@ -16,6 +16,7 @@ Melown.MapSrs = function(map_, id_, json_) {
     this.srsInfo_ = this.proj4_(this.srsDef_).info();
     this.geoidGrid_ = null;
     this.geoidGridMap_ = null;
+    this.srsProj4_ = this.proj4_(this.srsDef_, null, null, true); 
 
     if (json_["geoidGrid"]) {
         var geoidGridData_ = json_["geoidGrid"];
@@ -206,8 +207,8 @@ Melown.MapSrs.prototype.convertCoordsTo = function(coords_, srs_) {
     coords_ = coords_.slice();
     coords_[2] = this.getOriginalHeight(coords_);
 
-    var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsDef_;
-    var coords2_ = this.proj4_(this.srsDef_, srsDef_, coords_);
+    var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsProj4_;
+    var coords2_ = this.proj4_(this.srsProj4_, srsDef_, coords_);
 
     if (typeof srs_ !== "string") {
         coords2_[2] = srs_.getFinalHeight(coords2_);
@@ -232,8 +233,8 @@ Melown.MapSrs.prototype.convertCoordsFrom = function(coords_, srs_) {
         coords_[2] = srs_.getOriginalHeight(coords_);
     }
 
-    var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsDef_;
-    var coords2_ = this.proj4_(srsDef_, this.srsDef_, coords_);
+    var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsProj4_;
+    var coords2_ = this.proj4_(srsDef_, this.srsProj4_, coords_);
 
     coords2_[2] = this.getFinalHeight(coords2_);
 

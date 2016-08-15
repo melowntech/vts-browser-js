@@ -170,17 +170,84 @@ struct Metanode {
     var nodeSize2_ = stream_.index_ - lastIndex_;
     
     if (this.map_.config_.mapGeocentCulling_) {
-        var node_ = this.map_.getSpatialDivisionNodeById(this.id_);
+        var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
+        var node_ = res_[0]; 
+        var ll_ = res_[1][0];
+        var ur_ = res_[1][1];
         
-        var ll_ = node_.extents_.ll_;
-        var ur_ = node_.extents_.ur_;
-        
-        var minddle_ = [(ur[0] - ll[0])* 0.5, (ur[1] - ll[1])* 0.5, 0];
+        var minddle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5, 0];
         var normal_ = [0,0,0];
         
         this.diskPos_ = node_.getPhysicalCoords(minddle_);
+        this.diskNormal_ = Melown.vec3.length(this.diskPos_); 
         Melown.vec3.normalize(this.diskPos_, normal_);
         this.diskNormal_ = normal_;   
+
+        var p1_ = [ur_[0], ur_[1], 0];
+        var p2_ = [ur_[0], ll_[1], 0];
+        var p3_ = [ll_[0], ll_[1], 0];
+        var p4_ = [ll_[0], ur_[1], 0];
+
+        p1_ = node_.getPhysicalCoords(p1_);
+        p2_ = node_.getPhysicalCoords(p2_);
+        p3_ = node_.getPhysicalCoords(p3_);
+        p4_ = node_.getPhysicalCoords(p4_);
+
+        this.diskP1_ = p1_;
+        this.diskP2_ = p2_;
+        this.diskP3_ = p3_;
+        this.diskP4_ = p4_;
+
+        var v1_ = [0,0,0];
+        var v2_ = [0,0,0];
+        var v3_ = [0,0,0];
+        var v4_ = [0,0,0];
+
+        Melown.vec3.normalize(p1_, v1_);
+        Melown.vec3.normalize(p2_, v2_);
+        Melown.vec3.normalize(p3_, v3_);
+        Melown.vec3.normalize(p4_, v4_);
+
+        /*
+        var d1_ = 2 - (Melown.vec3.dot(normal_, v1_) + 1);
+        var d2_ = 2 - (Melown.vec3.dot(normal_, v2_) + 1);
+        var d3_ = 2 - (Melown.vec3.dot(normal_, v3_) + 1);
+        var d4_ = 2 - (Melown.vec3.dot(normal_, v4_) + 1);
+
+        var maxDelta_ = Math.max(d1_, d2_);
+        maxDelta_ = Math.max(maxDelta_, d3_);
+        maxDelta_ = Math.max(maxDelta_, d4_);
+        */
+
+        var d1_ = Melown.vec3.dot(normal_, v1_);
+        var d2_ = Melown.vec3.dot(normal_, v2_);
+        var d3_ = Melown.vec3.dot(normal_, v3_);
+        var d4_ = Melown.vec3.dot(normal_, v4_);
+
+        var maxDelta_ = Math.min(d1_, d2_);
+        maxDelta_ = Math.min(maxDelta_, d3_);
+        maxDelta_ = Math.min(maxDelta_, d4_);
+
+        maxDelta_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
+
+
+        if (this.id_[0] >= 5) {
+            this.diskAngle_ = maxDelta_;   
+        }
+
+        this.diskAngle_ = maxDelta_;
+        this.diskP1_ = p1_;
+        this.diskP2_ = p2_;
+        this.diskP3_ = p3_;
+        this.diskP4_ = p4_;
+
+        this.diskV1_ = v1_;
+        this.diskV2_ = v2_;
+        this.diskV3_ = v3_;
+        this.diskV4_ = v4_;
+        
+        //this.diskNormal_[2] = -this.diskNormal_[2];    
+
         //this.diskAngle_ =   
     }
 
@@ -204,6 +271,24 @@ Melown.MapMetanode.prototype.clone = function() {
     node_.internalTextureCount_ = this.internalTextureCount_;
     node_.pixelSize_ = this.pixelSize_;
     node_.displaySize_ = this.displaySize_;
+
+//    if (this.map_.config_.mapGeocentCulling_) {
+        node_.diskPos_ = this.diskPos_;
+        node_.diskNormal_ = this.diskNormal_; 
+        node_.diskAngle_ = this.diskAngle_;   
+
+        node_.diskP1_ = this.diskP1_;
+        node_.diskP2_ = this.diskP2_;
+        node_.diskP3_ = this.diskP3_;
+        node_.diskP4_ = this.diskP4_;
+
+        node_.diskV1_ = this.diskV1_;
+        node_.diskV2_ = this.diskV2_;
+        node_.diskV3_ = this.diskV3_;
+        node_.diskV4_ = this.diskV4_;
+
+ //   }
+
     return node_;
 };
 
