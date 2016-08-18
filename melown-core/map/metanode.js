@@ -153,7 +153,7 @@ struct Metanode {
 
     this.pixelSize_ = Melown.decodeFloat16( streamData_.getUint16(stream_.index_, true) ); stream_.index_ += 2;
     this.displaySize_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-    this.displaySize_ = 2048;
+    this.displaySize_ = 1024;
     if ((this.flags_ & (1 << 2)) == 0) {
         this.pixelSize_ = Number.POSITIVE_INFINITY;
     }
@@ -168,98 +168,8 @@ struct Metanode {
     this.alien_ = false;
 
     var nodeSize2_ = stream_.index_ - lastIndex_;
-    
-    if (this.map_.config_.mapGeocentCulling_) {
-        var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
-        var node_ = res_[0]; 
-        var ll_ = res_[1][0];
-        var ur_ = res_[1][1];
-        
-        var minddle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5, 0];
-        var normal_ = [0,0,0];
-        
-        this.diskPos_ = node_.getPhysicalCoords(minddle_);
-        this.diskNormal_ = Melown.vec3.length(this.diskPos_); 
-        Melown.vec3.normalize(this.diskPos_, normal_);
-        this.diskNormal_ = normal_;   
 
-        var p1_ = [ur_[0], ur_[1], 0];
-        var p2_ = [ur_[0], ll_[1], 0];
-        var p3_ = [ll_[0], ll_[1], 0];
-        var p4_ = [ll_[0], ur_[1], 0];
-
-        p1_ = node_.getPhysicalCoords(p1_);
-        p2_ = node_.getPhysicalCoords(p2_);
-        p3_ = node_.getPhysicalCoords(p3_);
-        p4_ = node_.getPhysicalCoords(p4_);
-
-        this.diskP1_ = p1_;
-        this.diskP2_ = p2_;
-        this.diskP3_ = p3_;
-        this.diskP4_ = p4_;
-
-        var v1_ = [0,0,0];
-        var v2_ = [0,0,0];
-        var v3_ = [0,0,0];
-        var v4_ = [0,0,0];
-
-        Melown.vec3.normalize(p1_, v1_);
-        Melown.vec3.normalize(p2_, v2_);
-        Melown.vec3.normalize(p3_, v3_);
-        Melown.vec3.normalize(p4_, v4_);
-
-        /*
-        var d1_ = 2 - (Melown.vec3.dot(normal_, v1_) + 1);
-        var d2_ = 2 - (Melown.vec3.dot(normal_, v2_) + 1);
-        var d3_ = 2 - (Melown.vec3.dot(normal_, v3_) + 1);
-        var d4_ = 2 - (Melown.vec3.dot(normal_, v4_) + 1);
-
-        var maxDelta_ = Math.max(d1_, d2_);
-        maxDelta_ = Math.max(maxDelta_, d3_);
-        maxDelta_ = Math.max(maxDelta_, d4_);
-        */
-
-        var d1_ = Melown.vec3.dot(normal_, v1_);
-        var d2_ = Melown.vec3.dot(normal_, v2_);
-        var d3_ = Melown.vec3.dot(normal_, v3_);
-        var d4_ = Melown.vec3.dot(normal_, v4_);
-
-        var maxDelta_ = Math.min(d1_, d2_);
-        maxDelta_ = Math.min(maxDelta_, d3_);
-        maxDelta_ = Math.min(maxDelta_, d4_);
-
-        maxDelta_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
-
-
-        if (this.id_[0] >= 5) {
-            this.diskAngle_ = maxDelta_;   
-        }
-
-        this.diskAngle_ = maxDelta_;
-        this.diskP1_ = p1_;
-        this.diskP2_ = p2_;
-        this.diskP3_ = p3_;
-        this.diskP4_ = p4_;
-
-        this.diskV1_ = v1_;
-        this.diskV2_ = v2_;
-        this.diskV3_ = v3_;
-        this.diskV4_ = v4_;
-        
-        //this.diskNormal_[2] = -this.diskNormal_[2];    
-
-        //this.diskAngle_ =   
-    }
-
-//    console.log("node size: " + JSON.stringify(this.id_) + "  " + nodeSize2_ + "  " + this.metatile_.nodeSize_ + "  " + this.flags_.toString(2));
-    //console.log("node size: " + JSON.stringify(this.id_) + "  " + this.pixelSize_);
-
-/*
-    if (this.metatile_.nodeSize_ != nodeSize2_) {
-        //nodeSize_ = nodeSize_;
-        console.log("node parser error: " + JSON.stringify(this.id_));
-    }
-*/
+    this.generateCullingHelpers();    
 };
 
 Melown.MapMetanode.prototype.clone = function() {
@@ -275,21 +185,96 @@ Melown.MapMetanode.prototype.clone = function() {
 //    if (this.map_.config_.mapGeocentCulling_) {
         node_.diskPos_ = this.diskPos_;
         node_.diskNormal_ = this.diskNormal_; 
-        node_.diskAngle_ = this.diskAngle_;   
-
-        node_.diskP1_ = this.diskP1_;
-        node_.diskP2_ = this.diskP2_;
-        node_.diskP3_ = this.diskP3_;
-        node_.diskP4_ = this.diskP4_;
-
-        node_.diskV1_ = this.diskV1_;
-        node_.diskV2_ = this.diskV2_;
-        node_.diskV3_ = this.diskV3_;
-        node_.diskV4_ = this.diskV4_;
-
+        node_.diskAngle_ = this.diskAngle_;
+        node_.diskDistance_ = this.diskDistance_;   
  //   }
 
     return node_;
+};
+
+Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
+    if (this.map_.config_.mapPreciseCulling_) { //use division node srs
+        if (virtual_) {
+            return; //result is same for each tile id
+        }
+
+        var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
+        var node_ = res_[0]; 
+        var ll_ = res_[1][0];
+        var ur_ = res_[1][1];
+        
+        var minddle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5, 0];
+        var normal_ = [0,0,0];
+        
+        this.diskPos_ = node_.getPhysicalCoords(minddle_);
+        this.diskDistance_ = Melown.vec3.length(this.diskPos_); 
+        Melown.vec3.normalize(this.diskPos_, normal_);
+        this.diskNormal_ = normal_;   
+
+        var n1_ = node_.getPhysicalCoords([ur_[0], ur_[1], 0]);
+        var n2_ = node_.getPhysicalCoords([ur_[0], ll_[1], 0]);
+        var n3_ = node_.getPhysicalCoords([ll_[0], ll_[1], 0]);
+        var n4_ = node_.getPhysicalCoords([ll_[0], ur_[1], 0]);
+
+        Melown.vec3.normalize(n1_);
+        Melown.vec3.normalize(n2_);
+        Melown.vec3.normalize(n3_);
+        Melown.vec3.normalize(n4_);
+
+        var d1_ = Melown.vec3.dot(normal_, n1_);
+        var d2_ = Melown.vec3.dot(normal_, n2_);
+        var d3_ = Melown.vec3.dot(normal_, n3_);
+        var d4_ = Melown.vec3.dot(normal_, n4_);
+
+        var maxDelta_ = Math.min(d1_, d2_, d3_, d4_);
+
+        //get cos angle based at 90deg
+        this.diskAngle_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
+    } else {
+        var min_ = this.bbox_.min_;
+        var max_ = this.bbox_.max_;
+        var normal_ = this.bbox_.center();
+        this.diskPos_ = [normal_[0],normal_[1],normal_[2]];   
+        Melown.vec3.normalize(normal_);
+        this.diskNormal_ = normal_;   
+
+        var n1_ = [min_[0], min_[1], min_[2]];
+        var n2_ = [max_[0], min_[1], min_[2]];
+        var n3_ = [max_[0], max_[1], min_[2]];
+        var n4_ = [min_[0], max_[1], min_[2]];
+        var n5_ = [min_[0], min_[1], max_[2]];
+        var n6_ = [max_[0], min_[1], max_[2]];
+        var n7_ = [max_[0], max_[1], max_[2]];
+        var n8_ = [min_[0], max_[1], max_[2]];
+
+        Melown.vec3.normalize(n1_);
+        Melown.vec3.normalize(n2_);
+        Melown.vec3.normalize(n3_);
+        Melown.vec3.normalize(n4_);
+        Melown.vec3.normalize(n5_);
+        Melown.vec3.normalize(n6_);
+        Melown.vec3.normalize(n7_);
+        Melown.vec3.normalize(n8_);
+
+        var d1_ = Melown.vec3.dot(normal_, n1_);
+        var d2_ = Melown.vec3.dot(normal_, n2_);
+        var d3_ = Melown.vec3.dot(normal_, n3_);
+        var d4_ = Melown.vec3.dot(normal_, n4_);
+        var d5_ = Melown.vec3.dot(normal_, n5_);
+        var d6_ = Melown.vec3.dot(normal_, n6_);
+        var d7_ = Melown.vec3.dot(normal_, n7_);
+        var d8_ = Melown.vec3.dot(normal_, n8_);
+
+        var maxDelta_ = Math.min(d1_, d2_, d3_, d4_, d5_, d6_, d7_, d8_);
+                    
+        //get cos angle based at 90deg
+        this.diskAngle_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
+        
+        //shift center closer to earth
+        this.bbox_.updateMaxSize();
+        var factor_ = this.bbox_.maxSize_ * 0.2; 
+        this.diskPos_ = [this.diskPos_[0] - normal_[0] * factor_, this.diskPos_[1]  - normal_[1] * factor_, this.diskPos_[2] - normal_[2] * factor_];   
+    }
 };
 
 Melown.MapMetanode.prototype.getWorldMatrix = function(geoPos_, matrix_) {

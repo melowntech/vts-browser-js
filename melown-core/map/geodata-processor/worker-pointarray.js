@@ -127,17 +127,17 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
                 center_[0] += p1[0];
                 center_[1] += p1[1];
                 center_[2] += p1[2];
+
+                if (icon_ == true) {
+                    processIcon(p1, iconData_) ;//, pointArray_, lod_, style_, zIndex_);
+                }
+    
+                if (label_ == true) {
+                    processLabel(p1, labelData_); //, pointArray_, lod_, style_, zIndex_);
+                }
         
                 for (var j = 0; j < circleSides_; j++) {
-        
-                    if (icon_ == true) {
-                        processIcon(p1, iconData_) ;//, pointArray_, lod_, style_, zIndex_);
-                    }
-        
-                    if (label_ == true) {
-                        processLabel(p1, labelData_); //, pointArray_, lod_, style_, zIndex_);
-                    }
-        
+
                     if (point_ == true) {
         
                         if (pointFlat_ == true) {

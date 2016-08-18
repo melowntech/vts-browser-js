@@ -1,6 +1,6 @@
 
 
-Melown.Map.prototype.draw = function() {
+Melown.Map.prototype.draw = function(skipFreeLayers_) {
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
     this.updateFogDensity();
     this.maxGpuUsed_ = this.gpuCache_.getMaxCost() * 0.9; 
@@ -51,30 +51,32 @@ Melown.Map.prototype.draw = function() {
         } 
     }
 
-    //draw free layers tiles stored in buffer
-    if (this.freeLayerSequence_.length > 0) {
-        for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
-            var tiles_ = this.tileBuffer_[i];
-            
-            if (tiles_) {
-                for (var j = 0, lj = tiles_.length; j < lj; j++) {
-                    var tile_ = tiles_[j];
-                    var surface_ = tile_.tile_.surface_;
-                    
-                    if (surface_ && surface_.free_) { //draw only free layers
-                        var tmp_ = this.zFactor_;
-                        this.zFactor_ += (surface_) ? surface_.zFactor_ : 0;
-                        this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
-                        this.zFactor_ = tmp_;
+    if (!skipFreeLayers_) {
+        //draw free layers tiles stored in buffer
+        if (this.freeLayerSequence_.length > 0) {
+            for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+                var tiles_ = this.tileBuffer_[i];
+                
+                if (tiles_) {
+                    for (var j = 0, lj = tiles_.length; j < lj; j++) {
+                        var tile_ = tiles_[j];
+                        var surface_ = tile_.tile_.surface_;
+                        
+                        if (surface_ && surface_.free_) { //draw only free layers
+                            var tmp_ = this.zFactor_;
+                            this.zFactor_ += (surface_) ? surface_.zFactor_ : 0;
+                            this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                            this.zFactor_ = tmp_;
+                        }
                     }
-                }
-            } 
+                } 
+            }
         }
-    }
-
-    if (this.freeLayersHaveGeodata_) {
-        this.renderer_.drawGpuJobs();
-        this.renderer_.clearJobBuffer();
+    
+        if (this.freeLayersHaveGeodata_) {
+            this.renderer_.drawGpuJobs();
+            this.renderer_.clearJobBuffer();
+        }
     }
 };
 

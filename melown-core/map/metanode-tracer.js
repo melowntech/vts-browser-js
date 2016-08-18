@@ -258,7 +258,6 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
     var surfaces_ = tile_.virtualSurfaces_;
     var first_ = false;
     var node_ = null;
-   
 
     //get top most existing surface
     for (var i = 0, li = surfaces_.length; i < li; i++) {
@@ -343,10 +342,13 @@ Melown.MapMetanodeTracer.prototype.createVirtualMetanode = function(tile_, prior
                     node_.bbox_.max_[0] = Math.max(node_.bbox_.max_[0], metanode_.bbox_.max_[0]); 
                     node_.bbox_.max_[1] = Math.max(node_.bbox_.max_[1], metanode_.bbox_.max_[1]); 
                     node_.bbox_.max_[2] = Math.max(node_.bbox_.max_[2], metanode_.bbox_.max_[2]);
-                     
                 }
             }
         }
+    }
+    
+    if (node_) {
+        node_.generateCullingHelpers(true);
     }
     
     return node_;

@@ -140,6 +140,8 @@ Melown.Camera.prototype.scaleFactor = function(worldPos_, returnDist_) {
 };
 
 Melown.Camera.prototype.scaleFactor2 = function(dist_) {
+    if (this.dirty_) this.update();
+
     if (dist_ < this.near_) return Number.POSITIVE_INFINITY;
     return this.projection_[0] / dist_;
 };

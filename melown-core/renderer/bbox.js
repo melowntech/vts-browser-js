@@ -29,7 +29,7 @@ Melown.BBox.prototype.side = function(index_) {
     return this.max_[index_] - this.min_[index_];
 };
 
-Melown.BBox.prototype.updateMaxSize = function(index_) {
+Melown.BBox.prototype.updateMaxSize = function() {
     this.maxSize_ = Math.abs(Math.max(this.max_[0] - this.min_[0],
                                       this.max_[1] - this.min_[1],
                                       this.max_[2] - this.min_[2]));

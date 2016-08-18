@@ -173,8 +173,8 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 109:
                         //map_.drawMaxLod_ = !map_.drawMaxLod_;
                         
-                        map_.config_.mapGeocentCulling2_ = !map_.config_.mapGeocentCulling2_;
-                        console.log("mapGeocentCulling2: " + map_.config_.mapGeocentCulling2_);
+                        //map_.config_.mapGeocentCulling2_ = !map_.config_.mapGeocentCulling2_;
+                        //console.log("mapGeocentCulling2: " + map_.config_.mapGeocentCulling2_);
                         
                        /*
                         var from_ = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs";
@@ -215,8 +215,8 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 74:
                     case 106:
-                        map_.config_.mapGeocentCulling_ = !map_.config_.mapGeocentCulling_;
-                        console.log("mapGeocentCulling: " + map_.config_.mapGeocentCulling_);
+                        //map_.config_.mapGeocentCulling_ = !map_.config_.mapGeocentCulling_;
+                        //console.log("mapGeocentCulling: " + map_.config_.mapGeocentCulling_);
                         //map_.blendHeightmap_ = !map_.blendHeightmap_;
                         break; //key J pressed
 

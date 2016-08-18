@@ -15,6 +15,7 @@ Melown.MapSurfaceTree = function(map_, freeLayer_, freeLayerSurface_) {
     //this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
 
     this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTileRender.bind(this), this.traceChildSequenceViewBased.bind(this));
+    //this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTileRender.bind(this), this.traceChildSequenceBasic.bind(this));
 
     //used only for debug
     this.surfaceTracerBasic_ = new Melown.MapMetanodeTracer(this, null, this.traceTileRender.bind(this), this.traceChildSequenceBasic.bind(this));
@@ -241,6 +242,7 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
     if (log_) { console.log("draw-tile: visible"); }
 
     var pixelSize_;
+    var texelSizeFit_ = this.config_.mapTexelSizeFit_;
 
     if (node_.hasGeometry()) {
         var screenPixelSize_ = Number.POSITIVE_INFINITY;
@@ -255,13 +257,31 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
             var height_ = this.camera_.getViewHeight();
             pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
         } else {
-            pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
             
-            if (node_.usedDisplaySize()) { //MEGA HACK!!!!!!! use view distance as tile distance
-                if (pixelSize_[1] < this.map_.cameraDistance_) {
-                    var factor_ = this.camera_.scaleFactor2(this.map_.cameraDistance_);
-                    pixelSize_ = [factor_ * screenPixelSize_, this.map_.cameraDistance_];
+            if (node_.usedDisplaySize()) { 
+                screenPixelSize_ = this.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256);
+                var factor_ = (node_.displaySize_ / 256) * this.map_.cameraDistance_;
+                
+                var v = this.map_.cameraVector_;
+                var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
+                
+                pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, p, p, true);
+
+            } else {
+                
+                if (texelSizeFit_ > 1.1) {
+                    screenPixelSize_ = this.ndcToScreenPixel_ * node_.pixelSize_ * (texelSizeFit_ / 1.1);
+                    var factor_ = (texelSizeFit_ / 1.1) * this.map_.cameraDistance_;
+                    
+                    var v = this.map_.cameraVector_;
+                    var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
+                    
+                    pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, p, p, true);
+                    
+                } else {
+                    pixelSize_ = this.tilePixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
                 }
+                
             }
         }
     } else {
@@ -273,25 +293,9 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
         console.log("draw-tile: psize=="  + pixelSize_[0]);
     }
 
-    //if (node_.id_[0] == 14) {
-        //debugger;
-    //}
-
-    //if (log2_ && node_.id_[0] == 11) { 
-        //debugger;
-    //}
-
-    //HACK
-    //this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY;
-    this.config_.mapTexelSizeTolerance_ = 2.2;
-
-    //if (this.map_.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
-        //node_ = node_;
-    //}
-
     var channel_ = this.map_.drawChannel_;
 
-    if (node_.hasChildren() == false || pixelSize_[0] < this.config_.mapTexelSizeFit_) {
+    if (node_.hasChildren() == false || pixelSize_[0] < texelSizeFit_) {
 
         if (log2_) { console.log("drawn"); }
         if (log_) { console.log("draw-tile: drawn"); }
@@ -329,7 +333,7 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
 
         return [false, preventRedener_, preventLoad_];
         
-    } else if (this.config_.mapAllowLowres_ && node_.hasGeometry() && pixelSize_[0] < this.config_.mapTexelSizeTolerance_) {
+    } else if (this.config_.mapAllowLowres_ && node_.hasGeometry() && pixelSize_[0] < (texelSizeFit_ * 2)) {
         //return [true, preventRedener_];
         
         //if children are not ready then draw coarser lod
@@ -395,7 +399,7 @@ Melown.MapSurfaceTree.prototype.canDrawCoarserLod = function(tile_, node_, camer
 Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, node_) {
     var skipGeoTest_ = false;
     
-    if (id_[0] >= 6) {
+    if (id_[0] >= 6 && this.geocent_) {
         id_ = id_;
         
         if (!node_.hasGeometry()) {
@@ -412,17 +416,18 @@ Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, n
     }
 
 
-    if (!skipGeoTest_ && this.geocent_) {
+    if (!skipGeoTest_ && this.geocent_ /*&& id_[0] < 9*/) {
 
-
-        if (this.map_.config_.mapGeocentCulling_) {
+        // if (id_[0] > 0 && id_[0] < 12) {
+    
+        //if (this.map_.config_.mapGeocentCulling_) {
 
             if (node_) {
                 if (!node_.diskNormal_) {
                     node_ = node_;
                 }
                 
-                if (this.map_.config_.mapGeocentCulling2_) {
+                if (true) {  //version with perspektive
                     var p2_ = node_.diskPos_;
                     var p1_ = this.map_.cameraPosition_;
                     var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
@@ -434,99 +439,11 @@ Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, n
                 }
                 
                 if (a > node_.diskAngle_) {
-                    
-                    var ignore_ = false;
-
-                    if (false && this.map_.config_.mapGeocentCulling2_) {
-                        var p1_ = this.map_.cameraPosition_;
-
-                        var p2_ = node_.diskP1_;
-                        var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                        Melown.vec3.normalize(camVec_);
-                        a = Melown.vec3.dot(camVec_, node_.diskV1_);
-                        
-                        if (a < node_.diskAngle_) {
-                            ignore_ = true;   
-                        } else {
-                            var p2_ = node_.diskP2_;
-                            var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                            Melown.vec3.normalize(camVec_);
-                            a = Melown.vec3.dot(camVec_, node_.diskV2_);
-                            
-                            if (a < node_.diskAngle_) {
-                                ignore_ = true;   
-                            } else {
-                                var p2_ = node_.diskP3_;
-                                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                                Melown.vec3.normalize(camVec_);
-                                a = Melown.vec3.dot(camVec_, node_.diskV3_);
-
-                                if (a < node_.diskAngle_) {
-                                    ignore_ = true;   
-                                } else {
-                                    var p2_ = node_.diskP4_;
-                                    var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                                    Melown.vec3.normalize(camVec_);
-                                    a = Melown.vec3.dot(camVec_, node_.diskV4_);
-
-                                    if (a < node_.diskAngle_) {
-                                        ignore_ = true;   
-                                    }
-                                }
-                            }
-                        }
-
-
-                    }
-
-                    if (!ignore_) {
-                        return false;
-                    }
+                    return false;
                 }
             }
-            
-        } else if (id_[0] > 0 && id_[0] < 12) {
-
-            var hit_ = false;
-            var cv_ = this.map_.cameraVector2_; //why vector2???!!!!!
-            var bmax_ = bbox_.max_;
-            var bmin_ = bbox_.min_;
-            var edge_ = -0.5;
-            
-            var camDistance_ = Math.max(this.cameraHeight_, this.map_.cameraDistance_); 
-    
-            if (camDistance_ < 1000000) {
-                edge_ = -0.9;
-            } 
-            
-            if (camDistance_ < 100000) {
-                edge_ = -0.991;
-            } 
-            
-            switch(id_[0]) {
-                case 1: edge_ = 1; break;
-                case 2: edge_ = 0; break;
-                case 3: edge_ = -0.4; break;
-                case 4: edge_ = -0.45; break;
-                case 5: edge_ = -0.45; break;
-            }
            
-            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmax_[2]])) < edge_);
-            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmax_[2]])) < edge_);
-            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmax_[2]])) < edge_);
-            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmax_[2]])) < edge_);
-    
-            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmax_[1], bmin_[2]])) < edge_);
-            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmax_[1], bmin_[2]])) < edge_);
-            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmax_[0], bmin_[1], bmin_[2]])) < edge_);
-            hit_ = hit_ || (Melown.vec3.dot(cv_, Melown.vec3.normalize([bmin_[0], bmin_[1], bmin_[2]])) < edge_);
-            
-            if (!hit_) {
-                return false;
-            }
-            
-        }
-
+        //} 
 
     }
     
@@ -640,7 +557,66 @@ Melown.MapSurfaceTree.prototype.traceTileHeightNodeOnly = function(tile_, params
     params_.metanode_ =  node_;
     return [tile_.id_[0] != params_.desiredLod_, reducedProcessing_, preventLoad_];
 };
+/*
+Melown.MapSurfaceTree.prototype.tilePixelSize3 = function(node_, screenPixelSize_, factor_) {
+    var d = (this.map_.cameraGeocentDistance_*factor_) - node_.diskDist_;
+    if (d < 0) {
+        return [Number.POSITIVE_INFINITY, 0.1];
+    } 
 
+    var a = Melown.vec3.dot(this.map_.cameraGeocentNormal_, node_.diskNormal_);
+    
+    if (a < node_.diskAngle2_) {
+        var a2 = Math.acos(a); 
+        var l1 = Math.tan(a2) * node_.diskDist_;
+        d = Math.sqrt(l1*l1 + d*d);
+    }
+
+    var factor_ = this.camera_.scaleFactor2(d);
+    return [factor_ * screenPixelSize_, d];
+};
+
+
+Melown.MapSurfaceTree.prototype.tilePixelSize2 = function(node_, screenPixelSize_) {
+    var d = this.map_.cameraGeocentDistance_ - node_.diskDist_;
+    if (d < 0) {
+        return [Number.POSITIVE_INFINITY, 0.1];
+    } 
+
+    var a = Melown.vec3.dot(this.map_.cameraGeocentNormal_, node_.diskNormal_);
+    
+    if (a < node_.diskAngle2_) {
+        var a2 = Math.acos(a); 
+        var l1 = Math.tan(a2) * node_.diskDist_;
+        d = Math.sqrt(l1*l1 + d*d);
+    }
+
+    var factor_ = this.camera_.scaleFactor2(d);
+    return [factor_ * screenPixelSize_, d];
+};
+
+Melown.MapSurfaceTree.prototype.tilePixelSize22 = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
+    var min_ = bbox_.min_;
+    var max_ = bbox_.max_;
+    var p1_ = bbox_.center();
+    bbox_.updateMaxSize();
+    var d = bbox_.maxSize_ * 0.5; 
+    
+    var dd_ = [cameraPos_[0]-p1_[0],
+               cameraPos_[1]-p1_[1],
+               cameraPos_[2]-p1_[2]]; 
+
+    var d2_ = Melown.vec3.length(dd_) - (bbox_.maxSize_ * 0.5);
+
+    var factor_ = this.camera_.scaleFactor2(d2_);
+
+    if (returnDistance_ == true) {
+        return [(factor_[0] * screenPixelSize_), factor_[1]];
+    }
+
+    return (factor_ * screenPixelSize_);
+};
+*/
 
 Melown.MapSurfaceTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
     var min_ = bbox_.min_;

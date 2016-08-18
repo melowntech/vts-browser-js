@@ -510,7 +510,7 @@ Melown.Map.prototype.processUrl = function(url_, fallback_) {
     }
     
     //is url absolute
-    if (url_.indexOf("://") != -1) {
+    if (url_.indexOf("//") != -1) {
         return url_;
     } else {
         return this.baseURL_ + url_; 
@@ -527,8 +527,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapMetatileCache":              this.config_.mapMetatileCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 60)*1024*1024;
                                               this.metatileCache_.setMaxCost(this.config_.mapMetatileCache_); break;
         case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
-        case "mapTexelSizeTolerance":         this.config_.mapTexelSizeTolerance_= 2.2; break; ///Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 2.2); break;
-        case "mapLowresBackground":           this.config_.mapLowresBackground_ = Melown.validateBool(value_, false); break;
+        case "mapLowresBackground":           this.config_.mapLowresBackground_ = Melown.validateNumber(value_, 0, Number.MAX_INTEGER, 0); break;
         case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;
         case "mapMaxProcessingTime":          this.config_.mapMaxProcessingTime_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 1000/20); break;
         case "mapMobileMode":                 this.config_.mapMobileMode_ = Melown.validateBool(value_, false); break;
@@ -539,7 +538,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapAllowHires":                 this.config_.mapAllowHires_ = Melown.validateBool(value_, true); break;
         case "mapAllowLowres":                this.config_.mapAllowLowres_ = Melown.validateBool(value_, true); break;
         case "mapAllowSmartSwitching":        this.config_.mapAllowSmartSwitching_ = Melown.validateBool(value_, true); break;
-        case "mapGeocentCulling":             this.config_.mapGeocentCulling_ = Melown.validateBool(value_, false); break;
+        case "mapPreciseCulling":             this.config_.mapPreciseCulling_ = Melown.validateBool(value_, false); break;
         case "mapHeightLodBlend":             this.config_.mapHeightLodBlend_ = Melown.validateBool(value_, true); break;
         case "mapHeightNodeBlend":            this.config_.mapHeightNodeBlend_ = Melown.validateBool(value_, true); break;
         case "mapBasicTileSequence":          this.config_.mapBasicTileSequence_ = Melown.validateBool(value_, true); break;
@@ -553,7 +552,6 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapGPUCache":                   return this.config_.mapGPUCache_;
         case "mapMetatileCache":              return this.config_.mapMetatileCache_;
         case "mapTexelSizeFit":               return this.config_.mapTexelSizeFit_;
-        case "mapTexelSizeTolerance":         return this.config_.mapTexelSizeTolerance_;
         case "mapLowresBackground":           return this.config_.mapLowresBackground_;
         case "mapDownloadThreads":            return this.config_.mapDownloadThreads_;
         case "mapMaxProcessingTime":          return this.config_.mapMaxProcessingTime_;
@@ -565,7 +563,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapAllowHires":                 return this.config_.mapAllowHires_;
         case "mapAllowLowres":                return this.config_.mapAllowLowres_;
         case "mapAllowSmartSwitching":        return this.config_.mapAllowSmartSwitching_;
-        case "mapGeocentCulling":             return this.config_.mapGeocentCulling_;
+        case "mapPreciseCulling":             return this.config_.mapPreciseCulling_;
         case "mapHeightLodBlend":             return this.config_.mapHeightLodBlend_;
         case "mapHeightNodeBlend":            return this.config_.mapHeightNodeBlend_;
         case "mapBasicTileSequence":          return this.config_.mapBasicTileSequence_;
@@ -635,11 +633,17 @@ Melown.Map.prototype.drawMap = function() {
     this.renderer_.cameraVector_ = this.cameraVector_; 
 
     if (projected_) {
-        var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
+        var yaw_ = Melown.radians(this.renderer_.cameraOrientation_[0]);
         this.renderer_.labelVector_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0, 0];
     } else {
         var v = camInfo_.vector_;
         this.renderer_.labelVector_ = [v[0], v[1], v[2], 0]; 
+
+        this.cameraGeocentDistance_ = Melown.vec3.length(this.cameraPosition_);
+
+        var n = [0,0,0];
+        Melown.vec3.normalize(this.cameraPosition_, n);
+        this.cameraGeocentNormal_ = n;
     }
    
     var distanceFactor_ = (500/Math.max(10.0,this.cameraDistance_));
@@ -658,23 +662,24 @@ Melown.Map.prototype.drawMap = function() {
         //if (this.getNavigationSrs().isProjected()) {    
             //this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.renderer_.progSkydome_);
         //} else {
-            this.renderer_.drawSkydome(this.renderer_.whiteTexture_, this.renderer_.progStardome_);
+            if (this.drawWireframe_ == 2) {
+                this.renderer_.drawSkydome(this.renderer_.whiteTexture_, this.renderer_.progStardome_);
+            } else {
+                this.renderer_.drawSkydome(this.renderer_.blackTexture_, this.renderer_.progStardome_);
+            }
+            
+            //
         //}
     }
 
-    if (this.config_.mapLowresBackground_) {
+    if (this.config_.mapLowresBackground_ > 0) {
+        var lastTexelSizeFit_ = this.config_.mapTexelSizeFit_; 
         this.zFactor_ = 0.8;
-        this.config_.mapTexelSizeFit_ = Number.POSITIVE_INFINITY;//500000000.1;
-        this.config_.mapTexelSizeTolerance_ = Number.POSITIVE_INFINITY; //this.config_.mapTexelSizeFit_ * 2;
+        this.config_.mapTexelSizeFit_ = 1.1 * Math.pow(2,this.config_.mapLowresBackground_);
         this.loader_.setChannel(1); //1 = lowres channel
-        this.draw();
+        this.draw(true);
 
-        //this.zFactor_ = 0.9;
-        //this.config_.mapTexelSizeFit_ = 10.1;
-        //this.config_.mapTexelSizeTolerance_ = this.config_.mapTexelSizeFit_ * 2;
-        //this.draw();
-        this.config_.mapTexelSizeFit_ = 1.1;
-        this.config_.mapTexelSizeTolerance_ = 2.2;
+        this.config_.mapTexelSizeFit_ = lastTexelSizeFit_;
     }
 
     //if (this.loader_.pending_.length > 0) {
@@ -683,20 +688,16 @@ Melown.Map.prototype.drawMap = function() {
     this.zFactor_ = 0;
     this.draw();
 
-    if (!projected_) {    
-
+    //if (!projected_) {    
         //var camInfo_ = this.position_.getCameraInfo(true);
-        //this.cameraPosition_;
-        
-        var atmoSize_ = 50000;
-        //this.cameraHeight_;
+        //var atmoSize_ = 50000;
 
-        var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
+        //var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
         /*
         this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
                                   navigationSrsInfo_["a"] + atmoSize_, this.renderer_.progAtmo_, 1, navigationSrsInfo_["a"]);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
                                   */
-    }
+    //}
 };
 
 

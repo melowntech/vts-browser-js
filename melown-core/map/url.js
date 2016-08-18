@@ -185,7 +185,7 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
 
     this.urlCounter_++;
 
-    skipBaseUrl_ = (url_.indexOf("://") != -1);
+    skipBaseUrl_ = (url_.indexOf("//") != -1);
 
     /* //useful for debug
     var tmp_;

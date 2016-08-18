@@ -66,6 +66,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
 
             case "endGroup":
                 if (this.currentGpuGroup_) {
+                    this.currentGpuGroup_.optimize();
                     this.size += this.currentGpuGroup_.size();
                 } else {
                     message_ = message_;
@@ -139,7 +140,7 @@ Melown.MapGeodataView.prototype.draw = function(cameraPos_) {
             group_.draw(mv_, mvp_);
 
             this.stats_.drawnFaces_ += group_.polygons_;
-            this.stats_.drawCalls_ ++;
+            this.stats_.drawCalls_ += group_.jobs_.length;
         }
     }
     return this.ready_;

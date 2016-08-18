@@ -70,16 +70,17 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     //allocate buffers
     var lineVertices_ = (texturedLine_ || !lineFlat_ ? 4 : 3) * 3 * 2;
     var joinVertices_ = circleSides_ * (texturedLine_ || !lineFlat_? 4 : 3) * 3;
-    var vertexBuffer_ = new Array(totalPoints_ * lineVertices_ + totalPoints_ * joinVertices_);
+    var vertexBuffer_ = new Float32Array(totalPoints_ * lineVertices_ + totalPoints_ * joinVertices_);
+
 
     if (!lineFlat_ || texturedLine_) {
         var lineNormals_ = 3 * 4 * 2;
         var joinNormals_ = circleSides_ * 3 * 4;
-        var normalBuffer_ = new Array(totalPoints_ * lineNormals_ + totalPoints_ * joinNormals_);
+        var normalBuffer_ = new Float32Array(totalPoints_ * lineNormals_ + totalPoints_ * joinNormals_);
     }
 
     if (texturedLine_) {
-        var joinParams_ = Array(totalPoints_);
+        var joinParams_ = Float32Array(totalPoints_);
     }
 
     var center_ = [0,0,0];
@@ -523,8 +524,12 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
                 messageData_["background"] = lineStyleBackground_;
             }
         }
-    
-        postMessage(messageData_);
+        
+        if (normalBuffer_) {
+            postMessage(messageData_, [vertexBuffer_.buffer, normalBuffer_.buffer]);
+        } else {
+            postMessage(messageData_, [vertexBuffer_.buffer]);
+        }
     }
 
     //debugger
@@ -579,7 +584,7 @@ var processLineLabel = function(lineLabelPoints_, lineLabelPoints2_, lineString_
                   "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                   "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                   "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                  "lod":(autoLod_ ? null : tileLod_) });
+                  "lod":(autoLod_ ? null : tileLod_) } /*, [vertexBuffer_.buffer, texcoordsBuffer_.buffer]*/);
 };
 
 

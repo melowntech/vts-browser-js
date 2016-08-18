@@ -224,7 +224,7 @@ var logError = function(errorType_, layerId_, key_, value_, index_, subkey_) {
         value_ = JSON.stringify(value_);
     }
     
-    var str_ = "";
+    var str_ = null;
 
     switch(errorType_) {
         case "wrong-property-value":
@@ -256,7 +256,9 @@ var logError = function(errorType_, layerId_, key_, value_, index_, subkey_) {
             break;
     }
     
-    console.log(str_);
+    if (str_) {
+        console.log(str_);
+    }
 };
 
 var validateValue = function(layerId_, key_, value_, type_, arrayLength_, min_, max_) {
