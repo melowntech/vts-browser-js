@@ -134,11 +134,12 @@ var addChar = function(pos_, dir_, verticalShift_, char_, factor_, index_, index
     return [p1, index_, index2_, l];
 };
 
+var getCharVerticesCount = function(origin_) {
+    return (origin_ ? 3 : 4) * 3 * 2;
+};
 
-var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoordsBuffer_, flat_) {
+var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoordsBuffer_, flat_, index_) {
     var textVector_ = [0,1,0];
-    var index_ = vertexBuffer_.length;
-    var index2_ = texcoordsBuffer_.length;
 
     var factor_ = size_ / font_.size_;
     var newLineSpace_ = font_.space_ * factor_;
@@ -156,29 +157,26 @@ var addText = function(pos_, dir_, text_, size_, font_, vertexBuffer_, texcoords
             continue;
         }
 
-        var shift_ = addChar(p1, dir_, 0, char_, factor_, index_, index2_, textVector_, font_, vertexBuffer_, texcoordsBuffer_, flat_);
+        var shift_ = addChar(p1, dir_, 0, char_, factor_, index_, index_, textVector_, font_, vertexBuffer_, texcoordsBuffer_, flat_);
 
         p1 = shift_[0];
         index_ = shift_[1];
-        index2_ = shift_[2];
+        //index2_ = shift_[2];
     }
 
+    return index_;
 };
 
 
-var addTextOnPath = function(points_, distance_, text_, size_, textVector_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_) {
+var addTextOnPath = function(points_, distance_, text_, size_, textVector_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_, index_) {
     if (textVector_ == null) {
         textVector_ = [0,1,0];
     }
 
     var p1 = points_[0];
     var p2 = points_[1];
-
-    var index_ = vertexBuffer_.length;
-    var index2_ = texcoordsBuffer_.length;
-
+    
     var chars_ = font_.chars_;
-
     var factor_ = size_ / font_.size_;
     var newLineSpace_ = font_.space_ * factor_;
 
@@ -216,17 +214,18 @@ var addTextOnPath = function(points_, distance_, text_, size_, textVector_, font
 
         vec3Normalize(dir_);
 
-        var shift_ = addChar(posAndDir_[0], dir_, -factor_*font_.size_*0.7+verticalOffset_, char_, factor_, index_, index2_, textVector_, font_, vertexBuffer_, texcoordsBuffer_);
+        var shift_ = addChar(posAndDir_[0], dir_, -factor_*font_.size_*0.7+verticalOffset_, char_, factor_, index_, index_, textVector_, font_, vertexBuffer_, texcoordsBuffer_);
 
         p1 = shift_[0];
         index_ = shift_[1];
-        index2_ = shift_[2];
+        //index2_ = shift_[2];
         l += ll;
     }
 
+    return index_;
 };
 
-var addStreetTextOnPath = function(points_, text_, size_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_) {
+var addStreetTextOnPath = function(points_, text_, size_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_, index_) {
     var factor_ = size_ / font_.size_;
     var textLength_ = getTextLength(text_, factor_, font_);
     var pathLength_ = getPathLength(points_);
@@ -241,7 +240,7 @@ var addStreetTextOnPath = function(points_, text_, size_, font_, verticalOffset_
 
     var textVector_ = getPathTextVector(points_, shift_, text_, factor_, font_);
 
-    addTextOnPath(points_, shift_, text_, size_, textVector_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_);
+    return addTextOnPath(points_, shift_, text_, size_, textVector_, font_, verticalOffset_, vertexBuffer_, texcoordsBuffer_, index_);
 };
 
 var getFontFactor = function(size_, font_) {

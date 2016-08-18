@@ -569,22 +569,24 @@ var processLineLabel = function(lineLabelPoints_, lineLabelPoints2_, lineString_
 
     var zbufferOffset_ = getLayerPropertyValue(style_, "zbuffer-offset", lineString_, lod_);
 
-    var vertexBuffer_ = [];
-    var texcoordsBuffer_ = [];
+    var bufferSize_ = getCharVerticesCount() * labelText_.length * 2;
+    var vertexBuffer_ = new Float32Array(bufferSize_);
+    var texcoordsBuffer_ = new Float32Array(bufferSize_);
 
     //debugger
 
     var hitable_ = hoverEvent_ || clickEvent_ || enterEvent_ || leaveEvent_;
+    var index_ = 0;    
 
-    addStreetTextOnPath(lineLabelPoints_, labelText_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_);
-    addStreetTextOnPath(lineLabelPoints2_, labelText_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_);
+    var index_ = addStreetTextOnPath(lineLabelPoints_, labelText_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_, index_);
+    index_ = addStreetTextOnPath(lineLabelPoints2_, labelText_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_, index_);
 
     postMessage({"command":"addRenderJob", "type": "line-label", "vertexBuffer": vertexBuffer_,
                   "texcoordsBuffer": texcoordsBuffer_, "color":labelColor_, "z-index":zIndex_, "center": center_,
                   "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                   "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                   "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                  "lod":(autoLod_ ? null : tileLod_) } /*, [vertexBuffer_.buffer, texcoordsBuffer_.buffer]*/);
+                  "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer, texcoordsBuffer_.buffer]);
 };
 
 

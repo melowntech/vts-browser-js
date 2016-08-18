@@ -248,8 +248,8 @@ Melown.GpuGroup.prototype.addLineLabelJob = function(data_) {
         job_.vertexPositionBuffer_ = gl_.createBuffer();
         gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
     
-        gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-        //gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
+        //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
+        gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
         job_.vertexPositionBuffer_.itemSize = 4;
         job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
     
@@ -257,8 +257,8 @@ Melown.GpuGroup.prototype.addLineLabelJob = function(data_) {
         job_.vertexTexcoordBuffer_ = gl_.createBuffer();
         gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
     
-        gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(texcoords_), gl_.STATIC_DRAW);
-        //gl_.bufferData(gl_.ARRAY_BUFFER, texcoords_, gl_.STATIC_DRAW);
+        //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(texcoords_), gl_.STATIC_DRAW);
+        gl_.bufferData(gl_.ARRAY_BUFFER, texcoords_, gl_.STATIC_DRAW);
         job_.vertexTexcoordBuffer_.itemSize = 4;
         job_.vertexTexcoordBuffer_.numItems = texcoords_.length / 4;
     }
@@ -310,7 +310,8 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     job_.vertexPositionBuffer_ = gl_.createBuffer();
     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
 
-    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
+    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
+    gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
     job_.vertexPositionBuffer_.itemSize = 4;
     job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
 
@@ -318,7 +319,8 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     job_.vertexTexcoordBuffer_ = gl_.createBuffer();
     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
 
-    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(texcoords_), gl_.STATIC_DRAW);
+    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(texcoords_), gl_.STATIC_DRAW);
+    gl_.bufferData(gl_.ARRAY_BUFFER, texcoords_, gl_.STATIC_DRAW);
     job_.vertexTexcoordBuffer_.itemSize = 4;
     job_.vertexTexcoordBuffer_.numItems = texcoords_.length / 4;
 
@@ -326,7 +328,8 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     job_.vertexOriginBuffer_ = gl_.createBuffer();
     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexOriginBuffer_);
 
-    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(origins_), gl_.STATIC_DRAW);
+    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(origins_), gl_.STATIC_DRAW);
+    gl_.bufferData(gl_.ARRAY_BUFFER, origins_, gl_.STATIC_DRAW);
     job_.vertexOriginBuffer_.itemSize = 3;
     job_.vertexOriginBuffer_.numItems = origins_.length / 3;
 
@@ -404,7 +407,7 @@ Melown.GpuGroup.prototype.optimize = function() {
                         }
                     }
 
-                    var vbuffer_ = new Array(vbufferSize_);
+                    var vbuffer_ = new Float32Array(vbufferSize_);
                     var index_ = 0;
 
                     for (var j = i; j < li; j++) {
@@ -437,8 +440,8 @@ Melown.GpuGroup.prototype.optimize = function() {
                         }
                     }
 
-                    var vbuffer_ = new Array(vbufferSize_);
-                    var nbuffer_ = new Array(vbufferSize_);
+                    var vbuffer_ = new Float32Array(vbufferSize_);
+                    var nbuffer_ = new Float32Array(vbufferSize_);
                     var index_ = 0;
 
                     for (var j = i; j < li; j++) {
@@ -472,7 +475,7 @@ Melown.GpuGroup.prototype.optimize = function() {
 
     this.reduced_ = this.jobs_.length - newJobs_.length;  
 
-    console.log("total: " + this.jobs_.length + "    reduced: " + this.reduced_);
+    //console.log("total: " + this.jobs_.length + "    reduced: " + this.reduced_);
 
     this.jobs_ = newJobs_;
 
@@ -488,7 +491,8 @@ Melown.GpuGroup.prototype.optimize = function() {
                     job_.vertexPositionBuffer_ = gl_.createBuffer();
                     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
                 
-                    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
+                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
+                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.vbuffer_, gl_.STATIC_DRAW);
                     job_.vertexPositionBuffer_.itemSize = 3;
                     job_.vertexPositionBuffer_.numItems = job_.vbuffer_.length / 3;
                     break;
@@ -499,7 +503,8 @@ Melown.GpuGroup.prototype.optimize = function() {
                     job_.vertexPositionBuffer_ = gl_.createBuffer();
                     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
                 
-                    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
+                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
+                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.vbuffer_, gl_.STATIC_DRAW);
                     job_.vertexPositionBuffer_.itemSize = 4;
                     job_.vertexPositionBuffer_.numItems = job_.vbuffer_.length / 4;
                 
@@ -507,7 +512,8 @@ Melown.GpuGroup.prototype.optimize = function() {
                     job_.vertexNormalBuffer_ = gl_.createBuffer();
                     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexNormalBuffer_);
                 
-                    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.nbuffer_), gl_.STATIC_DRAW);
+                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.nbuffer_), gl_.STATIC_DRAW);
+                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.nbuffer_, gl_.STATIC_DRAW);
                     job_.vertexNormalBuffer_.itemSize = 4;
                     job_.vertexNormalBuffer_.numItems = job_.nbuffer_.length / 4;
 
@@ -517,7 +523,8 @@ Melown.GpuGroup.prototype.optimize = function() {
                     job_.vertexPositionBuffer_ = gl_.createBuffer();
                     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
                 
-                    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
+                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
+                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.vbuffer_, gl_.STATIC_DRAW);
                     job_.vertexPositionBuffer_.itemSize = 4;
                     job_.vertexPositionBuffer_.numItems = job_.vbuffer_.length / 4;
 
@@ -525,7 +532,8 @@ Melown.GpuGroup.prototype.optimize = function() {
                     job_.vertexTexcoordBuffer_ = gl_.createBuffer();
                     gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
                 
-                    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.nbuffer_), gl_.STATIC_DRAW);
+                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.nbuffer_), gl_.STATIC_DRAW);
+                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.nbuffer_, gl_.STATIC_DRAW);
                     job_.vertexTexcoordBuffer_.itemSize = 4;
                     job_.vertexTexcoordBuffer_.numItems = job_.nbuffer_.length / 4;
                    

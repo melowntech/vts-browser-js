@@ -36,40 +36,58 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
 
     var icon_ = getLayerPropertyValue(style_, "icon", pointArray_, lod_);
     if (icon_ == true) {
-        var iconData_ = {
-            color_ : getLayerPropertyValue(style_, "icon-color", pointArray_, lod_),
-            scale_ : getLayerPropertyValue(style_, "icon-scale", pointArray_, lod_),
-            offset_ : getLayerPropertyValue(style_, "icon-offset", pointArray_, lod_),
-            stick_ : getLayerPropertyValue(style_, "icon-stick", pointArray_, lod_),
-            origin_ : getLayerPropertyValue(style_, "icon-origin", pointArray_, lod_),
-            source_ : getLayerPropertyValue(style_, "icon-source", pointArray_, lod_),
-            vertexBuffer_ : [],
-            originBuffer_ : [],
-            texcoordsBuffer_ : []
-        };
+        var source_ = getLayerPropertyValue(style_, "icon-source", pointArray_, lod_);
+        
+        if (source_) {
+            var bufferSize_ = getCharVerticesCount() * pointsGroups_.length;
+            var bufferSize2_ = getCharVerticesCount(true) * pointsGroups_.length;
+    
+            var iconData_ = {
+                color_ : getLayerPropertyValue(style_, "icon-color", pointArray_, lod_),
+                scale_ : getLayerPropertyValue(style_, "icon-scale", pointArray_, lod_),
+                offset_ : getLayerPropertyValue(style_, "icon-offset", pointArray_, lod_),
+                stick_ : getLayerPropertyValue(style_, "icon-stick", pointArray_, lod_),
+                origin_ : getLayerPropertyValue(style_, "icon-origin", pointArray_, lod_),
+                source_ : getLayerPropertyValue(style_, "icon-source", pointArray_, lod_),
+                vertexBuffer_ : new Float32Array(bufferSize_),
+                originBuffer_ : new Float32Array(bufferSize2_),
+                texcoordsBuffer_ : new Float32Array(bufferSize_),
+                index_ : 0,
+                index2_ : 0
+            };
+        } else {
+            icon_ = false;
+        }
     }
 
     var label_ = getLayerPropertyValue(style_, "label", pointArray_, lod_);
     if (label_ == true) {
         var source_ = getLayerPropertyValue(style_, "label-source", pointArray_, lod_);
         var text_ = getLayerExpresionValue(style_, source_, pointArray_, lod_);
+        var size_ = getLayerPropertyValue(style_, "label-size", pointArray_, lod_);
         
-        if (text_) {
+        if (text_ && text_ != "" && Math.abs(size_) > 0.0001) {
+            var bufferSize_ = getCharVerticesCount() * text_.length * pointsGroups_.length;
+            var bufferSize2_ = getCharVerticesCount(true) * text_.length * pointsGroups_.length;
+
             var labelData_ = {
                 color_ : getLayerPropertyValue(style_, "label-color", pointArray_, lod_),
-                size_ : getLayerPropertyValue(style_, "label-size", pointArray_, lod_),
+                size_ : size_,
                 offset_ : getLayerPropertyValue(style_, "label-offset", pointArray_, lod_),
                 stick_ : getLayerPropertyValue(style_, "label-stick", pointArray_, lod_),
                 origin_ : getLayerPropertyValue(style_, "label-origin", pointArray_, lod_),
                 align_ : getLayerPropertyValue(style_, "label-align", pointArray_, lod_),
                 text_ : text_,
                 width_ : getLayerPropertyValue(style_, "label-width", pointArray_, lod_),
-                vertexBuffer_ : [],
-                originBuffer_ : [],
-                texcoordsBuffer_ : []
+                vertexBuffer_ : new Float32Array(bufferSize_),
+                originBuffer_ : new Float32Array(bufferSize2_),
+                texcoordsBuffer_ : new Float32Array(bufferSize_),
+                index_ : 0,
+                index2_ : 0
             };
+        } else {
+            label_ = false;
         }
-        
     }
 
     var index_ = 0;
@@ -223,7 +241,7 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
                          "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                          "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                          "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                         "lod":(autoLod_ ? null : tileLod_) });
+                         "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer]);
         } else {
             postMessage({"command":"addRenderJob", "type": "pixel-line", "vertexBuffer": vertexBuffer_,
                          "normalBuffer": normalBuffer_, "color":pointColor_, "z-index":zIndex_,
@@ -231,7 +249,7 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
                          "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                          "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                          "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                         "lod":(autoLod_ ? null : tileLod_) });
+                         "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer, normalBuffer_.buffer]);
         }
     }
 
@@ -243,7 +261,7 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
                      "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                      "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                      "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                     "lod":(autoLod_ ? null : tileLod_) });
+                     "lod":(autoLod_ ? null : tileLod_) }, [iconData_.vertexBuffer_.buffer, iconData_.originBuffer_.buffer, iconData_.texcoordsBuffer_.buffer]);
     }
 
     if (label_ == true && labelData_.vertexBuffer_.length > 0) {
@@ -253,7 +271,7 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
                      "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                      "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                      "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                     "lod":(autoLod_ ? null : tileLod_) });
+                     "lod":(autoLod_ ? null : tileLod_) }, [labelData_.vertexBuffer_.buffer, labelData_.originBuffer_.buffer, labelData_.texcoordsBuffer_.buffer]);
     }
 
 };
@@ -274,10 +292,9 @@ var getOriginOffset = function(origin_, width_, height_) {
 
 var processIcon = function(point_, iconData_) {
     var icon_ = iconData_.source_;
-
-    if (icon_ == null) {
-        return;
-    }
+    var index_ = iconData_.index_;
+    var index2_ = iconData_.index2_;
+    var lastIndex_ = index_;
 
     var width_ = Math.abs(icon_[3] * iconData_.scale_);
     var height_ = Math.abs(icon_[4] * iconData_.scale_);
@@ -285,53 +302,105 @@ var processIcon = function(point_, iconData_) {
     var vertexBuffer_ = iconData_.vertexBuffer_;
     var texcoordsBuffer_ = iconData_.texcoordsBuffer_;
     var originBuffer_ = iconData_.originBuffer_;
-    var vertexBufferSize_ = vertexBuffer_.length;
 
     //add polygon
-    vertexBuffer_.push(0, 0, 0, 0,
-                       width_, 0, 0, 0,
-                       width_, -height_, 0, 0);
+    vertexBuffer_[index_] = 0;
+    vertexBuffer_[index_+1] = 0;
+    vertexBuffer_[index_+2] = 0;
+    vertexBuffer_[index_+3] = 0;
 
-    texcoordsBuffer_.push(icon_[1], icon_[2], 0, 0,
-                          icon_[1]+icon_[3], icon_[2], 0, 0,
-                          icon_[1]+icon_[3], icon_[2]+icon_[4], 0, 0);
+    vertexBuffer_[index_+4] = width_;
+    vertexBuffer_[index_+5] = 0;
+    vertexBuffer_[index_+6] = 0;
+    vertexBuffer_[index_+7] = 0;
+
+    vertexBuffer_[index_+8] = width_;
+    vertexBuffer_[index_+9] = -height_;
+    vertexBuffer_[index_+10] = 0;
+    vertexBuffer_[index_+11] = 0;
+
+    texcoordsBuffer_[index_] = icon_[1];
+    texcoordsBuffer_[index_+1] = icon_[2];
+    texcoordsBuffer_[index_+2] = 0;
+    texcoordsBuffer_[index_+3] = 0;
+
+    texcoordsBuffer_[index_+4] = icon_[1]+icon_[3];
+    texcoordsBuffer_[index_+5] = icon_[2];
+    texcoordsBuffer_[index_+6] = 0;
+    texcoordsBuffer_[index_+7] = 0;
+
+    texcoordsBuffer_[index_+8] = icon_[1]+icon_[3];
+    texcoordsBuffer_[index_+9] = icon_[2]+icon_[4];
+    texcoordsBuffer_[index_+10] = 0;
+    texcoordsBuffer_[index_+11] = 0;
+
+    index_ += 12;
 
     //add polygon
-    vertexBuffer_.push(0, 0, 0, 0,
-                       0, -height_, 0, 0,
-                       width_, -height_, 0, 0);
+    vertexBuffer_[index_] = 0;
+    vertexBuffer_[index_+1] = 0;
+    vertexBuffer_[index_+2] = 0;
+    vertexBuffer_[index_+3] = 0;
 
-    texcoordsBuffer_.push(icon_[1], icon_[2], 0, 0,
-                          icon_[1], icon_[2]+icon_[4], 0, 0,
-                          icon_[1]+icon_[3], icon_[2]+icon_[4], 0, 0);
+    vertexBuffer_[index_+4] = 0;
+    vertexBuffer_[index_+5] = -height_;
+    vertexBuffer_[index_+6] = 0;
+    vertexBuffer_[index_+7] = 0;
+
+    vertexBuffer_[index_+8] = width_;
+    vertexBuffer_[index_+9] = -height_;
+    vertexBuffer_[index_+10] = 0;
+    vertexBuffer_[index_+11] = 0;
+
+    texcoordsBuffer_[index_] = icon_[1];
+    texcoordsBuffer_[index_+1] = icon_[2];
+    texcoordsBuffer_[index_+2] = 0;
+    texcoordsBuffer_[index_+3] = 0;
+
+    texcoordsBuffer_[index_+4] = icon_[1];
+    texcoordsBuffer_[index_+5] = icon_[2]+icon_[4];
+    texcoordsBuffer_[index_+6] = 0;
+    texcoordsBuffer_[index_+7] = 0;
+
+    texcoordsBuffer_[index_+8] = icon_[1]+icon_[3];
+    texcoordsBuffer_[index_+9] = icon_[2]+icon_[4];
+    texcoordsBuffer_[index_+10] = 0;
+    texcoordsBuffer_[index_+11] = 0;
+    
+    index_ += 12;
 
     //get offset
     var originOffset_ = getOriginOffset(iconData_.origin_, width_, height_);
-    originOffset_[0] = originOffset_[0] + iconData_.offset_[0];
-    originOffset_[1] = originOffset_[1] + iconData_.offset_[1];
+    var offsetX_ = originOffset_[0] + iconData_.offset_[0];
+    var offsetY_ = originOffset_[1] + iconData_.offset_[1];
+
+    var p1_ = point_[0];
+    var p2_ = point_[1];
+    var p3_ = point_[2];
 
     //set origin buffer and apply offset
-    for (var i = vertexBufferSize_, li = vertexBuffer_.length; i < li; i+=4) {
-        originBuffer_.push(point_[0], point_[1], point_[2]);
+    for (var i = lastIndex_; i < index_; i+=4) {
+        vertexBuffer_[i] += offsetX_;
+        vertexBuffer_[i+1] -= offsetY_;
 
-        vertexBuffer_[i] +=  originOffset_[0];
-        vertexBuffer_[i+1] -= originOffset_[1];
+        originBuffer_[index2_] = p1_;
+        originBuffer_[index2_ + 1] = p2_;
+        originBuffer_[index2_ + 2] = p3_;
+        index2_ += 3;
     }
+
+    iconData_.index_ = index_;
+    iconData_.index2_ = index2_;
 };
 
 
 var processLabel = function(point_, labelData_) {
-    if (!labelData_ || labelData_.text_ == "" || Math.abs(labelData_.size_) < 0.0001) {
-        return;
-    }
-
     var vertexBuffer_ = labelData_.vertexBuffer_;
     var texcoordsBuffer_ = labelData_.texcoordsBuffer_;
     var originBuffer_ = labelData_.originBuffer_;
-    var vertexBufferSize_ = vertexBuffer_.length;
-
-    //debugger
-    
+    var index_ = labelData_.index_;
+    var index2_ = labelData_.index2_;
+    var lastIndex_ = index_;
     var text_ = "" + labelData_.text_;
 
     //split by new line
@@ -345,15 +414,15 @@ var processLabel = function(point_, labelData_) {
         var line_= lines_[i];
 
         do {
-            var index_ = getSplitIndex(line_, labelData_.width_, getFontFactor(labelData_.size_, fonts_["default"]), fonts_["default"]);
+            var splitIndex_ = getSplitIndex(line_, labelData_.width_, getFontFactor(labelData_.size_, fonts_["default"]), fonts_["default"]);
 
-            if (line_.length == index_) {
+            if (line_.length == splitIndex_) {
                 lines2_.push(line_);
                 break;
             }
 
-            lines2_.push(line_.substring(0,index_));
-            line_ = line_.substring(index_+1);
+            lines2_.push(line_.substring(0,splitIndex_));
+            line_ = line_.substring(splitIndex_+1);
             align_ = true;
 
         } while(true);
@@ -384,23 +453,32 @@ var processLabel = function(point_, labelData_) {
             case "center": x = (maxWidth_ - textWidth_)*0.5; break;
         }
 
-        addText([x,y,0], [1,0,0], lines2_[i], labelData_.size_, fonts_["default"], vertexBuffer_, texcoordsBuffer_, true);
+        index_ = addText([x,y,0], [1,0,0], lines2_[i], labelData_.size_, fonts_["default"], vertexBuffer_, texcoordsBuffer_, true, index_);
         y -= lineHeight_;
     }
 
     //get offset
     var originOffset_ = getOriginOffset(labelData_.origin_, maxWidth_, -y);
-    originOffset_[0] = originOffset_[0] + labelData_.offset_[0];
-    originOffset_[1] = originOffset_[1] + labelData_.offset_[1];
+    offsetX_ = originOffset_[0] + labelData_.offset_[0];
+    offsetY_ = originOffset_[1] + labelData_.offset_[1];
+    
+    var p1_ = point_[0];
+    var p2_ = point_[1];
+    var p3_ = point_[2];
 
     //set origin buffer and apply offset
-    for (var i = vertexBufferSize_, li = vertexBuffer_.length; i < li; i+=4) {
-        originBuffer_.push(point_[0], point_[1], point_[2]);
+    for (var i = lastIndex_; i < index_; i+=4) {
+        vertexBuffer_[i] += offsetX_;
+        vertexBuffer_[i+1] -= offsetY_;
 
-        vertexBuffer_[i] +=  originOffset_[0];
-        vertexBuffer_[i+1] -= originOffset_[1];
+        originBuffer_[index2_] = p1_;
+        originBuffer_[index2_ + 1] = p2_;
+        originBuffer_[index2_ + 2] = p3_;
+        index2_ += 3;
     }
 
+    labelData_.index_ = index_;
+    labelData_.index2_ = index2_;
 };
 
 
