@@ -193,7 +193,7 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
     var node_ = tile_.metanode_;
     var cameraPos_ = this.map_.cameraPosition_;
 
-    var log2_ = false;//this.map_.drawBBoxes_;        
+    var log2_ = this.map_.drawBBoxes_;        
 
     if (log2_) {
         console.log("--------------------------------------------");
@@ -242,7 +242,7 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
     if (log_) { console.log("draw-tile: visible"); }
 
     var pixelSize_;
-    var texelSizeFit_ = this.config_.mapTexelSizeFit_;
+    var texelSizeFit_ = this.map_.texelSizeFit_;
 
     if (node_.hasGeometry()) {
         var screenPixelSize_ = Number.POSITIVE_INFINITY;
@@ -397,9 +397,9 @@ Melown.MapSurfaceTree.prototype.canDrawCoarserLod = function(tile_, node_, camer
 };
 
 Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, node_) {
-    var skipGeoTest_ = false;
+    var skipGeoTest_ = this.map_.config_.mapDisableCulling_;
     
-    if (id_[0] >= 6 && this.geocent_) {
+    if (!skipGeoTest_ && id_[0] >= 6 && this.geocent_) {
         id_ = id_;
         
         if (!node_.hasGeometry()) {

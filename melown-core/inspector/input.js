@@ -92,7 +92,8 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         
                         if (!this.circleImage_) {
                             this.circleImage_ = Melown.Http.imageFactory(
-                                "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png",
+                                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAAAAAAAD5Q7t/AAAACW9GRnMAAAAgAAAA4ACD+EAUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA/UlEQVRYw+2VPwqDMBTG3dz1Am56EnH2XLroETxGuwc3Z7cOdhY8QJpfSUBspUvStJAPPggvD973/uQligICAgL+DKViqygUV02hbaXLwJlio7gpyhNu2idzEXwwgfI8H+u6vnZdN/V9P3EuimLcCRlsiyArGcfxjWDLsmzyAGzc4aNFNDZ7/iw7AeQH4LNrh5WZYLgkJTaZCyHuVVVdkiSZ0zSdOWMzlaBFWkRrQ4A4Zk/A4wBie1MFYUMAz0wybCYAmR8FUAlzj6+2r18TgM2VAO8tOB1Cyk7mrofQ+zP0voheVjHtIBjDxjrmvCu7k1Xs/TP6ie84ICDAGR5uCYdPo0MWiAAAAABJRU5ErkJggg==",
+                                //"http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png",
                                 (function(){
                                     this.circleTexture_ = this.core_.getRendererInterface().createTexture({ "source": this.circleImage_ });
                                 }).bind(this)
@@ -209,7 +210,9 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         
                         console.log("proj4 timer2: " + tt + "   " + JSON.stringify(r));
                         */
-                          
+
+                        map_.zFactor2_ += 0.01;                          
+                        console.log("zfactor  " + map_.zFactor2_);                          
 
                         break; //key M pressed
 
@@ -218,6 +221,9 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         //map_.config_.mapGeocentCulling_ = !map_.config_.mapGeocentCulling_;
                         //console.log("mapGeocentCulling: " + map_.config_.mapGeocentCulling_);
                         //map_.blendHeightmap_ = !map_.blendHeightmap_;
+                        map_.zFactor2_ -= 0.01;
+                        console.log("zfactor  " + map_.zFactor2_);                          
+
                         break; //key J pressed
 
                     case 88:

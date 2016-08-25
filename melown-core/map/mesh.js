@@ -402,7 +402,13 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         this.stats_.gpuRenderUsed_ ++;
     }
 
+    //this.map_.renderer_.gpu_.gl_.polygonOffset(-1.0, this.map_.zShift_);
+    //this.map_.renderer_.gpu_.gl_.enable(this.map_.renderer_.gpu_.gl_.POLYGON_OFFSET_FILL);
+
     gpuSubmesh_.draw(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
+
+    //this.map_.renderer_.gpu_.gl_.disable(this.map_.renderer_.gpu_.gl_.POLYGON_OFFSET_FILL);
+
     this.stats_.drawnFaces_ += this.faces_;
     this.stats_.drawCalls_ ++;
 };

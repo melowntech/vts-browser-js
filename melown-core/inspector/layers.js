@@ -107,6 +107,7 @@ Melown.Inspector.prototype.initLayersPanel = function() {
             + "height: 200px;"
             + "border: 1px solid #ddd;"
             + "white-space: nowrap;"
+            + "padding: 0px;"
         + "}"
 
         
@@ -120,7 +121,7 @@ Melown.Inspector.prototype.initLayersPanel = function() {
         + "}"        
         
         + ".melown-layers-item input[type=number]{"
-            + "width: 45px;"
+            + "width: 43px;"
         + "}"
         
         + ".melown-layers-name {"

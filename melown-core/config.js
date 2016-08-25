@@ -11,19 +11,22 @@ Melown.Core.prototype.initConfig = function() {
         mapDownloadThreads_ : 6,
         mapMaxProcessingTime_ : 1000*20,
         mapMobileMode_ : false,
-        mapMobileTexelDegradation_ : 2,
+        mapMobileModeAutodect_ : true,
+        mapMobileDetailDegradation_ : 1,
         mapNavSamplesPerViewExtent_ : 4,
         mapIgnoreNavtiles_ : false,
         mapAllowHires_ : true,
         mapAllowLowres_ : true,
         mapAllowSmartSwitching_ : true,
+        mapDisableCulling_ : false,
         mapPreciseCulling_ : false,
         mapHeightLodBlend_ : true,
         mapHeightNodeBlend_ : true,
         mapBasicTileSequence_ : false,
         mapFog_ : false,
         rendererAntialiasing_ : true,
-        rendererAllowScreenshots_ : false
+        rendererAllowScreenshots_ : false,
+        mario_ : false
     };
 };
 
@@ -52,7 +55,7 @@ Melown.Core.prototype.setConfigParam = function(key_, value_) {
     } else if (key_ == "map") {
         this.config_.map_ = Melown.validateString(value_, null);
     } else {
-        if (key_.indexOf("map") == 0) {
+        if (key_.indexOf("map") == 0 || key_.indexOf("mario") == 0) {
             this.configStorage_[key_] = value_;
             if (this.getMap() != null) {
                 this.getMap().setConfigParam(key_, value_);

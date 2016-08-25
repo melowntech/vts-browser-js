@@ -55,6 +55,25 @@ Melown.Core.prototype.loadMap = function(path_) {
         this.setConfigParams(this.map_.browserOptions_);
         this.setConfigParams(this.configStorage_);
 
+        //MEGA HACK!!!!
+        if (this.map_.config_.mario_) {
+            if (!(
+                this.map_.getSurface("egm96-geoid") ||
+                this.map_.getSurface("srtm-arc-sec-world") ||
+                this.map_.getSurface("aster-world") ||
+                this.map_.getSurface("viewfinder-world") ||
+                
+                this.map_.getSurface("melown-egm96-geoid") ||
+                this.map_.getSurface("melown-srtm-arc-sec-world") ||
+                this.map_.getSurface("melown-aster-world") ||
+                this.map_.getSurface("melown-viewfinder-world")
+
+                )) {
+
+                this.map_.config_.mapDisableCulling_ = true;
+            }            
+        }
+
         if (this.config_.position_) {
             this.map_.setPosition(this.config_.position_);
             this.config_.position_ = null;
