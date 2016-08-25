@@ -95,7 +95,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
 };
 
 Melown.MapGeodataView.prototype.isReady = function() {
-    if (this.ready_ == false && this.geodataProcessor_.isReady() == true) {
+    if (!this.ready_ && this.geodataProcessor_.isReady()) {
         this.geodataProcessor_.setListener(this.onGeodataProcessorMessage.bind(this));
         this.geodataProcessor_.sendCommand("processGeodata", this.geodata_.geodata_, this.tile_);
     }
@@ -123,7 +123,7 @@ Melown.MapGeodataView.prototype.getWorldMatrix = function(bbox_, geoPos_, matrix
 
 
 Melown.MapGeodataView.prototype.draw = function(cameraPos_) {
-    if (this.ready_ == true) {
+    if (this.ready_) {
         var renderer_ = this.renderer_;
 
         for (var i = 0, li = this.gpuGroups_.length; i < li; i++) {

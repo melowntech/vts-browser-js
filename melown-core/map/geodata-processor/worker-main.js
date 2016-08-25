@@ -216,7 +216,7 @@ self.onmessage = function (e) {
 
         case "processGeodata":
             tileLod_ = message_["lod"] || 0;
-            
+            data_ = JSON.parse(data_);            
             processGeodata(data_, tileLod_);
             postMessage("allProcessed");
             postMessage("ready");

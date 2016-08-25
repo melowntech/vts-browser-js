@@ -41,23 +41,26 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
 
     var index_ = 0;
     var index2_ = 0;
+    var skipJoins_ = (!lineFlat_ && lineWidth_ < 2.1);
 
     //console.log("lod: " + lod_ + "  width: " + lineWidth_);
 
-    var circleBuffer_ = [];
-    var circleBuffer2_ = [];
-    var circleSides_ = 8;//Math.max(8, (14 - lod_) * 8);
-
-    var angle_ = 0, step_ = (2.0*Math.PI) / circleSides_;
-
-    for (var i = 0; i < circleSides_; i++) {
-        circleBuffer_[i] = [-Math.sin(angle_), Math.cos(angle_)];
-        circleBuffer2_[i] = angle_;
-        angle_ += step_;
+    if (!skipJoins_) {
+        var circleBuffer_ = [];
+        var circleBuffer2_ = [];
+        var circleSides_ = 8;//Math.max(8, (14 - lod_) * 8);
+    
+        var angle_ = 0, step_ = (2.0*Math.PI) / circleSides_;
+    
+        for (var i = 0; i < circleSides_; i++) {
+            circleBuffer_[i] = [-Math.sin(angle_), Math.cos(angle_)];
+            circleBuffer2_[i] = angle_;
+            angle_ += step_;
+        }
+    
+        circleBuffer_[circleSides_] = [0, 1.0];
+        circleBuffer2_[circleSides_] = 0;
     }
-
-    circleBuffer_[circleSides_] = [0, 1.0];
-    circleBuffer2_[circleSides_] = 0;
 
     var totalPoints_ = 0;
 
@@ -69,17 +72,17 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
 
     //allocate buffers
     var lineVertices_ = (texturedLine_ || !lineFlat_ ? 4 : 3) * 3 * 2;
-    var joinVertices_ = circleSides_ * (texturedLine_ || !lineFlat_? 4 : 3) * 3;
+    var joinVertices_ = skipJoins_ ? 0 : (circleSides_ * (texturedLine_ || !lineFlat_? 4 : 3) * 3);
     var vertexBuffer_ = new Float32Array(totalPoints_ * lineVertices_ + totalPoints_ * joinVertices_);
 
 
     if (!lineFlat_ || texturedLine_) {
         var lineNormals_ = 3 * 4 * 2;
-        var joinNormals_ = circleSides_ * 3 * 4;
+        var joinNormals_ = skipJoins_ ? 0 : (circleSides_ * 3 * 4);
         var normalBuffer_ = new Float32Array(totalPoints_ * lineNormals_ + totalPoints_ * joinNormals_);
     }
 
-    if (texturedLine_) {
+    if (texturedLine_ && !skipJoins_) {
         var joinParams_ = Float32Array(totalPoints_);
     }
 
@@ -360,132 +363,136 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     
         var p1 = [p[0], p[1], p[2]];
     
-        var lindex_ = index_; //debug only
-        var lindex2_ = index2_; //debug only
-    
-        //add joins
-        for (var i = 0, li = points_.length; i < li; i++) {
-    
-            if (forceOrigin_) {
-                p1 = [p1[0] - tileX_, p1[1] - tileY_, p1[2]];
-            }
-    
-            if (forceScale_ != null) {
-                p1 = [p1[0] * forceScale_[0], p1[1] * forceScale_[1], p1[2] * forceScale_[2]];
-            }
-    
-            center_[0] += p1[0];
-            center_[1] += p1[1];
-            center_[2] += p1[2];
-    
-            var angleShift_ = (joinParams_ != null) ? joinParams_[i] : 0;
+        if (true /*!skipJoins_ || lineLabel_*/) {
 
-            if (geocent_) {
-                var vv = [0,0,0];
-                var nn = [0,0,0];
-                vec3Normalize(bboxMin_, nn);
-                vec3AnyPerpendicular(nn, vv);
-                vec3Normalize(vv);
-                vec3Cross(nn, vv, nn);
-            }
-    
-            for (var j = 0; j < circleSides_; j++) {
-    
-                if (lineFlat_ && !texturedLine_) {
-
-                    vertexBuffer_[index_] = p1[0];
-                    vertexBuffer_[index_+1] = p1[1];
-                    vertexBuffer_[index_+2] = p1[2];
-    
-                    //add polygon
-                    if (geocent_) {
-                        var dx = circleBuffer_[j][0];
-                        var dy = circleBuffer_[j][1];
-                        vertexBuffer_[index_+3] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth_;
-                        vertexBuffer_[index_+4] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth_;
-                        vertexBuffer_[index_+5] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth_;
+            //add joins
+            for (var i = 0, li = points_.length; i < li; i++) {
         
-                        dx = circleBuffer_[j+1][0];
-                        dy = circleBuffer_[j+1][1];
-                        vertexBuffer_[index_+6] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth_;
-                        vertexBuffer_[index_+7] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth_;
-                        vertexBuffer_[index_+8] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth_;
-                    } else {
-        
-                        vertexBuffer_[index_+3] = p1[0] + circleBuffer_[j][0] * lineWidth_;
-                        vertexBuffer_[index_+4] = p1[1] + circleBuffer_[j][1] * lineWidth_;
-                        vertexBuffer_[index_+5] = p1[2];
-        
-                        vertexBuffer_[index_+6] = p1[0] + circleBuffer_[j+1][0] * lineWidth_;
-                        vertexBuffer_[index_+7] = p1[1] + circleBuffer_[j+1][1] * lineWidth_;
-                        vertexBuffer_[index_+8] = p1[2];
-                    }
-        
-                    index_ += 9;
-    
-                } else {
-    
-                    //distance_ = vertexBuffer_[(i >> 1) * lineVertices_ + ((i & 1) ? 11 : 3)];
-                    if (i != (li-1)) {
-                        distance_ = vertexBuffer_[i * lineVertices_ + 3];
-                    } else {
-                        distance_ = vertexBuffer_[(i - 1) * lineVertices_ + 11];
-                    }
-                    //distance_ = vertexBuffer_[((i == li) ? i - 1 : i) * lineVertices_ + 3];
-    
-                    //if (distance_ == null) {
-                      //  debugger
-                    //}
-    
-                    //console.log("distance-dot("+i+"): " + distance_);
-    
-                    //add polygon
-                    vertexBuffer_[index_] = p1[0];
-                    vertexBuffer_[index_+1] = p1[1];
-                    vertexBuffer_[index_+2] = p1[2];
-                    vertexBuffer_[index_+3] = distance_;
-                    normalBuffer_[index2_] = 0;
-                    normalBuffer_[index2_+1] = 0;
-                    normalBuffer_[index2_+2] = 0;
-                    normalBuffer_[index2_+3] = 0;
-    
-                    vertexBuffer_[index_+4] = p1[0];
-                    vertexBuffer_[index_+5] = p1[1];
-                    vertexBuffer_[index_+6] = p1[2];
-                    vertexBuffer_[index_+7] = distance_;
-                    normalBuffer_[index2_+4] = circleBuffer_[j][0] * lineWidth_;
-                    normalBuffer_[index2_+5] = circleBuffer_[j][1] * lineWidth_;
-                    normalBuffer_[index2_+6] = circleBuffer2_[j] + angleShift_;
-                    normalBuffer_[index2_+7] = 0;
-    
-                    vertexBuffer_[index_+8] = p1[0];
-                    vertexBuffer_[index_+9] = p1[1];
-                    vertexBuffer_[index_+10] = p1[2];
-                    vertexBuffer_[index_+11] = distance_;
-                    normalBuffer_[index2_+8] = circleBuffer_[j+1][0] * lineWidth_;
-                    normalBuffer_[index2_+9] = circleBuffer_[j+1][1] * lineWidth_;
-                    normalBuffer_[index2_+10] = circleBuffer2_[j+1] + angleShift_;
-                    normalBuffer_[index2_+11] = 0;
-    
-                    index_ += 12;
-                    index2_ += 12;
+                if (forceOrigin_) {
+                    p1 = [p1[0] - tileX_, p1[1] - tileY_, p1[2]];
                 }
-    
+        
+                if (forceScale_ != null) {
+                    p1 = [p1[0] * forceScale_[0], p1[1] * forceScale_[1], p1[2] * forceScale_[2]];
+                }
+        
+                center_[0] += p1[0];
+                center_[1] += p1[1];
+                center_[2] += p1[2];
+                
+                if (!skipJoins_) {
+                    var angleShift_ = (joinParams_ != null) ? joinParams_[i] : 0;
+        
+                    if (geocent_) {
+                        var vv = [0,0,0];
+                        var nn = [0,0,0];
+                        vec3Normalize(bboxMin_, nn);
+                        vec3AnyPerpendicular(nn, vv);
+                        vec3Normalize(vv);
+                        vec3Cross(nn, vv, nn);
+                    }
+            
+                    for (var j = 0; j < circleSides_; j++) {
+            
+                        if (lineFlat_ && !texturedLine_) {
+        
+                            vertexBuffer_[index_] = p1[0];
+                            vertexBuffer_[index_+1] = p1[1];
+                            vertexBuffer_[index_+2] = p1[2];
+            
+                            //add polygon
+                            if (geocent_) {
+                                var dx = circleBuffer_[j][0];
+                                var dy = circleBuffer_[j][1];
+                                vertexBuffer_[index_+3] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth_;
+                                vertexBuffer_[index_+4] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth_;
+                                vertexBuffer_[index_+5] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth_;
+                
+                                dx = circleBuffer_[j+1][0];
+                                dy = circleBuffer_[j+1][1];
+                                vertexBuffer_[index_+6] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth_;
+                                vertexBuffer_[index_+7] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth_;
+                                vertexBuffer_[index_+8] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth_;
+                            } else {
+                
+                                vertexBuffer_[index_+3] = p1[0] + circleBuffer_[j][0] * lineWidth_;
+                                vertexBuffer_[index_+4] = p1[1] + circleBuffer_[j][1] * lineWidth_;
+                                vertexBuffer_[index_+5] = p1[2];
+                
+                                vertexBuffer_[index_+6] = p1[0] + circleBuffer_[j+1][0] * lineWidth_;
+                                vertexBuffer_[index_+7] = p1[1] + circleBuffer_[j+1][1] * lineWidth_;
+                                vertexBuffer_[index_+8] = p1[2];
+                            }
+                
+                            index_ += 9;
+            
+                        } else {
+            
+                            //distance_ = vertexBuffer_[(i >> 1) * lineVertices_ + ((i & 1) ? 11 : 3)];
+                            if (i != (li-1)) {
+                                distance_ = vertexBuffer_[i * lineVertices_ + 3];
+                            } else {
+                                distance_ = vertexBuffer_[(i - 1) * lineVertices_ + 11];
+                            }
+                            //distance_ = vertexBuffer_[((i == li) ? i - 1 : i) * lineVertices_ + 3];
+            
+                            //if (distance_ == null) {
+                              //  debugger
+                            //}
+            
+                            //console.log("distance-dot("+i+"): " + distance_);
+            
+                            //add polygon
+                            vertexBuffer_[index_] = p1[0];
+                            vertexBuffer_[index_+1] = p1[1];
+                            vertexBuffer_[index_+2] = p1[2];
+                            vertexBuffer_[index_+3] = distance_;
+                            normalBuffer_[index2_] = 0;
+                            normalBuffer_[index2_+1] = 0;
+                            normalBuffer_[index2_+2] = 0;
+                            normalBuffer_[index2_+3] = 0;
+            
+                            vertexBuffer_[index_+4] = p1[0];
+                            vertexBuffer_[index_+5] = p1[1];
+                            vertexBuffer_[index_+6] = p1[2];
+                            vertexBuffer_[index_+7] = distance_;
+                            normalBuffer_[index2_+4] = circleBuffer_[j][0] * lineWidth_;
+                            normalBuffer_[index2_+5] = circleBuffer_[j][1] * lineWidth_;
+                            normalBuffer_[index2_+6] = circleBuffer2_[j] + angleShift_;
+                            normalBuffer_[index2_+7] = 0;
+            
+                            vertexBuffer_[index_+8] = p1[0];
+                            vertexBuffer_[index_+9] = p1[1];
+                            vertexBuffer_[index_+10] = p1[2];
+                            vertexBuffer_[index_+11] = distance_;
+                            normalBuffer_[index2_+8] = circleBuffer_[j+1][0] * lineWidth_;
+                            normalBuffer_[index2_+9] = circleBuffer_[j+1][1] * lineWidth_;
+                            normalBuffer_[index2_+10] = circleBuffer2_[j+1] + angleShift_;
+                            normalBuffer_[index2_+11] = 0;
+            
+                            index_ += 12;
+                            index2_ += 12;
+                        }
+                    }
+                }
+        
+                if (lineLabel_) {
+                    var p = [p1[0], p1[1], p1[2] + lineLabelSize_*0.1];
+                    lineLabelPoints_[i] = p;
+                    lineLabelPoints2_[li - i - 1] = p;
+                }
+        
+                if (dlines_) {
+                    var p2 = points_[i+1];
+                    p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
+                } else {
+                    p1 = points_[i+1];
+                }
             }
-    
-            if (lineLabel_) {
-                var p = [p1[0], p1[1], p1[2] + lineLabelSize_*0.1];
-                lineLabelPoints_[i] = p;
-                lineLabelPoints2_[li - i - 1] = p;
-            }
-    
-            if (dlines_) {
-                var p2 = points_[i+1];
-                p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-            } else {
-                p1 = points_[i+1];
-            }
+
+            
         }
+    
     }
 
     if (totalPoints_ > 0) {
@@ -497,10 +504,6 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     center_[0] += groupOrigin_[0];
     center_[1] += groupOrigin_[1];
     center_[2] += groupOrigin_[2];
-
-    //debug only
-    //if (vertexBuffer_ != null) { vertexBuffer_ = vertexBuffer_.slice(lindex_); }
-    //if (normalBuffer_ != null) { normalBuffer_ = normalBuffer_.slice(lindex2_); }
 
     var hitable_ = hoverEvent_ || clickEvent_ || enterEvent_ || leaveEvent_;
 
