@@ -20,6 +20,7 @@ Melown.UIElement.prototype.setDraggableState = function(state_) {
     this.dragCurrentPos_ = [0,0];
     this.dragLastPos_ = [0,0];
     this.dragAbsMoved_ = [0,0];
+    this.dragTouchCount_ = 0;
     
     this.dragable_ = state_;
     this.dragButtons_ = {
@@ -56,8 +57,6 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
     this.firstDragDistance_ = 0;
     this.lastDragDistance_ = 0;
     this.zoomDrag_ = false;
-
-
 
     if (this.dragging_ != true) {
         this.dragging_ = true;
@@ -101,12 +100,18 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
 
     Melown.Utils.preventDefault(event_);
 
-
     //console.log("move: 2#:  " + JSON.stringify(this.dragButtons_));
 
     var zoom_ = 0;
+    
+    var touchCount_ = event_.getTouchesCount();
+    if (touchCount_ != this.dragTouchCount_) {
+        this.dragLastPos_[0] = pos_[0];
+        this.dragLastPos_[1] = pos_[1];
+        this.dragTouchCount_ = touchCount_; 
+    }
 
-    if (event_.getTouchesCount() == 2) {
+    if (touchCount_ == 2) {
         var p1_ = event_.getTouchCoords(0); 
         var p2_ = event_.getTouchCoords(1); 
         var dx_ = p2_[0] - p1_[0];
@@ -136,7 +141,8 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
         "left" : this.dragButtons_["left"],
         "right" : this.dragButtons_["right"],
         "middle" : this.dragButtons_["middle"],
-        "zoom" : zoom_
+        "zoom" : zoom_,
+        "touches" : touchCount_  
         });
 
     this.dragLastPos_ = this.dragCurrentPos_;
@@ -144,11 +150,14 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
     this.dragAbsMoved_[0] += Math.abs(pos_[0] - this.dragLastPos_[0]);
     this.dragAbsMoved_[1] += Math.abs(pos_[1] - this.dragLastPos_[1]);
 
-    //var el_ = document.getElementById("melown-debug-logo");
+    //var el_ = document.getElementsByClassName("melown-logo")[0];
     //el_.innerHTML = "" + this.firstDragDistance_ + "   " + this.lastDragDistance_ + "   " + zoom_;
     //el_.innerHTML = "" + this.dragAbsMoved_[0] + "    " + this.dragAbsMoved_[1];
-
+    //el_.innerHTML = "1111-" + Melown.debugCoutner;
+    //Melown.debugCoutner++;
 };
+
+//Melown.debugCoutner = 0;
 
 Melown.UIElement.prototype.onDragEnd = function(event_) {
     //this.dragButtons_[event_.getMouseButton()] = false;

@@ -29,18 +29,21 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     var coords_ = map_.getPositionCoords(pos_);
     var delta_ = event_.getDragDelta();
     var zoom_ = event_.getDragZoom(); 
+    var touches_ = event_.getDragTouches(); 
     var azimuthDistance_ = this.getAzimuthAndDistance(delta_[0], delta_[1]);
     
     var modifierKey_ = (this.browser_.controlMode_.altKey_
                || this.browser_.controlMode_.shiftKey_
                || this.browser_.controlMode_.ctrlKey_);
 
-    if (zoom_ != 0) {
-        var factor_ = 1.0 + (zoom_ > 1.0 ? -1 : 1)*0.05;
-        
+
+    if (touches_ == 2 && /*event_.getDragButton("middle")*/ zoom_ != 0 && this.config_.zoomAllowed_) {
         if (map_.getPositionViewMode(pos_) != "obj") {
             return;
         }
+
+        var factor_ = 1.0 + (zoom_ > 1.0 ? -1 : 1)*0.01;
+        //var factor_ = 1.0 + (delta_[1] > 1.0 ? -1 : 1)*0.025;
         
         this.viewExtentDeltas_.push(factor_);
         this.reduceFloatingHeight(0.8);
@@ -66,10 +69,10 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
             this.coordsDeltas_.push(forward_);
             this.reduceFloatingHeight(0.9);
         }
-    } else if ((event_.getDragButton("right") || event_.getDragButton("middle") || modifierKey_) 
+    } else if (((touches_ <= 1 && event_.getDragButton("right")) || event_.getDragButton("middle") || modifierKey_) 
                && this.config_.rotationAllowed_) { //rotate
                    
-        var sensitivity_ = 0.4;
+        var sensitivity_ = 0.3;
         this.orientationDeltas_.push([-delta_[0] * sensitivity_,
                                       -delta_[1] * sensitivity_, 0]);
     }

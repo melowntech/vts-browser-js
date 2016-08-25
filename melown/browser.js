@@ -12,6 +12,9 @@ Melown.Browser = function(element_, config_) {
         this.ui_.setControlDisplayState("fallback", true);
         return;
     }
+    
+    this.updatePosInUrl_ = false;
+    this.lastUrlUpdateTime_ = false;
 
     this.autopilot_ = new Melown.Autopilot(this);
     this.rois_ = new Melown.Rois(this);
@@ -106,9 +109,7 @@ Melown.Browser.prototype.getLinkWithCurrentPos = function() {
 
 Melown.Browser.prototype.onMapPositionChanged = function() {
     if (this.config_.positionInUrl_) {
-        if (window.history.replaceState) {
-            window.history.replaceState({}, null, this.getLinkWithCurrentPos());
-        }        
+        this.updatePosInUrl_ = true;
     }
 };
 
@@ -125,6 +126,17 @@ Melown.Browser.prototype.onTick = function() {
     this.autopilot_.tick();
     this.ui_.tick(this.dirty_);
     this.dirty_ = false;
+    
+    if (this.updatePosInUrl_) {
+        var timer_ = performance.now(); 
+        if ((timer_ - this.lastUrlUpdateTime_) > 1000) {
+            if (window.history.replaceState) {
+                window.history.replaceState({}, null, this.getLinkWithCurrentPos());
+            }        
+            this.updatePosInUrl_ = false;
+            this.lastUrlUpdateTime_ = timer_;
+        }
+    }
 };
 
 

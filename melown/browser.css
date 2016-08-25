@@ -175,6 +175,7 @@
 }
 
 .melown-zoom-plus img {
+    display: block;
     border-radius: 2px;
     background-color: #fff;
 }
@@ -191,6 +192,7 @@
 }
 
 .melown-zoom-minus img {
+    display: block;
     border-radius: 2px;
     background-color: #fff;
 }
@@ -236,6 +238,7 @@
 }
 
 .melown-link-button img {
+    display: block;
     border-radius: 2px;
     background-color: #fff;
 }
