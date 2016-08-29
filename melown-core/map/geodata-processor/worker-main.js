@@ -161,6 +161,10 @@ var processGroup = function(group_, lod_) {
         processFeature("polygon", polygons_[i], lod_, i, "polygon", groupId_);
     }
 
+    if (groupOptimize_) {
+        optimizeGroupMessages();
+    }
+
     postMessage({"command":"endGroup"});
 };
 
@@ -192,6 +196,153 @@ var processGeodata = function(data_, lod_) {
     //console.log("processGeodata-ready");
 };
 
+var optimizeGroupMessages = function() {
+    //loop messages
+    var index2_ = 0;
+    var messages_ = messageBuffer_;
+    var messages2_ = messageBuffer2_;
+
+    for (var i = 0, li = messageBufferIndex_; i < li; i++) {
+        var message_ = messages_[i];
+        var job_ = message_.job_;
+        var type_ = job_["type"];
+        var signature_ = message_.signature_;
+        
+        if (!message_["hitable"] && !message_.reduced_ &&
+            !(type_ == "icon" || type_ == "label")) {
+            
+            switch(type_) {
+                case "flat-line":
+                    var vbufferSize_ = job_["vertexBuffer"].length;
+
+                    for (var j = i + 1; j < li; j++) {
+                        var message2_ = messages_[j];
+                        
+                        if (message2_.signature_ == signature_) {
+                            message2_.reduced_ = true;
+                            vbufferSize_ += message2_.job_["vertexBuffer"].length;                             
+                        }
+                    }
+
+                    var vbuffer_ = new Float32Array(vbufferSize_);
+                    var index_ = 0;
+
+                    for (var j = i; j < li; j++) {
+                        var message2_ = messages_[j];
+                        var job2_ = message2_.job_;
+                        
+                        if (message2_.signature_ == signature_) {
+                            var buff_ = job2_["vertexBuffer"];
+                            job2_["vertexBuffer"] = null;
+                            for (var k = 0, lk = buff_.length; k < lk; k++) {
+                                vbuffer_[index_+k] = buff_[k];
+                            }
+                            index_+= lk;        
+                        }
+                    }
+
+                    job_["vertexBuffer"] = vbuffer_;                             
+                    message_.arrays_ = [vbuffer_.buffer];                             
+                    break;
+                    
+                case "pixel-line":
+                case "line-label":
+                    var vbufferSize_ = job_["vertexBuffer"].length;
+
+                    for (var j = i + 1; j < li; j++) {
+                        var message2_ = messages_[j];
+                        
+                        if (message2_.signature_ == signature_) {
+                            message2_.reduced_ = true;
+                            vbufferSize_ += message2_.job_["vertexBuffer"].length;                             
+                        }
+                    }
+
+                    var vbuffer_ = new Float32Array(vbufferSize_);
+                    var nbuffer_ = new Float32Array(vbufferSize_);
+                    var index_ = 0;
+
+                    for (var j = i; j < li; j++) {
+                        var message2_ = messages_[j];
+                        var job2_ = message2_.job_;
+                        
+                        if (message2_.signature_ == signature_) {
+                            var buff_ = job2_["vertexBuffer"];
+                            job2_["vertexBuffer"] = null;
+                            
+                            if (type_ == "line-label") {
+                                var buff2_ = job2_["texcoordsBuffer"];
+                                job2_["texcoordsBuffer"] = null;
+                            } else {
+                                var buff2_ = job2_["normalBuffer"];
+                                job2_["normalBuffer"] = null;
+                            }
+                            
+                            for (var k = 0, lk = buff_.length; k < lk; k++) {
+                                vbuffer_[index_+k] = buff_[k];
+                                nbuffer_[index_+k] = buff2_[k];
+                            }
+                            index_+= lk;        
+                        }
+                    }
+
+                    job_["vertexBuffer"] = vbuffer_;                             
+
+                    if (type_ == "line-label") {
+                        job_["texcoordsBuffer"] = nbuffer_;
+                    } else {
+                        job_["normalBuffer"] = nbuffer_;
+                    }
+
+                    message_.arrays_ = [vbuffer_.buffer, nbuffer_.buffer];                             
+                    break;
+            }
+
+            //messages2_[index2_] = message_;
+            index2_++;
+            
+            postMessage(message_.job_, message_.arrays_);
+            
+        } else if (!message_.reduced_) {
+
+            postMessage(message_.job_, message_.arrays_);
+
+            //messages2_[index2_] = message_;
+            index2_++;
+        }
+    }
+
+    //for (var i = 0, li = index2_; i < li; i++) {
+        //var message_ = messages2_[i];
+        //postMessage(message_.job_, message_.arrays_);
+    //}
+
+    //var reduced_ = messageBufferIndex_ - index2_;  
+    //console.log("total: " + messageBufferIndex_ + "    reduced: " + reduced_);
+
+    messageBufferIndex_ = 0;
+}; 
+
+var postGroupMessage = function(message_, arrays_, signature_) {
+    if (groupOptimize_) {
+        if (messageBufferIndex_ >= messageBufferSize_) { //resize buffer
+            var oldBuffer_ = messageBuffer_; 
+            messageBufferSize_ += 65536;
+            messageBuffer_ = new Array(messageBufferSize_);
+            messageBuffer2_ = new Array(messageBufferSize_);
+            
+            for (var i = 0, li = messageBufferIndex_; i < li; i++) {
+                messageBuffer_[i] = oldBuffer_[i];
+            }
+        }
+        
+        messageBuffer_[messageBufferIndex_] = { job_ : message_, arrays_: arrays_, signature_ : signature_ };
+        messageBufferIndex_++;
+    } else {
+        postMessage(message_, arrays_);
+    }
+};
+
 self.onmessage = function (e) {
     var message_ = e.data;
     var command_ = message_["command"];
@@ -218,6 +369,11 @@ self.onmessage = function (e) {
             tileLod_ = message_["lod"] || 0;
             data_ = JSON.parse(data_);            
             processGeodata(data_, tileLod_);
+            
+            if (groupOptimize_) {
+                optimizeGroupMessages();
+            }
+            
             postMessage("allProcessed");
             postMessage("ready");
             break;

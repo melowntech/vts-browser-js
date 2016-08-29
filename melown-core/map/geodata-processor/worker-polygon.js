@@ -101,7 +101,7 @@ var processPolygonPass = function(polygon_, lod_, style_, zIndex_, eventInfo_) {
                         "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                         "lod":(autoLod_ ? null : tileLod_) };
 
-    postMessage(messageData_);
+    postGroupMessage(messageData_);
 };
 
 var createEmptyFeatureFromPolygon = function(polygon_) {

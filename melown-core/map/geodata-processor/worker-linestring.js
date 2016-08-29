@@ -527,11 +527,18 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
                 messageData_["background"] = lineStyleBackground_;
             }
         }
+
+        var signature_ = JSON.stringify({
+            type_: messageData_["type"],
+            color_ : lineColor_,
+            zIndex_ : zIndex_,
+            zOffset_ : zbufferOffset_
+        });
         
         if (normalBuffer_) {
-            postMessage(messageData_, [vertexBuffer_.buffer, normalBuffer_.buffer]);
+            postGroupMessage(messageData_, [vertexBuffer_.buffer, normalBuffer_.buffer], signature_);
         } else {
-            postMessage(messageData_, [vertexBuffer_.buffer]);
+            postGroupMessage(messageData_, [vertexBuffer_.buffer], signature_);
         }
     }
 
@@ -584,12 +591,19 @@ var processLineLabel = function(lineLabelPoints_, lineLabelPoints2_, lineString_
     var index_ = addStreetTextOnPath(lineLabelPoints_, labelText_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_, index_);
     index_ = addStreetTextOnPath(lineLabelPoints2_, labelText_, labelSize_, fonts_["default"], labelOffset_, vertexBuffer_, texcoordsBuffer_, index_);
 
-    postMessage({"command":"addRenderJob", "type": "line-label", "vertexBuffer": vertexBuffer_,
-                  "texcoordsBuffer": texcoordsBuffer_, "color":labelColor_, "z-index":zIndex_, "center": center_,
-                  "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                  "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                  "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                  "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer, texcoordsBuffer_.buffer]);
+    var signature_ = JSON.stringify({
+        type_: "line-label",
+        color_ : labelColor_,
+        zIndex_ : zIndex_,
+        zOffset_ : zbufferOffset_
+    });
+
+    postGroupMessage({"command":"addRenderJob", "type": "line-label", "vertexBuffer": vertexBuffer_,
+                      "texcoordsBuffer": texcoordsBuffer_, "color":labelColor_, "z-index":zIndex_, "center": center_,
+                      "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
+                      "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
+                      "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
+                      "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer, texcoordsBuffer_.buffer], signature_);
 };
 
 

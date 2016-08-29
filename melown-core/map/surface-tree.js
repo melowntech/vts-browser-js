@@ -407,44 +407,30 @@ Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, n
         }
         
         //node_.pixelSize_ = 0.000001;
-        
         //return false;
     }
 
-    if (id_[0] == 4 && id_[1] == 0 && id_[2] == 0) {
-        node_ = node_;
-    }
-
+    //if (id_[0] == 4 && id_[1] == 0 && id_[2] == 0) {
+        //node_ = node_;
+    //}
 
     if (!skipGeoTest_ && this.geocent_ /*&& id_[0] < 9*/) {
-
-        // if (id_[0] > 0 && id_[0] < 12) {
-    
-        //if (this.map_.config_.mapGeocentCulling_) {
-
-            if (node_) {
-                if (!node_.diskNormal_) {
-                    node_ = node_;
-                }
+        if (node_) {
+            if (true) {  //version with perspektive
+                var p2_ = node_.diskPos_;
+                var p1_ = this.map_.cameraPosition_;
+                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
+                Melown.vec3.normalize(camVec_);
                 
-                if (true) {  //version with perspektive
-                    var p2_ = node_.diskPos_;
-                    var p1_ = this.map_.cameraPosition_;
-                    var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                    Melown.vec3.normalize(camVec_);
-                    
-                    var a = Melown.vec3.dot(camVec_, node_.diskNormal_);
-                } else {
-                    var a = Melown.vec3.dot(this.map_.cameraVector_, node_.diskNormal_);
-                }
-                
-                if (a > node_.diskAngle_) {
-                    return false;
-                }
+                var a = Melown.vec3.dot(camVec_, node_.diskNormal_);
+            } else {
+                var a = Melown.vec3.dot(this.map_.cameraVector_, node_.diskNormal_);
             }
-           
-        //} 
-
+            
+            if (a > node_.diskAngle_) {
+                return false;
+            }
+        }
     }
     
     return this.camera_.bboxVisible(bbox_, cameraPos_);

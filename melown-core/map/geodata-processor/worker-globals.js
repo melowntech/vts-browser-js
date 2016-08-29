@@ -18,7 +18,12 @@ var tileY_ = 0;
 var tileLod_ = 0;
 var fonts_ = {};
 var hitState_ = 0;
+var groupOptimize_ = true;
 var groupOrigin_ = [0,0,0];
+var messageBuffer_ = new Array(65536);
+var messageBuffer2_ = new Array(65536);
+var messageBufferIndex_ = 0;
+var messageBufferSize_ = messageBuffer_.length;
 var autoLod_ = false;
 
 var clamp = function(value_, min_, max_) {

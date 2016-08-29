@@ -19,7 +19,7 @@ Melown.Core.prototype.initConfig = function() {
         mapAllowLowres_ : true,
         mapAllowSmartSwitching_ : true,
         mapDisableCulling_ : false,
-        mapPreciseCulling_ : false,
+        mapPreciseCulling_ : true,
         mapHeightLodBlend_ : true,
         mapHeightNodeBlend_ : true,
         mapBasicTileSequence_ : false,

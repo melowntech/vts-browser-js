@@ -66,7 +66,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
 
             case "endGroup":
                 if (this.currentGpuGroup_) {
-                    this.currentGpuGroup_.optimize();
+                    //this.currentGpuGroup_.optimize();
                     this.size += this.currentGpuGroup_.size();
                 } else {
                     message_ = message_;

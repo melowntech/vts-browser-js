@@ -236,42 +236,42 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
 
     if (point_ == true) {
         if (pointFlat_ == true) {
-            postMessage({"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer_,
-                         "color":pointColor_, "z-index":zIndex_, "visibility": visibility_, "center": center_,
-                         "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                         "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                         "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                         "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer]);
+            postGroupMessage({"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer_,
+                              "color":pointColor_, "z-index":zIndex_, "visibility": visibility_, "center": center_,
+                              "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
+                              "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
+                              "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
+                              "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer]);
         } else {
-            postMessage({"command":"addRenderJob", "type": "pixel-line", "vertexBuffer": vertexBuffer_,
-                         "normalBuffer": normalBuffer_, "color":pointColor_, "z-index":zIndex_,
-                         "visibility": visibility_, "center": center_,
-                         "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                         "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                         "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                         "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer, normalBuffer_.buffer]);
+            postGroupMessage({"command":"addRenderJob", "type": "pixel-line", "vertexBuffer": vertexBuffer_,
+                              "normalBuffer": normalBuffer_, "color":pointColor_, "z-index":zIndex_,
+                              "visibility": visibility_, "center": center_,
+                              "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
+                              "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
+                              "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
+                              "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer, normalBuffer_.buffer]);
         }
     }
 
     if (icon_ == true && iconData_.vertexBuffer_.length > 0) {
-        postMessage({"command":"addRenderJob", "type": "icon", "vertexBuffer": iconData_.vertexBuffer_,
-                     "originBuffer": iconData_.originBuffer_, "texcoordsBuffer": iconData_.texcoordsBuffer_,
-                     "icon":stylesheetBitmaps_[iconData_.source_[0]], "color":iconData_.color_, "z-index":zIndex_,
-                     "visibility": visibility_, "center": center_, "stick": iconData_.stick_,
-                     "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                     "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                     "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                     "lod":(autoLod_ ? null : tileLod_) }, [iconData_.vertexBuffer_.buffer, iconData_.originBuffer_.buffer, iconData_.texcoordsBuffer_.buffer]);
+        postGroupMessage({"command":"addRenderJob", "type": "icon", "vertexBuffer": iconData_.vertexBuffer_,
+                          "originBuffer": iconData_.originBuffer_, "texcoordsBuffer": iconData_.texcoordsBuffer_,
+                          "icon":stylesheetBitmaps_[iconData_.source_[0]], "color":iconData_.color_, "z-index":zIndex_,
+                          "visibility": visibility_, "center": center_, "stick": iconData_.stick_,
+                          "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
+                          "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
+                          "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
+                          "lod":(autoLod_ ? null : tileLod_) }, [iconData_.vertexBuffer_.buffer, iconData_.originBuffer_.buffer, iconData_.texcoordsBuffer_.buffer]);
     }
 
     if (label_ == true && labelData_.vertexBuffer_.length > 0) {
-        postMessage({"command":"addRenderJob", "type": "label", "vertexBuffer": labelData_.vertexBuffer_,
-                     "originBuffer": labelData_.originBuffer_, "texcoordsBuffer": labelData_.texcoordsBuffer_,
-                     "color":labelData_.color_, "z-index":zIndex_, "visibility": visibility_, "center": center_, "stick": labelData_.stick_,
-                     "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                     "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                     "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                     "lod":(autoLod_ ? null : tileLod_) }, [labelData_.vertexBuffer_.buffer, labelData_.originBuffer_.buffer, labelData_.texcoordsBuffer_.buffer]);
+        postGroupMessage({"command":"addRenderJob", "type": "label", "vertexBuffer": labelData_.vertexBuffer_,
+                          "originBuffer": labelData_.originBuffer_, "texcoordsBuffer": labelData_.texcoordsBuffer_,
+                          "color":labelData_.color_, "z-index":zIndex_, "visibility": visibility_, "center": center_, "stick": labelData_.stick_,
+                          "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
+                          "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
+                          "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
+                          "lod":(autoLod_ ? null : tileLod_) }, [labelData_.vertexBuffer_.buffer, labelData_.originBuffer_.buffer, labelData_.texcoordsBuffer_.buffer]);
     }
 
 };

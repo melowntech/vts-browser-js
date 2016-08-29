@@ -16,7 +16,7 @@ Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, renderer_) {
         this.bbox_ = new Melown.BBox(bbox_[0][0], bbox_[0][1], bbox_[0][2], bbox_[1][0], bbox_[1][1], bbox_[1][2]);
     }
     
-    this.optimize_ = true;
+    this.optimize_ = false;
 
     this.size_ = 0;
     this.polygons_ = 0;
