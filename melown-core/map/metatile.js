@@ -94,7 +94,14 @@ Melown.MapMetatile.prototype.getNode = function(id_) {
         return null;
     }
     
-    return this.nodes_[this.sizex_ * y + x];
+    var node_ = this.nodes_[this.sizex_ * y + x];
+    
+    if (!node_.ready_) {
+        node_.generateCullingHelpers();
+        node_.ready_ = true;
+    }
+    
+    return node_;
 };
 
 Melown.MapMetatile.prototype.scheduleLoad = function() {

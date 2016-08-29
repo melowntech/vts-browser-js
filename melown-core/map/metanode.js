@@ -13,6 +13,7 @@ Melown.MapMetanode = function(metatile_, id_, stream_) {
     this.id_ = id_;
     this.credits_ = [];
     this.alien_ = false;
+    this.ready_ = false;
     //this.metadata_ = null;
     //this.nodes_ = [];
     //this.children_ = [null, null, null, null];
@@ -169,7 +170,9 @@ struct Metanode {
 
     var nodeSize2_ = stream_.index_ - lastIndex_;
 
-    this.generateCullingHelpers();    
+    //if (this.map_.config_.mapSmartNodeParsing_) {
+        this.generateCullingHelpers();
+    //}    
 };
 
 Melown.MapMetanode.prototype.clone = function() {
@@ -181,6 +184,8 @@ Melown.MapMetanode.prototype.clone = function() {
     node_.internalTextureCount_ = this.internalTextureCount_;
     node_.pixelSize_ = this.pixelSize_;
     node_.displaySize_ = this.displaySize_;
+    node_.ready_ = this.ready_;
+    node_.stream_ = this.stream_;
 
 //    if (this.map_.config_.mapGeocentCulling_) {
         node_.diskPos_ = this.diskPos_;
@@ -193,6 +198,8 @@ Melown.MapMetanode.prototype.clone = function() {
 };
 
 Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
+    this.ready_ = true;
+
     if (this.map_.config_.mapPreciseCulling_) { //use division node srs
         if (virtual_) {
             return; //result is same for each tile id

@@ -184,11 +184,12 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
         return [false, preventRedener_, preventLoad_];
     }
 
+    /*
     if (tile_.id_[0] == Melown.debugId_[0] &&
         tile_.id_[1] == Melown.debugId_[1] &&
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
-    }
+    }*/
 
     var node_ = tile_.metanode_;
     var cameraPos_ = this.map_.cameraPosition_;
@@ -405,16 +406,9 @@ Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, n
         if (!node_.hasGeometry()) {
             return false;
         }
-        
-        //node_.pixelSize_ = 0.000001;
-        //return false;
     }
 
-    //if (id_[0] == 4 && id_[1] == 0 && id_[2] == 0) {
-        //node_ = node_;
-    //}
-
-    if (!skipGeoTest_ && this.geocent_ /*&& id_[0] < 9*/) {
+    if (!skipGeoTest_ && this.geocent_) {
         if (node_) {
             if (true) {  //version with perspektive
                 var p2_ = node_.diskPos_;

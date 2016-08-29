@@ -23,6 +23,7 @@ Melown.Core.prototype.initConfig = function() {
         mapHeightLodBlend_ : true,
         mapHeightNodeBlend_ : true,
         mapBasicTileSequence_ : false,
+        mapSmartNodeParsing_ : true,
         mapFog_ : false,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false,

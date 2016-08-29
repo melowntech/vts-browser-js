@@ -582,6 +582,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapHeightLodBlend":             this.config_.mapHeightLodBlend_ = Melown.validateBool(value_, true); break;
         case "mapHeightNodeBlend":            this.config_.mapHeightNodeBlend_ = Melown.validateBool(value_, true); break;
         case "mapBasicTileSequence":          this.config_.mapBasicTileSequence_ = Melown.validateBool(value_, true); break;
+        case "mapSmartNodeParsing":           this.config_.mapSmartNodeParsing_ = Melown.validateBool(value_, true); break;
         case "mario":                         this.config_.mario_ = Melown.validateBool(value_, true); break;
     }
 };
@@ -610,6 +611,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapHeightLodBlend":             return this.config_.mapHeightLodBlend_;
         case "mapHeightNodeBlend":            return this.config_.mapHeightNodeBlend_;
         case "mapBasicTileSequence":          return this.config_.mapBasicTileSequence_;
+        case "mapSmartNodeParsing":           return this.config_.mapSmartNodeParsing_;
         case "mario":                         return this.config_.mario_;
     }
 };
