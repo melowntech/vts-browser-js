@@ -16,8 +16,6 @@ Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, renderer_) {
         this.bbox_ = new Melown.BBox(bbox_[0][0], bbox_[0][1], bbox_[0][2], bbox_[1][0], bbox_[1][1], bbox_[1][2]);
     }
     
-    this.optimize_ = false;
-
     this.size_ = 0;
     this.polygons_ = 0;
 };
@@ -87,29 +85,14 @@ Melown.GpuGroup.prototype.addLineJob = function(data_) {
     job_.reduced_ = false;
     job_.ready_ = true;
 
-    if (this.optimize_ && !job_.hitable_) {
-        job_.ready_ = false;
+    //create vertex buffer
+    job_.vertexPositionBuffer_ = gl_.createBuffer();
+    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
 
-        job_.renderSignature_ = JSON.stringify({
-            type_: job_.type_,
-            color_ : color_,
-            zIndex_ : job_.zIndex_,
-            //lineWidth_ : job_.lineWidth_,
-            zOffset_ : job_.zbufferOffset_
-        });
-
-        job_.vbuffer_ = vertices_;
-        
-    } else {
-        //create vertex buffer
-        job_.vertexPositionBuffer_ = gl_.createBuffer();
-        gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-    
-        //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-        gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
-        job_.vertexPositionBuffer_.itemSize = 3;
-        job_.vertexPositionBuffer_.numItems = vertices_.length / 3;
-    }
+    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
+    gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
+    job_.vertexPositionBuffer_.itemSize = 3;
+    job_.vertexPositionBuffer_.numItems = vertices_.length / 3;
 
     this.jobs_.push(job_);
 
@@ -162,39 +145,23 @@ Melown.GpuGroup.prototype.addExtentedLineJob = function(data_) {
         case "pixel-tline":  job_.program_ = (background_[3] != 0) ? this.renderer_.progTPBLine_ : this.renderer_.progTPLine_; break;
     }
 
-    if (this.optimize_ && !job_.hitable_) {
-        job_.ready_ = false;
+    //create vertex buffer
+    job_.vertexPositionBuffer_ = gl_.createBuffer();
+    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
 
-        job_.renderSignature_ = JSON.stringify({
-            type_: job_.type_,
-            color_ : color_,
-            zIndex_ : job_.zIndex_,
-            lineWidth_ : job_.lineWidth_,
-            zOffset_ : job_.zbufferOffset_
-        });
+    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
+    gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
+    job_.vertexPositionBuffer_.itemSize = 4;
+    job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
 
-        job_.vbuffer_ = vertices_;
-        job_.nbuffer_ = normals_;
-        
-    } else {
-        //create vertex buffer
-        job_.vertexPositionBuffer_ = gl_.createBuffer();
-        gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-    
-        //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-        gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
-        job_.vertexPositionBuffer_.itemSize = 4;
-        job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
-    
-        //create normal buffer
-        job_.vertexNormalBuffer_ = gl_.createBuffer();
-        gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexNormalBuffer_);
-    
-        //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(normals_), gl_.STATIC_DRAW);
-        gl_.bufferData(gl_.ARRAY_BUFFER, normals_, gl_.STATIC_DRAW);
-        job_.vertexNormalBuffer_.itemSize = 4;
-        job_.vertexNormalBuffer_.numItems = normals_.length / 4;
-    }
+    //create normal buffer
+    job_.vertexNormalBuffer_ = gl_.createBuffer();
+    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexNormalBuffer_);
+
+    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(normals_), gl_.STATIC_DRAW);
+    gl_.bufferData(gl_.ARRAY_BUFFER, normals_, gl_.STATIC_DRAW);
+    job_.vertexNormalBuffer_.itemSize = 4;
+    job_.vertexNormalBuffer_.numItems = normals_.length / 4;
 
     this.jobs_.push(job_);
 
@@ -228,40 +195,23 @@ Melown.GpuGroup.prototype.addLineLabelJob = function(data_) {
     job_.reduced_ = false;
     job_.ready_ = true;
 
+    //create vertex buffer
+    job_.vertexPositionBuffer_ = gl_.createBuffer();
+    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
 
-    if (this.optimize_ && !job_.hitable_) {
-        job_.ready_ = false;
+    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
+    gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
+    job_.vertexPositionBuffer_.itemSize = 4;
+    job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
 
-        job_.renderSignature_ = JSON.stringify({
-            type_: job_.type_,
-            color_ : color_,
-            zIndex_ : job_.zIndex_,
-            //lineWidth_ : job_.lineWidth_,
-            zOffset_ : job_.zbufferOffset_
-        });
+    //create normal buffer
+    job_.vertexTexcoordBuffer_ = gl_.createBuffer();
+    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
 
-        job_.vbuffer_ = vertices_;
-        job_.nbuffer_ = texcoords_;
-        
-    } else {
-        //create vertex buffer
-        job_.vertexPositionBuffer_ = gl_.createBuffer();
-        gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-    
-        //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-        gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
-        job_.vertexPositionBuffer_.itemSize = 4;
-        job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
-    
-        //create normal buffer
-        job_.vertexTexcoordBuffer_ = gl_.createBuffer();
-        gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
-    
-        //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(texcoords_), gl_.STATIC_DRAW);
-        gl_.bufferData(gl_.ARRAY_BUFFER, texcoords_, gl_.STATIC_DRAW);
-        job_.vertexTexcoordBuffer_.itemSize = 4;
-        job_.vertexTexcoordBuffer_.numItems = texcoords_.length / 4;
-    }
+    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(texcoords_), gl_.STATIC_DRAW);
+    gl_.bufferData(gl_.ARRAY_BUFFER, texcoords_, gl_.STATIC_DRAW);
+    job_.vertexTexcoordBuffer_.itemSize = 4;
+    job_.vertexTexcoordBuffer_.numItems = texcoords_.length / 4;
 
     this.jobs_.push(job_);
 
@@ -353,196 +303,6 @@ Melown.GpuGroup.prototype.addRenderJob = function(data_) {
         case "optimize":    this.optimaze(data_); break;
     }
 };
-
-Melown.GpuGroup.prototype.optimize = function() {
-    if (!this.optimize_) {
-        return;
-    }
-
-    var gl_ = this.gl_;
-    var newJobs_ = [];
-    
-    for (var i = 0, li = this.jobs_.length; i < li; i++) {
-        var job_ = this.jobs_[i];
-        
-        if (!job_.hitable_ && !job_.reduced_ &&
-            !(job_.type_ == "icon" || job_.type_ == "label")) {
-
-            /*
-            //simple but unstable
-            for (var j = i + 1; j < li; j++) {
-                var job2_ = this.jobs_[j];
-                
-                if (job_.renderSignature_ == job2_.renderSignature_) {
-                    job2_.reduced_ = true;
-
-                    switch(job_.type_) {
-                        case "flat-line":
-                            job_.vbuffer_.push.apply(job_.vbuffer_, job2_.vbuffer_);                             
-                            break;
-                            
-                        case "pixel-line":
-                        case "line-label":
-                            job_.vbuffer_.push.apply(job_.vbuffer_, job2_.vbuffer_);                             
-                            job_.nbuffer_.push.apply(job_.nbuffer_, job2_.nbuffer_);                             
-                            break;
-                    }
-                }
-            }
-            */
-
-            
-            switch(job_.type_) {
-                case "flat-line":
-
-                    var vbufferSize_ = job_.vbuffer_.length;
-                    var signature_ = job_.renderSignature_;
-
-                    for (var j = i + 1; j < li; j++) {
-                        var job2_ = this.jobs_[j];
-                        
-                        if (job2_.renderSignature_ == signature_) {
-                            job2_.reduced_ = true;
-                            vbufferSize_ += job2_.vbuffer_.length;                             
-                        }
-                    }
-
-                    var vbuffer_ = new Float32Array(vbufferSize_);
-                    var index_ = 0;
-
-                    for (var j = i; j < li; j++) {
-                        var job2_ = this.jobs_[j];
-                        
-                        if (job2_.renderSignature_ == signature_) {
-                            var buff_ = job2_.vbuffer_;
-                            job2_.vbuffer_ = null;
-                            for (var k = 0, lk = buff_.length; k < lk; k++) {
-                                vbuffer_[index_+k] = buff_[k];
-                            }
-                            index_+= lk;        
-                        }
-                    }
-
-                    job_.vbuffer_ = vbuffer_;                             
-                    break;
-                    
-                case "pixel-line":
-                case "line-label":
-                    var vbufferSize_ = job_.vbuffer_.length;
-                    var signature_ = job_.renderSignature_;
-
-                    for (var j = i + 1; j < li; j++) {
-                        var job2_ = this.jobs_[j];
-                        
-                        if (job2_.renderSignature_ == signature_) {
-                            job2_.reduced_ = true;
-                            vbufferSize_ += job2_.vbuffer_.length;                             
-                        }
-                    }
-
-                    var vbuffer_ = new Float32Array(vbufferSize_);
-                    var nbuffer_ = new Float32Array(vbufferSize_);
-                    var index_ = 0;
-
-                    for (var j = i; j < li; j++) {
-                        var job2_ = this.jobs_[j];
-                        
-                        if (job2_.renderSignature_ == signature_) {
-                            var buff_ = job2_.vbuffer_;
-                            var buff2_ = job2_.nbuffer_;
-                            job2_.vbuffer_ = null;
-                            job2_.nbuffer_ = null;
-                            for (var k = 0, lk = buff_.length; k < lk; k++) {
-                                vbuffer_[index_+k] = buff_[k];
-                                nbuffer_[index_+k] = buff2_[k];
-                            }
-                            index_+= lk;        
-                        }
-                    }
-
-                    job_.vbuffer_ = vbuffer_;                             
-                    job_.nbuffer_ = nbuffer_;                             
-                    break;
-            }
-
-            newJobs_.push(job_);
-            job_.ready_ = true;
-            
-        } else if (!job_.reduced_) {
-            newJobs_.push(job_);
-        }
-    }
-
-    this.reduced_ = this.jobs_.length - newJobs_.length;  
-
-    //console.log("total: " + this.jobs_.length + "    reduced: " + this.reduced_);
-
-    this.jobs_ = newJobs_;
-
-    //build vertex buffers
-    for (var i = 0, li = this.jobs_.length; i < li; i++) {
-        var job_ = this.jobs_[i];
-
-        if (!job_.hitable_ && !(job_.type_ == "icon" || job_.type_ == "label")) {
-
-            switch(job_.type_) {
-                case "flat-line":
-                    //create vertex buffer
-                    job_.vertexPositionBuffer_ = gl_.createBuffer();
-                    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-                
-                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
-                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.vbuffer_, gl_.STATIC_DRAW);
-                    job_.vertexPositionBuffer_.itemSize = 3;
-                    job_.vertexPositionBuffer_.numItems = job_.vbuffer_.length / 3;
-                    break;
-                    
-                case "pixel-line":
-        
-                    //create vertex buffer
-                    job_.vertexPositionBuffer_ = gl_.createBuffer();
-                    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-                
-                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
-                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.vbuffer_, gl_.STATIC_DRAW);
-                    job_.vertexPositionBuffer_.itemSize = 4;
-                    job_.vertexPositionBuffer_.numItems = job_.vbuffer_.length / 4;
-                
-                    //create normal buffer
-                    job_.vertexNormalBuffer_ = gl_.createBuffer();
-                    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexNormalBuffer_);
-                
-                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.nbuffer_), gl_.STATIC_DRAW);
-                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.nbuffer_, gl_.STATIC_DRAW);
-                    job_.vertexNormalBuffer_.itemSize = 4;
-                    job_.vertexNormalBuffer_.numItems = job_.nbuffer_.length / 4;
-
-                case "line-label":
-
-                    //create vertex buffer
-                    job_.vertexPositionBuffer_ = gl_.createBuffer();
-                    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-                
-                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.vbuffer_), gl_.STATIC_DRAW);
-                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.vbuffer_, gl_.STATIC_DRAW);
-                    job_.vertexPositionBuffer_.itemSize = 4;
-                    job_.vertexPositionBuffer_.numItems = job_.vbuffer_.length / 4;
-
-                    //create normal buffer
-                    job_.vertexTexcoordBuffer_ = gl_.createBuffer();
-                    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
-                
-                    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(job_.nbuffer_), gl_.STATIC_DRAW);
-                    gl_.bufferData(gl_.ARRAY_BUFFER, job_.nbuffer_, gl_.STATIC_DRAW);
-                    job_.vertexTexcoordBuffer_.itemSize = 4;
-                    job_.vertexTexcoordBuffer_.numItems = job_.nbuffer_.length / 4;
-                   
-                    break;
-            }
-        }        
-    }
-};
-
 
 Melown.GpuGroup.prototype.draw = function(mv_, mvp_, applyOrigin_) {
     if (this.id_ != null) {
