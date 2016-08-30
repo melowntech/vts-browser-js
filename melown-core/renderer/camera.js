@@ -215,7 +215,7 @@ Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
     return true;
 };
 
-Melown.Camera.prototype.update = function() {
+Melown.Camera.prototype.update = function(offset_) {
     // modelview matrix, this is essentially the inverse of a matrix that
     // brings the camera from the origin to its world position (the inverse
     // is trivial here -- negative angles, reverse order of transformations)
@@ -232,6 +232,9 @@ Melown.Camera.prototype.update = function() {
         this.projection_ = Melown.orthographicMatrix(this.viewHeight_, this.aspect_, this.near_, this.far_);
     } else {
         this.projection_ = Melown.perspectiveMatrix(this.fov_, this.aspect_, this.near_, this.far_);
+        if (offset_) {
+            this.projection_[10] *= 1.0 + offset_;
+        } 
     }
 
     //this.mvp_ = Melown.mat4.create();

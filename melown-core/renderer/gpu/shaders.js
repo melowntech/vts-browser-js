@@ -402,7 +402,9 @@ Melown.tileVertexShader =
     "varying float vFogFactor;\n"+
     "void main() {\n"+
         "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
-        "gl_Position = uProj * camSpacePos; gl_Position.z+=uParams[0];\n"+
+//        "gl_Position = uProj * camSpacePos; gl_Position.z*=1.0+uParams[0]*abs(gl_Position.w/gl_Position.z);\n"+
+//        "gl_Position = uProj * camSpacePos; gl_Position.z*=1.0+uParams[0]*abs(gl_Position.z/gl_Position.w);\n"+
+        "gl_Position = uProj * camSpacePos;\n"+
         "float camDist = length(camSpacePos.xyz);\n"+
         "vFogFactor = exp(uParams[1] * camDist);\n"+
         "vTexCoord = aTexCoord;\n"+
@@ -429,7 +431,9 @@ Melown.tile2VertexShader =
     "varying float vFogFactor;\n"+
     "void main() {\n"+
         "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
-        "gl_Position = uProj * camSpacePos; gl_Position.z+=uParams[0];\n"+
+//        "gl_Position = uProj * camSpacePos; gl_Position.z*=1.0+uParams[0]*abs(gl_Position.w/gl_Position.z);\n"+
+//        "gl_Position = uProj * camSpacePos; gl_Position.z*=1.0+uParams[0]*abs(gl_Position.z/gl_Position.w);\n"+
+        "gl_Position = uProj * camSpacePos;\n"+
         "float camDist = length(camSpacePos.xyz);\n"+
         "vFogFactor = exp(uParams[1] * camDist);\n"+
         "vTexCoord = vec2(uTransform[0] * aTexCoord2[0] + uTransform[2], uTransform[1] * aTexCoord2[1] + uTransform[3]);\n"+

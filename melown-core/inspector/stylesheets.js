@@ -6,8 +6,8 @@ Melown.Inspector.prototype.initStylesheetsPanel = function() {
             + "font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;"
             + "display: none;"
             + "padding:15px;"
-            + "width: 550px;"
-            + "height: 450px;"
+            + "width: 1200px;"
+            + "height: 350px;"
             + "font-size: 14px;"
             + "position: absolute;"
             + "right: 10px;"
@@ -27,7 +27,7 @@ Melown.Inspector.prototype.initStylesheetsPanel = function() {
         + "}"
 
         + "#melown-stylesheets-panel-combo {"
-            + "width: 480px;"
+            + "width: 1130px;"
             + "height: 21px;"
         + "}"
 
@@ -37,7 +37,7 @@ Melown.Inspector.prototype.initStylesheetsPanel = function() {
 
         + "#melown-stylesheets-panel-text {"
             + "width: 100%;"
-            + "height: 420px;"
+            + "height: 320px;"
             + "resize: none;"
             + "white-space: nowrap;"
         + "}"
@@ -95,7 +95,7 @@ Melown.Inspector.prototype.onStylesheetsComboSwitched = function() {
     }
 
     var stylesheet_ = map_.getStylesheet(this.stylesheetsOptionsElement_.value);
-    this.stylesheetsTextElement_.value = stylesheet_ ? JSON.stringify(stylesheet_.data_, null, "  ") : "";
+    this.stylesheetsTextElement_.value = this.niceStyleFormat(stylesheet_);
 };
 
 Melown.Inspector.prototype.onStylesheetsUpdate = function() {
@@ -105,6 +105,73 @@ Melown.Inspector.prototype.onStylesheetsUpdate = function() {
     }
 
     map_.setStylesheetData(this.stylesheetsOptionsElement_.value, JSON.parse(this.stylesheetsTextElement_.value));
+};
+
+Melown.Inspector.prototype.niceStyleFormat = function(data_) {
+    if (!data_) {
+        return "";
+    }
+    
+    data_ = data_.data_;
+
+    //return JSON.stringify(data_, null, "  ");
+    
+    var tmp_ = "";
+    tmp_ += "{\n";
+
+    var elements_ = [];
+
+    if (data_["constants"]) {
+        elements_.push("constants");
+    } 
+
+    if (data_["bitmaps"]) {
+        elements_.push("bitmaps");
+    } 
+
+    if (data_["layers"]) {
+        elements_.push("layers");
+    } 
+    
+    for (var j = 0, lj = elements_.length; j < lj; j++) {
+        var type_ = elements_[j];
+        tmp_ += '  "' + type_ + '": {\n';
+
+        var element_ = data_[type_];
+
+        var buff_ = [];
+        for (var key_ in element_) {
+            buff_.push(key_);
+        }
+
+        for (var i = 0, li = buff_.length; i < li; i++) {
+            if (type_ == "layers") {
+                
+                var element2_ = element_[buff_[i]];
+                
+                var buff2_ = [];
+                for (var key2_ in element2_) {
+                    buff2_.push(key2_);
+                }
+
+                tmp_ += '    "' + buff_[i] + '": {\n';
+
+                for (var k = 0, lk = buff2_.length; k < lk; k++) {
+                    tmp_ += '      "' + buff2_[k] + '": ' + JSON.stringify(element2_[buff2_[k]]) + (k == (lk - 1) ? "" : ",") + "\n";
+                }
+                
+                tmp_ += "    }"  + (i == (li - 1) ? "" : ",\n");
+            } else {
+                tmp_ += '    "' + buff_[i] + '": ' + JSON.stringify(element_[buff_[i]]) + (i == (li - 1) ? "" : ",") + "\n";
+            }
+        }
+        
+        tmp_ += "\n  }" + (j == (lj - 1) ? "" : ",\n");
+    }
+    
+    tmp_ += "\n}";
+    
+    return tmp_;
 };
 
 Melown.Inspector.prototype.buildStylesheetsCombo = function() {
@@ -124,7 +191,7 @@ Melown.Inspector.prototype.buildStylesheetsCombo = function() {
     this.stylesheetsOptionsElement_.innerHTML = html_;
     
     var stylesheet_ = map_.getStylesheet(styles_[0]);
-    this.stylesheetsTextElement_.value = stylesheet_ ? JSON.stringify(stylesheet_.data_, null, "  ") : "";
+    this.stylesheetsTextElement_.value = this.niceStyleFormat(stylesheet_);
 };
 
 

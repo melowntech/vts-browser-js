@@ -105,8 +105,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawFog_ = this.config_.mapFog_;
     this.debugTextSize_ = 2.0;
     this.fogDensity_ = 0;
-    this.zFactor_ = 1;
-    this.zFactor2_ = 0.8;
+    this.zFactor_ = 0;
+    this.zFactor2_ = 0;
     this.zShift_ = 0;
     this.zLastShift_ = 0;
 
@@ -735,11 +735,15 @@ Melown.Map.prototype.drawMap = function() {
         //this.renderer_.gpu_.setState(this.drawTileState_);
 
         this.zFactor_ = this.zFactor2_;
+        
+        this.zFactor_ = 0;
+        this.camera_.update(this.zFactor2_);
         //this.zFactor_ = 0;
         //this.zShift_ = 1000;
         //this.config_.mapTexelSizeFit_ = 1.1 * Math.pow(2,this.config_.mapLowresBackground_);
         this.loader_.setChannel(1); //1 = lowres channel
         this.draw(true);
+        this.camera_.update(0);
 
         //if (this.drawChannel_ != 1) {
             //this.renderer_.gpu_.clear(false, true);
