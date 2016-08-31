@@ -34,7 +34,8 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
 
     this.heightMap_ = null;
     this.drawCommands_ = [[], [], []];
-    this.credits_ = [];
+    this.imageryCredits_ = {};
+    this.mapdataCredits_ = {};
     
     this.resources_ = this.map_.resourcesTree_.findNode(id_, true);   // link to resource tree
     this.metaresources_ = this.map_.resourcesTree_.findAgregatedNode(id_, 5, true); //link to meta resource tree
@@ -105,7 +106,8 @@ Melown.MapSurfaceTile.prototype.kill = function() {
         
     this.heightMap_ = null;
     this.drawCommands_ = [[], [], []];
-    this.credits_ = {};
+    this.imageryCredits_ = {};
+    this.mapdataCredits_ = {};
 
     this.verifyChildren_ = false;
     this.children_ = [null, null, null, null];
@@ -139,7 +141,8 @@ Melown.MapSurfaceTile.prototype.viewSwitched = function() {
     if (this.drawCommands_[0].length > 0) {  // check only visible chanel
         this.lastRenderState_ = {
             drawCommands_ : this.drawCommands_,
-            credits_ : this.credits_
+            imageryCredits_ : this.imageryCredits_,
+            mapdataCredits_ : this.mapdataCredits_
         };
     } else {
         this.lastRenderState_ = null;
@@ -181,7 +184,8 @@ Melown.MapSurfaceTile.prototype.viewSwitched = function() {
     this.virtualSurfaces_ = [];
     
     this.drawCommands_ = [[], [], []];
-    this.credits_ = {};
+    this.imageryCredits_ = {};
+    this.mapdataCredits_ = {};
 };
 
 Melown.MapSurfaceTile.prototype.restoreLastState = function() {

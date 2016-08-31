@@ -415,12 +415,12 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
     switch(job_.type_) {
         case "flat-line":
 
-            gpu_.setState(Melown.StencilLineState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.StencilLineState_);
             var prog_ = renderer_.progLine_;
 
             gpu_.useProgram(prog_, "aPosition", null, null, null);
             prog_.setVec4("uColor", color_);
-            prog_.setMat4("uMVP", mvp_);
+            prog_.setMat4("uMVP", mvp_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
 
             var vertexPositionAttribute_ = prog_.getAttribute("aPosition");
 
@@ -437,7 +437,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
         case "pixel-line":
         case "pixel-tline":
 
-            gpu_.setState(Melown.StencilLineState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.StencilLineState_);
             var prog_ = job_.program_;
             var texture_ = null;
             var textureParams_ = [0,0,0,0];
@@ -476,7 +476,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
             gpu_.useProgram(prog_, "aPosition", null, null, null);
             prog_.setVec4("uColor", color_);
             prog_.setVec2("uScale", screenPixelSize_);
-            prog_.setMat4("uMVP", mvp_);
+            prog_.setMat4("uMVP", mvp_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
 
             if (job_.type_ != "pixel-line") {
                 if (job_.background_ != null) {
@@ -509,14 +509,14 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
             //var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
             //var forward_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0];
 
-            gpu_.setState(Melown.LineLabelState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.LineLabelState_);
             var prog_ = renderer_.progText_;
 
             gpu_.bindTexture(texture_);
 
             gpu_.useProgram(prog_, "aPosition", "aTexCoord", null, null);
             prog_.setSampler("uSampler", 0);
-            prog_.setMat4("uMVP", mvp_);
+            prog_.setMat4("uMVP", mvp_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
             prog_.setVec4("uVec", renderer_.labelVector_);
             prog_.setVec4("uColor", color_);
             //prog_.setVec2("uScale", screenPixelSize_);
@@ -551,7 +551,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
                 //job_.visibility_
             //}
 
-            gpu_.setState(Melown.LineLabelState_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
+            gpu_.setState(Melown.LineLabelState_);
             
             var stickShift_ = 0;
 
@@ -575,7 +575,7 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
 
             gpu_.useProgram(prog_, "aPosition", "aTexCoord", null, "aOrigin");
             prog_.setSampler("uSampler", 0);
-            prog_.setMat4("uMVP", mvp_);
+            prog_.setMat4("uMVP", mvp_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
             prog_.setVec4("uScale", [screenPixelSize_[0], screenPixelSize_[1], (job_.type_ == "label" ? 1.0 : 1.0 / texture_.width_), stickShift_*2]);
             prog_.setVec4("uColor", color_);
             //prog_.setVec2("uScale", screenPixelSize_);

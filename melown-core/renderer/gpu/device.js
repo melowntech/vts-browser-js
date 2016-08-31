@@ -175,6 +175,7 @@ Melown.GpuDevice.prototype.createState = function(state_) {
 };
 
 Melown.GpuDevice.prototype.setState = function(state_, directOffset_) {
+    /*
     if (this.currentState_ == state_) {
 
         if (directOffset_ != null) {
@@ -187,7 +188,8 @@ Melown.GpuDevice.prototype.setState = function(state_, directOffset_) {
         return;
     }
 
-    this.gl_.polygonOffset(-1.0, 0);
+    //this.gl_.polygonOffset(-1.0, 0);
+    */
 
     var gl_ = this.gl_;
     var currentState_ = this.currentState_;
@@ -210,7 +212,7 @@ Melown.GpuDevice.prototype.setState = function(state_, directOffset_) {
             gl_.disable(gl_.STENCIL_TEST);
         }
     }
-
+/*
     if (currentState_.zoffset_ != directOffset_) {
         if (directOffset_ != 0) {
             gl_.polygonOffset(-1.0, directOffset_);
@@ -220,7 +222,7 @@ Melown.GpuDevice.prototype.setState = function(state_, directOffset_) {
         }
         this.currentOffset_ = directOffset_;
     }
-
+*/
     if (currentState_.zwrite_ != state_.zwrite_) {
         if (state_.zwrite_ == true) {
             gl_.depthMask(true);

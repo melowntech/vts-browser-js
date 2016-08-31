@@ -16,7 +16,9 @@ Melown.Camera = function(parent_, fov_, near_, far_) {
     this.modelview_ = Melown.mat4.create();
     this.rotationview_ = Melown.mat4.create();
     this.projection_ = Melown.mat4.create();
+    this.projection2_ = Melown.mat4.create();
     this.mvp_ = Melown.mat4.create();
+    this.mvp2_ = Melown.mat4.create();
     this.frustumPlanes_ = [ [0,0,0,0], [0,0,0,0], [0,0,0,0],
                             [0,0,0,0], [0,0,0,0], [0,0,0,0] ];
 
@@ -215,7 +217,7 @@ Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
     return true;
 };
 
-Melown.Camera.prototype.update = function(offset_) {
+Melown.Camera.prototype.update = function(zoffset_) {
     // modelview matrix, this is essentially the inverse of a matrix that
     // brings the camera from the origin to its world position (the inverse
     // is trivial here -- negative angles, reverse order of transformations)
@@ -232,13 +234,22 @@ Melown.Camera.prototype.update = function(offset_) {
         this.projection_ = Melown.orthographicMatrix(this.viewHeight_, this.aspect_, this.near_, this.far_);
     } else {
         this.projection_ = Melown.perspectiveMatrix(this.fov_, this.aspect_, this.near_, this.far_);
-        if (offset_) {
-            this.projection_[10] *= 1.0 + offset_;
-        } 
     }
+
+    Melown.mat4.set(this.projection_, this.projection2_); //without zoffset
+
+    if (zoffset_) {
+        zoffset_ = 1.0 + zoffset_;
+        var m_ = this.projection_; 
+        m_[2] *= zoffset_;
+        m_[6] *= zoffset_;
+        m_[10] *= zoffset_;
+        m_[15] *= zoffset_;
+    } 
 
     //this.mvp_ = Melown.mat4.create();
     Melown.mat4.multiply(this.projection_, this.modelview_, this.mvp_);
+    Melown.mat4.multiply(this.projection2_, this.modelview_, this.mvp2_); //without zoffset
 
     // prepare frustum planes (in normalized device coordinates)
     this.frustumPlanes_[0] = [ 0, 0, 1, 1 ]; // far
@@ -252,7 +263,7 @@ Melown.Camera.prototype.update = function(offset_) {
     // planes in homogeneous coordinates transform as p' = M^{-T} * p, where
     // M^{-T} is the transpose of inverse of M
     var mvpt_ = Melown.mat4.create();
-    Melown.mat4.transpose(this.mvp_, mvpt_);
+    Melown.mat4.transpose(this.mvp2_, mvpt_); //without zoffset
     for (var i = 0; i < 6; i++) {
         this.frustumPlanes_[i] = Melown.mat4.multiplyVec4(mvpt_, this.frustumPlanes_[i]);
     }

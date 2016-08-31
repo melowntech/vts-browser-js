@@ -113,8 +113,11 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
 };
 
 Melown.Map.prototype.applyCredits = function(tile_) {
-    for (var key_ in tile_.credits_) {
+    for (var key_ in tile_.imageryCredits_) {
         this.visibleCredits_.imagery_[key_] = true;
+    }
+    for (var key_ in tile_.mapdataCredits_) {
+        this.visibleCredits_.mapdata_[key_] = true;
     }
 };
 
@@ -263,12 +266,12 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
         }*/
 
         tile_.drawCommands_ = [[], [], []]; //??
-        tile_.credits_ = {};
+        tile_.imageryCredits_ = {};
         tile_.boundsDebug_ = {}; //used for inspector
 
         //set credits
         for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-            tile_.credits_[node_.credits_[k]] = true;  
+            tile_.imageryCredits_[node_.credits_[k]] = true;  
         }
 
         for (var i = 0, li = submeshes_.length; i < li; i++) {
@@ -334,7 +337,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                                             //set credits
                                             var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
                                             for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                                tile_.credits_[credits_[k]] = true;  
+                                                tile_.imageryCredits_[credits_[k]] = true;  
                                             }
 
                                             tile_.drawCommands_[0].push({
@@ -374,7 +377,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                                         //set credits
                                         var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;
                                         for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                            tile_.credits_[credits_[k]] = true;  
+                                            tile_.imageryCredits_[credits_[k]] = true;  
                                         }
                                         
                                         tile_.drawCommands_[0].push({
@@ -406,7 +409,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                                             //set credits
                                             var credits_ = tile_.boundLayers_[layer_.id_].creditsNumbers_;
                                             for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                                tile_.credits_[credits_[k]] = true;  
+                                                tile_.imageryCredits_[credits_[k]] = true;  
                                             }
                                             
                                             //draw mesh
@@ -547,11 +550,11 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
             tile_.surfaceGeodataView_ = new Melown.MapGeodataView(this, tile_.surfaceGeodata_, {tile_:tile_, surface_:tile_.surface_});
         }
 
-        tile_.credits_ = {};
+        tile_.mapdataCredits_ = {};
 
         //set credits
         for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-            tile_.credits_[node_.credits_[k]] = true;  
+            tile_.mapdataCredits_[node_.credits_[k]] = true;  
         }
 
         //if (tile_.drawCommands_[channel_].length == 0) {
@@ -895,8 +898,8 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
     if (this.drawCredits_) {
         var text_ = "{ ";
        
-        for (var key_ in tile_.credits_) {
-            if (tile_.credits_[key_]) {
+        for (var key_ in tile_.imageryCredits_) {
+            if (tile_.imageryCredits_[key_]) {
                 var credit_ = this.getCreditByNumber(key_);
                 if (credit_) {
                     text_ += credit_.key_ + ", ";
@@ -904,7 +907,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
             }
         }
 
-        text_ += "} ";
+        text_ += "}";
 
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [255,255,255,255], pos_[2]);
     }

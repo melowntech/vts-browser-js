@@ -106,7 +106,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.debugTextSize_ = 2.0;
     this.fogDensity_ = 0;
     this.zFactor_ = 0;
-    this.zFactor2_ = 0;
+    //this.zFactor2_ = 0.000012;
+    this.zFactor2_ = 0.003;
     this.zShift_ = 0;
     this.zLastShift_ = 0;
 
@@ -692,6 +693,9 @@ Melown.Map.prototype.drawMap = function() {
         this.cameraGeocentNormal_ = n;
     }
    
+    //var distanceFactor_ = (500/Math.max(10.0,this.cameraDistance_));
+    //this.renderer_.distanceFactor_ = (distanceFactor_ * distanceFactor_ * distanceFactor_)*0.5;
+
     var distanceFactor_ = (500/Math.max(10.0,this.cameraDistance_));
     this.renderer_.distanceFactor_ = (distanceFactor_ * distanceFactor_ * distanceFactor_)*0.5;
     this.renderer_.tiltFactor_ = 0.5 + 0.5 * (Math.abs(this.renderer_.cameraOrientation_[1]/-90));
@@ -702,13 +706,29 @@ Melown.Map.prototype.drawMap = function() {
         this.renderer_.gpu_.clear(true, true, [255,255,255,255]);
     }
 
+    if (this.cameraDistance_ < 1000) {
+        this.zFactor2_ = 0.300;
+    } else if (this.cameraDistance_ < 2000) {
+        this.zFactor2_ = 0.200;
+    } else if (this.cameraDistance_ < 5000) {
+        this.zFactor2_ = 0.100;
+    } else if (this.cameraDistance_ < 8000) {
+        this.zFactor2_ = 0.050;
+    } else if (this.cameraDistance_ < 12000) {
+        this.zFactor2_ = 0.010;
+    } else {
+        this.zFactor2_ = 0.003;
+    }
+
+
+
     this.renderer_.gpu_.setState(this.drawTileState_);
 
     if (this.drawChannel_ != 1) {
         //if (this.getNavigationSrs().isProjected()) {    
             //this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.renderer_.progSkydome_);
         //} else {
-
+            /*
         if (this.config_.mapLowresBackground_ < 0.8) {
             if (this.drawWireframe_ == 2) {
                 this.renderer_.drawSkydome(this.renderer_.whiteTexture_, this.renderer_.progStardome_);
@@ -716,58 +736,42 @@ Melown.Map.prototype.drawMap = function() {
                 this.renderer_.drawSkydome(this.renderer_.blackTexture_, this.renderer_.progStardome_);
             }
         }
-            
-            //
+        */
         //}
     }
 
     if (this.config_.mapLowresBackground_ > 0) {
-        //var lastTexelSizeFit_ = this.config_.mapTexelSizeFit_; 
-        
         this.setupDetailDegradation(this.config_.mapLowresBackground_);
-
-        
-        //force change state
-        this.renderer_.gpu_.currentState_ = this.renderer_.gpu_.defaultState_;
-        
-        //this.renderer_.gpu_.setState(this.renderer_.gpu_.defaultState_);
-        //this.drawTileState_.zoffset_ = -2000;//this.renderer_.gpu_.createState({zoffset_ : 20000000});
-        //this.renderer_.gpu_.setState(this.drawTileState_);
-
-        this.zFactor_ = this.zFactor2_;
-        
         this.zFactor_ = 0;
-        this.camera_.update(this.zFactor2_);
-        //this.zFactor_ = 0;
-        //this.zShift_ = 1000;
-        //this.config_.mapTexelSizeFit_ = 1.1 * Math.pow(2,this.config_.mapLowresBackground_);
+        
+        this.camera_.update(this.renderer_.getZoffsetFactor([this.zFactor2_, 0, 0]));
         this.loader_.setChannel(1); //1 = lowres channel
         this.draw(true);
         this.camera_.update(0);
-
-        //if (this.drawChannel_ != 1) {
-            //this.renderer_.gpu_.clear(false, true);
-        //}
-
-        //this.renderer_.gpu_.currentState_ = this.renderer_.gpu_.defaultState_;
-
-        //this.renderer_.gpu_.setState(this.renderer_.gpu_.defaultState_);
-        //this.drawTileState_.zoffset_ = 0;//this.renderer_.gpu_.createState({});
-        //this.renderer_.gpu_.setState(this.drawTileState_);
-
-            //gl_.polygonOffset(-1.0, directOffset_);
-            //this.renderer_.gpu_.gl_.disable(this.renderer_.gpu_.gl_.POLYGON_OFFSET_FILL);
-            
-        //this.config_.mapTexelSizeFit_ = lastTexelSizeFit_;
     }
+    
+//    console.log("mvp: " + this.camera_.mvp_[10]);
+/*
+    console.log("mvp1: " + JSON.stringify(this.camera_.mvp_));
+
+    Melown.mat4.multiply(
+        [1,0,0,0,
+        0,1,0,0,
+        0,0,2,0,
+        0,0,0,1,], this.camera_.mvp_, this.camera_.mvp_);
+
+    console.log("mvp2: " + JSON.stringify(this.camera_.mvp_));
+*/
+    //this.camera_.mvp_
 
     this.setupDetailDegradation();
 
-    //if (this.loader_.pending_.length > 0) {
 
     this.loader_.setChannel(0); //0 = hires channel
     this.zFactor_ = 0;
-    this.draw();
+    if (!this.drawBBoxes_) {
+        this.draw();
+    }
 
     //if (!projected_) {    
         //var camInfo_ = this.position_.getCameraInfo(true);

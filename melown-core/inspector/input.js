@@ -211,8 +211,8 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         console.log("proj4 timer2: " + tt + "   " + JSON.stringify(r));
                         */
 
-                        map_.zFactor2_ += 0.000001;                          
-                        console.log("zfactor  " + map_.zFactor2_);                          
+                        map_.zFactor2_ += 0.1; //0.000001;
+                        console.log("zfactor  " + map_.zFactor2_ + "   zz: " + map_.renderer_.getZoffsetFactor([map_.zFactor2_, 0, 0]));                          
 
                         break; //key M pressed
 
@@ -221,7 +221,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         //map_.config_.mapGeocentCulling_ = !map_.config_.mapGeocentCulling_;
                         //console.log("mapGeocentCulling: " + map_.config_.mapGeocentCulling_);
                         //map_.blendHeightmap_ = !map_.blendHeightmap_;
-                        map_.zFactor2_ -= 0.000001;
+                        map_.zFactor2_ -= 0.1;//0.000001;
                         console.log("zfactor  " + map_.zFactor2_);                          
 
                         break; //key J pressed

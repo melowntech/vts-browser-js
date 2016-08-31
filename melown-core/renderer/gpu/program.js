@@ -71,13 +71,34 @@ Melown.GpuProgram.prototype.setSampler = function(name_, index_) {
     }
 };
 
-Melown.GpuProgram.prototype.setMat4 = function(name_, m_) {
+Melown.GpuProgram.prototype.setMat4 = function(name_, m_, zoffset_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.program_ == null) return;
 
     var key_ = this.getUniform(name_);
     if (key_ != null) {
-        gl_.uniformMatrix4fv(key_, false, m_);
+        if (zoffset_) {
+            zoffset_ =1.0+zoffset_;
+            var tmp1_ = m_[2];
+            var tmp2_ = m_[6];
+            var tmp3_ = m_[10];
+            var tmp4_ = m_[15];
+
+            m_[2] *= zoffset_;
+            m_[6] *= zoffset_;
+            m_[10] *= zoffset_;
+            m_[15] *= zoffset_;
+
+            gl_.uniformMatrix4fv(key_, false, m_);
+
+            m_[2] = tmp1_;
+            m_[6] = tmp2_;
+            m_[10] = tmp3_;
+            m_[15] = tmp4_;
+            
+        } else {
+            gl_.uniformMatrix4fv(key_, false, m_);
+        }
     }
 };
 
