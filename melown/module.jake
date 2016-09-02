@@ -33,6 +33,7 @@ var files = [
     'ui/control/logo.js',
     'ui/control/map.js',
     'ui/control/zoom.js',
+    'ui/control/popup.js',
     'ui/element/draggable.js',
     'ui/element/element.js',
     'ui/element/event.js',

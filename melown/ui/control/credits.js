@@ -13,35 +13,40 @@ Melown.UIControlCredits = function(ui_, visible_) {
     this.credits_ = this.control_.getElement("melown-credits");
 };
 
-Melown.UIControlCredits.prototype.getCreditsString = function(array_) {
+Melown.UIControlCredits.prototype.getCreditsString = function(array_, separator_, full_) {
     var map_ = this.browser_.getMap();
     var html_ = "";
     var copyright_ = "&copy;" + (new Date().getFullYear());
+    
+    var li = array_.length;
+    var plain_ = ""; 
+    var more_ = false;
 
-    for (var i = 0, li = array_.length; i < li; i++) {
+    for (var i = 0; i < li; i++) {
         var creditInfo_ = map_.getCreditInfo(array_[i]);
-        
-        /*
-        if (creditInfo_["copyrighted"]) {
-            html_ += copyright_;        
+        if (creditInfo_["plain"]) {
+            plain_ += creditInfo_["plain"];
         }
+    }        
+    
+    if (plain_ && plain_.length > 30 && li > 1 && !full_) {
+        li = 1;
+        more_ = true; 
+    }
 
-        if (creditInfo_["url"]) {
-            html_ += " <a href='" + creditInfo_["notice"] + "'>" + creditInfo_["notice"] + "</a>";        
-        } else {
-            html_ += " " + creditInfo_["notice"];        
-        }*/
-        
+    for (var i = 0; i < li; i++) {
+        var creditInfo_ = map_.getCreditInfo(array_[i]);
+       
         if (creditInfo_["html"]) {
             html_ += creditInfo_["html"];
         }
 
         if (i + 1 < li) {
-            html_ += ", ";        
+            html_ += separator_;        
         }
     }
     
-    return html_;
+    return [html_, more_];
 };
 
 Melown.UIControlCredits.prototype.update = function() {
@@ -50,27 +55,52 @@ Melown.UIControlCredits.prototype.update = function() {
         return;
     }
 
-    var html_ = "<ul>";
+    var html_ = "";
+
     var credits_ = map_.getCurrentCredits();
     
     if (credits_["imagery"].length > 0) {
-        html_ += "<li>Imagery: " + this.getCreditsString(credits_["imagery"]) + "</li>";
+        var res_ = this.getCreditsString(credits_["imagery"], ", ");
+        html_ += "<div class='melown-credits-cell'>Imagery: " + res_[0] + "</div>";
+        html_ += res_[1] ? "<div class='melown-credits-cell-button' id='melown-credits-imagery-more'>and others</div>" : "";
+        html_ += "<div class='melown-credits-separator'></div>";
+        var html2_ = "<div class='melown-credits-list'>";
+        html2_ += this.getCreditsString(credits_["imagery"], "<br/>", true)[0] + "</div>";
     }
     
     if (credits_["mapdata"].length > 0) {
-        html_ += "<li>Map Data: " + this.getCreditsString(credits_["mapdata"]) + "</li>";
+        var res_ = this.getCreditsString(credits_["mapdata"], ", ");
+        html_ += "<div class='melown-credits-cell'>Map Data: " + res_[0] + "</div>";
+        html_ += res_[1] ? "<div class='melown-credits-cell-button' id='melown-credits-mapdata-more'>and others</div>" : "";
+        html_ += "<div class='melown-credits-separator'></div>";
+        var html3_ = "<div class='melown-credits-list'>";
+        html3_ += this.getCreditsString(credits_["mapdata"], "<br/>", true)[0] + "</div>";
     }
 
-    html_ += "<li>3D: MELOWN";
-
-    if (credits_["mapdata"].length > 0) {
-        html_ += ", " + this.getCreditsString(credits_["3d"]) + "</li>";
-    }
-
-    html_ += "</ul>";
+    html_ += "<div class='melown-credits-cell'>Powered by <a class='melown-logo' href='https://melown.com' target='_blank'>MELOWN</a></div>";
 
     if (this.lastHTML_ != html_) {
         this.lastHTML_ = html_;
-        this.credits_.setHTML(html_);
+        this.credits_.setHtml(html_);
+
+        var butt_ = this.control_.getElement("melown-credits-imagery-more");
+        if (butt_) {
+            butt_.on("click", this.onMoreButton.bind(this, butt_, html2_));
+        }
+        
+        butt_ = this.control_.getElement("melown-credits-mapdata-more");
+        if (butt_) {
+            butt_.on("click", this.onMoreButton.bind(this, butt_, html3_));
+        }
     }
 };
+
+Melown.UIControlCredits.prototype.onMoreButton = function(butt_, html_) {
+    var rect_ = butt_.getRect();
+    this.ui_.popup_.show({"left" : rect_["left"] + "px",
+                          "bottom" : (rect_["fromBottom"]+10) + "px"}, html_);
+};
+
+
+
+

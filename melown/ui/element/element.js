@@ -50,11 +50,38 @@ Melown.UIElement.prototype.removeClass = function(name_) {
     return this;
 };
 
-Melown.UIElement.prototype.setHTML = function(html_) {
-    this.element_.innerHTML = html_;
+Melown.UIElement.prototype.getRect = function() {
+    var rect_ = this.element_.getBoundingClientRect();
+    var rect2_ = this.ui_.element_.getBoundingClientRect();
+    var offsetX_ = window.pageXOffset || 0;
+    var offsetY_ = window.pageYOffset || 0;
+    return {
+        "left" : (rect_.left + offsetX_) - (rect2_.left + offsetX_), 
+        "top" : (rect_.top + offsetY_) - (rect2_.top + offsetY_), 
+        "fromRight" : rect2_.right - (rect_.left + offsetX_) - (rect2_.left + offsetX_), 
+        "fromBottom" : rect2_.height - ((rect_.top + offsetY_) - (rect2_.top + offsetY_)),
+        "width" : rect_.width, 
+        "height" : rect_.height 
+    };
 };
 
-Melown.UIElement.prototype.getHTML = function() {
+Melown.UIElement.prototype.setHtml = function(html_) {
+    this.element_.innerHTML = html_;
+    
+    var allElements_ = this.element_.getElementsByTagName('*');
+
+    //store all elements with id attribute to the table
+    for (var i = 0, li = allElements_.length; i < li; i++) {
+        var id_ = allElements_[i].getAttribute("id");
+
+        if (id_ !== null) {
+            //store element to the table
+            this.control_.elementsById_[id_] = new Melown.UIElement(this, allElements_[i]);
+        }
+    }    
+};
+
+Melown.UIElement.prototype.getHtml = function() {
     return this.element_.innerHTML;
 };
 
@@ -72,5 +99,6 @@ Melown.UIElement.prototype["setStyle"] = Melown.UIElement.prototype.setStyle;
 Melown.UIElement.prototype["getStyle"] = Melown.UIElement.prototype.getStyle; 
 Melown.UIElement.prototype["addClass"] = Melown.UIElement.prototype.addClass; 
 Melown.UIElement.prototype["hasClass"] = Melown.UIElement.prototype.hasClass; 
+Melown.UIElement.prototype["getRect"] = Melown.UIElement.prototype.getRect; 
 Melown.UIElement.prototype["removeClass"] = Melown.UIElement.prototype.removeClass; 
 
