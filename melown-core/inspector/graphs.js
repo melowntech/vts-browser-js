@@ -5,7 +5,7 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
             + "position:absolute;"
             + "left:10px;"
             + "top:10px;"
-            + "z-index: 4;"
+            + "z-index: 7;"
             + "background-color: #FFFFFF;"
             + "padding: 5px;"
             + "border-radius: 4px;"

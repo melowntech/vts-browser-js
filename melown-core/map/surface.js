@@ -68,7 +68,7 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
     this.navDelta_ = json_["navDelta"] || 1;
     this.meshUrl_ = this.processUrl(this.baseUrl_, json_["meshUrl"], "");
     this.textureUrl_ = this.processUrl(this.baseUrl_, json_["textureUrl"], "");
-    this.geodataUrl_ = this.processUrl(this.baseUrl_, json_["geodataUrl"], "");
+    this.geodataUrl_ = this.processUrl(this.baseUrl_, json_["geodataUrl"] || json_["geodata"], "");
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
     this.textureLayer_ = json_["textureLayer"] || null;
@@ -84,6 +84,8 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
     } else {
         this.extents_ = new Melown.BBox(0,0,0,1,1,1);
     }
+
+    this.specificity_ = Math.pow(2,this.lodRange_[0]) / ((this.tileRange_[1][0] - this.tileRange_[1][0]+1)*(this.tileRange_[1][1] - this.tileRange_[1][1]+1));    
     
     switch(typeof this.credits_) {
         case "string":

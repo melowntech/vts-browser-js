@@ -5,7 +5,6 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
     this.map_ = map_;
     this.id_ = id_;
     this.currentAlpha_ = 1.0;
-    this.creditsNumbers_ = [];
 
     this.tileSize_ = [256,256];
     this.lodRange_ = [0,100];
@@ -61,6 +60,8 @@ Melown.MapBoundLayer.prototype.parseJson = function(json_) {
     this.credits_ = json_["credits"] || [];
     this.creditsUrl_ = null;
 
+    this.specificity_ = Math.pow(2,this.lodRange_[0]) / ((this.tileRange_[1][0] - this.tileRange_[1][0]+1)*(this.tileRange_[1][1] - this.tileRange_[1][1]+1));    
+
     this.availability_ = json_["availability"] ? {} : null;
 
     if (this.availability_) {
@@ -98,7 +99,7 @@ Melown.MapBoundLayer.prototype.parseJson = function(json_) {
 
             for (var i = 0, li = this.credits_.length; i < li; i++) {
                 var credit_ = this.map_.getCreditById(this.credits_[i]);
-                this.creditsNumbers_.push(credit_ ? credit_.id_ : null); 
+                //this.creditsNumbers_.push(credit_ ? credit_.id_ : null); 
             }
         
             break;

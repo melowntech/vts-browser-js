@@ -15,7 +15,7 @@ Melown.Inspector.prototype.initLayersPanel = function() {
             + "border-radius: 5px;"
             + "border: solid 1px #ccc;"
             + "text-align: left;"
-            + "z-index: 4;"
+            + "z-index: 7;"
             + "padding: 10px;"
         + "}"
 

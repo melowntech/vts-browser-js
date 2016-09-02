@@ -56,6 +56,7 @@ Melown.Core.prototype.loadMap = function(path_) {
         this.setConfigParams(this.configStorage_);
 
         //MEGA HACK!!!!
+        /*
         if (this.map_.config_.mario_) {
             if (!(
                 this.map_.getSurface("egm96-geoid") ||
@@ -72,7 +73,7 @@ Melown.Core.prototype.loadMap = function(path_) {
 
                 this.map_.config_.mapDisableCulling_ = true;
             }            
-        }
+        }*/
 
         if (this.config_.position_) {
             this.map_.setPosition(this.config_.position_);

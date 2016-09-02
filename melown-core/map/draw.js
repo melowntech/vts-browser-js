@@ -114,10 +114,24 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
 
 Melown.Map.prototype.applyCredits = function(tile_) {
     for (var key_ in tile_.imageryCredits_) {
-        this.visibleCredits_.imagery_[key_] = true;
+        var value_ = tile_.imageryCredits_[key_];
+        var value2_ = this.visibleCredits_.imagery_[key_];
+
+        if (value2_) {
+            this.visibleCredits_.imagery_[key_] = value_ > value2_ ? value_ : value2_;
+        } else {
+            this.visibleCredits_.imagery_[key_] = value_;
+        }
     }
     for (var key_ in tile_.mapdataCredits_) {
-        this.visibleCredits_.mapdata_[key_] = true;
+        var value_ = tile_.mapdataCredits_[key_];
+        var value2_ = this.visibleCredits_.mapdata_[key_];
+
+        if (value2_) {
+            this.visibleCredits_.mapdata_[key_] = value_ > value2_ ? value_ : value2_;
+        } else {
+            this.visibleCredits_.mapdata_[key_] = value_;
+        }
     }
 };
 
@@ -269,9 +283,24 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
         tile_.imageryCredits_ = {};
         tile_.boundsDebug_ = {}; //used for inspector
 
+        var specificity_ = 0;
+        
+        if (tile_.surface_.glue_) {
+            var surfaces_ = tile_.surface_.id_; 
+            for (var i = 0, li = surfaces_.length; i < li; i++) {
+                var surface_ = this.getSurface(surfaces_[i]);
+                if (surface_) {
+                    specificity_ = Math.max(specificity_, surface_.specificity_);
+                }
+            }
+        } else {
+            specificity_ = tile_.surface_.specificity_;
+        }
+        
+
         //set credits
         for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-            tile_.imageryCredits_[node_.credits_[k]] = true;  
+            tile_.imageryCredits_[node_.credits_[k]] = specificity_;  
         }
 
         for (var i = 0, li = submeshes_.length; i < li; i++) {
@@ -335,9 +364,10 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                                             tile_.boundsDebug_[surface_.id_].push(layers_[j]);
 
                                             //set credits
-                                            var credits_ = tile_.boundLayers_[layers_[j]].creditsNumbers_;
+                                            var layer_ = tile_.boundLayers_[layers_[j]];
+                                            var credits_ = layer_.credits_;
                                             for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                                tile_.imageryCredits_[credits_[k]] = true;  
+                                                tile_.imageryCredits_[credits_[k]] = layer_.specificity_;  
                                             }
 
                                             tile_.drawCommands_[0].push({
@@ -375,9 +405,10 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                                         tile_.boundsDebug_[surface_.id_].push(layerId_);
                                         
                                         //set credits
-                                        var credits_ = tile_.boundLayers_[layerId_].creditsNumbers_;
+                                        var layer_ = tile_.boundLayers_[layerId_];
+                                        var credits_ = layer_.credits_;
                                         for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                            tile_.imageryCredits_[credits_[k]] = true;  
+                                            tile_.imageryCredits_[credits_[k]] = layer_.specificity_;  
                                         }
                                         
                                         tile_.drawCommands_[0].push({
@@ -407,9 +438,10 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                                             tile_.boundsDebug_[surface_.id_].push(layer_.id_);
                                             
                                             //set credits
-                                            var credits_ = tile_.boundLayers_[layer_.id_].creditsNumbers_;
+                                            var layer_ = tile_.boundLayers_[layer_.id_];
+                                            var credits_ = layer_.credits_;
                                             for (var k = 0, lk = credits_.length; k < lk; k++) {
-                                                tile_.imageryCredits_[credits_[k]] = true;  
+                                                tile_.imageryCredits_[credits_[k]] = layer_.specificity_;  
                                             }
                                             
                                             //draw mesh
@@ -551,10 +583,12 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
         }
 
         tile_.mapdataCredits_ = {};
+        
+        var specificity_ = (tile_.surface_) ? tile_.surface_.specificity_ : 0;
 
         //set credits
         for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-            tile_.mapdataCredits_[node_.credits_[k]] = true;  
+            tile_.mapdataCredits_[node_.credits_[k]] = specificity_;  
         }
 
         //if (tile_.drawCommands_[channel_].length == 0) {

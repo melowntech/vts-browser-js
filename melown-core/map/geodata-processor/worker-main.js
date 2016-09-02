@@ -348,7 +348,7 @@ self.onmessage = function (e) {
     var command_ = message_["command"];
     var data_ = message_["data"];
 
-    console.log("worker_onmessage: " + command_);
+    //console.log("worker_onmessage: " + command_);
 
     switch(command_) {
 

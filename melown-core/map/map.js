@@ -218,23 +218,57 @@ Melown.Map.prototype.getCredits = function() {
 Melown.Map.prototype.getVisibleCredits = function() {
     var imagery_ = this.visibleCredits_.imagery_;
     var imageryArray_ = []; 
+    var imagerySpecificity_ = []; 
     
     for (var key_ in imagery_) {
-        var item_ = this.creditsByNumber_[key_];
-        if (item_) {
-            imageryArray_.push(item_.key_);
-        }
+        imageryArray_.push(key_);
+        imagerySpecificity_.push(imagery_[key_]); 
     }
+
+    //sort imagery
+    do {
+        var sorted_ = true;
+        
+        for (var i = 0, li = imagerySpecificity_.length - 1; i < li; i++) {
+            if (imagerySpecificity_[i] < imagerySpecificity_[i+1]) {
+                var t = imagerySpecificity_[i];
+                imagerySpecificity_[i] = imagerySpecificity_[i+1];
+                imagerySpecificity_[i+1] = t;
+                t = imageryArray_[i];
+                imageryArray_[i] = imageryArray_[i+1];
+                imageryArray_[i+1] = t;
+                sorted_ = false;
+            } 
+        }
+        
+    } while(!sorted_);
 
     var mapdata_ = this.visibleCredits_.mapdata_;
     var mapdataArray_ = []; 
-    
+    var mapdataSpecificity_ = []; 
+
     for (var key_ in mapdata_) {
-        var item_ = this.creditsByNumber_[key_];
-        if (item_) {
-            mapdataArray_.push(item_.key_);
-        }
+        mapdataArray_.push(key_);
+        mapdataSpecificity_.push(mapdata_[key_]); 
     }
+    
+    //sort imagery
+    do {
+        var sorted_ = true;
+        
+        for (var i = 0, li = mapdataSpecificity_.length - 1; i < li; i++) {
+            if (mapdataSpecificity_[i] < mapdataSpecificity_[i+1]) {
+                var t = mapdataSpecificity_[i];
+                mapdataSpecificity_[i] = mapdataSpecificity_[i+1];
+                mapdataSpecificity_[i+1] = t;
+                t = mapdataArray_[i];
+                mapdataArray_[i] = mapdataArray_[i+1];
+                mapdataArray_[i+1] = t;
+                sorted_ = false;
+            } 
+        }
+        
+    } while(!sorted_);
 
     return {
         "3D" : [], 
@@ -728,7 +762,7 @@ Melown.Map.prototype.drawMap = function() {
         //if (this.getNavigationSrs().isProjected()) {    
             //this.renderer_.drawSkydome(this.renderer_.skydomeTexture_, this.renderer_.progSkydome_);
         //} else {
-            /*
+            
         if (this.config_.mapLowresBackground_ < 0.8) {
             if (this.drawWireframe_ == 2) {
                 this.renderer_.drawSkydome(this.renderer_.whiteTexture_, this.renderer_.progStardome_);
@@ -736,7 +770,7 @@ Melown.Map.prototype.drawMap = function() {
                 this.renderer_.drawSkydome(this.renderer_.blackTexture_, this.renderer_.progStardome_);
             }
         }
-        */
+        
         //}
     }
 
@@ -769,9 +803,9 @@ Melown.Map.prototype.drawMap = function() {
 
     this.loader_.setChannel(0); //0 = hires channel
     this.zFactor_ = 0;
-    if (!this.drawBBoxes_) {
+    //if (!this.drawBBoxes_) {
         this.draw();
-    }
+    //}
 
     //if (!projected_) {    
         //var camInfo_ = this.position_.getCameraInfo(true);

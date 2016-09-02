@@ -399,14 +399,14 @@ Melown.MapSurfaceTree.prototype.canDrawCoarserLod = function(tile_, node_, camer
 
 Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, node_) {
     var skipGeoTest_ = this.map_.config_.mapDisableCulling_;
-    
+    /*
     if (!skipGeoTest_ && id_[0] >= 6 && this.geocent_) {
         id_ = id_;
         
         if (!node_.hasGeometry()) {
             return false;
         }
-    }
+    }*/
 
     if (!skipGeoTest_ && this.geocent_) {
         if (node_) {
