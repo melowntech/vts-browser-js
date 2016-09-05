@@ -75,6 +75,12 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
 
     this.parseConfig();
 
+    this.geocent_ = !this.getNavigationSrs().isProjected();
+    this.processBuffer_ = new Array(30000);
+    this.processBuffer2_ = new Array(30000);
+    this.drawBuffer_ = new Array(30000);
+    
+
     this.tree_ = new Melown.MapSurfaceTree(this, false);
     this.afterConfigParsed();
 

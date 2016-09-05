@@ -31,7 +31,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_) {
             traceHeight_ : true
         };
 
-        tree_.heightTracer_.trace(root_, params_);
+        tree_.traceHeight(root_, params_, false);
 
         var heightMap_ = params_.heightMap_;
         var metanode_ = params_.metanode_;
@@ -153,7 +153,7 @@ Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeSta
             traceHeight_ : true
         };
 
-        tree_.heightTracerNodeOnly_.trace(root_, params_);
+        tree_.traceHeight(root_, params_, true);
 
         var metanode_ = params_.metanode_;
 

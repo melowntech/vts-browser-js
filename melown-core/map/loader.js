@@ -39,12 +39,6 @@ Melown.MapLoader.prototype.load = function(path_, downloadFunction_, priority_) 
         pending_.unshift({id_:path_, call_: downloadFunction_, priority_ : (priority_ || 0) });
     }
 
-    // keep the pending list at reasonable length
-    if (pending_.length > 20) {
-        pending_.pop();
-    }
-    
-    
     //sort pending list by priority
     do {
         var sorted_ = true;
@@ -60,7 +54,11 @@ Melown.MapLoader.prototype.load = function(path_, downloadFunction_, priority_) 
         }
         
     } while(!sorted_);
-    
+
+    // keep the pending list at reasonable length
+    if (pending_.length > 20) {
+        pending_.pop();
+    }
 };
 
 
@@ -121,8 +119,8 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
                     this.downloading_.splice(index_, 1);
                     this.downloadingTime_.splice(index_, 1);
                     this.usedThreads_--;
-
                     this.map_.markDirty();
+                    this.update();
 
                 }).bind(this);
 
@@ -134,6 +132,8 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
                     this.downloading_.splice(index_, 1);
                     this.downloadingTime_.splice(index_, 1);
                     this.usedThreads_--;
+                    this.map_.markDirty();
+                    this.update();
 
                 }).bind(this);
 

@@ -9,20 +9,13 @@ Melown.MapSurfaceTree = function(map_, freeLayer_, freeLayerSurface_) {
     this.freeLayerSurface_ = freeLayerSurface_;
     this.metaBinaryOrder_ = this.map_.referenceFrame_.params_.metaBinaryOrder_;
     this.initialized_ = false;
-    this.geocent_ = !this.map_.getNavigationSrs().isProjected();
+    //this.geocent_ = !this.map_.getNavigationSrs().isProjected();
 
     this.surfaceTree_ = new Melown.MapSurfaceTile(this.map_, null, this.rootId_);
-    //this.metastorageTree_ = new Melown.MapMetastorage(this.map_, null, this.rootId_);
-
-    this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTileRender.bind(this), this.traceChildSequenceViewBased.bind(this));
-    //this.surfaceTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTileRender.bind(this), this.traceChildSequenceBasic.bind(this));
-
-    //used only for debug
-    this.surfaceTracerBasic_ = new Melown.MapMetanodeTracer(this, null, this.traceTileRender.bind(this), this.traceChildSequenceBasic.bind(this));
 
     if (freeLayer_ != true) {
-        this.heightTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTileHeight.bind(this), this.traceHeightChild.bind(this));
-        this.heightTracerNodeOnly_ = new Melown.MapMetanodeTracer(this, null, this.traceTileHeightNodeOnly.bind(this), this.traceHeightChild.bind(this));
+        //this.heightTracer_ = new Melown.MapMetanodeTracer(this, null, this.traceTileHeight.bind(this), this.traceHeightChild.bind(this));
+        //this.heightTracerNodeOnly_ = new Melown.MapMetanodeTracer(this, null, this.traceTileHeightNodeOnly.bind(this), this.traceHeightChild.bind(this));
     }
 
     this.surfaceSequence_ = [];
@@ -88,12 +81,11 @@ Melown.MapSurfaceTree.prototype.draw = function() {
     var periodicity_ = srs_.periodicity_;
 
     if (this.map_.config_.mapBasicTileSequence_) {
-        this.surfaceTracer_ = this.surfaceTracerBasic_;
+        //this.surfaceTracer_ = this.surfaceTracerBasic_;
     }
 
     if (periodicity_ != null) {
         this.drawSurface([0,0,0]);
-        //this.renderSurface([0,0,0]);
 
         if (periodicity_.type_ == "X") {
             this.drawSurface([periodicity_.period_,0,0]);
@@ -108,14 +100,119 @@ Melown.MapSurfaceTree.prototype.draw = function() {
 
 Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     this.counter_++;
-    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);
-};
+//    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);
 
-//probably used for hit test etc..
-Melown.MapSurfaceTree.prototype.renderSurface = function(shift_) {
-    //this.renderTracer_.trace(this.rootId_);
-};
+    var tile_ = this.surfaceTree_;
+    
+    if (!tile_.isMetanodeReady(this, 0)) {
+        return;
+    }
+    
+    var node_ = tile_.metanode_;
 
+    if (!tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+        return;
+    }
+
+    tile_.updateTexelSize();
+    
+    var typeFactor_ = this.freeLayerSurface_ ? 1 : 1;
+    
+    /*
+    var drawBuffer_ = this.map_.processBuffer_;
+    var processBuffer_ = this.map_.processBuffer_;
+    var newProcessBuffer_ = this.map_.processBuffer2_;
+    var drawBufferIndex_ = 0;
+    var processBufferIndex_ = 0;
+    var newProcessBufferIndex_ = 0;
+    */
+    
+    var drawBuffer_ = [];
+    var processBuffer_ = [tile_];
+    var cameraPos_ = this.map_.cameraPosition_;
+    var texelSizeFit_ = this.map_.texelSizeFit_;
+    
+    do {
+        var newProcessBuffer_ = [];
+        
+        for (var i = 0, li = processBuffer_.length; i < li; i++) {
+            tile_ = processBuffer_[i];
+            node_ = tile_.metanode_;
+
+            if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+                
+                if (tile_.texelSize_ <= texelSizeFit_) {
+                    
+                    drawBuffer_.unshift(tile_);
+                    
+                } else { //go deeper
+
+                    var childrenCount_ = 0;
+                    var readyCount_ = 0;
+                    var childrenBuffer_ = [];
+        
+                    for (var j = 0; j < 4; j++) {
+                        var child_ = tile_.children_[j];
+                        if (child_) {
+                            childrenCount_++;
+       
+                            if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+
+                                child_.updateTexelSize();
+                                var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+                                
+                                //are draw buffers ready? preventRender=true, preventLoad_=false
+                                if (this.map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, false)) {
+                                    readyCount_++;
+                                    //child_.updateTexelSize();
+                                    childrenBuffer_.push(child_);
+                                }
+                            }
+                        }
+                    }
+        
+                    if (childrenCount_ > 0 && childrenCount_ == readyCount_) {
+                        //sort childern by distance
+    
+                        do {
+                            var sorted_ = true;
+                            
+                            for (var j = 0, lj = childrenBuffer_.length - 1; j < lj; j++) {
+                                if (childrenBuffer_[j].distance_ > childrenBuffer_[j+1].distance_) {
+                                    var t = childrenBuffer_[j];
+                                    childrenBuffer_[j] = childrenBuffer_[j+1];
+                                    childrenBuffer_[j+1] = t;
+                                    sorted_ = false;
+                                } 
+                            }
+                            
+                        } while(!sorted_);
+    
+    
+                        //add childern to new process buffer 
+                        for (var j = 0, lj = childrenBuffer_.length; j < lj; j++) {
+                            newProcessBuffer_.unshift(childrenBuffer_[j]);  
+                        }
+                    } else {
+                        drawBuffer_.unshift(tile_);  
+                    }
+                    
+                }
+            }
+        }
+        
+        processBuffer_ = newProcessBuffer_;
+        
+    } while(processBuffer_.length > 0);
+    
+
+    for (var i = 0, li = drawBuffer_.length; i < li; i++) {
+        tile_ = drawBuffer_[i];
+        //draw tile,  preventRender=false, preventLoad_=false
+        this.map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, 0, false, false);
+    }
+};
+/*
 Melown.MapSurfaceTree.prototype.traceChildSequenceBasic = function(tile_) {
     return [[0,0],[1,0],[2,0],[3,0]];
 };
@@ -168,13 +265,6 @@ Melown.MapSurfaceTree.prototype.traceChildSequenceViewBased = function(tile_) {
 
     //console.log(JSON.stringify(tile_.id_) + "   " + JSON.stringify(angles_));
 
-/*
-    var seq_ = [];
-
-    for (var i = 0, li = angles_.length; i < li; i++) {
-        seq_.push(angles_[i][0]);
-    }
-*/    
     return angles_;
 };
 
@@ -184,12 +274,12 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
         return [false, preventRedener_, preventLoad_];
     }
 
-    /*
-    if (tile_.id_[0] == Melown.debugId_[0] &&
-        tile_.id_[1] == Melown.debugId_[1] &&
-        tile_.id_[2] == Melown.debugId_[2]) {
-            tile_ = tile_;
-    }*/
+    
+    //if (tile_.id_[0] == Melown.debugId_[0] &&
+      //  tile_.id_[1] == Melown.debugId_[1] &&
+      //  tile_.id_[2] == Melown.debugId_[2]) {
+      //      tile_ = tile_;
+    //}
 
     var node_ = tile_.metanode_;
     var cameraPos_ = this.map_.cameraPosition_;
@@ -303,7 +393,6 @@ Melown.MapSurfaceTree.prototype.traceTileRender = function(tile_, params_, child
 
           
         if (this.config_.mapAllowHires_ && node_.hasChildren() &&
-            /*(this.map_.stats_.gpuRenderUsed_ < this.maxGpuUsed_) &&*/
             this.canDrawDetailedLod(tile_, priority_, preventLoad_)) {
             
             //if (tile_.drawCommands_[channel_].length <= 0) {
@@ -379,8 +468,7 @@ Melown.MapSurfaceTree.prototype.canDrawCoarserLod = function(tile_, node_, camer
                 continue;
             }
 
-            if (childTile_.metanode_.hasGeometry() /*&&
-                this.bboxVisible(childTile_.id_, childTile_.metanode_.bbox_, cameraPos_, node_)*/) {
+            if (childTile_.metanode_.hasGeometry() ) {
 
                 if (!(childTile_.drawCommands_[channel_].length > 0 && this.map_.areDrawCommandsReady(childTile_.drawCommands_[channel_], priority_))) {
                     //load data for child tile
@@ -397,37 +485,51 @@ Melown.MapSurfaceTree.prototype.canDrawCoarserLod = function(tile_, node_, camer
     return ret_;
 };
 
-Melown.MapSurfaceTree.prototype.bboxVisible = function(id_, bbox_, cameraPos_, node_) {
-    var skipGeoTest_ = this.map_.config_.mapDisableCulling_;
-    /*
-    if (!skipGeoTest_ && id_[0] >= 6 && this.geocent_) {
-        id_ = id_;
-        
-        if (!node_.hasGeometry()) {
-            return false;
-        }
-    }*/
+*/
 
-    if (!skipGeoTest_ && this.geocent_) {
-        if (node_) {
-            if (true) {  //version with perspektive
-                var p2_ = node_.diskPos_;
-                var p1_ = this.map_.cameraPosition_;
-                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                Melown.vec3.normalize(camVec_);
-                
-                var a = Melown.vec3.dot(camVec_, node_.diskNormal_);
-            } else {
-                var a = Melown.vec3.dot(this.map_.cameraVector_, node_.diskNormal_);
-            }
-            
-            if (a > node_.diskAngle_) {
-                return false;
-            }
+Melown.MapSurfaceTree.prototype.traceHeight = function(tile_, params_, nodeOnly_) {
+    if (!tile_) {
+        return;
+    }
+
+    this.params_ = params_;
+
+    var heightFunction_ = nodeOnly_ ? this.traceHeightTileByNodeOnly : this.traceHeightTileByMap;  
+
+    if (tile_.id_[0] == 1) { //update root, get height in VTS2015 starts in division node which has lod 1
+        this.traceHeightTile(tile_.parent_, 0, true);
+        if (!tile_.parent_.metanode_) {
+            return;
         }
     }
     
-    return this.camera_.bboxVisible(bbox_, cameraPos_);
+    this.traceHeightTile(tile_, 0, false, heightFunction_);
+};
+
+Melown.MapSurfaceTree.prototype.traceHeightTile = function(tile_, priority_, nodeReadyOnly_, heightFunction_) {
+    if (tile_ == null) {
+        return;
+    }
+
+    if (!tile_.isMetanodeReady(this, 0) || nodeReadyOnly_) {
+        return;
+    }
+
+    tile_.metanode_.metatile_.used();
+
+    if (tile_.lastSurface_ && tile_.lastSurface_ == tile_.surface_) {
+        tile_.lastSurface_ = null;
+        tile_.restoreLastState();
+        //return;
+    }
+    
+    //process tile e.g. draw or get height
+    var res_ = heightFunction_(tile_, this.params_, priority_); 
+    
+    if (res_ == true) { //we need to go deeper
+        var childIndex_ = this.traceHeightChild(tile_, this.params_);
+        this.traceHeightTile(tile_.children_[childIndex_], 0, false, heightFunction_);
+    }
 };
 
 Melown.MapSurfaceTree.prototype.traceHeightChild = function(tile_, params_, res_) {
@@ -468,29 +570,29 @@ Melown.MapSurfaceTree.prototype.traceHeightChild = function(tile_, params_, res_
 
     //trace only resulting quadrant 
     if (right_) {
-        return bottom_ ? [[1,0]] : [[3,0]];
+        return bottom_ ? 1 : 3;
     } else {
-        return bottom_ ? [[0,0]] : [[2,0]];
+        return bottom_ ? 0 : 2;
     }
 };
 
-Melown.MapSurfaceTree.prototype.traceTileHeight = function(tile_, params_, childrenSequence_, priority_, reducedProcessing_, preventLoad_) {
+Melown.MapSurfaceTree.prototype.traceHeightTileByMap = function(tile_, params_, priority_) {
     if (!tile_ || (tile_.id_[0] > params_.desiredLod_ && params_.heightMap_)) {
-        return [false, reducedProcessing_, preventLoad_];
+        return false;
     }
 
     var node_ = tile_.metanode_;
 
     if (!node_) {
-        return [false, reducedProcessing_, preventLoad_];
+        return false;
     }
 
     if (node_.hasNavtile()) {
         if (!tile_.heightMap_) {
-            if (!preventLoad_) {
+            //if (!preventLoad_) {
                 var path_ = tile_.surface_.getNavUrl(tile_.id_);
                 tile_.heightMap_ = tile_.resources_.getTexture(path_, true);
-            }
+            //}
         } else {
             if (tile_.heightMap_.isReady() == true) {
                 params_.parent_ = {
@@ -505,7 +607,7 @@ Melown.MapSurfaceTree.prototype.traceTileHeight = function(tile_, params_, child
                     ll_ : params_.extents_.ll_.slice(),
                     ur_ : params_.extents_.ur_.slice()
                 };
-                return [tile_.id_[0] != params_.desiredLod_, reducedProcessing_, preventLoad_];
+                return (tile_.id_[0] != params_.desiredLod_);
             }
         }
     } else {
@@ -513,21 +615,21 @@ Melown.MapSurfaceTree.prototype.traceTileHeight = function(tile_, params_, child
             params_.metanode_ =  node_;
         }
         
-        return [true, reducedProcessing_, preventLoad_];
+        return true;
     }
 
-    return [false, reducedProcessing_, preventLoad_];
+    return false;
 };
 
-Melown.MapSurfaceTree.prototype.traceTileHeightNodeOnly = function(tile_, params_, childrenSequence_, priority_, reducedProcessing_, preventLoad_) {
+Melown.MapSurfaceTree.prototype.traceHeightTileByNodeOnly = function(tile_, params_, priority_) {
     if (!tile_ || tile_.id_[0] > params_.desiredLod_) {
-        return [false, reducedProcessing_, preventLoad_];
+        return false;
     }
 
     var node_ = tile_.metanode_;
 
     if (!node_) {
-        return [false, reducedProcessing_, preventLoad_];
+        return false;
     }
 
     params_.parent_ = {
@@ -535,182 +637,6 @@ Melown.MapSurfaceTree.prototype.traceTileHeightNodeOnly = function(tile_, params
     };
 
     params_.metanode_ =  node_;
-    return [tile_.id_[0] != params_.desiredLod_, reducedProcessing_, preventLoad_];
-};
-/*
-Melown.MapSurfaceTree.prototype.tilePixelSize3 = function(node_, screenPixelSize_, factor_) {
-    var d = (this.map_.cameraGeocentDistance_*factor_) - node_.diskDist_;
-    if (d < 0) {
-        return [Number.POSITIVE_INFINITY, 0.1];
-    } 
-
-    var a = Melown.vec3.dot(this.map_.cameraGeocentNormal_, node_.diskNormal_);
-    
-    if (a < node_.diskAngle2_) {
-        var a2 = Math.acos(a); 
-        var l1 = Math.tan(a2) * node_.diskDist_;
-        d = Math.sqrt(l1*l1 + d*d);
-    }
-
-    var factor_ = this.camera_.scaleFactor2(d);
-    return [factor_ * screenPixelSize_, d];
-};
-
-
-Melown.MapSurfaceTree.prototype.tilePixelSize2 = function(node_, screenPixelSize_) {
-    var d = this.map_.cameraGeocentDistance_ - node_.diskDist_;
-    if (d < 0) {
-        return [Number.POSITIVE_INFINITY, 0.1];
-    } 
-
-    var a = Melown.vec3.dot(this.map_.cameraGeocentNormal_, node_.diskNormal_);
-    
-    if (a < node_.diskAngle2_) {
-        var a2 = Math.acos(a); 
-        var l1 = Math.tan(a2) * node_.diskDist_;
-        d = Math.sqrt(l1*l1 + d*d);
-    }
-
-    var factor_ = this.camera_.scaleFactor2(d);
-    return [factor_ * screenPixelSize_, d];
-};
-
-Melown.MapSurfaceTree.prototype.tilePixelSize22 = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
-    var min_ = bbox_.min_;
-    var max_ = bbox_.max_;
-    var p1_ = bbox_.center();
-    bbox_.updateMaxSize();
-    var d = bbox_.maxSize_ * 0.5; 
-    
-    var dd_ = [cameraPos_[0]-p1_[0],
-               cameraPos_[1]-p1_[1],
-               cameraPos_[2]-p1_[2]]; 
-
-    var d2_ = Melown.vec3.length(dd_) - (bbox_.maxSize_ * 0.5);
-
-    var factor_ = this.camera_.scaleFactor2(d2_);
-
-    if (returnDistance_ == true) {
-        return [(factor_[0] * screenPixelSize_), factor_[1]];
-    }
-
-    return (factor_ * screenPixelSize_);
-};
-*/
-
-Melown.MapSurfaceTree.prototype.tilePixelSize = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
-    var min_ = bbox_.min_;
-    var max_ = bbox_.max_;
-    var tilePos_ = [min_[0] - cameraPos_[0], min_[1] - cameraPos_[1]];
-    var tilePos2_ = [max_[0] - cameraPos_[0], min_[1] - cameraPos_[1]];
-    var tilePos3_ = [max_[0] - cameraPos_[0], max_[1] - cameraPos_[1]];
-    var tilePos4_ = [min_[0] - cameraPos_[0], max_[1] - cameraPos_[1]];
-    var h1_ = min_[2] - cameraPos_[2];
-    var h2_ = max_[2] - cameraPos_[2];
-    
-    //camera inside bbox
-    if (!this.map_.config_.mapLowresBackground_) {
-        if (cameraPos_[0] > min_[0] && cameraPos_[0] < max_[0] &&
-            cameraPos_[1] > min_[1] && cameraPos_[1] < max_[1] &&
-            cameraPos_[2] > min_[2] && cameraPos_[2] < max_[2]) {
-    
-            if (returnDistance_ == true) {
-                return [Number.POSITIVE_INFINITY, 0.1];
-            }
-        
-            return Number.POSITIVE_INFINITY;
-        }
-    }
-
-    var factor_ = 0;
-
-    //find bbox sector
-    if (0 < tilePos_[1]) { //top row - zero means camera position in y
-        if (0 < tilePos_[0]) { // left top corner
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos_[0], tilePos_[1], (h1_ + h2_)*0.5], returnDistance_);
-            }
-        } else if (0 > tilePos2_[0]) { // right top corner
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], tilePos2_[1], (h1_ + h2_)*0.5], returnDistance_);
-            }
-        } else { //top side
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([(tilePos_[0] + tilePos2_[0])*0.5, tilePos2_[1], h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([(tilePos_[0] + tilePos2_[0])*0.5, tilePos2_[1], h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([(tilePos_[0] + tilePos2_[0])*0.5, tilePos2_[1], (h1_ + h2_)*0.5], returnDistance_);
-            }
-        }
-    } else if (0 > tilePos4_[1]) { //bottom row
-        if (0 < tilePos4_[0]) { // left bottom corner
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos4_[0], tilePos4_[1], (h1_ + h2_)*0.5], returnDistance_);
-            }
-        } else if (0 > tilePos3_[0]) { // right bottom corner
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos3_[0], tilePos3_[1], (h1_ + h2_)*0.5], returnDistance_);
-            }
-        } else { //bottom side
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([(tilePos4_[0] + tilePos3_[0])*0.5, tilePos3_[1], h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([(tilePos4_[0] + tilePos3_[0])*0.5, tilePos3_[1], h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([(tilePos4_[0] + tilePos3_[0])*0.5, tilePos3_[1], (h1_ + h2_)*0.5], returnDistance_);
-            }
-        }
-    } else { //middle row
-        if (0 < tilePos4_[0]) { // left side
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([tilePos_[0], (tilePos2_[1] + tilePos3_[1])*0.5, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([tilePos_[0], (tilePos2_[1] + tilePos3_[1])*0.5, h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos_[0], (tilePos2_[1] + tilePos3_[1])*0.5, (h1_ + h2_)*0.5], returnDistance_);
-            }
-        } else if (0 > tilePos3_[0]) { // right side
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], (tilePos2_[1] + tilePos3_[1])*0.5, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], (tilePos2_[1] + tilePos3_[1])*0.5, h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([tilePos2_[0], (tilePos2_[1] + tilePos3_[1])*0.5, (h1_ + h2_)*0.5], returnDistance_);
-            }
-        } else { //center
-            if (0 > h2_) { // hi
-                factor_ = this.camera_.scaleFactor([(tilePos_[1] + tilePos2_[1])*0.5, (tilePos2_[1] + tilePos3_[1])*0.5, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = this.camera_.scaleFactor([(tilePos_[1] + tilePos2_[1])*0.5, (tilePos2_[1] + tilePos3_[1])*0.5, h1_], returnDistance_);
-            } else { // middle
-                factor_ = this.camera_.scaleFactor([(tilePos_[1] + tilePos2_[1])*0.5, (tilePos2_[1] + tilePos3_[1])*0.5, (h1_ + h2_)*0.5], returnDistance_);
-            }
-        }
-    }
-
-    //console.log("new: " + (factor_ * screenPixelSize_) + " old:" + this.tilePixelSize2(node_) );
-
-    if (returnDistance_ == true) {
-        return [(factor_[0] * screenPixelSize_), factor_[1]];
-    }
-
-    return (factor_ * screenPixelSize_);
+    return (tile_.id_[0] != params_.desiredLod_);
 };
 
