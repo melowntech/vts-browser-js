@@ -73,7 +73,7 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
     }
 
     if (ignoreCore_ == true) {
-        if ((key_.indexOf("map") == 0 || key_.indexOf("mario") == 0) && this.core_.getMap()) {
+        if ((key_.indexOf("map") == 0 || key_.indexOf("mario") == 0 || key_.indexOf("authorization") == 0) && this.core_.getMap()) {
             this.core_.getMap().setConfigParam(key_, value_);
         }
 
