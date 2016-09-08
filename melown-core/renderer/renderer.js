@@ -583,11 +583,13 @@ Melown.Renderer.prototype.hitTestOld = function(screenX_, screenY_, mode_) {
 };
 
 Melown.Renderer.prototype.getZoffsetFactor = function(params_) {
-    var offsetFactor_ = 1.0 + this.distanceFactor_*params_[1]*((1-params_[2])+params_[2]*this.tiltFactor_);
+    //var offsetFactor_ = 1.0 + this.distanceFactor_*params_[1]*((1-params_[2])+params_[2]*this.tiltFactor_);
 //    return -Math.round(2000 * offsetFactor_ * params_[0]);
 //    return 1.0/(this.camera_.getFar() - this.camera_.getNear()) * offsetFactor_ * params_[0];
 //    return (1.0/(this.camera_.getFar() - this.camera_.getNear())) * (params_[0]*10000) * this.distanceFactor_;
-    return (1.0/(this.camera_.getFar() - this.camera_.getNear())) * offsetFactor_ * (params_[0]*10000);
+//    return (1.0/(this.camera_.getFar() - this.camera_.getNear())) * offsetFactor_ * (params_[0]*10000);
+
+    return (params_[0] + params_[1]*this.distanceFactor_ + params_[2]*this.tiltFactor_)*0.0001;
 };
 
 Melown.Renderer.prototype.saveScreenshot = function() {

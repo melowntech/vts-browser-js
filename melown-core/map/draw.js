@@ -552,7 +552,23 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
     }
 
     if (tile_.surfaceGeodata_ == null) {
-        var path_ = tile_.surface_.getGeodataUrl(tile_.id_);
+        var path_;
+        
+        if (tile_.surface_.geodataNavtileInfo_) {
+            var navtile_ = this.tree_.findNavTile(tile_.id_);
+            
+            if (navtile_ && navtile_.surface_) {
+                var navtileStr_ = navtile_.surface_.getNavUrl(navtile_.id_) + ";"
+                                  + navtile_.id_[0] + "-" + navtile_.id_[1] + "-" + navtile_.id_[2] + ";"      
+                                  + navtile_.metanode_.minHeight_ + ";" + navtile_.metanode_.maxHeight_;     
+                path_ = tile_.surface_.getGeodataUrl(tile_.id_, encodeURIComponent(navtileStr_));
+            }
+        }
+        
+        if (!path_) {
+            path_ = tile_.surface_.getGeodataUrl(tile_.id_, "");
+        }
+
         tile_.surfaceGeodata_ = tile_.resources_.getGeodata(path_, {tile_:tile_, surface_:tile_.surface_});
     }
 
@@ -612,10 +628,9 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
                 geodata_ : tile_.surfaceGeodataView_ 
             };
         //}
-    
         return true;
     }
-    
+
     return false;
 };
 

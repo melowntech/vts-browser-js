@@ -91,9 +91,31 @@ Melown.Core.prototype.loadMap = function(path_) {
     var onError_ = (function() {
     }).bind(this);
 
+    var onAutorizationLoaded_ = (function(data_) {
+        this.config_.token_ = "?token=" + data_["token"];
+        this.tokenExpiration_ = data_["expire"];
+        onLoadMapconfig(this.config_.token_);
+    }).bind(this);
+
+    var onAutorizationError_ = (function() {
+    }).bind(this);
+
     var baseUrl_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
-    Melown.loadJSON(path_, onLoaded_, onError_, null, Melown["useCredentials"]);// (path_.indexOf(baseUrl_) != -1));
+    var onLoadMapconfig = function(token_) {
+        Melown.loadJSON(path_ + token_, onLoaded_, onError_, null, Melown["useCredentials"]);
+    };
+
+    if (this.config_.authorization_) {
+        if (typeof this.config_.authorization_ === "string") {
+            Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"]);
+        } else {
+            this.config_.authorization_(onAutorizationLoaded_);
+        }
+    } else {
+        onLoadMapconfig("");
+    }
+
 };
 
 Melown.Core.prototype.getMap = function() {

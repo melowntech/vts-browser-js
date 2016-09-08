@@ -559,6 +559,7 @@ var validateLayerPropertyValue = function(layerId_, key_, value_) {
 
        case "visible":     return validateValue(layerId_, key_, value_, "boolean"); break;
        case "visibility":  return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "culling":     return validateValue(layerId_, key_, value_, "number", 180, 0.0001, 180); break;
        case "next-pass":   return validateValue(layerId_, key_, value_, "object"); break;
     }
 
@@ -613,7 +614,7 @@ var getDefaultLayerPropertyValue = function(key_) {
        case "polygon-color":  return [255,255,255,255];
 
        case "z-index":        return 0;
-       case "zbuffer-offset": return [1,1,1];
+       case "zbuffer-offset": return [0,0,0];
 
        case "hover-event": return false;
        case "hover-style": return "";
@@ -624,6 +625,7 @@ var getDefaultLayerPropertyValue = function(key_) {
 
        case "visible":    return true;
        case "visibility": return 0;
+       case "culling":    return 180;
        case "next-pass":  return null;
     }
 };
@@ -667,7 +669,17 @@ function getFilterResult(filter_, feature_, featureType_, group_) {
         case "#type":  value_ = featureType_; break;   
         case "#group": value_ = group_;       break;
         default:   
-            value_ = feature_.properties_[filter_[1]];
+            var filterValue_ = filter_[1];  
+
+            if (filterValue_ && filterValue_.length > 0) {
+                //is it feature property?
+                switch (filterValue_.charAt(0)) {
+                    case "$": value_ = feature_.properties_[filterValue_.substr(1)]; break;
+                    case "@": value_ = stylesheetConstants_[filterValue_]; break;
+                    default:
+                        value_ = feature_.properties_[filterValue_]; //fallback for old format
+                }
+            }
     }
 
     switch(filter_[0]) {
@@ -676,7 +688,7 @@ function getFilterResult(filter_, feature_, featureType_, group_) {
         case ">=": return (value_ >= filter_[2]);
         case "<=": return (value_ <= filter_[2]);
         case ">": return (value_ > filter_[2]);
-        case ">": return (value_ < filter_[2]);
+        case "<": return (value_ < filter_[2]);
         
         case "has": return (typeof value_ != "undefined");
         case "!has": return (typeof value_ == "undefined");
@@ -719,18 +731,9 @@ var processLayer = function(layerId_, layerData_, stylesheetLayersData_) {
             if (value_.length > 0) {
                 //is it constant?
                 if (value_.charAt(0) == "@") {
-
-                    if (stylesheetLayersData_["constants"] != null) {
-                        if (stylesheetLayersData_["constants"][value_] != null) {
-
-                            //replace constant with value
-                            layer_[key_] = stylesheetLayersData_["constants"][value_];
-                        } else {
-                            logError("wrong-object", layerId_, key_, value_, null, "constant");
-
-                            //replace constant with deafault value
-                            layer_[key_] = getDefaultLayerPropertyValue(key_);
-                        }
+                    if (stylesheetConstants_[value_] != null) {
+                        //replace constant with value
+                        layer_[key_] = stylesheetConstants_[value_];
                     } else {
                         logError("wrong-object", layerId_, key_, value_, null, "constant");
 
@@ -754,6 +757,7 @@ var processLayer = function(layerId_, layerData_, stylesheetLayersData_) {
 
 var processStylesheet = function(stylesheetLayersData_) {
     stylesheetBitmaps_ = {};
+    stylesheetConstants_ = stylesheetLayersData_["constants"] || {};
 
     //get bitmaps
     var bitmaps_ = stylesheetLayersData_["bitmaps"] || {};

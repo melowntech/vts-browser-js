@@ -732,12 +732,8 @@ Melown.Map.prototype.drawMap = function() {
         Melown.vec3.normalize(this.cameraPosition_, n);
         this.cameraGeocentNormal_ = n;
     }
-   
-    //var distanceFactor_ = (500/Math.max(10.0,this.cameraDistance_));
-    //this.renderer_.distanceFactor_ = (distanceFactor_ * distanceFactor_ * distanceFactor_)*0.5;
 
-    var distanceFactor_ = (500/Math.max(10.0,this.cameraDistance_));
-    this.renderer_.distanceFactor_ = (distanceFactor_ * distanceFactor_ * distanceFactor_)*0.5;
+    this.renderer_.distanceFactor_ = Math.log(this.cameraDistance_) / Math.log(1.04);
     this.renderer_.tiltFactor_ = 0.5 + 0.5 * (Math.abs(this.renderer_.cameraOrientation_[1]/-90));
    
     if (this.drawChannel_ != 1) {
@@ -745,22 +741,6 @@ Melown.Map.prototype.drawMap = function() {
     } else { //dender depth map
         this.renderer_.gpu_.clear(true, true, [255,255,255,255]);
     }
-
-    if (this.cameraDistance_ < 1000) {
-        this.zFactor2_ = 0.300;
-    } else if (this.cameraDistance_ < 2000) {
-        this.zFactor2_ = 0.200;
-    } else if (this.cameraDistance_ < 5000) {
-        this.zFactor2_ = 0.100;
-    } else if (this.cameraDistance_ < 8000) {
-        this.zFactor2_ = 0.050;
-    } else if (this.cameraDistance_ < 12000) {
-        this.zFactor2_ = 0.010;
-    } else {
-        this.zFactor2_ = 0.003;
-    }
-
-
 
     this.renderer_.gpu_.setState(this.drawTileState_);
 
@@ -780,32 +760,7 @@ Melown.Map.prototype.drawMap = function() {
         //}
     }
 
-    if (this.config_.mapLowresBackground_ > 0) {
-        this.setupDetailDegradation(this.config_.mapLowresBackground_);
-        this.zFactor_ = 0;
-        
-        this.camera_.update(this.renderer_.getZoffsetFactor([this.zFactor2_, 0, 0]));
-        this.loader_.setChannel(1); //1 = lowres channel
-        this.draw(true);
-        this.camera_.update(0);
-    }
-    
-//    console.log("mvp: " + this.camera_.mvp_[10]);
-/*
-    console.log("mvp1: " + JSON.stringify(this.camera_.mvp_));
-
-    Melown.mat4.multiply(
-        [1,0,0,0,
-        0,1,0,0,
-        0,0,2,0,
-        0,0,0,1,], this.camera_.mvp_, this.camera_.mvp_);
-
-    console.log("mvp2: " + JSON.stringify(this.camera_.mvp_));
-*/
-    //this.camera_.mvp_
-
     this.setupDetailDegradation();
-
 
     this.loader_.setChannel(0); //0 = hires channel
     this.zFactor_ = 0;
@@ -848,6 +803,12 @@ Melown.Map.prototype.update = function() {
     if (this.renderer_.curSize_[0] != rect_.width || this.renderer_.curSize_[1] != rect_.height) {
         this.renderer_.onResize();
         this.dirty_ = true;
+    }
+
+    if (this.core_.tokenExpiration_) {
+        if (performance.now() > (this.core_.tokenExpiration_ - (1000*60))) {
+            this.core_.tokenExpirationCallback_();
+        }
     }
 
     var dirty_ = this.dirty_;

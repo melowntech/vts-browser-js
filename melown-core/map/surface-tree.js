@@ -70,6 +70,46 @@ Melown.MapSurfaceTree.prototype.findSurfaceTile = function(id_) {
     return tile_;
 };
 
+Melown.MapSurfaceTree.prototype.findNavTile = function(id_) {
+    var tile_ = this.surfaceTree_;
+    
+    if (id_[0] == 0) {
+        if (tile_.metanode_ && tile_.metanode_.hasNavtile()) {
+            return tile_;
+        } else {
+            return null;
+        }
+    }
+    
+    var navtile_ = null;
+
+    for (var lod_ = 1; lod_ <= id_[0]; lod_++) {
+        var mask_ = 1 << (id_[0] - lod_);
+        var index_ = 0;
+
+        if ((id_[1] & mask_) != 0) {
+            index_ += 1;
+        }
+
+        if ((id_[2] & mask_) != 0) {
+            index_ += 2;
+        }
+        
+        tile_ = tile_.children_[index_];
+
+        if (!tile_) {
+            return navtile_;
+        } else {
+            if (tile_.metanode_ && tile_.metanode_.hasNavtile()) {
+                navtile_ = tile_;
+            }
+        }
+    }
+    
+    return navtile_;
+};
+
+
 Melown.MapSurfaceTree.prototype.draw = function() {
     this.cameraPos_ = [0,0,0];
     this.worldPos_ = [0,0,0];
@@ -109,6 +149,7 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     }
     
     var node_ = tile_.metanode_;
+    var cameraPos_ = this.map_.cameraPosition_;
 
     if (!tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
         return;
@@ -129,7 +170,6 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     
     var drawBuffer_ = [];
     var processBuffer_ = [tile_];
-    var cameraPos_ = this.map_.cameraPosition_;
     var texelSizeFit_ = this.map_.texelSizeFit_;
     
     do {
@@ -141,7 +181,7 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
 
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
                 
-                if (tile_.texelSize_ <= texelSizeFit_) {
+                if (/*node_.hasGeometry() && */tile_.texelSize_ <= texelSizeFit_) {
                     
                     drawBuffer_.unshift(tile_);
                     

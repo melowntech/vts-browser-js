@@ -7,6 +7,7 @@ var layerId_ = {};
 var stylesheetData_ = {};
 var stylesheetLayers_ = {};
 var stylesheetBitmaps_ = {};
+var stylesheetConstants_ = {};
 var forceOrigin_ = false;
 var bboxMin_ = [0,0,0];
 var bboxMax_ = [1,1,1];

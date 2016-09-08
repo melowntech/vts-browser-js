@@ -235,6 +235,7 @@ Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
     job_.color_ = [color_[0]*f, color_[1]*f, color_[2]*f, color_[3]*f];
     job_.zIndex_ = data_["z-index"] + 256;
     job_.visibility_ = data_["visibility"];
+    job_.culling_ = data_["culling"];
     job_.clickEvent_ = data_["click-event"];
     job_.hoverEvent_ = data_["hover-event"];
     job_.enterEvent_ = data_["enter-event"];
@@ -545,6 +546,44 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
             if (texture_.loaded_ == false) {
                 return;
             }
+
+             if (job_.culling_ != 180) {
+                var p2_ = job_.center_;
+                var p1_ = renderer_.cameraPosition_;
+                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
+
+                if (job_.visibility_ != 0) {
+                    var l = Melown.vec3.length(camVec_);
+                    if (l > job_.visibility_) {
+                        return;
+                    }
+
+                    l = 1/l;
+                    camVec_[0] *= l;                       
+                    camVec_[1] *= l;                       
+                    camVec_[2] *= l;                       
+                } else {
+                    Melown.vec3.normalize(camVec_);
+                }
+                
+                job_.normal_ = [0,0,0];
+                Melown.vec3.normalize(job_.center_, job_.normal_);
+                
+                var a = -Melown.vec3.dot(camVec_, job_.normal_);
+                if (a < Math.cos(Melown.radians(job_.culling_))) {
+                    return;
+                }
+            } else if (job_.visibility_ != 0) {
+                var p2_ = job_.center_;
+                var p1_ = renderer_.cameraPosition_;
+                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
+                var l = Melown.vec3.length(camVec_);
+                if (l > job_.visibility_) {
+                    return;
+                }
+            }
+            
+            //console.log(""+JSON.stringify(renderer_.cameraPosition_));
             
             //value larger then 0 means that visibility is tested
             //if (job_.visibility_ != 0) {

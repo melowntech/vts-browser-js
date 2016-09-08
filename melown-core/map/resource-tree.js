@@ -11,7 +11,7 @@ Melown.MapResourceTree.prototype.kill = function() {
 };
 
 Melown.MapResourceTree.prototype.findNode = function(id_, createNonexisted_) {
-    var node_ = this.tree_;
+    var node_ = this.tree_; //TODO: fix is it same way as findNavTile
 
     for (var lod_ = 1; lod_ <= id_[0]; lod_++) {
         var mask_ = 1 << (lod_-1);
@@ -40,7 +40,7 @@ Melown.MapResourceTree.prototype.findNode = function(id_, createNonexisted_) {
 };
 
 Melown.MapResourceTree.prototype.findAgregatedNode = function(id_, agregation_, createNonexisted_) {
-    var rootLod_ = 0;
+    var rootLod_ = 0;  //TODO: fix is it same way as findNavTile
     var node_ = this.tree_;
     var ix_ = ((id_[1] >> agregation_) << agregation_);
     var iy_ = ((id_[2] >> agregation_) << agregation_);

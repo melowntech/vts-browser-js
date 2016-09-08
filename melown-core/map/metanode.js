@@ -200,6 +200,10 @@ Melown.MapMetanode.prototype.clone = function() {
 Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
     this.ready_ = true;
 
+    if (this.geocent_) {
+        return;
+    }
+
     if (this.map_.config_.mapPreciseCulling_) { //use division node srs
         if (virtual_) {
             return; //result is same for each tile id
@@ -217,6 +221,12 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
         this.diskDistance_ = Melown.vec3.length(this.diskPos_); 
         Melown.vec3.normalize(this.diskPos_, normal_);
         this.diskNormal_ = normal_;   
+        
+        if (node_.id_[0] == 1 && node_.id_[1] ==  1 && node_.id_[2] == 0) {
+            var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
+
+            node_ = node_;
+        }
 
         var n1_ = node_.getPhysicalCoords([ur_[0], ur_[1], 0]);
         var n2_ = node_.getPhysicalCoords([ur_[0], ll_[1], 0]);

@@ -9,6 +9,7 @@ Melown.GpuProgram = function(gpu_, vertex_, fragment_) {
     this.program_ = null;
     this.uniformLocationCache_ = [];
     this.attributeLocationCache_ = [];
+    this.m_ = new Float32Array(16);
     this.createProgram(vertex_, fragment_);
 };
 
@@ -78,7 +79,44 @@ Melown.GpuProgram.prototype.setMat4 = function(name_, m_, zoffset_) {
     var key_ = this.getUniform(name_);
     if (key_ != null) {
         if (zoffset_) {
-            zoffset_ =1.0+zoffset_;
+            zoffset_ =1+zoffset_;
+            
+            /*
+            var m2_ = [
+                1,0,0,0,
+                0,1,0,0,
+                0,0,zoffset_,0,
+                0,0,0,1
+            ]; 
+
+            Melown.mat4.multiply(m2_, m_, m2_);
+            */
+            
+            var m3_ = this.m_;
+            
+            m3_[0] = m_[0];  
+            m3_[1] = m_[1];  
+            m3_[2] = m_[2] * zoffset_;  
+            m3_[3] = m_[3];  
+
+            m3_[4] = m_[4];  
+            m3_[5] = m_[5];  
+            m3_[6] = m_[6] * zoffset_;  
+            m3_[7] = m_[7];  
+
+            m3_[8] = m_[8] * zoffset_;  
+            m3_[9] = m_[9] * zoffset_;  
+            m3_[10] = m_[10] * zoffset_;  
+            m3_[11] = m_[11] * zoffset_;  
+
+            m3_[12] = m_[12];  
+            m3_[13] = m_[13];  
+            m3_[14] = m_[14] * zoffset_;  
+            m3_[15] = m_[15];  
+
+            
+            //var m_ = Melown.mat4.create(m_);
+            /*
             var tmp1_ = m_[2];
             var tmp2_ = m_[6];
             var tmp3_ = m_[10];
@@ -88,13 +126,16 @@ Melown.GpuProgram.prototype.setMat4 = function(name_, m_, zoffset_) {
             m_[6] *= zoffset_;
             m_[10] *= zoffset_;
             m_[15] *= zoffset_;
+            */
 
-            gl_.uniformMatrix4fv(key_, false, m_);
+            gl_.uniformMatrix4fv(key_, false, m3_);
 
+            /*
             m_[2] = tmp1_;
             m_[6] = tmp2_;
             m_[10] = tmp3_;
             m_[15] = tmp4_;
+            */
             
         } else {
             gl_.uniformMatrix4fv(key_, false, m_);

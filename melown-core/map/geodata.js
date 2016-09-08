@@ -61,7 +61,7 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
     
     Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), true, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
     return;
-
+/*
     var tile_ = this.extraInfo_.tile_;    
 
     if (tile_) {
@@ -81,15 +81,6 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
         
                     "points": [{
                         "points": [
-                            [0, 0, 0] /*,
-                            [4096, 0, 0],
-                            [4096, 4096, 0],
-                            [0, 4096, 0],
-    
-                            [0, 0, 4096],
-                            [4096, 0, 4096],
-                            [4096, 4096, 4096],
-                            [0, 4096, 4096]*/
                         ],
             
                         "properties": {
@@ -105,15 +96,8 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
                                 [4096, 0, 0],
                                 [4096, 4096, 0],
                                 [0, 4096, 0]
-                            ]/*,
-                            
-                            [
-                                [0, 0, 4096],
-                                [4096, 0, 4096],
-                                [4096, 4096, 4096],
-                                [0, 4096, 4096]
-                            ]*/
-                        ],
+                            ]
+                        ]
             
                         "properties": {
                             "kind": "road",
@@ -187,7 +171,7 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
             
         });
     }
-
+*/
 };
 
 Melown.MapGeodata.prototype.onLoadError = function() {

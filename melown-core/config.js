@@ -27,6 +27,7 @@ Melown.Core.prototype.initConfig = function() {
         mapFog_ : false,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false,
+        authorization_ : null, 
         mario_ : false
     };
 };
@@ -55,8 +56,10 @@ Melown.Core.prototype.setConfigParam = function(key_, value_) {
         }
     } else if (key_ == "map") {
         this.config_.map_ = Melown.validateString(value_, null);
+    } else if (key_ == "authorization") {
+        this.config_.authorization_ = ((typeof value_ === "string") || (typeof value_ === "function")) ? value_ : null;   
     } else {
-        if (key_.indexOf("map") == 0 || key_.indexOf("mario") == 0) {
+        if (key_.indexOf("map") == 0 || key_ == "mario") {
             this.configStorage_[key_] = value_;
             if (this.getMap() != null) {
                 this.getMap().setConfigParam(key_, value_);

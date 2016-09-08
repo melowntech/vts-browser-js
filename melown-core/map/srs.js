@@ -17,6 +17,7 @@ Melown.MapSrs = function(map_, id_, json_) {
     this.geoidGrid_ = null;
     this.geoidGridMap_ = null;
     this.srsProj4_ = this.proj4_(this.srsDef_, null, null, true); 
+    this.latlonProj4_ = null; 
 
     if (json_["geoidGrid"]) {
         var geoidGridData_ = json_["geoidGrid"];
@@ -27,7 +28,7 @@ Melown.MapSrs = function(map_, id_, json_) {
             valueRange : geoidGridData_["valueRange"] || [0,1]
         };
 
-        if (geoidGridData_["extents"] != null) {
+        if (geoidGridData_["extents"]) {
             this.geoidGrid_.extents_ = {
                 ll_ : geoidGridData_["extents"]["ll"],
                 ur_ : geoidGridData_["extents"]["ur"]
@@ -39,9 +40,13 @@ Melown.MapSrs = function(map_, id_, json_) {
             };
         }
 
-        if (this.geoidGrid_.definition_ != null) {
+        if (this.geoidGrid_.definition_) {
             var url_ = this.map_.makeUrl(this.geoidGrid_.definition_, {}, null);
             this.geoidGridMap_ = new Melown.MapTexture(this.map_, url_, true);
+        }
+        
+        if (this.geoidGrid_.srsDefEllps_) {
+            this.geoidGrid_.srsProj4_ = this.proj4_(this.geoidGrid_.srsDefEllps_, null, null, true);        
         }
     }
 
@@ -115,7 +120,7 @@ Melown.MapSrs.prototype.getFinalHeight = function(coords_) {
 Melown.MapSrs.prototype.getGeoidGridDelta = function(coords_, original_) {
     if (this.geoidGridMap_ != null && this.isGeoidGridReady()) {
         //get cooords in geoidGrid space
-        mapCoords_ = this.proj4_(this.srsDef_, this.geoidGrid_.srsDefEllps_, [coords_[0], coords_[1]]);
+        mapCoords_ = this.proj4_(this.srsDef_, this.this.geoidGrid_.srsProj4_, [coords_[0], coords_[1]]);
 
         //get image coords
         var px_ = mapCoords_[0] - this.geoidGrid_.extents_.ll_[0];
@@ -166,7 +171,11 @@ Melown.MapSrs.prototype.getVerticalAdjustmentFactor = function(coords_) {
                           " +b=" + info_["b"] +
                           " +x_0=0 +y_0=0";
 
-        var coords2_ = this.proj4_(this.srsDef_, latlonProj_, [coords_[0], coords_[1]]);
+        if (!this.latlonProj4_) {
+            this.latlonProj4_ = this.proj4_(latlonProj_, null, null, true); 
+        }
+
+        var coords2_ = this.proj4_(this.srsProj4_, this.latlonProj4_, [coords_[0], coords_[1]]);
 
         //move coors 1000m
         var geod = new GeographicLib["Geodesic"]["Geodesic"](info_["a"],
@@ -177,7 +186,7 @@ Melown.MapSrs.prototype.getVerticalAdjustmentFactor = function(coords_) {
         coords2_ = [r.lon2, r.lat2];
 
         //convet coords from latlon back to projected
-        coords2_ = this.proj4_(latlonProj_, this.srsDef_, coords2_);
+        coords2_ = this.proj4_(this.latlonProj4_, this.srsProj4_, coords2_);
 
         //get distance between coords
         var dx_ = coords2_[0] - coords_[0];

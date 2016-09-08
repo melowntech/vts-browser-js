@@ -22,6 +22,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.ready_ = false;
     this.geodataProcessor_ = null;
     this.geodataCounter_ = 0;
+    this.geodataNavtileInfo_ = false;
     this.monoGeodata_ = null;
     this.monoGeodataView_ = null;
     this.monoGeodataCounter_ = -1;
@@ -112,6 +113,11 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
         
             break;
     }    
+
+
+    if (this.geodataUrl_ && this.geodataUrl_.indexOf("{geonavtile}") != -1) {
+        this.geodataNavtileInfo_ = true;
+    }
 
     //load stylesheet
     if (this.geodata_) {
@@ -279,6 +285,14 @@ Melown.MapSurface.prototype.getNavUrl = function(id_, skipBaseUrl_) {
     return this.map_.makeUrl(this.navUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
 };
 
+Melown.MapSurface.prototype.getNavTemplate = function(id_, skipBaseUrl_) {
+    if (this.navUrl_.indexOf("//") != -1){
+        return this.navUrl_ 
+    } else {
+        this.map_.baseURL_ + url_;
+    }
+};
+
 Melown.MapSurface.prototype.getMeshUrl = function(id_, skipBaseUrl_) {
     return this.map_.makeUrl(this.meshUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
 };
@@ -287,8 +301,8 @@ Melown.MapSurface.prototype.getTextureUrl = function(id_, subId_, skipBaseUrl_) 
     return this.map_.makeUrl(this.textureUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, subId_, skipBaseUrl_);
 };
 
-Melown.MapSurface.prototype.getGeodataUrl = function(id_, skipBaseUrl_) {
-    return this.map_.makeUrl(this.geodataUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
+Melown.MapSurface.prototype.getGeodataUrl = function(id_, navtileStr_, skipBaseUrl_) {
+    return this.map_.makeUrl(this.geodataUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, navtileStr_, skipBaseUrl_);
 };
 
 Melown.MapSurface.prototype.getMonoGeodataUrl = function(id_, skipBaseUrl_) {

@@ -20,6 +20,7 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
 
     //debugger
     var visibility_ = getLayerPropertyValue(style_, "visibility", pointArray_, lod_);
+    var culling_ = getLayerPropertyValue(style_, "culling", pointArray_, lod_);
     var hoverEvent_ = getLayerPropertyValue(style_, "hover-event", pointArray_, lod_);
     var clickEvent_ = getLayerPropertyValue(style_, "click-event", pointArray_, lod_);
     var drawEvent_ = getLayerPropertyValue(style_, "draw-event", pointArray_, lod_);
@@ -228,9 +229,9 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
         center_[2] /= totalPoints_;
     }
 
-    center_[0] += groupOrigin_[0];
-    center_[1] += groupOrigin_[1];
-    center_[2] += groupOrigin_[2];
+    center_[0] += bboxMin_[0];//groupOrigin_[0];
+    center_[1] += bboxMin_[1];//groupOrigin_[1];
+    center_[2] += bboxMin_[2];//groupOrigin_[2];
 
     var hitable_ = hoverEvent_ || clickEvent_ || enterEvent_ || leaveEvent_;
 
@@ -257,7 +258,7 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
         postGroupMessage({"command":"addRenderJob", "type": "icon", "vertexBuffer": iconData_.vertexBuffer_,
                           "originBuffer": iconData_.originBuffer_, "texcoordsBuffer": iconData_.texcoordsBuffer_,
                           "icon":stylesheetBitmaps_[iconData_.source_[0]], "color":iconData_.color_, "z-index":zIndex_,
-                          "visibility": visibility_, "center": center_, "stick": iconData_.stick_,
+                          "visibility": visibility_, "culling": culling_, "center": center_, "stick": iconData_.stick_,
                           "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                           "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                           "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
@@ -267,7 +268,8 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
     if (label_ == true && labelData_.vertexBuffer_.length > 0) {
         postGroupMessage({"command":"addRenderJob", "type": "label", "vertexBuffer": labelData_.vertexBuffer_,
                           "originBuffer": labelData_.originBuffer_, "texcoordsBuffer": labelData_.texcoordsBuffer_,
-                          "color":labelData_.color_, "z-index":zIndex_, "visibility": visibility_, "center": center_, "stick": labelData_.stick_,
+                          "color":labelData_.color_, "z-index":zIndex_, "visibility": visibility_, "culling": culling_, 
+                          "center": center_, "stick": labelData_.stick_,
                           "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
                           "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
                           "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
