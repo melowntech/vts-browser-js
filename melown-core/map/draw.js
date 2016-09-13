@@ -551,6 +551,13 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
         return true;
     }
 
+    if (tile_.id_[0] == 21 && 
+        tile_.id_[1] == 566376 &&
+        tile_.id_[2] == 355252 ){ 
+            
+//        return true;        
+    }
+
     if (tile_.surfaceGeodata_ == null) {
         var path_;
         
@@ -628,7 +635,7 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
                 geodata_ : tile_.surfaceGeodataView_ 
             };
         //}
-        return true;
+        return tile_.surfaceGeodataView_.isReady();
     }
 
     return false;
@@ -982,7 +989,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
 
     //draw distance
     if (this.drawDistance_) {
-        var text_ = "" + pixelSize_[1].toFixed(2) + "  " + pixelSize_[0].toFixed(3) + "  " + node_.pixelSize_.toFixed(3);
+        var text_ = "" + tile_.distance_.toFixed(2) + "  " + tile_.texelSize_.toFixed(3) + "  " + node_.pixelSize_.toFixed(3);
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
     }
 

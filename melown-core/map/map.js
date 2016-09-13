@@ -733,8 +733,8 @@ Melown.Map.prototype.drawMap = function() {
         this.cameraGeocentNormal_ = n;
     }
 
-    this.renderer_.distanceFactor_ = Math.log(this.cameraDistance_) / Math.log(1.04);
-    this.renderer_.tiltFactor_ = 0.5 + 0.5 * (Math.abs(this.renderer_.cameraOrientation_[1]/-90));
+    this.renderer_.distanceFactor_ = 1 / Math.max(1,Math.log(this.cameraDistance_) / Math.log(1.04));
+    this.renderer_.tiltFactor_ = (Math.abs(this.renderer_.cameraOrientation_[1]/-90));
    
     if (this.drawChannel_ != 1) {
         this.renderer_.gpu_.clear(true, false);

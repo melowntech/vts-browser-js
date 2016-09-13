@@ -93,8 +93,10 @@ Melown.Core.prototype.loadMap = function(path_) {
 
     var onAutorizationLoaded_ = (function(data_) {
         this.config_.token_ = "?token=" + data_["token"];
-        this.tokenExpiration_ = data_["expire"];
-        onLoadMapconfig(this.config_.token_);
+        this.tokenExpiration_ = data_["expires"] * 1000;
+        this.tokenExpirationCallback_ = (function(){
+            Melown.loadJSON(path_ + this.config_.token_, null, null, null, Melown["useCredentials"]);
+        });
     }).bind(this);
 
     var onAutorizationError_ = (function() {
@@ -106,7 +108,7 @@ Melown.Core.prototype.loadMap = function(path_) {
         Melown.loadJSON(path_ + token_, onLoaded_, onError_, null, Melown["useCredentials"]);
     };
 
-    if (this.config_.authorization_) {
+    if (false && this.config_.authorization_) {
         if (typeof this.config_.authorization_ === "string") {
             Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"]);
         } else {

@@ -8,6 +8,8 @@ Melown.MapMetatile = function(metaresources_, surface_) {
     this.id_ = metaresources_.id_;
     this.nodes_ = [];
     this.loadState_ = 0;
+    this.loadErrorTime_ = null;
+    this.loadErrorCounter_ = 0;
     this.size_ = 0;
     this.cacheItem_ = null;
 };
@@ -59,7 +61,7 @@ Melown.MapMetatile.prototype.clone = function(surface_) {
     return metatile_;
 };
 
-Melown.MapMetatile.prototype.isReady = function () {
+Melown.MapMetatile.prototype.isReady = function (/*doNotLoad_,*/ priority_) {
     //if (this.id_[0] == 18 &&
     //    this.id_[1] == 130400 &&
     //    this.id_[2] == 129088) {
@@ -70,10 +72,27 @@ Melown.MapMetatile.prototype.isReady = function () {
         return true;
     } else {
 
-        if (this.loadState_ == 0) { //not loaded
-            this.scheduleLoad();
-        } //else load in progress
+        if (this.loadState_ == 0) { 
+            //if (doNotLoad_) {
+                //remove from queue
+                //if (this.mapLoaderUrl_) {
+                  //  this.map_.loader_.remove(this.mapLoaderUrl_);
+                //}
+            //} else {
+                //not loaded
+                //add to loading queue or top position in queue
+                if (this.loadState_ == 3) { //loadError
+                    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_ &&
+                        performance.now() > this.loadErrorTime_ + this.map_.config_.mapLoadErrorRetryTime_) {
 
+                        this.scheduleLoad(priority_);                    
+                    }
+                } else {
+                    this.scheduleLoad(priority_);
+                }
+            //}
+        } //else load in progress
+        
         return false;
     }
 
@@ -125,8 +144,16 @@ Melown.MapMetatile.prototype.onLoadError = function() {
         return;
     }
 
+    this.loadState_ = 3;
+    this.loadErrorTime_ = performance.now();
+    this.loadErrorCounter_ ++;
+
+    //make sure we try to load it again
+    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_) { 
+        setTimeout((function(){ if (!this.map_.killed_) { this.map_.markDirty(); } }).bind(this), this.map_.config_.mapLoadErrorRetryTime_);
+    }    
+
     this.mapLoaderCallError_();
-    //this.loadState_ = 2;
 };
 
 Melown.MapMetatile.prototype.onLoaded = function(data_) {
@@ -140,9 +167,11 @@ Melown.MapMetatile.prototype.onLoaded = function(data_) {
 
     this.cacheItem_= this.map_.metatileCache_.insert(this.kill.bind(this, true), this.size_);
 
-    this.mapLoaderCallLoaded_();
-    this.loadState_ = 2;
     this.map_.markDirty();
+    this.loadState_ = 2;
+    this.loadErrorTime_ = null;
+    this.loadErrorCounter_ = 0;
+    this.mapLoaderCallLoaded_();
 };
 
 Melown.MapMetatile.prototype.parseMetatatile = function(stream_) {

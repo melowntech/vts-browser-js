@@ -133,7 +133,13 @@ Melown.MapSurfaceTree.prototype.draw = function() {
         }
 
     } else {
-        this.drawSurface([0,0,0]);
+
+        if (this.freeLayerSurface_ && this.freeLayerSurface_.geodata_) {
+            this.drawGeodataSurface([0,0,0]);
+        } else {
+            this.drawSurface([0,0,0]);
+        }
+
         //this.renderSurface([0,0,0]);
     }
 };
@@ -252,6 +258,398 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
         this.map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, 0, false, false);
     }
 };
+
+
+
+Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
+    this.counter_++;
+//    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);
+
+    var tile_ = this.surfaceTree_;
+    
+    if (!tile_.isMetanodeReady(this, 0)) {
+        return;
+    }
+    
+    var node_ = tile_.metanode_;
+    var cameraPos_ = this.map_.cameraPosition_;
+
+    if (!tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+        return;
+    }
+
+    tile_.updateTexelSize();
+    
+    var typeFactor_ = this.freeLayerSurface_ ? 1 : 1;
+    
+    /*
+    var drawBuffer_ = this.map_.processBuffer_;
+    var processBuffer_ = this.map_.processBuffer_;
+    var newProcessBuffer_ = this.map_.processBuffer2_;
+    var drawBufferIndex_ = 0;
+    var processBufferIndex_ = 0;
+    var newProcessBufferIndex_ = 0;
+    */
+    
+    var drawBuffer_ = [];
+    var processBuffer_ = [tile_];
+    var texelSizeFit_ = this.map_.texelSizeFit_;
+    
+    do {
+        var newProcessBuffer_ = [];
+        
+        for (var i = 0, li = processBuffer_.length; i < li; i++) {
+            tile_ = processBuffer_[i];
+            node_ = tile_.metanode_;
+
+            if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+                
+                if (/*node_.hasGeometry() && */tile_.texelSize_ <= texelSizeFit_) {
+                    
+                    drawBuffer_.unshift(tile_);
+                    
+                } else { //go deeper
+
+                    var childrenCount_ = 0;
+                    var readyCount_ = 0;
+                    var childrenBuffer_ = [];
+        
+                    for (var j = 0; j < 4; j++) {
+                        var child_ = tile_.children_[j];
+                        if (child_) {
+                            childrenCount_++;
+       
+                            if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+
+                                child_.updateTexelSize();
+                                var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+                                
+                                //are draw buffers ready? preventRender=true, preventLoad_=false
+                                //if (this.map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, false)) {
+                                    //readyCount_++;
+                                    //child_.updateTexelSize();
+                                    childrenBuffer_.push(child_);
+                                //} else {
+                                    
+                                    //check children
+                                    /*
+                                    for (var k = 0; k < 4; k++) {
+                                        var subchild_ = child_.children_[k];
+                                        if (subchild_) {
+                                            childrenCount_++;
+                       
+                                            if (subchild_.isMetanodeReady(this, subchild_.id_[0])) { //lod is used as priority
+                                                
+                                            }
+                                        }
+                                    }*/
+                                    
+                                    
+                                //}
+                            }
+                        }
+                    }
+        
+                    if (childrenCount_ > 0/* && childrenCount_ == readyCount_*/) {
+                        //sort childern by distance
+    
+                        do {
+                            var sorted_ = true;
+                            
+                            for (var j = 0, lj = childrenBuffer_.length - 1; j < lj; j++) {
+                                if (childrenBuffer_[j].distance_ > childrenBuffer_[j+1].distance_) {
+                                    var t = childrenBuffer_[j];
+                                    childrenBuffer_[j] = childrenBuffer_[j+1];
+                                    childrenBuffer_[j+1] = t;
+                                    sorted_ = false;
+                                } 
+                            }
+                            
+                        } while(!sorted_);
+    
+                        //add childern to new process buffer 
+                        for (var j = 0, lj = childrenBuffer_.length; j < lj; j++) {
+                            newProcessBuffer_.unshift(childrenBuffer_[j]);  
+                        }
+                    } else {
+                        drawBuffer_.unshift(tile_);  
+                    }
+                    
+                }
+            }
+        }
+        
+        processBuffer_ = newProcessBuffer_;
+        
+    } while(processBuffer_.length > 0);
+    
+
+    for (var i = 0, li = drawBuffer_.length; i < li; i++) {
+        tile_ = drawBuffer_[i];
+        //draw tile,  preventRender=false, preventLoad_=false
+        this.map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, 0, false, false);
+    }
+};
+
+
+
+Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
+    this.counter_++;
+//    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);
+
+    var tile_ = this.surfaceTree_;
+    
+    if (!tile_.isMetanodeReady(this, 0)) {
+        return;
+    }
+    
+    var node_ = tile_.metanode_;
+    var cameraPos_ = this.map_.cameraPosition_;
+
+    if (!tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+        return;
+    }
+
+    tile_.updateTexelSize();
+    
+    var typeFactor_ = this.freeLayerSurface_ ? 1 : 1;
+    
+    /*
+    var drawBuffer_ = this.map_.processBuffer_;
+    var processBuffer_ = this.map_.processBuffer_;
+    var newProcessBuffer_ = this.map_.processBuffer2_;
+    var drawBufferIndex_ = 0;
+    var processBufferIndex_ = 0;
+    var newProcessBufferIndex_ = 0;
+    */
+    
+    var drawBuffer_ = [];
+    var processBuffer_ = [[tile_,0]];
+    var texelSizeFit_ = this.map_.texelSizeFit_;
+    
+    do {
+        var newProcessBuffer_ = [];
+
+        /*if (this.map_.drawIndices_) {
+            console.log("processed begin==============================================");
+        }*/            
+       
+        for (var i = 0, li = processBuffer_.length; i < li; i++) {
+            var pack_ = processBuffer_[i];
+            tile_ = pack_[0];
+            depth_ = pack_[1];
+            
+            /*if (this.map_.drawIndices_) {
+                console.log(JSON.stringify(tile_.id_));
+            }*/
+            
+            if (depth_ >= 2) {
+                continue;
+            }
+            /*
+            if (tile_.id_[0] >= 16) { 
+                tile_ = tile_;    
+            } 
+
+            if (tile_.id_[0] == 18 && 
+                tile_.id_[1] == 20982 &&
+                tile_.id_[2] == 50643){
+                tile_ = tile_;    
+            }*/
+            
+            node_ = tile_.metanode_;
+
+            if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+
+                if (node_.hasChildren() == false || tile_.texelSize_ <= texelSizeFit_) {
+
+                    var priority_ = tile_.id_[0] * typeFactor_ * tile_.distance_; 
+            
+                    if (node_.hasChildren() && !this.map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, (depth_ > 0))) {
+
+                        depth_++;
+            
+                        for (var j = 0; j < 4; j++) {
+                            var child_ = tile_.children_[j];
+                            if (child_) {
+           
+                                if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+                                    
+                                    child_.updateTexelSize();
+                                    var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+
+                                    /*if (child_.id_[0] == 18 && 
+                                    child_.id_[1] == 20982 &&
+                                    child_.id_[2] == 50643){
+                                        child_ = child_;    
+                                    }*/
+                                    
+                                    //are draw buffers ready? preventRender=true, preventLoad_=false
+                                    if (this.map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, (depth_ > 0))) {
+                                        //readyCount_++;
+                                        //child_.updateTexelSize();
+                                        drawBuffer_.unshift(child_);
+                                    } else {
+                                        //child_.updateTexelSize();
+                                        newProcessBuffer_.unshift([child_, depth_]);
+                                    }
+                                }
+                            }
+                        }
+
+                    } else {
+                        drawBuffer_.unshift(tile_);
+                    }
+                    
+                } else if (depth_ == 0 && node_.hasGeometry() && tile_.texelSize_ <= (texelSizeFit_ * 2)) {
+                    
+                    //are all children ready? if not then draw carser lod
+                    var childrenCount_ = 0;
+                    var readyCount_ = 0;
+                    var childrenBuffer_ = [];
+        
+                    for (var j = 0; j < 4; j++) {
+                        var child_ = tile_.children_[j];
+                        if (child_) {
+                            childrenCount_++;
+       
+                            if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+
+                                child_.updateTexelSize();
+                                var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+
+                                /*if (child_.id_[0] == 18 && 
+                                child_.id_[1] == 20982 &&
+                                child_.id_[2] == 50643){
+                                    child_ = child_;    
+                                }*/
+                                
+                                //are draw buffers ready? preventRender=true, preventLoad_=false
+                                if (this.map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, (depth_ > 0))) {
+                                    readyCount_++;
+                                    childrenBuffer_.push(child_);
+                                }
+                            }
+                        }
+                    }
+        
+                    if (childrenCount_ > 0 && childrenCount_ == readyCount_) {
+                        //sort childern by distance
+    
+                        do {
+                            var sorted_ = true;
+                            
+                            for (var j = 0, lj = childrenBuffer_.length - 1; j < lj; j++) {
+                                if (childrenBuffer_[j].distance_ > childrenBuffer_[j+1].distance_) {
+                                    var t = childrenBuffer_[j];
+                                    childrenBuffer_[j] = childrenBuffer_[j+1];
+                                    childrenBuffer_[j+1] = t;
+                                    sorted_ = false;
+                                } 
+                            }
+                            
+                        } while(!sorted_);
+    
+                        //add childern to new process buffer 
+                        for (var j = 0, lj = childrenBuffer_.length; j < lj; j++) {
+                            newProcessBuffer_.unshift([childrenBuffer_[j], depth_]);
+                            
+                            /*
+                            var child_ = childrenBuffer_[j];
+                            if (child_.id_[0] == 18 && 
+                            child_.id_[1] == 20982 &&
+                            child_.id_[2] == 50643){
+                                child_ = child_;    
+                            }*/
+
+                        }
+                    } else {
+                        
+                        //can i use coarser lod
+                        //if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+
+                        var priority_ = tile_.id_[0] * typeFactor_ * tile_.distance_; 
+
+                        if (this.map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, true)) {
+                            drawBuffer_.unshift(tile_);
+                            //newProcessBuffer_.unshift([tile_, depth_+1]);
+                        } else {
+
+                            for (var j = 0; j < 4; j++) {
+                                var child_ = tile_.children_[j];
+                                if (child_) {
+        
+                                    /*if (child_.id_[0] == 18 && 
+                                    child_.id_[1] == 20982 &&
+                                    child_.id_[2] == 50643){
+                                        child_ = child_;    
+                                    }*/
+        
+                                    if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+                                        child_.updateTexelSize();
+                                        var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+        
+                                        newProcessBuffer_.unshift([child_, depth_]);  
+                                    }
+                                }
+                            }                    
+
+                        } 
+                    }
+
+                } else  {  //go deeper
+                    
+                    
+                    for (var j = 0; j < 4; j++) {
+                        var child_ = tile_.children_[j];
+                        if (child_) {
+
+                            /*if (child_.id_[0] == 18 && 
+                            child_.id_[1] == 20982 &&
+                            child_.id_[2] == 50643){
+                                child_ = child_;    
+                            }*/
+
+                            if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+                                child_.updateTexelSize();
+                                var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+
+                                newProcessBuffer_.unshift([child_, depth_]);  
+                            }
+                        }
+                    }                    
+                    
+                }
+
+
+
+                
+            }
+        }
+
+        /*if (this.map_.drawIndices_) {
+            console.log("processed end==============================================");
+        }*/            
+        
+        processBuffer_ = newProcessBuffer_;
+        
+    } while(processBuffer_.length > 0);
+    
+
+    for (var i = 0, li = drawBuffer_.length; i < li; i++) {
+        tile_ = drawBuffer_[i];
+        //draw tile,  preventRender=false, preventLoad_=false
+        if (tile_.metanode_) {
+            this.map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, 0, false, false);
+        }
+    }
+};
+
+
+
+
+
+
 /*
 Melown.MapSurfaceTree.prototype.traceChildSequenceBasic = function(tile_) {
     return [[0,0],[1,0],[2,0],[3,0]];
@@ -630,6 +1028,10 @@ Melown.MapSurfaceTree.prototype.traceHeightTileByMap = function(tile_, params_, 
     if (node_.hasNavtile()) {
         if (!tile_.heightMap_) {
             //if (!preventLoad_) {
+                if (!tile_.surface_) {
+                    return false; //is it best way how to do it?
+                }
+                
                 var path_ = tile_.surface_.getNavUrl(tile_.id_);
                 tile_.heightMap_ = tile_.resources_.getTexture(path_, true);
             //}

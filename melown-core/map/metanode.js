@@ -247,6 +247,11 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
 
         //get cos angle based at 90deg
         this.diskAngle_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
+
+        //shift center closer to earth
+        var factor_ = this.bbox_.maxSize_ * 0.2; 
+        this.diskPos_ = [this.diskPos_[0] - normal_[0] * factor_, this.diskPos_[1]  - normal_[1] * factor_, this.diskPos_[2] - normal_[2] * factor_];   
+
     } else {
         var min_ = this.bbox_.min_;
         var max_ = this.bbox_.max_;

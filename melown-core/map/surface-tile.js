@@ -766,6 +766,7 @@ Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
             if (node_.usedDisplaySize()) { 
                 screenPixelSize_ = this.map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256);
                 var factor_ = (node_.displaySize_ / 256) * this.map_.cameraDistance_;
+                //var factor_ = (256 / 256) * this.map_.cameraDistance_;
                 
                 var v = this.map_.cameraVector_;
                 var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];

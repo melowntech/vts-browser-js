@@ -77,6 +77,8 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
     this.credits_ = json_["credits"] || [];
     this.creditsUrl_ = null;
     this.displaySize_ = json_["displaySize"] || 256;
+    
+    //this.geodataUrl_= "http://pomerol.internal:8870/mp/melown2015/geodata/melown/legacy-mapzen-all-json/{lod}-{x}-{y}.geo?navtile={geonavtile}";
 
     if (json_["extents"]) {
         var ll_ = json_["extents"]["ll"];
@@ -116,7 +118,8 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
 
 
     if (this.geodataUrl_ && this.geodataUrl_.indexOf("{geonavtile}") != -1) {
-        this.geodataNavtileInfo_ = true;
+        //this.geodataNavtileInfo_ = true;
+        this.geodataNavtileInfo_ = false;
     }
 
     //load stylesheet
@@ -287,7 +290,7 @@ Melown.MapSurface.prototype.getNavUrl = function(id_, skipBaseUrl_) {
 
 Melown.MapSurface.prototype.getNavTemplate = function(id_, skipBaseUrl_) {
     if (this.navUrl_.indexOf("//") != -1){
-        return this.navUrl_ 
+        return this.navUrl_;
     } else {
         this.map_.baseURL_ + url_;
     }
@@ -302,6 +305,7 @@ Melown.MapSurface.prototype.getTextureUrl = function(id_, subId_, skipBaseUrl_) 
 };
 
 Melown.MapSurface.prototype.getGeodataUrl = function(id_, navtileStr_, skipBaseUrl_) {
+//    return this.map_.makeUrl(this.geodataUrl_ + "&v=1", {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, navtileStr_, skipBaseUrl_);
     return this.map_.makeUrl(this.geodataUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, navtileStr_, skipBaseUrl_);
 };
 

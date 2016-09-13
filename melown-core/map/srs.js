@@ -120,7 +120,7 @@ Melown.MapSrs.prototype.getFinalHeight = function(coords_) {
 Melown.MapSrs.prototype.getGeoidGridDelta = function(coords_, original_) {
     if (this.geoidGridMap_ != null && this.isGeoidGridReady()) {
         //get cooords in geoidGrid space
-        mapCoords_ = this.proj4_(this.srsDef_, this.this.geoidGrid_.srsProj4_, [coords_[0], coords_[1]]);
+        mapCoords_ = this.proj4_(this.srsProj4_, this.geoidGrid_.srsProj4_, [coords_[0], coords_[1]]);
 
         //get image coords
         var px_ = mapCoords_[0] - this.geoidGrid_.extents_.ll_[0];

@@ -9,6 +9,8 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
     this.imageExtents_ = null;
     this.gpuTexture_ = null;
     this.loadState_ = 0;
+    this.loadErrorTime_ = null;
+    this.loadErrorCounter_ = 0;
     this.neverReady_ = false;
     this.mask_ = null;
     this.mapLoaderUrl_ = path_;
@@ -245,6 +247,11 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
             if (this.checkStatus_ != 2) {
                 if (this.checkStatus_ == 0) {
                     this.scheduleHeadRequest(priority_, (this.checkType_ == "negative-size"));
+                } else if (this.checkStatus_ == 3) { //loadError
+                    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_ &&
+                        performance.now() > this.loadErrorTime_ + this.map_.config_.mapLoadErrorRetryTime_) {
+                        this.scheduleHeadRequest(priority_, (this.checkType_ == "negative-size"));
+                    }
                 } else if (this.checkStatus_ == -1) {
             
                     if (this.extraInfo_) {
@@ -342,6 +349,12 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
                 //add to loading queue or top position in queue
                 this.scheduleLoad(priority_);
             }
+        } else if (this.loadState_ == 3) { //loadError
+            if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_ &&
+                performance.now() > this.loadErrorTime_ + this.map_.config_.mapLoadErrorRetryTime_) {
+
+                this.scheduleLoad(priority_);                    
+            }
         } //else load in progress
     }
 
@@ -368,8 +381,16 @@ Melown.MapTexture.prototype.onLoadError = function() {
         return;
     }
 
+    this.loadState_ = 3;
+    this.loadErrorTime_ = performance.now();
+    this.loadErrorCounter_ ++;
+    
+    //make sure we try to load it again
+    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_) { 
+        setTimeout((function(){ if (!this.map_.killed_) { this.map_.markDirty(); } }).bind(this), this.map_.config_.mapLoadErrorRetryTime_);
+    }    
+    
     this.mapLoaderCallError_();
-    //this.loadState_ = 2;
 };
 
 Melown.MapTexture.prototype.onLoaded = function(data_) {
@@ -385,7 +406,10 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
 
     this.cacheItem_ = this.map_.resourcesCache_.insert(this.killImage.bind(this, true), size_);
 
+    this.map_.markDirty();
     this.loadState_ = 2;
+    this.loadErrorTime_ = null;
+    this.loadErrorCounter_ = 0;
     this.mapLoaderCallLoaded_();
 };
 
@@ -425,6 +449,15 @@ Melown.MapTexture.prototype.onLoadHeadError = function(downloadAll_) {
         return;
     }
 
+    this.checkStatus_ = 3;
+    this.loadErrorTime_ = performance.now();
+    this.loadErrorCounter_ ++;
+    
+    //make sure we try to load it again
+    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_) { 
+        setTimeout((function(){ if (!this.map_.killed_) { this.map_.markDirty(); } }).bind(this), this.map_.config_.mapLoadErrorRetryTime_);
+    }    
+    
     this.mapLoaderCallError_();
 };
 
@@ -434,6 +467,8 @@ Melown.MapTexture.prototype.onHeadLoaded = function(downloadAll_, data_, status_
     }
 
     this.checkStatus_ = 2;
+    this.loadErrorTime_ = null;
+    this.loadErrorCounter_ = 0;
 
     //if (this.mapLoaderUrl_ == "http://t4.tiles.virtualearth.net/tiles/a120212123213310.jpeg?g=854&mkt=en-US&token=Ahu6LJpWaKRj0Fzngk4d58AQFI9jKLsnvovS3ReEVcfOf6rBDCxiLDq-ycxakgOi") {
         //this.checkStatus_ = this.checkStatus_;
