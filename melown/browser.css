@@ -88,6 +88,7 @@
 .melown-credits-cell a {
     color: #FFFFFF;
     text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
 }
 
 .melown-credits-cell-button {

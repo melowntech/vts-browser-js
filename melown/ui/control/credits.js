@@ -98,7 +98,7 @@ Melown.UIControlCredits.prototype.update = function() {
 Melown.UIControlCredits.prototype.onMoreButton = function(butt_, html_) {
     var rect_ = butt_.getRect();
     this.ui_.popup_.show({"left" : rect_["left"] + "px",
-                          "bottom" : (rect_["fromBottom"]+15) + "px"}, html_);
+                          "bottom" : (rect_["fromBottom"]+10) + "px"}, html_);
 };
 
 

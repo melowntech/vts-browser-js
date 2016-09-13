@@ -52,14 +52,14 @@ Melown.UIElement.prototype.removeClass = function(name_) {
 
 Melown.UIElement.prototype.getRect = function() {
     var rect_ = this.element_.getBoundingClientRect();
-    var rect2_ = this.ui_.element_.getBoundingClientRect();
+    var rect2_ = this.ui_.map_.getMapElement().element_.getBoundingClientRect();
     var offsetX_ = window.pageXOffset || 0;
     var offsetY_ = window.pageYOffset || 0;
     return {
-        "left" : (rect_.left + offsetX_), // - (rect2_.left + offsetX_), 
-        "top" : (rect_.top + offsetY_), // - (rect2_.top + offsetY_), 
-        "fromRight" : rect2_.right - (rect_.left + offsetX_), // - (rect2_.left + offsetX_), 
-        "fromBottom" : rect2_.height - (rect_.top + offsetY_), // - (rect2_.top + offsetY_)),
+        "left" : (rect_.left + offsetX_) - (rect2_.left + offsetX_), 
+        "top" : (rect_.top + offsetY_) - (rect2_.top + offsetY_), 
+        "fromRight" : rect2_.right - ((rect_.left + offsetX_) - (rect2_.left + offsetX_)), 
+        "fromBottom" : rect2_.height - ((rect_.top + offsetY_) - (rect2_.top + offsetY_)),
         "width" : rect_.width, 
         "height" : rect_.height 
     };
