@@ -128,7 +128,11 @@ Melown.MapBoundLayer.prototype.processUrl = function(baseUrl_, url_, fallback_) 
     
     //is url absolute
     if (url_.indexOf("//") != -1) {
-        return url_;
+        if (url_.indexOf("//") == 0) {
+            return this.map_.baseUrlSchema_ + url_;
+        } else {
+            return url_;
+        }
     } else {
         return baseUrl_ + url_; 
     }

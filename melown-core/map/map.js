@@ -19,6 +19,17 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.loaderSuspended_ = false;
 
     this.baseURL_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
+    
+    this.baseUrlSchema_ = "";
+    
+    if (window.location.href.indexOf("file://") != -1) {
+        if (this.baseURL_.indexOf("http://") != -1) {
+            this.baseUrlSchema_ = "http:";
+        }
+        if (this.baseURL_.indexOf("https://") != -1) {
+            this.baseUrlSchema_ = "https:";
+        }
+    }
 
     this.position_ = new Melown.MapPosition(this, ["obj", 0, 0, "fix", 0,  0, 0, 0,  0, 0]);
     this.lastPosition_ = this.position_.clone();
@@ -593,7 +604,11 @@ Melown.Map.prototype.processUrl = function(url_, fallback_) {
     
     //is url absolute
     if (url_.indexOf("//") != -1) {
-        return url_;
+        if (url_.indexOf("//") == 0) {
+            return this.baseUrlSchema_ + url_;
+        } else {
+            return url_;
+        }
     } else {
         return this.baseURL_ + url_; 
     }

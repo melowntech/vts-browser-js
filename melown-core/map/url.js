@@ -201,7 +201,11 @@ Melown.Map.prototype.makeUrl = function(templ_, id_, subId_, skipBaseUrl_) {
     }*/
 
     if (skipBaseUrl_) {
-        return url_;
+        if (url_.indexOf("//") == 0) {
+            return this.baseUrlSchema_ + url_;
+        } else {
+            return url_;
+        }
     } else {
         return this.baseURL_ + url_;
     }
