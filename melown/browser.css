@@ -57,19 +57,28 @@
  */
 
 .melown-credits {
-    position:absolute;
-    right:3px;
-    bottom:3px;
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
     z-index: 4;
-    padding: 7px 0px;
+    padding: 0px 0px;
     margin: 0px;
-    text-align: left;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-align: right;
     color: #FFFFFF;
     font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
     font-size: 11px;
+    left: 120px;
+    overflow: hidden;    
+}
+
+.melown-credits-supercell {
+    display: inline-block;
+    text-shadow: 0 0 2px #000;
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 5px;
 }
 
 .melown-credits-cell {
@@ -89,6 +98,7 @@
     color: #FFFFFF;
     text-decoration: none;
     border-bottom: 1px solid rgba(255,255,255,0.5);
+    margin: 0px;
 }
 
 .melown-credits-cell-button {

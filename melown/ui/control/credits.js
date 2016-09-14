@@ -56,28 +56,34 @@ Melown.UIControlCredits.prototype.update = function() {
     }
 
     var html_ = "";
-
     var credits_ = map_.getCurrentCredits();
     
     if (credits_["imagery"].length > 0) {
         var res_ = this.getCreditsString(credits_["imagery"], ", ");
-        html_ += "<div class='melown-credits-cell'>Imagery: " + res_[0] + "</div>";
-        html_ += res_[1] ? "<div class='melown-credits-cell-button' id='melown-credits-imagery-more'>and others</div>" : "";
-        html_ += "<div class='melown-credits-separator'></div>";
+        html_ += "<div class='melown-credits-supercell'>";
+            html_ += "<div class='melown-credits-cell'>Imagery: " + res_[0] + "</div>";
+            html_ += res_[1] ? "<div class='melown-credits-cell-button' id='melown-credits-imagery-more'>and others</div>" : "";
+            html_ += "<div class='melown-credits-separator'></div>";
+        html_ += "</div>";
         var html2_ = "<div class='melown-credits-list'>";
         html2_ += this.getCreditsString(credits_["imagery"], "<br/>", true)[0] + "</div>";
     }
     
     if (credits_["mapdata"].length > 0) {
         var res_ = this.getCreditsString(credits_["mapdata"], ", ");
-        html_ += "<div class='melown-credits-cell'>Map Data: " + res_[0] + "</div>";
-        html_ += res_[1] ? "<div class='melown-credits-cell-button' id='melown-credits-mapdata-more'>and others</div>" : "";
-        html_ += "<div class='melown-credits-separator'></div>";
+        html_ += "<div class='melown-credits-supercell'>";
+            html_ += "<div class='melown-credits-cell'>Map Data: " + res_[0] + "</div>";
+            html_ += res_[1] ? "<div class='melown-credits-cell-button' id='melown-credits-mapdata-more'>and others</div>" : "";
+            html_ += "<div class='melown-credits-separator'></div>";
+        html_ += "</div>";
         var html3_ = "<div class='melown-credits-list'>";
         html3_ += this.getCreditsString(credits_["mapdata"], "<br/>", true)[0] + "</div>";
     }
 
-    html_ += "<div class='melown-credits-cell'>Powered by <a class='melown-logo' href='https://melown.com' target='_blank'>MELOWN</a></div>";
+    html_ += "<div class='melown-credits-supercell'>";
+        html_ += "<div class='melown-credits-cell'>Powered by <a class='melown-logo' href='https://melown.com' target='_blank'>MELOWN</a></div>";
+        html_ += "<div class='melown-credits-separator'></div>";
+    html_ += "</div>";
 
     if (this.lastHTML_ != html_) {
         this.lastHTML_ = html_;
@@ -97,8 +103,8 @@ Melown.UIControlCredits.prototype.update = function() {
 
 Melown.UIControlCredits.prototype.onMoreButton = function(butt_, html_) {
     var rect_ = butt_.getRect();
-    this.ui_.popup_.show({"left" : rect_["left"] + "px",
-                          "bottom" : (rect_["fromBottom"]+10) + "px"}, html_);
+    this.ui_.popup_.show({"right" : Math.max(0,(rect_["fromRight"]-rect_["width"])) + "px",
+                          "bottom" : (rect_["fromBottom"]+7) + "px"}, html_);
 };
 
 
