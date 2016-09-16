@@ -95,12 +95,22 @@ Melown.Core.prototype.loadMap = function(path_) {
         this.config_.token_ = "?token=" + data_["token"];
         this.tokenExpiration_ = data_["expires"] * 1000;
         this.tokenExpirationCallback_ = (function(){
+            this.tokenExpiration_ = null;
+            this.tokenExpirationLoop_ = true;
+            Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"]);
+        }).bind(this);
+        if (!this.tokenExpirationLoop_) {
+            onLoadMapconfig(this.config_.token_);
+        } else {
             Melown.loadJSON(path_ + this.config_.token_, null, null, null, Melown["useCredentials"]);
-        });
+        }
     }).bind(this);
 
     var onAutorizationError_ = (function() {
+        console.log("auth token not loaded");
     }).bind(this);
+
+    this.tokenExpirationLoop_ = false;
 
     var baseUrl_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
@@ -108,7 +118,8 @@ Melown.Core.prototype.loadMap = function(path_) {
         Melown.loadJSON(path_ + token_, onLoaded_, onError_, null, Melown["useCredentials"]);
     };
 
-    if (false && this.config_.authorization_) {
+    //if (false && this.config_.authorization_) {
+    if (this.config_.authorization_) {
         if (typeof this.config_.authorization_ === "string") {
             Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"]);
         } else {

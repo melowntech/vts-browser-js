@@ -21,6 +21,16 @@ Melown.Camera = function(parent_, fov_, near_, far_) {
     this.mvp2_ = Melown.mat4.create();
     this.frustumPlanes_ = [ [0,0,0,0], [0,0,0,0], [0,0,0,0],
                             [0,0,0,0], [0,0,0,0], [0,0,0,0] ];
+    this.bboxPoints_ = [
+        [ 0, 0, 0, 1 ],
+        [ 0, 0, 0, 1 ],
+        [ 0, 0, 0, 1 ],
+        [ 0, 0, 0, 1 ],
+        [ 0, 0, 0, 1 ],
+        [ 0, 0, 0, 1 ],
+        [ 0, 0, 0, 1 ],
+        [ 0, 0, 0, 1 ]
+    ];
 
     //reduce garbage collection
     this.scaleFactorVec_ = [0,0,0,0];
@@ -183,6 +193,7 @@ Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
     var min_ = bbox_.min_;
     var max_ = bbox_.max_;
 
+    /* old
     if (shift_) {
         min_ = [min_[0] - shift_[0], min_[1] - shift_[1], min_[2] - shift_[2]];
         max_ = [max_[0] - shift_[0], max_[1] - shift_[1], max_[2] - shift_[2]];
@@ -198,13 +209,57 @@ Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
         [ max_[0], max_[1], min_[2], 1 ],
         [ max_[0], max_[1], max_[2], 1 ]
     ];
+    */
+   
+    var points_ = this.bboxPoints_;
+    var p;
+
+    if (shift_) {
+        var minX_ = min_[0] - shift_[0];        
+        var minY_ = min_[1] - shift_[1];        
+        var minZ_ = min_[2] - shift_[2];        
+
+        var maxX_ = max_[0] - shift_[0];        
+        var maxY_ = max_[1] - shift_[1];        
+        var maxZ_ = max_[2] - shift_[2];        
+    } else {
+        var minX_ = min_[0];        
+        var minY_ = min_[1];        
+        var minZ_ = min_[2];        
+
+        var maxX_ = max_[0];        
+        var maxY_ = max_[1];        
+        var maxZ_ = max_[2];        
+    }
+
+    p = points_[0];
+    p[0] = minX_;  p[1] = minY_; p[2] = minZ_; 
+    p = points_[1];
+    p[0] = minX_;  p[1] = minY_; p[2] = maxZ_; 
+    p = points_[2];
+    p[0] = minX_;  p[1] = maxY_; p[2] = minZ_; 
+    p = points_[3];
+    p[0] = minX_;  p[1] = maxY_; p[2] = maxZ_; 
+
+    p = points_[4];
+    p[0] = maxX_;  p[1] = minY_; p[2] = minZ_; 
+    p = points_[5];
+    p[0] = maxX_;  p[1] = minY_; p[2] = maxZ_; 
+    p = points_[6];
+    p[0] = maxX_;  p[1] = maxY_; p[2] = minZ_; 
+    p = points_[7];
+    p[0] = maxX_;  p[1] = maxY_; p[2] = maxZ_; 
+
+
+    var dot_ = Melown.vec4.dot2;
+    var planes_ = this.frustumPlanes_;
 
     // test all frustum planes quickly
     for (var i = 0; i < 6; i++) {
         // check if all points lie on the negative side of the frustum plane
         var negative_ = true;
         for (var j = 0; j < 8; j++) {
-            if (Melown.vec4.dot(this.frustumPlanes_[i], points_[j]) >= 0) {
+            if (dot_(planes_[i], points_[j]) >= 0) {
                 //return false;
                 negative_ = false;
                 break;

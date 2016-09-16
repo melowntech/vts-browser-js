@@ -87,9 +87,9 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.parseConfig();
 
     this.geocent_ = !this.getNavigationSrs().isProjected();
-    this.processBuffer_ = new Array(30000);
-    this.processBuffer2_ = new Array(30000);
-    this.drawBuffer_ = new Array(30000);
+    this.processBuffer_ = new Array(60000);
+    this.processBuffer2_ = new Array(60000);
+    this.drawBuffer_ = new Array(60000);
     
 
     this.tree_ = new Melown.MapSurfaceTree(this, false);
@@ -801,6 +801,12 @@ Melown.Map.prototype.update = function() {
         return;
     }
 
+    if (this.core_.tokenExpiration_) {
+        if (Date.now() > (this.core_.tokenExpiration_ - (1000*60))) {
+            this.core_.tokenExpirationCallback_();
+        }
+    }
+
     if (this.div_ != null && this.div_.style.visibility == "hidden"){
         //loop heartbeat
         //window.requestAnimFrame(this.update.bind(this));
@@ -818,12 +824,6 @@ Melown.Map.prototype.update = function() {
     if (this.renderer_.curSize_[0] != rect_.width || this.renderer_.curSize_[1] != rect_.height) {
         this.renderer_.onResize();
         this.dirty_ = true;
-    }
-
-    if (this.core_.tokenExpiration_) {
-        if (performance.now() > (this.core_.tokenExpiration_ - (1000*60))) {
-            this.core_.tokenExpirationCallback_();
-        }
     }
 
     var dirty_ = this.dirty_;

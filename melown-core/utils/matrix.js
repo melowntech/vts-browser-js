@@ -26,6 +26,9 @@ Melown.vec4.create = function (a) {
 Melown.vec4.dot = function (a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
 };
+Melown.vec4.dot2 = function (a, b) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3];
+};
 
 Melown.vec3 = {};
 Melown.vec3.create = function (a) {

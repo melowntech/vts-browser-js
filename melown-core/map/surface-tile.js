@@ -745,30 +745,31 @@ Melown.MapSurfaceTile.prototype.getPixelSize22 = function(bbox_, screenPixelSize
 
 Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
     var pixelSize_;
-    var texelSizeFit_ = this.map_.texelSizeFit_;
+    var map_ = this.map_;
+    var texelSizeFit_ = map_.texelSizeFit_;
     var node_ = this.metanode_;
-    var cameraPos_ = this.map_.cameraPosition_;  
+    var cameraPos_ = map_.cameraPosition_;  
 
     if (node_.hasGeometry()) {
         var screenPixelSize_ = Number.POSITIVE_INFINITY;
 
         if (node_.usedTexelSize()) {
-            screenPixelSize_ = this.map_.ndcToScreenPixel_ * node_.pixelSize_;
+            screenPixelSize_ = map_.ndcToScreenPixel_ * node_.pixelSize_;
         } else if (node_.usedDisplaySize()) {
-            screenPixelSize_ = this.map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / node_.displaySize_);
+            screenPixelSize_ = map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / node_.displaySize_);
         }
 
-        if (this.map_.camera_.ortho_ == true) {
-            var height_ = this.map_.camera_.getViewHeight();
+        if (map_.camera_.ortho_ == true) {
+            var height_ = map_.camera_.getViewHeight();
             pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
         } else {
             
             if (node_.usedDisplaySize()) { 
-                screenPixelSize_ = this.map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256);
-                var factor_ = (node_.displaySize_ / 256) * this.map_.cameraDistance_;
+                screenPixelSize_ = map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256);
+                var factor_ = (node_.displaySize_ / 256) * map_.cameraDistance_;
                 //var factor_ = (256 / 256) * this.map_.cameraDistance_;
                 
-                var v = this.map_.cameraVector_;
+                var v = map_.cameraVector_;
                 var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
                 
                 pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, p, p, true);
@@ -777,9 +778,9 @@ Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
                 
                 if (texelSizeFit_ > 1.1) {
                     screenPixelSize_ = this.ndcToScreenPixel_ * node_.pixelSize_ * (texelSizeFit_ / 1.1);
-                    var factor_ = (texelSizeFit_ / 1.1) * this.map_.cameraDistance_;
+                    var factor_ = (texelSizeFit_ / 1.1) * map_.cameraDistance_;
                     
-                    var v = this.map_.cameraVector_;
+                    var v = map_.cameraVector_;
                     var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
                     
                     pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, p, p, true);

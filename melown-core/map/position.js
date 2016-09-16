@@ -262,9 +262,9 @@ Melown.MapPosition.prototype.validate = function() {
     pos_[3] = (pos_[3] == "fix" || pos_[3] == "fixed" || pos_[3] == "float") ? pos_[3] : "float";
     pos_[4] = pos_[4] || 0;
     pos_[5] = pos_[5] || 0;
-    pos_[6] = pos_[6] || 0;
+    pos_[6] = pos_[6] || -90;
     pos_[7] = pos_[7] || 0;
-    pos_[8] = pos_[8] || 300;
+    pos_[8] = pos_[8] || 900;
     pos_[9] = pos_[9] || 90;
 
     pos_[3] = (pos_[3] == "fixed") ? "fix" : pos_[3];
