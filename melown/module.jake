@@ -31,6 +31,8 @@ var files = [
     'ui/control/fallback.js',
     'ui/control/holder.js',
     'ui/control/logo.js',
+    'ui/control/link.js',
+    'ui/control/loading.js',
     'ui/control/map.js',
     'ui/control/zoom.js',
     'ui/control/popup.js',

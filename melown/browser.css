@@ -151,6 +151,7 @@
     display: none;
     font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
     color:#ddd;
+    z-index: 7
 }
 
 .melown-fallback-text {
@@ -170,6 +171,45 @@
     padding: 3px;
     margin: 0px;
 }
+
+/*
+ * LOADING
+ */
+
+.melown-loading {
+    position: absolute;
+    top:0px;
+    left:0px;
+    width:100%;
+    height:100%;
+    background-color: rgba(255,255,255,0.75);
+    font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+    color:#ddd;
+    z-index: 5;    
+}
+
+.melown-loading-progress {
+    width: 50%;
+    left: 25%;
+    position: absolute;
+    height: 10%;
+    top: 45%;
+    text-align: center;
+}
+
+.melown-loading-dot {
+    display: inline-block;
+    background-color: #333;
+    border-radius: 999px;
+    /*margin: 0.6%;
+    padding: 1%;*/
+    margin: 0.9%;
+    padding: 1.5%;
+
+    position: relative;
+    top: 33%;
+}
+
 
 /*
  * COMPASS

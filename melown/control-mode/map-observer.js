@@ -58,12 +58,13 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
                 this.setPosition(pos_);
             }
         } else {
+            var sensitivity_ = this.config_.sensitivity_[0];
             var fov_ = map_.getPositionFov(pos_);
             var fovCorrection_ = (fov_ > 0.01 && fov_ < 179) ? (1.0 / Math.tan(Melown.radians(fov_*0.5))) : 1.0;
             var azimuth_ = Melown.radians(azimuthDistance_[0]);
             var forward_ = [-Math.sin(azimuth_), //direction vector x
                             Math.cos(azimuth_), //direction vector y
-                            azimuthDistance_[1] * fovCorrection_, azimuthDistance_[0], //distance and azimut
+                            azimuthDistance_[1] * fovCorrection_ * sensitivity_, azimuthDistance_[0], //distance and azimut
                             coords_[0], coords_[1]]; //coords
             
             this.coordsDeltas_.push(forward_);
@@ -72,7 +73,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     } else if (((touches_ <= 1 && event_.getDragButton("right")) || event_.getDragButton("middle") || modifierKey_) 
                && this.config_.rotationAllowed_) { //rotate
                    
-        var sensitivity_ = 0.3;
+        var sensitivity_ = this.config_.sensitivity_[1];
         this.orientationDeltas_.push([-delta_[0] * sensitivity_,
                                       -delta_[1] * sensitivity_, 0]);
     }
@@ -86,14 +87,23 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
 
     var pos_ = map_.getPosition();
     var delta_ = event_.getWheelDelta();
-    var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*0.05;
-    
-    if (map_.getPositionViewMode(pos_) != "obj") {
-        return;
+    var sensitivity_ = this.config_.sensitivity_[2];
+    var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*sensitivity_;
+
+    if (this.browser_.controlMode_.altKey_ &&
+        this.browser_.controlMode_.shiftKey_ &&
+        this.browser_.controlMode_.ctrlKey_) {
+        var fov_ = Melown.clamp(map_.getPositionFov(pos_) * factor_, 1, 179);
+        pos_ = map_.setPositionFov(pos_, fov_);
+        map_.setPosition(pos_);
+    } else {
+        if (map_.getPositionViewMode(pos_) != "obj") {
+            return;
+        }
+        
+        this.viewExtentDeltas_.push(factor_);
+        this.reduceFloatingHeight(0.8);
     }
-    
-    this.viewExtentDeltas_.push(factor_);
-    this.reduceFloatingHeight(0.8);
 };
 
 Melown.ControlMode.MapObserver.prototype.doubleclick = function(event_) {
@@ -168,8 +178,8 @@ Melown.ControlMode.MapObserver.prototype.getAzimuthAndDistance = function(dx_, d
     var viewExtent_ = map_.getPositionViewExtent(pos_);
     var fov_ = map_.getPositionFov(pos_)*0.5;
 
-    var sensitivity_ = 0.5;
-    var zoomFactor_ = ((viewExtent_ * Math.tan(Melown.radians(fov_))) / 800) * sensitivity_;
+    //var sensitivity_ = 0.5;
+    var zoomFactor_ = (((viewExtent_*0.5) * Math.tan(Melown.radians(fov_))) / 800);
     dx_ *= zoomFactor_;
     dy_ *= zoomFactor_;
 
@@ -187,7 +197,7 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
 
     var pos_ = map_.getPosition();
     var update_ = false;
-    var inertia_ = [0.8, 0.8, 0.7]; 
+    var inertia_ = this.config_.inertia_; //[0.83, 0.9, 0.7]; 
     //var inertia_ = [0.95, 0.8, 0.8]; 
     //var inertia_ = [0, 0, 0]; 
 
@@ -328,7 +338,7 @@ Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
 
         //apply final orintation
         // HACK
-         pos_ = map_.setPositionOrientation(pos_, orientation_);
+        pos_ = map_.setPositionOrientation(pos_, orientation_);
         update_ = true;
     }
 
@@ -374,15 +384,26 @@ Melown.ControlMode.MapObserver.prototype.reset = function(config_) {
 
 
 Melown.constrainMapPosition = function(browser_, pos_) {
+    if (!browser_.config_.constrainCamera_) {
+        return pos_;
+    }
 
-    //reduce tilt whe you are far off the planet
+    var minVE_ = browser_.config_.minViewExtent_;
+    var maxVE_ = browser_.config_.maxViewExtent_;
+
     var map_ = browser_.getMap();
 
+    //clamp view extets
+    var viewExtent_ = Melown.clamp(map_.getPositionViewExtent(pos_), minVE_, maxVE_); 
+    pos_ = map_.setPositionViewExtent(pos_, viewExtent_);
+
+    var distance_ = (map_.getPositionViewExtent(pos_)*0.5) / Math.tan(Melown.radians(map_.getPositionFov(pos_)*0.5));
+
+    //reduce tilt whe you are far off the planet
     if (map_.getPositionViewMode(pos_) == "obj") {
         var rf_ = map_.getReferenceFrame();
         var srs_ = map_.getSrsInfo(rf_["navigationSrs"]);
         
-        var distance_ = map_.getPositionViewExtent(pos_) / Math.tan(Melown.radians(map_.getPositionFov(pos_)*0.5));
         
         if (srs_["a"]) {
             var factor_ = Math.min(distance_ / (srs_["a"]*0.5), 1.0);
@@ -405,9 +426,13 @@ Melown.constrainMapPosition = function(browser_, pos_) {
 
     //do not allow camera under terrain
     var camPos_ = map_.getPositionCameraCoords(pos_, "float");
-    var cameraConstrainDistance_ = 1;
+    //var cameraConstrainDistance_ = 1;
+    var cameraConstrainDistance_ = (minVE_*0.5) / Math.tan(Melown.radians(map_.getPositionFov(pos_)*0.5));
+    cameraConstrainDistance_ *= 0.5; //divice by 2 to alow 45deg tilt in maximum zoom
     
-    var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (distance_ * Math.tan(Melown.radians(3.0))));
+    //var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (distance_ * Math.tan(Melown.radians(3.0))));
+    //var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (distance_ * Math.tan(Melown.radians(3.0))));
+    var hmax_ = Math.max(cameraConstrainDistance_, (distance_ * Math.tan(Melown.radians(3.0))));
     var cameraHeight_ = camPos_[2]; //this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_;
 
     if (cameraHeight_ < hmax_) {

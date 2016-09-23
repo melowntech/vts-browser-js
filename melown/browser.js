@@ -2,8 +2,10 @@
  * @constructor
  */
 Melown.Browser = function(element_, config_) {
+    this.configStorage_ = {};
     this.initConfig();
     this.setConfigParams(config_, true);
+    this.originalConfig_ = JSON.parse(JSON.stringify(config_));
     
     this.element_ = (typeof element_ === "string") ? document.getElementById(element_) : element_; 
     this.ui_ = new Melown.UI(this, this.element_);
@@ -17,6 +19,7 @@ Melown.Browser = function(element_, config_) {
     
     this.updatePosInUrl_ = false;
     this.lastUrlUpdateTime_ = false;
+    this.mapLoaded_ = false;
 
     this.autopilot_ = new Melown.Autopilot(this);
     this.rois_ = new Melown.Rois(this);
@@ -63,7 +66,20 @@ Melown.Browser.prototype.callListener = function(name_, event_) {
     this.core_.callListener(name_, event_);
 };
 
-Melown.Browser.prototype.onMapLoaded = function() {
+Melown.Browser.prototype.onMapLoaded = function(event_) {
+    this.mapLoaded_ = true;
+
+    //overwrite browser options
+    var options_ = event_["browserOptions"] || {};
+    var originalOptions_ = this.originalConfig_;
+    for (var key_ in originalOptions_) {
+        if (typeof options_[key_] !== "undefined") {
+            options_[key_] = originalOptions_[key_]; 
+        } 
+    }    
+    
+    this.setConfigParams(options_);
+
     if (this.autopilot_) {
         this.autopilot_.setAutorotate(this.config_.autoRotate_);
         this.autopilot_.setAutopan(this.config_.autoPan_[0], this.config_.autoPan_[1]);
@@ -81,6 +97,8 @@ Melown.Browser.prototype.getLinkWithCurrentPos = function() {
     
     //get position string
     var p = map_.getPosition();
+    p = map_.convertPositionHeightMode(p, "fix", true);
+    
     var s = "";
     s += map_.getPositionViewMode(p) + ",";
     var c = map_.getPositionCoords(p);

@@ -378,36 +378,36 @@ Melown.BrowserInterface.prototype.generatePIHTrajectory = function(position_, az
 };
 
 Melown.BrowserInterface.prototype.flyTrajectory = function(trajectory_, sampleDuration_) {
-    if(!this.map_) return;
+    if(!this.map_ || !this.autopilot_) return;
     this.autopilot_.flyTrajectory(trajectory_, sampleDuration_); 
     return this;    
 };
 
 Melown.BrowserInterface.prototype.cancelFlight = function() {
-    if(!this.map_) return;
+    if(!this.map_ || !this.autopilot_) return;
     this.autopilot_.cancelFlight(); 
     return this;    
 }; 
 
 Melown.BrowserInterface.prototype.setAutorotate = function(speed_) {
-    if(!this.map_) return;
+    if(!this.map_ || !this.autopilot_) return;
     this.autopilot_.setAutorotate(speed_);
     return this;
 };
 
 Melown.BrowserInterface.prototype.getAutorotate = function() {
-    if(!this.map_) return;
+    if(!this.map_ || !this.autopilot_) return 0;
     return this.autopilot_.getAutorotate();
 };
 
 Melown.BrowserInterface.prototype.setAutopan = function(speed_, azimuth_) {
-    if(!this.map_) return;
+    if(!this.map_ || !this.autopilot_) return;
     this.autopilot_.setAutopan(speed_, azimuth_);
     return this;
 };
 
 Melown.BrowserInterface.prototype.getAutopan = function() {
-    if(!this.map_) return;
+    if(!this.map_ || !this.autopilot_) return;
     return this.autopilot_.getAutopan();
 };
 
@@ -453,6 +453,7 @@ Melown.getBrowserVersion = function() {
 
 //prevent minification
 Melown["MapBrowser"] = Melown.MapBrowser;
+Melown["mapBrowser"] = Melown.MapBrowser;
 Melown.BrowserInterface.prototype["getRenderer"] = Melown.BrowserInterface.prototype.getRenderer; 
 Melown.BrowserInterface.prototype["getPresenter"] = Melown.BrowserInterface.prototype.getPresenter; 
 Melown.BrowserInterface.prototype["getProj4"] = Melown.BrowserInterface.prototype.getProj4; 
