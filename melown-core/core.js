@@ -85,7 +85,7 @@ Melown.Core.prototype.loadMap = function(path_) {
             this.config_.view_ = null;
         }
     
-        this.callListener("map-loaded", {});
+        this.callListener("map-loaded", { "browserOptions":this.map_.browserOptions_});
     }).bind(this);
 
     var onError_ = (function() {
@@ -118,8 +118,8 @@ Melown.Core.prototype.loadMap = function(path_) {
         Melown.loadJSON(path_ + token_, onLoaded_, onError_, null, Melown["useCredentials"]);
     };
 
-    //if (false && this.config_.authorization_) {
-    if (this.config_.authorization_) {
+    if (false && this.config_.authorization_) {
+    //if (this.config_.authorization_) {
         if (typeof this.config_.authorization_ === "string") {
             Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"]);
         } else {

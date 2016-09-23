@@ -16,16 +16,16 @@ Melown.Map.prototype.updateCamera = function() {
     //var height_ = 227;
     var height_ = this.position_.getHeight();
 
-    if (this.position_.getHeightMode() == "float") {
-        var lod_ =  this.getOptimalHeightLod(this.position_.getCoords(), this.position_.getViewExtent(), this.config_.mapNavSamplesPerViewExtent_);
-        var surfaceHeight_ = this.getSurfaceHeight(this.position_.getCoords(), lod_, true);
-        
-        this.stats_.heightTerrain_ = surfaceHeight_[0];
-        this.stats_.heightDelta_ = height_;
+    var lod_ =  this.getOptimalHeightLod(this.position_.getCoords(), this.position_.getViewExtent(), this.config_.mapNavSamplesPerViewExtent_);
+    var surfaceHeight_ = this.getSurfaceHeight(this.position_.getCoords(), lod_, true);
+    
+    this.stats_.heightTerrain_ = surfaceHeight_[0];
+    this.stats_.heightDelta_ = height_;
 
+    //console.log("terrain height:" + surfaceHeight_[0] + "  pos height:" + this.position_.getHeight());
+
+    if (this.position_.getHeightMode() == "float") {
         height_ += surfaceHeight_[0];
-        
-        //console.log("terrain height:" + surfaceHeight_[0] + "  pos height:" + this.position_.getHeight());
     }
 
     var camInfo_ = this.position_.getCameraInfo(this.getNavigationSrs().isProjected());

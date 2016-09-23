@@ -170,6 +170,8 @@ struct VerticesBlock {
     this.undulationDeltas_ = undulationDeltas_;
 
     stream_.index_ = index_;
+    
+    //console.log("ver: " + numVertices_);
 
 };
 

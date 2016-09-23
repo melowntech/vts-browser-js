@@ -127,6 +127,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.zFactor2_ = 0.003;
     this.zShift_ = 0;
     this.zLastShift_ = 0;
+    this.bestMeshTexelSize_ = 1;
+    this.bestGeodataTexelSize_ = 1;
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});
@@ -842,6 +844,8 @@ Melown.Map.prototype.update = function() {
 
     if (this.dirty_) {
         this.dirty_ = false;
+        this.bestMeshTexelSize_ = 0;//Number.MAX_VALUE;
+        this.bestGeodataTexelSize_ = 0;//Number.MAX_VALUE;
         
         this.processRenderSlots();
         

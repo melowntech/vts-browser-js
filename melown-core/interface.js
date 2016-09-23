@@ -39,6 +39,7 @@ Melown.CoreInterface.prototype.callListener = function(name_, event_) {
 
 //prevent minification
 Melown["MapCore"] = Melown.MapCore;
+Melown["mapCore"] = Melown.MapCore;
 Melown.CoreInterface.prototype["getMap"] = Melown.CoreInterface.prototype.getMap;
 Melown.CoreInterface.prototype["getRenderer"] = Melown.CoreInterface.prototype.getRenderer;
 Melown.CoreInterface.prototype["on"] = Melown.CoreInterface.prototype.on;

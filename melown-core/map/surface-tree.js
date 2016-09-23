@@ -182,8 +182,12 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     }*/
     
     var texelSizeFit_ = map_.texelSizeFit_;
-    
+
+    var best2_ = 0;
+
     do {
+        var best_ = 0;
+
         newProcessBufferIndex_ = 0;
         
         for (var i = processBufferIndex_ - 1; i >= 0; i--) {
@@ -191,6 +195,16 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
             node_ = tile_.metanode_;
 
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+
+                if (tile_.texelSize_  != Number.POSITIVE_INFINITY){
+                    
+                    if (tile_.texelSize_ > best_) {
+                        best_ = tile_.texelSize_;
+                    }
+                    //best_ += tile_.texelSize_;
+                    //best2_ ++;
+                }
+
                 
                 if (/*node_.hasGeometry() && */tile_.texelSize_ <= texelSizeFit_) {
                     
@@ -259,9 +273,22 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
         processBuffer_ = newProcessBuffer_;
         newProcessBuffer_ = tmp_;
         processBufferIndex_ = newProcessBufferIndex_;
+
+        //if (tile_) {
+          //  console.log("texel: "+ (best_ / 1) + "   " + JSON.stringify(tile_.id_));
+        //}
         
+        if (best_ != 0) {
+            best2_ = best_;
+        }
+
     } while(processBufferIndex_ > 0);
     
+    if (best2_ > this.map_.bestMeshTexelSize_) {
+        this.map_.bestMeshTexelSize_ = best2_;
+    }
+    
+    //console.log("texel: "+ this.map_.bestMeshTexelSize_);
 
     for (var i = drawBufferIndex_ - 1; i >= 0; i--) {
         tile_ = drawBuffer_[i];
@@ -430,7 +457,8 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
 
     tile_.updateTexelSize();
     
-    var typeFactor_ = this.freeLayerSurface_ ? 1 : 1;
+    var lodShift_ = 4;//this.freeLayerSurface_ ? 1 : 1;
+    var typeFactor_ = 2000;//this.freeLayerSurface_ ? 1 : 1;
     
     var drawBuffer_ = map_.drawBuffer_;
     var processBuffer_ = map_.processBuffer_;
@@ -481,7 +509,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
 
                 if (node_.hasChildren() == false || tile_.texelSize_ <= texelSizeFit_) {
 
-                    var priority_ = tile_.id_[0] * typeFactor_ * tile_.distance_; 
+                    var priority_ = ((tile_.id_[0] + lodShift_) * typeFactor_) * tile_.distance_; 
             
                     if (node_.hasChildren() && !map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, (depth_ > 0))) {
 
@@ -494,7 +522,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                                 if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
                                     
                                     child_.updateTexelSize();
-                                    var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+                                    var priority_ = ((child_.id_[0] + lodShift_) * typeFactor_) * child_.distance_; 
 
                                     /*if (child_.id_[0] == 18 && 
                                     child_.id_[1] == 20982 &&
@@ -535,7 +563,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                             if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
 
                                 child_.updateTexelSize();
-                                var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+                                var priority_ = ((child_.id_[0] + lodShift_) * typeFactor_) * child_.distance_; 
 
                                 /*if (child_.id_[0] == 18 && 
                                 child_.id_[1] == 20982 &&
@@ -588,7 +616,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                         //can i use coarser lod
                         //if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
 
-                        var priority_ = tile_.id_[0] * typeFactor_ * tile_.distance_; 
+                        var priority_ = ((tile_.id_[0] + lodShift_) * typeFactor_) * tile_.distance_; 
 
                         if (map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, true)) {
                             drawBuffer_[drawBufferIndex_] = tile_;
@@ -628,7 +656,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
 
                             if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
                                 child_.updateTexelSize();
-                                var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+                                //var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
 
                                 newProcessBuffer_[newProcessBufferIndex_] = [child_, depth_];
                                 newProcessBufferIndex_++;

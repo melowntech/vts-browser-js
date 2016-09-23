@@ -141,6 +141,13 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 80:
                     case 112:
+                       var pos_ = map_.getPosition();
+                       console.log("pos-before: " + JSON.stringify(pos_.pos_));
+                       pos_.convertViewMode((pos_.getViewMode() == "obj") ? "subj" : "obj");
+                       console.log("new mode: " + pos_.getViewMode());
+                       console.log("pos-after: " + JSON.stringify(pos_.pos_));
+                       map_.setPosition(pos_);
+
                         /*this.core_.saveScreenshot(pos_);*/ break;  //key P pressed
 
                     case 83:
@@ -236,19 +243,6 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 82:
                     case 114:
                         this.switchGraphsPanel(); break; //key R pressed
-
-                    case 69:
-                    case 101:
-                        /*this.showExport();*/
-                       
-                       var pos_ = map_.getPosition();
-                       console.log("pos-before: " + JSON.stringify(pos_.pos_));
-                       pos_.convertViewMode((pos_.getViewMode() == "obj") ? "subj" : "obj");
-                       console.log("new mode: " + pos_.getViewMode());
-                       console.log("pos-after: " + JSON.stringify(pos_.pos_));
-                       map_.setPosition(pos_);
-                       
-                       break; //key E pressed
 
                     case 79:
                     case 111:

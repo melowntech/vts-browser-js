@@ -15,6 +15,8 @@ Melown.MapLoader = function(map_, numThreads_) {
 
     this.downloading_ = [];
     this.downloadingTime_ = [];
+    this.lastDownloadTime_ = 0;
+    this.downloaded_ = 0;
 };
 
 Melown.MapLoader.prototype.setChannel = function(channel_) {
@@ -110,6 +112,7 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
                 this.downloading_.push(item_.id_);
                 this.downloadingTime_.push(timer_);
                 this.usedThreads_++;
+                this.downloaded_++;
 
                 var onLoaded_ = (function(path_){
 
@@ -118,6 +121,7 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
                     var index_ = this.downloading_.indexOf(item_.id_);
                     this.downloading_.splice(index_, 1);
                     this.downloadingTime_.splice(index_, 1);
+                    this.lastDownloadTime_ = Date.now();
                     this.usedThreads_--;
                     this.map_.markDirty();
                     this.update();
@@ -131,6 +135,7 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
                     var index_ = this.downloading_.indexOf(item_.id_);
                     this.downloading_.splice(index_, 1);
                     this.downloadingTime_.splice(index_, 1);
+                    this.lastDownloadTime_ = Date.now();
                     this.usedThreads_--;
                     this.map_.markDirty();
                     this.update();

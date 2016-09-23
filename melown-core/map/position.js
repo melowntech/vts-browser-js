@@ -81,8 +81,7 @@ Melown.MapPosition.prototype.setViewExtent = function(extent_) {
 };
 
 Melown.MapPosition.prototype.getViewDistance = function() {
-    //do not divide height by 2, probably because of screen has range from -1 to 1
-    return (this.getViewExtent()) / Math.tan(Melown.radians(this.getFov()*0.5));
+    return (this.getViewExtent()*0.5) / Math.tan(Melown.radians(this.getFov()*0.5));
 };
 
 Melown.MapPosition.prototype.getViewMode = function() {
@@ -257,15 +256,15 @@ Melown.MapPosition.prototype.validate = function() {
     }
 
     pos_[0] = (pos_[0] == "obj" || pos_[0] == "subj") ? pos_[0] : "obj";
-    pos_[1] = pos_[1] || 0;
-    pos_[2] = pos_[2] || 0;
+    pos_[1] = (pos_[1] != null) ? pos_[1] : 0;
+    pos_[2] = (pos_[2] != null) ? pos_[2] : 0;
     pos_[3] = (pos_[3] == "fix" || pos_[3] == "fixed" || pos_[3] == "float") ? pos_[3] : "float";
-    pos_[4] = pos_[4] || 0;
-    pos_[5] = pos_[5] || 0;
-    pos_[6] = pos_[6] || -90;
-    pos_[7] = pos_[7] || 0;
-    pos_[8] = pos_[8] || 900;
-    pos_[9] = pos_[9] || 90;
+    pos_[4] = (pos_[4] != null) ? pos_[4] : 0;
+    pos_[5] = (pos_[5] != null) ? pos_[5] : 0;
+    pos_[6] = (pos_[6] != null) ? pos_[6] : -90;
+    pos_[7] = (pos_[7] != null) ? pos_[7] : 0;
+    pos_[8] = (pos_[8] != null) ? pos_[8] : 900;
+    pos_[9] = (pos_[9] != null) ? pos_[9] : 90;
 
     pos_[3] = (pos_[3] == "fixed") ? "fix" : pos_[3];
 };

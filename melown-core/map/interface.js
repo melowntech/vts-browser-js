@@ -311,9 +311,19 @@ Melown.MapInterface.prototype.getHitCoords = function(screenX_, screenY_, mode_,
     return this.map_.getHitCoords(screenX_, screenY_, mode_, lod_);
 };
 
+Melown.MapInterface.prototype.getStats = function() {
+    return {
+        "bestMeshTexelSize" : this.map_.bestMeshTexelSize_,
+        "bestGeodataTexelSize" : this.map_.bestGeodataTexelSize_, 
+        "downloading" : this.map_.loader_.downloading_.length,
+        "lastDownload" : this.map_.loader_.lastDownloadTime_, 
+        "surfaces" : this.map_.tree_.surfaceSequence_.length,
+        "freeLayers" : this.map_.freeLayerSequence_.length,
+        "texelSizeFit" : this.map_.texelSizeFit_
+    };
+};
+
 Melown.MapPositionInterface = Melown.MapPosition;
-
-
 
 Melown.MapInterface.prototype["setPosition"] = Melown.MapInterface.prototype.setPosition;
 Melown.MapInterface.prototype["getPosition"] = Melown.MapInterface.prototype.getPosition;
@@ -376,4 +386,5 @@ Melown.MapInterface.prototype["setLoaderSuspended"] = Melown.MapInterface.protot
 Melown.MapInterface.prototype["getLoaderSuspended"] = Melown.MapInterface.prototype.getLoaderSuspended; 
 Melown.MapInterface.prototype["getGpuCache"] = Melown.MapInterface.prototype.getGpuCache;
 Melown.MapInterface.prototype["getHitCoords"] = Melown.MapInterface.prototype.getHitCoords;
+Melown.MapInterface.prototype["getStats"] = Melown.MapInterface.prototype.getStats;
 

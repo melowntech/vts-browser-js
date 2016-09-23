@@ -7,6 +7,7 @@ var SEZNAMCZ = false;
 var Melown = {};
 
 //prevent minification
+window["M"] = Melown;
 window["Melown"] = Melown;
 window["ga"] = (window["ga"] != null) ? window["ga"] : {}; //google analytics
 window["MelownMap_"] = (window["MelownMap_"] != null) ? window["MelownMap_"] : null;

@@ -183,3 +183,12 @@ rm ../build/geodata-worker-tmp.js
 # rm ../build/melown-core-v1-merge-tmp2.js
 
 cd ..
+
+
+
+
+
+
+
+
+

@@ -15,7 +15,7 @@ Melown.frustumMatrix = function(left_, right_, bottom_, top_, near_, far_) {
 
 
 Melown.perspectiveMatrix = function(fovy_, aspect_, near_, far_) {
-    var ymax_ = near_ * Math.tan(fovy_ * Math.PI / 360.0);
+    var ymax_ = near_ * Math.tan(fovy_ * Math.PI / 180.0);
     var xmax_ = ymax_ * aspect_;
     return Melown.frustumMatrix(-xmax_, xmax_, -ymax_, ymax_, near_, far_);
 };
