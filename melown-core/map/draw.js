@@ -190,6 +190,13 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
     }
+/*
+    if (tile_.id_[0] == 9 &&
+        tile_.id_[1] == 138 &&
+        tile_.id_[2] == 89) {
+        return true;
+    }
+*/
 
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         return false;
@@ -1031,10 +1038,22 @@ Melown.Map.prototype.updateFogDensity = function() {
     var orientation_ = pos_.getOrientation();
     
     var cameraVisibility_ = this.camera_.getFar();
-    var density_ = Math.log(0.05) / (cameraVisibility_ * 10*(Math.max(5,-orientation_[1])/90));
+//    var density_ = Math.log(0.05) / (cameraVisibility_ * 10*(Math.max(5,-orientation_[1])/90));
+
+
+    var atmosphereHeight_ = 100000;
+    //this.cameraHeight_;
+
+    //var density_ = Math.log(0.05) / (cameraVisibility_ * (Math.max(5,-orientation_[1])/90));
+    
+    var tiltFactor_ = (Math.max(5,-orientation_[1])/90);
+    var heightFactor_ = 1-Math.max(0,Math.min(1.0,this.cameraHeight_ / atmosphereHeight_));
+    
+    //var density_ = ((Math.log(0.05) / (cameraVisibility_)) * tiltFactor_ * heightFactor_);
+    var density_ = Math.log(0.05) / ((cameraVisibility_ * Math.max(1,this.cameraHeight_*0.0001))* tiltFactor_);
     density_ *= (5.0) / (Math.min(50000, Math.max(this.cameraDistance_, 1000)) /5000);
 
-    if (this.drawFog_ == false) {
+    if (!this.drawFog_) {
         density_ = 0;
     }
     

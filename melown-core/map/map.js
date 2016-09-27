@@ -690,14 +690,68 @@ Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
 
     var cameraSpaceCoords_ = this.renderer_.hitTest(screenX_, screenY_);
     
-    if (!cameraSpaceCoords_[3]) {
+    var fallbackUsed_ = false; 
+    var cameraPos_ = this.cameraPosition_;
+    var worldPos_;
+
+    var ray_ = cameraSpaceCoords_[4];
+
+    if (this.getNavigationSrs().isProjected()) { //plane fallback
+        var planePos_ = [0,0,Math.min(-1000,this.referenceFrame_.getGlobalHeightRange()[0])];
+        var planeNormal_ = [0,0,1];
+
+        var d = Melown.Math.vec3Dot(planeNormal_, ray_);
+        //if (d > 1e-6) {
+            var a = [planePos_[0] - cameraPos_[0], planePos_[1] - cameraPos_[1], planePos_[2] - cameraPos_[2]];
+            t = Melown.Math.vec3Dot(a, planeNormal_) / d;
+            
+            //var t = (Melown.Math.vec3Dot(cameraPos_, planeNormal_) + (-500)) / d;            
+            if (t >= 0) {
+                if (!cameraSpaceCoords_[3] || t < cameraSpaceCoords_[5]) {
+                    worldPos_ = [ (ray_[0] * t) + cameraPos_[0],
+                                  (ray_[1] * t) + cameraPos_[1],
+                                  (ray_[2] * t) + cameraPos_[2] ];
+    
+                    fallbackUsed_ = true;
+                }
+            }
+        //}
+
+    } else /*if (false)*/ { //elipsoid fallback
+        var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
+        var planetRadius_ = navigationSrsInfo_["b"] + this.referenceFrame_.getGlobalHeightRange()[0];
+    
+        var offset_ = [cameraPos_[0], cameraPos_[1], cameraPos_[2]];
+        var a = Melown.Math.vec3Dot(ray_, ray_);
+        var b = 2 * Melown.Math.vec3Dot(ray_, offset_);
+        var c = Melown.Math.vec3Dot(offset_, offset_) - planetRadius_ * planetRadius_;
+        var d = b * b - 4 * a * c;
+        
+        if (d > 0) {
+            d = Math.sqrt(d);
+            var t1 = (-b - d) / (2*a);
+            var t2 = (-b + d) / (2*a);
+            var t = (t1 < t2) ? t1 : t2;
+            
+            if (!cameraSpaceCoords_[3] || t < cameraSpaceCoords_[5]) {
+                worldPos_ = [ (ray_[0] * t) + cameraPos_[0],
+                              (ray_[1] * t) + cameraPos_[1],
+                              (ray_[2] * t) + cameraPos_[2] ];
+
+                fallbackUsed_ = true;
+            }
+        }   
+    }
+    
+    if (!cameraSpaceCoords_[3] && !fallbackUsed_) {
         return null;
     }
     
-    var cameraPos_ = this.cameraPosition_;
-    var worldPos_ = [ cameraSpaceCoords_[0] + cameraPos_[0],
+    if (!fallbackUsed_) {
+        worldPos_ = [ cameraSpaceCoords_[0] + cameraPos_[0],
                       cameraSpaceCoords_[1] + cameraPos_[1],
                       cameraSpaceCoords_[2] + cameraPos_[2] ];
+    }
 
     var navCoords_ = this.convertCoords(worldPos_, "physical", "navigation");
 
@@ -832,13 +886,6 @@ Melown.Map.prototype.update = function() {
     this.stats_.begin(dirty_);
 
     if (!this.loaderSuspended_) {
-        /*        
-        if (!(this.config_.mapLowresBackground_ && this.loader_.pending_[1].length > 0)) {
-            this.loader_.setChannel(0); //0 = hires channel
-        } else {
-            this.loader_.setChannel(1); //1 = lowres channel
-        }*/
-
         this.loader_.update();
     }
 
@@ -848,6 +895,10 @@ Melown.Map.prototype.update = function() {
         this.bestGeodataTexelSize_ = 0;//Number.MAX_VALUE;
         
         this.processRenderSlots();
+
+        if (!this.loaderSuspended_) {
+            this.loader_.update();
+        }
         
         this.core_.callListener("map-update", {});
 

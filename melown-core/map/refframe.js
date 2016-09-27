@@ -69,6 +69,10 @@ Melown.MapRefFrame.prototype.getInfo = function() {
     };
 };
 
+Melown.MapRefFrame.prototype.getGlobalHeightRange = function() {
+    return this.division_.heightRange_;     
+};
+
 Melown.MapRefFrame.prototype.parseNode = function(nodeData_) {
     var node_ = {
         srs_ : nodeData_["srs"],

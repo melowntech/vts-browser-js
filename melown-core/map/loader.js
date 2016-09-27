@@ -1,11 +1,13 @@
 /**
  * @constructor
  */
-Melown.MapLoader = function(map_, numThreads_) {
+Melown.MapLoader = function(map_, maxThreads_) {
     this.map_ = map_;
 
-    this.numThreads_ = numThreads_ || 1;
+    this.maxThreads_ = maxThreads_ || 1;
     this.usedThreads_ = 0;
+    this.maxPending_ = this.maxThreads_ * 2;
+    this.fadeout_ = 19 / 20;
 
     this.pending_ = [[],[]];
     //this.pendingPath_ = [];
@@ -17,6 +19,13 @@ Melown.MapLoader = function(map_, numThreads_) {
     this.downloadingTime_ = [];
     this.lastDownloadTime_ = 0;
     this.downloaded_ = 0;
+    this.updateThreadCount();
+};
+
+Melown.MapLoader.prototype.updateThreadCount = function(channel_) {
+    this.maxThreads_ = this.map_.config_.mapDownloadThreads_;
+    this.maxPending_ = Math.max(20, this.maxThreads_ * 2);
+    this.fadeout_ = (this.maxPending_-1) / this.maxPending_;
 };
 
 Melown.MapLoader.prototype.setChannel = function(channel_) {
@@ -58,7 +67,7 @@ Melown.MapLoader.prototype.load = function(path_, downloadFunction_, priority_) 
     } while(!sorted_);
 
     // keep the pending list at reasonable length
-    if (pending_.length > 20) {
+    if (pending_.length > this.maxPending_) {
         pending_.pop();
     }
 };
@@ -74,10 +83,11 @@ Melown.MapLoader.prototype.remove = function(path_) {
 
 Melown.MapLoader.prototype.updateChannel = function(channel_) {
     var pending_ = this.pending_[channel_];
+    this.updateThreadCount();
 
     //reduce priority for pending stuff
     for (var i = 0, li = pending_.length; i < li; i++) {
-        pending_[i].priority_ *= 19/20;
+        pending_[i].priority_ *= this.fadeout_;
     }
 
     var timer_ = performance.now();
@@ -98,10 +108,10 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
     }*/
     
     //if (this.pending_.length > 0) {
-        //if (this.usedThreads_ < this.numThreads_) {
-        while (pending_.length > 0 && this.usedThreads_ < this.numThreads_) {
+        //if (this.usedThreads_ < this.maxThreads_) {
+        while (pending_.length > 0 && this.usedThreads_ < this.maxThreads_) {
 
-            //console.log("used: " + this.usedThreads_ + " pending:" + this.pendingPath_.length + " max:" + this.numThreads_);
+            //console.log("used: " + this.usedThreads_ + " pending:" + this.pendingPath_.length + " max:" + this.maxThreads_);
 
             var item_ = pending_.shift();
 

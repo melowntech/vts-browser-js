@@ -264,7 +264,7 @@ Melown.MapPosition.prototype.validate = function() {
     pos_[6] = (pos_[6] != null) ? pos_[6] : -90;
     pos_[7] = (pos_[7] != null) ? pos_[7] : 0;
     pos_[8] = (pos_[8] != null) ? pos_[8] : 900;
-    pos_[9] = (pos_[9] != null) ? pos_[9] : 90;
+    pos_[9] = (pos_[9] != null) ? pos_[9] : 55;
 
     pos_[3] = (pos_[3] == "fixed") ? "fix" : pos_[3];
 };

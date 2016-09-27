@@ -447,9 +447,13 @@ Melown.Renderer.prototype.switchToFramebuffer = function(type_) {
 Melown.Renderer.prototype.hitTest = function(screenX_, screenY_) {
     var gl_ = this.gpu_.gl_;
 
+    //get screen ray
+    var screenRay_ = this.getScreenRay(screenX_, screenY_);
+    var cameraPos_ = this.camera_.getPosition();
+
     //conver screen coords to texture coords
     if (gl_.checkFramebufferStatus(gl_.FRAMEBUFFER) != gl_.FRAMEBUFFER_COMPLETE) {
-        return [0,0,0,0];
+        return [0, 0, 0, null, screenRay_, Number.MAX_VALUE, cameraPos_];
     }
 
     var x_ = 0, y_ = 0;
@@ -469,9 +473,6 @@ Melown.Renderer.prototype.hitTest = function(screenX_, screenY_) {
 
     var surfaceHit_ = !(pixel_[0] == 255 && pixel_[1] == 255 && pixel_[2] == 255 && pixel_[3] == 255);
 
-    //get screen ray
-    var screenRay_ = this.getScreenRay(screenX_, screenY_);
-    var cameraPos_ = this.camera_.getPosition();
 
     //compute hit postion
     this.lastHitPosition_ = [cameraPos_[0] + screenRay_[0]*depth_, cameraPos_[1] + screenRay_[1]*depth_, cameraPos_[2] + screenRay_[2]*depth_];
@@ -481,7 +482,7 @@ Melown.Renderer.prototype.hitTest = function(screenX_, screenY_) {
     //this.core_.hover(screenX_, screenY_, false, { test:true});
     //this.core_.click(screenX_, screenY_, { test2:true});
 
-    return [this.lastHitPosition_[0], this.lastHitPosition_[1], this.lastHitPosition_[2], surfaceHit_];
+    return [this.lastHitPosition_[0], this.lastHitPosition_[1], this.lastHitPosition_[2], surfaceHit_, screenRay_, depth_, cameraPos_];
 };
 
 Melown.Renderer.prototype.hitTestOld = function(screenX_, screenY_, mode_) {
