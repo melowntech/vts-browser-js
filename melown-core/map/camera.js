@@ -37,6 +37,7 @@ Melown.Map.prototype.updateCamera = function() {
     this.cameraVector2_ = camInfo_.vector2_;
     this.cameraPosition_ = camInfo_.orbitCoords_;
     this.cameraHeight_ = camInfo_.orbitHeight_ + height_;
+    this.cameraTerrainHeight_ = height_;
 
     if (!this.getNavigationSrs().isProjected()) { //HACK!!!!!!!!
         //this.position_.setHeight(0);

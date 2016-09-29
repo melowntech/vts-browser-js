@@ -186,6 +186,13 @@ Melown.MapMetanode.prototype.clone = function() {
     node_.displaySize_ = this.displaySize_;
     node_.ready_ = this.ready_;
     node_.stream_ = this.stream_;
+    
+    //copy credits
+    node_.credits_ = new Array(this.credits_.length);
+    
+    for (var i = 0, li = this.credits_.length; i < li; i++) {
+        node_.credits_[i] = this.credits_[i];
+    }
 
 //    if (this.map_.config_.mapGeocentCulling_) {
         node_.diskPos_ = this.diskPos_;

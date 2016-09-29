@@ -58,8 +58,9 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.freeLayersHaveGeodata_ = false;
 
     this.visibleCredits_ = {
-        imagery_ : [],
-        mapdata_ : []
+      imagery_ : {},
+      glueImagery_ : {},
+      mapdata_ : {}
     };
     
     this.mobile_ = false;
@@ -80,6 +81,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.cameraVector_ = [0,0,1];
     this.cameraCenter_ = [0,0,0];
     this.cameraHeight_ = 0;
+    this.cameraTerrainHeight_ = 0;
+    this.lastCameraTerrainHeight_ = 0;
 
     this.stats_ = new Melown.MapStats(this);
     this.resourcesTree_ = new Melown.MapResourceTree(this);
@@ -236,8 +239,17 @@ Melown.Map.prototype.getCredits = function() {
 
 Melown.Map.prototype.getVisibleCredits = function() {
     var imagery_ = this.visibleCredits_.imagery_;
+    var glueImagery_ = this.visibleCredits_.glueImagery_;
     var imageryArray_ = []; 
     var imagerySpecificity_ = []; 
+
+    for (var key_ in glueImagery_) {
+        if (!imagery_[key_]) {
+            imagery_[key_] = glueImagery_[key_];
+        }
+    }
+    
+    this.visibleCredits_.glueImagery_ = {};
     
     for (var key_ in imagery_) {
         imageryArray_.push(key_);
@@ -770,8 +782,9 @@ Melown.Map.prototype.drawMap = function() {
     }
 
     this.visibleCredits_ = {
-      imagery_ : [],
-      mapdata_ : []
+      imagery_ : {},
+      glueImagery_ : {},
+      mapdata_ : {}
     };
 
     var projected_ = this.getNavigationSrs().isProjected();
@@ -870,10 +883,15 @@ Melown.Map.prototype.update = function() {
     }
 
     if (this.position_.isDifferent(this.lastPosition_)) {
-        this.core_.callListener("map-position-changed", {"position":this.position_.pos_.slice()});
+        this.core_.callListener("map-position-changed", {"position":this.position_.pos_.slice(), "last-position":this.lastPosition_.pos_.slice()});
+    }
+
+    if (this.lastCameraTerrainHeight_ != this.cameraTerrainHeight_) {
+        this.core_.callListener("map-position-fixed-height-changed", {"height":this.cameraTerrainHeight_, "last-height":this.lastCameraTerrainHeight_});
     }
 
     this.lastPosition_ = this.position_.clone();
+    this.lastCameraTerrainHeight_ = this.cameraTerrainHeight_;
 
     var rect_ = this.renderer_.div_.getBoundingClientRect();
 

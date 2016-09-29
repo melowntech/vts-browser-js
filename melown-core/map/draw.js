@@ -81,6 +81,8 @@ Melown.Map.prototype.draw = function(skipFreeLayers_) {
 };
 
 Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNotLoad_) {
+    var ready_ = true;
+    
     for (var i = 0, li = commands_.length; i < li; i++) {
         var command_ = commands_[i];
         
@@ -90,9 +92,11 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_; 
                 
-                if (!(mesh_ && mesh_.isReady(doNotLoad_, priority_, true) &&
-                      (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_, true)))) ) {
-                     return false;   
+                var meshReady_ = (mesh_ && mesh_.isReady(doNotLoad_, priority_, true));
+                var textureReady_ = (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_, true)));
+                
+                if (!(meshReady_ && textureReady_) ) {
+                     ready_ = false;   
                 }
                 
                 break;
@@ -102,14 +106,14 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
                 var geodata_ = command_.geodata_; 
                 
                 if (!(geodata_ && geodata_.isReady(doNotLoad_, priority_, true))) {
-                     return false;   
+                     ready_ = false;   
                 }
                 
                 break;
         }
     }
     
-    return true;
+    return ready_;
 };
 
 Melown.Map.prototype.applyCredits = function(tile_) {
@@ -123,6 +127,16 @@ Melown.Map.prototype.applyCredits = function(tile_) {
             this.visibleCredits_.imagery_[key_] = value_;
         }
     }
+    for (var key_ in tile_.glueImageryCredits_) {
+        var value_ = tile_.glueImageryCredits_[key_];
+        var value2_ = this.visibleCredits_.imagery_[key_];
+
+        if (value2_) {
+            this.visibleCredits_.glueImagery_[key_] = value_ > value2_ ? value_ : value2_;
+        } else {
+            this.visibleCredits_.glueImagery_[key_] = value_;
+        }
+    }
     for (var key_ in tile_.mapdataCredits_) {
         var value_ = tile_.mapdataCredits_[key_];
         var value2_ = this.visibleCredits_.mapdata_[key_];
@@ -132,6 +146,10 @@ Melown.Map.prototype.applyCredits = function(tile_) {
         } else {
             this.visibleCredits_.mapdata_[key_] = value_;
         }
+    }
+    
+    if (this.drawBBoxes_) {
+        console.log(JSON.stringify(tile_.id_) + " " + JSON.stringify(this.visibleCredits_));
     }
 };
 
@@ -155,10 +173,11 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
                 
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_;
-               
-                if (mesh_ && mesh_.isReady(doNotLoad_, priority_) &&
-                    (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_))) ) {
 
+                var meshReady_ = (mesh_ && mesh_.isReady(doNotLoad_, priority_));
+                var textureReady_ = (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_)));
+                
+                if (meshReady_ && textureReady_) {
                     //debug bbox
                     if (this.drawBBoxes_ && this.drawMeshBBox_) {
                         mesh_.submeshes_[command_.submesh_].drawBBox(cameraPos_);
@@ -185,18 +204,18 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
 Melown.debugId_ = [144, 8880, 5492];
 
 Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
-    if (tile_.id_[0] == Melown.debugId_[0] && //debuf stufff
+    /*if (tile_.id_[0] == Melown.debugId_[0] && //debuf stufff
         tile_.id_[1] == Melown.debugId_[1] &&
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
-    }
-/*
-    if (tile_.id_[0] == 9 &&
-        tile_.id_[1] == 138 &&
-        tile_.id_[2] == 89) {
-        return true;
-    }
-*/
+    }*/
+
+    /*if (tile_.id_[0] == 19 &&
+        tile_.id_[1] == 232834 &&
+        tile_.id_[2] == 103256) {
+        tile_ = tile_;
+    }*/
+
 
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         return false;
@@ -286,12 +305,11 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
     if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
         var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
-        /*
-        if (tile_.id_[0] == 11 &&
-            tile_.id_[1] == 546 &&
-            tile_.id_[2] == 344) {
-                tile_ = tile_;
-        }*/
+        /*if (tile_.id_[0] == 19 &&
+            tile_.id_[1] == 232834 &&
+            tile_.id_[2] == 103256) {
+            tile_ = tile_;
+        }*/      
 
         tile_.drawCommands_ = [[], [], []]; //??
         tile_.imageryCredits_ = {};
@@ -307,14 +325,19 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                     specificity_ = Math.max(specificity_, surface_.specificity_);
                 }
             }
+
+            //set credits
+            for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                tile_.glueImageryCredits_[node_.credits_[k]] = specificity_;  
+            }
+
         } else {
             specificity_ = tile_.surface_.specificity_;
-        }
-        
 
-        //set credits
-        for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
-            tile_.imageryCredits_[node_.credits_[k]] = specificity_;  
+            //set credits
+            for (var k = 0, lk = node_.credits_.length; k < lk; k++) {
+                tile_.imageryCredits_[node_.credits_[k]] = specificity_;  
+            }
         }
 
         for (var i = 0, li = submeshes_.length; i < li; i++) {
@@ -558,12 +581,11 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
         return true;
     }
 
-    if (tile_.id_[0] == 21 && 
+    /*if (tile_.id_[0] == 21 && 
         tile_.id_[1] == 566376 &&
         tile_.id_[2] == 355252 ){ 
-            
 //        return true;        
-    }
+    }*/
 
     if (tile_.surfaceGeodata_ == null) {
         var path_;
@@ -982,10 +1004,14 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
        
         for (var key_ in tile_.imageryCredits_) {
             if (tile_.imageryCredits_[key_]) {
-                var credit_ = this.getCreditByNumber(key_);
-                if (credit_) {
-                    text_ += credit_.key_ + ", ";
-                }
+                text_ += key_ + ":" + tile_.imageryCredits_[key_] + ", ";
+            }
+        }
+
+        for (var key_ in tile_.glueImageryCredits_) {
+            if (!tile_.imageryCredits_[key_]) {
+                text_ += key_ + ":" + tile_.glueImageryCredits_[key_] + ", ";
+                //text_ += key_ + ", ";
             }
         }
 

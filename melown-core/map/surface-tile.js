@@ -37,6 +37,7 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.heightMap_ = null;
     this.drawCommands_ = [[], [], []];
     this.imageryCredits_ = {};
+    this.glueImageryCredits_ = {};
     this.mapdataCredits_ = {};
     
     this.resources_ = this.map_.resourcesTree_.findNode(id_, true);   // link to resource tree
@@ -109,6 +110,7 @@ Melown.MapSurfaceTile.prototype.kill = function() {
     this.heightMap_ = null;
     this.drawCommands_ = [[], [], []];
     this.imageryCredits_ = {};
+    this.glueImageryCredits_ = {};
     this.mapdataCredits_ = {};
 
     this.verifyChildren_ = false;
@@ -187,6 +189,7 @@ Melown.MapSurfaceTile.prototype.viewSwitched = function() {
     
     this.drawCommands_ = [[], [], []];
     this.imageryCredits_ = {};
+    this.glueImageryCredits_ = {};
     this.mapdataCredits_ = {};
 };
 
@@ -505,11 +508,12 @@ Melown.MapSurfaceTile.prototype.createVirtualMetanode = function(tree_, priority
                 } else {
                     node_.flags_ |= metanode_.flags_ & ((15)<<4); 
 
+                    /*
                     for (var j = 0, lj = metanode_.credits_.length; j <lj; j++) {
                         if (node_.credits_.indexOf(metanode_.credits_[j]) == -1) {
                             node_.credits_.push(metanode_.credits_[j]);
                         } 
-                    }
+                    }*/
 
                     //!!!!!!removed for debug
                     node_.bbox_.min_[0] = Math.min(node_.bbox_.min_[0], metanode_.bbox_.min_[0]); 

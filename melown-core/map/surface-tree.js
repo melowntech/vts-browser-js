@@ -519,7 +519,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                             var child_ = tile_.children_[j];
                             if (child_) {
            
-                                if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+                                if (child_.isMetanodeReady(this, child_.id_[0], true)) { //lod is used as priority
                                     
                                     child_.updateTexelSize();
                                     var priority_ = ((child_.id_[0] + lodShift_) * typeFactor_) * child_.distance_; 

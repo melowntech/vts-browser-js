@@ -8,7 +8,7 @@ Melown.Core.prototype.initConfig = function() {
         mapMetatileCache_ : 60,
         mapTexelSizeFit_ : 1.1,
         mapLowresBackground_ : 0,
-        mapDownloadThreads_ : 6,
+        mapDownloadThreads_ : 20,
         mapMaxProcessingTime_ : 1000*20,
         mapMobileMode_ : false,
         mapMobileModeAutodect_ : true,
