@@ -30,6 +30,7 @@ Melown.Browser = function(element_, config_) {
     this.on("map-unloaded", this.onMapUnloaded.bind(this));
     this.on("map-update", this.onMapUpdate.bind(this));
     this.on("map-position-changed", this.onMapPositionChanged.bind(this));
+    this.on("map-position-fixed-height-changed", this.onMapPositionFixedHeightChanged.bind(this));
 
     this.on("tick", this.onTick.bind(this));
 };
@@ -128,6 +129,12 @@ Melown.Browser.prototype.getLinkWithCurrentPos = function() {
 };
 
 Melown.Browser.prototype.onMapPositionChanged = function() {
+    if (this.config_.positionInUrl_) {
+        this.updatePosInUrl_ = true;
+    }
+};
+
+Melown.Browser.prototype.onMapPositionFixedHeightChanged = function() {
     if (this.config_.positionInUrl_) {
         this.updatePosInUrl_ = true;
     }

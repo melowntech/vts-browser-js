@@ -21,6 +21,10 @@ Melown.Autopilot = function(browser_) {
 };
 
 Melown.Autopilot.prototype.setAutorotate = function(speed_) {
+    if (this.autoRotate_ != speed_) {
+        this.browser_.callListener("autotate-changed", { "autorotate" : speed_});
+    }
+
     this.autoRotate_ = speed_;
 };
 

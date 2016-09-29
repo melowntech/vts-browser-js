@@ -10,6 +10,8 @@ Melown.UIControlCredits = function(ui_, visible_) {
       + ' </div>', visible_);
 
     this.lastHTML_ = "";
+    this.lastHTML2_ = "";
+    this.lastHTML3_ = "";
     this.credits_ = this.control_.getElement("melown-credits");
 };
 
@@ -56,6 +58,8 @@ Melown.UIControlCredits.prototype.update = function() {
     }
 
     var html_ = "";
+    var html2_ = "";
+    var html3_ = "";
     var credits_ = map_.getCurrentCredits();
     
     if (credits_["imagery"].length > 0) {
@@ -88,13 +92,17 @@ Melown.UIControlCredits.prototype.update = function() {
     if (this.lastHTML_ != html_) {
         this.lastHTML_ = html_;
         this.credits_.setHtml(html_);
+    }
 
+    if (this.lastHTML2_ != html2_) {
         var butt_ = this.control_.getElement("melown-credits-imagery-more");
         if (butt_) {
             butt_.on("click", this.onMoreButton.bind(this, butt_, html2_));
         }
+    }
         
-        butt_ = this.control_.getElement("melown-credits-mapdata-more");
+    if (this.lastHTML3_ != html3_) {
+        var butt_ = this.control_.getElement("melown-credits-mapdata-more");
         if (butt_) {
             butt_.on("click", this.onMoreButton.bind(this, butt_, html3_));
         }
