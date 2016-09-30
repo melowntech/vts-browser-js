@@ -20,10 +20,15 @@ Melown.UIControlZoom = function(ui_, visible_) {
 
     var plus_ = this.control_.getElement("melown-zoom-plus");
     plus_.on("click", this.onZoomIn.bind(this));
+    plus_.on("dblclick", this.onDoNothing.bind(this));
 
     var minus_ = this.control_.getElement("melown-zoom-minus");
     minus_.on("click", this.onZoomOut.bind(this));
+    minus_.on("dblclick", this.onDoNothing.bind(this));
+};
 
+Melown.UIControlZoom.prototype.onDoNothing = function(event_) {
+    Melown.Utils.stopPropagation(event_);    
 };
 
 Melown.UIControlZoom.prototype.onZoomIn = function() {

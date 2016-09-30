@@ -2,6 +2,7 @@
  * @constructor
  */
 Melown.Browser = function(element_, config_) {
+    this.killed_ = false;
     this.configStorage_ = {};
     this.initConfig();
     this.setConfigParams(config_, true);
@@ -150,6 +151,10 @@ Melown.Browser.prototype.onMapUpdate = function() {
 };
 
 Melown.Browser.prototype.onTick = function() {
+    if (this.killed_) {
+        return;
+    }
+
     this.autopilot_.tick();
     this.ui_.tick(this.dirty_);
     this.dirty_ = false;

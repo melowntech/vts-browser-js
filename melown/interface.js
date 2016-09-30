@@ -34,6 +34,13 @@ Melown.BrowserInterface.prototype.getUI = function() {
     return this.ui_;
 };
 
+Melown.BrowserInterface.prototype.destroy = function() {
+    this.core_.destroy();
+    this.map_ = null;
+    this.browser_.killed_ = true;
+    return this;    
+};
+
 Melown.BrowserInterface.prototype.setControlMode = function(mode_) {
     this.browser_.controlMode_ = mode_;
     return this;    
@@ -41,6 +48,17 @@ Melown.BrowserInterface.prototype.setControlMode = function(mode_) {
 
 Melown.BrowserInterface.prototype.getControlMode = function() {
     return this.browser_.controlMode_;
+};
+
+Melown.BrowserInterface.prototype.loadMap = function(path_) {
+    this.core_.loadMap(path_);
+    return this;    
+};
+
+Melown.BrowserInterface.prototype.destroyMap = function() {
+    this.core_.destroyMap();
+    this.map_ = null;
+    return this;    
 };
 
 Melown.BrowserInterface.prototype.setPosition = function(position_) {
@@ -458,8 +476,11 @@ Melown.BrowserInterface.prototype["getRenderer"] = Melown.BrowserInterface.proto
 Melown.BrowserInterface.prototype["getPresenter"] = Melown.BrowserInterface.prototype.getPresenter; 
 Melown.BrowserInterface.prototype["getProj4"] = Melown.BrowserInterface.prototype.getProj4; 
 Melown.BrowserInterface.prototype["getUI"] = Melown.BrowserInterface.prototype.getUI; 
+Melown.BrowserInterface.prototype["destroy"] = Melown.BrowserInterface.prototype.destroy; 
 Melown.BrowserInterface.prototype["setControlMode"] = Melown.BrowserInterface.prototype.setControlMode;
 Melown.BrowserInterface.prototype["getControlMode"] = Melown.BrowserInterface.prototype.getControlMode;
+Melown.BrowserInterface.prototype["loadMap"] = Melown.BrowserInterface.prototype.loadMap;
+Melown.BrowserInterface.prototype["destroyMap"] = Melown.BrowserInterface.prototype.destroyMap;
 Melown.BrowserInterface.prototype["setPosition"] = Melown.BrowserInterface.prototype.setPosition;
 Melown.BrowserInterface.prototype["getPosition"] = Melown.BrowserInterface.prototype.getPosition;
 Melown.BrowserInterface.prototype["getCurrentCredits"] = Melown.BrowserInterface.prototype.getCurrentCredits; 

@@ -23,12 +23,17 @@ Melown.UIControlLink = function(ui_, visible_) {
 
     var button_ = this.control_.getElement("melown-link-button");
     button_.on("click", this.onSwitch.bind(this));
+    button_.on("dblclick", this.onDoNothing.bind(this));
 
     this.linkPanel_ = this.control_.getElement("melown-link-text-holder");
     this.link_ = this.control_.getElement("melown-link-text-input");
 
     this.linkVisible_ = false;
     this.update();
+};
+
+Melown.UIControlLink.prototype.onDoNothing = function(event_) {
+    Melown.Utils.stopPropagation(event_);    
 };
 
 Melown.UIControlLink.prototype.onSwitch = function() {

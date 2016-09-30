@@ -20,12 +20,18 @@ Melown.UIControlSpace = function(ui_, visible_) {
      
     this.button2D_ = this.control_.getElement("melown-space-2d");
     this.button2D_.on("click", this.onSwitch.bind(this));
+    this.button2D_.on("dblclick", this.onDoNothing.bind(this));
 
     this.button3D_ = this.control_.getElement("melown-space-3d");
     this.button3D_.on("click", this.onSwitch.bind(this));
+    this.button3D_.on("dblclick", this.onDoNothing.bind(this));
 
     this.space3D_ = true;
     this.update();
+};
+
+Melown.UIControlSpace.prototype.onDoNothing = function(event_) {
+    Melown.Utils.stopPropagation(event_);    
 };
 
 Melown.UIControlSpace.prototype.onSwitch = function() {
