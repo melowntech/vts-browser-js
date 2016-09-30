@@ -3,6 +3,7 @@
  * @constructor
  */
 Melown.Core = function(element_, config_, interface_) {
+    this.killed_ = false;
     this.initConfig();
     this.configStorage_ = {}; 
     this.setConfigParams(config_);
@@ -10,7 +11,6 @@ Melown.Core = function(element_, config_, interface_) {
     this.interface_ = interface_;
     //this.options_ = options_;
     this.ready_ = false;
-    this.killed_ = false;
     this.listeners_ = [];
     this.listenerCounter_ = 0;
     this.inspector_ = (Melown.Inspector != null) ? (new Melown.Inspector(this)) : null;
@@ -37,10 +37,7 @@ Melown.Core.prototype.onResize = function() {
 
 Melown.Core.prototype.loadMap = function(path_) {
     if (this.map_ != null) {
-        this.map_.kill();
-        this.map_ = null;
-        this.mapInterface_ = null;
-        this.callListener("map-unloaded", {});
+        this.destroyMap();
     }
 
     if (path_ == null) {
@@ -129,6 +126,23 @@ Melown.Core.prototype.loadMap = function(path_) {
         onLoadMapconfig("");
     }
 
+};
+
+Melown.Core.prototype.destroy = function() {
+    this.destroyMap();
+    if (this.renderer_) {
+        this.renderer_.kill();
+    }
+    this.killed_ = true;
+};
+
+Melown.Core.prototype.destroyMap = function() {
+    if (this.map_) {
+        this.map_.kill();
+        this.map_ = null;
+        this.mapInterface_ = null;
+        this.callListener("map-unloaded", {});
+    }
 };
 
 Melown.Core.prototype.getMap = function() {

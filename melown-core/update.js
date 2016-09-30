@@ -1,5 +1,8 @@
 
 Melown.Core.prototype.onUpdate = function() {
+    if (this.killed_) {
+        return;
+    }
 
     if (this.map_ != null) {
         this.map_.update();

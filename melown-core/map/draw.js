@@ -779,11 +779,11 @@ Melown.Map.prototype.getTileTextureTransform = function(sourceTile_, targetTile_
 };
 
 Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface_, bound_, fullUpdate_) {
-    if (tile_.id_[0] == Melown.debugId_[0] &&
+    /*if (tile_.id_[0] == Melown.debugId_[0] &&
         tile_.id_[1] == Melown.debugId_[1] &&
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
-    }
+    }*/
         
     //search map view
     if (surface_.boundLayerSequence_.length > 0) {
@@ -794,6 +794,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
             
             for (var j = 0, lj = surface_.boundLayerSequence_.length; j < lj; j++) {
                 var layer_ = surface_.boundLayerSequence_[j][0];
+                
                 if (layer_ && layer_.ready_ && layer_.hasTileOrInfluence(tile_.id_) && surface_.boundLayerSequence_[j][1] > 0) {
                     var extraBound_ = null; 
                     

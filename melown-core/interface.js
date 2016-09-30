@@ -17,8 +17,20 @@ Melown.CoreInterface = function(element_, config_) {
     this.map_ = this.core_.getMap();
 };
 
+Melown.CoreInterface.prototype.destroy = function() {
+    return this.core_.destroy();
+};
+
 Melown.CoreInterface.prototype.getMap = function() {
     return this.core_.getMapInterface();
+};
+
+Melown.CoreInterface.prototype.loadMap = function(path_) {
+    return this.core_.loadMap(path_);
+};
+
+Melown.CoreInterface.prototype.destroyMap = function() {
+    return this.core_.destroyMap();
 };
 
 Melown.CoreInterface.prototype.getRenderer = function() {
@@ -40,6 +52,9 @@ Melown.CoreInterface.prototype.callListener = function(name_, event_) {
 //prevent minification
 Melown["MapCore"] = Melown.MapCore;
 Melown["mapCore"] = Melown.MapCore;
+Melown.CoreInterface.prototype["destroy"] = Melown.CoreInterface.prototype.destroy;
+Melown.CoreInterface.prototype["loadMap"] = Melown.CoreInterface.prototype.loadMap;
+Melown.CoreInterface.prototype["destroyMap"] = Melown.CoreInterface.prototype.destroyMap;
 Melown.CoreInterface.prototype["getMap"] = Melown.CoreInterface.prototype.getMap;
 Melown.CoreInterface.prototype["getRenderer"] = Melown.CoreInterface.prototype.getRenderer;
 Melown.CoreInterface.prototype["on"] = Melown.CoreInterface.prototype.on;
