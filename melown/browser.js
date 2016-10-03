@@ -21,6 +21,7 @@ Melown.Browser = function(element_, config_) {
     this.updatePosInUrl_ = false;
     this.lastUrlUpdateTime_ = false;
     this.mapLoaded_ = false;
+    this.mapInteracted_ = false;
 
     this.autopilot_ = new Melown.Autopilot(this);
     this.rois_ = new Melown.Rois(this);
@@ -32,7 +33,10 @@ Melown.Browser = function(element_, config_) {
     this.on("map-update", this.onMapUpdate.bind(this));
     this.on("map-position-changed", this.onMapPositionChanged.bind(this));
     this.on("map-position-fixed-height-changed", this.onMapPositionFixedHeightChanged.bind(this));
-
+    this.on("map-position-panned", this.onMapPositionPanned.bind(this));
+    this.on("map-position-rotated", this.onMapPositionRotated.bind(this));
+    this.on("map-position-zoomed", this.onMapPositionZoomed.bind(this));
+        
     this.on("tick", this.onTick.bind(this));
 };
 
@@ -111,6 +115,15 @@ Melown.Browser.prototype.getLinkWithCurrentPos = function() {
 
     //replace old value with new one    
     params_["pos"] = s;
+
+    if (this.mapInteracted_) {
+        if (params_["rotate"]) {
+            params_["rotate"] = "0";
+        }
+        if (params_["pan"]) {
+            params_["pan"] = "0,0";
+        }
+    }
     
     //convert prameters to url parameters string
     s = "";
@@ -133,6 +146,18 @@ Melown.Browser.prototype.onMapPositionChanged = function() {
     if (this.config_.positionInUrl_) {
         this.updatePosInUrl_ = true;
     }
+};
+
+Melown.Browser.prototype.onMapPositionPanned = function() {
+    this.mapInteracted_ = true;
+};
+
+Melown.Browser.prototype.onMapPositionRotated = function() {
+    this.mapInteracted_ = true;
+};
+
+Melown.Browser.prototype.onMapPositionZoomed = function() {
+    this.mapInteracted_ = true;
 };
 
 Melown.Browser.prototype.onMapPositionFixedHeightChanged = function() {

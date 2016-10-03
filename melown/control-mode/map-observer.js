@@ -47,6 +47,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
         
         this.viewExtentDeltas_.push(factor_);
         this.reduceFloatingHeight(0.8);
+        this.browser_.callListener("map-position-zoomed", {});
         
     } else if ((event_.getDragButton("left") && !modifierKey_)
         && this.config_.panAllowed_) { //pan
@@ -69,6 +70,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
             
             this.coordsDeltas_.push(forward_);
             this.reduceFloatingHeight(0.9);
+            this.browser_.callListener("map-position-panned", {});
         }
     } else if (((touches_ <= 1 && event_.getDragButton("right")) || event_.getDragButton("middle") || modifierKey_) 
                && this.config_.rotationAllowed_) { //rotate
@@ -76,6 +78,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
         var sensitivity_ = this.config_.sensitivity_[1];
         this.orientationDeltas_.push([-delta_[0] * sensitivity_,
                                       -delta_[1] * sensitivity_, 0]);
+        this.browser_.callListener("map-position-rotated", {});
     }
 };
 
@@ -103,6 +106,7 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
         
         this.viewExtentDeltas_.push(factor_);
         this.reduceFloatingHeight(0.8);
+        this.browser_.callListener("map-position-zoomed", {});
     }
 };
 
@@ -110,6 +114,13 @@ Melown.ControlMode.MapObserver.prototype.doubleclick = function(event_) {
     var map_ = this.browser_.getMap();
     if (!map_ || !this.config_.jumpAllowed_) {
         return;
+    }
+
+    if (this.browser_.controlMode_.altKey_ &&
+        this.browser_.controlMode_.shiftKey_ &&
+        this.browser_.controlMode_.ctrlKey_) {
+        this.browser_.config_.minViewExtent_ = 0.5;        
+        return;            
     }
 
     var coords_ = event_.getMouseCoords();

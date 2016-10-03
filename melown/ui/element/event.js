@@ -135,6 +135,7 @@ Melown.UIEvent.prototype.getModifierKey = function(key_) {
     switch (this.type_) {
         case "mouseup":
         case "mousedown":
+        case "dblclick":
         case "keyup":
         case "keydown":
         case "keypress":
