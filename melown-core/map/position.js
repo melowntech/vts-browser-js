@@ -206,7 +206,7 @@ Melown.MapPosition.prototype.convertHeightMode = function(mode_, noPrecisionChec
     var height_ = this.map_.getSurfaceHeight(this.getCoords(), lod_);
 
     if (height_[1] == false && !noPrecisionCheck_) {
-        return null;
+        //return null;
     }
 
     //set new height
