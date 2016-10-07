@@ -169,7 +169,9 @@ Melown.Map.prototype.setupMobileMode = function() {
 };
 
 Melown.Map.prototype.setupCache = function() {
-    var factor_ = 1 / (this.mobile_ ? Math.pow(2, this.config_.mapMobileDetailDegradation_) : 1);
+    var factor_ = 1 / (this.mobile_ ? Math.pow(2, Math.max(0,this.config_.mapMobileDetailDegradation_-1)) : 1);
+    var factor2_ = 1 / (this.mobile_ ? Math.pow(2, this.config_.mapMobileDetailDegradation_) : 1);
+    factor_ = (factor_ + factor2_) * 0.5;
     this.resourcesCache_.setMaxCost(this.config_.mapCache_*1024*1024*factor_);
     this.gpuCache_.setMaxCost(this.config_.mapGPUCache_*1024*1024*factor_);
     this.metatileCache_.setMaxCost(this.config_.mapMetatileCache_*1024*1024*(factor_ < 0.8 ? 0.5 : 1));
@@ -712,10 +714,10 @@ Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
         var planePos_ = [0,0,Math.min(-1000,this.referenceFrame_.getGlobalHeightRange()[0])];
         var planeNormal_ = [0,0,1];
 
-        var d = Melown.Math.vec3Dot(planeNormal_, ray_);
+        var d = Melown["Math"]["vec3Dot"](planeNormal_, ray_); //minification is wrong there
         //if (d > 1e-6) {
             var a = [planePos_[0] - cameraPos_[0], planePos_[1] - cameraPos_[1], planePos_[2] - cameraPos_[2]];
-            t = Melown.Math.vec3Dot(a, planeNormal_) / d;
+            t = Melown["Math"]["vec3Dot"](a, planeNormal_) / d;
             
             //var t = (Melown.Math.vec3Dot(cameraPos_, planeNormal_) + (-500)) / d;            
             if (t >= 0) {
@@ -734,9 +736,9 @@ Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
         var planetRadius_ = navigationSrsInfo_["b"] + this.referenceFrame_.getGlobalHeightRange()[0];
     
         var offset_ = [cameraPos_[0], cameraPos_[1], cameraPos_[2]];
-        var a = Melown.Math.vec3Dot(ray_, ray_);
-        var b = 2 * Melown.Math.vec3Dot(ray_, offset_);
-        var c = Melown.Math.vec3Dot(offset_, offset_) - planetRadius_ * planetRadius_;
+        var a = Melown["Math"]["vec3Dot"](ray_, ray_); //minification is wrong there
+        var b = 2 * Melown["Math"]["vec3Dot"](ray_, offset_);
+        var c = Melown["Math"]["vec3Dot"](offset_, offset_) - planetRadius_ * planetRadius_;
         var d = b * b - 4 * a * c;
         
         if (d > 0) {

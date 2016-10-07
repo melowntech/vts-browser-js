@@ -205,14 +205,25 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
         struct Submesh submeshes [];      // array of submeshes, size of array is defined by numSubmeshes property
     };
 */
+    //parase header
+    var streamData_ = stream_.data_;
+    var magic_ = "";
 
-    if (!this.parseMeshHeader(stream_)) {
-        return;
+    magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
+    magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
+
+    if (magic_ != "ME") {
+        return false;
     }
 
-    //if (!this.numSubmeshes_) {
-        //debugger;
-    //}
+    this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+
+    if (this.version_ > 3) {
+        return false;
+    }
+
+    this.meanUndulation_ = streamData_.getFloat64(stream_.index_, true); stream_.index_ += 8;
+    this.numSubmeshes_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
 
     this.submeshes_ = [];
 
@@ -226,29 +237,6 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
     }
     
     this.numSubmeshes_ = this.submeshes_.length;
-};
-
-Melown.MapMesh.prototype.parseMeshHeader = function (stream_) {
-    var streamData_ = stream_.data_;
-    var magic_ = "";
-
-    magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
-    magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
-
-    if (magic_ != "ME") {
-        return false;
-    }
-
-    this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-
-    if (this.version_ > 2) {
-        return false;
-    }
-
-    this.meanUndulation_ = streamData_.getFloat64(stream_.index_, true); stream_.index_ += 8;
-    this.numSubmeshes_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-    
-    return true;
 };
 
 Melown.MapMesh.prototype.addSubmesh = function(submesh_) {

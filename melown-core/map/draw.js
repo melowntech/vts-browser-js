@@ -184,6 +184,9 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
                     }
 
                     mesh_.drawSubmesh(cameraPos_, command_.submesh_, texture_, command_.material_, command_.alpha_);
+                } else {
+                    i = i;
+                    //this should not happen
                 }
                 
                 break;
@@ -210,10 +213,11 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             tile_ = tile_;
     }*/
 
-    /*if (tile_.id_[0] == 19 &&
-        tile_.id_[1] == 232834 &&
-        tile_.id_[2] == 103256) {
+    /*if (tile_.id_[0] == 22 &&
+        tile_.id_[1] == 1862678 &&
+        tile_.id_[2] == 826010) {
         tile_ = tile_;
+        //return true;
     }*/
 
 
@@ -301,15 +305,19 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
             ret_ = true;
         }
     }
+    
+    if (tile_.drawCommands_[channel_].length > 0) { //this is new but probably harmless
+        //return false;
+    } 
 
     if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
         var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
-        /*if (tile_.id_[0] == 19 &&
-            tile_.id_[1] == 232834 &&
-            tile_.id_[2] == 103256) {
+        if (tile_.id_[0] == 22 &&
+            tile_.id_[1] == 1862678 &&
+            tile_.id_[2] == 826010) {
             tile_ = tile_;
-        }*/      
+        }    
 
         tile_.drawCommands_ = [[], [], []]; //??
         tile_.imageryCredits_ = {};
@@ -518,7 +526,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                             if (tile_.surfaceTextures_[i] == null) {
                                 var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
                                 tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
-                            } else {
+                            } //else {
                                 tile_.drawCommands_[0].push({
                                     type_ : "submesh",
                                     mesh_ : tile_.surfaceMesh_,
@@ -526,7 +534,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                                     texture_ : tile_.surfaceTextures_[i],
                                     material_ : "internal"
                                 });                                                
-                            }
+                            //}
                         }
                     }                            
                 }
@@ -535,7 +543,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                 if (tile_.surfaceTextures_[i] == null) {
                     var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
                     tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
-                } else {
+                } //else {
                     tile_.drawCommands_[0].push({
                         type_ : "submesh",
                         mesh_ : tile_.surfaceMesh_,
@@ -543,7 +551,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                         texture_ : tile_.surfaceTextures_[i],
                         material_ : "internal"
                     });                                                
-                }
+                //}
             }
             
             //depth path

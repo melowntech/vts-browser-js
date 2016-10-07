@@ -21,8 +21,8 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     //this.pp2_.convertViewMode("subj");
 
     this.mode_ = options_["mode"] || "auto";
-    this.submode_ = "piha";//options_["submode"] || "none";
-//    this.submode_ = "none";
+    this.submode_ = options_["submode"] || "none";
+    this.submode_ = "none";
     this.maxHeight_ = options_["maxHeight"] || 1000000000;
     this.maxDuration_ = options_["maxDuration"] || 10000;
     this.samplePeriod_ = options_["samplePeriod"] || 10;

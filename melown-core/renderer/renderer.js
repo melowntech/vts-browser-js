@@ -37,6 +37,7 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.geoHitmapCounter_ = 0;
     this.clearStencilPasses_ = [];
     this.onResizeCall_ = onResize_;
+    this.math_ = Melown.Math;
 
     this.clickEvent_ = null;
     this.hoverEvent_ = null;

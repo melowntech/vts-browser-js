@@ -12,7 +12,7 @@ Melown.Core.prototype.initConfig = function() {
         mapMaxProcessingTime_ : 1000*20,
         mapMobileMode_ : false,
         mapMobileModeAutodect_ : true,
-        mapMobileDetailDegradation_ : 1,
+        mapMobileDetailDegradation_ : 2,
         mapNavSamplesPerViewExtent_ : 4,
         mapIgnoreNavtiles_ : false,
         mapAllowHires_ : true,

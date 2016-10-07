@@ -17,7 +17,6 @@ Melown.MapSubmesh = function(mesh_, stream_) {
     this.vertices_ = null;
     this.internalUVs_ = null;
     this.externalUVs_ = null;
-    this.undulationDeltas_ = null;
     this.mesh_ = mesh_;
     this.statsCounter_ = 0;
     this.valid_ = true;
@@ -35,7 +34,6 @@ Melown.MapSubmesh.prototype.kill = function () {
     this.vertices_ = null;
     this.internalUVs_ = null;
     this.externalUVs_ = null;
-    this.undulationDeltas_ = null;
 };
 
 //! Reads the mesh from the binary representation.
@@ -50,13 +48,11 @@ struct MapSubmesh {
 };
 */
     this.parseHeader(stream_);
-    this.parseVertices(stream_);
-
-    if (this.flags_ & MelownSubmeshFlags_InternalTexcoords) {
-        this.parseTexcoords(stream_);
+    if (this.mesh_.version_ >= 3) {
+        this.parseVerticesAndFaces2(stream_);
+    } else {
+        this.parseVerticesAndFaces(stream_);
     }
-
-    this.parseFaces(stream_);
 };
 
 Melown.MapSubmesh.prototype.parseHeader = function (stream_) {
@@ -97,9 +93,11 @@ struct MapSubmeshHeader {
     bboxMax_[0] = streamData_.getFloat64(stream_.index_, true); stream_.index_ += 8;
     bboxMax_[1] = streamData_.getFloat64(stream_.index_, true); stream_.index_ += 8;
     bboxMax_[2] = streamData_.getFloat64(stream_.index_, true); stream_.index_ += 8;
+    
+    this.bbox_.updateMaxSize();
 };
 
-Melown.MapSubmesh.prototype.parseVertices = function (stream_) {
+Melown.MapSubmesh.prototype.parseVerticesAndFaces = function (stream_) {
 /*
 struct VerticesBlock {
     ushort numVertices;              // number of vertices
@@ -131,16 +129,11 @@ struct VerticesBlock {
     }
 
     var externalUVs_ = null;
-    var undulationDeltas_ = null;
 
     var vertices_ = new Float32Array(numVertices_ * 3);//[];
 
     if (this.flags_ & MelownSubmeshFlags_ExternalTexcoords) {
         externalUVs_ = new Float32Array(numVertices_ * 2);//[];
-    }
-
-    if (this.flags_ & MelownSubmeshFlags_PerVertexUndulation) {
-        undulationDeltas_ = new Float32Array(numVertices_);//[];
     }
 
     var uvfactor_ = 1.0 / 65535;
@@ -158,24 +151,12 @@ struct VerticesBlock {
             externalUVs_[uvindex_] = data_.getUint16(index_, true) * uvfactor_; index_ += 2;
             externalUVs_[uvindex_+1] = (65535 - data_.getUint16(index_, true)) * uvfactor_; index_ += 2;
         }
-
-        if (undulationDeltas_ != null) {
-            undulationDeltas_[i] = data_.getUint16(index_, true) * ufactor_; index_ += 2;
-        }
     }
 
 
     this.tmpVertices_ = vertices_;
     this.tmpExternalUVs_ = externalUVs_;
-    this.undulationDeltas_ = undulationDeltas_;
-
-    stream_.index_ = index_;
-    
-    //console.log("ver: " + numVertices_);
-
-};
-
-Melown.MapSubmesh.prototype.parseTexcoords = function (stream_) {
+   
 /*
 struct TexcoorsBlock {
     ushort numTexcoords;              // number of texture coordinates
@@ -190,25 +171,20 @@ struct TexcoorsBlock {
 };
 */
 
-    var data_ = stream_.data_;
-    var index_ = stream_.index_;
-
-    var numUVs_ = data_.getUint16(stream_.index_, true); index_ += 2;
-
-    var internalUVs_ = new Float32Array(numUVs_ * 2);//[];
-    var uvfactor_ = 1.0 / 65535;
-
-    for (var i = 0, li = numUVs_ * 2; i < li; i+=2) {
-        internalUVs_[i] = data_.getUint16(index_, true) * uvfactor_; index_ += 2;
-        internalUVs_[i+1] = (65535 - data_.getUint16(index_, true)) * uvfactor_; index_ += 2;
+    if (this.flags_ & MelownSubmeshFlags_InternalTexcoords) {
+        var numUVs_ = data_.getUint16(index_, true); index_ += 2;
+    
+        var internalUVs_ = new Float32Array(numUVs_ * 2);//[];
+        var uvfactor_ = 1.0 / 65535;
+    
+        for (var i = 0, li = numUVs_ * 2; i < li; i+=2) {
+            internalUVs_[i] = data_.getUint16(index_, true) * uvfactor_; index_ += 2;
+            internalUVs_[i+1] = (65535 - data_.getUint16(index_, true)) * uvfactor_; index_ += 2;
+        }
+    
+        this.tmpInternalUVs_ = internalUVs_;
     }
 
-    this.tmpInternalUVs_ = internalUVs_;
-
-    stream_.index_ = index_;
-};
-
-Melown.MapSubmesh.prototype.parseFaces = function (stream_) {
 /*
 struct FacesBlock {
     ushort numFaces;              // number of faces
@@ -222,10 +198,7 @@ struct FacesBlock {
 };
 */
 
-    var data_ = stream_.data_;
-    var index_ = stream_.index_;
-
-    var numFaces_ = data_.getUint16(stream_.index_, true); index_ += 2;
+    var numFaces_ = data_.getUint16(index_, true); index_ += 2;
 
     var internalUVs_ = null;
     var externalUVs_ = null;
@@ -243,7 +216,6 @@ struct FacesBlock {
     var vtmp_ = this.tmpVertices_;
     var eUVs_ = this.tmpExternalUVs_;
     var iUVs_ = this.tmpInternalUVs_;
-    //var uds = this.undulationDeltas_;
 
     for (var i = 0; i < numFaces_; i++) {
         var vindex_ = i * (3 * 3);
@@ -295,7 +267,6 @@ struct FacesBlock {
     this.vertices_ = vertices_;
     this.internalUVs_ = internalUVs_;
     this.externalUVs_ = externalUVs_;
-    //this.undulationDeltas_ = undulationDeltas_;
 
     this.tmpVertices_ = null;
     this.tmpInternalUVs_ = null;
@@ -306,10 +277,272 @@ struct FacesBlock {
     this.size_ = this.vertices_.length;
     if (this.internalUVs_) this.size_ += this.internalUVs_.length;
     if (this.externalUVs_) this.size_ += this.externalUVs_.length;
-    if (this.undulationDeltas_) this.size_ += this.undulationDeltas_.length;
     this.size_ *= 4;
     this.faces_ = numFaces_;
+};
 
+Melown.MapSubmesh.prototype.parseWord = function (data_, index_) {
+    var value_ = data_.getUint8(index_, true);
+    
+    if (value_ & 0x80) {
+        var value2_ = data_.getUint8(index_+1, true);
+        return [(value_ & 0x7f) | (value2_ << 7), index_ + 2];
+    }
+
+    return [value_, index_ + 1];
+};
+
+Melown.MapSubmesh.prototype.parseDelta = function (data_, index_) {
+    var value_ = data_.getUint8(index_, true);
+    
+    if (value_ & 0x80) {
+        value_ = (value_ & 0x7f) | (data_.getUint8(index_+1, true) << 7);
+
+        if (value_ & 1) {
+            return [-((value_ >> 1)+1), index_ + 2];
+        } else {
+            return [(value_ >> 1), index_ + 2];
+        }
+    }
+
+    if (value_ & 1) {
+        return [-((value_ >> 1)+1), index_ + 1];
+    } else {
+        return [(value_ >> 1), index_ + 1];
+    }
+};
+
+Melown.MapSubmesh.prototype.parseVerticesAndFaces2 = function (stream_) {
+/*
+struct VerticesBlock {
+    ushort numVertices;              // number of vertices
+    ushort geomQuantCoef;            // geometry quantization coefficient
+
+    struct Vertex {                  // array of vertices, size of array is defined by numVertices property
+        // vertex coordinates
+        delta x;
+        delta y;
+        delta z;
+    } vertices[];
+};
+*/
+
+    var data_ = stream_.data_;
+    var index_ = stream_.index_;
+
+    var numVertices_ = data_.getUint16(index_, true); index_ += 2;
+    var quant_ = data_.getUint16(index_, true); index_ += 2;
+
+    if (!numVertices_) {
+        this.valid_ = false;
+    }
+
+    var center_ = this.bbox_.center();
+    var scale_ = this.bbox_.maxSize_;
+
+    var multiplier_ = 1.0 / quant_;
+    var externalUVs_ = null;
+
+    var vertices_ = new Float32Array(numVertices_ * 3);//[];
+    
+    var x = 0, y = 0,z = 0;
+    var cx = center_[0], cy = center_[1], cz = center_[2];
+    var mx_ = this.bbox_.min_[0];
+    var my_ = this.bbox_.min_[1];
+    var mz_ = this.bbox_.min_[2];
+    var sx_ = 1.0 / (this.bbox_.max_[0] - this.bbox_.min_[0]);
+    var sy_ = 1.0 / (this.bbox_.max_[1] - this.bbox_.min_[1]);
+    var sz_ = 1.0 / (this.bbox_.max_[2] - this.bbox_.min_[2]);
+
+    for (var i = 0; i < numVertices_; i++) {
+        var d = this.parseDelta(data_, index_);
+        x += d[0]; index_ = d[1];
+        d = this.parseDelta(data_, index_);
+        y += d[0]; index_ = d[1];
+        d = this.parseDelta(data_, index_);
+        z += d[0]; index_ = d[1];
+        
+        var vindex_ = i * 3;
+        vertices_[vindex_] = ((x * multiplier_ * scale_ + cx) - mx_) * sx_;
+        vertices_[vindex_+1] = ((y * multiplier_ * scale_ + cy) - my_) * sy_;
+        vertices_[vindex_+2] = ((z * multiplier_ * scale_ + cz) - mz_) * sz_;
+    }
+
+    if (this.flags_ & MelownSubmeshFlags_ExternalTexcoords) {
+        quant_ = data_.getUint16(stream_.index_, true); index_ += 2;
+        multiplier_ = 1.0 / quant_;
+
+        externalUVs_ = new Float32Array(numVertices_ * 2);
+        x = 0, y = 0;
+
+        for (var i = 0; i < numVertices_; i++) {
+            var d = this.parseDelta(data_, index_);
+            x += d[0]; index_ = d[1];
+            d = this.parseDelta(data_, index_);
+            y += d[0]; index_ = d[1];
+
+            var uvindex_ = i * 2;
+            externalUVs_[uvindex_] = x * multiplier_;
+            externalUVs_[uvindex_+1] = 1 - (y * multiplier_);
+        }
+    }
+
+    this.tmpVertices_ = vertices_;
+    this.tmpExternalUVs_ = externalUVs_;
+    
+/*
+struct TexcoorsBlock {
+    ushort numTexcoords;              // number of texture coordinates
+
+    struct TextureCoords {            // array of texture coordinates, size of array is defined by numTexcoords property
+
+        // internal texture coordinates
+        // values in 2^16^ range represents the 0..1 normalized texture space
+        ushort u;
+        ushort v;
+    } texcoords[];
+};
+*/
+
+    if (this.flags_ & MelownSubmeshFlags_InternalTexcoords) {
+        var numUVs_ = data_.getUint16(index_, true); index_ += 2;
+        var quantU_ = data_.getUint16(index_, true); index_ += 2;
+        var quantV_ = data_.getUint16(index_, true); index_ += 2;
+        var multiplierU_ = 1.0 / quantU_;
+        var multiplierV_ = 1.0 / quantV_;
+        x = 0, y = 0;
+    
+        var internalUVs_ = new Float32Array(numUVs_ * 2);//[];
+    
+        for (var i = 0, li = numUVs_ * 2; i < li; i+=2) {
+            var d = this.parseDelta(data_, index_);
+            x += d[0]; index_ = d[1];
+            d = this.parseDelta(data_, index_);
+            y += d[0]; index_ = d[1];
+
+            internalUVs_[i] = x * multiplierU_;
+            internalUVs_[i+1] = 1 - (y * multiplierV_);
+        }
+    
+        this.tmpInternalUVs_ = internalUVs_;
+    }
+
+/*
+struct FacesBlock {
+    ushort numFaces;              // number of faces
+
+    struct Face {                 // array of faces, size of array is defined by numFaces property
+
+        ushort v[3]; // array of indices to stored vertices
+        ushort t[3]; // if header.flags & ( 1 << 0 ): array of indices to stored internal texture coords
+
+    } faces[];
+};
+*/
+
+    var numFaces_ = data_.getUint16(index_, true); index_ += 2;
+
+    var internalUVs_ = null;
+    var externalUVs_ = null;
+
+    var vertices_ = new Float32Array(numFaces_ * 3 * 3);//[];
+
+    if (this.flags_ & MelownSubmeshFlags_InternalTexcoords) {
+        internalUVs_ = new Float32Array(numFaces_ * 3 * 2);//[];
+    }
+
+    if (this.flags_ & MelownSubmeshFlags_ExternalTexcoords) {
+        externalUVs_ = new Float32Array(numFaces_ * 3 * 2);//[];
+    }
+
+    var vtmp_ = this.tmpVertices_;
+    var eUVs_ = this.tmpExternalUVs_;
+    var iUVs_ = this.tmpInternalUVs_;
+    var high_ = 0;
+
+    for (var i = 0; i < numFaces_; i++) {
+        var vindex_ = i * (3 * 3);
+       
+        var d = this.parseWord(data_, index_);
+        var v1 = high_ - d[0]; index_ = d[1];
+        if (!d[0]) { high_++; }
+
+        d = this.parseWord(data_, index_);
+        var v2 = high_ - d[0]; index_ = d[1];
+        if (!d[0]) { high_++; }
+
+        d = this.parseWord(data_, index_);
+        var v3 = high_ - d[0]; index_ = d[1];
+        if (!d[0]) { high_++; }
+        
+        //var dindex_ = i * (3 * 3);
+        var sindex_ = v1 * 3;
+        vertices_[vindex_] = vtmp_[sindex_];
+        vertices_[vindex_+1] = vtmp_[sindex_+1];
+        vertices_[vindex_+2] = vtmp_[sindex_+2];
+
+        sindex_ = v2 * 3;
+        vertices_[vindex_+3] = vtmp_[sindex_];
+        vertices_[vindex_+4] = vtmp_[sindex_+1];
+        vertices_[vindex_+5] = vtmp_[sindex_+2];
+
+        sindex_ = v3 * 3;
+        vertices_[vindex_+6] = vtmp_[sindex_];
+        vertices_[vindex_+7] = vtmp_[sindex_+1];
+        vertices_[vindex_+8] = vtmp_[sindex_+2];
+
+        if (externalUVs_ != null) {
+            vindex_ = i * (3 * 2);
+            externalUVs_[vindex_] = eUVs_[v1*2];
+            externalUVs_[vindex_+1] = eUVs_[v1*2+1];
+            externalUVs_[vindex_+2] = eUVs_[v2*2];
+            externalUVs_[vindex_+3] = eUVs_[v2*2+1];
+            externalUVs_[vindex_+4] = eUVs_[v3*2];
+            externalUVs_[vindex_+5] = eUVs_[v3*2+1];
+        }
+    }
+
+    high_ = 0;
+
+    if (internalUVs_ != null) {
+        for (var i = 0; i < numFaces_; i++) {
+            var d = this.parseWord(data_, index_);
+            var v1 = high_ - d[0]; index_ = d[1];
+            if (!d[0]) { high_++; }
+    
+            d = this.parseWord(data_, index_);
+            var v2 = high_ - d[0]; index_ = d[1];
+            if (!d[0]) { high_++; }
+    
+            d = this.parseWord(data_, index_);
+            var v3 = high_ - d[0]; index_ = d[1];
+            if (!d[0]) { high_++; }
+
+            vindex_ = i * (3 * 2);
+            internalUVs_[vindex_] = iUVs_[v1*2];
+            internalUVs_[vindex_+1] = iUVs_[v1*2+1];
+            internalUVs_[vindex_+2] = iUVs_[v2*2];
+            internalUVs_[vindex_+3] = iUVs_[v2*2+1];
+            internalUVs_[vindex_+4] = iUVs_[v3*2];
+            internalUVs_[vindex_+5] = iUVs_[v3*2+1];
+        }
+    }
+
+    this.vertices_ = vertices_;
+    this.internalUVs_ = internalUVs_;
+    this.externalUVs_ = externalUVs_;
+
+    this.tmpVertices_ = null;
+    this.tmpInternalUVs_ = null;
+    this.tmpExternalUVs_ = null;
+
+    stream_.index_ = index_;
+
+    this.size_ = this.vertices_.length;
+    if (this.internalUVs_) this.size_ += this.internalUVs_.length;
+    if (this.externalUVs_) this.size_ += this.externalUVs_.length;
+    this.size_ *= 4;
+    this.faces_ = numFaces_;
 };
 
 
