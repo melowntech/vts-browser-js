@@ -117,10 +117,12 @@ Melown.Browser.prototype.getLinkWithCurrentPos = function() {
     params_["pos"] = s;
 
     if (this.mapInteracted_) {
-        if (params_["rotate"]) {
+        if (params_["rotate"] || this.getConfigParam("rotate")) {
             params_["rotate"] = "0";
         }
-        if (params_["pan"]) {
+        
+        var pan_ = this.getConfigParam("pan");
+        if (params_["pan"] || (pan_ && (pan_[0] || pan_[1]))) {
             params_["pan"] = "0,0";
         }
     }

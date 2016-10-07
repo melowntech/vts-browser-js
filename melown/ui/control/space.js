@@ -57,10 +57,12 @@ Melown.UIControlSpace.prototype.update = function() {
     var orientation_ = map_.getPositionOrientation(pos_);
 
     if (this.space3D_) {
+        orientation_[0] = 45;
         orientation_[1] = -60;
         //pos_ = map_.setPositionFov(pos_, 90);
         pos_ = map_.setPositionOrientation(pos_, orientation_);
     } else {
+        orientation_[0] = 0;
         orientation_[1] = -90;
         //pos_ = map_.setPositionFov(pos_, 5);
         pos_ = map_.setPositionOrientation(pos_, orientation_);

@@ -20,7 +20,7 @@ Melown.Browser.prototype.initConfig = function(data_) {
         controlLayers_ : false,
         controlCredits_ : true,
         controlLoading_ : true,
-        minViewExtent_ : 150,
+        minViewExtent_ : 75,
         maxViewExtent_ : Number.MAX_INTEGER,
         autoRotate_ : 0,
         autoPan_ : [0,0]

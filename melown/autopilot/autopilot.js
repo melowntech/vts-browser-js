@@ -70,6 +70,7 @@ Melown.Autopilot.prototype.flyTrajectory = function(trajectory_, sampleDuration_
 };
 
 Melown.Autopilot.prototype.cancelFlight = function() {
+    this.browser_.getControlMode().setCurrentControlMode(this.lastControlMode_);
     this.finished_ = true;
 };
 
