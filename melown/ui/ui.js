@@ -4,15 +4,24 @@
 Melown.UI = function(browser_, element_) {
     this.browser_ = browser_;
     this.config_ = browser_.config_;
-    this.element_ = element_;
+    this.rootElement_ = element_;
+    this.element_ = null;
     this.controls_ = [];
+    this.killed_ = false;
     this.init();
     this.instanceId_ = Melown.InstanceCounter++;
 };
 
 Melown.UI.prototype.init = function() {
+    //create browser wrapper
+    this.element_ = document.createElement('div');
+    this.element_.className = "melown-browser";
+    this.rootElement_.appendChild(this.element_);
+
+    //create map cotrol
     this.map_ = new Melown.UIControlMap(this);
    
+    //create other ui controls
     var loading_ = true;
     this.compass_ = new Melown.UIControlCompass(this, (!loading_ && this.config_.controlCompass_));
     this.credits_ = new Melown.UIControlCredits(this, (!loading_ && this.config_.controlCredits_));
@@ -27,6 +36,18 @@ Melown.UI.prototype.init = function() {
     this.loading_ = new Melown.UIControlLoading(this, this.config_.controlLoading_);
 
     Melown.Utils.disableContexMenu(this.element_);
+};
+
+Melown.UI.prototype.kill = function() {
+    this.killed_ = true;
+
+    for (var key_ in this.controls_) {
+        delete this.controls_[key_];
+    }
+
+    this.rootElement_.removeChild(this.element_);
+    delete this.element_;
+    this.element_ = null;
 };
 
 Melown.UI.prototype.addControl = function(id_, html_, visible_) {

@@ -34,10 +34,14 @@ Melown.UIElement.prototype.addEvent = function(type_, function_, externalElement
     var id_ = type_ + "-" + Melown.Utils.stamp(function_)
               + (externalElement_ ? ("-" + Melown.Utils.stamp(externalElement_)) : "");
 
-    var handler_ = function(e) {
+    var handler_ = (function(e) {
+        if (this.ui_.killed_) {
+            return; //todo remove event
+        }
+
 //        function_.call(new Melown.UIEvent(type_, this, e || window.event));
         function_(new Melown.UIEvent(type_, this, e || window.event));
-    };
+    }).bind(this);
 
     var element_ =  externalElement_ || this.element_;
     element_.addEventListener(this.getEventName(type_), handler_, false);
@@ -48,7 +52,6 @@ Melown.UIElement.prototype.addEvent = function(type_, function_, externalElement
 
     this.events_[type_] = this.events_[type_] || [];
     this.events_[type_][id_] = handler_;
-
 };
 
 Melown.UIElement.prototype.removeEvent = function(type_, function_, externalElement_) {

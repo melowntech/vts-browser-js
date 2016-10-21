@@ -11,7 +11,7 @@ Melown.Browser = function(element_, config_) {
     this.element_ = (typeof element_ === "string") ? document.getElementById(element_) : element_; 
     this.ui_ = new Melown.UI(this, this.element_);
 
-    this.core_ = Melown.MapCore("melown-map", config_);
+    this.core_ = Melown.MapCore(this.ui_.getMapControl().getMapElement().getElement(), config_);
 
     if (this.core_ == null) {
         this.ui_.setControlDisplayState("fallback", true);

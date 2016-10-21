@@ -38,6 +38,8 @@ Melown.BrowserInterface.prototype.destroy = function() {
     this.core_.destroy();
     this.map_ = null;
     this.browser_.killed_ = true;
+    this.ui_.kill();
+    this.ui_ = null;
     return this;    
 };
 
