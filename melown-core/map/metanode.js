@@ -333,7 +333,7 @@ Melown.MapMetanode.prototype.getWorldMatrix = function(geoPos_, matrix_) {
 Melown.MapMetanode.prototype.drawBBox = function(cameraPos_) {
     var renderer_ = this.map_.renderer_;
 
-    renderer_.gpu_.useProgram(renderer_.progBBox_, "aPosition");
+    renderer_.gpu_.useProgram(renderer_.progBBox_, ["aPosition"]);
 
     var mvp_ = Melown.mat4.create();
     var mv_ = Melown.mat4.create();

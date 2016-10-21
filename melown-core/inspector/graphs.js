@@ -42,9 +42,9 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
     this.graphsElement_ = document.createElement("div");
     this.graphsElement_.id = "melown-graphs-panel";
     this.graphsElement_.innerHTML = ""
-        + '<canvas id="melown-graphs-render" class="melown-graphs-canvas" width="600" height="100" ></canvas>'
+        + '<canvas id="melown-graphs-render" class="melown-graphs-canvas" width="900" height="100" ></canvas>'
         + '<div id="melown-graphs-info" class="melown-graphs-info" >&FilledSmallSquare; Frame: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: 1234 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Mesh: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMesh: 1234</div>'
-        + '<canvas id="melown-graphs-cache" class="melown-graphs-canvas" width="600" height="100" ></canvas>'
+        + '<canvas id="melown-graphs-cache" class="melown-graphs-canvas" width="900" height="100" ></canvas>'
         + '<div id="melown-graphs-info2" class="melown-graphs-info" >&FilledSmallSquare; Cache: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Used: 123 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> Mesh: &nbsp 1234</div>'
         + '<div id="melown-graphs-rec" class="melown-graphs-button" >Recording On</div>'
         + '<div id="melown-graphs-ref" class="melown-graphs-button" >Refresh On</div>'
@@ -163,15 +163,15 @@ Melown.Inspector.prototype.graphsMagnifyPressed = function() {
     this.graphsMagnify_ = !this.graphsMagnify_;
 
     if (this.graphsMagnify_ == true) {
-        this.graphsCanvasRender_.style.width = "1000px";
+        this.graphsCanvasRender_.style.width = "1400px";
         this.graphsCanvasRender_.style.height = "200px";
-        this.graphsCanvasCache_.style.width = "1000px";
+        this.graphsCanvasCache_.style.width = "1400px";
         this.graphsCanvasCache_.style.height = "200px";
         document.getElementById("melown-graphs-magnify").innerHTML = "Magnify On";
     } else {
-        this.graphsCanvasRender_.style.width = "600px";
+        this.graphsCanvasRender_.style.width = "900px";
         this.graphsCanvasRender_.style.height = "100px";
-        this.graphsCanvasCache_.style.width = "600px";
+        this.graphsCanvasCache_.style.width = "900px";
         this.graphsCanvasCache_.style.height = "100px";
         document.getElementById("melown-graphs-magnify").innerHTML = "Magnify Off";
     }
@@ -221,7 +221,7 @@ Melown.Inspector.prototype.onGraphsMouseMove = function(event_) {
     this.graphsShowCursor_ = true;
 
     if (this.graphsMagnify_ == true) {
-        x = Math.floor(x * 600/1000);
+        x = Math.floor(x * 900/1400);
     }
 
     this.graphsCursorIndex_ = x;
@@ -376,12 +376,14 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
             var maxResources_ = 0;
             var maxTextures_ = 0;
             var maxMeshes_ = 0;
+            var maxGeodata_ = 0;
             var maxGpu_ = 0;
 
             var valuesMetatiles_ = stats_.graphsCpuMemoryMetatiles_;
             var valuesResources_ = stats_.graphsCpuMemoryUsed_;
             var valuesTextures_ = stats_.graphsGpuMemoryTextures_;
             var valuesMeshes_ = stats_.graphsGpuMemoryMeshes_;
+            var valuesGeodata_ = stats_.graphsGpuMemoryGeodata_;
             var valuesGpu_ = stats_.graphsGpuMemoryRender_;
 
             for (var i = 0; i < samples_; i++) {
@@ -389,6 +391,7 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                 maxResources_ = valuesResources_[i] > maxResources_ ? valuesResources_[i] : maxResources_;
                 maxTextures_ = valuesTextures_[i] > maxTextures_ ? valuesTextures_[i] : maxTextures_;
                 maxMeshes_ = valuesMeshes_[i] > maxMeshes_ ? valuesMeshes_[i] : maxMeshes_;
+                maxGeodata_ = valuesGeodata_[i] > maxGeodata_ ? valuesGeodata_[i] : maxGeodata_;
                 maxGpu_ = valuesGpu_[i] > maxGpu_ ? valuesGpu_[i] : maxGpu_;
             }
 
@@ -396,7 +399,7 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                 var index_ = samplesIndex_ + i;
                 index_ %= samples_;
 
-                var value_ = valuesMetatiles_[index_] + valuesMeshes_[index_] + valuesTextures_[index_] + valuesResources_[index_];
+                var value_ = valuesMetatiles_[index_] + valuesMeshes_[index_] + valuesTextures_[index_] + valuesGeodata_[index_] + valuesResources_[index_];
                 ctx_.fillStyle="#000000";
                 ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
                 value_ -= valuesResources_[index_];
@@ -404,6 +407,10 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                 ctx_.fillStyle="#0000ff";
                 ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
                 value_ -= valuesTextures_[index_];
+
+                ctx_.fillStyle="#009999";
+                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+                value_ -= valuesGeodata_[index_];
 
                 ctx_.fillStyle="#007700";
                 ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
@@ -421,18 +428,20 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                 var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
                 var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles_[index_] + valuesResources_[index_] + valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#0055ff">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.ceil(valuesTextures_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.ceil(valuesMeshes_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(valuesMetatiles_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te: ' + Math.ceil(valuesTextures_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(valuesMeshes_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(valuesGeodata_[index_]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(valuesMetatiles_[index_]/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(valuesGpu_[index_]/(1024*1024)) + "MB" +'</div>';
             } else {
                 var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles_ + maxResources_ + maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.ceil(maxTextures_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.ceil(maxMeshes_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Meta.: ' + Math.ceil(maxMetatiles_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te ' + Math.ceil(maxTextures_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(maxMeshes_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(maxGeodata_/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(maxMetatiles_/(1024*1024)) + "MB" +
                            ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(maxGpu_/(1024*1024)) + "MB" +'</div>';
             }
 
@@ -550,8 +559,14 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
             var maxMeshMinusCount_ = 0;
             var maxMeshMinusSize_ = 0;
 
+            var maxGeodataPlusCount_ = 0;
+            var maxGeodataPlusSize_ = 0;
+            var maxGeodataMinusCount_ = 0;
+            var maxGeodataMinusSize_ = 0;
+
             var valuesTextures_ = stats_.graphsFluxTextures_;
             var valuesMeshes_ = stats_.graphsFluxMeshes_;
+            var valuesGeodata_ = stats_.graphsFluxGeodatas_;
 
             for (var i = 0; i < samples_; i++) {
                 var tmp_ = valuesTextures_[i][0][0] + valuesMeshes_[i][0][0];
@@ -573,6 +588,11 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                 maxMeshPlusSize_ = valuesMeshes_[i][0][1] > maxMeshPlusSize_ ? valuesMeshes_[i][0][1] : maxMeshPlusSize_;
                 maxMeshMinusCount_ = valuesMeshes_[i][1][0] > maxMeshMinusCount_ ? valuesMeshes_[i][1][0] : maxMeshMinusCount_;
                 maxMeshMinusSize_ = valuesMeshes_[i][1][1] > maxMeshMinusSize_ ? valuesMeshes_[i][1][1] : maxMeshMinusSize_;
+
+                maxGeodataPlusCount_ = valuesGeodata_[i][0][0] > maxGeodataPlusCount_ ? valuesGeodata_[i][0][0] : maxGeodataPlusCount_;
+                maxGeodataPlusSize_ = valuesGeodata_[i][0][1] > maxGeodataPlusSize_ ? valuesGeodata_[i][0][1] : maxGeodataPlusSize_;
+                maxGeodataMinusCount_ = valuesGeodata_[i][1][0] > maxGeodataMinusCount_ ? valuesGeodata_[i][1][0] : maxGeodataMinusCount_;
+                maxGeodataMinusSize_ = valuesGeodata_[i][1][1] > maxGeodataMinusSize_ ? valuesGeodata_[i][1][1] : maxGeodataMinusSize_;
             }
 
             var factorY_ = (height_*0.25-2) / maxCount_;
@@ -584,21 +604,42 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
             for (var i = 0; i < samples_; i++) {
                 var index_ = samplesIndex_ + i;
                 index_ %= samples_;
+                
+                var y1Up_ = base_;
+                var y1Down_ = base_+1;
+                var y2Up_ = base2_;
+                var y2Down_ = base2_+1;
 
                 ctx_.fillStyle="#0000aa";
-                ctx_.fillRect(i*factorX_, base_, 1, -(valuesTextures_[index_][0][0])*factorY_);
-                ctx_.fillRect(i*factorX_, base_+1, 1, (valuesTextures_[index_][1][0])*factorY_);
+                ctx_.fillRect(i*factorX_, y1Up_, 1, -(valuesTextures_[index_][0][0])*factorY_);
+                ctx_.fillRect(i*factorX_, y1Down_, 1, (valuesTextures_[index_][1][0])*factorY_);
 
-                ctx_.fillRect(i*factorX_, base2_, 1, -(valuesTextures_[index_][0][1])*factorY2_);
-                ctx_.fillRect(i*factorX_, base2_+1, 1, (valuesTextures_[index_][1][1])*factorY2_);
+                ctx_.fillRect(i*factorX_, y2Up_, 1, -(valuesTextures_[index_][0][1])*factorY2_);
+                ctx_.fillRect(i*factorX_, y2Down_, 1, (valuesTextures_[index_][1][1])*factorY2_);
+
+                y1Up_ -= (valuesTextures_[index_][0][0])*factorY_;
+                y1Down_ += (valuesTextures_[index_][1][0])*factorY_;
+                y2Up_ -= (valuesTextures_[index_][0][1])*factorY2_;
+                y2Down_ += (valuesTextures_[index_][1][1])*factorY2_;
 
                 ctx_.fillStyle="#007700";
+                ctx_.fillRect(i*factorX_, y1Up_, 1, -(valuesMeshes_[index_][0][0])*factorY_);
+                ctx_.fillRect(i*factorX_, y1Down_, 1, (valuesMeshes_[index_][1][0])*factorY_);
 
-                ctx_.fillRect(i*factorX_, base_-(valuesTextures_[index_][0][0])*factorY_, 1, -(valuesMeshes_[index_][0][0])*factorY_);
-                ctx_.fillRect(i*factorX_, base_+1+(valuesTextures_[index_][1][0])*factorY_, 1, (valuesMeshes_[index_][1][0])*factorY_);
+                ctx_.fillRect(i*factorX_, y2Up_, 1, -(valuesMeshes_[index_][0][1])*factorY2_);
+                ctx_.fillRect(i*factorX_, y2Down_, 1, (valuesMeshes_[index_][1][1])*factorY2_);
 
-                ctx_.fillRect(i*factorX_, base2_-(valuesTextures_[index_][0][1])*factorY2_, 1, -(valuesMeshes_[index_][0][1])*factorY2_);
-                ctx_.fillRect(i*factorX_, base2_+1+(valuesTextures_[index_][1][0])*factorY2_, 1, (valuesMeshes_[index_][1][1])*factorY2_);
+                y1Up_ -= (valuesMeshes_[index_][0][0])*factorY_;
+                y1Down_ += (valuesMeshes_[index_][1][0])*factorY_;
+                y2Up_ -= (valuesMeshes_[index_][0][1])*factorY2_;
+                y2Down_ += (valuesMeshes_[index_][1][1])*factorY2_;
+
+                ctx_.fillStyle="#009999";
+                ctx_.fillRect(i*factorX_, y1Up_, 1, -(valuesGeodata_[index_][0][0])*factorY_);
+                ctx_.fillRect(i*factorX_, y1Down_, 1, (valuesGeodata_[index_][1][0])*factorY_);
+
+                ctx_.fillRect(i*factorX_, y2Up_, 1, -(valuesGeodata_[index_][0][1])*factorY2_);
+                ctx_.fillRect(i*factorX_, y2Down_, 1, (valuesGeodata_[index_][1][1])*factorY2_);
 
                 ctx_.fillStyle="#aaaaaa";
                 ctx_.fillRect(0, Math.floor(height_*0.5), width_, 1);
@@ -614,12 +655,16 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
                 str_ += ' &nbsp Size +/-: ' + (valuesTextures_[index_][0][1]/1024/1024).toFixed(2) + "/" + (valuesTextures_[index_][1][1]/1024/1024).toFixed(2);
                 str_ += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + valuesMeshes_[index_][0][0] + "/" + valuesMeshes_[index_][1][0];
                 str_ += ' &nbsp Size +/-: ' + (valuesMeshes_[index_][0][1]/1024/1024).toFixed(2) + "/" + (valuesMeshes_[index_][1][1]/1024/1024).toFixed(2);
+                str_ += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + valuesGeodata_[index_][0][0] + "/" + valuesGeodata_[index_][1][0];
+                str_ += ' &nbsp Size +/-: ' + (valuesGeodata_[index_][0][1]/1024/1024).toFixed(2) + "/" + (valuesGeodata_[index_][1][1]/1024/1024).toFixed(2);
                 str_ += '</div>';
             } else {
                 var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + maxTexPlusCount_ + "/" + maxTexMinusCount_;
                 str_ += ' &nbsp Size +/-: ' + (maxTexPlusSize_/1024/1024).toFixed(2) + "/" + (maxTexMinusSize_/1024/1024).toFixed(2);
                 str_ += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + maxMeshPlusCount_ + "/" + maxMeshMinusCount_;
                 str_ += ' &nbsp Size +/-: ' + (maxMeshPlusSize_/1024/1024).toFixed(2) + "/" + (maxMeshMinusSize_/1024/1024).toFixed(2);
+                str_ += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + maxGeodataPlusCount_ + "/" + maxGeodataMinusCount_;
+                str_ += ' &nbsp Size +/-: ' + (maxGeodataPlusSize_/1024/1024).toFixed(2) + "/" + (maxGeodataMinusSize_/1024/1024).toFixed(2);
                 str_ += '</div>';
             }
 

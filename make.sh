@@ -21,6 +21,7 @@ cat utils/matrix.js \
     inspector/layers.js \
     inspector/stylesheets.js \
     inspector/graphs.js \
+    inspector/replay.js \
     renderer/gpu/bbox.js \
     renderer/gpu/device.js \
     renderer/gpu/font.js \

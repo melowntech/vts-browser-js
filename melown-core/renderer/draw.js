@@ -21,7 +21,7 @@ Melown.Renderer.prototype.drawSkydome = function(texture_, shader_) {
     Melown.mat4.multiply(this.camera_.getMvpMatrix(), domeMat_, mvp_);
     Melown.mat4.multiply(mvp_, normMat_, mvp_);
 
-    this.gpu_.useProgram(shader_, "aPosition", "aTexCoord");
+    this.gpu_.useProgram(shader_, ["aPosition", "aTexCoord"]);
     this.gpu_.bindTexture(texture_);
 //    this.gpu_.bindTexture(this.hitmapTexture_);
 
@@ -64,7 +64,7 @@ Melown.Renderer.prototype.drawTBall = function(position_, size_, shader_) {
     
     //var shader_ = this.progStardome_;
 
-    this.gpu_.useProgram(shader_, "aPosition", null/*"aTexCoord"*/);
+    this.gpu_.useProgram(shader_, ["aPosition"]);
     this.gpu_.bindTexture(this.redTexture_);
 
     shader_.setSampler("uSampler", 0);
@@ -102,7 +102,7 @@ Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, nfactor
     
     //var shader_ = this.progStardome_;
 
-    this.gpu_.useProgram(shader_, "aPosition", null/*"aTexCoord"*/);
+    this.gpu_.useProgram(shader_, ["aPosition"]);
     this.gpu_.bindTexture(this.redTexture_);
 
     shader_.setSampler("uSampler", 0);
@@ -143,7 +143,7 @@ Melown.Renderer.prototype.drawBall2 = function(position_, size_, shader_, nfacto
     
     //var shader_ = this.progStardome_;
 
-    this.gpu_.useProgram(shader_, "aPosition", null/*"aTexCoord"*/);
+    this.gpu_.useProgram(shader_, ["aPosition"]);
     this.gpu_.bindTexture(this.redTexture_);
 
     shader_.setSampler("uSampler", 0);
@@ -204,7 +204,7 @@ Melown.Renderer.prototype.drawLineString = function(points_, size_, color_, dept
         gl_.disable(gl_.CULL_FACE);
     }
 
-    this.gpu_.useProgram(this.progLine4_, "aPosition", null);
+    this.gpu_.useProgram(this.progLine4_, ["aPosition"]);
 
     this.progLine4_.setMat4("uMVP", this.imageProjectionMatrix_);
     this.progLine4_.setVec3("uScale", [(2 / this.curSize_[0]), (2 / this.curSize_[1]), size_*0.5]);
@@ -260,7 +260,7 @@ Melown.Renderer.prototype.drawImage = function(x, y, lx, ly, texture_, color_, d
         gl_.disable(gl_.CULL_FACE);
     }
 
-    this.gpu_.useProgram(this.progImage_, "aPosition", null);
+    this.gpu_.useProgram(this.progImage_, ["aPosition"]);
     this.gpu_.bindTexture(texture_);
 
     var vertices_ = this.rectVerticesBuffer_;
@@ -323,7 +323,7 @@ Melown.Renderer.prototype.drawBillboard = function(mvp_, texture_, color_, depth
         gl_.disable(gl_.CULL_FACE);
     }
 
-    this.gpu_.useProgram(this.progImage_, "aPosition", "aTexCoord");
+    this.gpu_.useProgram(this.progImage_, ["aPosition", "aTexCoord"]);
     this.gpu_.bindTexture(texture_);
 
     this.progImage_.setSampler("uSampler", 0);
@@ -375,7 +375,7 @@ Melown.Renderer.prototype.drawFlatImage = function(x, y, lx, ly, texture_, color
     }
 
     var gl_ = this.gpu_.gl_;
-    this.gpu_.useProgram(this.progImage_, "aPosition", null);
+    this.gpu_.useProgram(this.progImage_, ["aPosition"]);
     this.gpu_.bindTexture(texture_);
 
     var vertices_ = this.rectVerticesBuffer_;
@@ -419,7 +419,7 @@ Melown.Renderer.prototype.drawText = function(x, y, size_, text_, color_, depth_
         }
     }
 
-    this.gpu_.useProgram(this.progImage_, "aPosition", null);
+    this.gpu_.useProgram(this.progImage_, ["aPosition"]);
     this.gpu_.bindTexture(this.textTexture2_);
     //this.gpu_.bindTexture(this.textTexture2_);
 

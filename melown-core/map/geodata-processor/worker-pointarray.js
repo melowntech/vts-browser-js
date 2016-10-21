@@ -67,6 +67,15 @@ var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventIn
         var text_ = getLayerExpresionValue(style_, source_, pointArray_, lod_);
         var size_ = getLayerPropertyValue(style_, "label-size", pointArray_, lod_);
         
+        if (source_ == "$name") {
+            if (!areTextCharactersAvailable(text_, fonts_["default"])) {
+                var text2_ = getLayerExpresionValue(style_, "$name:en", pointArray_, lod_);
+                
+                if (areTextCharactersAvailable(text2_, fonts_["default"])) {
+                    text_ = text2_;                     
+                }
+            }
+        }
         if (text_ && text_ != "" && Math.abs(size_) > 0.0001) {
             var bufferSize_ = getCharVerticesCount() * text_.length * pointsGroups_.length;
             var bufferSize2_ = getCharVerticesCount(true) * text_.length * pointsGroups_.length;

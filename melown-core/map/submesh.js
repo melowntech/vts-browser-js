@@ -20,6 +20,7 @@ Melown.MapSubmesh = function(mesh_, stream_) {
     this.mesh_ = mesh_;
     this.statsCounter_ = 0;
     this.valid_ = true;
+    this.killed_ = false;
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
@@ -31,6 +32,7 @@ Melown.MapSubmesh = function(mesh_, stream_) {
 };
 
 Melown.MapSubmesh.prototype.kill = function () {
+    this.killed_ = true;
     this.vertices_ = null;
     this.internalUVs_ = null;
     this.externalUVs_ = null;
@@ -369,7 +371,7 @@ struct VerticesBlock {
     }
 
     if (this.flags_ & MelownSubmeshFlags_ExternalTexcoords) {
-        quant_ = data_.getUint16(stream_.index_, true); index_ += 2;
+        quant_ = data_.getUint16(index_, true); index_ += 2;
         multiplier_ = 1.0 / quant_;
 
         externalUVs_ = new Float32Array(numVertices_ * 2);
@@ -591,7 +593,7 @@ Melown.MapSubmesh.prototype.getWorldMatrix = function(geoPos_, matrix_) {
 Melown.MapSubmesh.prototype.drawBBox = function(cameraPos_) {
     var renderer_ = this.map_.renderer_;
 
-    renderer_.gpu_.useProgram(renderer_.progBBox_, "aPosition");
+    renderer_.gpu_.useProgram(renderer_.progBBox_, ["aPosition"]);
 
     var mvp_ = Melown.mat4.create();
     var mv_ = Melown.mat4.create();

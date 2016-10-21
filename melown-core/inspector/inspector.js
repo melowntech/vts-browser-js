@@ -8,6 +8,7 @@ Melown.Inspector = function(core_) {
     this.initStatsPanel();
     this.initGraphsPanel();
     this.initLayersPanel();
+    this.initReplayPanel();
     this.initStylesheetsPanel();
 
     //keyboard events

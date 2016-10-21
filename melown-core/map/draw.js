@@ -103,9 +103,9 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
 
             case "geodata":
                 
-                var geodata_ = command_.geodata_; 
+                var geodataView_ = command_.geodataView_; 
                 
-                if (!(geodata_ && geodata_.isReady(doNotLoad_, priority_, true))) {
+                if (!(geodataView_ && geodataView_.isReady(doNotLoad_, priority_, true))) {
                      ready_ = false;   
                 }
                 
@@ -148,9 +148,9 @@ Melown.Map.prototype.applyCredits = function(tile_) {
         }
     }
     
-    if (this.drawBBoxes_) {
+    /*if (this.drawBBoxes_) {
         console.log(JSON.stringify(tile_.id_) + " " + JSON.stringify(this.visibleCredits_));
-    }
+    }*/
 };
 
 Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, priority_, doNotLoad_) {
@@ -193,10 +193,10 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
                 
             case "geodata":
                 
-                var geodata_ = command_.geodata_; 
+                var geodataView_ = command_.geodataView_; 
                 
-                if (geodata_ && geodata_.isReady(doNotLoad_, priority_, true)) {
-                     geodata_.draw(cameraPos_);
+                if (geodataView_ && geodataView_.isReady(doNotLoad_, priority_, true)) {
+                     geodataView_.draw(cameraPos_);
                 }
                 
                 break;
@@ -222,12 +222,18 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
 
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
+        if (tile_.surface_) {
+            if (!tile_.surface_.geodata_) {
+                tile_ = tile_;
+            }
+        }
+
         return false;
     }
 
     tile_.renderReady_ = false;
     
-    if (tile_.surface_ != null) {
+    if (tile_.surface_) {
         if (node_.hasGeometry()) {
 
             if (this.drawBBoxes_ && !preventRedener_) {
@@ -620,6 +626,11 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
     
     if (tile_.geodataCounter_ != tile_.surface_.geodataCounter_) {
         tile_.drawCommands_ = [[],[],[]];
+
+        if (tile_.surfaceGeodataView_ != null) {
+            tile_.surfaceGeodataView_.kill();
+        }
+        
         tile_.surfaceGeodataView_ = null;
         tile_.geodataCounter_ = tile_.surface_.geodataCounter_;
     }
@@ -651,12 +662,14 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
         }
     }
 */
-    if (tile_.surfaceGeodata_.isReady(preventLoad_, priority_) && !preventLoad_) {
 
-        if (!tile_.surfaceGeodataView_) {
+    if (!tile_.surfaceGeodataView_) {
+        if (tile_.surfaceGeodata_.isReady(preventLoad_, priority_) && !preventLoad_) {
             tile_.surfaceGeodataView_ = new Melown.MapGeodataView(this, tile_.surfaceGeodata_, {tile_:tile_, surface_:tile_.surface_});
         }
+    }
 
+    if (tile_.surfaceGeodataView_) {
         tile_.mapdataCredits_ = {};
         
         var specificity_ = (tile_.surface_) ? tile_.surface_.specificity_ : 0;
@@ -669,7 +682,7 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
         //if (tile_.drawCommands_[channel_].length == 0) {
             tile_.drawCommands_[channel_][0] = {
                 type_ : "geodata",
-                geodata_ : tile_.surfaceGeodataView_ 
+                geodataView_ : tile_.surfaceGeodataView_ 
             };
         //}
         return tile_.surfaceGeodataView_.isReady();

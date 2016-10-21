@@ -390,3 +390,24 @@ var getPathTextVector = function(points_, shift_, text_, factor_, font_) {
     return textDir_;
 };
 
+var areTextCharactersAvailable = function(text_, font_) {
+    if (!text_ || text_ == "") {
+        return false;
+    }
+
+    var chars_ = font_.chars_;
+
+    for (var i = 0, li = text_.length; i < li; i++) {
+        var char_ = text_.charCodeAt(i);
+
+        if (char_ == 10 || char_ == 9) { //new line, tab or space
+            continue;
+        }
+
+        if (!chars_[char_]) {
+            return false;
+        }
+    }
+
+    return true;
+};

@@ -21,9 +21,31 @@ Melown.MapGeodata = function(map_, url_, extraInfo_) {
 
 Melown.MapGeodata.prototype.kill = function() {
     this.bbox_ = null;
+    this.killGeodata();
 };
 
-Melown.MapGeodata.prototype.isReady = function(doNotLoad_, priority_) {
+Melown.MapGeodata.prototype.killGeodata = function(killedByCache_) {
+    if (this.geodata_) {
+        this.geodata_ = null;
+    }
+    
+    if (killedByCache_ != true && this.cacheItem_ != null) {
+        this.map_.resourcesCache_.remove(this.cacheItem_);
+    }
+
+    //if (this.gpuSubmeshes_.length == 0) {
+        this.loadState_ = 0;
+    //}
+
+    this.size_ = 0;
+    this.fileSize_ = 0;
+    this.cacheItem_ = null;
+};
+
+Melown.MapGeodata.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {
+    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
+    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
+
     if (this.loadState_ == 2) { //loaded
         this.map_.resourcesCache_.updateItem(this.cacheItem_);
         return true;
@@ -183,7 +205,7 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
 };
 
 Melown.MapGeodata.prototype.onLoadError = function() {
-    if (this.map_.killed_ == true){
+    if (this.map_.killed_){
         return;
     }
 
@@ -200,11 +222,17 @@ Melown.MapGeodata.prototype.onLoadError = function() {
 };
 
 Melown.MapGeodata.prototype.onLoaded = function(data_) {
-    if (this.map_.killed_ == true){
+    if (this.map_.killed_){
         return;
     }
 
+    var size_ = data_.length;
+    this.size_ = size_;
+    this.fileSize_ = size_;
+
     this.geodata_ = data_;
+
+    this.cacheItem_ = this.map_.resourcesCache_.insert(this.killGeodata.bind(this, true), size_);
 
     this.map_.markDirty();
     this.loadState_ = 2;

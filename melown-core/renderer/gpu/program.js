@@ -3,6 +3,7 @@
  * @constructor
  */
 Melown.GpuProgram = function(gpu_, vertex_, fragment_) {
+    this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
     this.vertex_ = vertex_;
     this.fragment_ = fragment_;

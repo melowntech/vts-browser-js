@@ -156,7 +156,7 @@ Melown.Renderer.prototype.kill = function() {
         this.planet_.kill();
     }
 
-    this.gpuCache_.reset();
+    //this.gpuCache_.reset();
 
     if (this.heightmapMesh_) this.heightmapMesh_.kill();
     if (this.heightmapTexture_) this.heightmapTexture_.kill();
@@ -164,8 +164,19 @@ Melown.Renderer.prototype.kill = function() {
     if (this.skydomeTexture_) this.skydomeTexture_.kill();
     if (this.hitmapTexture_) this.hitmapTexture_.kill();
     if (this.geoHitmapTexture_) this.geoHitmapTexture_.kill();
-
-    this.div_.removeChild(this.gpu_.getCanvas());
+    if (this.redTexture_) this.redTexture_.kill();
+    if (this.whiteTexture_) this.whiteTexture_.kill();
+    if (this.blackTexture_) this.blackTexture_.kill();
+    if (this.lineTexture_) this.lineTexture_.kill();
+    if (this.textTexture2_) this.textTexture2_.kill();
+    if (this.atmoMesh_) this.atmoMesh_.kill();
+    if (this.bboxMesh_) this.bboxMesh_.kill();
+    if (this.font_) this.font_.kill();
+    if (this.plines_) this.plines_.kill();
+    if (this.plineJoints_) this.plineJoints_.kill();
+ 
+    this.gpu_.kill();
+    //this.div_.removeChild(this.gpu_.getCanvas());
 };
 
 

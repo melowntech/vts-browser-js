@@ -27,6 +27,8 @@ Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, fi
 //destructor
 Melown.GpuTexture.prototype.kill = function() {
     this.gl_.deleteTexture(this.texture_);
+    
+    this.texture_ = null;
 
     /*
     if (this.core_ != null && this.core_.renderer_ != null) {

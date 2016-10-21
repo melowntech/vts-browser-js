@@ -21,6 +21,7 @@ Melown.MapMesh = function(map_, url_) {
 
     this.submeshes_ = [];
     this.gpuSubmeshes_ = [];
+    this.submeshesKilled_ = false;
 };
 
 Melown.MapMesh.prototype.kill = function() {
@@ -33,14 +34,18 @@ Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
     for (var i = 0, li = this.submeshes_.length; i < li; i++) {
         this.submeshes_[i].kill();
     }
-    this.submeshes_ = [];
+    //this.submeshes_ = [];
+    this.submeshesKilled_ = true;
 
-    if (killedByCache_ != true && this.cacheItem_ != null) {
+    if (killedByCache_ != true && this.cacheItem_) {
         this.map_.resourcesCache_.remove(this.cacheItem_);
         //this.tile_.validate();
     }
 
-    this.loadState_ = 0;
+    if (this.gpuSubmeshes_.length == 0) {
+        this.loadState_ = 0;
+    }
+
     this.cacheItem_ = null;
 };
 
@@ -59,12 +64,17 @@ Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
 
     this.gpuSubmeshes_ = [];
 
-    if (killedByCache_ != true && this.gpuCacheItem_ != null) {
+    if (killedByCache_ != true && this.gpuCacheItem_) {
         this.map_.gpuCache_.remove(this.gpuCacheItem_);
         //this.tile_.validate();
     }
 
     //console.log("kill: " + this.stats_.counter_ + "   " + this.mapLoaderUrl_);
+
+//    if (this.submeshes_.length == 0) {
+    if (this.submeshesKilled_) {
+        this.loadState_ = 0;
+    }
 
     this.gpuCacheItem_ = null;
 };
@@ -73,12 +83,14 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
     var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
     doNotLoad_ = doNotLoad_ || doNotUseGpu_;
     
-    if (doNotUseGpu_) {
-        doNotUseGpu_ = doNotUseGpu_;
-    }
+    //if (doNotUseGpu_) {
+      //  doNotUseGpu_ = doNotUseGpu_;
+    //}
 
     if (this.loadState_ == 2) { //loaded
-        this.map_.resourcesCache_.updateItem(this.cacheItem_);
+        if (this.cacheItem_) {
+            this.map_.resourcesCache_.updateItem(this.cacheItem_);
+        }
         
         if (doNotCheckGpu_) {
             return true;
@@ -103,7 +115,7 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
             this.stats_.renderBuild_ += performance.now() - t; 
         }
 
-        if (!doNotLoad_) {
+        if (!doNotLoad_ && this.gpuCacheItem_) {
             this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
         }
         return true;
@@ -132,7 +144,7 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
 };
 
 Melown.MapMesh.prototype.scheduleLoad = function(priority_) {
-    if (this.mapLoaderUrl_ == null) {
+    if (!this.mapLoaderUrl_) {
         this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.surface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
     }
 
@@ -173,6 +185,7 @@ Melown.MapMesh.prototype.onLoaded = function(data_) {
 
     var stream_ = {data_:data_, index_:0};
     this.parseMapMesh(stream_);
+    this.submeshesKilled_ = false;
 
     this.cacheItem_ = this.map_.resourcesCache_.insert(this.killSubmeshes.bind(this, true), this.size_);
 
@@ -205,6 +218,8 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
         struct Submesh submeshes [];      // array of submeshes, size of array is defined by numSubmeshes property
     };
 */
+    this.killSubmeshes(); //just in case
+
     //parase header
     var streamData_ = stream_.data_;
     var magic_ = "";
@@ -264,14 +279,14 @@ Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
 };
 
 Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, type_, alpha_) {
-    if (this.gpuSubmeshes_[index_] == null && this.submeshes_[index_] != null) {
+    if (this.gpuSubmeshes_[index_] == null && this.submeshes_[index_] != null && !this.submeshes_[index_].killed_) {
         this.gpuSubmeshes_[index_] = this.submeshes_[index_].buildGpuMesh();
     }
 
     var submesh_ = this.submeshes_[index_];
     var gpuSubmesh_ = this.gpuSubmeshes_[index_];
 
-    if (gpuSubmesh_ == null) {
+    if (!gpuSubmesh_) {
         return;
     }
 
@@ -282,6 +297,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     var texcoordsAttr_ = null;
     var texcoords2Attr_ = null;
     var drawWireframe_ = this.map_.drawWireframe_;
+    var attributes_ = (drawWireframe_ != 0) ?  ["aPosition", "aBarycentric"] : ["aPosition"];
 
     if (type_ == "depth") {
         program_ = renderer_.progDepthTile_;
@@ -298,12 +314,14 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
                         case "internal-nofog":
                             program_ = renderer_.progWireframeTile_;
                             texcoordsAttr_ = "aTexCoord";
+                            attributes_.push("aTexCoord");
                             break;
     
                         case "external":
                         case "external-nofog":
                             program_ = renderer_.progWireframeTile3_;
                             texcoords2Attr_ = "aTexCoord2";
+                            attributes_.push("aTexCoord2");
                             break;
     
                         case "fog":
@@ -318,6 +336,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
                 case "internal-nofog":
                     program_ = renderer_.progTile_;
                     texcoordsAttr_ = "aTexCoord";
+                    attributes_.push("aTexCoord");
                     break;
     
                 case "external":
@@ -332,6 +351,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
                     } 
                     
                     texcoords2Attr_ = "aTexCoord2";
+                    attributes_.push("aTexCoord2");
                     break;
     
                 case "fog":
@@ -341,10 +361,9 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         }
     }
 
-    renderer_.gpu_.useProgram(program_, "aPosition", texcoordsAttr_, texcoords2Attr_,
-                              drawWireframe_ != 0 ? "aBarycentric" : null, null, null, null, gpuMask_);
+    renderer_.gpu_.useProgram(program_, attributes_, gpuMask_);
 
-    if (texture_ != null) {
+    if (texture_) {
         var gpuTexture_ = texture_.getGpuTexture();
         
         if (gpuTexture_) {
@@ -405,9 +424,9 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     if (submesh_.statsCoutner_ != this.stats_.counter_) {
         submesh_.statsCoutner_ = this.stats_.counter_;
         this.stats_.gpuRenderUsed_ += gpuSubmesh_.size_;
-    } else {
-        this.stats_.gpuRenderUsed_ ++;
-    }
+    } //else {
+        //this.stats_.gpuRenderUsed_ ++;
+    //}
 
     //this.map_.renderer_.gpu_.gl_.polygonOffset(-1.0, this.map_.zShift_);
     //this.map_.renderer_.gpu_.gl_.enable(this.map_.renderer_.gpu_.gl_.POLYGON_OFFSET_FILL);

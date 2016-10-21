@@ -42,7 +42,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     
     if (typeof json_ === "string") {
         this.jsonUrl_ = this.map_.processUrl(json_);
-        this.baseUrl_ = json_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
+        this.baseUrl_ = this.jsonUrl_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
         
         var onLoaded_ = (function(data_){
             this.parseJson(data_);            
@@ -169,15 +169,16 @@ Melown.MapSurface.prototype.processUrl = function(baseUrl_, url_, fallback_) {
     if (!url_) {
         return fallback_;
     }
+
+    url_ = url_.trim();
     
-    //is url absolute
-    if (url_.indexOf("//") != -1) {
-        if (url_.indexOf("//") == 0) {
-            return this.map_.baseUrlSchema_ + url_;
-        } else {
-            return url_;
-        }
-    } else {
+    if (url_.indexOf("://") != -1) { //absolute
+        return url_;
+    } else if (url_.indexOf("//") == 0) {  //absolute without schema
+        return this.map_.baseUrlSchema_ + url_;
+    } else if (url_.indexOf("/") == 0) {  //absolute without host
+        return this.map_.baseUrlOrigin_ + url_;
+    } else {  //relative
         return baseUrl_ + url_; 
     }
 };

@@ -144,6 +144,18 @@ Melown.MapSurfaceTree.prototype.draw = function() {
     }
 };
 
+Melown.MapSurfaceTree.prototype.logTileInfo = function(tile_, node_, cameraPos_) {
+    if (!tile_ || !node_) {
+        return;
+    }
+    
+    var visible_ = tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_);
+    tile_.updateTexelSize();
+    
+//    console.log("tile: " + JSON.stringify(tile_.id_) + " visible: " + visible_ + " texelsize: " +  tile_.texelSize_);
+    console.log("tile: " + JSON.stringify(tile_.id_) + " visible: " + visible_ + " texelsize: " +  tile_.texelSize_ + " center: "  + JSON.stringify(node_.diskPos_) + " vec: " + node_.diskNormal_ + "ang: " + node_.diskAngle_ + " dist: " + node_.diskDistance_);
+};
+
 Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     this.counter_++;
 //    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);
@@ -193,6 +205,10 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
         for (var i = processBufferIndex_ - 1; i >= 0; i--) {
             tile_ = processBuffer_[i];
             node_ = tile_.metanode_;
+            
+            //if (this.map_.drawIndices_) {
+                //this.logTileInfo(tile_, node_, cameraPos_);
+            //}
 
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
 
@@ -225,13 +241,23 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
                             if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
 
                                 child_.updateTexelSize();
-                                var priority_ = child_.id_[0] * typeFactor_ * child_.distance_; 
+                                var priority_ = child_.id_[0] * typeFactor_ * child_.distance_;
                                 
-                                //are draw buffers ready? preventRender=true, preventLoad_=false
-                                if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, false)) {
+                                if (!tile_.surface_ || !child_.metanode_.hasGeometry()) {
+
                                     readyCount_++;
                                     //child_.updateTexelSize();
                                     childrenBuffer_.push(child_);
+                                    
+                                } else {
+
+                                    //are draw buffers ready? preventRender=true, preventLoad_=false
+                                    if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, false)) {
+                                        readyCount_++;
+                                        //child_.updateTexelSize();
+                                        childrenBuffer_.push(child_);
+                                    }
+                                    
                                 }
                             }
                         }

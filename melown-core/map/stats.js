@@ -23,7 +23,7 @@ Melown.MapStats = function(map_) {
     this.recordGraphs_ = false;
     this.graphsTimeIndex_ = 0;
     this.graphsLastTimeIndex_ = 0;
-    this.graphsTimeSamples_ = 600;
+    this.graphsTimeSamples_ = 900;
     this.graphsRenderTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateMeshTimes_ = new Array(this.graphsTimeSamples_);
     this.graphsCreateGpuMeshTimes_ = new Array(this.graphsTimeSamples_);
@@ -33,13 +33,16 @@ Melown.MapStats = function(map_) {
     this.graphsCpuMemoryUsed_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryTextures_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryMeshes_ = new Array(this.graphsTimeSamples_);
+    this.graphsGpuMemoryGeodata_ = new Array(this.graphsTimeSamples_);
     this.graphsGpuMemoryRender_ = new Array(this.graphsTimeSamples_);
     this.graphsPolygons_ = new Array(this.graphsTimeSamples_);
     this.graphsLODs_ = new Array(this.graphsTimeSamples_);
     this.graphsFluxTextures_ = new Array(this.graphsTimeSamples_);
     this.graphsFluxMeshes_ = new Array(this.graphsTimeSamples_);
+    this.graphsFluxGeodatas_ = new Array(this.graphsTimeSamples_);
     this.graphsFluxTexture_ = [[0,0],[0,0]];
     this.graphsFluxMesh_ = [[0,0],[0,0]];
+    this.graphsFluxGeodata_ = [[0,0],[0,0]];
     this.graphsCreateTextureTime_ = 0;
     this.graphsCreateGpuMeshTime_ = 0;
     this.graphsCreateMeshTime_ = 0;
@@ -47,6 +50,7 @@ Melown.MapStats = function(map_) {
 
     this.gpuMeshes_ = 0;
     this.gpuTextures_ = 0;
+    this.gpuGeodata_ = 0;
     this.gpuUsed_ = 0;
     this.resourcesUsed_ = 0;
     this.metaUsed_ = 0;
@@ -72,11 +76,13 @@ Melown.MapStats.prototype.resetGraphs = function() {
         this.graphsCpuMemoryMetatiles_[i] = 0;
         this.graphsGpuMemoryTextures_[i] = 0;
         this.graphsGpuMemoryMeshes_[i] = 0;
+        this.graphsGpuMemoryGeodata_[i] = 0;
         this.graphsGpuMemoryRender_[i] = 0;
         this.graphsPolygons_[i] = 0;
         this.graphsLODs_[i] = [0,[]];
         this.graphsFluxTextures_[i] = [[0,0],[0,0]];
         this.graphsFluxMeshes_[i] = [[0,0],[0,0]];
+        this.graphsFluxGeodatas_[i] = [[0,0],[0,0]];
     }
 };
 
@@ -93,9 +99,6 @@ Melown.MapStats.prototype.begin = function(dirty_) {
     }
 
     this.debugIds_ = {};
-
-    this.graphsFluxTexture_ = [[0,0],[0,0]];
-    this.graphsFluxMesh_ = [[0,0],[0,0]];
 
     this.counter_++;
     this.statsCycle_++;
@@ -128,10 +131,12 @@ Melown.MapStats.prototype.end = function(dirty_) {
         this.graphsCpuMemoryMetatiles_[i] = this.map_.metatileCache_.totalCost_;
         this.graphsGpuMemoryTextures_[i] = this.gpuTextures_;
         this.graphsGpuMemoryMeshes_[i] = this.gpuMeshes_;
+        this.graphsGpuMemoryGeodata_[i] = this.gpuGeodata_;
         this.graphsGpuMemoryRender_[i] = this.gpuRenderUsed_;
         this.graphsPolygons_[i] = this.drawnFaces_;
         this.graphsFluxTextures_[i] = [[this.graphsFluxTexture_[0][0], this.graphsFluxTexture_[0][1]], [this.graphsFluxTexture_[1][0], this.graphsFluxTexture_[1][1]] ];
         this.graphsFluxMeshes_[i] = [[this.graphsFluxMesh_[0][0], this.graphsFluxMesh_[0][1]], [this.graphsFluxMesh_[1][0], this.graphsFluxMesh_[1][1]] ];
+        this.graphsFluxGeodatas_[i] = [[this.graphsFluxGeodata_[0][0], this.graphsFluxGeodata_[0][1]], [this.graphsFluxGeodata_[1][0], this.graphsFluxGeodata_[1][1]] ];
         this.graphsLODs_[i] = [this.drawnTiles_, this.renderedLods_.slice()];
 
         this.graphsTimeIndex_ = (this.graphsTimeIndex_ + 1) % this.graphsTimeSamples_;
@@ -152,6 +157,12 @@ Melown.MapStats.prototype.end = function(dirty_) {
             this.inspector_.updateStatsPanel(this);
         }
     }
+    
+    //do not reset flux data in begin function, because we to collect data from events which     
+    this.graphsFluxTexture_ = [[0,0],[0,0]];
+    this.graphsFluxMesh_ = [[0,0],[0,0]];
+    this.graphsFluxGeodata_ = [[0,0],[0,0]];
+    
 };
 
 

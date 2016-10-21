@@ -9,10 +9,6 @@ Melown.Map.prototype.updateCamera = function() {
     //check position orientaion ...
     this.position_.check();
 
-    //get camera distance
-    this.cameraDistance_ = this.position_.getViewDistance();
-    this.cameraDistance_ = Melown.clamp(this.cameraDistance_, 0.1, this.camera_.getFar());
-
     //var height_ = 227;
     var height_ = this.position_.getHeight();
 
@@ -32,12 +28,19 @@ Melown.Map.prototype.updateCamera = function() {
 
     this.camera_.setPosition(camInfo_.orbitCoords_);
     this.camera_.setRotationMatrix(camInfo_.rotMatrix_);
-    this.renderer_.cameraDistance_ = camInfo_.distance_; //needed for fog
     this.cameraVector_ = camInfo_.vector_;
     this.cameraVector2_ = camInfo_.vector2_;
     this.cameraPosition_ = camInfo_.orbitCoords_;
     this.cameraHeight_ = camInfo_.orbitHeight_ + height_;
     this.cameraTerrainHeight_ = height_;
+
+    //get camera distance
+    this.cameraDistance_ = this.position_.getViewDistance();
+    this.cameraDistance_ = Math.max(this.cameraTerrainHeight_, this.position_.getViewDistance());
+    this.cameraDistance_ = Melown.clamp(this.cameraDistance_, 0.1, this.camera_.getFar());
+    
+    //this.renderer_.cameraDistance_ = camInfo_.distance_; //needed for fog
+    this.renderer_.cameraDistance_ = this.cameraDistance_; //needed for fog
 
     if (!this.getNavigationSrs().isProjected()) { //HACK!!!!!!!!
         //this.position_.setHeight(0);
@@ -46,7 +49,6 @@ Melown.Map.prototype.updateCamera = function() {
     this.camera_.setViewHeight(this.position_.getViewExtent());
     //this.camera_.setOrtho(true);
 
-
     //convert public coords to physical
     var worldPos_ = this.convertCoords([this.position_.getCoords()[0], this.position_.getCoords()[1], height_], "navigation", "physical");
 	worldPos_[0] += camInfo_.orbitCoords_[0];
@@ -54,7 +56,8 @@ Melown.Map.prototype.updateCamera = function() {
 	worldPos_[2] += camInfo_.orbitCoords_[2];
     this.camera_.setPosition([0,0,0]); //always zeros
     this.cameraPosition_ = worldPos_;
-
+    
+    //console.log("word-pos: " + JSON.stringify(worldPos_));
 
     //set near and far of camera by distance of orbit
     var factor_ = Math.max(this.cameraHeight_, this.cameraDistance_) / 600000;

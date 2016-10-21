@@ -7,6 +7,9 @@ Melown.GpuDevice = function(div_, size_, keepFrameBuffer_, antialias_) {
     this.canvas_ =  null;
     this.curSize_ = size_;
     this.currentProgram_ = null;
+    this.maxAttributesCount_ = 8;
+    this.newAttributes_ = new Uint8Array(this.maxAttributesCount_);
+    this.enabledAttributes_ = new Uint8Array(this.maxAttributesCount_);
 
     this.defaultState_ = this.createState({});
     this.currentState_ = this.defaultState_;
@@ -59,6 +62,12 @@ Melown.GpuDevice.prototype.init = function() {
     this.gl_.clear(this.gl_.COLOR_BUFFER_BIT | this.gl_.DEPTH_BUFFER_BIT);
 };
 
+Melown.GpuDevice.prototype.kill = function() {
+    this.div_.removeChild(this.canvas_);
+    delete this.canvas_;
+    this.canvas_ = null;
+};
+
 Melown.GpuDevice.prototype.resize = function(size_, skipCanvas_) {
     this.curSize_ = size_;
 
@@ -90,7 +99,9 @@ Melown.GpuDevice.prototype.clear = function(clearDepth_, clearColor_, color_) {
                    (clearColor_ ? this.gl_.DEPTH_BUFFER_BIT : 0) );
 };
 
-Melown.GpuDevice.prototype.useProgram = function(program_, attrPosition_, attrTexCoord_, attrTexCoord2_, attrBarycentric_, attrNormal_, attrNormal2_, attrNormal3_, nextSampler_) {
+//aPosition_, attrTexCoord_, attrTexCoord2_, attrBarycentric_, attrNormal_, attrNormal2_, attrNormal3_
+
+Melown.GpuDevice.prototype.useProgram = function(program_, attributes_, nextSampler_) {
     if (this.currentProgram_ != program_) {
         this.gl_.useProgram(program_.program_);
         this.currentProgram_ = program_;
@@ -101,38 +112,36 @@ Melown.GpuDevice.prototype.useProgram = function(program_, attrPosition_, attrTe
             program_.setSampler("uSampler2", 1);
         }
 
-        var vertexPositionAttribute_ = program_.getAttribute(attrPosition_);
-        this.gl_.enableVertexAttribArray(vertexPositionAttribute_);
-
-        if (attrTexCoord_ != null) {
-            var textureCoordAttribute_ = program_.getAttribute(attrTexCoord_);
-            this.gl_.enableVertexAttribArray(textureCoordAttribute_);
+        var newAttributes_ = this.newAttributes_;
+        var enabledAttributes_ = this.enabledAttributes_; 
+       
+        //reset new attributes list
+        for (var i = 0, li = newAttributes_.length; i < li; i++){
+            newAttributes_[i] = 0;
+        }
+        
+        //
+        for (var i = 0, li = attributes_.length; i < li; i++){
+            var index_ = program_.getAttribute(attributes_[i]);
+            
+            if (index_ != -1){
+                newAttributes_[index_] = 1;
+            }
         }
 
-        if (attrTexCoord2_ != null) {
-            var textureCoordAttribute2_ = program_.getAttribute(attrTexCoord2_);
-            this.gl_.enableVertexAttribArray(textureCoordAttribute2_);
+        //enable or disable current attributes according to new attributes list
+        for (var i = 0, li = newAttributes_.length; i < li; i++){
+            if (enabledAttributes_[i] != newAttributes_[i]) {
+                if (newAttributes_[i]) {
+                    this.gl_.enableVertexAttribArray(i);
+                    enabledAttributes_[i] = 1;
+                } else {
+                    this.gl_.disableVertexAttribArray(i);
+                    enabledAttributes_[i] = 0;
+                }
+            }
         }
 
-        if (attrBarycentric_ != null) {
-            var barycentricAttribute_ = program_.getAttribute(attrBarycentric_);
-            this.gl_.enableVertexAttribArray(barycentricAttribute_);
-        }
-
-        if (attrNormal_ != null) {
-            var normalAttribute_ = program_.getAttribute(attrNormal_);
-            this.gl_.enableVertexAttribArray(normalAttribute_);
-        }
-
-        if (attrNormal2_ != null) {
-            var normal2Attribute_ = program_.getAttribute(attrNormal2_);
-            this.gl_.enableVertexAttribArray(normal2Attribute_);
-        }
-
-        if (attrNormal3_ != null) {
-            //var normal3Attribute_ = program_.getAttribute(attrNormal3_);
-            //this.gl_.enableVertexAttribArray(normal3Attribute_);
-        }
 
     }
 };

@@ -567,7 +567,17 @@ var processLineLabel = function(lineLabelPoints_, lineLabelPoints2_, lineString_
 
     var labelText_ = getLayerExpresionValue(style_, labelSource_, lineString_, lod_);
 
-    if (labelText_ == null || labelText_ == "") {
+    if (labelSource_ == "$name") {
+        if (!areTextCharactersAvailable(labelText_, fonts_["default"])) {
+            var labelText2_ = getLayerExpresionValue(style_, "$name:en", lineString_, lod_);
+            
+            if (areTextCharactersAvailable(labelText2_, fonts_["default"])) {
+                labelText_ = labelText2_;                     
+            }
+        }
+    }
+
+    if (!labelText_ || labelText_ == "") {
         return;
     }
 

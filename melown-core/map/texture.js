@@ -60,7 +60,7 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
     this.image_ = null;
     this.imageData_ = null;
 
-    if (killedByCache_ != true && this.cacheItem_ != null) {
+    if (killedByCache_ != true && this.cacheItem_) {
         this.map_.resourcesCache_.remove(this.cacheItem_);
         //this.tile_.validate();
     }
@@ -69,7 +69,12 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
         this.mask_.killImage(); 
     }
 
-    this.loadState_ = 0;
+    if (!this.gpuTexture_) {
+        this.loadState_ = 0;
+    } else {
+        this.loadState_ = this.loadState_;
+    }
+
     this.cacheItem_ = null;
 };
 
@@ -88,9 +93,13 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
 
     this.gpuTexture_ = null;
 
-    if (killedByCache_ != true && this.gpuCacheItem_ != null) {
+    if (killedByCache_ != true && this.gpuCacheItem_) {
         this.map_.gpuCache_.remove(this.gpuCacheItem_);
         //this.tile_.validate();
+    }
+
+    if (!this.image_ && !this.imageData_) {
+        this.loadState_ = 0;
     }
 
     this.gpuCacheItem_ = null;
@@ -118,13 +127,13 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
     var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
     doNotLoad_ = doNotLoad_ || doNotUseGpu_;
     
-    if (this.extraInfo_) {
+    /*if (this.extraInfo_) {
         if (this.extraInfo_.tile_.id_[0] == Melown.debugId_[0] &&
             this.extraInfo_.tile_.id_[1] == Melown.debugId_[1] &&
             this.extraInfo_.tile_.id_[2] == Melown.debugId_[2]) {
                 this.extraInfo_ = this.extraInfo_;
         }
-    }
+    }*/
    
    if (this.neverReady_) {
        return false;
@@ -280,13 +289,13 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
     }
 
     if (this.loadState_ == 2) { //loaded
-        if (!doNotLoad_) {
+        if (!doNotLoad_ && this.cacheItem_) {
             this.map_.resourcesCache_.updateItem(this.cacheItem_);
         }
 
         if (doNotCheckGpu_) {
             if (this.heightMap_) {
-                if (this.imageData_ == null) {
+                if (!this.imageData_) {
                     this.buildHeightMap();
                 }
             }
@@ -299,11 +308,11 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
         }
 
         if (this.heightMap_) {
-            if (this.imageData_ == null) {
+            if (!this.imageData_) {
                 this.buildHeightMap();
             }
         } else {
-            if (this.gpuTexture_ == null) {
+            if (!this.gpuTexture_) {
                 if (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_) {
                     return false;
                 }
@@ -327,7 +336,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
                 this.stats_.renderBuild_ += performance.now() - t; 
             }
 
-            if (!doNotLoad_) {
+            if (!doNotLoad_ && this.gpuCacheItem_) {
                 this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
             }
         }
@@ -394,13 +403,9 @@ Melown.MapTexture.prototype.onLoadError = function() {
 };
 
 Melown.MapTexture.prototype.onLoaded = function(data_) {
-    if (this.map_.killed_ == true){
+    if (this.map_.killed_){
         return;
     }
-
-    //if (this.mapLoaderUrl_ == "http://t4.tiles.virtualearth.net/tiles/a120212123213310.jpeg?g=854&mkt=en-US&token=Ahu6LJpWaKRj0Fzngk4d58AQFI9jKLsnvovS3ReEVcfOf6rBDCxiLDq-ycxakgOi") {
-      //  this.checkStatus_ = this.checkStatus_;
-    //}
 
     var size_ = this.image_.naturalWidth * this.image_.naturalHeight * (this.heightMap_ ? 3 : 3);
 
@@ -445,7 +450,7 @@ Melown.MapTexture.prototype.onLoadHead = function(downloadAll_, url_, onLoaded_,
 };
 
 Melown.MapTexture.prototype.onLoadHeadError = function(downloadAll_) {
-    if (this.map_.killed_ == true){
+    if (this.map_.killed_){
         return;
     }
 
@@ -462,7 +467,7 @@ Melown.MapTexture.prototype.onLoadHeadError = function(downloadAll_) {
 };
 
 Melown.MapTexture.prototype.onHeadLoaded = function(downloadAll_, data_, status_) {
-    if (this.map_.killed_ == true){
+    if (this.map_.killed_){
         return;
     }
 

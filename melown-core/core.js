@@ -133,6 +133,7 @@ Melown.Core.prototype.destroy = function() {
     if (this.renderer_) {
         this.renderer_.kill();
     }
+    this.element_ = null;
     this.killed_ = true;
 };
 

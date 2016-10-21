@@ -122,12 +122,12 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         /*this.core_.setOption("noForwardMovement" , !this.core_.getOption("noForwardMovement"));*/
                         break;
 
-                    case 84:
-                    case 116:
+                    //case 84: //key T pressed
+                    //case 116:
                         /*var pos_ = this.core_.hitTest(this.mouseX_, this.mouseY_, "all");
                         console.log("hit pos: " + pos_[0] + " " + pos_[1] + " " + pos_[2] + " " + pos_[3] + " d " + pos_[4]); //key T pressed
                         this.core_.logTile(pos_);*/
-                        break;
+                        //break;
 
                     case 72:
                     case 104:
@@ -161,6 +161,10 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 69:
                     case 101:
                         this.switchStylesheetsPanel(); break; //key E pressed
+
+                    case 84:
+                    case 116:
+                        this.switchReplayPanel(); break; //key T pressed
 
                     case 66:
                     case 98:

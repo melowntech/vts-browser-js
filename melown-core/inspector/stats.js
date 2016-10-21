@@ -86,6 +86,7 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
             "GPU Cache: " + Math.round(stats_.gpuUsed_/(1024*1024)) + "MB<br/>" +
             " - textures: " + Math.round(stats_.gpuTextures_/(1024*1024)) + "MB<br/>" +
             " - meshes: " + Math.round(stats_.gpuMeshes_/(1024*1024)) + "MB<br/>" +
+            " - geodata: " + Math.round(stats_.gpuGeodata_/(1024*1024)) + "MB<br/>" +
             "CPU Cache: " + Math.round(stats_.resourcesUsed_/(1024*1024)) + "MB<br/>" +
             "Metaile Cache: " + Math.round(stats_.metaUsed_/(1024*1024)) + "MB<br/>" +
 //            "FOV: " + Math.round(this.core_.getOption("fov")) + " deg<br/>" +

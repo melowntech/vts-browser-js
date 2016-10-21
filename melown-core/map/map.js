@@ -19,9 +19,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.loaderSuspended_ = false;
 
     this.baseURL_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
-    
+
     this.baseUrlSchema_ = "";
-    
     if (window.location.href.indexOf("file://") != -1) {
         if (this.baseURL_.indexOf("http://") != -1) {
             this.baseUrlSchema_ = "http:";
@@ -30,6 +29,11 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
             this.baseUrlSchema_ = "https:";
         }
     }
+
+    //get origin
+    var location_ = document.createElement("a");
+    location_.href = path_;
+    this.baseUrlOrigin_ = location_.origin; 
 
     this.position_ = new Melown.MapPosition(this, ["obj", 0, 0, "fix", 0,  0, 0, 0,  0, 0]);
     this.lastPosition_ = this.position_.clone();
@@ -148,9 +152,13 @@ Melown.Map.prototype.kill = function() {
     
     this.tree_.kill();
 
-    for (var key_ in freeLayers_) {
+    for (var key_ in this.freeLayers_) {
         this.getFreeLayer(key_).tree_.kill();
     }
+
+    this.gpuCache_.clear();
+    this.resourcesCache_.clear();
+    this.metatileCache_.clear();
 
     if (this.renderer_ != null) {
         this.renderer_.kill();
@@ -618,14 +626,15 @@ Melown.Map.prototype.processUrl = function(url_, fallback_) {
         return fallback_;
     }
     
-    //is url absolute
-    if (url_.indexOf("//") != -1) {
-        if (url_.indexOf("//") == 0) {
-            return this.baseUrlSchema_ + url_;
-        } else {
-            return url_;
-        }
-    } else {
+    url_ = url_.trim();
+
+    if (url_.indexOf("://") != -1) { //absolute
+        return url_;
+    } else if (url_.indexOf("//") == 0) {  //absolute without schema
+        return this.baseUrlSchema_ + url_;
+    } else if (url_.indexOf("/") == 0) {  //absolute without host
+        return this.baseUrlOrigin_ + url_;
+    } else {  //relative
         return this.baseURL_ + url_; 
     }
 };
@@ -633,9 +642,9 @@ Melown.Map.prototype.processUrl = function(url_, fallback_) {
 Melown.Map.prototype.setConfigParam = function(key_, value_) {
     switch (key_) {
         case "map":                           this.config_.map_ = Melown.validateString(value_, null); break;
-        case "mapCache":                      this.config_.mapCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 900)*1024*1024; this.setupCache(); break;
-        case "mapGPUCache":                   this.config_.mapGPUCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 360)*1024*1024; this.setupCache(); break;
-        case "mapMetatileCache":              this.config_.mapMetatileCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 60)*1024*1024; this.setupCache(); break;
+        case "mapCache":                      this.config_.mapCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 900); this.setupCache(); break;
+        case "mapGPUCache":                   this.config_.mapGPUCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 360); this.setupCache(); break;
+        case "mapMetatileCache":              this.config_.mapMetatileCache_ = Melown.validateNumber(value_, 10, Number.MAX_INTEGER, 60); this.setupCache(); break;
         case "mapTexelSizeFit":               this.config_.mapTexelSizeFit_ = Melown.validateNumber(value_, 0.0001, Number.MAX_INTEGER, 1.1); break;
         case "mapLowresBackground":           this.config_.mapLowresBackground_ = Melown.validateNumber(value_, 0, Number.MAX_INTEGER, 0); break;
         case "mapDownloadThreads":            this.config_.mapDownloadThreads_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 6); break;
@@ -643,7 +652,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapMobileMode":                 this.config_.mapMobileMode_ = Melown.validateBool(value_, false); this.setupMobileMode(); break;
         case "mapMobileModeAutodect":         this.config_.mapMobileModeAutodect_ = Melown.validateBool(value_, false); break;
         case "mapMobileDetailDegradation":    this.config_.mapMobileDetailDegradation_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 2); break;
-        case "mapNavSamplesPerViewExtent":    this.config_.mapNavSamplesPerViewExtent_ = Melown.validateNumber(value_, 1, Number.MAX_INTEGER, 10); break;
+        case "mapNavSamplesPerViewExtent":    this.config_.mapNavSamplesPerViewExtent_ = Melown.validateNumber(value_, 0.00000000001, Number.MAX_INTEGER, 4); break;
         case "mapFog":                        this.config_.mapFog_ = Melown.validateBool(value_, false); break;
         case "mapIgnoreNavtiles":             this.config_.mapIgnoreNavtiles_ = Melown.validateBool(value_, false); break;
         case "mapAllowHires":                 this.config_.mapAllowHires_ = Melown.validateBool(value_, true); break;

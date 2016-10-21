@@ -5,15 +5,35 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     this.map_ = map_;
     this.p1_ = p1_.clone();
     this.p2_ = p2_.clone();
+    this.op2_ = p2_.clone();
+
+    var hm1_ = this.p1_.getHeightMode();
+    var hm2_ = this.p2_.getHeightMode();
+    
+    if (hm1_ == "fix" && hm2_ == "float") {
+        this.p1_.convertHeightMode("float", true);
+    } else if (hm1_ == "float" && hm2_ == "fix") {
+        this.p1_.convertHeightMode("fix", true);
+    } 
+    
+    var vm1_ = this.p1_.getViewMode();
+    var vm2_ = this.p2_.getViewMode();
+
+    if (vm1_ == "subj" && vm2_ == "obj") {
+        this.p2_.convertViewMode("subj");
+    } else if (vm1_ == "obj" && vm2_ == "subj") {
+        this.p1_.convertViewMode("subj");
+    } 
     
     this.p1_.pos_[5] = this.p1_.pos_[5] < 0 ? (360 + (this.p1_.pos_[5] % 360)) : (this.p1_.pos_[5] % 360);  
     this.p2_.pos_[5] = this.p2_.pos_[5] < 0 ? (360 + (this.p2_.pos_[5] % 360)) : (this.p2_.pos_[5] % 360);  
     
     this.pp1_ = this.p1_.clone();
 
+    /*
     if (this.p1_.getHeightMode() != this.p2_.getHeightMode()) {
         this.p2_.convertHeightMode(this.p1_.getHeightMode(), true);
-    } 
+    }*/
      
     //this.pp1_.convertHeightMode("fix", true);
     //this.pp2_.convertHeightMode("fix", true);
@@ -221,7 +241,7 @@ Melown.MapTrajectory.prototype.generate = function() {
     }
     
     if (!this.distanceAzimuth_) {
-        samples_[index_] = this.p2_.clone().pos_;
+        samples_[index_] = this.op2_.clone().pos_;
     }
 
     //console.log("pos2: " + this.p2_.toString());

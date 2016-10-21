@@ -74,8 +74,21 @@ Melown.GpuMesh.prototype.kill = function() {
         return;
     }
 
-    this.gl_.deleteBuffer(this.vertexBuffer_);
-    this.gl_.deleteBuffer(this.uvBuffer_);
+    if (this.vertexBuffer_) {
+        this.gl_.deleteBuffer(this.vertexBuffer_);
+    }
+    
+    if (this.uvBuffer_) {
+        this.gl_.deleteBuffer(this.uvBuffer_);
+    }
+
+    if (this.uv2Buffer_) {
+        this.gl_.deleteBuffer(this.uv2Buffer_);
+    }
+    
+    this.vertexBuffer_ = null;
+    this.uvBuffer_ = null;
+    this.uv2Buffer_ = null;
 
     /*
     if (this.core_.renderer_ != null) {
@@ -89,6 +102,10 @@ Melown.GpuMesh.prototype.draw = function(program_, attrVertex_, attrUV_, attrUV2
     var gl_ = this.gl_;
     if (gl_ == null || !this.valid_) {
         return;
+    }
+    
+    if (!this.vertexBuffer_) {
+        gl_ = gl_;
     }
 
     //bind vetex positions
@@ -116,8 +133,17 @@ Melown.GpuMesh.prototype.draw = function(program_, attrVertex_, attrUV_, attrUV2
     }
 
     //draw polygons
+    //try {
     gl_.drawArrays(gl_.TRIANGLES, 0, this.vertexBuffer_.numItems);
+    //} catch(e) {
+      //  e = e;
+    //}
 };
+/*
+window.onerror = (function(e,d,c){
+  var a = 0, b =1;
+  a += b; 
+});*/
 
 //! Returns GPU RAM used, in bytes.
 Melown.GpuMesh.prototype.size = function(){ return this.size_; };

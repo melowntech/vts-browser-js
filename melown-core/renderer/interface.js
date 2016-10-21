@@ -181,6 +181,8 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
                 break;
 
             case "shaded":
+                uvAttr_ = null;
+
             case "textured":
             case "textured-and-shaded":
 
@@ -196,14 +198,21 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
                     shaderVariables_["uFogDensity"] = ["float", fogDensity_];
                 } 
             
-                //uvAttr_ = options_["uv"] || "aTexCoord";
                 uv2Attr_ = (shader_ == "textured") ? null : "aNormal";
                 shader_ = (shader_ == "textured") ? renderer_.progTile_ : ((shader_ == "shaded") ? renderer_.progShadedTile_ : renderer_.progTShadedTile_);
                 break;
         }
     }
 
-    renderer_.gpu_.useProgram(shader_, vertexAttr_, uvAttr_, uv2Attr_, null);
+    var attributes_ = [vertexAttr_];
+    if (uvAttr_){
+        attributes_.push(uvAttr_);        
+    } 
+    if (uv2Attr_){
+        attributes_.push(uv2Attr_);        
+    } 
+
+    renderer_.gpu_.useProgram(shader_, attributes_);
 
     for (var key_ in shaderVariables_) {
         var item_ = shaderVariables_[key_];
@@ -238,11 +247,12 @@ Melown.RendererInterface.prototype.drawMesh = function(options_) {
         }
     }
 
-    if (texture_ != null) {
+    if (texture_) {
         renderer_.gpu_.bindTexture(texture_);
     }
     
-    mesh_.draw(shader_, "aPosition", texture_ ? uvAttr_ : null, uv2Attr_, null);
+    //mesh_.draw(shader_, vertexAttr_, texture_ ? uvAttr_ : null, uv2Attr_, null);
+    mesh_.draw(shader_, vertexAttr_, uvAttr_, uv2Attr_, null);
     return this;    
 };
 

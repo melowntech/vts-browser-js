@@ -114,7 +114,7 @@ Melown.MapResourceNode.prototype.addMetatile = function(path_, metatile_) {
 };
 
 Melown.MapResourceNode.prototype.removeMetatile = function(metatile_) {
-    for (var key_ in metatiles_) {
+    for (var key_ in this.metatiles_) {
         if (this.metatiles_[key_] == metatile_) {
             delete this.metatiles_[key_];
         }
