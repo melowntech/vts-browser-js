@@ -136,6 +136,10 @@ Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_)
 
     if (Melown.noTextures_ != true) {
         gl_.texImage2D(gl_.TEXTURE_2D, 0, gl_.RGBA, gl_.RGBA, gl_.UNSIGNED_BYTE, image_);
+        if (gl_.getError() == 1281) {
+            gl_ = gl_;
+        }
+        //console.log(gl_.getError());
 
         if (mipmaps_ == true) {
             gl_.generateMipmap(gl_.TEXTURE_2D);

@@ -21,6 +21,7 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
     this.checkStatus_ = 0;
     this.checkType_ = null;
     this.checkValue_ = null;
+    this.fastHeaderCheck_ = false;
 
     if (extraInfo_ && extraInfo_.layer_) {
         var layer_ = extraInfo_.layer_;
@@ -370,24 +371,38 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
     return false;
 };
 
-Melown.MapTexture.prototype.scheduleLoad = function(priority_) {
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_);
+Melown.MapTexture.prototype.scheduleLoad = function(priority_, header_) {
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this, header_), priority_);
 };
 
-Melown.MapTexture.prototype.onLoad = function(url_, onLoaded_, onError_) {
+Melown.MapTexture.prototype.onLoad = function(header_, url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
     var onerror_ = this.onLoadError.bind(this);
     var onload_ = this.onLoaded.bind(this);
-    this.image_ = Melown.Http.imageFactory(url_, onload_, onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
 
-    this.loadState_ = 1;
+    if (header_) {
+        this.checkStatus_ = 1;
+    } else {
+        this.loadState_ = 1;
+    }
+
+    if (this.map_.config_.mapXhrImageLoad_) {
+        Melown.loadBinary(url_, this.onBinaryLoaded.bind(this), onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_, "blob");
+    } else {
+        this.image_ = Melown.Http.imageFactory(url_, onload_, onerror_, (this.map_.core_.tokenCookieHost_ ? (url_.indexOf(this.map_.core_.tokenCookieHost_) != -1) : false));
+    }
+    //mapXhrImageLoad_
 };
 
-Melown.MapTexture.prototype.onLoadError = function() {
+Melown.MapTexture.prototype.onLoadError = function(killBlob_) {
     if (this.map_.killed_ == true){
         return;
+    }
+
+    if (killBlob_) {
+        window.URL.revokeObjectURL(this.image_.src);
     }
 
     this.loadState_ = 3;
@@ -402,12 +417,39 @@ Melown.MapTexture.prototype.onLoadError = function() {
     this.mapLoaderCallError_();
 };
 
-Melown.MapTexture.prototype.onLoaded = function(data_) {
+Melown.MapTexture.prototype.onBinaryLoaded = function(data_) {
+    if (this.fastHeaderCheck_ && this.checkType_ && this.checkType_ != "metatile") {
+        this.onHeadLoaded(null, data_, null /*status_*/);
+        
+        if (this.checkStatus_ == -1) {
+            this.mapLoaderCallLoaded_();
+            return;
+        }
+    }
+
+    var image_ = new Image();
+    image_.onerror = this.onLoadError.bind(this, true);
+    image_.onload = this.onLoaded.bind(this, true);
+    this.image_ = image_;
+    image_.src = window.URL.createObjectURL(data_);
+};
+
+Melown.MapTexture.prototype.onLoaded = function(killBlob_) {
     if (this.map_.killed_){
         return;
     }
 
+    if (killBlob_) {
+        window.URL.revokeObjectURL(this.image_.src);
+    }
+
     var size_ = this.image_.naturalWidth * this.image_.naturalHeight * (this.heightMap_ ? 3 : 3);
+    
+    if (!this.image_.complete_) {
+        size_ = size_;
+    }
+    
+    //console.log(size_);
 
     this.cacheItem_ = this.map_.resourcesCache_.insert(this.killImage.bind(this, true), size_);
 
@@ -419,7 +461,11 @@ Melown.MapTexture.prototype.onLoaded = function(data_) {
 };
 
 Melown.MapTexture.prototype.scheduleHeadRequest = function(priority_, downloadAll_) {
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this, downloadAll_), priority_);
+    if (this.map_.config_.mapXhrImageLoad_ && this.fastHeaderCheck_) {
+        this.scheduleLoad(priority_, true);
+    } else {
+        this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this, downloadAll_), priority_);
+    }
 };
 
 //Melown.onlyOneHead_ = false;
@@ -475,47 +521,68 @@ Melown.MapTexture.prototype.onHeadLoaded = function(downloadAll_, data_, status_
     this.loadErrorTime_ = null;
     this.loadErrorCounter_ = 0;
 
-    //if (this.mapLoaderUrl_ == "http://t4.tiles.virtualearth.net/tiles/a120212123213310.jpeg?g=854&mkt=en-US&token=Ahu6LJpWaKRj0Fzngk4d58AQFI9jKLsnvovS3ReEVcfOf6rBDCxiLDq-ycxakgOi") {
-        //this.checkStatus_ = this.checkStatus_;
-    //}
+    if (this.map_.config_.mapXhrImageLoad_ && this.fastHeaderCheck_) {
 
-    /*
-    if (this.extraInfo_) {
-        if (this.extraInfo_.tile_.id_[0] == Melown.debugId_[0] &&
-            this.extraInfo_.tile_.id_[1] == Melown.debugId_[1] &&
-            this.extraInfo_.tile_.id_[2] == Melown.debugId_[2]) {
-                this.extraInfo_ = this.extraInfo_;
+        switch (this.checkType_) {
+            case "negative-size":
+                if (data_) {
+                    if (data_.size == this.checkValue_) {
+                        this.checkStatus_ = -1;
+                    }
+                }
+                break;
+                
+            case "negative-type":
+                if (data_) {
+                    if (data_.type == this.checkValue_) {
+                        this.checkStatus_ = -1;
+                    }
+                }
+                break;
+                
+            case "negative-code":
+                if (status_) {
+                    if (this.checkValue_.indexOf(status_) != -1) {
+                        this.checkStatus_ = -1;
+                    }
+                }
+                break;
         }
-    }*/
-    
-    switch (this.checkType_) {
-        case "negative-size":
-            if (data_) {
-                if (data_.byteLength == this.checkValue_) {
-                    this.checkStatus_ = -1;
-                }
-            }
-            break;
-            
-        case "negative-type":
-        case "negative-size":
-            if (data_) {
-                if (data_.indexOf(this.checkValue_) != -1) {
-                    this.checkStatus_ = -1;
-                }
-            }
-            break;
-            
-        case "negative-code":
-            if (status_) {
-                if (this.checkValue_.indexOf(status_) != -1) {
-                    this.checkStatus_ = -1;
-                }
-            }
-            break;
-    }
 
-    this.mapLoaderCallLoaded_();
+    } else {
+
+        switch (this.checkType_) {
+            case "negative-size":
+                if (data_) {
+                    if (data_.byteLength == this.checkValue_) {
+                        this.checkStatus_ = -1;
+                    }
+                }
+                break;
+                
+            case "negative-type":
+                if (data_) {
+                    if (!data_.indexOf) {
+                        data_ = data_;
+                    }
+                    
+                    if (data_.indexOf(this.checkValue_) != -1) {
+                        this.checkStatus_ = -1;
+                    }
+                }
+                break;
+                
+            case "negative-code":
+                if (status_) {
+                    if (this.checkValue_.indexOf(status_) != -1) {
+                        this.checkStatus_ = -1;
+                    }
+                }
+                break;
+        }
+        
+        this.mapLoaderCallLoaded_();
+    }
 };
 
 

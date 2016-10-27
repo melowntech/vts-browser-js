@@ -13,6 +13,9 @@ Melown.Core = function(element_, config_, interface_) {
     this.ready_ = false;
     this.listeners_ = [];
     this.listenerCounter_ = 0;
+    this.tokenCookieHost_ = null;
+    this.tokenIFrame_ = null;
+    this.xhrParams_ = {};
     this.inspector_ = (Melown.Inspector != null) ? (new Melown.Inspector(this)) : null;
 
     this.map_ = null;
@@ -44,33 +47,24 @@ Melown.Core.prototype.loadMap = function(path_) {
         return;
     }
 
-    var onLoaded_ = (function(data_) {
+    this.tokenCookieLoaded_ = true;
+    this.mapConfigData_ = null;
+    this.tokenExpiration_ = null;
+    this.tokenExpirationCallback_ = null;
+    
+    var onLoaded_ = (function() {
+        if (!this.tokenCookieLoaded_ || !this.mapConfigData_) {
+            return;
+        }
+        
+        var data_ = this.mapConfigData_; 
+    
         this.callListener("map-mapconfig-loaded", data_);
 
         this.map_ = new Melown.Map(this, data_, path_, this.config_);
         this.mapInterface_ = new Melown.MapInterface(this.map_);
         this.setConfigParams(this.map_.browserOptions_);
         this.setConfigParams(this.configStorage_);
-
-        //MEGA HACK!!!!
-        /*
-        if (this.map_.config_.mario_) {
-            if (!(
-                this.map_.getSurface("egm96-geoid") ||
-                this.map_.getSurface("srtm-arc-sec-world") ||
-                this.map_.getSurface("aster-world") ||
-                this.map_.getSurface("viewfinder-world") ||
-                
-                this.map_.getSurface("melown-egm96-geoid") ||
-                this.map_.getSurface("melown-srtm-arc-sec-world") ||
-                this.map_.getSurface("melown-aster-world") ||
-                this.map_.getSurface("melown-viewfinder-world")
-
-                )) {
-
-                this.map_.config_.mapDisableCulling_ = true;
-            }            
-        }*/
 
         if (this.config_.position_) {
             this.map_.setPosition(this.config_.position_);
@@ -85,22 +79,43 @@ Melown.Core.prototype.loadMap = function(path_) {
         this.callListener("map-loaded", { "browserOptions":this.map_.browserOptions_});
     }).bind(this);
 
-    var onError_ = (function() {
+    var onMapConfigLoaded_ = (function(data_) {
+        this.mapConfigData_ = data_; 
+        onLoaded_();
     }).bind(this);
 
+    var onMapConfigError_ = (function() {
+    }).bind(this);
+
+    //this.tokenLoaded_ = true;
+
     var onAutorizationLoaded_ = (function(data_) {
-        this.config_.token_ = "?token=" + data_["token"];
+        this.tokenLoaded_ = true;
+        this.xhrParams_["token"] = data_["token"];
+        this.xhrParams_["tokenHeader"] = data_["header"];
         this.tokenExpiration_ = data_["expires"] * 1000;
         this.tokenExpirationCallback_ = (function(){
+            //this.tokenLoaded_ = false;
+            //this.tokenCookieLoaded_ = false;
             this.tokenExpiration_ = null;
             this.tokenExpirationLoop_ = true;
-            Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"]);
+            if (typeof this.config_.authorization_ === "string") {
+                Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"], this.xhrParams_);
+            } else {
+                this.config_.authorization_(onAutorizationLoaded_);
+            }
         }).bind(this);
+        
         if (!this.tokenExpirationLoop_) {
-            onLoadMapconfig(this.config_.token_);
-        } else {
-            Melown.loadJSON(path_ + this.config_.token_, null, null, null, Melown["useCredentials"]);
+            onLoadMapconfig(path_);
         }
+        
+        if (typeof this.config_.authorization_ === "string") {
+            onLoadImageCookie(data_["cookieInjector"], this.config_.authorization_);
+        } else {
+            onLoadImageCookie(data_["cookieInjector"], path_);
+        }
+
     }).bind(this);
 
     var onAutorizationError_ = (function() {
@@ -109,26 +124,55 @@ Melown.Core.prototype.loadMap = function(path_) {
 
     this.tokenExpirationLoop_ = false;
 
+    var onImageCookieLoaded_ = (function(data_) {
+        document.body.removeChild(this.tokenIFrame_);
+        this.tokenIFrame_ = null;   
+        this.tokenCookieLoaded_ = true;
+        onLoaded_();
+    }).bind(this);
+
+    var onImageCookieError_ = (function() {
+        console.log("auth cookie not loaded");
+    }).bind(this);
+
     var baseUrl_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
-    var onLoadMapconfig = function(token_) {
-        Melown.loadJSON(path_ + token_, onLoaded_, onError_, null, Melown["useCredentials"]);
-    };
+    var onLoadMapconfig = (function(path_) {
+        Melown.loadJSON(path_, onMapConfigLoaded_, onMapConfigError_, null, Melown["useCredentials"], this.xhrParams_);
+    }).bind(this);
 
-    if (false && this.config_.authorization_) {
-    //if (this.config_.authorization_) {
+    var onLoadImageCookie = (function(url_, originUrl_) {
+        url_ = Melown.Url.getProcessUrl(url_, originUrl_);
+        this.tokenCookieHost_ = Melown.Url.getHost(url_);
+        //Melown.Http.imageFactory(url_, onImageCookieLoaded_, onImageCookieError_);
+        var iframe_ = document.createElement('iframe');
+        this.tokenIFrame_ = iframe_;
+        iframe_.onload = onImageCookieLoaded_;
+        iframe_.src = url_;
+        iframe_.style.display = "none";
+        document.body.appendChild(iframe_);   
+    }).bind(this);
+
+    //if (false && this.config_.authorization_) {
+    if (this.config_.authorization_) {
+        this.tokenCookieLoaded_ = false;
+
         if (typeof this.config_.authorization_ === "string") {
-            Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"]);
+            Melown.loadJSON(this.config_.authorization_, onAutorizationLoaded_, onAutorizationError_, null, Melown["useCredentials"], this.xhrParams_);
         } else {
             this.config_.authorization_(onAutorizationLoaded_);
         }
     } else {
-        onLoadMapconfig("");
+        onLoadMapconfig(path_);
     }
 
 };
 
 Melown.Core.prototype.destroy = function() {
+    if (this.killed_) {
+        return;
+    }
+
     this.destroyMap();
     if (this.renderer_) {
         this.renderer_.kill();
@@ -173,7 +217,6 @@ Melown.Core.prototype.setOption = function(key_, value_) {
 };
 
 Melown.Core.prototype.on = function(name_, listener_) {
-
     if (this.killed_ == true) { // || this.renderer_ == null) {
         return;
     }
@@ -227,8 +270,7 @@ bool checkSupport()
     Returns true if the environment is capable of running the WebGL browser, false otherwise.
 */
 
-Melown.checkSupport = function()
-{
+Melown.checkSupport = function() {
     Melown.Platform.init();
 
     //is webgl supported

@@ -135,7 +135,7 @@ Melown.MapMetatile.prototype.onLoad = function(url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_);
     this.loadState_ = 1;
 };
 

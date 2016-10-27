@@ -52,7 +52,7 @@ Melown.MapSurface = function(map_, json_, type_) {
         
         var onError_ = (function(){ }).bind(this);
 
-        Melown.loadJSON(this.jsonUrl_, onLoaded_, onError_, null,(Melown["useCredentials"] ? (this.jsonUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+        Melown.loadJSON(this.jsonUrl_, onLoaded_, onError_, null,(Melown["useCredentials"] ? (this.jsonUrl_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_);
         //Melown.loadJSON(this.url_, onLoaded_, onError_, null, Melown["useCredentials"]);
     } else {
         this.parseJson(json_);

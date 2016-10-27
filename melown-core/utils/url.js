@@ -40,6 +40,46 @@ Melown.Url.getParamsFromUrl = function(url_) {
     return queryString_;
 };
 
+Melown.Url.getHost = function(url_) {
+    var location_ = document.createElement("a");
+    location_.href = url_;
+    return location_.hostname; 
+};
+
+Melown.Url.getProcessUrl = function(url_, originUrl_) {
+    if (!url_ || !originUrl_) {
+        return url_;
+    }
+    
+    var baseUrl_ = url_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
+
+    var baseUrlSchema_ = "";
+    if (window.location.href.indexOf("file://") != -1) {
+        if (baseUrl_.indexOf("http://") != -1) {
+            baseUrlSchema_ = "http:";
+        }
+        if (baseUrl_.indexOf("https://") != -1) {
+            baseUrlSchema_ = "https:";
+        }
+    }
+
+    var location_ = document.createElement("a");
+    location_.href = originUrl_;
+    var baseUrlOrigin_ = location_.origin; 
+   
+    url_ = url_.trim();
+
+    if (url_.indexOf("://") != -1) { //absolute
+        return url_;
+    } else if (url_.indexOf("//") == 0) {  //absolute without schema
+        return baseUrlSchema_ + url_;
+    } else if (url_.indexOf("/") == 0) {  //absolute without host
+        return baseUrlOrigin_ + url_;
+    } else {  //relative
+        return baseUrl_ + url_; 
+    }
+};
+
 Melown["Url"] = Melown.Url;
 Melown.Url["getParamsFromUrl"] = Melown.Url.getParamsFromUrl;
 

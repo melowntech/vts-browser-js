@@ -19,7 +19,7 @@ Melown.MapStylesheet = function(map_, id_, url_) {
         this.url_ = this.map_.processUrl(url_);
 
         //load style directly
-        Melown.loadJSON(this.url_, this.onLoaded.bind(this), this.onLoadError.bind(this), null, (Melown["useCredentials"] ? (this.url_.indexOf(this.map_.baseURL_) != -1) : false));
+        Melown.loadJSON(this.url_, this.onLoaded.bind(this), this.onLoadError.bind(this), null, (Melown["useCredentials"] ? (this.url_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_);
         this.loadState_ = 1;
     }
 };
