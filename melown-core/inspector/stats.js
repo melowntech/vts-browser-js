@@ -99,7 +99,9 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
             "- desired lod: " + (stats_.heightLod_.toFixed(2)) + "<br/>" +
             "- used lod: " + (stats_.heightNode_.toFixed(2)) + "<br/>" +
             "- used source: " + ((stats_.heightClass_ == 2 ? "navtile" : stats_.heightClass_ == 1 ? "node": "---") ) + "<br/>" +
-            "Terrain Radar Lod: " + (this.radarLod_) + "<br/>";
+            "Terrain Radar Lod: " + (this.radarLod_) + "<br/><br/>" + 
+            "Loaded/Errors: " + (stats_.loadedCount_) + " / " + (stats_.loadErrorCount_) + "<br/>" +
+            "Load time: " + ((stats_.loadLast_ - stats_.loadFirst_)*0.001).toFixed(2) + "s <br/>";
 
     var text3_ = "Tiles: " + (stats_.drawnTiles_) +"<br/>";
 

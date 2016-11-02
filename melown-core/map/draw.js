@@ -4,16 +4,112 @@ Melown.Map.prototype.draw = function(skipFreeLayers_) {
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
     this.updateFogDensity();
     this.maxGpuUsed_ = this.gpuCache_.getMaxCost() * 0.9; 
-    this.cameraCenter_ = this.position_.getCoords();
+    //this.cameraCenter_ = this.position_.getCoords();
     this.stats_.renderBuild_ = 0;
     this.drawTileCounter_ = 0;
+    var cameraPos_ = this.cameraPosition_;
     
-    for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+    if (this.replay_.storeNodes_ || this.replay_.storeFreeNodes_) {
+        this.replay_.nodeBuffer_ = [];
+    }
+    
+    if (this.replay_.drawGlobe_ || this.replay_.drawTiles_ || this.replay_.drawFreeTiles_||
+        this.replay_.drawNodes_ || this.replay_.drawFreeNodes_) { //used only in inspector
+
+        var lod_ = this.replay_.lod_; 
+        var single_ = this.replay_.singleLod_; 
+
+        if (this.replay_.drawTiles_ && this.replay_.drawnTiles_) {
+            var  tiles_ = this.replay_.drawnTiles_;
+            for (var i = 0, li = tiles_.length; i < li; i++) {
+                var tile_ = tiles_[i];
+                if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
+                    this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                }
+            }
+        }
+        
+        if (this.replay_.drawFreeTiles_ && this.replay_.drawnFreeTiles_) {
+            var  tiles_ = this.replay_.drawnFreeTiles_;
+            for (var i = 0, li = tiles_.length; i < li; i++) {
+                var tile_ = tiles_[i];
+                if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
+                    this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                }
+            }
+
+            if (this.freeLayersHaveGeodata_) {
+                this.renderer_.drawGpuJobs();
+                this.renderer_.clearJobBuffer();
+            }
+        }
+
+        if (this.replay_.drawNodes_ && this.replay_.tracedNodes_) {
+            var  tiles_ = this.replay_.tracedNodes_;
+            var tmp_ = this.drawBBoxes_;
+            this.drawBBoxes_ = true;  
+            for (var i = 0, li = tiles_.length; i < li; i++) {
+                var tile_ = tiles_[i];
+                if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
+                    this.drawTileInfo(tile_, tile_.metanode_, cameraPos_, tile_.surfaceMesh_, tile_.pixelSize_);
+                }
+            }
+            this.drawBBoxes_ = tmp_;
+        }
+
+        if (this.replay_.drawFreeNodes_ && this.replay_.tracedFreeNodes_) {
+            var  tiles_ = this.replay_.tracedFreeNodes_;
+            var tmp_ = this.drawBBoxes_;
+            this.drawBBoxes_ = true;  
+            for (var i = 0, li = tiles_.length; i < li; i++) {
+                var tile_ = tiles_[i];
+                if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
+                    this.drawTileInfo(tile_, tile_.metanode_, cameraPos_, tile_.surfaceMesh_, tile_.pixelSize_);
+                }
+            }
+            this.drawBBoxes_ = tmp_;
+        }
+
+        return;
+    }    
+    
+    for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {  //todo remove this
         this.tileBuffer_[i] = null;    
     }
 
     if (this.tree_.surfaceSequence_.length > 0) {
         this.tree_.draw();
+    }
+
+    if (this.replay_.storeTiles_) { //used only in inspectors
+        var drawnTiles_ = [];
+
+        for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+            var tiles_ = this.tileBuffer_[i];
+           
+            if (tiles_) {
+                for (var j = 0, lj = tiles_.length; j < lj; j++) {
+                    drawnTiles_.push(tiles_[j]);
+                }
+            }
+        }
+        
+        this.replay_.cameraPos_ = cameraPos_; 
+        this.replay_.drawnTiles_ = drawnTiles_;
+        this.replay_.storeTiles_ = false; 
+    }
+
+    if (this.replay_.storeNodes_) { //used only in inspector
+        var nodeBuffer_ = []; 
+
+        for (var i = 0, li = this.replay_.nodeBuffer_.length; i < li; i++) {
+            var tile_ = this.replay_.nodeBuffer_[i];
+            nodeBuffer_.push(tile_);
+        }
+
+        this.replay_.cameraPos_ = cameraPos_; 
+        this.replay_.tracedNodes_ = nodeBuffer_;
+        this.replay_.storeNodes_ = false; 
     }
 
     //draw free layers    
@@ -29,10 +125,47 @@ Melown.Map.prototype.draw = function(skipFreeLayers_) {
             }
         }
     }
+
+    if (this.replay_.storeFreeTiles_) { //used only in inspector
+        var drawnTiles_ = [];
+
+        for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+            var tiles_ = this.tileBuffer_[i];
+           
+            if (tiles_) {
+                for (var j = 0, lj = tiles_.length; j < lj; j++) {
+                    var tile_ = tiles_[j];
+                    if (tile_.surface_ && tile_.surface_.free_) { //do no draw free layers
+                        drawnTiles_.push(tile_);
+                    }
+                }
+            }
+        }
+        
+        this.replay_.cameraPos_ = cameraPos_; 
+        this.replay_.drawnFreeTiles_ = drawnTiles_;
+        this.replay_.storeFreeTiles_ = false; 
+    }
+
+    if (this.replay_.storeFreeNodes_) { //used only in inspector
+        var nodeBuffer_ = []; 
+
+        for (var i = 0, li = this.replay_.nodeBuffer_.length; i < li; i++) {
+            var tile_ = this.replay_.nodeBuffer_[i];
+            if (tile_.surface_ && tile_.surface_.free_) { //do no draw free layers
+                nodeBuffer_.push(tile_);
+            }
+        }
+
+        this.replay_.cameraPos_ = cameraPos_; 
+        this.replay_.tracedFreeNodes_ = nodeBuffer_;
+        this.replay_.storeFreeNodes_ = false; 
+    }
+
     
-    var cameraPos_ = this.cameraPosition_;
     
     //draw surface tiles stored in buffer
+    /*
     for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
         var tiles_ = this.tileBuffer_[i];
         
@@ -49,10 +182,11 @@ Melown.Map.prototype.draw = function(skipFreeLayers_) {
                 }
             }
         } 
-    }
+    }*/
 
     if (!skipFreeLayers_) {
         //draw free layers tiles stored in buffer
+        /*
         if (this.freeLayerSequence_.length > 0) {
             for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
                 var tiles_ = this.tileBuffer_[i];
@@ -71,7 +205,7 @@ Melown.Map.prototype.draw = function(skipFreeLayers_) {
                     }
                 } 
             }
-        }
+        }*/
     
         if (this.freeLayersHaveGeodata_) {
             this.renderer_.drawGpuJobs();
@@ -319,11 +453,11 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
     if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
         var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
-        if (tile_.id_[0] == 22 &&
+        /*if (tile_.id_[0] == 22 &&
             tile_.id_[1] == 1862678 &&
             tile_.id_[2] == 826010) {
             tile_ = tile_;
-        }    
+        }*/    
 
         tile_.drawCommands_ = [[], [], []]; //??
         tile_.imageryCredits_ = {};
@@ -548,7 +682,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
 
                 if (tile_.surfaceTextures_[i] == null) {
                     var path_ = tile_.surface_.getTextureUrl(tile_.id_, i);
-                    tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_);
+                    tile_.surfaceTextures_[i] = tile_.resources_.getTexture(path_, null, null, null, true);
                 } //else {
                     tile_.drawCommands_[0].push({
                         type_ : "submesh",
@@ -1113,4 +1247,5 @@ Melown.Map.prototype.updateFogDensity = function() {
 
     //console.log("fden: " + density_);
 };
+
 

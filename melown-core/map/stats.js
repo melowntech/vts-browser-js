@@ -55,6 +55,10 @@ Melown.MapStats = function(map_) {
     this.resourcesUsed_ = 0;
     this.metaUsed_ = 0;
     this.gpuRenderUsed_ = 0;
+    this.loadedCount_ = 0;
+    this.loadErrorCount_ = 0;
+    this.loadFirst_ = 0;
+    this.loadLast_ = 0;
 
     this.heightClass_ = 0;
     this.heightLod_ = 0;

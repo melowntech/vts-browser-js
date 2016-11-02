@@ -46,29 +46,40 @@ Melown.Url.getHost = function(url_) {
     return location_.hostname; 
 };
 
+Melown.Url.getSchema = function(url_) {
+    //if (window.location.href.indexOf("file://") != -1) {
+    if (url_.indexOf("http://") != -1) {
+        return "http:";
+    } else if (url_.indexOf("https://") != -1) {
+        return "https:";
+    } else {
+        var location_ = document.createElement("a");
+        location_.href = url_;
+        return location_.protocol;
+    }
+};
+
+Melown.Url.getOrigin = function(url_) {
+    var location_ = document.createElement("a");
+    location_.href = url_;
+    return location_.origin; 
+};
+
+Melown.Url.getBase = function(url_) {
+    return url_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
+};
+
 Melown.Url.getProcessUrl = function(url_, originUrl_) {
     if (!url_ || !originUrl_) {
         return url_;
     }
-    
-    var baseUrl_ = url_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
-    var baseUrlSchema_ = "";
-    if (window.location.href.indexOf("file://") != -1) {
-        if (baseUrl_.indexOf("http://") != -1) {
-            baseUrlSchema_ = "http:";
-        }
-        if (baseUrl_.indexOf("https://") != -1) {
-            baseUrlSchema_ = "https:";
-        }
-    }
-
-    var location_ = document.createElement("a");
-    location_.href = originUrl_;
-    var baseUrlOrigin_ = location_.origin; 
-   
     url_ = url_.trim();
-
+    originUrl_= originUrl_.trim();
+    var baseUrl_ = Melown.Url.getBase(originUrl_);
+    var baseUrlSchema_ = Melown.Url.getSchema(originUrl_);
+    var baseUrlOrigin_ = Melown.Url.getOrigin(originUrl_); 
+   
     if (url_.indexOf("://") != -1) { //absolute
         return url_;
     } else if (url_.indexOf("//") == 0) {  //absolute without schema

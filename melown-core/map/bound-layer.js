@@ -11,7 +11,9 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
     this.credits_ = [];
     this.tileRange_ = [[0,0],[0,0]];
     this.jsonUrl_ = null;
-    this.baseUrl_ = "";
+    this.baseUrl_ = this.map_.baseUrl_;
+    this.baseUrlSchema_ = this.map_.baseUrlSchema_;
+    this.baseUrlOrigin_ = this.map_.baseUrlOrigin_;
     this.ready_ = false;
 
     //hack
@@ -28,7 +30,9 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
     
     if (typeof json_ === "string") {
         this.jsonUrl_ = this.map_.processUrl(json_);
-        this.baseUrl_ = this.jsonUrl_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
+        this.baseUrl_ = Melown.Url.getBase(this.jsonUrl_);
+        this.baseUrlSchema_ = Melown.Url.getSchema(this.jsonUrl_);
+        this.baseUrlOrigin_ = Melown.Url.getOrigin(this.jsonUrl_);
         
         var onLoaded_ = (function(data_){
             this.parseJson(data_);            
@@ -38,7 +42,7 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
         
         var onError_ = (function(){ }).bind(this);
 
-        Melown.loadJSON(this.jsonUrl_, onLoaded_, onError_, null, (Melown["useCredentials"] ? (this.jsonUrl_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_);
+        Melown.loadJSON(this.jsonUrl_, onLoaded_, onError_, null, (Melown["useCredentials"] ? (this.jsonUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
         //Melown.loadJSON(this.url_, onLoaded_, onError_, null, Melown["useCredentials"]);
     } else {
         this.parseJson(json_);
@@ -50,12 +54,12 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
 Melown.MapBoundLayer.prototype.parseJson = function(json_) {
     this.numberId_ = json_["id"] || null;
     this.type_ = json_["type"] || "raster";
-    this.url_ = this.processUrl(this.baseUrl_, json_["url"], "");
+    this.url_ = this.processUrl(json_["url"], "");
     this.tileSize_ = json_["tileSize"] || [256,256];
     this.lodRange_ = json_["lodRange"] || [0,0];
     this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
-    this.metaUrl_ = this.processUrl(this.baseUrl_, json_["metaUrl"]);
-    this.maskUrl_ = this.processUrl(this.baseUrl_, json_["maskUrl"]);
+    this.metaUrl_ = this.processUrl(json_["metaUrl"]);
+    this.maskUrl_ = this.processUrl(json_["maskUrl"]);
     this.isTransparent_ = json_["isTransparent"] || false;
     this.credits_ = json_["credits"] || [];
     this.creditsUrl_ = null;
@@ -121,7 +125,7 @@ Melown.MapBoundLayer.prototype.getInfo = function() {
     };
 };
 
-Melown.MapBoundLayer.prototype.processUrl = function(baseUrl_, url_, fallback_) {
+Melown.MapBoundLayer.prototype.processUrl = function(url_, fallback_) {
     if (!url_) {
         return fallback_;
     }
@@ -131,11 +135,11 @@ Melown.MapBoundLayer.prototype.processUrl = function(baseUrl_, url_, fallback_) 
     if (url_.indexOf("://") != -1) { //absolute
         return url_;
     } else if (url_.indexOf("//") == 0) {  //absolute without schema
-        return this.map_.baseUrlSchema_ + url_;
+        return this.baseUrlSchema_ + url_;
     } else if (url_.indexOf("/") == 0) {  //absolute without host
-        return this.map_.baseUrlOrigin_ + url_;
+        return this.baseUrlOrigin_ + url_;
     } else {  //relative
-        return baseUrl_ + url_; 
+        return this.baseUrl_ + url_; 
     }
 };
 

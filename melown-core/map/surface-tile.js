@@ -130,7 +130,7 @@ Melown.MapSurfaceTile.prototype.kill = function() {
 
 Melown.MapSurfaceTile.prototype.validate = function() {
     //is tile empty?
-    if (this.metaresources_ == null || !this.metaresources_.getMetatile(this.surface_)) {
+    if (this.metaresources_ == null || !this.metaresources_.getMetatile(this.surface_, null, this)) {
         //this.kill();
     }
 };
@@ -327,7 +327,7 @@ Melown.MapSurfaceTile.prototype.checkSurface = function(tree_, priority_) {
                 ///* ????????
                 var parent_ = this.parent_;
                 if (parent_ != null) { 
-                    var metatile_ = parent_.metaresources_.getMetatile(surface_);
+                    var metatile_ = parent_.metaresources_.getMetatile(surface_, null, this);
                     if (metatile_) {
                         
                         if (!metatile_.isReady(priority_)) {
@@ -385,7 +385,7 @@ Melown.MapSurfaceTile.prototype.checkMetanode = function(tree_, priority_) {
         return false;
     }
 
-    var metatile_ = this.metaresources_.getMetatile(surface_, true);
+    var metatile_ = this.metaresources_.getMetatile(surface_, true, this);
 
     if (metatile_.isReady(priority_) == true) {
 
@@ -423,7 +423,7 @@ Melown.MapSurfaceTile.prototype.isVirtualMetanodeReady = function(tree_, priorit
 
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i][0];
-        var metatile_ = this.metaresources_.getMetatile(surface_, true);
+        var metatile_ = this.metaresources_.getMetatile(surface_, true, this);
 
         if (metatile_.isReady(priority_) == true) {
             readyCount_++;
@@ -446,7 +446,7 @@ Melown.MapSurfaceTile.prototype.createVirtualMetanode = function(tree_, priority
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i][0];
         var alien_ = surfaces_[i][1];
-        var metatile_ = this.metaresources_.getMetatile(surface_);
+        var metatile_ = this.metaresources_.getMetatile(surface_, null, this);
 
         if (metatile_.isReady(priority_) == true) {
             var metanode_ = metatile_.getNode(this.id_);
@@ -491,7 +491,7 @@ Melown.MapSurfaceTile.prototype.createVirtualMetanode = function(tree_, priority
     //extend bbox, credits and children flags by other surfaces
     for (var i = 0, li = surfaces_.length; i < li; i++) {
         var surface_ = surfaces_[i][0];
-        var metatile_ = this.metaresources_.getMetatile(surface_);
+        var metatile_ = this.metaresources_.getMetatile(surface_, null, this);
 
         if (metatile_.isReady(priority_) == true) {
             var metanode_ = metatile_.getNode(this.id_);

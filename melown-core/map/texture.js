@@ -1,9 +1,11 @@
 /**
  * @constructor
  */
-Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
+Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_) {
     this.map_ = map_;
     this.stats_ = map_.stats_;
+    this.tile_ = tile_; // used only for stats
+    this.internal_ = internal_; // used only for stats
     this.image_ = null;
     this.imageData_ = null;
     this.imageExtents_ = null;
@@ -22,6 +24,7 @@ Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_) {
     this.checkType_ = null;
     this.checkValue_ = null;
     this.fastHeaderCheck_ = false;
+    this.fileSize_ = 0;
 
     if (extraInfo_ && extraInfo_.layer_) {
         var layer_ = extraInfo_.layer_;
@@ -372,7 +375,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
 };
 
 Melown.MapTexture.prototype.scheduleLoad = function(priority_, header_) {
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this, header_), priority_);
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this, header_), priority_, this.id_, this.internal_);
 };
 
 Melown.MapTexture.prototype.onLoad = function(header_, url_, onLoaded_, onError_) {
@@ -389,7 +392,7 @@ Melown.MapTexture.prototype.onLoad = function(header_, url_, onLoaded_, onError_
     }
 
     if (this.map_.config_.mapXhrImageLoad_) {
-        Melown.loadBinary(url_, this.onBinaryLoaded.bind(this), onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_, "blob");
+        Melown.loadBinary(url_, this.onBinaryLoaded.bind(this), onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_, "blob");
     } else {
         this.image_ = Melown.Http.imageFactory(url_, onload_, onerror_, (this.map_.core_.tokenCookieHost_ ? (url_.indexOf(this.map_.core_.tokenCookieHost_) != -1) : false));
     }
@@ -432,6 +435,7 @@ Melown.MapTexture.prototype.onBinaryLoaded = function(data_) {
     image_.onload = this.onLoaded.bind(this, true);
     this.image_ = image_;
     image_.src = window.URL.createObjectURL(data_);
+    this.fileSize_ = data_.size;
 };
 
 Melown.MapTexture.prototype.onLoaded = function(killBlob_) {
@@ -488,9 +492,9 @@ Melown.MapTexture.prototype.onLoadHead = function(downloadAll_, url_, onLoaded_,
     //url_ = "http://m2.mapserver.mapy.cz/ophoto0203-m/20-568396-351581";
 */
     if (downloadAll_) {
-        Melown.loadBinary(url_, onload_, onerror_);
+        Melown.loadBinary(url_, onload_, onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_, "blob");
     } else {
-        Melown.Http.headRequest(url_, onload_, onerror_);
+        Melown.Http.headRequest(url_, onload_, onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_, "blob");
     }
 
 };

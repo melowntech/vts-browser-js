@@ -1,11 +1,12 @@
 /**
  * @constructor
  */
-Melown.MapMesh = function(map_, url_) {
+Melown.MapMesh = function(map_, url_, tile_) {
     this.generateLines_ = true;
     this.map_ = map_;
     this.stats_ = map_.stats_;
     this.mapLoaderUrl_  = url_;
+    this.tile_ = tile_; // used only for stats
 
     this.bbox_ = new Melown.BBox();
     this.size_ = 0;
@@ -18,6 +19,9 @@ Melown.MapMesh = function(map_, url_) {
     this.loadState_ = 0;
     this.loadErrorTime_ = null;
     this.loadErrorCounter_ = 0;
+
+    this.mBuffer_ = Melown.mat4.create();
+    this.mBuffer2_ = Melown.mat4.create();
 
     this.submeshes_ = [];
     this.gpuSubmeshes_ = [];
@@ -148,14 +152,14 @@ Melown.MapMesh.prototype.scheduleLoad = function(priority_) {
         this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.surface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
     }
 
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_);
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_, this.tile_, "mesh");
 };
 
 Melown.MapMesh.prototype.onLoad = function(url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_);
+    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
     this.loadState_ = 1;
 };
 
@@ -385,8 +389,8 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         return;
     }
 
-    var mv_ = Melown.mat4.create();
-    Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_), mv_);
+    var mv_ = this.mBuffer_;
+    Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_, this.mBuffer2_), mv_);
     var proj_ = renderer_.camera_.getProjectionMatrix();
 
     program_.setMat4("uMV", mv_);

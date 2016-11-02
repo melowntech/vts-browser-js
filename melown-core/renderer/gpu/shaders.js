@@ -545,7 +545,7 @@ Melown.tileShadedFragmentShader = "precision mediump float;\n"+
         "float specW = pow(max(dot(refDir, eyeDir), 0.0), uMaterial[3][0]);\n"+
         "float diffW = max(dot(normal, ldir), 0.0);\n"+
         "vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n"+
-        "gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);\n"+
+        "gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor); gl_FragColor.w=uMaterial[3][1];\n"+
     "}";
 
 //flat shade tile mesh

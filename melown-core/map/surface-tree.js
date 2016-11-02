@@ -196,6 +196,8 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     var texelSizeFit_ = map_.texelSizeFit_;
 
     var best2_ = 0;
+    var storeNodes_ = map_.replay_.storeNodes_ || map_.replay_.storeFreeNodes_;
+    var storeNodesBuffer_ = map_.replay_.nodeBuffer_; 
 
     do {
         var best_ = 0;
@@ -220,7 +222,10 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
                     //best_ += tile_.texelSize_;
                     //best2_ ++;
                 }
-
+                
+                if (storeNodes_) { //used only for inspaector_
+                    storeNodesBuffer_.push(tile_);
+                }
                 
                 if (/*node_.hasGeometry() && */tile_.texelSize_ <= texelSizeFit_) {
                     
@@ -316,6 +321,18 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     
     //console.log("texel: "+ this.map_.bestMeshTexelSize_);
 
+
+    if (this.map_.replay_.storeTiles_ || this.map_.replay_.storeFreeTiles_) { //used only in inspectors
+        if (!this.map_.tileBuffer_[0]) {
+            this.map_.tileBuffer_[0] = [];
+        }
+        
+        var tiles_ = this.map_.tileBuffer_[0];
+        for (var i = drawBufferIndex_ - 1; i >= 0; i--) {
+            tiles_.push(drawBuffer_[i]);
+        }
+    }
+
     for (var i = drawBufferIndex_ - 1; i >= 0; i--) {
         tile_ = drawBuffer_[i];
         //draw tile,  preventRender=false, preventLoad_=false
@@ -358,6 +375,9 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
     processBufferIndex_ = 1;
 
     var texelSizeFit_ = map_.texelSizeFit_;
+
+    var storeNodes_ = map_.replay_.storeNodes_ || map_.replay_.storeFreeNodes_;
+    var storeNodesBuffer_ = map_.replay_.nodeBuffer_; 
     
     do {
         newProcessBufferIndex_ = 0;
@@ -367,6 +387,10 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
             node_ = tile_.metanode_;
 
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+
+                if (storeNodes_) { //used only for inspaector_
+                    storeNodesBuffer_.push(tile_);
+                }
                 
                 if (/*node_.hasGeometry() && */tile_.texelSize_ <= texelSizeFit_) {
                     
@@ -453,6 +477,16 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
         
     } while(processBufferIndex_ > 0);
 
+    if (this.map_.replay_.storeTiles_ || this.map_.replay_.storeFreeTiles_) { //used only in inspectors
+        if (!this.map_.tileBuffer_[0]) {
+            this.map_.tileBuffer_[0] = [];
+        }
+        
+        var tiles_ = this.map_.tileBuffer_[0];
+        for (var i = drawBufferIndex_ - 1; i >= 0; i--) {
+            tiles_.push(drawBuffer_[i]);
+        }
+    }
 
     for (var i = drawBufferIndex_ - 1; i >= 0; i--) {
         tile_ = drawBuffer_[i];
@@ -498,6 +532,8 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
 
     var texelSizeFit_ = map_.texelSizeFit_;
 
+    var storeNodes_ = map_.replay_.storeNodes_ || map_.replay_.storeFreeNodes_;
+    var storeNodesBuffer_ = map_.replay_.nodeBuffer_; 
     
     do {
         newProcessBufferIndex_ = 0;
@@ -532,6 +568,10 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
             node_ = tile_.metanode_;
 
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+
+                if (storeNodes_) { //used only for inspaector_
+                    storeNodesBuffer_.push(tile_);
+                }
 
                 if (node_.hasChildren() == false || tile_.texelSize_ <= texelSizeFit_) {
 
@@ -703,6 +743,18 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
         processBufferIndex_ = newProcessBufferIndex_;
         
     } while(processBufferIndex_ > 0);
+
+
+    if (this.map_.replay_.storeTiles_ || this.map_.replay_.storeFreeTiles_) { //used only in inspectors
+        if (!this.map_.tileBuffer_[0]) {
+            this.map_.tileBuffer_[0] = [];
+        }
+        
+        var tiles_ = this.map_.tileBuffer_[0];
+        for (var i = drawBufferIndex_ - 1; i >= 0; i--) {
+            tiles_.push(drawBuffer_[i]);
+        }
+    }
 
     for (var i = drawBufferIndex_ - 1; i >= 0; i--) {
         tile_ = drawBuffer_[i];

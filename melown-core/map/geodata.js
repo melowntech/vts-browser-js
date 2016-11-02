@@ -78,7 +78,7 @@ Melown.MapGeodata.prototype.scheduleLoad = function(priority_) {
         //this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.surface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
     //}
 
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_);
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_, this.extraInfo_.tile_, "geodata");
 };
 
 Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
@@ -89,7 +89,7 @@ Melown.MapGeodata.prototype.onLoad = function(url_, onLoaded_, onError_) {
 
     this.loadState_ = 1;
     
-    Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), true, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_);
+    Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), true, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
     return;
 /*
     var tile_ = this.extraInfo_.tile_;    

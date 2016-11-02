@@ -27,6 +27,7 @@ Melown.Core.prototype.initConfig = function() {
         mapLoadErrorRetryTime_ : 3000,
         mapLoadErrorMaxRetryCount_ : 3,
         mapXhrImageLoad_ : false,
+        mapStoreLoadStats_ : true,
         mapFog_ : false,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false,

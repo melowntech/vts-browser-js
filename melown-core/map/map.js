@@ -18,22 +18,10 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.config_ = config_ || {};
     this.loaderSuspended_ = false;
 
-    this.baseURL_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
-
-    this.baseUrlSchema_ = "";
-    if (window.location.href.indexOf("file://") != -1) {
-        if (this.baseURL_.indexOf("http://") != -1) {
-            this.baseUrlSchema_ = "http:";
-        }
-        if (this.baseURL_.indexOf("https://") != -1) {
-            this.baseUrlSchema_ = "https:";
-        }
-    }
-
-    //get origin
-    var location_ = document.createElement("a");
-    location_.href = path_;
-    this.baseUrlOrigin_ = location_.origin; 
+    path_ = path_.trim();
+    this.baseUrl_ = Melown.Url.getBase(path_);
+    this.baseUrlSchema_ = Melown.Url.getSchema(path_);
+    this.baseUrlOrigin_ = Melown.Url.getOrigin(path_); 
 
     this.position_ = new Melown.MapPosition(this, ["obj", 0, 0, "fix", 0,  0, 0, 0,  0, 0]);
     this.lastPosition_ = this.position_.clone();
@@ -90,6 +78,34 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
 
     this.stats_ = new Melown.MapStats(this);
     this.resourcesTree_ = new Melown.MapResourceTree(this);
+    this.replay_ = {
+        camera_ : null,
+        drawnTiles_ : null,
+        drawnFreeTiles_ : null,
+        nodeBuffer_ : null,
+        tracedNodes_ : null,
+        tracedFreeNodes_ : null,
+        storeTiles_ : false,
+        storeFreeTiles_ : false,
+        storeNodes_ : false,
+        storeFreeNodes_ : false,
+        storeLoaded_ : false,
+        drawGlobe_ : false,
+        drawTiles_ : false,
+        drawNodes_ : false,
+        drawFreeTiles_ : false,
+        drawFreeNodes_ : false,
+        drawLoaded_ : false,
+        lod_ : 30,
+        singleLod_ : false,
+        lodedIndex_ : 0,
+        singleLodedIndex_ : 0,
+        loadedIndex_ : 0,
+        loaded_ : [],
+        loadFirst_ : 0,
+        loadLast_ : 0
+    };
+    
 
     this.parseConfig();
 
@@ -635,7 +651,7 @@ Melown.Map.prototype.processUrl = function(url_, fallback_) {
     } else if (url_.indexOf("/") == 0) {  //absolute without host
         return this.baseUrlOrigin_ + url_;
     } else {  //relative
-        return this.baseURL_ + url_; 
+        return this.baseUrl_ + url_; 
     }
 };
 
@@ -664,6 +680,8 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapHeightNodeBlend":            this.config_.mapHeightNodeBlend_ = Melown.validateBool(value_, true); break;
         case "mapBasicTileSequence":          this.config_.mapBasicTileSequence_ = Melown.validateBool(value_, true); break;
         case "mapSmartNodeParsing":           this.config_.mapSmartNodeParsing_ = Melown.validateBool(value_, true); break;
+        case "mapStoreLoadStats":             this.config_.mapStoreLoadStats_ = Melown.validateBool(value_, true);  this.replay_.storeLoaded_ = this.config_.mapStoreLoadStats_; break;
+        case "mapXhrImageLoad":               this.config_.mapXhrImageLoad_ = Melown.validateBool(value_, false); break;
         case "mario":                         this.config_.mario_ = Melown.validateBool(value_, true); break;
     }
 };
@@ -693,6 +711,8 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapHeightNodeBlend":            return this.config_.mapHeightNodeBlend_;
         case "mapBasicTileSequence":          return this.config_.mapBasicTileSequence_;
         case "mapSmartNodeParsing":           return this.config_.mapSmartNodeParsing_;
+        case "mapStoreLoadStats":             return this.config_.mapStoreLoadStats_;
+        case "mapXhrImageLoad":               return this.config_.mapXhrImageLoad_;
         case "mario":                         return this.config_.mario_;
     }
 };
@@ -700,6 +720,10 @@ Melown.Map.prototype.getConfigParam = function(key_) {
 Melown.Map.prototype.markDirty = function() {
     this.dirty_ = true;
     this.hitMapDirty_ = true;
+};
+
+Melown.Map.prototype.getScreenRay = function(screenX_, screenY_) {
+    return this.renderer_.getScreenRay(screenX_, screenY_);
 };
 
 Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {

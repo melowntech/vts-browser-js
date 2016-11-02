@@ -1,11 +1,12 @@
 /**
  * @constructor
  */
-Melown.MapMetatile = function(metaresources_, surface_) {
+Melown.MapMetatile = function(metaresources_, surface_, tile_) {
     this.metaresources_= metaresources_; //this is metastorage tile
     this.map_ = metaresources_.map_;
     this.surface_ = surface_;
     this.id_ = metaresources_.id_;
+    this.tile_ = tile_; // used only for stats
     this.nodes_ = [];
     this.loadState_ = 0;
     this.loadErrorTime_ = null;
@@ -128,14 +129,14 @@ Melown.MapMetatile.prototype.scheduleLoad = function() {
         this.mapLoaderUrl_ = this.surface_.getMetaUrl(this.id_);
     }
 
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), null);
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), null, this.tile_, "metatile");
 };
 
 Melown.MapMetatile.prototype.onLoad = function(url_, onLoaded_, onError_) {
     this.mapLoaderCallLoaded_ = onLoaded_;
     this.mapLoaderCallError_ = onError_;
 
-    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_);
+    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
     this.loadState_ = 1;
 };
 

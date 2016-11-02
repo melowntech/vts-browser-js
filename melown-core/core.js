@@ -51,9 +51,11 @@ Melown.Core.prototype.loadMap = function(path_) {
     this.mapConfigData_ = null;
     this.tokenExpiration_ = null;
     this.tokenExpirationCallback_ = null;
+
+    this.tokenCanBeSkiped_ = true;
     
     var onLoaded_ = (function() {
-        if (!this.tokenCookieLoaded_ || !this.mapConfigData_) {
+        if (!(this.tokenCookieLoaded_ || this.tokenCanBeSkiped_) || !this.mapConfigData_) {
             return;
         }
         
@@ -120,6 +122,10 @@ Melown.Core.prototype.loadMap = function(path_) {
 
     var onAutorizationError_ = (function() {
         console.log("auth token not loaded");
+        
+        if (this.tokenCanBeSkiped_) {
+            onLoadMapconfig(path_);
+        }
     }).bind(this);
 
     this.tokenExpirationLoop_ = false;

@@ -311,6 +311,10 @@ Melown.MapInterface.prototype.getHitCoords = function(screenX_, screenY_, mode_,
     return this.map_.getHitCoords(screenX_, screenY_, mode_, lod_);
 };
 
+Melown.MapInterface.prototype.getScreenRay = function(screenX_, screenY_) {
+    return this.map_.getScreenRay(screenX_, screenY_);
+};
+
 Melown.MapInterface.prototype.getStats = function() {
     return {
         "bestMeshTexelSize" : this.map_.bestMeshTexelSize_,
@@ -386,5 +390,6 @@ Melown.MapInterface.prototype["setLoaderSuspended"] = Melown.MapInterface.protot
 Melown.MapInterface.prototype["getLoaderSuspended"] = Melown.MapInterface.prototype.getLoaderSuspended; 
 Melown.MapInterface.prototype["getGpuCache"] = Melown.MapInterface.prototype.getGpuCache;
 Melown.MapInterface.prototype["getHitCoords"] = Melown.MapInterface.prototype.getHitCoords;
+Melown.MapInterface.prototype["getScreenRay"] = Melown.MapInterface.prototype.getScreenRay;
 Melown.MapInterface.prototype["getStats"] = Melown.MapInterface.prototype.getStats;
 

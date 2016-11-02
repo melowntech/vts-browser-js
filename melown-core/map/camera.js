@@ -51,6 +51,7 @@ Melown.Map.prototype.updateCamera = function() {
 
     //convert public coords to physical
     var worldPos_ = this.convertCoords([this.position_.getCoords()[0], this.position_.getCoords()[1], height_], "navigation", "physical");
+    this.cameraCenter_ = [worldPos_[0], worldPos_[1], worldPos_[2]];
 	worldPos_[0] += camInfo_.orbitCoords_[0];
 	worldPos_[1] += camInfo_.orbitCoords_[1];
 	worldPos_[2] += camInfo_.orbitCoords_[2];

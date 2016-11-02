@@ -32,7 +32,7 @@ Melown.MapLoader.prototype.setChannel = function(channel_) {
     this.channel_ = channel_;
 };
 
-Melown.MapLoader.prototype.load = function(path_, downloadFunction_, priority_) {
+Melown.MapLoader.prototype.load = function(path_, downloadFunction_, priority_, id_, kind_) {
     var index_ = this.downloading_.indexOf(path_);
 
     if (index_ != -1) {
@@ -47,7 +47,7 @@ Melown.MapLoader.prototype.load = function(path_, downloadFunction_, priority_) 
     if (index_ != -1) {
         pending_[index_].priority_ = priority_; 
     } else {
-        pending_.unshift({id_:path_, call_: downloadFunction_, priority_ : (priority_ || 0) });
+        pending_.unshift({id_:path_, call_: downloadFunction_, priority_ : (priority_ || 0), tile_:id_, kind_:kind_ });
     }
 
     //sort pending list by priority
@@ -91,6 +91,9 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
     }
 
     var timer_ = performance.now();
+    var stats_ = this.map_.stats_;
+
+    var recordStats_ = this.map_.replay_.storeLoaded_;
 
     //this.downloadingTime_.push(item_.id_);
     /*
@@ -106,6 +109,7 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
             }
         }
     }*/
+
     
     //if (this.pending_.length > 0) {
         //if (this.usedThreads_ < this.maxThreads_) {
@@ -135,6 +139,14 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
                     this.usedThreads_--;
                     this.map_.markDirty();
                     this.update();
+                    stats_.loadedCount_++;
+                    stats_.loadLast_ = timer_;
+                    
+                    if (recordStats_) {
+                        this.map_.replay_.loaded_ = {
+                            
+                        };
+                    }
 
                 }).bind(this);
 
@@ -149,6 +161,8 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
                     this.usedThreads_--;
                     this.map_.markDirty();
                     this.update();
+                    stats_.loadErrorCount_++;
+                    stats_.loadLast_ = timer_;
 
                 }).bind(this);
 

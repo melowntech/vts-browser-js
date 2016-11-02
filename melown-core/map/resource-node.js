@@ -74,7 +74,7 @@ Melown.MapResourceNode.prototype.getMesh = function(path_) {
     var mesh_ = this.meshes_[path_];
     
     if (!mesh_) {
-        mesh_ = new Melown.MapMesh(this.map_, path_);
+        mesh_ = new Melown.MapMesh(this.map_, path_, this.id_);
         this.meshes_[path_] = mesh_;
     }
     
@@ -96,11 +96,11 @@ Melown.MapResourceNode.prototype.getGeodata = function(path_, extraInfo_) {
 
 // Textures ---------------------------------
 
-Melown.MapResourceNode.prototype.getTexture = function(path_, heightMap_, extraBound_, extraInfo_) {
+Melown.MapResourceNode.prototype.getTexture = function(path_, heightMap_, extraBound_, extraInfo_, tile_, internal_) {
     var texture_ = this.textures_[path_];
     
     if (!texture_) {
-        texture_ = new Melown.MapTexture(this.map_, path_, heightMap_, extraBound_, extraInfo_);
+        texture_ = new Melown.MapTexture(this.map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_);
         this.textures_[path_] = texture_;
     }
     
@@ -121,7 +121,7 @@ Melown.MapResourceNode.prototype.removeMetatile = function(metatile_) {
     }
 };
 
-Melown.MapResourceNode.prototype.getMetatile = function(surface_, allowCreation_) {
+Melown.MapResourceNode.prototype.getMetatile = function(surface_, allowCreation_, tile_) {
     var metatiles_ = this.metatiles_; 
     for (var key_ in metatiles_) {
         if (metatiles_[key_].surface_ == surface_) {
@@ -138,7 +138,7 @@ Melown.MapResourceNode.prototype.getMetatile = function(surface_, allowCreation_
     }
 
     if (allowCreation_) {
-        var metatile_ = new Melown.MapMetatile(this, surface_);
+        var metatile_ = new Melown.MapMetatile(this, surface_, tile_);
         this.addMetatile(path_, metatile_);
         return metatile_; 
     } else {

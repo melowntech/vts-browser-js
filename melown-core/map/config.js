@@ -11,6 +11,11 @@ Melown.Map.prototype.parseConfig = function() {
           this.parseViews() && this.parseParams() && this.parseBrowserOptions() )) {
         //wrong config file
     }
+
+    this.stats_.loadedCount_ = 0;
+    this.stats_.loadErrorCount_ = 0;
+    this.stats_.loadFirst_ = performance.now();
+    this.stats_.loadLast_ = this.loadFirst_;
 };
 
 Melown.Map.prototype.afterConfigParsed = function() {

@@ -274,6 +274,8 @@ Melown.Renderer.prototype.getScreenRay = function(screenX_, screenY_) {
     //conver screen coords
     var x_ = (2.0 * screenX_) / this.curSize_[0] - 1.0;
     var y_ = 1.0 - (2.0 * screenY_) / this.curSize_[1];
+    
+    //console.log("x: " + x_ + " y: " + y_);
 
     var rayNormalizeDeviceSpace_ = [x_, y_, 1.0];
 

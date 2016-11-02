@@ -19,7 +19,7 @@ Melown.MapStylesheet = function(map_, id_, url_) {
         this.url_ = this.map_.processUrl(url_);
 
         //load style directly
-        Melown.loadJSON(this.url_, this.onLoaded.bind(this), this.onLoadError.bind(this), null, (Melown["useCredentials"] ? (this.url_.indexOf(this.map_.baseURL_) != -1) : false), this.map_.core_.xhrParams_);
+        Melown.loadJSON(this.url_, this.onLoaded.bind(this), this.onLoadError.bind(this), null, (Melown["useCredentials"] ? (this.url_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
         this.loadState_ = 1;
     }
 };
@@ -61,7 +61,7 @@ Melown.MapStylesheet.prototype.onLoad = function(url_, onLoaded_, onError_) {
     //this.mapLoaderCallLoaded_ = onLoaded_;
     //this.mapLoaderCallError_ = onError_;
 
-    //Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), null, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseURL_) != -1) : false));
+    //Melown.loadJSON(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), null, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false));
     this.loadState_ = 1;
 };
 

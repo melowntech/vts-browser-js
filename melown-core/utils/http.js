@@ -41,7 +41,7 @@ Melown.Http.loadBinary = function(url_, onLoaded_, onError_) {
     Melown.loadBinary(url_, onLoaded_, onError_);
 };
 
-Melown.Http.headRequest = function(url_, onLoaded_, onError_) { 
+Melown.Http.headRequest = function(url_, onLoaded_, onError_, withCredentials_, xhrParams_, responseType_) { 
     var xhr_ = new XMLHttpRequest();
 
     xhr_.onreadystatechange = (function (){
@@ -77,6 +77,14 @@ Melown.Http.headRequest = function(url_, onLoaded_, onError_) {
     }).bind(this);
 
     xhr_.open('HEAD', url_, true);
+    //xhr_.responseType = responseType_ ? responseType_ : "arraybuffer";
+    xhr_.withCredentials = withCredentials_;
+
+    if (xhrParams_ && xhrParams_["token"] /*&& xhrParams_["tokenHeader"]*/) {
+        //xhr_.setRequestHeader(xhrParams_["tokenHeader"], xhrParams_["token"]); //old way
+        xhr_.setRequestHeader("Accept", "token/" + xhrParams_["token"] + ", */*");
+    }
+
     xhr_.send("");
 };
 
