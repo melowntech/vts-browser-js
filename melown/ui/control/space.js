@@ -27,7 +27,15 @@ Melown.UIControlSpace = function(ui_, visible_) {
     this.button3D_.on("dblclick", this.onDoNothing.bind(this));
 
     this.space3D_ = true;
-    this.update();
+    this.display3D_ = this.space3D_;
+
+    if (this.space3D_) {
+        this.button2D_.setStyle("display", "block");
+        this.button3D_.setStyle("display", "none");
+    } else {
+        this.button2D_.setStyle("display", "none");
+        this.button3D_.setStyle("display", "block");
+    }
 };
 
 Melown.UIControlSpace.prototype.onDoNothing = function(event_) {
@@ -36,17 +44,6 @@ Melown.UIControlSpace.prototype.onDoNothing = function(event_) {
 
 Melown.UIControlSpace.prototype.onSwitch = function() {
     this.space3D_ = !this.space3D_;
-    this.update();
-};
-
-Melown.UIControlSpace.prototype.update = function() {
-    if (this.space3D_) {
-        this.button2D_.setStyle("display", "block");
-        this.button3D_.setStyle("display", "none");
-    } else {
-        this.button2D_.setStyle("display", "none");
-        this.button3D_.setStyle("display", "block");
-    }
 
     var map_ = this.browser_.getMap();
     if (map_ == null) {
@@ -70,6 +67,33 @@ Melown.UIControlSpace.prototype.update = function() {
 
     pos_ = Melown.constrainMapPosition(this.browser_, pos_);
     map_.setPosition(pos_);
+    
+    this.update();
+};
+
+Melown.UIControlSpace.prototype.update = function() {
+    var map_ = this.browser_.getMap();
+    if (map_ == null) {
+        return;
+    }
+
+    var pos_ = map_.getPosition();
+    var orientation_ = map_.getPositionOrientation(pos_);
+
+    var space3D_ = (Math.abs(orientation_[1]+90) > 0.1);
+
+    if (space3D_ != this.display3D_) {
+        if (space3D_) {
+            this.button2D_.setStyle("display", "block");
+            this.button3D_.setStyle("display", "none");
+        } else {
+            this.button2D_.setStyle("display", "none");
+            this.button3D_.setStyle("display", "block");
+        }
+
+        this.space3D_ = space3D_;
+        this.display3D_ = space3D_;
+    }
 };
 
 

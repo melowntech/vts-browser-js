@@ -106,6 +106,7 @@ Melown.UI.prototype.setParam = function(key_) {
 Melown.UI.prototype.tick = function(dirty_) {
     if (dirty_) {
         this.compass_.update();
+        this.space_.update();
         this.credits_.update();
         this.link_.updateLink();                
     }
