@@ -21,7 +21,7 @@ Melown.Inspector.prototype.initReplayPanel = function() {
         + "}"
 
         + "#melown-replay-panel-left {"
-            + "width: 200px;"
+            + "width: 253px;"
             + "height: 100%;"
             + "float: left;"
         + "}"
@@ -47,7 +47,7 @@ Melown.Inspector.prototype.initReplayPanel = function() {
         + "}" 
 
         + "#melown-replay-lod-slider {"
-            + "width: 330px;"
+            + "width: 240px;"
         + "}"
 
         + "#melown-replay-lod-text {"
@@ -73,7 +73,26 @@ Melown.Inspector.prototype.initReplayPanel = function() {
         + "#melown-replay-time-single {"
             + "margin-left: 10px;"
         + "}"
-        
+
+        + "#melown-replay-panel-gtime canvas{"
+            + "border: 1px solid #555;"
+        + "}"
+
+        + "#melown-replay-panel-gtime span{"
+            + "font-size: 10px;"
+        + "}"
+
+        + "#melown-replay-info {"
+            + "width: 240px;"
+            + "height: 140px;"
+            + "overflow-x: hidden;"
+            + "border: 1px solid #ddd;"
+            + "padding-right: 5px;"
+            + "margin-top: 10px;"            
+            + "font-size: 12px;"
+            + "word-wrap: break-word;"   
+        + "}"
+       
     );
 
     this.replayElement_ = document.createElement("div");
@@ -81,8 +100,6 @@ Melown.Inspector.prototype.initReplayPanel = function() {
     this.replayElement_.innerHTML =
             '<div id="melown-replay-panel-left">'
             + '<div id="melown-replay-items"></div>'
-          + '</div>'
-          + '<div id="melown-replay-panel-right">'
             + '<div id="melown-replay-panel-lod">'  
                 + '<input id="melown-replay-lod-slider" type="range" min="0" max="30" step="1" value="30" /><br/>'
                 + '<span>LOD:</span>'
@@ -91,10 +108,30 @@ Melown.Inspector.prototype.initReplayPanel = function() {
                 + '<input id="melown-replay-lod-down" type="button" value=">"/>'
                 + '<input id="melown-replay-lod-single" type="checkbox"/>'
                 + '<span>Single</span>'
-            + '</div><br/>'
+            + '</div>'
+            + '<div id="melown-replay-info"></div>'
+          + '</div>'
+          + '<div id="melown-replay-panel-right">'
+            + '<div id="melown-replay-panel-gtime">'  
+                + '<span id="melown-replay-info-meshes">Meshes Count: 0 Min/Max: 0/0 Avg. 0</span><br/>'
+                + '<canvas id="melown-replay-canvas-meshes" width=340 height=30></canvas><br/>'  
+                + '<span id="melown-replay-info-textures">Internal Textures Count: 0 Min/Max: 0/0 Avg. 0</span><br/>'
+                + '<canvas id="melown-replay-canvas-textures" width=340 height=30></canvas><br/>'  
+                + '<span id="melown-replay-info-textures2">External Textures Count: 0 Min/Max: 0/0 Avg. 0</span><br/>'
+                + '<canvas id="melown-replay-canvas-textures2" width=340 height=30></canvas><br/>'  
+                + '<span id="melown-replay-info-geodata">Geodata Count: 0 Min/Max: 0/0 Avg. 0</span><br/>'
+                + '<canvas id="melown-replay-canvas-geodata" width=340 height=30></canvas><br/>'  
+                + '<span id="melown-replay-info-metatiles">Metatiles Count: 0 Min/Max: 0/0 Avg. 0</span><br/>'
+                + '<canvas id="melown-replay-canvas-metatiles" width=340 height=30></canvas><br/>'  
+                + '<span id="melown-replay-info-intervals">Interval Count: 0 Min/Max: 0/0 Avg. 0</span><br/>'
+                + '<canvas id="melown-replay-canvas-intervals" width=340 height=30></canvas><br/>'  
+                + '<span id="melown-replay-info-threads">Threads Min/Max: 0/0 Avg. 0 </span><br/>'
+                + '<canvas id="melown-replay-canvas-threads" width=340 height=30></canvas><br/>'  
+            + '</div>'
+
             + '<div id="melown-replay-panel-time">'  
-                + '<input id="melown-replay-time-slider" type="range" min="0" max="50000" value="0" /><br/>'
-                + '<span>Time:</span>'
+                + '<input id="melown-replay-time-slider" type="range" min="0" max="2000" value="0" /><br/>'
+                + '<span>File:</span>'
                 + '<input id="melown-replay-time-text" type="text" value="0"/>'
                 + '<input id="melown-replay-time-up" type="button" value="<"/>'
                 + '<input id="melown-replay-time-down" type="button" value=">"/>'
@@ -125,6 +162,8 @@ Melown.Inspector.prototype.initReplayPanel = function() {
     this.replayTimeText_ = document.getElementById("melown-replay-time-text");
     this.replayTimeText_.onchange = this.onReplayTextChange.bind(this, "time");
 
+    this.replayTimeInfo_ = document.getElementById("melown-replay-info");
+
     document.getElementById("melown-replay-time-up").onclick = this.onReplaySliderChange.bind(this, "time", "down");
     document.getElementById("melown-replay-time-down").onclick = this.onReplaySliderChange.bind(this, "time", "up");
     document.getElementById("melown-replay-time-single").onclick = this.onReplaySliderChange.bind(this, "time", "single");
@@ -133,6 +172,21 @@ Melown.Inspector.prototype.initReplayPanel = function() {
     this.replayElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
     this.replayElement_.addEventListener("mousewheel", this.doNothing.bind(this), false);
     this.replayElement_.addEventListener("dblclick", this.doNothing.bind(this), false);
+
+    this.replayInfoMeshes_ = document.getElementById("melown-replay-info-meshes");
+    this.replayCtxMeshes_ = document.getElementById("melown-replay-canvas-meshes").getContext("2d");  
+    this.replayInfoTextures_ = document.getElementById("melown-replay-info-textures");
+    this.replayCtxTextures_ = document.getElementById("melown-replay-canvas-textures").getContext("2d");  
+    this.replayInfoTextures2_ = document.getElementById("melown-replay-info-textures2");
+    this.replayCtxTextures2_ = document.getElementById("melown-replay-canvas-textures2").getContext("2d");  
+    this.replayInfoGeodata_ = document.getElementById("melown-replay-info-geodata");
+    this.replayCtxGeodata_ = document.getElementById("melown-replay-canvas-geodata").getContext("2d");  
+    this.replayInfoMetatiles_ = document.getElementById("melown-replay-info-metatiles");
+    this.replayCtxMetatiles_ = document.getElementById("melown-replay-canvas-metatiles").getContext("2d");  
+    this.replayInfoIntervals_ = document.getElementById("melown-replay-info-intervals");
+    this.replayCtxIntervals_ = document.getElementById("melown-replay-canvas-intervals").getContext("2d");  
+    this.replayInfoThreads_ = document.getElementById("melown-replay-info-threads");
+    this.replayCtxThreads_ = document.getElementById("melown-replay-canvas-threads").getContext("2d");  
 
     this.replayCameraLines_ = [];
     this.replayCameraLines2_ = [];
@@ -146,6 +200,14 @@ Melown.Inspector.prototype.showReplayPanel = function() {
     this.buildReplayCombo();
     this.replayElement_.style.display = "block";
     this.replayPanelVisible_ = true;
+
+    var map_ = this.core_.getMap();
+    if (!map_) {
+        return;
+    }
+
+    this.updateFileInfo(map_.replay_.loadedIndex_);
+    this.updateLoadGraphs();
 };
 
 Melown.Inspector.prototype.hideReplayPanel = function() {
@@ -178,7 +240,20 @@ Melown.Inspector.prototype.onReplaySliderChange = function(type_, button_) {
                 this.replayLodText_.value = this.replayLodSlider_.value;    
         } 
     } else {
-        this.replayTimeText_.value = this.replayTimeSlider_.value;    
+        switch (button_) {
+            case "up":
+                this.replayTimeSlider_.stepUp();
+                this.replayTimeText_.value = this.replayTimeSlider_.value;    
+                break;
+            
+            case "down":
+                this.replayTimeSlider_.stepDown();
+                this.replayTimeText_.value = this.replayTimeSlider_.value;    
+                break;
+
+            default:
+                this.replayTimeText_.value = this.replayTimeSlider_.value;    
+        } 
     }
 
     var map_ = this.core_.getMap();
@@ -192,6 +267,8 @@ Melown.Inspector.prototype.onReplaySliderChange = function(type_, button_) {
     } else {
         map_.replay_.loadedIndex_ = parseFloat(this.replayTimeText_.value);
         map_.replay_.singleLodedIndex_ = document.getElementById("melown-replay-time-single").checked;
+        this.updateFileInfo(map_.replay_.loadedIndex_);
+        this.updateLoadGraphs();
     }
 
     map_.markDirty();
@@ -213,6 +290,8 @@ Melown.Inspector.prototype.onReplayTextChange = function(type_) {
         map_.replay_.lod_ = parseFloat(this.replayLodText_.value);
     } else {
         map_.replay_.loadedIndex_ = parseFloat(this.replayTimeText_.value);
+        this.updateFileInfo(map_.replay_.loadedIndex_);
+        this.updateLoadGraphs();
     }
 
     map_.markDirty();
@@ -429,6 +508,14 @@ Melown.Inspector.prototype.replayItemButton = function(item_, button_) {
 
         case "LoadSequence":
             map_.replay_.storeLoaded_ = (button_ == "S");
+
+            if (button_ == "S") {
+                map_.replay_.loadedIndex_ = 0;
+                map_.replay_.loaded_ = [];
+            } else {
+                this.updateFileInfo(map_.replay_.loadedIndex_);
+                this.updateLoadGraphs();
+            }
             break;
 
         case "Camera":
@@ -458,6 +545,9 @@ Melown.Inspector.prototype.switchReplayItem = function(item_, htmlId_) {
     //element_.checked;
     //this.applyMapView();
     var map_ = this.core_.getMap();
+    if (!map_) {
+        return;
+    }
 
     switch (item_) {
         case "DrawnTiles":
@@ -505,6 +595,209 @@ Melown.Inspector.prototype.switchReplayItem = function(item_, htmlId_) {
     map_.markDirty();
 };
 
+Melown.Inspector.prototype.updateLoadGraphs = function(index_) {
+    var map_ = this.core_.getMap();
+    if (!map_) {
+        return;
+    }
+
+    var minMeshes_ = Number.MAX_VALUE, maxMeshes_ = 0, avgMeshes_ = 0, avgMeshesCount_ = 0;
+    var minTextures_ = Number.MAX_VALUE, maxTextures_ = 0, avgTextures_ = 0, avgTexturesCount_ = 0;
+    var minTextures2_ = Number.MAX_VALUE, maxTextures2_ = 0, avgTextures2_ = 0, avgTextures2Count_ = 0;
+    var minGeodata_ = Number.MAX_VALUE, maxGeodata_ = 0, avgGeodata_ = 0, avgGeodataCount_ = 0;
+    var minMetatiles_ = Number.MAX_VALUE, maxMetatiles_ = 0, avgMetatiles_ = 0, avgMetatilesCount_ = 0;
+    var minThreads_ = Number.MAX_VALUE, maxThreads_ = 0, avgThreads_ = 0, avgThreadsCount_ = 0;
+    var minIntervals_ = Number.MAX_VALUE, maxIntervals_ = 0, avgIntervals_ = 0, avgIntervalsCount_ = 0;
+
+    var loaded_ = map_.replay_.loaded_;
+    var index_ = map_.replay_.loadedIndex_;
+
+    this.replayTimeSlider_.max = loaded_.length; 
+
+    var ctx_;   
+    var lx_ = 340;
+    var ly_ = 30;
+
+    this.replayCtxMeshes_.fillStyle = "#000000";
+    this.replayCtxMeshes_.fillRect(0, 0, lx_, ly_);
+    this.replayCtxTextures_.fillStyle = "#000000";
+    this.replayCtxTextures_.fillRect(0, 0, lx_, ly_);
+    this.replayCtxTextures2_.fillStyle = "#000000";
+    this.replayCtxTextures2_.fillRect(0, 0, lx_, ly_);
+    this.replayCtxGeodata_.fillStyle = "#000000";
+    this.replayCtxGeodata_.fillRect(0, 0, lx_, ly_);
+    this.replayCtxMetatiles_.fillStyle = "#000000";
+    this.replayCtxMetatiles_.fillRect(0, 0, lx_, ly_);
+    this.replayCtxIntervals_.fillStyle = "#000000";
+    this.replayCtxIntervals_.fillRect(0, 0, lx_, ly_);
+    this.replayCtxThreads_.fillStyle = "#000000";
+    this.replayCtxThreads_.fillRect(0, 0, lx_, ly_);
+
+    var i = Math.floor(map_.replay_.loadedIndex_ / lx_) * lx_;
+    var shift_ = i;
+    var li = (lx_-1);
+    
+    for (var i = 0; i < li; i++) {
+        var file_ = loaded_[i + shift_];
+        
+        if (file_) {
+            
+            switch(file_.kind_) {
+                case "mesh":
+                    ctx_ = this.replayCtxMeshes_;
+                    if (file_.duration_ < minMeshes_) minMeshes_ = file_.duration_; 
+                    if (file_.duration_ > maxMeshes_) maxMeshes_ = file_.duration_; 
+                    avgMeshes_ += file_.duration_;
+                    avgMeshesCount_++;  
+                    break;
+                    
+                case "texture-in":
+                    ctx_ = this.replayCtxTextures_;
+                    if (file_.duration_ < minTextures_) minTextures_ = file_.duration_; 
+                    if (file_.duration_ > maxTextures_) maxTextures_ = file_.duration_; 
+                    avgTextures_ += file_.duration_;
+                    avgTexturesCount_++;  
+                    break;
+                    
+                case "texture-ex":
+                    ctx_ = this.replayCtxTextures2_;
+                    if (file_.duration_ < minTextures2_) minTextures2_ = file_.duration_; 
+                    if (file_.duration_ > maxTextures2_) maxTextures2_ = file_.duration_; 
+                    avgTextures2_ += file_.duration_;
+                    avgTextures2Count_++;  
+                    break;
+                    
+                case "geodata":
+                    ctx_ = this.replayCtxGeodata_;
+                    if (file_.duration_ < minGeodata_) minGeodata_ = file_.duration_; 
+                    if (file_.duration_ > maxGeodata_) maxGeodata_ = file_.duration_; 
+                    avgGeodata_ += file_.duration_;
+                    avgGeodataCount_++;  
+                    break;
+                    
+                case "metatile":
+                    ctx_ = this.replayCtxMetatiles_;
+                    if (file_.duration_ < minMetatiles_) minMetatiles_ = file_.duration_; 
+                    if (file_.duration_ > maxMetatiles_) maxMetatiles_ = file_.duration_; 
+                    avgMetatiles_ += file_.duration_;
+                    avgMetatilesCount_++;  
+                    break;
+
+                default:
+                    continue;
+            }
+
+            var grey_ = Math.round(Math.min(255, 60+20 * Math.max(1, file_.duration_ / 300)));
+            ctx_.fillStyle="rgb("+grey_+","+grey_+","+grey_+")";
+
+            var h = (file_.duration_ / 300) * 30;                 
+            ctx_.fillRect(i, ly_, 1, -h);
+
+            //interval
+            grey_ = Math.round(Math.min(255, 60+20 * Math.max(1, file_.interval_ / 300)));
+            this.replayCtxIntervals_.fillStyle="rgb("+grey_+","+grey_+","+grey_+")";
+            h = (file_.interval_ / 300) * 30;                 
+            this.replayCtxIntervals_.fillRect(i, ly_, 1, -h);
+
+            //interval
+            this.replayCtxThreads_.fillStyle="rgb(80,80,80)";
+            h = (file_.threads_ / map_.config_.mapDownloadThreads_) * 30;                 
+            this.replayCtxThreads_.fillRect(i, ly_, 1, -h);
+                
+            if (file_.threads_ < minThreads_) minThreads_ = file_.threads_; 
+            if (file_.threads_ > maxThreads_) maxThreads_ = file_.threads_; 
+            avgThreads_ += file_.threads_;
+            avgThreadsCount_++;  
+
+            if (file_.threads_ < minIntervals_) minIntervals_ = file_.threads_; 
+            if (file_.threads_ > maxIntervals_) maxIntervals_ = file_.threads_; 
+            avgIntervals_ += file_.threads_;
+            avgIntervalsCount_++;  
+        }
+    }
+    
+    index_ -= shift_;
+
+    this.replayCtxMeshes_.fillStyle = "#ff0000";
+    this.replayCtxMeshes_.fillRect(index_ - 1, 0, 1, ly_);
+    this.replayCtxMeshes_.fillRect(index_ + 1, 0, 1, ly_);
+    this.replayCtxTextures_.fillStyle = "#ff0000";
+    this.replayCtxTextures_.fillRect(index_ - 1, 0, 1, ly_);
+    this.replayCtxTextures_.fillRect(index_ + 1, 0, 1, ly_);
+    this.replayCtxTextures2_.fillStyle = "#ff0000";
+    this.replayCtxTextures2_.fillRect(index_ - 1, 0, 1, ly_);
+    this.replayCtxTextures2_.fillRect(index_ + 1, 0, 1, ly_);
+    this.replayCtxGeodata_.fillStyle = "#ff0000";
+    this.replayCtxGeodata_.fillRect(index_ - 1, 0, 1, ly_);
+    this.replayCtxGeodata_.fillRect(index_ + 1, 0, 1, ly_);
+    this.replayCtxMetatiles_.fillStyle = "#ff0000";
+    this.replayCtxMetatiles_.fillRect(index_ - 1, 0, 1, ly_);
+    this.replayCtxMetatiles_.fillRect(index_ + 1, 0, 1, ly_);
+    this.replayCtxIntervals_.fillStyle = "#ff0000";
+    this.replayCtxIntervals_.fillRect(index_ - 1, 0, 1, ly_);
+    this.replayCtxIntervals_.fillRect(index_ + 1, 0, 1, ly_);
+    this.replayCtxThreads_.fillStyle = "#ff0000";
+    this.replayCtxThreads_.fillRect(index_ - 1, 0, 1, ly_);
+    this.replayCtxThreads_.fillRect(index_ + 1, 0, 1, ly_);
+
+    if (!avgMeshesCount_) {
+        minMeshes_ = 0, maxMeshes_ = 0, avgMeshes_ = 0, avgMeshesCount_ = 1;
+    }
+
+    if (!avgTexturesCount_) {
+        minTextures_ = 0, maxTextures_ = 0, avgTextures_ = 0, avgTexturesCount_ = 1;
+    }
+    
+    if (!avgTextures2Count_) {
+        minTextures2_ = 0, maxTextures2_ = 0, avgTextures2_ = 0, avgTextures2Count_ = 1;
+    }
+    
+    if (!avgGeodataCount_) {
+        minGeodata_ = 0, maxGeodata_ = 0, avgGeodata_ = 0, avgGeodataCount_ = 1;
+    }
+
+    if (!avgMetatilesCount_) {
+        minMetatiles_ = 0, maxMetatiles_ = 0, avgMetatiles_ = 0, avgMetatilesCount_ = 1;
+    }
+
+    if (!avgThreadsCount_) {
+        minThreads_ = 0, maxThreads_ = 0, avgThreads_ = 0, avgThreadsCount_ = 1;
+    }
+
+    if (!avgIntervalsCount_) {
+        minIntervals_ = 0, maxIntervals_ = 0, avgIntervals_ = 0, avgIntervalsCount_ = 1;
+    }
+
+    this.replayInfoMeshes_.innerHTML = "Meshes Min/Max/Avg: " + minMeshes_.toFixed(0) + " / " + maxMeshes_.toFixed(0) + " / " + (avgMeshes_/avgMeshesCount_).toFixed(1);
+    this.replayInfoTextures_.innerHTML = "Internal Textures Min/Max/Avg: " + minTextures_.toFixed(0) + " / " + maxTextures_.toFixed(0) + " / " + (avgTextures_/avgTexturesCount_).toFixed(1);
+    this.replayInfoTextures2_.innerHTML = "External Textures Min/Max/Avg: " + minTextures2_.toFixed(0) + " / " + maxTextures2_.toFixed(0) + " / " + (avgTextures2_/avgTextures2Count_).toFixed(1);
+    this.replayInfoGeodata_.innerHTML = "Geodata Min/Max/Avg: " + minGeodata_.toFixed(0) + " / " + maxGeodata_.toFixed(0) + " / " + (avgGeodata_/avgGeodataCount_).toFixed(1);
+    this.replayInfoMetatiles_.innerHTML = "Metatiles Min/Max/Avg: " + minMetatiles_.toFixed(0) + " / " + maxMetatiles_.toFixed(0) + " / " + (avgMetatiles_/avgMetatilesCount_).toFixed(1);
+    this.replayInfoIntervals_.innerHTML = "Intervals Min/Max/Avg: " + minIntervals_.toFixed(0) + " / " + maxIntervals_.toFixed(0) + " / " + (avgIntervals_/avgIntervalsCount_).toFixed(1);  
+    this.replayInfoThreads_.innerHTML = "Threads Min/Max/Avg: " + minThreads_ + " / " + maxThreads_ + " / " + (avgThreads_/avgThreadsCount_).toFixed(1);  
+};
+
+Melown.Inspector.prototype.updateFileInfo = function(index_) {
+    var map_ = this.core_.getMap();
+    if (!map_) {
+        return;
+    }
+
+    var file_ = map_.replay_.loaded_[index_];
+
+    if (file_) {
+        this.replayTimeInfo_.innerHTML = ""
+            + "Resource Kind: " + file_.kind_ + "<br/>"
+            + "Time: " + file_.time_.toFixed(2) + "<br/>"
+            + "Duration: " + file_.duration_.toFixed(2) + "<br/>"
+            + "Interval: " + file_.interval_.toFixed(2) + "<br/>"
+            + "Priority: " + file_.priority_.toFixed(2) + "<br/>"
+            + "Threads: " + file_.threads_ + "<br/>"
+            + "" + file_.url_;
+    } else {
+        this.replayTimeInfo_.innerHTML = "";
+    }
+};
 
 Melown.Inspector.prototype.buildReplayCombo = function() {
     var map_ = this.core_.getMap();

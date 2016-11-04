@@ -10,9 +10,6 @@ Melown.MapLoader = function(map_, maxThreads_) {
     this.fadeout_ = 19 / 20;
 
     this.pending_ = [[],[]];
-    //this.pendingPath_ = [];
-    //this.pendingPriority_ = [];
-
     this.channel_ = 0;
 
     this.downloading_ = [];
@@ -81,6 +78,73 @@ Melown.MapLoader.prototype.remove = function(path_) {
     }
 };
 
+Melown.MapLoader.prototype.onLoaded = function(item_) {
+    var index_ = this.downloading_.indexOf(item_.id_);
+    var timer_ = performance.now();
+    var stats_ = this.map_.stats_;
+    var recordStats_ = this.map_.replay_.storeLoaded_;
+
+    if (recordStats_) {
+        this.map_.replay_.loaded_.push({
+            url_ : item_.id_,
+            kind_ : item_.kind_,
+            tile_: item_.tile_,
+            priority_ : item_.priority_,
+            time_ : timer_,
+            duration_ : timer_ - this.downloadingTime_[index_],
+            interval_ : timer_ - this.lastDownloadTime_,
+            threads_ : this.downloading_.length
+        });
+
+        var a = (timer_ - this.downloadingTime_[index_]);
+        if (Number.isNaN(a)) {
+            a = a; 
+        }
+
+    }
+
+    this.downloading_.splice(index_, 1);
+    this.downloadingTime_.splice(index_, 1);
+    //this.lastDownloadTime_ = Date.now();
+    this.lastDownloadTime_ = timer_;
+    this.usedThreads_--;
+    this.map_.markDirty();
+    this.update();
+    stats_.loadedCount_++;
+    stats_.loadLast_ = timer_;
+};
+
+Melown.MapLoader.prototype.onLoadError = function(item_) {
+    var index_ = this.downloading_.indexOf(item_.id_);
+    var timer_ = performance.now();
+    var stats_ = this.map_.stats_;
+    var recordStats_ = this.map_.replay_.storeLoaded_;
+
+    if (recordStats_) {
+        this.map_.replay_.loaded_.push({
+            url_ : item_.id_,
+            kind_ : item_.kind_,
+            tile_: item_.tile_,
+            priority_ : item_.priority_,
+            time_ : timer_,
+            duration_ : timer_ - this.downloadingTime_[index_],
+            interval_ : timer_ - this.lastDownloadTime_,
+            threads_ : this.downloading_.length
+        });
+    }
+
+    this.downloading_.splice(index_, 1);
+    this.downloadingTime_.splice(index_, 1);
+    //this.lastDownloadTime_ = Date.now();
+    this.lastDownloadTime_ = timer_;
+    this.usedThreads_--;
+    this.map_.markDirty();
+    this.update();
+    stats_.loadErrorCount_++;
+    stats_.loadLast_ = timer_;
+};
+
+
 Melown.MapLoader.prototype.updateChannel = function(channel_) {
     var pending_ = this.pending_[channel_];
     this.updateThreadCount();
@@ -95,82 +159,18 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
 
     var recordStats_ = this.map_.replay_.storeLoaded_;
 
-    //this.downloadingTime_.push(item_.id_);
-    /*
-    if (this.map_.config_.mapLowresBackground_) {
-        for (var i = 0; i < this.downloading_.length; i++) {
-            if ((timer_ - this.downloadingTime_[i]) > 3000) {
-                this.downloading_.splice(i, 1);
-                this.downloadingTime_.splice(i, 1);
-                this.usedThreads_--;
-                i--;
+    while (pending_.length > 0 && this.usedThreads_ < this.maxThreads_) {
+        var item_ = pending_.shift();
 
-                this.map_.markDirty();
-            }
+        if (this.downloading_.indexOf(item_.id_) == -1 && item_.call_ != null) {
+            this.downloading_.push(item_.id_);
+            this.downloadingTime_.push(timer_);
+            this.usedThreads_++;
+            this.downloaded_++;
+
+            item_.call_(item_.id_, this.onLoaded.bind(this, item_), this.onLoadError.bind(this, item_));
         }
-    }*/
-
-    
-    //if (this.pending_.length > 0) {
-        //if (this.usedThreads_ < this.maxThreads_) {
-        while (pending_.length > 0 && this.usedThreads_ < this.maxThreads_) {
-
-            //console.log("used: " + this.usedThreads_ + " pending:" + this.pendingPath_.length + " max:" + this.maxThreads_);
-
-            var item_ = pending_.shift();
-
-            if (this.downloading_.indexOf(item_.id_) == -1 && item_.call_ != null) {
-
-                //console.log("MapLoader.prototype.download:" + hashId_);
-
-                this.downloading_.push(item_.id_);
-                this.downloadingTime_.push(timer_);
-                this.usedThreads_++;
-                this.downloaded_++;
-
-                var onLoaded_ = (function(path_){
-
-                    //console.log("MapLoader.prototype.downloadDONE:" + this.cache_.hash(originalID_));
-                    
-                    var index_ = this.downloading_.indexOf(item_.id_);
-                    this.downloading_.splice(index_, 1);
-                    this.downloadingTime_.splice(index_, 1);
-                    this.lastDownloadTime_ = Date.now();
-                    this.usedThreads_--;
-                    this.map_.markDirty();
-                    this.update();
-                    stats_.loadedCount_++;
-                    stats_.loadLast_ = timer_;
-                    
-                    if (recordStats_) {
-                        this.map_.replay_.loaded_ = {
-                            
-                        };
-                    }
-
-                }).bind(this);
-
-                var onError_ = (function(path_){
-
-                    //console.log("MapLoader.prototype.downloadERROR:" + this.cache_.hash(originalID_));
-
-                    var index_ = this.downloading_.indexOf(item_.id_);
-                    this.downloading_.splice(index_, 1);
-                    this.downloadingTime_.splice(index_, 1);
-                    this.lastDownloadTime_ = Date.now();
-                    this.usedThreads_--;
-                    this.map_.markDirty();
-                    this.update();
-                    stats_.loadErrorCount_++;
-                    stats_.loadLast_ = timer_;
-
-                }).bind(this);
-
-                //downloadFunction_(this.map_, id_, onLoaded_, onError_);
-                item_.call_(item_.id_, onLoaded_, onError_);
-            }
-        }
-    //}
+    }
 };
 
 Melown.MapLoader.prototype.update = function() {

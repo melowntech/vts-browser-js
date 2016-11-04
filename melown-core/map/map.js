@@ -89,7 +89,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
         storeFreeTiles_ : false,
         storeNodes_ : false,
         storeFreeNodes_ : false,
-        storeLoaded_ : false,
+        storeLoaded_ : this.config_.mapStoreLoadStats_,
         drawGlobe_ : false,
         drawTiles_ : false,
         drawNodes_ : false,
@@ -98,7 +98,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
         drawLoaded_ : false,
         lod_ : 30,
         singleLod_ : false,
-        lodedIndex_ : 0,
+        loadedIndex_ : 0,
         singleLodedIndex_ : 0,
         loadedIndex_ : 0,
         loaded_ : [],
@@ -682,6 +682,8 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapSmartNodeParsing":           this.config_.mapSmartNodeParsing_ = Melown.validateBool(value_, true); break;
         case "mapStoreLoadStats":             this.config_.mapStoreLoadStats_ = Melown.validateBool(value_, true);  this.replay_.storeLoaded_ = this.config_.mapStoreLoadStats_; break;
         case "mapXhrImageLoad":               this.config_.mapXhrImageLoad_ = Melown.validateBool(value_, false); break;
+        case "mapLoadMode":                   this.config_.mapLoadMode_ = Melown.validateString(value_, "topdown"); break;
+        case "mapGeodataLoadMode":            this.config_.mapGeodataLoadMode_ = Melown.validateString(value_, "fit"); break;
         case "mario":                         this.config_.mario_ = Melown.validateBool(value_, true); break;
     }
 };
@@ -713,6 +715,8 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapSmartNodeParsing":           return this.config_.mapSmartNodeParsing_;
         case "mapStoreLoadStats":             return this.config_.mapStoreLoadStats_;
         case "mapXhrImageLoad":               return this.config_.mapXhrImageLoad_;
+        case "mapLoadMode":                   return this.config_.mapLoadMode_;
+        case "mapGeodataLoadMode":            return this.config_.mapGeodataLoadMode_;
         case "mario":                         return this.config_.mario_;
     }
 };

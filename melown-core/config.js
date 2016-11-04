@@ -26,6 +26,8 @@ Melown.Core.prototype.initConfig = function() {
         mapSmartNodeParsing_ : true,
         mapLoadErrorRetryTime_ : 3000,
         mapLoadErrorMaxRetryCount_ : 3,
+        mapLoadMode_ : "topdown", //"downtop", "fit", "fitonly"
+        mapGeodataLoadMode_ : "fit", //"fitonly"
         mapXhrImageLoad_ : false,
         mapStoreLoadStats_ : true,
         mapFog_ : false,

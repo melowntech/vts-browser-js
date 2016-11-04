@@ -117,7 +117,7 @@ Melown.MapTexture.prototype.setBoundTexture = function(tile_, layer_) {
         if (!tile_.boundTextures_[layer_.id_]) {
             tile_.boundLayers_[layer_.id_] = layer_;
             var path_ = layer_.getUrl(tile_.id_);
-            tile_.boundTextures_[layer_.id_] = tile_.resources_.getTexture(path_, null, null, {tile_: tile_, layer_: layer_});
+            tile_.boundTextures_[layer_.id_] = tile_.resources_.getTexture(path_, null, null, {tile_: tile_, layer_: layer_}, this.tile_, this.internal_);
         }
 
         this.extraBound_.texture_ = tile_.boundTextures_[layer_.id_]; 
@@ -193,7 +193,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
 							this.extraInfo_.metaPath_ = path_;
 						}
 						
-                        var texture_ = metaresources_.getTexture(path_, true, null, null);
+                        var texture_ = metaresources_.getTexture(path_, true, null, null, this.tile_, this.internal_);
                         
                         if (this.mask_) {
                             if (this.mask_.isReady(doNotLoad_, priority_, doNotCheckGpu_)) {
@@ -209,7 +209,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
                                 if (this.checkStatus_ == 2) {
                                     if (!(value_ & 64)) { //load mask
                                         var path_ = layer_.getMaskUrl(tile_.id_);
-                                        this.mask_ = tile_.resources_.getTexture(path_, null, null, null);
+                                        this.mask_ = tile_.resources_.getTexture(path_, null, null, null, this.tile_, this.internal_);
                                         this.checkStatus_ = 0;
                                         tile_.resetDrawCommands_ = true;
                                         this.map_.markDirty();
@@ -375,7 +375,7 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
 };
 
 Melown.MapTexture.prototype.scheduleLoad = function(priority_, header_) {
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this, header_), priority_, this.id_, this.internal_);
+    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this, header_), priority_, this.tile_, this.internal_ ? "texture-in" : "texture-ex");
 };
 
 Melown.MapTexture.prototype.onLoad = function(header_, url_, onLoaded_, onError_) {
@@ -468,7 +468,7 @@ Melown.MapTexture.prototype.scheduleHeadRequest = function(priority_, downloadAl
     if (this.map_.config_.mapXhrImageLoad_ && this.fastHeaderCheck_) {
         this.scheduleLoad(priority_, true);
     } else {
-        this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this, downloadAll_), priority_);
+        this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this, downloadAll_), priority_, this.tile_, this.internal_, this.internal_ ? "texture-in" : "texture-ex");
     }
 };
 

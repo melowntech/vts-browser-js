@@ -120,9 +120,9 @@ Melown.MapSurfaceTree.prototype.draw = function() {
     var divisionNode_ = this.divisionNode_;
     var periodicity_ = srs_.periodicity_;
 
-    if (this.map_.config_.mapBasicTileSequence_) {
+    //if (this.map_.config_.mapBasicTileSequence_) {
         //this.surfaceTracer_ = this.surfaceTracerBasic_;
-    }
+    //}
 
     if (periodicity_ != null) {
         this.drawSurface([0,0,0]);
@@ -133,14 +133,19 @@ Melown.MapSurfaceTree.prototype.draw = function() {
         }
 
     } else {
+        var mode_;
 
         if (this.freeLayerSurface_ && this.freeLayerSurface_.geodata_) {
-            this.drawGeodataSurface([0,0,0]);
+            mode_ = this.map_.config_.mapGeodataLoadMode_; 
         } else {
-            this.drawSurface([0,0,0]);
+            mode_ = this.map_.config_.mapLoadMode_; 
         }
 
-        //this.renderSurface([0,0,0]);
+        switch(mode_) {
+            case "topdown": this.drawSurface([0,0,0]); break;
+            case "fit":     this.drawGeodataSurface([0,0,0]); break;
+            case "fitonly": this.drawGeodataSurface2([0,0,0]); break;
+        }
     }
 };
 
