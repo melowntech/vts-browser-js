@@ -46,6 +46,8 @@ Melown.Core.prototype.loadMap = function(path_) {
     if (path_ == null) {
         return;
     }
+    
+    path_ = Melown.Url.getProcessUrl(path_, window.location.href);
 
     this.tokenCookieLoaded_ = true;
     this.mapConfigData_ = null;
@@ -141,7 +143,7 @@ Melown.Core.prototype.loadMap = function(path_) {
         console.log("auth cookie not loaded");
     }).bind(this);
 
-    var baseUrl_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
+    //var baseUrl_ = path_.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
     var onLoadMapconfig = (function(path_) {
         Melown.loadJSON(path_, onMapConfigLoaded_, onMapConfigError_, null, Melown["useCredentials"], this.xhrParams_);

@@ -601,14 +601,6 @@ Melown.Inspector.prototype.updateLoadGraphs = function(index_) {
         return;
     }
 
-    var minMeshes_ = Number.MAX_VALUE, maxMeshes_ = 0, avgMeshes_ = 0, avgMeshesCount_ = 0;
-    var minTextures_ = Number.MAX_VALUE, maxTextures_ = 0, avgTextures_ = 0, avgTexturesCount_ = 0;
-    var minTextures2_ = Number.MAX_VALUE, maxTextures2_ = 0, avgTextures2_ = 0, avgTextures2Count_ = 0;
-    var minGeodata_ = Number.MAX_VALUE, maxGeodata_ = 0, avgGeodata_ = 0, avgGeodataCount_ = 0;
-    var minMetatiles_ = Number.MAX_VALUE, maxMetatiles_ = 0, avgMetatiles_ = 0, avgMetatilesCount_ = 0;
-    var minThreads_ = Number.MAX_VALUE, maxThreads_ = 0, avgThreads_ = 0, avgThreadsCount_ = 0;
-    var minIntervals_ = Number.MAX_VALUE, maxIntervals_ = 0, avgIntervals_ = 0, avgIntervalsCount_ = 0;
-
     var loaded_ = map_.replay_.loaded_;
     var index_ = map_.replay_.loadedIndex_;
 
@@ -641,48 +633,12 @@ Melown.Inspector.prototype.updateLoadGraphs = function(index_) {
         var file_ = loaded_[i + shift_];
         
         if (file_) {
-            
             switch(file_.kind_) {
-                case "mesh":
-                    ctx_ = this.replayCtxMeshes_;
-                    if (file_.duration_ < minMeshes_) minMeshes_ = file_.duration_; 
-                    if (file_.duration_ > maxMeshes_) maxMeshes_ = file_.duration_; 
-                    avgMeshes_ += file_.duration_;
-                    avgMeshesCount_++;  
-                    break;
-                    
-                case "texture-in":
-                    ctx_ = this.replayCtxTextures_;
-                    if (file_.duration_ < minTextures_) minTextures_ = file_.duration_; 
-                    if (file_.duration_ > maxTextures_) maxTextures_ = file_.duration_; 
-                    avgTextures_ += file_.duration_;
-                    avgTexturesCount_++;  
-                    break;
-                    
-                case "texture-ex":
-                    ctx_ = this.replayCtxTextures2_;
-                    if (file_.duration_ < minTextures2_) minTextures2_ = file_.duration_; 
-                    if (file_.duration_ > maxTextures2_) maxTextures2_ = file_.duration_; 
-                    avgTextures2_ += file_.duration_;
-                    avgTextures2Count_++;  
-                    break;
-                    
-                case "geodata":
-                    ctx_ = this.replayCtxGeodata_;
-                    if (file_.duration_ < minGeodata_) minGeodata_ = file_.duration_; 
-                    if (file_.duration_ > maxGeodata_) maxGeodata_ = file_.duration_; 
-                    avgGeodata_ += file_.duration_;
-                    avgGeodataCount_++;  
-                    break;
-                    
-                case "metatile":
-                    ctx_ = this.replayCtxMetatiles_;
-                    if (file_.duration_ < minMetatiles_) minMetatiles_ = file_.duration_; 
-                    if (file_.duration_ > maxMetatiles_) maxMetatiles_ = file_.duration_; 
-                    avgMetatiles_ += file_.duration_;
-                    avgMetatilesCount_++;  
-                    break;
-
+                case "mesh":       ctx_ = this.replayCtxMeshes_; break;
+                case "texture-in": ctx_ = this.replayCtxTextures_; break;
+                case "texture-ex": ctx_ = this.replayCtxTextures2_; break;
+                case "geodata":    ctx_ = this.replayCtxGeodata_; break;
+                case "metatile":   ctx_ = this.replayCtxMetatiles_; break;
                 default:
                     continue;
             }
@@ -703,6 +659,63 @@ Melown.Inspector.prototype.updateLoadGraphs = function(index_) {
             this.replayCtxThreads_.fillStyle="rgb(80,80,80)";
             h = (file_.threads_ / map_.config_.mapDownloadThreads_) * 30;                 
             this.replayCtxThreads_.fillRect(i, ly_, 1, -h);
+        }
+    }
+
+    var minMeshes_ = Number.MAX_VALUE, maxMeshes_ = 0, avgMeshes_ = 0, avgMeshesCount_ = 0;
+    var minTextures_ = Number.MAX_VALUE, maxTextures_ = 0, avgTextures_ = 0, avgTexturesCount_ = 0;
+    var minTextures2_ = Number.MAX_VALUE, maxTextures2_ = 0, avgTextures2_ = 0, avgTextures2Count_ = 0;
+    var minGeodata_ = Number.MAX_VALUE, maxGeodata_ = 0, avgGeodata_ = 0, avgGeodataCount_ = 0;
+    var minMetatiles_ = Number.MAX_VALUE, maxMetatiles_ = 0, avgMetatiles_ = 0, avgMetatilesCount_ = 0;
+    var minThreads_ = Number.MAX_VALUE, maxThreads_ = 0, avgThreads_ = 0, avgThreadsCount_ = 0;
+    var minIntervals_ = Number.MAX_VALUE, maxIntervals_ = 0, avgIntervals_ = 0, avgIntervalsCount_ = 0;
+    
+    li = loaded_.length;
+
+    for (var i = 0; i < li; i++) {
+        var file_ = loaded_[i];
+        
+        if (file_) {
+            
+            switch(file_.kind_) {
+                case "mesh":
+                    if (file_.duration_ < minMeshes_) minMeshes_ = file_.duration_; 
+                    if (file_.duration_ > maxMeshes_) maxMeshes_ = file_.duration_; 
+                    avgMeshes_ += file_.duration_;
+                    avgMeshesCount_++;  
+                    break;
+                    
+                case "texture-in":
+                    if (file_.duration_ < minTextures_) minTextures_ = file_.duration_; 
+                    if (file_.duration_ > maxTextures_) maxTextures_ = file_.duration_; 
+                    avgTextures_ += file_.duration_;
+                    avgTexturesCount_++;  
+                    break;
+                    
+                case "texture-ex":
+                    if (file_.duration_ < minTextures2_) minTextures2_ = file_.duration_; 
+                    if (file_.duration_ > maxTextures2_) maxTextures2_ = file_.duration_; 
+                    avgTextures2_ += file_.duration_;
+                    avgTextures2Count_++;  
+                    break;
+                    
+                case "geodata":
+                    if (file_.duration_ < minGeodata_) minGeodata_ = file_.duration_; 
+                    if (file_.duration_ > maxGeodata_) maxGeodata_ = file_.duration_; 
+                    avgGeodata_ += file_.duration_;
+                    avgGeodataCount_++;  
+                    break;
+                    
+                case "metatile":
+                    if (file_.duration_ < minMetatiles_) minMetatiles_ = file_.duration_; 
+                    if (file_.duration_ > maxMetatiles_) maxMetatiles_ = file_.duration_; 
+                    avgMetatiles_ += file_.duration_;
+                    avgMetatilesCount_++;  
+                    break;
+
+                default:
+                    continue;
+            }
                 
             if (file_.threads_ < minThreads_) minThreads_ = file_.threads_; 
             if (file_.threads_ > maxThreads_) maxThreads_ = file_.threads_; 
@@ -715,6 +728,7 @@ Melown.Inspector.prototype.updateLoadGraphs = function(index_) {
             avgIntervalsCount_++;  
         }
     }
+
     
     index_ -= shift_;
 
@@ -740,41 +754,29 @@ Melown.Inspector.prototype.updateLoadGraphs = function(index_) {
     this.replayCtxThreads_.fillRect(index_ - 1, 0, 1, ly_);
     this.replayCtxThreads_.fillRect(index_ + 1, 0, 1, ly_);
 
-    if (!avgMeshesCount_) {
-        minMeshes_ = 0, maxMeshes_ = 0, avgMeshes_ = 0, avgMeshesCount_ = 1;
-    }
+    if (!avgMeshesCount_) { minMeshes_ = 0, maxMeshes_ = 0; }
+    if (!avgTexturesCount_) { minTextures_ = 0, maxTextures_ = 0; }
+    if (!avgTextures2Count_) { minTextures2_ = 0, maxTextures2_ = 0; }
+    if (!avgGeodataCount_) { minGeodata_ = 0, maxGeodata_ = 0; }
+    if (!avgMetatilesCount_) { minMetatiles_ = 0, maxMetatiles_ = 0; }
+    if (!avgThreadsCount_) { minThreads_ = 0, maxThreads_ = 0; }
+    if (!avgIntervalsCount_) { minIntervals_ = 0, maxIntervals_ = 0; }
 
-    if (!avgTexturesCount_) {
-        minTextures_ = 0, maxTextures_ = 0, avgTextures_ = 0, avgTexturesCount_ = 1;
-    }
-    
-    if (!avgTextures2Count_) {
-        minTextures2_ = 0, maxTextures2_ = 0, avgTextures2_ = 0, avgTextures2Count_ = 1;
-    }
-    
-    if (!avgGeodataCount_) {
-        minGeodata_ = 0, maxGeodata_ = 0, avgGeodata_ = 0, avgGeodataCount_ = 1;
-    }
+    avgMeshes_ = avgMeshesCount_ ? (avgMeshes_/avgMeshesCount_) : 0;
+    avgTextures_ = avgTexturesCount_ ? (avgTextures_/avgTexturesCount_) : 0;
+    avgTextures2_ = avgTextures2Count_ ? (avgTextures2_/avgTextures2Count_) : 0;
+    avgGeodata_ = avgGeodataCount_ ? (avgGeodata_/avgGeodataCount_) : 0;
+    avgMetatiles_ = avgMetatilesCount_ ? (avgMetatiles_/avgMetatilesCount_) : 0;
+    avgIntervals_ = avgIntervalsCount_ ? (avgIntervals_/avgIntervalsCount_) : 0;
+    avgThreads_ = avgThreadsCount_ ? (avgThreads_/avgThreadsCount_) : 0;
 
-    if (!avgMetatilesCount_) {
-        minMetatiles_ = 0, maxMetatiles_ = 0, avgMetatiles_ = 0, avgMetatilesCount_ = 1;
-    }
-
-    if (!avgThreadsCount_) {
-        minThreads_ = 0, maxThreads_ = 0, avgThreads_ = 0, avgThreadsCount_ = 1;
-    }
-
-    if (!avgIntervalsCount_) {
-        minIntervals_ = 0, maxIntervals_ = 0, avgIntervals_ = 0, avgIntervalsCount_ = 1;
-    }
-
-    this.replayInfoMeshes_.innerHTML = "Meshes Min/Max/Avg: " + minMeshes_.toFixed(0) + " / " + maxMeshes_.toFixed(0) + " / " + (avgMeshes_/avgMeshesCount_).toFixed(1);
-    this.replayInfoTextures_.innerHTML = "Internal Textures Min/Max/Avg: " + minTextures_.toFixed(0) + " / " + maxTextures_.toFixed(0) + " / " + (avgTextures_/avgTexturesCount_).toFixed(1);
-    this.replayInfoTextures2_.innerHTML = "External Textures Min/Max/Avg: " + minTextures2_.toFixed(0) + " / " + maxTextures2_.toFixed(0) + " / " + (avgTextures2_/avgTextures2Count_).toFixed(1);
-    this.replayInfoGeodata_.innerHTML = "Geodata Min/Max/Avg: " + minGeodata_.toFixed(0) + " / " + maxGeodata_.toFixed(0) + " / " + (avgGeodata_/avgGeodataCount_).toFixed(1);
-    this.replayInfoMetatiles_.innerHTML = "Metatiles Min/Max/Avg: " + minMetatiles_.toFixed(0) + " / " + maxMetatiles_.toFixed(0) + " / " + (avgMetatiles_/avgMetatilesCount_).toFixed(1);
-    this.replayInfoIntervals_.innerHTML = "Intervals Min/Max/Avg: " + minIntervals_.toFixed(0) + " / " + maxIntervals_.toFixed(0) + " / " + (avgIntervals_/avgIntervalsCount_).toFixed(1);  
-    this.replayInfoThreads_.innerHTML = "Threads Min/Max/Avg: " + minThreads_ + " / " + maxThreads_ + " / " + (avgThreads_/avgThreadsCount_).toFixed(1);  
+    this.replayInfoMeshes_.innerHTML = "Meshes Min/Max/Avg/Count: " + minMeshes_.toFixed(0) + "/" + maxMeshes_.toFixed(0) + "/" + avgMeshes_.toFixed(1) + "/" + avgMeshesCount_;
+    this.replayInfoTextures_.innerHTML = "Internal Textures Min/Max/Avg/Count: " + minTextures_.toFixed(0) + "/" + maxTextures_.toFixed(0) + "/" + avgTextures_.toFixed(1) + "/" + avgTexturesCount_;
+    this.replayInfoTextures2_.innerHTML = "External Textures Min/Max/Avg/Count: " + minTextures2_.toFixed(0) + "/" + maxTextures2_.toFixed(0) + "/" + avgTextures2_.toFixed(1) + "/" + avgTextures2Count_;
+    this.replayInfoGeodata_.innerHTML = "Geodata Min/Max/Avg/Count: " + minGeodata_.toFixed(0) + "/" + maxGeodata_.toFixed(0) + "/" + avgGeodata_.toFixed(1) + "/" + avgGeodataCount_;
+    this.replayInfoMetatiles_.innerHTML = "Metatiles Min/Max/Avg/Count: " + minMetatiles_.toFixed(0) + "/" + maxMetatiles_.toFixed(0) + "/" + avgMetatiles_.toFixed(1) + "/" + avgMetatilesCount_;
+    this.replayInfoIntervals_.innerHTML = "Intervals Min/Max/Avg: " + minIntervals_.toFixed(0) + "/" + maxIntervals_.toFixed(0) + "/" + avgIntervals_.toFixed(1);  
+    this.replayInfoThreads_.innerHTML = "Threads Min/Max/Avg: " + minThreads_ + "/" + maxThreads_ + "/" + avgThreads_.toFixed(1);  
 };
 
 Melown.Inspector.prototype.updateFileInfo = function(index_) {

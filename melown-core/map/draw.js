@@ -66,7 +66,7 @@ Melown.Map.prototype.draw = function(skipFreeLayers_) {
         }
 
         var index_ = this.replay_.loadedIndex_; 
-        var single_ = this.replay_.singleLodedIndex_; 
+        var singleIndex_ = this.replay_.singleLodedIndex_; 
 
         if (this.replay_.drawLoaded_ && this.replay_.loaded_) {
             var  loaded_ = this.replay_.loaded_;
@@ -75,7 +75,8 @@ Melown.Map.prototype.draw = function(skipFreeLayers_) {
                 var file_ = loaded_[i];
                 if (file_ && file_.tile_ && file_.tile_.id_) {
                     var tile_ = file_.tile_;
-                    if ((single_ && i == index_) || (!single_ && i <= index_)) {
+                    if (((singleIndex_ && i == index_) || (!singleIndex_ && i <= index_)) &&
+                         ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) ) {
                         if (tile_.metanode_) {
                             if (tile_.metanode_.hasGeometry()) {
                                 this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
@@ -442,7 +443,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
     if (tile_.surfaceMesh_ == null) {
         var path_ = tile_.surface_.getMeshUrl(tile_.id_);
-        tile_.surfaceMesh_ = tile_.resources_.getMesh(path_);
+        tile_.surfaceMesh_ = tile_.resources_.getMesh(path_, tile_);
     }
 
     var channel_ = this.drawChannel_;

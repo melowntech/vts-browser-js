@@ -63,7 +63,6 @@ cat utils/matrix.js \
     map/geodata.js \
     map/geodata-view.js \
     map/mesh.js \
-    map/metanode-tracer.js \
     map/metanode.js \
     map/metatile.js \
     map/division-node.js \
@@ -147,7 +146,6 @@ cat utils/matrix.js \
     map/geodata.js \
     map/geodata-view.js \
     map/mesh.js \
-    map/metanode-tracer.js \
     map/metanode.js \
     map/metatile.js \
     map/division-node.js \

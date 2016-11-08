@@ -70,11 +70,11 @@ Melown.MapResourceNode.prototype.removeChild = function(tile_) {
 
 // Meshes ---------------------------------
 
-Melown.MapResourceNode.prototype.getMesh = function(path_) {
+Melown.MapResourceNode.prototype.getMesh = function(path_, tile_) {
     var mesh_ = this.meshes_[path_];
     
     if (!mesh_) {
-        mesh_ = new Melown.MapMesh(this.map_, path_, this.id_);
+        mesh_ = new Melown.MapMesh(this.map_, path_, tile_);
         this.meshes_[path_] = mesh_;
     }
     

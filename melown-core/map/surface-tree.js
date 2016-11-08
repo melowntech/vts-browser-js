@@ -203,15 +203,34 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     var best2_ = 0;
     var storeNodes_ = map_.replay_.storeNodes_ || map_.replay_.storeFreeNodes_;
     var storeNodesBuffer_ = map_.replay_.nodeBuffer_; 
+    
+    //var more_ = 0;
+    //var more2_ = 1;
+    
+    map_.drawCounter_++;
+    
+    var pocessedNodes_ = 1;
+    var pocessedMetatiles_ = 1;  
+    var usedNodes_ = 1;
+    var usedMetatiles_ = 1;  
+    var drawCounter_ = map_.drawCounter_;
+
 
     do {
         var best_ = 0;
-
         newProcessBufferIndex_ = 0;
         
         for (var i = processBufferIndex_ - 1; i >= 0; i--) {
             tile_ = processBuffer_[i];
             node_ = tile_.metanode_;
+
+            if (node_) {
+                pocessedNodes_++;
+                if (node_.metatile_.drawCounter_ != drawCounter_) {
+                    node_.metatile_.drawCounter_ = drawCounter_;
+                    pocessedMetatiles_++;
+                }
+            }
             
             //if (this.map_.drawIndices_) {
                 //this.logTileInfo(tile_, node_, cameraPos_);
@@ -219,16 +238,15 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
 
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
 
+                usedNodes_++;
+
                 if (tile_.texelSize_  != Number.POSITIVE_INFINITY){
-                    
                     if (tile_.texelSize_ > best_) {
                         best_ = tile_.texelSize_;
                     }
-                    //best_ += tile_.texelSize_;
-                    //best2_ ++;
                 }
                 
-                if (storeNodes_) { //used only for inspaector_
+                if (storeNodes_) { //used only for inspector_
                     storeNodesBuffer_.push(tile_);
                 }
                 
@@ -242,6 +260,8 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
                     var childrenCount_ = 0;
                     var readyCount_ = 0;
                     var childrenBuffer_ = [];
+                    
+                    var more3_ = 0;
         
                     for (var j = 0; j < 4; j++) {
                         var child_ = tile_.children_[j];
@@ -249,6 +269,13 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
                             childrenCount_++;
        
                             if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+                                
+                               /*if (!child_.bboxVisible(child_.id_, child_.metanode_.bbox_, cameraPos_, child_.metanode_)) {
+                                    more_++;
+                                    more3_++;
+                               } else {
+                                    more2_++;
+                               }*/
 
                                 child_.updateTexelSize();
                                 var priority_ = child_.id_[0] * typeFactor_ * child_.distance_;
@@ -272,8 +299,13 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
                             }
                         }
                     }
+                    
+                    /*if (childrenCount_ == more3_) {
+                        //console.log("more3!!!!");
+                        more_ -= more3_;
+                    }*/
         
-                    if (childrenCount_ > 0 && childrenCount_ == readyCount_) {
+                    if (childrenCount_ > 0 && childrenCount_ == readyCount_ && childrenCount_ != more3_) {
                         //sort childern by distance
     
                         do {
@@ -323,8 +355,13 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     if (best2_ > this.map_.bestMeshTexelSize_) {
         this.map_.bestMeshTexelSize_ = best2_;
     }
+
+    map_.stats_.usedNodes_ = usedNodes_;    
+    map_.stats_.processedNodes_ = pocessedNodes_;    
+    map_.stats_.processedMetatiles_ = pocessedMetatiles_;    
     
     //console.log("texel: "+ this.map_.bestMeshTexelSize_);
+    //console.log("more: "+ more_ + "more2: " + more2_);
 
 
     if (this.map_.replay_.storeTiles_ || this.map_.replay_.storeFreeTiles_) { //used only in inspectors
@@ -381,20 +418,45 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
 
     var texelSizeFit_ = map_.texelSizeFit_;
 
+    var best2_ = 0;
     var storeNodes_ = map_.replay_.storeNodes_ || map_.replay_.storeFreeNodes_;
     var storeNodesBuffer_ = map_.replay_.nodeBuffer_; 
+
+    map_.drawCounter_++;
+    
+    var usedNodes_ = 1;
+    var pocessedNodes_ = 1;
+    var pocessedMetatiles_ = 1;  
+    var drawCounter_ = map_.drawCounter_;
     
     do {
+        var best_ = 0;
         newProcessBufferIndex_ = 0;
         
         for (var i = processBufferIndex_ - 1; i >= 0; i--) {
             tile_ = processBuffer_[i];
             node_ = tile_.metanode_;
 
+            if (node_) {
+                pocessedNodes_++;
+                if (node_.metatile_.drawCounter_ != drawCounter_) {
+                    node_.metatile_.drawCounter_ = drawCounter_;
+                    pocessedMetatiles_++;
+                }
+            }
+
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+
+                usedNodes_++;
 
                 if (storeNodes_) { //used only for inspaector_
                     storeNodesBuffer_.push(tile_);
+                }
+
+                if (tile_.texelSize_  != Number.POSITIVE_INFINITY){
+                    if (tile_.texelSize_ > best_) {
+                        best_ = tile_.texelSize_;
+                    }
                 }
                 
                 if (/*node_.hasGeometry() && */tile_.texelSize_ <= texelSizeFit_) {
@@ -479,8 +541,16 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
         processBuffer_ = newProcessBuffer_;
         newProcessBuffer_ = tmp_;
         processBufferIndex_ = newProcessBufferIndex_;
+
+        if (best_ != 0) {
+            best2_ = best_;
+        }
         
     } while(processBufferIndex_ > 0);
+
+    map_.stats_.usedNodes_ = usedNodes_;    
+    map_.stats_.processedNodes_ = pocessedNodes_;    
+    map_.stats_.processedMetatiles_ = pocessedMetatiles_;    
 
     if (this.map_.replay_.storeTiles_ || this.map_.replay_.storeFreeTiles_) { //used only in inspectors
         if (!this.map_.tileBuffer_[0]) {
@@ -537,10 +607,19 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
 
     var texelSizeFit_ = map_.texelSizeFit_;
 
+    var best2_ = 0;
     var storeNodes_ = map_.replay_.storeNodes_ || map_.replay_.storeFreeNodes_;
     var storeNodesBuffer_ = map_.replay_.nodeBuffer_; 
+
+    map_.drawCounter_++;
+    
+    var usedNodes_ = 1;
+    var pocessedNodes_ = 1;
+    var pocessedMetatiles_ = 1;  
+    var drawCounter_ = map_.drawCounter_;
     
     do {
+        var best_ = 0;
         newProcessBufferIndex_ = 0;
 
         /*if (this.map_.drawIndices_) {
@@ -572,7 +651,24 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
             
             node_ = tile_.metanode_;
 
+            if (node_) {
+                pocessedNodes_++;
+                if (node_.metatile_.drawCounter_ != drawCounter_) {
+                    node_.metatile_.drawCounter_ = drawCounter_;
+                    pocessedMetatiles_++;
+                }
+            }
+
+
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
+
+                usedNodes_++;
+
+                if (tile_.texelSize_  != Number.POSITIVE_INFINITY){
+                    if (tile_.texelSize_ > best_) {
+                        best_ = tile_.texelSize_;
+                    }
+                }
 
                 if (storeNodes_) { //used only for inspaector_
                     storeNodesBuffer_.push(tile_);
@@ -746,9 +842,16 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
         processBuffer_ = newProcessBuffer_;
         newProcessBuffer_ = tmp_;
         processBufferIndex_ = newProcessBufferIndex_;
+
+        if (best_ != 0) {
+            best2_ = best_;
+        }
         
     } while(processBufferIndex_ > 0);
 
+    map_.stats_.usedNodes_ = usedNodes_;    
+    map_.stats_.processedNodes_ = pocessedNodes_;    
+    map_.stats_.processedMetatiles_ = pocessedMetatiles_;    
 
     if (this.map_.replay_.storeTiles_ || this.map_.replay_.storeFreeTiles_) { //used only in inspectors
         if (!this.map_.tileBuffer_[0]) {

@@ -42,6 +42,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.currentView_ = new Melown.MapView(this, {});
     this.currentViewString_ = "";
     this.namedViews_ = [];
+    this.drawCounter_ = 0;
     this.viewCounter_ = 0;
     this.drawChannel_ = 0;
     this.drawChannelNames_ = ["base", "hit"];

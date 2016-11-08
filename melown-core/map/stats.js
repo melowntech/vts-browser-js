@@ -8,6 +8,9 @@ Melown.MapStats = function(map_) {
     this.drawnTiles_ = 0;
     this.drawnFaces_ = 0;
     this.drawCalls_ = 0;    
+    this.usedNodes_ = 0;    
+    this.processedNodes_ = 0;    
+    this.processedMetatiles_ = 0;    
     this.counter_ = 0;
     this.statsCycle_ = 0;
     this.fps_ = 0;
@@ -96,6 +99,9 @@ Melown.MapStats.prototype.begin = function(dirty_) {
         this.drawCalls_ = 0;        
         this.drawnFaces_ = 0;
         this.gpuRenderUsed_ = 0;
+        this.usedNodes_ = 0;    
+        this.processedNodes_ = 0;    
+        this.processedMetatiles_ = 0;    
 
         for (var i = 0, li = this.renderedLods_.length; i < li; i++) {
             this.renderedLods_[i] = 0;

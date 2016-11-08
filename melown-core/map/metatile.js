@@ -8,6 +8,7 @@ Melown.MapMetatile = function(metaresources_, surface_, tile_) {
     this.id_ = metaresources_.id_;
     this.tile_ = tile_; // used only for stats
     this.nodes_ = [];
+    this.drawCounter_ = 0;
     this.loadState_ = 0;
     this.loadErrorTime_ = null;
     this.loadErrorCounter_ = 0;

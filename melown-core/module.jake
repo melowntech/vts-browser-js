@@ -4,14 +4,13 @@ var files = [
     'interface.js',
     'update.js',
     '_nominify.js',
-    '_minify.js',
-    '_minify_sez.js',
 
     'inspector/graphs.js',
     'inspector/input.js',
     'inspector/inspector.js',
     'inspector/stats.js',
     'inspector/stylesheets.js',
+    'inspector/replay.js',
 
     'map/bound-layer.js',
     'map/resource-tree.js',
@@ -30,7 +29,6 @@ var files = [
     'map/geodata.js',
     'map/geodata-view.js',
     'map/mesh.js',
-    'map/metanode-tracer.js',
     'map/metanode.js',
     'map/metatile.js',
     'map/division-node.js',
@@ -89,7 +87,6 @@ var files = [
     
     'utils/libs/geographics-full.js',
     'utils/libs/proj4.js',
-    'utils/libs/proj4-src.js',
 ];
 
 addSiteModule('melown-core-api-devel', files, {});
