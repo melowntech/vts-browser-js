@@ -392,6 +392,52 @@ Melown.heightmapDepthFragmentShader = "precision mediump float;\n"+
     "}";
 
 
+Melown.planeVertexShader =
+    "attribute vec3 aPosition;\n"+
+    "attribute vec2 aTexCoord;\n"+
+    "uniform mat4 uMV, uProj;\n"+
+    "uniform vec4 uParams;\n"+    //[zfactor, fogDensity, indexFactor, 0]
+    "uniform float uPoints[9*3];\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying float vFogFactor;\n"+
+    "vec3 quadPoint(int i1, int i2, int i3, float t, float t2) {\n"+
+        "float p1x = uPoints[i1], p1y = uPoints[i1+1], p1z = uPoints[i1+2];\n"+
+        "float p3x = uPoints[i3], p3y = uPoints[i3+1], p3z = uPoints[i3+2];\n"+
+        "float p2x = 2.0*uPoints[i2]-p1x*0.5-p3x*0.5;\n"+
+        "float p2y = 2.0*uPoints[i2+1]-p1y*0.5-p3y*0.5;\n"+
+        "float p2z = 2.0*uPoints[i2+2]-p1z*0.5-p3z*0.5;\n"+
+        "return vec3(t2*t2*p1x+2.0*t2*t*p2x+t*t*p3x, t2*t2*p1y+2.0*t2*t*p2y+t*t*p3y, t2*t2*p1z+2.0*t2*t*p2z+t*t*p3z); }\n"+
+    "void main() {\n"+
+        "vec3 indices = aPosition;\n"+
+        "float t = aPosition.y * uParams[2];\n"+  //vertical index
+        "float t2 = (1.0-t);\n"+
+        "vec3 p1 = quadPoint(0, 3, 6, t, t2);\n"+
+        "vec3 p2 = quadPoint(9, 9+3, 9+6, t, t2);\n"+
+        "vec3 p3 = quadPoint(18, 18+3, 18+6, t, t2);\n"+
+        "t = aPosition.x * uParams[2];\n"+  //horizontal index
+        "t2 = (1.0-t);\n"+
+        "float p2x = 2.0*p2.x-p1.x*0.5-p3.x*0.5;\n"+
+        "float p2y = 2.0*p2.y-p1.y*0.5-p3.y*0.5;\n"+
+        "float p2z = 2.0*p2.z-p1.z*0.5-p3.z*0.5;\n"+
+        "vec4 p = vec4(t2*t2*p1.x+2.0*t2*t*p2x+t*t*p3.x, t2*t2*p1.y+2.0*t2*t*p2y+t*t*p3.y, t2*t2*p1.z+2.0*t2*t*p2z+t*t*p3.z, 1);\n"+
+        "vec4 camSpacePos = uMV * p;\n"+
+        "gl_Position = uProj * camSpacePos;\n"+
+        "float camDist = length(camSpacePos.xyz);\n"+
+        "vFogFactor = exp(uParams[1] * camDist);\n"+
+        "vTexCoord = aTexCoord;\n"+
+    "}";
+
+Melown.planeFragmentShader = "precision mediump float;\n"+
+    "uniform sampler2D uSampler;\n"+
+    "varying vec2 vTexCoord;\n"+
+    "varying float vFogFactor;\n"+
+//    "const vec4 fogColor = vec4(0.8274, 0.9137, 0.9725, 1.0);\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+        //"gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"+
+        "gl_FragColor = texture2D(uSampler, vTexCoord*4.0);\n"+
+    "}";
+
 //textured tile mesh
 Melown.tileVertexShader =
     "attribute vec3 aPosition;\n"+

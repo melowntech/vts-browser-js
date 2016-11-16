@@ -23,6 +23,8 @@ Melown.Core.prototype.initConfig = function() {
         mapHeightLodBlend_ : true,
         mapHeightNodeBlend_ : true,
         mapBasicTileSequence_ : false,
+        mapPreciseBBoxTest_ : true,
+        mapPreciseDistanceTest_ : true,
         mapSmartNodeParsing_ : true,
         mapLoadErrorRetryTime_ : 3000,
         mapLoadErrorMaxRetryCount_ : 3,

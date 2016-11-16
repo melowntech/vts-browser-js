@@ -10,6 +10,7 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.renderReady_ = false;
     this.geodataCounter_ = 0;
     this.texelSize_ = 1;
+    this.texelSize2_ = 1;
     this.distance_ = 1;
 
     this.metanode_ = null;  //[metanode, cacheItem]
@@ -568,8 +569,12 @@ Melown.MapSurfaceTile.prototype.bboxVisible = function(id_, bbox_, cameraPos_, n
             }
         }
     }
-    
-    return map_.camera_.bboxVisible(bbox_, cameraPos_);
+
+    if (!map_.config_.mapPreciseBBoxTest_ || id_[0] < 4) {
+        return map_.camera_.bboxVisible(bbox_, cameraPos_);
+    } else {
+        return map_.camera_.pointsVisible(node_.bbox2_, cameraPos_);
+    }
 };
 
 Melown.MapSurfaceTile.prototype.getPixelSize = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
@@ -689,9 +694,9 @@ Melown.MapSurfaceTile.prototype.getPixelSize = function(bbox_, screenPixelSize_,
     return (factor_ * screenPixelSize_);
 };
 
-/*
+
 Melown.MapSurfaceTile.prototype.getPixelSize3 = function(node_, screenPixelSize_, factor_) {
-    var d = (this.map_.cameraGeocentDistance_*factor_) - node_.diskDist_;
+    var d = (this.map_.cameraGeocentDistance_*factor_) - node_.diskDistance_;
     if (d < 0) {
         return [Number.POSITIVE_INFINITY, 0.1];
     } 
@@ -700,32 +705,18 @@ Melown.MapSurfaceTile.prototype.getPixelSize3 = function(node_, screenPixelSize_
     
     if (a < node_.diskAngle2_) {
         var a2 = Math.acos(a); 
-        var l1 = Math.tan(a2) * node_.diskDist_;
+        var a3 = Math.acos(node_.diskAngle2_);
+        a2 = a2 - a3; 
+
+        var l1 = Math.tan(a2) * node_.diskDistance_;
         d = Math.sqrt(l1*l1 + d*d);
     }
 
-    var factor_ = this.camera_.scaleFactor2(d);
+    var factor_ = this.map_.camera_.scaleFactor2(d);
     return [factor_ * screenPixelSize_, d];
 };
 
-
-Melown.MapSurfaceTile.prototype.getPixelSize2 = function(node_, screenPixelSize_) {
-    var d = this.map_.cameraGeocentDistance_ - node_.diskDist_;
-    if (d < 0) {
-        return [Number.POSITIVE_INFINITY, 0.1];
-    } 
-
-    var a = Melown.vec3.dot(this.map_.cameraGeocentNormal_, node_.diskNormal_);
-    
-    if (a < node_.diskAngle2_) {
-        var a2 = Math.acos(a); 
-        var l1 = Math.tan(a2) * node_.diskDist_;
-        d = Math.sqrt(l1*l1 + d*d);
-    }
-
-    var factor_ = this.camera_.scaleFactor2(d);
-    return [factor_ * screenPixelSize_, d];
-};
+/*
 
 Melown.MapSurfaceTile.prototype.getPixelSize22 = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
     var min_ = bbox_.min_;
@@ -753,10 +744,12 @@ Melown.MapSurfaceTile.prototype.getPixelSize22 = function(bbox_, screenPixelSize
 
 Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
     var pixelSize_;
+    var pixelSize2_;
     var map_ = this.map_;
     var texelSizeFit_ = map_.texelSizeFit_;
     var node_ = this.metanode_;
-    var cameraPos_ = map_.cameraPosition_;  
+    var cameraPos_ = map_.cameraPosition_;
+    var preciseDistance_ = map_.config_.mapPreciseDistanceTest_;  
 
     if (node_.hasGeometry()) {
         var screenPixelSize_ = Number.POSITIVE_INFINITY;
@@ -773,34 +766,49 @@ Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
         } else {
             
             if (node_.usedDisplaySize()) { 
-                screenPixelSize_ = map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256);
-                var factor_ = (node_.displaySize_ / 256) * map_.cameraDistance_;
-                //var factor_ = (256 / 256) * this.map_.cameraDistance_;
-                
-                var v = map_.cameraVector_;
-                var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
-                
-                pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, p, p, true);
+               
+                if (!preciseDistance_) {
+                    screenPixelSize_ = map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256);
 
+                    var factor_ = (node_.displaySize_ / 256) * map_.cameraDistance_;
+                    //var factor_ = (256 / 256) * this.map_.cameraDistance_;
+                    
+                    var v = map_.cameraVector_; //move camera away hack
+                    var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
+
+                    pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, p, p, true);
+                } else {
+                    screenPixelSize_ = map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256) * (256 / node_.displaySize_);
+
+                    pixelSize_ = this.getPixelSize3(node_, screenPixelSize_, 1);
+                }
             } else {
                 
-                if (texelSizeFit_ > 1.1) {
+                if (!preciseDistance_ && texelSizeFit_ > 1.1) {
                     screenPixelSize_ = map_.ndcToScreenPixel_ * node_.pixelSize_ * (texelSizeFit_ / 1.1);
                     var factor_ = (texelSizeFit_ / 1.1) * map_.cameraDistance_;
                     
-                    var v = map_.cameraVector_;
+                    var v = map_.cameraVector_; //move camera away hack
                     var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
                     
                     pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, p, p, true);
-                    
                 } else {
-                    pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
+                    if (preciseDistance_) {
+                        pixelSize_ = this.getPixelSize3(node_, screenPixelSize_, 1);
+                    } else {
+                        pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
+                    }
                 }
-                
             }
         }
     } else {
-        pixelSize_ = this.getPixelSize(node_.bbox_, 1, cameraPos_, cameraPos_, true);
+        if (preciseDistance_) {
+            pixelSize_ = this.getPixelSize3(node_, 1, 1);
+        } else {
+            pixelSize_ = this.getPixelSize(node_.bbox_, 1, cameraPos_, cameraPos_, true);
+        }
+
+        //pixelSize_ = this.getPixelSize(node_.bbox_, 1, cameraPos_, cameraPos_, true);
         pixelSize_[0] = Number.POSITIVE_INFINITY;
     }
 

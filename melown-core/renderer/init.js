@@ -12,6 +12,7 @@ Melown.Renderer.prototype.initShaders = function() {
     this.progWireframeTile3_ = new Melown.GpuProgram(this.gpu_, Melown.tileWireframe3VertexShader, Melown.tileWireframeFragmentShader);
     this.progFlatShadeTile_ = new Melown.GpuProgram(this.gpu_, Melown.tileFlatShadeVertexShader, Melown.tileFlatShadeFragmentShader);
     this.progHeightmap_ = new Melown.GpuProgram(this.gpu_, Melown.heightmapVertexShader, Melown.heightmapFragmentShader);
+    this.progPlane_ = new Melown.GpuProgram(this.gpu_, Melown.planeVertexShader, Melown.planeFragmentShader);
     this.progSkydome_ = new Melown.GpuProgram(this.gpu_, Melown.skydomeVertexShader, Melown.skydomeFragmentShader);
     this.progStardome_ = new Melown.GpuProgram(this.gpu_, Melown.skydomeVertexShader, Melown.stardomeFragmentShader);
     this.progAtmo_ = new Melown.GpuProgram(this.gpu_, Melown.atmoVertexShader, Melown.atmoFragmentShader);
@@ -41,7 +42,10 @@ Melown.Renderer.prototype.initHeightmap = function() {
     var meshData_ = Melown.RendererGeometry.buildHeightmap(5);
     this.heightmapMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
 
-   // create heightmap texture
+    var meshData_ = Melown.RendererGeometry.buildPlane(16);
+    this.planeMesh_ = new Melown.GpuMesh(this.gpu_, meshData_, null, this.core_);
+
+    // create heightmap texture
     var size_ = 64;
     var halfLineWidth_ = 1;
     var data_ = new Uint8Array( size_ * size_ * 4 );

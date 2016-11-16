@@ -14,6 +14,8 @@ Melown.MapMetanode = function(metatile_, id_, stream_) {
     this.credits_ = [];
     this.alien_ = false;
     this.ready_ = false;
+    this.heightReady_ = false;
+
     //this.metadata_ = null;
     //this.nodes_ = [];
     //this.children_ = [null, null, null, null];
@@ -166,6 +168,16 @@ struct Metanode {
     this.minHeight_ = streamData_.getInt16(stream_.index_, true); stream_.index_ += 2;
     this.maxHeight_ = streamData_.getInt16(stream_.index_, true); stream_.index_ += 2;
     
+    if (this.metatile_.version_ >= 3) {
+        if (this.metatile_.flags_ & (1<<7)) {
+            this.sourceReference_ = streamData_.getInUint16(stream_.index_, true); stream_.index_ += 2;
+        } else if (this.metatile_.flags_ & (1<<6)) {
+            this.sourceReference_ = streamData_.getInUint8(stream_.index_, true); stream_.index_ += 1;
+        }
+    }
+
+    this.heightReady_ = this.hasNavtile();
+    
     this.alien_ = false;
 
     var nodeSize2_ = stream_.index_ - lastIndex_;
@@ -186,6 +198,7 @@ Melown.MapMetanode.prototype.clone = function() {
     node_.displaySize_ = this.displaySize_;
     node_.ready_ = this.ready_;
     node_.stream_ = this.stream_;
+    node_.heightReady_ = this.heightReady_;
     
     //copy credits
     node_.credits_ = new Array(this.credits_.length);
@@ -198,7 +211,9 @@ Melown.MapMetanode.prototype.clone = function() {
         node_.diskPos_ = this.diskPos_;
         node_.diskNormal_ = this.diskNormal_; 
         node_.diskAngle_ = this.diskAngle_;
-        node_.diskDistance_ = this.diskDistance_;   
+        node_.diskAngle2_ = this.diskAngle2_;
+        node_.diskDistance_ = this.diskDistance_; 
+        node_.bbox2_ = this.bbox2_;  
  //   }
 
     return node_;
@@ -221,24 +236,60 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
         var ll_ = res_[1][0];
         var ur_ = res_[1][1];
         
-        var minddle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5, 0];
+        var h = this.minHeight_;
+        var middle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5, h];
         var normal_ = [0,0,0];
         
-        this.diskPos_ = node_.getPhysicalCoords(minddle_);
+        this.diskPos_ = node_.getPhysicalCoords(middle_);
         this.diskDistance_ = Melown.vec3.length(this.diskPos_); 
         Melown.vec3.normalize(this.diskPos_, normal_);
         this.diskNormal_ = normal_;   
         
-        if (node_.id_[0] == 1 && node_.id_[1] ==  1 && node_.id_[2] == 0) {
+        if (node_.id_[0] == 1 && node_.id_[1] ==  1 && node_.id_[2] == 0) {   //???? debug?????
             var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
 
             node_ = node_;
         }
 
-        var n1_ = node_.getPhysicalCoords([ur_[0], ur_[1], 0]);
-        var n2_ = node_.getPhysicalCoords([ur_[0], ll_[1], 0]);
-        var n3_ = node_.getPhysicalCoords([ll_[0], ll_[1], 0]);
-        var n4_ = node_.getPhysicalCoords([ll_[0], ur_[1], 0]);
+        var n1_ = node_.getPhysicalCoords([ur_[0], ur_[1], h]);
+        var n2_ = node_.getPhysicalCoords([ur_[0], ll_[1], h]);
+        var n3_ = node_.getPhysicalCoords([ll_[0], ll_[1], h]);
+        var n4_ = node_.getPhysicalCoords([ll_[0], ur_[1], h]);
+
+        var mtop_ = node_.getPhysicalCoords([(ur_[0] + ll_[0])* 0.5, ur_[1], h]);
+        var mbottom_ = node_.getPhysicalCoords([(ur_[0] + ll_[0])* 0.5, ll_[1], h]);
+        var mleft_ = node_.getPhysicalCoords([ll_[0], (ur_[1] + ll_[1])* 0.5, h]);
+        var mright_ = node_.getPhysicalCoords([ur_[0], (ur_[1] + ll_[1])* 0.5, h]);
+        middle_ = this.diskPos_;
+
+        this.plane_ = [
+            n4_[0], n4_[1], n4_[2],
+            mtop_[0], mtop_[1], mtop_[2],
+            n1_[0], n1_[1], n1_[2],
+
+            mleft_[0], mleft_[1], mleft_[2],
+            middle_[0], middle_[1], middle_[2],
+            mright_[0], mright_[1], mright_[2],
+            
+            n3_[0], n3_[1], n3_[2],
+            mbottom_[0], mbottom_[1], mbottom_[2],
+            n2_[0], n2_[1], n2_[2]
+        ];
+
+        h = this.maxHeight_;
+        var n5_ = node_.getPhysicalCoords([ur_[0], ur_[1], h]);
+        var n6_ = node_.getPhysicalCoords([ur_[0], ll_[1], h]);
+        var n7_ = node_.getPhysicalCoords([ll_[0], ll_[1], h]);
+        var n8_ = node_.getPhysicalCoords([ll_[0], ur_[1], h]);
+        
+        this.bbox2_ = [
+            [n1_[0], n1_[1], n1_[2]],
+            [n2_[0], n2_[1], n2_[2]],
+            [n3_[0], n3_[1], n3_[2]],
+            [n4_[0], n4_[1], n4_[2]],
+
+            n5_, n6_, n7_, n8_
+        ];
 
         Melown.vec3.normalize(n1_);
         Melown.vec3.normalize(n2_);
@@ -254,6 +305,7 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
 
         //get cos angle based at 90deg
         this.diskAngle_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
+        this.diskAngle2_ = maxDelta_;
 
         //shift center closer to earth
         //var factor_ = this.bbox_.maxSize_ * 0.2; 
@@ -298,6 +350,7 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
                     
         //get cos angle based at 90deg
         this.diskAngle_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
+        this.diskAngle2_ = maxDelta_;
         
         //shift center closer to earth
         this.bbox_.updateMaxSize();
@@ -350,5 +403,56 @@ Melown.MapMetanode.prototype.drawBBox = function(cameraPos_) {
 
 };
 
+Melown.MapMetanode.prototype.drawBBox2 = function(cameraPos_) {
+    var spoints_ = []; 
+    for (var i = 0, li = this.bbox2_.length; i < li; i++) {
+        var pos_ = this.bbox2_[i];
+        pos_ = ["obj", pos_[0], pos_[1], "fix", pos_[2], 0, 0, 0, 10, 90 ];
+
+        spoints_.push((new Melown.MapPosition(this.map_, pos_)).getCanvasCoords(null, true));
+    }
+    
+    var renderer_ = this.map_.renderer_;
+    renderer_.drawLineString([spoints_[0], spoints_[1], spoints_[2], spoints_[3], spoints_[0] ], 2, [0,1,0.5,255], false, false, true);
+    renderer_.drawLineString([spoints_[4], spoints_[5], spoints_[6], spoints_[7], spoints_[4] ], 2, [0,1,0.5,255], false, false, true);
+};
+
+Melown.MapMetanode.prototype.drawPlane = function(cameraPos_) {
+    var renderer_ = this.map_.renderer_;
+    var buffer_ = this.map_.planeBuffer_;
+    var points_ = this.plane_;
+    
+    if (!points_) {
+        return;
+    }
+
+    renderer_.gpu_.useProgram(renderer_.progPlane_, ["aPosition", "aTexCoord"]);
+
+    var mvp_ = Melown.mat4.create();
+    var mv_ = renderer_.camera_.getModelviewMatrix();
+    var proj_ = renderer_.camera_.getProjectionMatrix();
+    Melown.mat4.multiply(proj_, mv_, mvp_);
+    
+    var sx_ = cameraPos_[0];
+    var sy_ = cameraPos_[1];
+    var sz_ = cameraPos_[2];
+
+    for (var i = 0; i < 9; i++) {
+        var index_ = i*3;
+        buffer_[index_] = points_[index_] - sx_; 
+        buffer_[index_+1] = points_[index_+1] - sy_; 
+        buffer_[index_+2] = points_[index_+2] - sz_; 
+    }
+
+    renderer_.progPlane_.setVec4("uParams", [0,0,1/15,0]);
+    renderer_.progPlane_.setMat4("uMV", mv_);
+    renderer_.progPlane_.setMat4("uProj", proj_);
+    renderer_.progPlane_.setFloatArray("uPoints", buffer_);
+
+    renderer_.gpu_.bindTexture(renderer_.heightmapTexture_);
+    
+    //draw bbox
+    renderer_.planeMesh_.draw(renderer_.progPlane_, "aPosition", "aTexCoord");
+};
 
 

@@ -383,7 +383,6 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
         //return true;
     }*/
 
-
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         if (tile_.surface_) {
             if (!tile_.surface_.geodata_) {
@@ -401,6 +400,13 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
             if (this.drawBBoxes_ && !preventRedener_) {
                 this.drawTileInfo(tile_, node_, cameraPos_, tile_.surfaceMesh_, pixelSize_);
+            }
+
+            if (this.heightmapOnly_ && !preventRedener_) {
+                if (!tile_.surface_.geodata_) {
+                    node_.drawPlane(cameraPos_);
+                }
+                return true;
             }
             
             if (!preventRedener_) {
@@ -1105,7 +1111,11 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
 
 Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pixelSize_) {
     if (!this.drawMeshBBox_) {
-        node_.drawBBox(cameraPos_);
+        if (this.drawCredits_) {
+            node_.drawBBox2(cameraPos_);
+        } else {
+            node_.drawBBox(cameraPos_);
+        }
     }
 
     //get screen pos of node
@@ -1208,6 +1218,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
     //draw distance
     if (this.drawDistance_) {
         var text_ = "" + tile_.distance_.toFixed(2) + "  " + tile_.texelSize_.toFixed(3) + "  " + node_.pixelSize_.toFixed(3);
+        text_ += "--" + tile_.texelSize2_.toFixed(3); 
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+17*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
     }
 
@@ -1215,6 +1226,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
     if (this.drawNodeInfo_) {
         var children_ = ((node_.flags_ & ((15)<<4))>>4);
         var text_ = "" + node_.flags_.toString(2) + "-" + ((children_ & 1) ? "1" : "0") + ((children_ & 2) ? "1" : "0") + ((children_ & 4) ? "1" : "0") + ((children_ & 8) ? "1" : "0");
+        text_ += "-" + node_.minHeight_ + "/" + node_.maxHeight_; 
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]-18*factor_), 4*factor_, text_, [255,0,255,255], pos_[2]);
     }
     

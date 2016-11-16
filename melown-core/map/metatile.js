@@ -205,7 +205,7 @@ Melown.MapMetatile.prototype.parseMetatatile = function(stream_) {
 
     this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
 
-    if (this.version_ > 2) {
+    if (this.version_ > 3) {
         return;
     }
 

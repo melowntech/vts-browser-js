@@ -17,6 +17,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.urlCounter_ = 0;
     this.config_ = config_ || {};
     this.loaderSuspended_ = false;
+    this.planeBuffer_ = new Float32Array(9*3);
 
     path_ = path_.trim();
     this.baseUrl_ = Melown.Url.getBase(path_);

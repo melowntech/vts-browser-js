@@ -131,11 +131,12 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 72:
                     case 104:
-                        /*map_.heightmapOnly_ = !map_.heightmapOnly_;*/
+                        map_.heightmapOnly_ = !map_.heightmapOnly_;
 
+                        /*
                         var pos_ = map_.getPosition();
                         pos_.setHeight(pos_.setHeight() * 0.9);
-                        map_.setPosition(pos_);
+                        map_.setPosition(pos_);*/
 
                         break;  //key H pressed
 
@@ -355,6 +356,14 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 case 69:
                 case 101:
                     map_.debugTextSize_ = (map_.debugTextSize_ == 2.0) ? 3.0 : 2.0; break; //key E pressed
+
+                case 88:
+                case 120:
+                    map_.config_.mapPreciseBBoxTest_ = !map_.config_.mapPreciseBBoxTest_; break; //key X pressed
+
+                case 90:
+                case 122:
+                    map_.config_.mapPreciseDistanceTest_ = !map_.config_.mapPreciseDistanceTest_; break; //key Z pressed
 
                 default:
                     blockHit_ = false;

@@ -103,14 +103,14 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
             "Loaded/Errors: " + (stats_.loadedCount_) + " / " + (stats_.loadErrorCount_) + "<br/>" +
             "Load time: " + ((stats_.loadLast_ - stats_.loadFirst_)*0.001).toFixed(2) + "s <br/>";
 
-    var text3_ = "Metatiles: " + (stats_.drawnTiles_) +"<br/>"+
+    var text3_ = "Metatiles: " + (stats_.processedMetatiles_) +"<br/>"+
                  "Metanodes: " + (stats_.processedNodes_) + " / " + (stats_.usedNodes_) + "<br/><br/>"+
-                 "Tiles: " + (stats_.processedMetatiles_) +"<br/>";
+                 "Tiles: " + (stats_.drawnTiles_) +"<br/>";
 
     for (var i =0, li = stats_.renderedLods_.length; i < li; i++) {
         if (stats_.renderedLods_[i]) {
             text3_ += "LOD " + i + ": " + (stats_.renderedLods_[i]) +"<br/>";
-        }        
+        }
     }
 
     var text_ = "<table style='width:305px'><tr><td>" + text2_ + "</td><td>" + text3_ + "</td></tr></table>";
