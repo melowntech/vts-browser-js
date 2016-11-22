@@ -91,20 +91,19 @@ Melown.Map.prototype.parseSurfaces = function() {
 };
 
 Melown.Map.prototype.parseVirtualSurfaces = function() {
-    return true;/*
     var surfaces_ = this.mapConfig_["virtualSurfaces"];
-    this.surfaces_ = [];
+    this.virtualSurfaces_ = [];
 
     if (surfaces_ == null) {
-        return false;
+        return true;
     }
 
     for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = new Melown.MapSurface(this, surfaces_[i]);
-        this.addSurface(surface_.id_, surface_);
+        var surface_ = new Melown.MapVirtualSurface(this, surfaces_[i]);
+        this.virtualSurfaces_[surface_.strId_] = surface_;
     }
 
-    return true;*/
+    return true;
 };
 
 Melown.Map.prototype.parseViews = function() {

@@ -20,6 +20,7 @@ Melown.MapSurface = function(map_, json_, type_) {
     this.boundLayerSequence_ = [];
     this.glue_ = (type_ == "glue");
     this.free_ = (type_ == "free");
+    this.virtual_ = false;
     this.zFactor_ = 0;
     this.ready_ = false;
     this.geodataProcessor_ = null;

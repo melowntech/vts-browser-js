@@ -241,7 +241,7 @@ Melown.MapMetatile.prototype.parseFlagPlanes = function(stream_) {
     //rounded to bytes
     var bitplaneSize_ = ((this.sizex_ * this.sizey_ + 7) >> 3);
 
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < 6; i++) {
         if ((this.flags_ & (1 << i)) != 0) {
 
             var bitplane_ = new Uint8Array(bitplaneSize_);

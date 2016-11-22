@@ -32,7 +32,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.credits_ = {};
     this.creditsByNumber_ = {};
     this.surfaces_ = [];
-    this.glues_ = [];
+    this.virtualSurfaces_ = {};
+    this.glues_ = {};
     this.freeLayers_ = [];
     this.boundLayers_ = [];
     this.dynamicLayers_ = [];
@@ -358,7 +359,7 @@ Melown.Map.prototype.addGlue = function(id_, glue_) {
 };
 
 Melown.Map.prototype.getGlue = function(id_) {
-    return this.searchArrayById(this.glues_, id_);
+    return this.glues_[id_];
 };
 
 Melown.Map.prototype.addBoundLayer = function(id_, layer_) {
@@ -686,6 +687,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapXhrImageLoad":               this.config_.mapXhrImageLoad_ = Melown.validateBool(value_, false); break;
         case "mapLoadMode":                   this.config_.mapLoadMode_ = Melown.validateString(value_, "topdown"); break;
         case "mapGeodataLoadMode":            this.config_.mapGeodataLoadMode_ = Melown.validateString(value_, "fit"); break;
+        case "mapHeightfiledWhenUnloaded":    this.config_.mapHeightfiledWhenUnloaded_= Melown.validateBool(value_, false); break;
         case "mario":                         this.config_.mario_ = Melown.validateBool(value_, true); break;
     }
 };
@@ -719,6 +721,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapXhrImageLoad":               return this.config_.mapXhrImageLoad_;
         case "mapLoadMode":                   return this.config_.mapLoadMode_;
         case "mapGeodataLoadMode":            return this.config_.mapGeodataLoadMode_;
+        case "mapHeightfiledWhenUnloaded":    return this.config_.mapHeightfiledWhenUnloaded_;
         case "mario":                         return this.config_.mario_;
     }
 };

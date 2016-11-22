@@ -78,7 +78,7 @@ Melown.RendererGeometry.buildPlane = function(size_) {
     var uvs_ = new Float32Array(numFaces_ * 3 * 2);//[];
 
     var USHRT_MAX = 65535;
-    var factor_ = 1.0 / (size_+1);
+    var factor_ = 1.0 / (size_);
     var index_ = 0;
     var index2_ = 0;
 

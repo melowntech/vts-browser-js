@@ -192,6 +192,7 @@ Melown.MapSurfaceTree.prototype.logTileInfo = function(tile_, node_, cameraPos_)
     console.log("tile: " + JSON.stringify(tile_.id_) + " visible: " + visible_ + " texelsize: " +  tile_.texelSize_ + " center: "  + JSON.stringify(node_.diskPos_) + " vec: " + node_.diskNormal_ + "ang: " + node_.diskAngle_ + " dist: " + node_.diskDistance_);
 };
 
+//loadmode = topdown
 Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
     this.counter_++;
 //    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);
@@ -416,7 +417,7 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
 };
 
 
-
+//loadmode = fitonly
 Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
     this.counter_++;
 //    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);
@@ -606,7 +607,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
 };
 
 
-
+//loadmode = fit
 Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
     this.counter_++;
 //    this.surfaceTracer_.trace(this.surfaceTree_);//this.rootId_);

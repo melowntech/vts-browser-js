@@ -170,9 +170,9 @@ struct Metanode {
     
     if (this.metatile_.version_ >= 3) {
         if (this.metatile_.flags_ & (1<<7)) {
-            this.sourceReference_ = streamData_.getInUint16(stream_.index_, true); stream_.index_ += 2;
+            this.sourceReference_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
         } else if (this.metatile_.flags_ & (1<<6)) {
-            this.sourceReference_ = streamData_.getInUint8(stream_.index_, true); stream_.index_ += 1;
+            this.sourceReference_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
         }
     }
 
@@ -215,6 +215,10 @@ Melown.MapMetanode.prototype.clone = function() {
         node_.diskDistance_ = this.diskDistance_; 
         node_.bbox2_ = this.bbox2_;  
  //   }
+
+    if (this.plane_) {
+        node_.plane_ = this.plane_.slice();
+    }
 
     return node_;
 };

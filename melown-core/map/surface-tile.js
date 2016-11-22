@@ -22,6 +22,7 @@ Melown.MapSurfaceTile = function(map_, parent_, id_) {
     this.surfaceGeodata_ = null;     //probably only used in free layers
     this.surfaceGeodataView_ = null; //probably only used in free layers
     this.surfaceTextures_ = [];
+    this.resourceSurface_ = null; //surface directing to resources
 
     this.virtual_ = false;
     this.virtualReady_ = false;
@@ -97,6 +98,7 @@ Melown.MapSurfaceTile.prototype.kill = function() {
     this.surfaceTextures_ = [];
     this.surfaceGeodata_ = null;
     this.surfaceGeodataView_ = null;
+    this.resourceSurface_ = null;
 
     this.bounds_ = {};
     this.boundLayers_ = {};
@@ -144,7 +146,8 @@ Melown.MapSurfaceTile.prototype.viewSwitched = function() {
         surfaceTextures_ : this.surfaceTextures_,
         boundTextures_ : this.boundTextures_,
         surfaceGeodata_ : this.surfaceGeodata_,
-        surfaceGeodataView_ : this.surfaceGeodataView_
+        surfaceGeodataView_ : this.surfaceGeodataView_,
+        resourceSurface_ : this.resourceSurface_ 
     };    
 
     if (this.drawCommands_[0].length > 0) {  // check only visible chanel
@@ -187,6 +190,7 @@ Melown.MapSurfaceTile.prototype.viewSwitched = function() {
     this.surfaceTextures_ = [];
     this.surfaceGeodata_ = null;
     this.surfaceGeodataView_ = null;
+    this.resourceSurface_ = null;
     
     this.virtual_ = false;
     this.virtualReady_ = false;
@@ -207,8 +211,10 @@ Melown.MapSurfaceTile.prototype.restoreLastState = function() {
     this.boundTextures_ = this.lastState_.boundTextures_;
     this.surfaceGeodata_ = this.lastState_.surfaceGeodata_;
     this.surfaceGeodataView_ = this.lastState_.surfaceGeodataView_;
+    this.resourceSurface_ = this.lastState_.resourceSurface_; 
     this.lastSurface_ = null;
     this.lastState_ = null;
+    this.lastResourceSurface_ = null;
 };
 
 Melown.MapSurfaceTile.prototype.addChild = function(index_) {
@@ -295,6 +301,15 @@ Melown.MapSurfaceTile.prototype.isMetanodeReady = function(tree_, priority_, pre
         //return;
     }
 
+    if (this.surface_.virtual_) {
+        this.resourceSurface_ = this.surface_.getSurface(this.metanode_.sourceReference_);
+        if (!this.resourceSurface_) {
+            this.resourceSurface_ = this.surface_;
+        }
+    } else {
+        this.resourceSurface_ = this.surface_;
+    }
+
     return true;
 };
 
@@ -365,7 +380,6 @@ Melown.MapSurfaceTile.prototype.checkSurface = function(tree_, priority_) {
     } else {
         this.surface_ = (this.virtualSurfaces_[0]) ? this.virtualSurfaces_[0][0] : null;
     }
-
 };
 
 Melown.MapSurfaceTile.prototype.checkMetanode = function(tree_, priority_) {
@@ -397,7 +411,6 @@ Melown.MapSurfaceTile.prototype.checkMetanode = function(tree_, priority_) {
         }
 
         if (this.metanode_ != null) {
-
             this.metanode_.tile_ = this; //used only for validate
             this.lastMetanode_ = null;
             this.map_.markDirty(); 

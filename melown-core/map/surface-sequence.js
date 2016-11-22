@@ -14,12 +14,15 @@ Melown.Map.prototype.generateSurfaceSequence = function(tree_, surfaces_) {
     var vsurfaces_ = {}; 
     var vsurfaceCount_ = 0;
     var list_ = [];
+    
+    var strId_ = [];
         
     //add surfaces to the list
     for (var key_ in view_.surfaces_) {
         var surface_ = this.getSurface(key_);
         
         if (surface_) {
+            strId_.push(surface_.id_);
             vsurfaceCount_++;
             vsurfaces_[key_] = surface_.index_ + 1; //add one to avoid zero 
             //list_.push(["" + (surface_.index_ + 1), surface_, true]);    
@@ -27,110 +30,131 @@ Melown.Map.prototype.generateSurfaceSequence = function(tree_, surfaces_) {
         }
     }
 
-    //debugger;
+
+    if (vsurfaceCount_ >= 1) { //do we have virtual surface?
+        strId_.sort(); 
+        strId_ = strId_.join(";");
+
+        var surface_ = this.virtualSurfaces_[strId_];
+        if (surface_) {
+            list_ = [ [ [(surface_.index_ + 1)], surface_, true, false] ]; //[surfaceId, surface, isSurface, isAlien]    
+            vsurfaceCount_ = 1;
+        }
+    }
     
-    var glues_ = [];
-
-    //add proper glues to the list
-    for (var key_ in this.glues_) {
-        var glue_ = this.glues_[key_];
+    if (vsurfaceCount_ > 1) {
+        //debugger;
         
-        //add only glue which contains desired surfaces
-        var id_ = glue_.id_; 
-        if (id_.length <= vsurfaceCount_) {
-
-            var missed_ = false;
-            for (var j = 0, lj = id_.length; j < lj; j++) {
-                if (!vsurfaces_[id_[j]]) {
-                    missed_ = true;
-                    break;
-                }
-            }
-
-            if (!missed_) {
-                //var listId_ = "";
-                var listId_ = [];
-                
-                //create glue id in reverse order for sorting
+        var glues_ = [];
+    
+        //add proper glues to the list
+        for (var key_ in this.glues_) {
+            var glue_ = this.glues_[key_];
+            
+            //add only glue which contains desired surfaces
+            var id_ = glue_.id_; 
+            if (id_.length <= vsurfaceCount_) {
+    
+                var missed_ = false;
                 for (var j = 0, lj = id_.length; j < lj; j++) {
-                    //listId_ = vsurfaces_[id_[j]] + (j ? "." : "") + listId_;
-                    listId_.unshift(vsurfaces_[id_[j]]);
+                    if (!vsurfaces_[id_[j]]) {
+                        missed_ = true;
+                        break;
+                    }
                 }
-
-                glues_.push([listId_, glue_, false, false]); //[surfaceId, surface, isSurface, isAlien]   
+    
+                if (!missed_) {
+                    //var listId_ = "";
+                    var listId_ = [];
+                    
+                    //create glue id in reverse order for sorting
+                    for (var j = 0, lj = id_.length; j < lj; j++) {
+                        //listId_ = vsurfaces_[id_[j]] + (j ? "." : "") + listId_;
+                        listId_.unshift(vsurfaces_[id_[j]]);
+                    }
+    
+                    glues_.push([listId_, glue_, false, false]); //[surfaceId, surface, isSurface, isAlien]   
+                }
             }
         }
-    }
-
-    //process glue flags
-    for (var i = 0, li = glues_.length; i < li; i++) {
-        var item_ = glues_[i];
-        var glue_ = item_[1];
-
-        glue_.flagProper_ = true;
-        glue_.flagAlien_ = true;
-
-        if (glue_.flagProper_) {
-            list_.push(item_);  
+    
+        //process glue flags
+        for (var i = 0, li = glues_.length; i < li; i++) {
+            var item_ = glues_[i];
+            var glue_ = item_[1];
+    
+            glue_.flagProper_ = true;
+            glue_.flagAlien_ = true;
+    
+            if (glue_.flagProper_) {
+                list_.push(item_);  
+            }
+                    
+            if (glue_.flagAlien_) {
+                //remove first surface from id
+                var listId_ = item_[0].slice(1);
+                            
+                //add same glue as alien
+                list_.push([listId_, item_[1], false, true]); //[surfaceId, surface, isSurface, isAlien]   
+            }
         }
+    
+        //debugger;
+    
+        //sort list alphabetically
+        do {
+            var sorted_ = true;
+            
+            for (var i = 0, li = list_.length - 1; i < li; i++) {
+                var a1 = list_[i][0];
+                var a2 = list_[i+1][0];
                 
-        if (glue_.flagAlien_) {
-            //remove first surface from id
-            var listId_ = item_[0].slice(1);
-                        
-            //add same glue as alien
-            list_.push([listId_, item_[1], false, true]); //[surfaceId, surface, isSurface, isAlien]   
-        }
-    }
-
-    //debugger;
-
-    //sort list alphabetically
-    do {
-        var sorted_ = true;
-        
-        for (var i = 0, li = list_.length - 1; i < li; i++) {
-            var a1 = list_[i][0];
-            var a2 = list_[i+1][0];
-            
-            var lesser_ = false;
-            
-            for (var j = 0, lj = Math.min(a1.length, a2.length); j < lj; j++) {
-                if (a1[j] < a2[j] || (j == (lj -1) && a1[j] == a2[j] && a2.length > a1.length)) {
-                    lesser_ = true;
-                    break;                    
+                var lesser_ = false;
+                
+                for (var j = 0, lj = Math.min(a1.length, a2.length); j < lj; j++) {
+                    if (a1[j] < a2[j] || (j == (lj -1) && a1[j] == a2[j] && a2.length > a1.length)) {
+                        lesser_ = true;
+                        break;                    
+                    }
                 }
+                
+                if (lesser_) {
+                    var t = list_[i];
+                    list_[i] = list_[i+1];
+                    list_[i+1] = t;
+                    sorted_ = false;
+                } 
             }
             
-            if (lesser_) {
-                var t = list_[i];
-                list_[i] = list_[i+1];
-                list_[i+1] = t;
-                sorted_ = false;
-            } 
+        } while(!sorted_);
+    
+        //debugger;
+    
+        //return;
+    
+        var lastIndex_ = vsurfaceCount_ - 1;
+    
+        //convert list to surface sequence
+        for (var i = 0, li = list_.length; i < li; i++) {
+            tree_.surfaceSequence_.push([list_[i][1], list_[i][3]]); //[surface, isAlien]
+            //this.surfaceSequence_.push(list_[i][1]); 
+            list_[i][1].viewSurfaceIndex_ = lastIndex_; 
+            
+            if (list_[i][2]) {
+                lastIndex_--;
+                tree_.surfaceOnlySequence_.push(list_[i][1]);
+            }
         }
+    
+        //this.generateSurfaceSequenceOld();
         
-    } while(!sorted_);
-
-    //debugger;
-
-    //return;
-
-    var lastIndex_ = vsurfaceCount_ - 1;
-
-    //convert list to surface sequence
-    for (var i = 0, li = list_.length; i < li; i++) {
-        tree_.surfaceSequence_.push([list_[i][1], list_[i][3]]); //[surface, isAlien]
-        //this.surfaceSequence_.push(list_[i][1]); 
-        list_[i][1].viewSurfaceIndex_ = lastIndex_; 
-        
-        if (list_[i][2]) {
-            lastIndex_--;
-            tree_.surfaceOnlySequence_.push(list_[i][1]);
+    } else {
+        if (vsurfaceCount_ == 1) {
+            tree_.surfaceSequence_.push([list_[0][1], list_[0][3]]); //[surface, isAlien]
+            list_[0][1].viewSurfaceIndex_ = vsurfaceCount_ - 1;
+            tree_.surfaceOnlySequence_ = [list_[0][1]];
         }
     }
-
-    //this.generateSurfaceSequenceOld();
 
     this.freeLayersHaveGeodata_ = false;
 

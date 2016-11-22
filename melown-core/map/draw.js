@@ -376,12 +376,12 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             tile_ = tile_;
     }*/
 
-    /*if (tile_.id_[0] == 22 &&
-        tile_.id_[1] == 1862678 &&
-        tile_.id_[2] == 826010) {
+    if (tile_.id_[0] == 4 &&
+        tile_.id_[1] == 4 &&
+        tile_.id_[2] == 2) {
         tile_ = tile_;
         //return true;
-    }*/
+    }
 
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
         if (tile_.surface_) {
@@ -483,6 +483,12 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
     
     if (tile_.drawCommands_[channel_].length > 0) { //this is new but probably harmless
         //return false;
+        
+        if (this.config_.mapHeightfiledWhenUnloaded_ && !preventRedener_) {
+            node_.drawPlane(cameraPos_);
+            ret_ = true;
+        }
+        
     } 
 
     if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
@@ -753,7 +759,20 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                 this.applyCredits(tile_);
             }
             ret_ = true;
+        } else {
+            if (this.config_.mapHeightfiledWhenUnloaded_ && !preventRedener_) {
+                node_.drawPlane(cameraPos_);
+                ret_ = true;
+            }
         }
+        
+    } else {
+        
+        if (this.config_.mapHeightfiledWhenUnloaded_ && !preventRedener_) {
+            node_.drawPlane(cameraPos_);
+            ret_ = true;
+        }
+        
     }
     
     return ret_;
