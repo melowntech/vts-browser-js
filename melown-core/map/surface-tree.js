@@ -265,7 +265,7 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
             }
             
             //if (this.map_.drawIndices_) {
-                //this.logTileInfo(tile_, node_, cameraPos_);
+              //  this.logTileInfo(tile_, node_, cameraPos_);
             //}
 
             if (tile_.bboxVisible(tile_.id_, node_.bbox_, cameraPos_, node_)) {
@@ -1017,11 +1017,11 @@ Melown.MapSurfaceTree.prototype.traceHeightTileByMap = function(tile_, params_, 
     if (node_.hasNavtile()) {
         if (!tile_.heightMap_) {
             //if (!preventLoad_) {
-                if (!tile_.surface_) {
+                if (!tile_.surface_ || tile_.surface_.virtual_) {
                     return false; //is it best way how to do it?
                 }
                 
-                var path_ = tile_.surface_.getNavUrl(tile_.id_);
+                var path_ = tile_.resourceSurface_.getNavUrl(tile_.id_);
                 tile_.heightMap_ = tile_.resources_.getTexture(path_, true);
             //}
         } else {

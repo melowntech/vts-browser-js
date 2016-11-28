@@ -94,6 +94,10 @@ Melown.Map.prototype.parseVirtualSurfaces = function() {
     var surfaces_ = this.mapConfig_["virtualSurfaces"];
     this.virtualSurfaces_ = [];
 
+    if (!this.config_.mapVirtualSurfaces_) {
+        return true;
+    }
+
     if (surfaces_ == null) {
         return true;
     }

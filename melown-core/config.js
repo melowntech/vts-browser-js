@@ -15,6 +15,7 @@ Melown.Core.prototype.initConfig = function() {
         mapMobileDetailDegradation_ : 2,
         mapNavSamplesPerViewExtent_ : 4,
         mapIgnoreNavtiles_ : false,
+        mapVirtualSurfaces_ : true,
         mapAllowHires_ : true,
         mapAllowLowres_ : true,
         mapAllowSmartSwitching_ : true,
@@ -25,7 +26,7 @@ Melown.Core.prototype.initConfig = function() {
         mapBasicTileSequence_ : false,
         mapPreciseBBoxTest_ : false,
         mapPreciseDistanceTest_ : false,
-        mapHeightfiledWhenUnloaded_ : true,
+        mapHeightfiledWhenUnloaded_ : false,
         mapSmartNodeParsing_ : true,
         mapLoadErrorRetryTime_ : 3000,
         mapLoadErrorMaxRetryCount_ : 3,
@@ -65,6 +66,8 @@ Melown.Core.prototype.setConfigParam = function(key_, value_) {
         }
     } else if (key_ == "map") {
         this.config_.map_ = Melown.validateString(value_, null);
+    } else if (key_ == "mapVirtualSurfaces") {
+        this.config_.mapVirtualSurfaces_ = Melown.validateBool(value_, true);
     } else if (key_ == "authorization") {
         this.config_.authorization_ = ((typeof value_ === "string") || (typeof value_ === "function")) ? value_ : null;   
     } else {

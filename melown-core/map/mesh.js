@@ -149,7 +149,7 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
 
 Melown.MapMesh.prototype.scheduleLoad = function(priority_) {
     if (!this.mapLoaderUrl_) {
-        this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.surface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
+        this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.resourceSurface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
     }
 
     this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_, this.tile_, "mesh");

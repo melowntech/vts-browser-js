@@ -301,14 +301,17 @@ Melown.MapSurfaceTile.prototype.isMetanodeReady = function(tree_, priority_, pre
         //return;
     }
 
-    if (this.surface_.virtual_) {
-        this.resourceSurface_ = this.surface_.getSurface(this.metanode_.sourceReference_);
-        if (!this.resourceSurface_) {
+    if (this.surface_) {
+        if (this.surface_.virtual_) {
+            this.resourceSurface_ = this.surface_.getSurface(this.metanode_.sourceReference_);
+            if (!this.resourceSurface_) {
+                this.resourceSurface_ = this.surface_;
+            }
+        } else {
             this.resourceSurface_ = this.surface_;
         }
-    } else {
-        this.resourceSurface_ = this.surface_;
     }
+
 
     return true;
 };
@@ -324,6 +327,35 @@ Melown.MapSurfaceTile.prototype.checkSurface = function(tree_, priority_) {
         this.surface_ = tree_.freeLayerSurface_;
         return; 
     }
+
+    /*
+    if (this.id_[0] == 0 && this.id_[1] == 0 && this.id_[2] == 0) {
+        tree_ = tree_;
+    }
+
+    if (this.id_[0] == 1 && this.id_[1] == 0 && this.id_[2] == 0) {
+        tree_ = tree_;
+    }
+
+    if (this.id_[0] == 2 && this.id_[1] == 1 && this.id_[2] == 1) {
+        tree_ = tree_;
+    }
+
+    if (this.id_[0] == 3 && this.id_[1] == 3 && this.id_[2] == 3) {
+        tree_ = tree_;
+    }
+
+    if (this.id_[0] == 4 && this.id_[1] == 7 && this.id_[2] == 7) {
+        tree_ = tree_;
+    }
+
+    if (this.id_[0] == 15 && this.id_[1] == 16297 && this.id_[2] == 16143) {
+        tree_ = tree_;
+    }
+
+    if (this.id_[0] == 16 && this.id_[1] == 32595 && this.id_[2] == 32287) {
+        tree_ = tree_;
+    }*/
 
     var sequence_ = tree_.surfaceSequence_;
 
@@ -342,7 +374,14 @@ Melown.MapSurfaceTile.prototype.checkSurface = function(tree_, priority_) {
                 //!!!!!!removed for debug
                 ///* ????????
                 var parent_ = this.parent_;
-                if (parent_ != null) { 
+                if (parent_) { 
+                    
+                    if (parent_.virtualSurfacesUncomplete_) {
+                        this.virtualSurfacesUncomplete_ = true;
+                        this.virtualSurfaces_ = [];
+                        return;
+                    }
+                    
                     var metatile_ = parent_.metaresources_.getMetatile(surface_, null, this);
                     if (metatile_) {
                         

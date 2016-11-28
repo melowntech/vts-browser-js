@@ -688,6 +688,7 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapLoadMode":                   this.config_.mapLoadMode_ = Melown.validateString(value_, "topdown"); break;
         case "mapGeodataLoadMode":            this.config_.mapGeodataLoadMode_ = Melown.validateString(value_, "fit"); break;
         case "mapHeightfiledWhenUnloaded":    this.config_.mapHeightfiledWhenUnloaded_= Melown.validateBool(value_, false); break;
+        case "mapVirtualSurfaces":            this.config_.mapVirtualSurfaces_ = Melown.validateBool(value_, true); break;
         case "mario":                         this.config_.mario_ = Melown.validateBool(value_, true); break;
     }
 };
@@ -722,6 +723,7 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapLoadMode":                   return this.config_.mapLoadMode_;
         case "mapGeodataLoadMode":            return this.config_.mapGeodataLoadMode_;
         case "mapHeightfiledWhenUnloaded":    return this.config_.mapHeightfiledWhenUnloaded_;
+        case "mapVirtualSurfaces":            return this.config_.mapVirtualSurfaces_;
         case "mario":                         return this.config_.mario_;
     }
 };
