@@ -249,17 +249,18 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
         Melown.vec3.normalize(this.diskPos_, normal_);
         this.diskNormal_ = normal_;   
         
+        /*
         if (node_.id_[0] == 1 && node_.id_[1] ==  1 && node_.id_[2] == 0) {   //???? debug?????
             var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
-
             node_ = node_;
-        }
+        }*/
 
         var n1_ = node_.getPhysicalCoords([ur_[0], ur_[1], h]);
         var n2_ = node_.getPhysicalCoords([ur_[0], ll_[1], h]);
         var n3_ = node_.getPhysicalCoords([ll_[0], ll_[1], h]);
         var n4_ = node_.getPhysicalCoords([ll_[0], ur_[1], h]);
 
+        /*
         var mtop_ = node_.getPhysicalCoords([(ur_[0] + ll_[0])* 0.5, ur_[1], h]);
         var mbottom_ = node_.getPhysicalCoords([(ur_[0] + ll_[0])* 0.5, ll_[1], h]);
         var mleft_ = node_.getPhysicalCoords([ll_[0], (ur_[1] + ll_[1])* 0.5, h]);
@@ -279,7 +280,8 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
             mbottom_[0], mbottom_[1], mbottom_[2],
             n2_[0], n2_[1], n2_[2]
         ];
-
+        */
+       
         h = this.maxHeight_;
         var n5_ = node_.getPhysicalCoords([ur_[0], ur_[1], h]);
         var n6_ = node_.getPhysicalCoords([ur_[0], ll_[1], h]);
@@ -421,7 +423,7 @@ Melown.MapMetanode.prototype.drawBBox2 = function(cameraPos_) {
     renderer_.drawLineString([spoints_[4], spoints_[5], spoints_[6], spoints_[7], spoints_[4] ], 2, [0,1,0.5,255], false, false, true);
 };
 
-Melown.MapMetanode.prototype.drawPlane = function(cameraPos_) {
+Melown.MapMetanode.prototype.drawPlane = function(cameraPos_, tile_) {
     var renderer_ = this.map_.renderer_;
     var buffer_ = this.map_.planeBuffer_;
     var points_ = this.plane_;
@@ -447,11 +449,28 @@ Melown.MapMetanode.prototype.drawPlane = function(cameraPos_) {
         buffer_[index_+1] = points_[index_+1] - sy_; 
         buffer_[index_+2] = points_[index_+2] - sz_; 
     }
+    
+    var prog_ = renderer_.progPlane_; 
 
-    renderer_.progPlane_.setVec4("uParams", [0,0,1/15,0]);
-    renderer_.progPlane_.setMat4("uMV", mv_);
-    renderer_.progPlane_.setMat4("uProj", proj_);
-    renderer_.progPlane_.setFloatArray("uPoints", buffer_);
+    prog_.setMat4("uMV", mv_);
+    prog_.setMat4("uProj", proj_);
+    prog_.setFloatArray("uPoints", buffer_);
+
+    var minTile_ = 32;
+    var embed_ = 8;
+    var altitude_ = Math.max(10, tile_.distance_ + 20);
+    var gridSelect_ = (Math.log(altitude_) / Math.log(embed_));
+    var step1_ = 4;//(Math.pow(embed_, Math.floor(gridSelect_)));
+    var step2_ = 8;//(Math.pow(embed_, Math.ceil(gridSelect_)));
+    var blend_ = (gridSelect_ - Math.floor(gridSelect_));
+    //var blend_ = 0;
+
+    //prog_.setVec4("uParams", [0,0,1/15,0]);
+    //prog_.setVec4("uParams", [(minTile_ / step1_),0,1/15,(minTile_ / step2_)]);
+    prog_.setVec4("uParams", [step1_, 0, 1/15, step2_]);
+
+    //prog_.setVec4("uParams2", [(minTile_ / step1_), (minTile_ / step2_), blend_, 0]);
+    prog_.setVec4("uParams2", [0, 0, blend_, 0]);
 
     renderer_.gpu_.bindTexture(renderer_.heightmapTexture_);
     

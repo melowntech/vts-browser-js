@@ -104,7 +104,9 @@ Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
             "Load time: " + ((stats_.loadLast_ - stats_.loadFirst_)*0.001).toFixed(2) + "s <br/>";
 
     var text3_ = "Metatiles: " + (stats_.processedMetatiles_) +"<br/>"+
-                 "Metanodes: " + (stats_.processedNodes_) + " / " + (stats_.usedNodes_) + "<br/><br/>"+
+                 "Metanodes: " + (stats_.processedNodes_) + " / " + (stats_.usedNodes_) + "<br/>"+
+                 "GeodataTiles: " + (stats_.drawnGeodataTiles_) +"<br/><br/>" +
+                 
                  "Tiles: " + (stats_.drawnTiles_) +"<br/>";
 
     for (var i =0, li = stats_.renderedLods_.length; i < li; i++) {

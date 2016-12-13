@@ -236,6 +236,10 @@ Melown.MapSrs.prototype.convertCoordsFrom = function(coords_, srs_) {
         srs_.isReady();
     }
 
+    if (!coords_) {
+        coords_ = coords_;
+    }
+
     coords_ = coords_.slice();
 
     if (typeof srs_ !== "string") {

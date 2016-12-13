@@ -323,7 +323,10 @@ Melown.MapInterface.prototype.getStats = function() {
         "lastDownload" : this.map_.loader_.lastDownloadTime_, 
         "surfaces" : this.map_.tree_.surfaceSequence_.length,
         "freeLayers" : this.map_.freeLayerSequence_.length,
-        "texelSizeFit" : this.map_.texelSizeFit_
+        "texelSizeFit" : this.map_.texelSizeFit_,
+        "loadMode" : this.map_.config_.mapLoadMode_,
+        "drawnTiles" : this.map_.stats_.drawnTiles_,
+        "drawnGeodataTiles" : this.map_.stats_.drawnGeodataTiles_
     };
 };
 

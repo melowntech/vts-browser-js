@@ -8,7 +8,7 @@ cd melown-core
 echo "Melown.MapGeodataProcessorWorker = function() { " | cat - map/geodata-processor/worker-globals.js map/geodata-processor/worker-style.js map/geodata-processor/worker-linestring.js map/geodata-processor/worker-pointarray.js map/geodata-processor/worker-polygon.js map/geodata-processor/worker-text.js map/geodata-processor/worker-main.js > ../build/geodata-worker-tmp.js
 echo "};">> ../build/geodata-worker-tmp.js 
 
-# merge melown-core 
+# merge melown-core with inspector
 cat utils/matrix.js \
     utils/math.js \
     utils/utils.js \
@@ -75,6 +75,7 @@ cat utils/matrix.js \
     map/surface.js \
     map/surface-sequence.js \
     map/texture.js \
+    map/virtual-surface.js \
     map/surface-tile.js \
     map/surface-tree.js \
     map/url.js \
@@ -98,7 +99,7 @@ cat utils/libs/proj4.js \
 rm ../build/melown-core-v1-tmp.js
 
 
-# merge melown-core 
+# merge melown-core without inspector
 cat utils/matrix.js \
     utils/math.js \
     utils/utils.js \
@@ -160,6 +161,7 @@ cat utils/matrix.js \
     map/free-layer.js \
     map/glue.js \
     map/texture.js \
+    map/virtual-surface.js \
     map/surface-tile.js \
     map/surface-tree.js \
     map/url.js \

@@ -53,14 +53,16 @@ Melown.Core.prototype.loadMap = function(path_) {
     this.mapConfigData_ = null;
     this.tokenExpiration_ = null;
     this.tokenExpirationCallback_ = null;
-
+    this.tokenExpirationLoop_ = false;
     this.tokenCanBeSkiped_ = true;
+    this.mapRunnig_ = false;
     
     var onLoaded_ = (function() {
-        if (!(this.tokenCookieLoaded_ || this.tokenCanBeSkiped_) || !this.mapConfigData_) {
+        if (!(this.tokenCookieLoaded_ || this.tokenCanBeSkiped_) || !this.mapConfigData_ || this.mapRunnig_) {
             return;
         }
-        
+
+        this.mapRunnig_ = true;
         var data_ = this.mapConfigData_; 
     
         this.callListener("map-mapconfig-loaded", data_);
@@ -129,8 +131,6 @@ Melown.Core.prototype.loadMap = function(path_) {
             onLoadMapconfig(path_);
         }
     }).bind(this);
-
-    this.tokenExpirationLoop_ = false;
 
     var onImageCookieLoaded_ = (function(data_) {
         document.body.removeChild(this.tokenIFrame_);
@@ -262,13 +262,13 @@ Melown.Core.prototype.removeListener = function(id_) {
 
 
 /*
-string getVersion()
+string getCoreVersion()
 
     Returns string with Melown version
 */
 
-Melown.getCoreVersion = function() {
-    return "1.65";
+Melown.getCoreVersion = function(full_) {
+    return (full_ ? "Core: " : "") + "1.68";
 };
 
 

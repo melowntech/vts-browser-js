@@ -6,6 +6,7 @@ Melown.MapStats = function(map_) {
     this.core_ = map_.core_;
     this.inspector_ = map_.core_.inspector_;
     this.drawnTiles_ = 0;
+    this.drawnGeodataTiles_ = 0;
     this.drawnFaces_ = 0;
     this.drawCalls_ = 0;    
     this.usedNodes_ = 0;    
@@ -96,6 +97,7 @@ Melown.MapStats.prototype.resetGraphs = function() {
 Melown.MapStats.prototype.begin = function(dirty_) {
     if (dirty_) {
         this.drawnTiles_ = 0;
+        this.drawnGeodataTiles_ = 0;
         this.drawCalls_ = 0;        
         this.drawnFaces_ = 0;
         this.gpuRenderUsed_ = 0;

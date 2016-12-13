@@ -1,15 +1,17 @@
 
-Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_) {
-    var result_ = this.getSpatialDivisionNode(coords_);
-    var node_ = result_[0];
-    var nodeCoords_ = result_[1];
+Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_, node_, nodeCoords_) {
+    if (!node_) {
+        var result_ = this.getSpatialDivisionNode(coords_);
+        var node_ = result_[0];
+        var nodeCoords_ = result_[1];
+    }
 
     if (!this.config_.mapHeightLodBlend_) {
         lod_ = Math.floor(lod_);
     }
 
     if (this.config_.mapIgnoreNavtiles_) {
-        return this.getSurfaceHeightNodeOnly(coords_, lod_ + 8, storeStats_, lod_);        
+        return this.getSurfaceHeightNodeOnly(coords_, lod_ + 8, storeStats_, lod_, null, node_, nodeCoords_);        
     }
 
     var tree_ = this.tree_;
@@ -58,7 +60,7 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_) {
             return [height_, metanode_.id_[0] >= Math.ceil(lod_), true];
 
         } else if (metanode_ != null /*&& metanode_.id_[0] == lod_ && !metanode_.hasNavtile()*/){
-            var height_ = this.getSurfaceHeightNodeOnly(coords_, lod_ + 8, storeStats_, lod_);
+            var height_ = this.getSurfaceHeightNodeOnly(coords_, lod_ + 8, storeStats_, lod_, null, node_, nodeCoords_);
 
             //console.log("lod2: " + lod_ + " h: " + height_[0]);  
             return [height_[0], height_[1], true];
@@ -78,11 +80,13 @@ Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_) {
 };
 
 
-Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeStats_, statsLod_, deltaSample_) {
+Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeStats_, statsLod_, deltaSample_, node_, nodeCoords_) {
     if (!deltaSample_) {
-        var result_ = this.getSpatialDivisionNode(coords_);
-        var node_ = result_[0];
-        var nodeCoords_ = result_[1];
+        if (!node_) {
+            var result_ = this.getSpatialDivisionNode(coords_);
+            var node_ = result_[0];
+            var nodeCoords_ = result_[1];
+        }
     } else {
         var node_ = deltaSample_[0];
         var nodeCoords_ = deltaSample_[1];

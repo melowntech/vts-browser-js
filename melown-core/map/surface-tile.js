@@ -868,5 +868,164 @@ Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
     this.distance_ = pixelSize_[1];
 };
 
+Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_) {
+//    if (this.)
+    if ((this.texelSize_ == Number.POSITIVE_INFINITY || this.texelSize_ > 4.4) && this.metanode_ && this.metanode_.hasChildren()) {
+        //cameraPos_ = cameraPos_;
+        return;
+    }
 
+    var map_ = this.map_;
+    var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
+    var node_ = res_[0]; 
+    var ll_ = res_[1][0];
+    var ur_ = res_[1][1];
+   
+    var h = 0;
+    var middle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5, h];
+    var normal_ = [0,0,0];
+    
+    var desiredSamplesPerViewExtent_ = 5;
+    var nodeExtent_ = node_.extents_.ur_[1] - node_.extents_.ll_[1];
+    var viewExtent_ = this.distance_;
+    var lod_ = Math.log((desiredSamplesPerViewExtent_ * nodeExtent_) / viewExtent_) / Math.log(2);
+    lod_ = lod_ - 8 + node_.id_[0];
+    lod_ = Math.max(0, lod_);
+    
+    //var lod_ = map_.getOptimalHeightLod(middle_, this.distance_, 5);
+    var hh_ = map_.getSurfaceHeight(null, lod_, null, node_, middle_);
+    middle_[2] = hh_[0];
+    middle_ = node_.getPhysicalCoords(middle_);
 
+    hh_ = map_.getSurfaceHeight(null, lod_, null, node_, [ur_[0], ur_[1]]);
+    var n1_ = node_.getPhysicalCoords([ur_[0], ur_[1], hh_[0]]);
+
+    hh_ = map_.getSurfaceHeight(null, lod_, null, node_, [ur_[0], ll_[1]]);
+    var n2_ = node_.getPhysicalCoords([ur_[0], ll_[1], hh_[0]]);
+
+    hh_ = map_.getSurfaceHeight(null, lod_, null, node_, [ll_[0], ll_[1]]);
+    var n3_ = node_.getPhysicalCoords([ll_[0], ll_[1], hh_[0]]);
+
+    hh_ = map_.getSurfaceHeight(null, lod_, null, node_, [ll_[0], ur_[1]]);
+    var n4_ = node_.getPhysicalCoords([ll_[0], ur_[1], hh_[0]]);
+
+    hh_ = map_.getSurfaceHeight(null, lod_, null, node_, [(ur_[0] + ll_[0])* 0.5, ur_[1]]);
+    var mtop_ = node_.getPhysicalCoords([(ur_[0] + ll_[0])* 0.5, ur_[1], hh_[0]]);
+
+    hh_ = map_.getSurfaceHeight(null, lod_, null, node_, [(ur_[0] + ll_[0])* 0.5, ll_[1]]);
+    var mbottom_ = node_.getPhysicalCoords([(ur_[0] + ll_[0])* 0.5, ll_[1], hh_[0]]);
+
+    hh_ = map_.getSurfaceHeight(null, lod_, null, node_, [ll_[0], (ur_[1] + ll_[1])* 0.5]);
+    var mleft_ = node_.getPhysicalCoords([ll_[0], (ur_[1] + ll_[1])* 0.5, hh_[0]]);
+
+    hh_ = map_.getSurfaceHeight(null, lod_, null, node_, [ur_[0], (ur_[1] + ll_[1])* 0.5]);
+    var mright_ = node_.getPhysicalCoords([ur_[0], (ur_[1] + ll_[1])* 0.5, hh_[0]]);
+
+    var renderer_ = this.map_.renderer_;
+    var buffer_ = this.map_.planeBuffer_;
+
+    renderer_.gpu_.useProgram(renderer_.progPlane_, ["aPosition", "aTexCoord"]);
+
+    var mvp_ = Melown.mat4.create();
+    var mv_ = renderer_.camera_.getModelviewMatrix();
+    var proj_ = renderer_.camera_.getProjectionMatrix();
+    Melown.mat4.multiply(proj_, mv_, mvp_);
+    
+    var sx_ = cameraPos_[0];
+    var sy_ = cameraPos_[1];
+    var sz_ = cameraPos_[2];
+
+    buffer_[0] = n4_[0] - sx_;
+    buffer_[1] = n4_[1] - sy_;
+    buffer_[2] = n4_[2] - sz_;
+    
+    buffer_[3] = mtop_[0] - sx_;
+    buffer_[4] = mtop_[1] - sy_;
+    buffer_[5] = mtop_[2] - sz_;
+
+    buffer_[6] = n1_[0] - sx_;
+    buffer_[7] = n1_[1] - sy_;
+    buffer_[8] = n1_[2] - sz_;
+
+    buffer_[9] = mleft_[0] - sx_;
+    buffer_[10] = mleft_[1] - sy_;
+    buffer_[11] = mleft_[2] - sz_;
+            
+    buffer_[12] = middle_[0] - sx_;
+    buffer_[13] = middle_[1] - sy_;
+    buffer_[14] = middle_[2] - sz_;
+            
+    buffer_[15] = mright_[0] - sx_;
+    buffer_[16] = mright_[1] - sy_;
+    buffer_[17] = mright_[2] - sz_;
+        
+    buffer_[18] = n3_[0] - sx_;
+    buffer_[19] = n3_[1] - sy_;
+    buffer_[20] = n3_[2] - sz_;
+    
+    buffer_[21] = mbottom_[0] - sx_;
+    buffer_[22] = mbottom_[1] - sy_;
+    buffer_[23] = mbottom_[2] - sz_;
+    
+    buffer_[24] = n2_[0] - sx_;
+    buffer_[25] = n2_[1] - sy_;
+    buffer_[26] = n2_[2] - sz_;
+    
+    var prog_ = renderer_.progPlane_; 
+
+    prog_.setMat4("uMV", mv_);
+    prog_.setMat4("uProj", proj_);
+    prog_.setFloatArray("uPoints", buffer_);
+
+    var minTile_ = 32;
+    var embed_ = 8;
+    var altitude_ = Math.max(10, this.map_.cameraDistance_ + 20);
+    var maxDistance_ = (node_.extents_.ur_[0] - node_.extents_.ll_[0])*2;
+    var gridSelect_ = (Math.log(Math.min(maxDistance_,altitude_)) / Math.log(embed_));
+    var gridMax_ = Math.log(maxDistance_) / Math.log(embed_);
+
+    gridSelect_ = gridMax_ - gridSelect_;
+
+    var blend_ = (gridSelect_ - Math.floor(gridSelect_));
+    
+    gridSelect_ = Math.floor(Math.floor(gridSelect_))+1;
+    var step1_ = Math.pow(embed_, gridSelect_);
+    var step2_ = step1_ * 8; 
+    
+    /*
+    var lx_ = (ur_[0] - ll_[0]);
+    var ly_ = (ll_[1] - ur_[1]);
+    var px_ = (ll_[0] - node_.extents_.ll_[0]) / lx_;
+    var py_ = (ur_[1] - node_.extents_.ll_[1]) / ly_;
+    
+    var llx_ = (node_.extents_.ur_[0] - node_.extents_.ll_[0]) / lx_;
+    var lly_ = (node_.extents_.ur_[1] - node_.extents_.ll_[1]) / ly_;
+
+    px_ = px_ / llx_;
+    py_ = py_ / lly_;
+    llx_ = 1.0/llx_;
+    lly_ = 1.0/lly_;
+    
+    llx_ *= step1_;
+    lly_ *= step1_;
+    px_ *= step1_;
+    py_ *= step1_;
+    */
+
+    var lx_ = 1.0 / (ur_[0] - ll_[0]);
+    var ly_ = 1.0 / (ll_[1] - ur_[1]);
+    var llx_ = step1_ / ((node_.extents_.ur_[0] - node_.extents_.ll_[0]) * lx_);
+    var lly_ = step1_ / ((node_.extents_.ur_[1] - node_.extents_.ll_[1]) * ly_);
+    var px_ = (ll_[0] - node_.extents_.ll_[0]) * lx_ * llx_;
+    var py_ = (ur_[1] - node_.extents_.ll_[1]) * ly_ * lly_;
+
+    prog_.setVec4("uParams", [step1_, 0, 1/15, step2_]);
+    prog_.setVec4("uParams3", [(py_ - Math.floor(py_)), (px_ - Math.floor(px_)), lly_, llx_]);
+    prog_.setVec4("uParams2", [0, 0, blend_, 0]);
+
+    renderer_.gpu_.bindTexture(renderer_.heightmapTexture_);
+    
+    //draw bbox
+    renderer_.planeMesh_.draw(renderer_.progPlane_, "aPosition", "aTexCoord");    
+
+};  

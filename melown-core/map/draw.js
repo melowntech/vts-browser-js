@@ -375,20 +375,21 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
         tile_.id_[2] == Melown.debugId_[2]) {
             tile_ = tile_;
     }*/
-
+/*
     if (tile_.id_[0] == 4 &&
         tile_.id_[1] == 4 &&
         tile_.id_[2] == 2) {
         tile_ = tile_;
         //return true;
     }
-
+*/
     if (this.stats_.gpuRenderUsed_ >= this.maxGpuUsed_) {
+       /*
         if (tile_.surface_) {
             if (!tile_.surface_.geodata_) {
                 tile_ = tile_;
             }
-        }
+        }*/
 
         return false;
     }
@@ -404,7 +405,8 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
             if (this.heightmapOnly_ && !preventRedener_) {
                 if (!tile_.surface_.geodata_) {
-                    node_.drawPlane(cameraPos_);
+                    //node_.drawPlane(cameraPos_, tile_);
+                    tile_.drawGrid(cameraPos_);
                 }
                 return true;
             }
@@ -412,6 +414,10 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
             if (!preventRedener_) {
                 this.stats_.renderedLods_[tile_.id_[0]]++;
                 this.stats_.drawnTiles_++;
+
+                if (tile_.surface_.geodata_) {
+                    this.stats_.drawnGeodataTiles_++;
+                }
             }
            
             if (tile_.resetDrawCommands_) {
@@ -490,7 +496,8 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
         //return false;
         
         if (this.config_.mapHeightfiledWhenUnloaded_ && !preventRedener_) {
-            node_.drawPlane(cameraPos_);
+            //node_.drawPlane(cameraPos_, tile_);
+            tile_.drawGrid(cameraPos_);
             ret_ = true;
         }
         
@@ -766,7 +773,8 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
             ret_ = true;
         } else {
             if (this.config_.mapHeightfiledWhenUnloaded_ && !preventRedener_) {
-                node_.drawPlane(cameraPos_);
+                //node_.drawPlane(cameraPos_, tile_);
+                tile_.drawGrid(cameraPos_);
                 ret_ = true;
             }
         }
@@ -774,7 +782,8 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
     } else {
         
         if (this.config_.mapHeightfiledWhenUnloaded_ && !preventRedener_) {
-            node_.drawPlane(cameraPos_);
+            //node_.drawPlane(cameraPos_, tile_);
+            tile_.drawGrid(cameraPos_);
             ret_ = true;
         }
         

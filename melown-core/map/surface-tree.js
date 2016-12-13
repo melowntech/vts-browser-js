@@ -272,7 +272,7 @@ Melown.MapSurfaceTree.prototype.drawSurface = function(shift_) {
 
                 usedNodes_++;
 
-                if (tile_.texelSize_  != Number.POSITIVE_INFINITY){
+                if (tile_.texelSize_ != Number.POSITIVE_INFINITY){
                     if (tile_.texelSize_ > best_) {
                         best_ = tile_.texelSize_;
                     }
@@ -627,6 +627,10 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
     }
 
     tile_.updateTexelSize();
+
+    var geodata_ = tile_.surface_.geodata_;
+    var free_ = tile_.surface_.free_;
+    var drawGrid_ = (!geodata_ && !free_ && map_.config_.mapHeightfiledWhenUnloaded_);
     
     var lodShift_ = 4;//this.freeLayerSurface_ ? 1 : 1;
     var typeFactor_ = 2000;//this.freeLayerSurface_ ? 1 : 1;
@@ -653,6 +657,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
     var pocessedNodes_ = 1;
     var pocessedMetatiles_ = 1;  
     var drawCounter_ = map_.drawCounter_;
+    var maxHiresLodLevels_ = map_.config_.mapMaxHiresLodLevels_; 
     
     do {
         var best_ = 0;
@@ -671,19 +676,22 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                 console.log(JSON.stringify(tile_.id_));
             }*/
             
-            if (depth_ >= 2) {
+            if (depth_ >= maxHiresLodLevels_) {
+                drawBuffer_[drawBufferIndex_] = [tile_, true]; //draw grid
+                drawBufferIndex_++;
+
                 continue;
             }
             /*
             if (tile_.id_[0] >= 16) { 
                 tile_ = tile_;    
-            } 
-
-            if (tile_.id_[0] == 18 && 
-                tile_.id_[1] == 20982 &&
-                tile_.id_[2] == 50643){
+            }*/ 
+            
+            /* if (tile_.id_[0] == 18 && 
+                tile_.id_[1] == 70786 &&
+                tile_.id_[2] == 44410){
                 tile_ = tile_;    
-            }*/
+            } */
             
             node_ = tile_.metanode_;
 
@@ -709,6 +717,9 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                 if (storeNodes_) { //used only for inspaector_
                     storeNodesBuffer_.push(tile_);
                 }
+                
+                var lastProcessBufferIndex_ = newProcessBufferIndex_;
+                var lastDrawBufferIndex_ = drawBufferIndex_;
 
                 if (node_.hasChildren() == false || tile_.texelSize_ <= texelSizeFit_) {
 
@@ -737,19 +748,20 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                                     
                                     //are draw buffers ready? preventRender=true, preventLoad_=false
                                     if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, (depth_ > 0))) {
-                                        drawBuffer_[drawBufferIndex_] = tile_;
+                                        drawBuffer_[drawBufferIndex_] = [child_, false];
                                         drawBufferIndex_++;
                                     } else {
-                                        //child_.updateTexelSize();
                                         newProcessBuffer_[newProcessBufferIndex_] = [child_, depth_];
                                         newProcessBufferIndex_++;
                                     }
-                                }
+                                } //if (drawGrid_) {
+                                 //   child_.drawGrid(cameraPos_);
+                                //}
                             }
                         }
 
                     } else {
-                        drawBuffer_[drawBufferIndex_] = tile_;
+                        drawBuffer_[drawBufferIndex_] = [tile_, false];
                         drawBufferIndex_++;
                     }
                     
@@ -771,19 +783,15 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                                 child_.updateTexelSize();
                                 
                                 var priority_ = ((child_.id_[0] + lodShift_) * typeFactor_) * child_.distance_; 
-
-                                /*if (child_.id_[0] == 18 && 
-                                child_.id_[1] == 20982 &&
-                                child_.id_[2] == 50643){
-                                    child_ = child_;    
-                                }*/
-                                
+                               
                                 //are draw buffers ready? preventRender=true, preventLoad_=false
-                                if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, (depth_ > 0))) {
+                                if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, true)) {
                                     readyCount_++;
                                     childrenBuffer_.push(child_);
                                 }
-                            }
+                            } //if (drawGrid_) {
+                             //   child_.drawGrid(cameraPos_);
+                            //}
                         }
                     }
         
@@ -808,15 +816,6 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                         for (var j = 0, lj = childrenBuffer_.length; j < lj; j++) {
                             newProcessBuffer_[newProcessBufferIndex_] = [childrenBuffer_[j], depth_];
                             newProcessBufferIndex_++;
-                            
-                            /*
-                            var child_ = childrenBuffer_[j];
-                            if (child_.id_[0] == 18 && 
-                            child_.id_[1] == 20982 &&
-                            child_.id_[2] == 50643){
-                                child_ = child_;    
-                            }*/
-
                         }
                     } else {
                         
@@ -826,29 +825,34 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                         var priority_ = ((tile_.id_[0] + lodShift_) * typeFactor_) * tile_.distance_; 
 
                         if (map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, true)) {
-                            drawBuffer_[drawBufferIndex_] = tile_;
+                            drawBuffer_[drawBufferIndex_] = [tile_, false];
                             drawBufferIndex_++;
                         } else {
 
                             //add childern to new process buffer 
+                            /*
                             for (var j = 0, lj = childrenBuffer_.length; j < lj; j++) {
                                 newProcessBuffer_[newProcessBufferIndex_] = [childrenBuffer_[j], depth_];
                                 newProcessBufferIndex_++;
-                                
-                                /*
-                                var child_ = childrenBuffer_[j];
-                                if (child_.id_[0] == 18 && 
-                                child_.id_[1] == 20982 &&
-                                child_.id_[2] == 50643){
-                                    child_ = child_;    
-                                }*/
-    
+                            }*/
+
+                            for (var j = 0; j < 4; j++) {
+                                var child_ = tile_.children_[j];
+                                if (child_) {
+                                    if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+                                        this.updateNodeHeightExtents(child_, child_.metanode_);
+                                        child_.updateTexelSize();
+
+                                        newProcessBuffer_[newProcessBufferIndex_] = [child_, depth_];
+                                        newProcessBufferIndex_++;
+                                    }
+                                }
                             }
 
                         } 
                     }
 
-                } else  {  //go deeper
+                }  else  {  //go deeper
                     
                     
                     for (var j = 0; j < 4; j++) {
@@ -869,11 +873,20 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
 
                                 newProcessBuffer_[newProcessBufferIndex_] = [child_, depth_];
                                 newProcessBufferIndex_++;
-                            }
+                            } //if (drawGrid_) {
+                            //    child_.drawGrid(cameraPos_);
+                            //}
                         }
                     }                    
                 }
             }
+
+
+            if (lastProcessBufferIndex_ == newProcessBufferIndex_ && lastDrawBufferIndex_ == drawBufferIndex_) {
+                drawBuffer_[drawBufferIndex_] = [tile_, true]; //draw grid
+                drawBufferIndex_++;
+            }
+
         }
 
         /*if (this.map_.drawIndices_) {
@@ -907,9 +920,23 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
     }
 
     for (var i = drawBufferIndex_ - 1; i >= 0; i--) {
+        var item_ = drawBuffer_[i];
         tile_ = drawBuffer_[i];
+/*
+            if (tile_.id_[0] == 10 && 
+                tile_.id_[1] == 304 &&
+                tile_.id_[2] == 193){
+                tile_ = tile_;    
+            }
+*/            
         //draw tile,  preventRender=false, preventLoad_=false
-        map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, 0, false, false);
+        
+        var tile_ = item_[0];
+        if (drawGrid_ && item_[1]) {
+            tile_.drawGrid(cameraPos_); 
+        } else {
+            map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, 0, false, false);
+        }
     }
 };
 

@@ -196,7 +196,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
     
                         var timeStart_ = performance.now();
                         
-                        for (var i = 0; i < 50000; i++) {
+                        for (var i = 0; i < 100000; i++) {
                             var r = map_.proj4_(from_, to_, coords_);
                         }
                         
@@ -205,14 +205,15 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                         var tt = timeEnd_ - timeStart_;
                         
                         console.log("proj4 timer: " + tt + "   " + JSON.stringify(r));
-                        
-                        
+                        */
+                        /*
                         var from2_ = map_.proj4_("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs", null, null, true);
                         var to2_ = map_.proj4_("+proj=geocent +datum=WGS84 +units=m +no_defs", null, null, true);
+                        var coords_ = [-5009377.08569725, 15028131.257091751, 0];
 
                         var timeStart_ = performance.now();
                         
-                        for (var i = 0; i < 50000; i++) {
+                        for (var i = 0; i < 100000; i++) {
                             var r = map_.proj4_(from2_, to2_, coords_);
                         }
                         
