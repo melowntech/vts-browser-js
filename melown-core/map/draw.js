@@ -3,6 +3,7 @@
 Melown.Map.prototype.draw = function(skipFreeLayers_) {
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
     this.updateFogDensity();
+    this.updateGridFactors();
     this.maxGpuUsed_ = this.gpuCache_.getMaxCost() * 0.9; 
     //this.cameraCenter_ = this.position_.getCoords();
     this.stats_.renderBuild_ = 0;
@@ -1320,6 +1321,29 @@ Melown.Map.prototype.updateFogDensity = function() {
     this.renderer_.fogDensity_ = density_; 
 
     //console.log("fden: " + density_);
+};
+
+
+Melown.Map.prototype.updateGridFactors = function() {
+    var nodes_ = this.referenceFrame_.getSpatialDivisionNodes();
+
+    for (var i = 0, li = nodes_.length; i < li; i++) {
+        var node_ = nodes_[i]; 
+        var embed_ = 8;
+
+        var altitude_ = Math.max(10, this.cameraDistance_ + 20);
+        var maxDistance_ = (node_.extents_.ur_[0] - node_.extents_.ll_[0])*2;
+        var gridSelect_ = Math.log(Math.min(maxDistance_,altitude_)) / this.log8_;
+        var gridMax_ = Math.log(maxDistance_) / this.log8_;
+    
+        gridSelect_ = gridMax_ - gridSelect_;
+    
+        node_.gridBlend_ = (gridSelect_ - Math.floor(gridSelect_));
+        
+        gridSelect_ = Math.floor(Math.floor(gridSelect_))+1;
+        node_.gridStep1_ = Math.pow(embed_, gridSelect_);
+        node_.gridStep2_ = node_.gridStep1_ * 8; 
+    }
 };
 
 

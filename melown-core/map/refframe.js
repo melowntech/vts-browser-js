@@ -15,9 +15,9 @@ Melown.MapRefFrame = function(map_, json_) {
     }
 
     this.model_ = {
-        physicalSrs_ : this.map_.getMapsSrs(model_["physicalSrs"]),
-        navigationSrs_ : this.map_.getMapsSrs(model_["navigationSrs"]),
-        publicSrs_ : this.map_.getMapsSrs(model_["publicSrs"])
+        physicalSrs_ : map_.getMapsSrs(model_["physicalSrs"]),
+        navigationSrs_ : map_.getMapsSrs(model_["navigationSrs"]),
+        publicSrs_ : map_.getMapsSrs(model_["publicSrs"])
     };
 
     this.params_ = {};
@@ -43,8 +43,8 @@ Melown.MapRefFrame = function(map_, json_) {
     var extents_ = this.parseSpaceExtents(division_["extents"]);
     this.division_.extents_ = extents_;
 
-    this.map_.spaceExtentSize_ = [extents_.ur_[0] - extents_.ll_[0], extents_.ur_[1] - extents_.ll_[1], extents_.ur_[2] - extents_.ll_[2]];
-    this.map_.spaceExtentOffset_ = extents_.ll_;
+    map_.spaceExtentSize_ = [extents_.ur_[0] - extents_.ll_[0], extents_.ur_[1] - extents_.ll_[1], extents_.ur_[2] - extents_.ll_[2]];
+    map_.spaceExtentOffset_ = extents_.ll_;
 
     var divisionNodes_ = division_["nodes"];
     this.division_.nodes_ = [];

@@ -155,6 +155,8 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.zLastShift_ = 0;
     this.bestMeshTexelSize_ = 1;
     this.bestGeodataTexelSize_ = 1;
+    this.log8_ = Math.log(8);
+    this.log2_ = Math.log(2);
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});

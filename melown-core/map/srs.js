@@ -203,7 +203,7 @@ Melown.MapSrs.prototype.getVerticalAdjustmentFactor = function(coords_) {
     return 1.0;
 };
 
-Melown.MapSrs.prototype.convertCoordsTo = function(coords_, srs_) {
+Melown.MapSrs.prototype.convertCoordsTo = function(coords_, srs_, skipVerticalAdjust_) {
     this.isReady();
     if (typeof srs_ !== "string") {
         if (srs_.id_ == this.id_) {
@@ -219,7 +219,7 @@ Melown.MapSrs.prototype.convertCoordsTo = function(coords_, srs_) {
     var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsProj4_;
     var coords2_ = this.proj4_(this.srsProj4_, srsDef_, coords_);
 
-    if (typeof srs_ !== "string") {
+    if (!skipVerticalAdjust_ && typeof srs_ !== "string") {
         coords2_[2] = srs_.getFinalHeight(coords2_);
     }
 
