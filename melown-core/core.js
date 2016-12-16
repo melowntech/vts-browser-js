@@ -268,7 +268,7 @@ string getCoreVersion()
 */
 
 Melown.getCoreVersion = function(full_) {
-    return (full_ ? "Core: " : "") + "1.68";
+    return (full_ ? "Core: " : "") + "1.69";
 };
 
 
