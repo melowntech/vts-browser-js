@@ -622,7 +622,7 @@ Melown.MapSurfaceTile.prototype.bboxVisible = function(id_, bbox_, cameraPos_, n
         }
     }
 
-    if (!map_.config_.mapPreciseBBoxTest_ || id_[0] < 4) {
+    if (!(map_.geocent_ && map_.config_.mapPreciseBBoxTest_) || id_[0] < 4) {
         return map_.camera_.bboxVisible(bbox_, cameraPos_);
     } else {
         return map_.camera_.pointsVisible(node_.bbox2_, cameraPos_);
@@ -801,7 +801,7 @@ Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
     var texelSizeFit_ = map_.texelSizeFit_;
     var node_ = this.metanode_;
     var cameraPos_ = map_.cameraPosition_;
-    var preciseDistance_ = map_.config_.mapPreciseDistanceTest_;  
+    var preciseDistance_ = (map_.geocent_ && map_.config_.mapPreciseDistanceTest_);  
 
     if (node_.hasGeometry()) {
         var screenPixelSize_ = Number.POSITIVE_INFINITY;

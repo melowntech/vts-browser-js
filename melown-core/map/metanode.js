@@ -226,7 +226,7 @@ Melown.MapMetanode.prototype.clone = function() {
 Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
     this.ready_ = true;
 
-    if (this.geocent_) {
+    if (!this.map_.geocent_) {
         return;
     }
 

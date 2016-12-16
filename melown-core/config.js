@@ -25,13 +25,13 @@ Melown.Core.prototype.initConfig = function() {
         mapHeightLodBlend_ : true,
         mapHeightNodeBlend_ : true,
         mapBasicTileSequence_ : false,
-        mapPreciseBBoxTest_ : false,
+        mapPreciseBBoxTest_ : true,
         mapPreciseDistanceTest_ : false,
         mapHeightfiledWhenUnloaded_ : true,
         mapSmartNodeParsing_ : true,
         mapLoadErrorRetryTime_ : 3000,
         mapLoadErrorMaxRetryCount_ : 3,
-        mapLoadMode_ : "topdown", //"downtop", "fit", "fitonly"
+        mapLoadMode_ : "fit", // "topdown", "downtop", "fit", "fitonly"
         mapGeodataLoadMode_ : "fit", //"fitonly"
         mapXhrImageLoad_ : false,
         mapStoreLoadStats_ : true,
