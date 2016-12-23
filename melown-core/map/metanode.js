@@ -4,6 +4,8 @@
 /** @const */ MelownMetanodeFlags_CoarsenessControl =  15;
 /** @const */ MelownMetanodeFlags_ChildShift =  3;
 
+Melown.MapMetanodeBuffer_ = new Uint8Array(1024);
+
 /**
  * @constructor
  */
@@ -107,7 +109,7 @@ struct Metanode {
     //}
 
     var extentsSize_ = (((this.id_[0] + 2) * 6 + 7) >> 3);
-    var extentsBytes_ = new Uint8Array(extentsSize_);
+    var extentsBytes_ = Melown.MapMetanodeBuffer_;//new Uint8Array(extentsSize_);
 
     for (var i = 0, li = extentsSize_; i < li; i++) {
         extentsBytes_[i] = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;

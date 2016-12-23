@@ -894,10 +894,12 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
     var middle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5];
     var normal_ = [0,0,0];
 
-    var pseudomerc_ = (node_.srs_.id_ == "pseudomerc");
+    var hasPoles_ = map_.referenceFrame_.hasPoles_;
+
+    //var pseudomerc_ = (node_.srs_.id_ == "pseudomerc");
     var angle_ = angle_ || this.metanode_.diskAngle2_;
     
-    if (pseudomerc_ &&  Math.acos(angle_) > Math.PI*0.1) {
+    if ((hasPoles_ && !node_.isPole_) &&  Math.acos(angle_) > Math.PI*0.1) {
         angle_ = Math.cos(Math.acos(angle_) * 0.5); 
         
         this.drawGrid(cameraPos_, [node_, [ [ll_[0], ll_[1]],  [middle_[0], middle_[1]] ] ], angle_);
@@ -1011,15 +1013,16 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
     buffer_[25] = n2_[1] - sy_;
     buffer_[26] = n2_[2] - sz_;
 
-    if (pseudomerc_ && !map_.poleRadius_) {
+    if (hasPoles_ && !map_.poleRadius_ && node_.id_[0] == 1 && !node_.isPole_) {
         var p = node_.getPhysicalCoords([node_.extents_.ur_[0], node_.extents_.ur_[1], 0]);
         map_.poleRadius_ = Math.sqrt(p[0]*p[0]+p[1]*p[1]); 
+        map_.poleRadiusFactor_ = 8 * Math.pow(2.0, 552058 / map_.poleRadius_); 
     }
 
     var factor_ = 1;
 
-    if (!pseudomerc_ && map_.poleRadius_) {
-        var factor_ = 8;
+    if (hasPoles_ && node_.isPole_) {
+        var factor_ = map_.poleRadiusFactor_; 
         var prog_ = renderer_.progPlane2_; 
         renderer_.gpu_.useProgram(prog_, ["aPosition", "aTexCoord"]);
         prog_.setVec4("uParams4", [-sx_, -sy_, map_.poleRadius_, 0]);

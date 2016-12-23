@@ -686,12 +686,12 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
             if (tile_.id_[0] >= 16) { 
                 tile_ = tile_;    
             }*/ 
-            
-            /* if (tile_.id_[0] == 18 && 
-                tile_.id_[1] == 70786 &&
-                tile_.id_[2] == 44410){
-                tile_ = tile_;    
-            } */
+
+            if (tile_.id_[0] == 12 &&
+                tile_.id_[1] == 690 &&
+                tile_.id_[2] == 1232) {
+                tile_ = tile_;
+            }
             
             node_ = tile_.metanode_;
 
@@ -827,6 +827,16 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                         if (map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, true)) {
                             drawBuffer_[drawBufferIndex_] = [tile_, false];
                             drawBufferIndex_++;
+
+                            for (var j = 0; j < 4; j++) {
+                                var child_ = tile_.children_[j];
+                                if (child_) {
+                                    if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
+                                        map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, false);
+                                    }
+                                }
+                            }
+
                         } else {
 
                             //add childern to new process buffer 

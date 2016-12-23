@@ -72,6 +72,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.renderer_ = this.core_.renderer_;//new Melown.Renderer(this.core_, this.core_.div_);
     this.camera_ = this.renderer_.camera_;
     this.cameraDistance_ = 10;
+    this.cameraDistance2_ = 10;
     this.cameraPosition_ = [0,0,0];
     this.cameraVector_ = [0,0,1];
     this.cameraCenter_ = [0,0,0];
@@ -689,6 +690,8 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapXhrImageLoad":               this.config_.mapXhrImageLoad_ = Melown.validateBool(value_, false); break;
         case "mapLoadMode":                   this.config_.mapLoadMode_ = Melown.validateString(value_, "topdown"); break;
         case "mapGeodataLoadMode":            this.config_.mapGeodataLoadMode_ = Melown.validateString(value_, "fit"); break;
+        case "mapPreciseBBoxTest":            this.config_.mapPreciseBBoxTest_ = Melown.validateBool(value_, true); break;
+        case "mapPreciseDistanceTest":        this.config_.mapPreciseDistanceTest_ = Melown.validateBool(value_, false); break;
         case "mapHeightfiledWhenUnloaded":    this.config_.mapHeightfiledWhenUnloaded_= Melown.validateBool(value_, false); break;
         case "mapVirtualSurfaces":            this.config_.mapVirtualSurfaces_ = Melown.validateBool(value_, true); break;
         case "mario":                         this.config_.mario_ = Melown.validateBool(value_, true); break;
@@ -724,6 +727,8 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapXhrImageLoad":               return this.config_.mapXhrImageLoad_;
         case "mapLoadMode":                   return this.config_.mapLoadMode_;
         case "mapGeodataLoadMode":            return this.config_.mapGeodataLoadMode_;
+        case "mapPreciseBBoxTest":            return this.config_.mapPreciseBBoxTest_;
+        case "mapPreciseDistanceTest":        return this.config_.mapPreciseDistanceTest_;
         case "mapHeightfiledWhenUnloaded":    return this.config_.mapHeightfiledWhenUnloaded_;
         case "mapVirtualSurfaces":            return this.config_.mapVirtualSurfaces_;
         case "mario":                         return this.config_.mario_;
@@ -900,16 +905,15 @@ Melown.Map.prototype.drawMap = function() {
         this.draw();
     //}
 
-    //if (!projected_) {    
-        //var camInfo_ = this.position_.getCameraInfo(true);
-        //var atmoSize_ = 50000;
+    if (!projected_ && this.drawFog_) {    
+        var camInfo_ = this.position_.getCameraInfo(true);
+        var atmoSize_ = 50000;
 
-        //var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
-        /*
+        var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
+        
         this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
-                                  navigationSrsInfo_["a"] + atmoSize_, this.renderer_.progAtmo_, 1, navigationSrsInfo_["a"]);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
-                                  */
-    //}
+                                  navigationSrsInfo_["a"] + atmoSize_, this.renderer_.progAtmo_, 1, navigationSrsInfo_["a"], atmoSize_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+    }
 };
 
 

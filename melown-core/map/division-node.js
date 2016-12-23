@@ -8,6 +8,7 @@ Melown.MapDivisionNode = function(map_, id_, srs_, extents_, heightRange_, parti
     this.extents_ = extents_;
     this.heightRange_ =  heightRange_;
     this.partitioning_ = partitioning_;
+    this.isPole_ = (id_[0] == 1 && ((id_[1] == 0 && id_[2] == 1)||(id_[1] == 1 && id_[2] == 0)));
 };
 
 Melown.MapDivisionNode.prototype.getInnerCoords = function (coords_) {

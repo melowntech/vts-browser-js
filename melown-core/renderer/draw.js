@@ -79,7 +79,7 @@ Melown.Renderer.prototype.drawTBall = function(position_, size_, shader_, textur
     }
 };
 
-Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, nfactor_) {
+Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, nfactor_, atmoSize_) {
     var gl_ = this.gpu_.gl_;
 
     //gl_.disable(gl_.CULL_FACE);
@@ -111,7 +111,7 @@ Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, nfactor
     shader_.setMat4("uProj", proj_);
     shader_.setMat4("uMV", mv_);
     shader_.setMat3("uNorm", norm_);
-    shader_.setFloat("uNFactor", nfactor_);
+    shader_.setFloat("uParams", [nfactor_, atmoSize_, 0 ,0]);
 
     this.atmoMesh_.draw(shader_, "aPosition", null /*"aTexCoord"*/);
 

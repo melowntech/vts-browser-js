@@ -266,7 +266,8 @@ Melown.atmoVertexShader =
 
 Melown.atmoFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
-    "uniform float uNFactor;\n"+
+//    "uniform float uNFactor;\n"+
+    "uniform vec4 uParams;\n"+       //[radius, atmoSize, 0 ,0]
     "varying vec4 vPosition;\n"+
     "varying vec3 vNormal;\n"+
     "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
@@ -274,8 +275,8 @@ Melown.atmoFragmentShader = "precision mediump float;\n"+
         "vec3 ldir = normalize(-vPosition.xyz);\n"+
         "vec4 c = texture2D(uSampler, vec2(0,0));\n"+
         //"c.y = 1.0+dot(normalize(vNormal),ldir)*4.0;\n"+
-        "float l = dot(normalize(vNormal*uNFactor),ldir);\n"+
-        "c = mix(vec4(0.0,0.0,0.0,1.0),fogColor,max(0.0,-l*3.0));\n"+
+        "float l = dot(normalize(vNormal*uParams[0]),ldir);\n"+
+        "c = mix(vec4(0.0,0.0,0.0,1.0),fogColor, 1.0 - clamp(-l, 0.0, uParams[1]) / uParams[1]);\n"+
         "gl_FragColor = c;\n"+
     "}";
 

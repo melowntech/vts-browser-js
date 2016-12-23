@@ -144,11 +144,13 @@ Melown.Camera.prototype.scaleFactor = function(worldPos_, returnDist_) {
 
     if (returnDist_ == true) {
         if (dist_ < this.near_) return [Number.POSITIVE_INFINITY, dist_];
-        return [this.projection_[0] / dist_, dist_];
+        return [this.projection_[0] / dist_, dist_]; 
+        //return [(this.projection_[5]*0.5) / dist_, dist_]; //projection by sy
     }
 
     if (dist_ < this.near_) return Number.POSITIVE_INFINITY;
     return this.projection_[0] / dist_;
+    //return (this.projection_[5]*0.5) / dist_; //projection by sy
 };
 
 Melown.Camera.prototype.scaleFactor2 = function(dist_) {
@@ -156,6 +158,7 @@ Melown.Camera.prototype.scaleFactor2 = function(dist_) {
 
     if (dist_ < this.near_) return Number.POSITIVE_INFINITY;
     return this.projection_[0] / dist_;
+    //return (this.projection_[5]*0.5) / dist_; //projection by sy
 };
 
 Melown.Camera.prototype.distance = function(worldPos_) {

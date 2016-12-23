@@ -139,6 +139,11 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
         }
     }*/
    
+   /*
+   if (this.mapLoaderUrl_ == "https://cdn.test.mlwn.se/mario/proxy//melown2015/tms/melown/carlo-tex.2/12-690-1232.jpg") {
+       this.mapLoaderUrl_ = this.mapLoaderUrl_;
+   }*/
+   
    if (this.neverReady_) {
        return false;
    }
@@ -172,6 +177,16 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
         
         return false;
     }
+
+    /*
+    if (!this.extraBound_ && this.extraInfo_ && !this.mask_) {
+        var layer_ = this.extraInfo_.layer_;
+        
+        if (layer_ && layer_.maskUrl_ && this.checkType_ != "metatile") {
+            var path_ = layer_.getMaskUrl(this.tile_.id_);
+            this.mask_ = this.tile_.resources_.getTexture(path_, null, null, null, this.tile_, this.internal_);
+        }
+    }*/
 
     switch (this.checkType_) {
         case "metatile":

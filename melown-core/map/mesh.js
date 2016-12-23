@@ -306,6 +306,8 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
     if (type_ == "depth") {
         program_ = renderer_.progDepthTile_;
         //texcoordsAttr_ = "aTexCoord";
+    } else if (type_ == "flat") {
+        program_ = renderer_.progFlatShadeTile_;
     } else {
         if (drawWireframe_ > 0) {
             switch (drawWireframe_) {
@@ -385,7 +387,7 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
         } else {
             return;
         }
-    } else if (type_ != "fog" && type_ != "depth") {
+    } else if (type_ != "fog" && type_ != "depth" && type_ != "flat") {
         return;
     }
 

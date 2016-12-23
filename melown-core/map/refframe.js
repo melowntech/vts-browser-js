@@ -53,6 +53,8 @@ Melown.MapRefFrame = function(map_, json_) {
         return;
     }
 
+    this.hasPoles_ = (divisionNodes_.length == 4); 
+
     for (var i = 0, li = divisionNodes_.length; i < li; i++) {
         var node_ = this.parseNode(divisionNodes_[i]);
         this.division_.nodes_.push(node_);

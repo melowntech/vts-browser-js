@@ -33,11 +33,11 @@ Melown.Map.prototype.updateCamera = function() {
     this.cameraVector2_ = camInfo_.vector2_;
     this.cameraPosition_ = camInfo_.orbitCoords_;
     this.cameraHeight_ = camInfo_.orbitHeight_ + height_;
-    this.cameraTerrainHeight_ = height_;
+    this.cameraTerrainHeight_ = this.cameraHeight_ - surfaceHeight_[0];
 
     //get camera distance
-    this.cameraDistance_ = this.position_.getViewDistance();
-    this.cameraDistance_ = Math.max(this.cameraTerrainHeight_, this.position_.getViewDistance());
+    this.cameraDistance2_ = this.position_.getViewDistance();
+    this.cameraDistance_ = Math.max(this.cameraTerrainHeight_, this.cameraDistance2_);
     this.cameraDistance_ = Melown.clamp(this.cameraDistance_, 0.1, this.camera_.getFar());
     
     //this.renderer_.cameraDistance_ = camInfo_.distance_; //needed for fog

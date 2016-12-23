@@ -220,7 +220,8 @@ Melown.MapInterface.prototype.getCameraInfo = function() {
         "view-projection-matrix" : camera_.mvp_.slice(),
         "rotation-matrix" : camera_.rotationview_.slice(),
         "position" : this.map_.cameraPosition_.slice(),
-        "vector" : this.map_.cameraVector_.slice()
+        "vector" : this.map_.cameraVector_.slice(),
+        "distance" : this.map_.cameraDistance_
     };
 };
 
