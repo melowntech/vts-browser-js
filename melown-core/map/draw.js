@@ -1327,7 +1327,7 @@ Melown.Map.prototype.updateFogDensity = function() {
     var tiltFactor_ = (Math.max(5,-orientation_[1])/90);
     var heightFactor_ = 1-Math.max(0,Math.min(1.0,this.cameraHeight_ / atmosphereHeight_));
     
-    //var density_ = ((Math.log(0.05) / (cameraVisibility_)) * tiltFactor_ * heightFactor_);
+//    var density_ = ((Math.log(0.05) / (cameraVisibility_)) * tiltFactor_ * heightFactor_);
     var density_ = Math.log(0.05) / ((cameraVisibility_ * Math.max(1,this.cameraHeight_*0.0001))* tiltFactor_);
     density_ *= (5.0) / (Math.min(50000, Math.max(this.cameraDistance_, 1000)) /5000);
 

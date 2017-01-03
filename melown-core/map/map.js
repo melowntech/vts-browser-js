@@ -907,19 +907,31 @@ Melown.Map.prototype.drawMap = function() {
 
     if (!projected_ && this.drawFog_) {    
         var camInfo_ = this.position_.getCameraInfo(true);
-        var atmoSize_ = 50000;
-
         var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
+
+        var earthRadius_ =  navigationSrsInfo_["a"];
+        var atmoSize_ = 50000;
         
-        //var cameraPosToEarthCenter_ = [0,0,0,0];
-        //Melown.vec3.normalize(this.cameraPosition_, cameraPosToEarthCenter_);
+        var cameraPosToEarthCenter_ = [0,0,0,0];
+        Melown.vec3.normalize(this.cameraPosition_, cameraPosToEarthCenter_);
         
-        //var horizAngle_ = Math.atan(1.0/(Melown.vec3.length(this.cameraPosition_) / navigationSrsInfo_["a"]));  //cotan = cameraDistFromCenter / earthRadius
-        //var horizAngle2_ = horizAngle_ / Math.PI * 180;
+        var horizAngle_ = Math.atan(1.0/(Melown.vec3.length(this.cameraPosition_) / navigationSrsInfo_["a"]));  //cotan = cameraDistFromCenter / earthRadius
+        var horizAngle2_ = (horizAngle_ / Math.PI * 180)*0.5;
+
+        var pos_ = this.getPosition();
+        var orientation_ = pos_.getOrientation();
+        var tiltFactor_ = (Math.max(5,-orientation_[1])/90);
+
+        var heightFactor_ = 1-Math.max(0,Math.min(1.0,this.cameraHeight_ / (atmoSize_*(10+20*tiltFactor_))));
+        heightFactor_ = heightFactor_ * heightFactor_;
+
+        var params_ = [Math.max(2,heightFactor_*128),0,0,0];
+
+        this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
+                                  earthRadius_, this.renderer_.progAtmo2_, params_,  cameraPosToEarthCenter_, true);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
         
         //console.log("" + horizAngle_+ "  a:" + horizAngle2_);
         
-        var earthRadius_ =  navigationSrsInfo_["a"];
         var safetyFactor_ = 2.0; 
         //var factor_ = (1 / earthRadius_) * safetyFactor_ * 2.0;  
         
@@ -931,12 +943,10 @@ Melown.Map.prototype.drawMap = function() {
         //factor_ *= ((earthRadius_ + atmoSize_) / earthRadius_);  
 
         var params2_ = [this.cameraPosition_[0] * factor_, this.cameraPosition_[1] * factor_, this.cameraPosition_[2] * factor_, 1];
+
         
         this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
                                   earthRadius_ + atmoSize_, this.renderer_.progAtmo_, params_,  params2_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
-
-//        this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
-  //                                earthRadius_ + atmoSize_, this.renderer_.progAtmo_, params_,  params2_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
 
     }
 };

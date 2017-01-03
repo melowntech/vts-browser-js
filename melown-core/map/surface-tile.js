@@ -1064,7 +1064,7 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
     var px_ = (ll_[0] - node_.extents_.ll_[0]) * lx_ * llx_;
     var py_ = (ur_[1] - node_.extents_.ll_[1]) * ly_ * lly_;
 
-    prog_.setVec4("uParams", [step1_ * factor_, 0, 1/15, node_.gridStep2_ * factor_]);
+    prog_.setVec4("uParams", [step1_ * factor_, this.map_.fogDensity_, 1/15, node_.gridStep2_ * factor_]);
     prog_.setVec4("uParams3", [(py_ - Math.floor(py_)), (px_ - Math.floor(px_)), lly_, llx_]);
     prog_.setVec4("uParams2", [0, 0, node_.gridBlend_, 0]);
 

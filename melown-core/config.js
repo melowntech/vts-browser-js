@@ -35,7 +35,7 @@ Melown.Core.prototype.initConfig = function() {
         mapGeodataLoadMode_ : "fit", //"fitonly"
         mapXhrImageLoad_ : false,
         mapStoreLoadStats_ : true,
-        mapFog_ : false,
+        mapFog_ : true,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false,
         authorization_ : null, 
