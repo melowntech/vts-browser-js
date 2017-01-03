@@ -901,9 +901,9 @@ Melown.Map.prototype.drawMap = function() {
 
     this.loader_.setChannel(0); //0 = hires channel
     this.zFactor_ = 0;
-    //if (!this.drawBBoxes_) {
+    if (!this.drawBBoxes_) {
         this.draw();
-    //}
+    }
 
     if (!projected_ && this.drawFog_) {    
         var camInfo_ = this.position_.getCameraInfo(true);
@@ -911,8 +911,33 @@ Melown.Map.prototype.drawMap = function() {
 
         var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
         
+        //var cameraPosToEarthCenter_ = [0,0,0,0];
+        //Melown.vec3.normalize(this.cameraPosition_, cameraPosToEarthCenter_);
+        
+        //var horizAngle_ = Math.atan(1.0/(Melown.vec3.length(this.cameraPosition_) / navigationSrsInfo_["a"]));  //cotan = cameraDistFromCenter / earthRadius
+        //var horizAngle2_ = horizAngle_ / Math.PI * 180;
+        
+        //console.log("" + horizAngle_+ "  a:" + horizAngle2_);
+        
+        var earthRadius_ =  navigationSrsInfo_["a"];
+        var safetyFactor_ = 2.0; 
+        //var factor_ = (1 / earthRadius_) * safetyFactor_ * 2.0;  
+        
+        var params_ = [safetyFactor_, safetyFactor_ * ((earthRadius_ + atmoSize_) / earthRadius_), 0.25, safetyFactor_* ((earthRadius_ + atmoSize_) / earthRadius_)];
+
+        //var factor_ = (1 / (earthRadius_ + atmoSize_) ) * safetyFactor_;  
+        var factor_ = (1 / (earthRadius_) ) * safetyFactor_;  
+
+        //factor_ *= ((earthRadius_ + atmoSize_) / earthRadius_);  
+
+        var params2_ = [this.cameraPosition_[0] * factor_, this.cameraPosition_[1] * factor_, this.cameraPosition_[2] * factor_, 1];
+        
         this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
-                                  navigationSrsInfo_["a"] + atmoSize_, this.renderer_.progAtmo_, 1, navigationSrsInfo_["a"], atmoSize_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+                                  earthRadius_ + atmoSize_, this.renderer_.progAtmo_, params_,  params2_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+
+//        this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
+  //                                earthRadius_ + atmoSize_, this.renderer_.progAtmo_, params_,  params2_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+
     }
 };
 

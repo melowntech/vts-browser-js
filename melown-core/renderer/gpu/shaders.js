@@ -260,7 +260,10 @@ Melown.atmoVertexShader =
         "vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n"+
         "gl_Position = uProj * camSpacePos;\n"+
         "vec4 c = uMV * vec4(aPosition, 1.0);\n"+
-        "vNormal = uNorm * (aPosition.xyz - vec3(0.5));\n"+
+
+//        "vNormal = uNorm * (aPosition.xyz - vec3(0.5));\n"+
+        "vNormal = (aPosition.xyz - vec3(0.5));\n"+
+
         "vPosition = camSpacePos;\n"+
     "}";
 
@@ -268,15 +271,27 @@ Melown.atmoFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
 //    "uniform float uNFactor;\n"+
     "uniform vec4 uParams;\n"+       //[radius, atmoSize, 0 ,0]
+    "uniform vec4 uParams2;\n"+       //[radius, atmoSize, 0 ,0]
     "varying vec4 vPosition;\n"+
     "varying vec3 vNormal;\n"+
     "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
     "void main() {\n"+
-        "vec3 ldir = normalize(-vPosition.xyz);\n"+
-        "vec4 c = texture2D(uSampler, vec2(0,0));\n"+
+  //      "vec3 ldir = normalize(-vPosition.xyz);\n"+
+//        "vec4 c = texture2D(uSampler, vec2(0,0));\n"+
         //"c.y = 1.0+dot(normalize(vNormal),ldir)*4.0;\n"+
-        "float l = dot(normalize(vNormal*uParams[0]),ldir);\n"+
-        "c = mix(vec4(0.0,0.0,0.0,1.0),fogColor, 1.0 - clamp(-l, 0.0, uParams[1]) / uParams[1]);\n"+
+        
+        //"float l = dot(normalize(vNormal*uParams[0]),ldir);\n"+
+        //"c = mix(vec4(0.0,0.0,0.0,1.0),fogColor, 1.0 - clamp(-l, 0.0, uParams[1]) / uParams[1]);\n"+
+        
+//        "float l = dot(normalize(vNormal),ldir);\n"+
+        "float l = dot(normalize(vNormal),-uParams2.xyz);\n"+
+        //"l = cos(acos(l) - uParams.x);\n"+  //anguler shift
+        "l = (1.0-(abs(l)));\n"+
+        //"l = clamp(pow(l,12.0)*uParams.w, 0.0, 1.0);\n"+
+
+//        "vec4 c = vec4(fogColor.xyz*pow(0.85 - l, 13.0), 1.0);\n"+
+        "vec4 c = vec4(fogColor.xyz*l, 1.0);\n"+
+        
         "gl_FragColor = c;\n"+
     "}";
 
@@ -304,6 +319,93 @@ Melown.atmoFragmentShader2 = "precision mediump float;\n"+
         //"float l = dot(normalize(vNormal*uNFactor),ldir);\n"+
         //"c = mix(vec4(0.0,0.0,0.0,1.0),fogColor,max(0.0,-l*3.0));\n"+
         "gl_FragColor = fogColor;\n"+
+    "}";
+
+
+Melown.atmoVertexShader3 =
+    "attribute vec3 aPosition;\n"+
+    "attribute vec2 aTexCoord;\n"+
+    "uniform mat4 uMV, uProj;\n"+
+    //"uniform mat3 uNorm;\n"+
+    "uniform vec4 uParams;\n"+       //[surfaceRadius, surfaceRadius, strech ,safetyfactor]
+    "uniform vec4 uParams2;\n"+       //[cameraPos, 1]
+
+    "varying vec2 vTexcoords;\n"+
+
+    "void main(){ \n"+
+        "gl_Position = uProj * (uMV * vec4(aPosition, 1.0));\n"+
+
+        "vec3 position = (aPosition.xyz - vec3(0.5)) * vec3(uParams.w * 2.0);\n"+
+        "vec4 camPos = uParams2;\n"+
+        "float SurfaceRadius = uParams.x;\n"+ 
+        "float AtmosphereRadius = uParams.y;\n"+ 
+        "float StretchAmt = uParams.z;\n"+ 
+     
+        //"oPosition = mul(Po, WorldViewProj);\n"+ 
+     
+        "float radius = length(position);\n"+
+        "float radius2 = radius * radius;\n"+ 
+        "float camHeight = length(camPos.xyz);\n"+
+        "vec3 camToPos = position - camPos.xyz;\n"+
+        "float farDist = length(camToPos);\n"+
+     
+        //"vec3 normal = normalize(position);\n"+
+     
+        //"vec3 rayDir = camToPos / farDist;\n"+
+        //"float camHeight2 = camHeight * camHeight;\n"+
+     
+        // Calculate the closest intersection of the ray with the outer atmosphere
+        //"float B = 2.0 * dot(camPos.xyz, rayDir);\n"+
+        //"float C = camHeight2 - radius2;\n"+
+        //"float det = max(0.0, B*B - 4.0 * C);\n"+
+        //"float nearDist = 0.5 * (-B - sqrt(det));\n"+
+        //"vec3 nearPos = camPos.xyz + (rayDir * nearDist);\n"+
+        //"vec3 nearNormal = normalize(nearPos);\n"+
+    
+        // get distance to surface horizon
+        "float altitude = camHeight - SurfaceRadius;\n"+
+        "float horizonDist = sqrt((altitude*altitude) + (2.0 * SurfaceRadius * altitude));\n"+
+        "float maxDot = horizonDist / camHeight;\n"+
+     
+        // get distance to atmosphere horizon - use max(0,...) because we can go into the atmosphere
+        "altitude = max(0.0,camHeight - AtmosphereRadius);\n"+
+        "horizonDist = sqrt((altitude*altitude) + (2.0 * AtmosphereRadius * altitude));\n"+
+     
+        // without this, the shift between inside and outside atmosphere is  jarring
+        "float tweakAmount = 0.1;\n"+
+        "float minDot = max(tweakAmount,horizonDist / camHeight);\n"+
+     
+        // scale minDot from 0 to -1 as we enter the atmosphere
+        "float minDot2 = ((camHeight - SurfaceRadius) * (1.0 / (AtmosphereRadius  - SurfaceRadius))) - (1.0 - tweakAmount);\n"+
+        "minDot = min(minDot, minDot2);\n"+
+      
+        // get dot product of the vertex we're looking out
+        "float posDot = dot(camToPos / farDist,-camPos.xyz / camHeight) - minDot;\n"+
+     
+        // calculate the height from surface in range 0..1
+        "float height = posDot * (1.0 / (maxDot - minDot));\n"+
+    
+        "vTexcoords.y = height;\n"+ 
+     
+        "height -= min(0.0,minDot2 + ((1.0 + StretchAmt) * minDot2));\n"+
+        "vTexcoords.x = height;\n"+
+    "}";
+
+Melown.atmoFragmentShader3 = "precision mediump float;\n"+
+    "varying vec2 vTexcoords;\n"+
+    "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
+    "void main() {\n"+
+//        "gl_FragColor = vec4(1.0 - exp(((fogColor * vTexcoords.x) * (1.0 + vTexcoords.y)) * -1.5));\n"+
+//        "gl_FragColor = vec4(vec3(fract(vTexcoords.y)),1.0);\n"+
+//        "gl_FragColor = vec4(vec3(1.0),fract(vTexcoords.y));\n"+
+//        "gl_FragColor = vec4(vec3(1.0),1.0 - exp(((fogColor * vTexcoords.x)) * -1.5));\n"+
+
+        "gl_FragColor = vec4(vec3(vTexcoords.y),1.0);\n"+
+//        "gl_FragColor = vec4(fogColor.xyz, vTexcoords.x);\n"+
+
+
+//        "gl_FragColor = vec4(vec3(1.0),1.0 - exp(((fogColor * vTexcoords.x) * (1.0 + vTexcoords.y)) * -1.5));\n"+
+
     "}";
 
 

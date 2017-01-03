@@ -79,10 +79,15 @@ Melown.Renderer.prototype.drawTBall = function(position_, size_, shader_, textur
     }
 };
 
-Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, nfactor_, atmoSize_) {
+Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, params_, params2_, normals_) {
     var gl_ = this.gpu_.gl_;
 
     //gl_.disable(gl_.CULL_FACE);
+
+            gl_.blendEquationSeparate(gl_.FUNC_ADD, gl_.FUNC_ADD);
+            gl_.blendFuncSeparate(gl_.SRC_ALPHA, gl_.ONE_MINUS_SRC_ALPHA, gl_.ONE, gl_.ONE_MINUS_SRC_ALPHA);
+            gl_.enable(gl_.BLEND);
+
 
     var normMat_ = Melown.mat4.create();
     Melown.mat4.multiply(Melown.scaleMatrix(2, 2, 2), Melown.translationMatrix(-0.5, -0.5, -0.5), normMat_);
@@ -110,14 +115,33 @@ Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, nfactor
     shader_.setSampler("uSampler", 0);
     shader_.setMat4("uProj", proj_);
     shader_.setMat4("uMV", mv_);
-    shader_.setMat3("uNorm", norm_);
-    shader_.setFloat("uParams", [nfactor_, atmoSize_, 0 ,0]);
+    
+    if (normals_) {
+        shader_.setMat3("uNorm", norm_);
+        gl_.cullFace(gl_.FRONT);
+    }
+    
+
+    if (params_) {
+        shader_.setVec4("uParams", params_);
+    }
+
+    if (params2_) {
+        shader_.setVec4("uParams2", params2_);
+    }
 
     this.atmoMesh_.draw(shader_, "aPosition", null /*"aTexCoord"*/);
 
     this.renderedPolygons_ += this.skydomeMesh_.getPolygons();
 
     //gl_.enable(gl_.CULL_FACE);
+    if (normals_) {
+        gl_.cullFace(gl_.BACK);
+    }
+
+
+    gl_.disable(gl_.BLEND);
+
 };
 
 Melown.Renderer.prototype.drawBall2 = function(position_, size_, shader_, nfactor_, dir_, radius2_) {

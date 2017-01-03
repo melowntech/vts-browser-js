@@ -913,7 +913,7 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
      
     var desiredSamplesPerViewExtent_ = 5;
     var nodeExtent_ = node_.extents_.ur_[1] - node_.extents_.ll_[1];
-    var viewExtent_ = this.distance_;
+    var viewExtent_ = this.distance_ ;//* 0.1;
     var lod_ = Math.log((desiredSamplesPerViewExtent_ * nodeExtent_) / viewExtent_) / map_.log2_;
     lod_ = Math.max(0,lod_ - 8 + node_.id_[0]);
     
