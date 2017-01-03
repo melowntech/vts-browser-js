@@ -36,6 +36,7 @@ Melown.UIControlLoading.prototype.show = function() {
     this.ui_.setControlVisible("compass", false);
     this.ui_.setControlVisible("zoom", false);
     this.ui_.setControlVisible("space", false);
+    this.ui_.setControlVisible("search", false);
     this.ui_.setControlVisible("link", false);
     this.ui_.setControlVisible("credits", false);
     this.ui_.setControlVisible("loading", true);
@@ -46,6 +47,7 @@ Melown.UIControlLoading.prototype.hide = function() {
     this.ui_.setControlVisible("compass", this.ui_.config_.controlCompass_);
     this.ui_.setControlVisible("zoom", this.ui_.config_.controlZoom_);
     this.ui_.setControlVisible("space", this.ui_.config_.controlSpace_);
+    this.ui_.setControlVisible("search", this.ui_.config_.controlSearch_);
     this.ui_.setControlVisible("link", this.ui_.config_.controlLink_);
     this.ui_.setControlVisible("credits", this.ui_.config_.controlCredits_);
     this.ui_.setControlVisible("loading", false);
@@ -87,10 +89,12 @@ Melown.UIControlLoading.prototype.update = function() {
     
     //"bestMeshTexelSize" : this.map_.bestMeshTexelSize_,
     //"bestGeodataTexelSize" : this.map_.bestGeodataTexelSize_, 
+    //console.log("drawnTiles: " + stats_["drawnTiles"] + "  geodata: " + stats_["drawnGeodataTiles"]);
 
     if ((stats_["surfaces"] == 0 && stats_["freeLayers"] == 0) ||  //nothing to load 
         (stats_["downloading"] == 0 && stats_["lastDownload"] > 0 && (timer_ - stats_["lastDownload"]) > 1000) || //or everything loaded
-        (stats_["bestMeshTexelSize"] != 0 && stats_["bestMeshTexelSize"] <= (stats_["texelSizeFit"] * 3))) { //or resolution is good enough
+        (stats_["bestMeshTexelSize"] != 0 && stats_["bestMeshTexelSize"] <= (stats_["texelSizeFit"] * 3) || //or resolution is good enough
+        (stats_["loadMode"] == "fit" || stats_["loadMode"] == "fitonly") && (stats_["drawnTiles"] - stats_["drawnGeodataTiles"]) > 1) ) { //or at leas some tiles are loaded
         this.hide();
     }
 

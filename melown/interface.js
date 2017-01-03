@@ -485,7 +485,7 @@ Melown.BrowserInterface.prototype.getParam = function(key_) {
 };
 
 Melown.getBrowserVersion = function() {
-    return "0.1";
+    return "Browser: 1.11, Core: " + Melown.getCoreVersion();
 };
 
 //prevent minification

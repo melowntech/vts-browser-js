@@ -181,6 +181,53 @@
 }
 
 /*
+ * SEARCH
+ */
+
+.melown-search {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+}
+
+.melown-search input[type="text"] {
+    padding: 5px 5px 5px 25px;
+    border-radius: 1px;
+    border: none;
+    background-image: url(data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAAlwSFlzAAAGnQAABp0B6C+u5gAAActpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDUuNC4wIj4KICAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyI+CiAgICAgICAgIDx4bXA6Q3JlYXRvclRvb2w+d3d3Lmlua3NjYXBlLm9yZzwveG1wOkNyZWF0b3JUb29sPgogICAgICAgICA8dGlmZjpPcmllbnRhdGlvbj4xPC90aWZmOk9yaWVudGF0aW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KGMtVWAAAAetJREFUSA3tUz1LQmEU9noD4zYINaRLiFtrS0tSjtXW4NAQ6tAdosW5wTUcAoNCFD+WCqHAQRothKDRsSjEXyBFSVLe2/PAfeFyvxAhWnzhcN73nOc85+Oe6/NNz39PQBqngFqttqDrekRRlKdEIvExTozAeCaoVCo7AOYkSYoaATp0R9O0g3Q6/SBIvLTfzVmtVs9AfA15RvV7fr8/Bq1CNNjaSJ5xizXbHTtg5SQHMJNMJk/MAa1Wa6bX653DlkQna+jk0ey33t06yAF4ayVncDwe/0EXh5BXdHVkJbS+bQn4QVF9FASXVrB4p1KpL9yvgYlls1kbh8BR25wIitAhy3KX2u2g+i4KCYbDYdkNQ7stAVcRdn00Gi17BWL+9PdVVf32wtkSGHveQXX79XrdsbpSqTQP/y6IG17k9NkS0Mg9x6hWBoPBaT6fD9AmDskxvgu8Q8DcCLubdlxTgrnnqPIY1xcSceYci1F5iBjYB1Db+Oh3fDsd1wQEl8vlVa4iiGIgDsLUhzSMyq9gU5gEsoX/4Z4x1uOZQIC5itwW8wdFhxvwN5kE+hNJNtFJW8QIPVYCAbZqdLiODpuwz0Heh8PhEop4M+McP7IZ4HXnWFg5yaEDSDbrhZ/YVygUgsVicXFigmngn07gF2iNwr51RjszAAAAAElFTkSuQmCC),none;
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    height: 26px;
+}
+
+.melown-search-input {
+    border-radius: 3px;
+    border: 2px solid rgba(255, 255, 255, 0.47);
+    position: absolute;
+}
+
+.melown-search-list {
+    font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 3px;
+    padding: 5px;
+    display: none;
+    cursor: default;
+    position: relative;
+    top: 33px;    
+}
+
+.melown-search-listitem {
+    margin-bottom: 5px;
+}
+
+.melown-search-listitem:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+/*
  * LOADING
  */
 

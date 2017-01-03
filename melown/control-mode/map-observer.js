@@ -96,6 +96,7 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     if (this.browser_.controlMode_.altKey_ &&
         this.browser_.controlMode_.shiftKey_ &&
         this.browser_.controlMode_.ctrlKey_) {
+        Melown.Utils.preventDefault(event_);    
         var fov_ = Melown.clamp(map_.getPositionFov(pos_) * factor_, 1, 179);
         pos_ = map_.setPositionFov(pos_, fov_);
         map_.setPosition(pos_);

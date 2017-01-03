@@ -14,6 +14,7 @@ Melown.Browser.prototype.initConfig = function(data_) {
         controlCompass_ : true,
         controlZoom_ : true,
         controlSpace_ : true,
+        controlSearch_ : true,
         controlMeasure_ : false,
         controlLink_ : false,
         controlScale_ : true,
@@ -79,6 +80,7 @@ Melown.Browser.prototype.setConfigParam = function(key_, value_, ignoreCore_) {
         case "controlScale":       this.config_.controlScale_ = Melown.Utils.validateBool(value_, true); this.updateUI(key_);     break;
         case "controlLayers":      this.config_.controlLayers_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);   break;
         case "controlSpace":       this.config_.controlSpace_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);    break;
+        case "controlSearch":      this.config_.controlSearch_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);   break;
         case "controlLink":        this.config_.controlLink_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);     break;
         case "controlLogo":        this.config_.controlLogo_ = Melown.Utils.validateBool(value_, false); this.updateUI(key_);     break;
         case "controlCredits":     this.config_.controlCredits_ = Melown.Utils.validateBool(value_, true); this.updateUI(key_);   break;
@@ -155,6 +157,7 @@ Melown.Browser.prototype.getConfigParam = function(key_) {
         case "controlScale":       return this.config_.controlScale_;
         case "controlLayers":      return this.config_.controlLayers_;
         case "controlSpace":       return this.config_.controlSpace_;
+        case "controlSearch":      return this.config_.controlSearch_;
         case "controlLink":        return this.config_.controlLink_;
         case "controlLogo":        return this.config_.controlLogo_;
         case "controlCredits":     return this.config_.controlCredits_;
