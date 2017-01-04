@@ -150,7 +150,7 @@ Melown.UIEvent.prototype.getModifierKey = function(key_) {
     return false;
 };
 
-Melown.UIEvent.prototype.getKeyCode = function(key_) {
+Melown.UIEvent.prototype.getKeyCode = function() {
     switch (this.type_) {
         case "keyup":
         case "keydown":

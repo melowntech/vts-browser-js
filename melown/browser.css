@@ -199,6 +199,11 @@
     background-repeat: no-repeat;
     background-position: 0px 0px;
     height: 26px;
+    font-size: 16px;
+}
+
+.melown-search input[type="text"]:focus {
+    outline: none;
 }
 
 .melown-search-input {
@@ -209,23 +214,33 @@
 
 .melown-search-list {
     font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.15);
     border-radius: 3px;
-    padding: 5px;
     display: none;
     cursor: default;
     position: relative;
-    top: 33px;    
+    top: 33px;
+    color: #fff;
+    text-shadow: 0 0 3px #000,0 0 3px #000,0 0 3px #000,0 0 3px #000;
 }
 
 .melown-search-listitem {
-    margin-bottom: 5px;
+    padding: 6px 15px;
 }
 
-.melown-search-listitem:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+.melown-search-listitem-selected {
+    padding: 6px 15px;
+    background-color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
+    border-radius: 3px;
 }
+
+/*
+.melown-search-listitem:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    border-radius: 3px;
+}*/
 
 /*
  * LOADING
