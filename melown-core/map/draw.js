@@ -1,6 +1,6 @@
 
 
-Melown.Map.prototype.draw = function(skipFreeLayers_) {
+Melown.Map.prototype.draw = function(skipFreeLayers_, projected_) {
     this.ndcToScreenPixel_ = this.renderer_.curSize_[0] * 0.5;
     this.updateFogDensity();
     this.updateGridFactors();
@@ -9,237 +9,278 @@ Melown.Map.prototype.draw = function(skipFreeLayers_) {
     this.stats_.renderBuild_ = 0;
     this.drawTileCounter_ = 0;
     var cameraPos_ = this.cameraPosition_;
-    
-    if (this.replay_.storeNodes_ || this.replay_.storeFreeNodes_) {
-        this.replay_.nodeBuffer_ = [];
-    }
-    
-    if (this.replay_.drawGlobe_ || this.replay_.drawTiles_ || this.replay_.drawFreeTiles_||
-        this.replay_.drawNodes_ || this.replay_.drawFreeNodes_ || this.replay_.drawLoaded_) { //used only in inspector
 
-        var lod_ = this.replay_.lod_; 
-        var single_ = this.replay_.singleLod_; 
-
-        if (this.replay_.drawTiles_ && this.replay_.drawnTiles_) {
-            var  tiles_ = this.replay_.drawnTiles_;
-            for (var i = 0, li = tiles_.length; i < li; i++) {
-                var tile_ = tiles_[i];
-                if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
-                    this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
-                }
-            }
+    if (this.drawEarth_) {
+        if (this.replay_.storeNodes_ || this.replay_.storeFreeNodes_) {
+            this.replay_.nodeBuffer_ = [];
         }
         
-        if (this.replay_.drawFreeTiles_ && this.replay_.drawnFreeTiles_) {
-            var  tiles_ = this.replay_.drawnFreeTiles_;
-            for (var i = 0, li = tiles_.length; i < li; i++) {
-                var tile_ = tiles_[i];
-                if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
-                    this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+        if (this.replay_.drawGlobe_ || this.replay_.drawTiles_ || this.replay_.drawFreeTiles_||
+            this.replay_.drawNodes_ || this.replay_.drawFreeNodes_ || this.replay_.drawLoaded_) { //used only in inspector
+    
+            var lod_ = this.replay_.lod_; 
+            var single_ = this.replay_.singleLod_; 
+    
+            if (this.replay_.drawTiles_ && this.replay_.drawnTiles_) {
+                var  tiles_ = this.replay_.drawnTiles_;
+                for (var i = 0, li = tiles_.length; i < li; i++) {
+                    var tile_ = tiles_[i];
+                    if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
+                        this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                    }
                 }
             }
-        }
-
-        if (this.replay_.drawNodes_ && this.replay_.tracedNodes_) {
-            var  tiles_ = this.replay_.tracedNodes_;
-            var tmp_ = this.drawBBoxes_;
-            this.drawBBoxes_ = true;  
-            for (var i = 0, li = tiles_.length; i < li; i++) {
-                var tile_ = tiles_[i];
-                if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
-                    this.drawTileInfo(tile_, tile_.metanode_, cameraPos_, tile_.surfaceMesh_, tile_.pixelSize_);
+            
+            if (this.replay_.drawFreeTiles_ && this.replay_.drawnFreeTiles_) {
+                var  tiles_ = this.replay_.drawnFreeTiles_;
+                for (var i = 0, li = tiles_.length; i < li; i++) {
+                    var tile_ = tiles_[i];
+                    if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
+                        this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                    }
                 }
             }
-            this.drawBBoxes_ = tmp_;
-        }
-
-        if (this.replay_.drawFreeNodes_ && this.replay_.tracedFreeNodes_) {
-            var  tiles_ = this.replay_.tracedFreeNodes_;
-            var tmp_ = this.drawBBoxes_;
-            this.drawBBoxes_ = true;  
-            for (var i = 0, li = tiles_.length; i < li; i++) {
-                var tile_ = tiles_[i];
-                if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
-                    this.drawTileInfo(tile_, tile_.metanode_, cameraPos_, tile_.surfaceMesh_, tile_.pixelSize_);
+    
+            if (this.replay_.drawNodes_ && this.replay_.tracedNodes_) {
+                var  tiles_ = this.replay_.tracedNodes_;
+                var tmp_ = this.drawBBoxes_;
+                this.drawBBoxes_ = true;  
+                for (var i = 0, li = tiles_.length; i < li; i++) {
+                    var tile_ = tiles_[i];
+                    if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
+                        this.drawTileInfo(tile_, tile_.metanode_, cameraPos_, tile_.surfaceMesh_, tile_.pixelSize_);
+                    }
                 }
+                this.drawBBoxes_ = tmp_;
             }
-            this.drawBBoxes_ = tmp_;
-        }
-
-        var index_ = this.replay_.loadedIndex_; 
-        var singleIndex_ = this.replay_.singleLodedIndex_; 
-
-        if (this.replay_.drawLoaded_ && this.replay_.loaded_) {
-            var  loaded_ = this.replay_.loaded_;
-            this.drawBBoxes_ = true;  
-            for (var i = 0, li = loaded_.length; i < li; i++) {
-                var file_ = loaded_[i];
-                if (file_ && file_.tile_ && file_.tile_.id_) {
-                    var tile_ = file_.tile_;
-                    if (((singleIndex_ && i == index_) || (!singleIndex_ && i <= index_)) &&
-                         ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) ) {
-                        if (tile_.metanode_) {
-                            if (tile_.metanode_.hasGeometry()) {
-                                this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
-                            } else {
-                                this.drawTileInfo(tile_, tile_.metanode_, cameraPos_, tile_.surfaceMesh_, tile_.pixelSize_);
+    
+            if (this.replay_.drawFreeNodes_ && this.replay_.tracedFreeNodes_) {
+                var  tiles_ = this.replay_.tracedFreeNodes_;
+                var tmp_ = this.drawBBoxes_;
+                this.drawBBoxes_ = true;  
+                for (var i = 0, li = tiles_.length; i < li; i++) {
+                    var tile_ = tiles_[i];
+                    if ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) {
+                        this.drawTileInfo(tile_, tile_.metanode_, cameraPos_, tile_.surfaceMesh_, tile_.pixelSize_);
+                    }
+                }
+                this.drawBBoxes_ = tmp_;
+            }
+    
+            var index_ = this.replay_.loadedIndex_; 
+            var singleIndex_ = this.replay_.singleLodedIndex_; 
+    
+            if (this.replay_.drawLoaded_ && this.replay_.loaded_) {
+                var  loaded_ = this.replay_.loaded_;
+                this.drawBBoxes_ = true;  
+                for (var i = 0, li = loaded_.length; i < li; i++) {
+                    var file_ = loaded_[i];
+                    if (file_ && file_.tile_ && file_.tile_.id_) {
+                        var tile_ = file_.tile_;
+                        if (((singleIndex_ && i == index_) || (!singleIndex_ && i <= index_)) &&
+                             ((single_ && tile_.id_[0] == lod_) || (!single_ && tile_.id_[0] <= lod_)) ) {
+                            if (tile_.metanode_) {
+                                if (tile_.metanode_.hasGeometry()) {
+                                    this.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                                } else {
+                                    this.drawTileInfo(tile_, tile_.metanode_, cameraPos_, tile_.surfaceMesh_, tile_.pixelSize_);
+                                }
                             }
                         }
                     }
                 }
+                this.drawBBoxes_ = tmp_;
             }
-            this.drawBBoxes_ = tmp_;
+    
+            if ((this.replay_.drawFreeTiles_ && this.replay_.drawnFreeTiles_) ||
+                (this.replay_.drawLoaded_ && this.replay_.loaded_)) {
+                    
+                if (this.freeLayersHaveGeodata_) {
+                    this.renderer_.drawGpuJobs();
+                    this.renderer_.clearJobBuffer();
+                }
+            }
+    
+            return;
+        }    
+        
+        for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {  //todo remove this
+            this.tileBuffer_[i] = null;    
         }
-
-        if ((this.replay_.drawFreeTiles_ && this.replay_.drawnFreeTiles_) ||
-            (this.replay_.drawLoaded_ && this.replay_.loaded_)) {
+    
+        if (this.tree_.surfaceSequence_.length > 0) {
+            this.tree_.draw();
+        }
+    
+        if (this.replay_.storeTiles_) { //used only in inspectors
+            var drawnTiles_ = [];
+    
+            for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+                var tiles_ = this.tileBuffer_[i];
+               
+                if (tiles_) {
+                    for (var j = 0, lj = tiles_.length; j < lj; j++) {
+                        drawnTiles_.push(tiles_[j]);
+                    }
+                }
+            }
+            
+            this.replay_.cameraPos_ = cameraPos_; 
+            this.replay_.drawnTiles_ = drawnTiles_;
+            this.replay_.storeTiles_ = false; 
+        }
+    
+        if (this.replay_.storeNodes_) { //used only in inspector
+            var nodeBuffer_ = []; 
+    
+            for (var i = 0, li = this.replay_.nodeBuffer_.length; i < li; i++) {
+                var tile_ = this.replay_.nodeBuffer_[i];
+                nodeBuffer_.push(tile_);
+            }
+    
+            this.replay_.cameraPos_ = cameraPos_; 
+            this.replay_.tracedNodes_ = nodeBuffer_;
+            this.replay_.storeNodes_ = false; 
+        }
+    
+        //draw free layers    
+        for (var i = 0, li = this.freeLayerSequence_.length; i < li; i++) {
+            var layer_ = this.freeLayerSequence_[i];
+            if (layer_.ready_ && layer_.tree_ && 
+                (!layer_.geodata_ || (layer_.stylesheet_ && layer_.stylesheet_.isReady())) ) {
                 
+                if (layer_.type_ == "geodata") {
+                    this.drawMonoliticGeodata(layer_);
+                } else {
+                    layer_.tree_.draw();
+                }
+            }
+        }
+    
+        if (this.replay_.storeFreeTiles_) { //used only in inspector
+            var drawnTiles_ = [];
+    
+            for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+                var tiles_ = this.tileBuffer_[i];
+               
+                if (tiles_) {
+                    for (var j = 0, lj = tiles_.length; j < lj; j++) {
+                        var tile_ = tiles_[j];
+                        if (tile_.surface_ && tile_.surface_.free_) { //do no draw free layers
+                            drawnTiles_.push(tile_);
+                        }
+                    }
+                }
+            }
+            
+            this.replay_.cameraPos_ = cameraPos_; 
+            this.replay_.drawnFreeTiles_ = drawnTiles_;
+            this.replay_.storeFreeTiles_ = false; 
+        }
+    
+        if (this.replay_.storeFreeNodes_) { //used only in inspector
+            var nodeBuffer_ = []; 
+    
+            for (var i = 0, li = this.replay_.nodeBuffer_.length; i < li; i++) {
+                var tile_ = this.replay_.nodeBuffer_[i];
+                if (tile_.surface_ && tile_.surface_.free_) { //do no draw free layers
+                    nodeBuffer_.push(tile_);
+                }
+            }
+    
+            this.replay_.cameraPos_ = cameraPos_; 
+            this.replay_.tracedFreeNodes_ = nodeBuffer_;
+            this.replay_.storeFreeNodes_ = false; 
+        }
+        
+        //draw surface tiles stored in buffer
+        /*
+        for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+            var tiles_ = this.tileBuffer_[i];
+            
+            if (tiles_) {
+                for (var j = 0, lj = tiles_.length; j < lj; j++) {
+                    var tile_ = tiles_[j];
+                    var surface_ = tile_.tile_.surface_;
+                    
+                    if (surface_ && !surface_.free_) { //do no draw free layers
+                        //var tmp_ = this.zFactor_;
+                        //this.zFactor_ += (surface_) ? surface_.zFactor_ : 0;
+                        this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                        //this.zFactor_ = tmp_;
+                    }
+                }
+            } 
+        }*/
+    }
+
+    //draw skydome before geodata
+    if (!projected_ && this.drawFog_) {    
+
+        var camInfo_ = this.position_.getCameraInfo(true);
+        var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
+
+        var earthRadius_ =  navigationSrsInfo_["a"];
+        var atmoSize_ = 50000;
+        
+        var cameraPosToEarthCenter_ = [0,0,0,0];
+        Melown.vec3.normalize(this.cameraPosition_, cameraPosToEarthCenter_);
+        
+        var horizAngle_ = Math.atan(1.0/(Melown.vec3.length(this.cameraPosition_) / navigationSrsInfo_["a"]));  //cotan = cameraDistFromCenter / earthRadius
+        var horizAngle2_ = (horizAngle_ / Math.PI * 180)*0.5;
+
+        var pos_ = this.getPosition();
+        var orientation_ = pos_.getOrientation();
+        var tiltFactor_ = (Math.max(5,-orientation_[1])/90);
+
+        var heightFactor_ = 1-Math.max(0,Math.min(1.0,this.cameraHeight_ / (atmoSize_*(10+20*tiltFactor_))));
+        heightFactor_ = heightFactor_ * heightFactor_;
+
+        var params_ = [Math.max(2,heightFactor_*128),0,0,0];
+
+        this.renderer_.gpu_.setState(this.drawAtmoState_);
+        this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
+                                  earthRadius_, this.renderer_.progAtmo2_, params_,  cameraPosToEarthCenter_, true);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+        
+        var safetyFactor_ = 2.0; 
+        var params_ = [safetyFactor_, safetyFactor_ * ((earthRadius_ + atmoSize_) / earthRadius_), 0.25, safetyFactor_* ((earthRadius_ + atmoSize_) / earthRadius_)];
+        var factor_ = (1 / (earthRadius_) ) * safetyFactor_;  
+        var params2_ = [this.cameraPosition_[0] * factor_, this.cameraPosition_[1] * factor_, this.cameraPosition_[2] * factor_, 1];
+
+        this.renderer_.gpu_.setState(this.drawAuraState_);
+        this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
+                                  earthRadius_ + atmoSize_, this.renderer_.progAtmo_, params_,  params2_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+    }
+
+
+    if (this.drawEarth_) {
+        if (!skipFreeLayers_) {
+            //draw free layers tiles stored in buffer
+            /*
+            if (this.freeLayerSequence_.length > 0) {
+                for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
+                    var tiles_ = this.tileBuffer_[i];
+                    
+                    if (tiles_) {
+                        for (var j = 0, lj = tiles_.length; j < lj; j++) {
+                            var tile_ = tiles_[j];
+                            var surface_ = tile_.tile_.surface_;
+                            
+                            if (surface_ && surface_.free_) { //draw only free layers
+                                var tmp_ = this.zFactor_;
+                                this.zFactor_ += (surface_) ? surface_.zFactor_ : 0;
+                                this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
+                                this.zFactor_ = tmp_;
+                            }
+                        }
+                    } 
+                }
+            }*/
+        
             if (this.freeLayersHaveGeodata_) {
                 this.renderer_.drawGpuJobs();
                 this.renderer_.clearJobBuffer();
             }
-        }
-
-        return;
-    }    
-    
-    for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {  //todo remove this
-        this.tileBuffer_[i] = null;    
-    }
-
-    if (this.tree_.surfaceSequence_.length > 0) {
-        this.tree_.draw();
-    }
-
-    if (this.replay_.storeTiles_) { //used only in inspectors
-        var drawnTiles_ = [];
-
-        for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
-            var tiles_ = this.tileBuffer_[i];
-           
-            if (tiles_) {
-                for (var j = 0, lj = tiles_.length; j < lj; j++) {
-                    drawnTiles_.push(tiles_[j]);
-                }
-            }
-        }
-        
-        this.replay_.cameraPos_ = cameraPos_; 
-        this.replay_.drawnTiles_ = drawnTiles_;
-        this.replay_.storeTiles_ = false; 
-    }
-
-    if (this.replay_.storeNodes_) { //used only in inspector
-        var nodeBuffer_ = []; 
-
-        for (var i = 0, li = this.replay_.nodeBuffer_.length; i < li; i++) {
-            var tile_ = this.replay_.nodeBuffer_[i];
-            nodeBuffer_.push(tile_);
-        }
-
-        this.replay_.cameraPos_ = cameraPos_; 
-        this.replay_.tracedNodes_ = nodeBuffer_;
-        this.replay_.storeNodes_ = false; 
-    }
-
-    //draw free layers    
-    for (var i = 0, li = this.freeLayerSequence_.length; i < li; i++) {
-        var layer_ = this.freeLayerSequence_[i];
-        if (layer_.ready_ && layer_.tree_ && 
-            (!layer_.geodata_ || (layer_.stylesheet_ && layer_.stylesheet_.isReady())) ) {
-            
-            if (layer_.type_ == "geodata") {
-                this.drawMonoliticGeodata(layer_);
-            } else {
-                layer_.tree_.draw();
-            }
-        }
-    }
-
-    if (this.replay_.storeFreeTiles_) { //used only in inspector
-        var drawnTiles_ = [];
-
-        for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
-            var tiles_ = this.tileBuffer_[i];
-           
-            if (tiles_) {
-                for (var j = 0, lj = tiles_.length; j < lj; j++) {
-                    var tile_ = tiles_[j];
-                    if (tile_.surface_ && tile_.surface_.free_) { //do no draw free layers
-                        drawnTiles_.push(tile_);
-                    }
-                }
-            }
-        }
-        
-        this.replay_.cameraPos_ = cameraPos_; 
-        this.replay_.drawnFreeTiles_ = drawnTiles_;
-        this.replay_.storeFreeTiles_ = false; 
-    }
-
-    if (this.replay_.storeFreeNodes_) { //used only in inspector
-        var nodeBuffer_ = []; 
-
-        for (var i = 0, li = this.replay_.nodeBuffer_.length; i < li; i++) {
-            var tile_ = this.replay_.nodeBuffer_[i];
-            if (tile_.surface_ && tile_.surface_.free_) { //do no draw free layers
-                nodeBuffer_.push(tile_);
-            }
-        }
-
-        this.replay_.cameraPos_ = cameraPos_; 
-        this.replay_.tracedFreeNodes_ = nodeBuffer_;
-        this.replay_.storeFreeNodes_ = false; 
-    }
-
-    
-    
-    //draw surface tiles stored in buffer
-    /*
-    for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
-        var tiles_ = this.tileBuffer_[i];
-        
-        if (tiles_) {
-            for (var j = 0, lj = tiles_.length; j < lj; j++) {
-                var tile_ = tiles_[j];
-                var surface_ = tile_.tile_.surface_;
-                
-                if (surface_ && !surface_.free_) { //do no draw free layers
-                    //var tmp_ = this.zFactor_;
-                    //this.zFactor_ += (surface_) ? surface_.zFactor_ : 0;
-                    this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
-                    //this.zFactor_ = tmp_;
-                }
-            }
-        } 
-    }*/
-
-    if (!skipFreeLayers_) {
-        //draw free layers tiles stored in buffer
-        /*
-        if (this.freeLayerSequence_.length > 0) {
-            for (var i = 0, li = this.tileBuffer_.length; i < li; i++) {
-                var tiles_ = this.tileBuffer_[i];
-                
-                if (tiles_) {
-                    for (var j = 0, lj = tiles_.length; j < lj; j++) {
-                        var tile_ = tiles_[j];
-                        var surface_ = tile_.tile_.surface_;
-                        
-                        if (surface_ && surface_.free_) { //draw only free layers
-                            var tmp_ = this.zFactor_;
-                            this.zFactor_ += (surface_) ? surface_.zFactor_ : 0;
-                            this.drawSurfaceTile(tile_.tile_, tile_.node_, cameraPos_, tile_.pixelSize_, tile_.priority_, false, false);
-                            this.zFactor_ = tmp_;
-                        }
-                    }
-                } 
-            }
-        }*/
-    
-        if (this.freeLayersHaveGeodata_) {
-            this.renderer_.drawGpuJobs();
-            this.renderer_.clearJobBuffer();
         }
     }
 };

@@ -234,12 +234,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 74:
                     case 106:
-                        //map_.config_.mapGeocentCulling_ = !map_.config_.mapGeocentCulling_;
-                        //console.log("mapGeocentCulling: " + map_.config_.mapGeocentCulling_);
-                        //map_.blendHeightmap_ = !map_.blendHeightmap_;
-                        //map_.zFactor2_ -= 0.1;//0.000001;
-                        //console.log("zfactor  " + map_.zFactor2_);                          
-
+                        map_.drawEarth_ = !map_.drawEarth_; hit_ = true; break; //key X pressed
                         break; //key J pressed
 
                     case 88:

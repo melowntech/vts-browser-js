@@ -174,7 +174,7 @@ Melown.GpuDevice.prototype.setFramebuffer = function(texture_) {
 Melown.GpuDevice.prototype.createState = function(state_) {
     if (state_.blend_ == null) { state_.blend_ = false; }
     if (state_.stencil_ == null) { state_.stencil_ = false; }
-    if (state_.zoffset_ == null) { state_.zoffset_ = 0; }
+    //if (state_.zoffset_ == null) { state_.zoffset_ = 0; }
     if (state_.zwrite_ == null) { state_.zwrite_ = true; }
     if (state_.ztest_ == null) { state_.ztest_ = true; }
     if (state_.zequal_ == null) { state_.zequal_ = false; }
@@ -202,7 +202,7 @@ Melown.GpuDevice.prototype.setState = function(state_, directOffset_) {
 
     var gl_ = this.gl_;
     var currentState_ = this.currentState_;
-    directOffset_ = directOffset_ || state_.zoffset_;
+    //directOffset_ = directOffset_ || state_.zoffset_;
 
     if (currentState_.blend_ != state_.blend_) {
         if (state_.blend_ == true) {
