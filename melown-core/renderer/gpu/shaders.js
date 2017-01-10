@@ -400,8 +400,10 @@ Melown.atmoVertexShader3 =
 
 Melown.atmoFragmentShader3 = "precision mediump float;\n"+
     "varying vec2 vTexcoords;\n"+
+    "uniform vec4 uParams3;\n"+       //[treshold, mutiplier, 0,0]
     "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
     "const vec4 fogColor2 = vec4(72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0);\n"+
+    "const vec4 fogColor3 = vec4(0.0/255.0, 0.0/255.0, 0.0/255.0, 1.0);\n"+
 
     "void main() {\n"+
 //        "gl_FragColor = vec4(1.0 - exp(((fogColor * vTexcoords.x) * (1.0 + vTexcoords.y)) * -1.5));\n"+
@@ -413,11 +415,14 @@ Melown.atmoFragmentShader3 = "precision mediump float;\n"+
         //"gl_FragColor = vec4(fogColor.xyz, vTexcoords.y);\n"+
 
         "float l = vTexcoords.y;\n"+
-        "if (l > 1.5){ discard; } else {\n"+
-        "float l2 = clamp((l*l)*0.9+0.1, 0.0, 1.5);\n"+
-        "gl_FragColor = vec4(mix(fogColor2.xyz, fogColor.xyz, l2), l);}\n"+
+        "if (l > uParams3.z){ discard; } else {\n"+
+            "float l2 = clamp((l*l)*0.9+0.1, 0.0, 1.5);\n"+
+            "gl_FragColor = vec4(mix(fogColor2.xyz, fogColor.xyz, l2), l);\n"+
+        
+            "if (l > uParams3.x){ gl_FragColor.xyz = mix(gl_FragColor.xyz, fogColor3.xyz, (l-uParams3.x)*uParams3.y); }\n"+
 
-//        "gl_FragColor = vec4(vec3(1.0),1.0 - exp(((fogColor * vTexcoords.x) * (1.0 + vTexcoords.y)) * -1.5));\n"+
+//          "gl_FragColor = vec4(vec3(1.0),1.0 - exp(((fogColor * vTexcoords.x) * (1.0 + vTexcoords.y)) * -1.5));\n"+
+        "}"+
 
     "}";
 

@@ -164,6 +164,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});
     this.drawAuraState_ = this.renderer_.gpu_.createState({zwrite_:false, blend_:true});
     this.drawAtmoState_ = this.renderer_.gpu_.createState({zwrite_:false, ztest_:false, blend_:true});
+    this.drawAtmoState2_ = this.renderer_.gpu_.createState({zwrite_:false, ztest_:true, blend_:false});
 //    this.drawAuraState_ = this.renderer_.gpu_.createState({zwrite_:false, ztest_:false, blend_:true});
 
     
@@ -906,9 +907,9 @@ Melown.Map.prototype.drawMap = function() {
 
     this.loader_.setChannel(0); //0 = hires channel
     this.zFactor_ = 0;
-    if (this.drawEarth_) {
+    //if (this.drawEarth_) {
         this.draw(null, projected_);
-    }
+    //}
 };
 
 

@@ -83,6 +83,20 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
 };
 
 Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
+    if (!this.map_.lastRemoved_) {
+        this.map_.lastRemoved_ = [];
+    }
+
+    //debug only    
+    if (this.map_.lastRemoved_.indexOf(this.mapLoaderUrl_) != -1) {
+        console.log("tex: " + this.mapLoaderUrl_);
+    }
+
+    //debug only    
+    this.map_.lastRemoved_.unshift(this.mapLoaderUrl_);
+    this.map_.lastRemoved_ = this.map_.lastRemoved_.slice(0,20);
+
+
     if (this.gpuTexture_ != null) {
         this.stats_.gpuTextures_ -= this.gpuTexture_.size_;
         this.gpuTexture_.kill();
@@ -139,11 +153,15 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
         }
     }*/
    
-   /*
-   if (this.mapLoaderUrl_ == "https://cdn.test.mlwn.se/mario/proxy//melown2015/tms/melown/carlo-tex.2/12-690-1232.jpg") {
+/*   
+   if (this.mapLoaderUrl_ == "https://cdn.melown.com/mario/proxy//melown2015/tms/melown/mapycz-ophoto-cz/10-277-172.mask") {
        this.mapLoaderUrl_ = this.mapLoaderUrl_;
-   }*/
+   }
    
+   if (this.mapLoaderUrl_ == "https://cdn.melown.com/mario/proxy//melown2015/tms/melown/mapycz-ophoto-cz/10-274-176.mask") {
+       this.mapLoaderUrl_ = this.mapLoaderUrl_;
+   }
+*/
    if (this.neverReady_) {
        return false;
    }

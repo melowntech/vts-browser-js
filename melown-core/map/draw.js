@@ -237,19 +237,40 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_) {
         heightFactor_ = heightFactor_ * heightFactor_;
 
         var params_ = [Math.max(2,heightFactor_*128),0,0,0];
+        
+        if (this.cameraHeight_ > earthRadius_*2) { //prevent foggy earth from larger distance
+            params_[0] = 2-Math.min(1.0, (this.cameraHeight_ - earthRadius_*2) / (earthRadius_*2));
+        }
 
         this.renderer_.gpu_.setState(this.drawAtmoState_);
         this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
-                                  earthRadius_, this.renderer_.progAtmo2_, params_,  cameraPosToEarthCenter_, true);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+                                  earthRadius_, this.renderer_.progAtmo2_, params_,  cameraPosToEarthCenter_, null, true);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
         
         var safetyFactor_ = 2.0; 
         var params_ = [safetyFactor_, safetyFactor_ * ((earthRadius_ + atmoSize_) / earthRadius_), 0.25, safetyFactor_* ((earthRadius_ + atmoSize_) / earthRadius_)];
         var factor_ = (1 / (earthRadius_) ) * safetyFactor_;  
         var params2_ = [this.cameraPosition_[0] * factor_, this.cameraPosition_[1] * factor_, this.cameraPosition_[2] * factor_, 1];
+        
+        
+        var t1_ = 1.1, t2_ = 1.5;
+
+        if (this.cameraHeight_ > 60000) { //don render ground color in aura
+            t1_ = 1.1, t2_ = 1.8;
+
+            var params3_ = [t2_,1.0,t2_,0];
+        } else {
+
+            if (this.cameraHeight_ < 5000) { 
+                t1_ = 1.0, t2_ = 1.1;
+            }
+            
+            var params3_ = [t1_,5.2 / (t2_-t1_),t2_,0];
+        } 
+            
 
         this.renderer_.gpu_.setState(this.drawAuraState_);
         this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
-                                  earthRadius_ + atmoSize_, this.renderer_.progAtmo_, params_,  params2_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+                                  earthRadius_ + atmoSize_, this.renderer_.progAtmo_, params_,  params2_, params3_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
     }
 
 
@@ -561,11 +582,11 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
     if (tile_.surfaceMesh_.isReady(preventLoad_, priority_) && !preventLoad_) {
         var submeshes_ = tile_.surfaceMesh_.submeshes_;
 
-        /*if (tile_.id_[0] == 12 &&
-            tile_.id_[1] == 690 &&
-            tile_.id_[2] == 1232) {
+        if (tile_.id_[0] == 8 &&
+            tile_.id_[1] == 70 &&
+            tile_.id_[2] == 43) {
             tile_ = tile_;
-        }*/
+        }
 
         tile_.drawCommands_ = [[], [], []]; //??
         tile_.imageryCredits_ = {};
@@ -612,8 +633,8 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
                 }
                 
                 var surface_ = tile_.resourceSurface_;
-                if (tile_.surface_.glue_ /*&& submesh_.surfaceReference_ != 0*/) { //glue have multiple surfaces per tile
-                    surface_ = tile_.surface_.getSurfaceReference(submesh_.surfaceReference_);
+                if (tile_.resourceSurface_.glue_ /*&& submesh_.surfaceReference_ != 0*/) { //glue have multiple surfaces per tile
+                    surface_ = tile_.resourceSurface_.getSurfaceReference(submesh_.surfaceReference_);
                 }
 
                 if (surface_ != null) {
@@ -1017,9 +1038,14 @@ Melown.Map.prototype.updateTileBounds = function(tile_, submeshes_) {
         if (submesh_.externalUVs_) {
             var submeshSurface_ = tile_.resourceSurface_;
 
-            if (tile_.surface_.glue_) { //glue have multiple surfaces per tile
-                submeshSurface_ = tile_.surface_.getSurfaceReference(submesh_.surfaceReference_);
+            //if (tile_.resourceSurface_.glue_) { //glue have multiple surfaces per tile
+              //  submeshSurface_ = tile_.resourceSurface_.getSurfaceReference(submesh_.surfaceReference_);
+            //}
+
+            if (tile_.resourceSurface_.glue_) { //glue have multiple surfaces per tile
+                submeshSurface_ = tile_.resourceSurface_.getSurfaceReference(submesh_.surfaceReference_);
             }
+
             
             if (submeshSurface_) {
                 var bounds_ = tile_.bounds_[submeshSurface_.id_];
