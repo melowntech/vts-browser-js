@@ -90,6 +90,10 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
     //if (doNotUseGpu_) {
       //  doNotUseGpu_ = doNotUseGpu_;
     //}
+    
+    if (this.mapLoaderUrl_ == "https://cdn.melown.com/mario/proxy/melown2015/surface/melown/cz10/12-1107-688.bin?0") {
+        this.mapLoaderUrl_ = this.mapLoaderUrl_;
+    }    
 
     if (this.loadState_ == 2) { //loaded
         if (this.cacheItem_) {

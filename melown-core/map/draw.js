@@ -305,8 +305,9 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_) {
     }
 };
 
-Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNotLoad_) {
+Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNotLoad_, checkGpu_) {
     var ready_ = true;
+    checkGpu_ = checkGpu_ ? false : true;
     
     for (var i = 0, li = commands_.length; i < li; i++) {
         var command_ = commands_[i];
@@ -317,8 +318,8 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
                 var mesh_ = command_.mesh_; 
                 var texture_ = command_.texture_; 
                 
-                var meshReady_ = (mesh_ && mesh_.isReady(doNotLoad_, priority_, true));
-                var textureReady_ = (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_, true)));
+                var meshReady_ = (mesh_ && mesh_.isReady(doNotLoad_, priority_, checkGpu_));
+                var textureReady_ = (!texture_  || (texture_ && texture_.isReady(doNotLoad_, priority_, checkGpu_)));
                 
                 if (!(meshReady_ && textureReady_) ) {
                      ready_ = false;   
@@ -330,7 +331,7 @@ Melown.Map.prototype.areDrawCommandsReady = function(commands_, priority_, doNot
                 
                 var geodataView_ = command_.geodataView_; 
                 
-                if (!(geodataView_ && geodataView_.isReady(doNotLoad_, priority_, true))) {
+                if (!(geodataView_ && geodataView_.isReady(doNotLoad_, priority_, checkGpu_))) {
                      ready_ = false;   
                 }
                 
@@ -444,7 +445,7 @@ Melown.Map.prototype.processDrawCommands = function(cameraPos_, commands_, prior
 
 Melown.debugId_ = [144, 8880, 5492];
 
-Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
+Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_, checkGpu_) {
     /*if (tile_.id_[0] == Melown.debugId_[0] && //debuf stufff
         tile_.id_[1] == Melown.debugId_[1] &&
         tile_.id_[2] == Melown.debugId_[2]) {
@@ -510,9 +511,9 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
 
 
             if (!tile_.surface_.geodata_) {
-                return this.drawMeshTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_);
+                return this.drawMeshTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_, checkGpu_);
             } else {
-                return this.drawGeodataTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_);
+                return this.drawGeodataTile(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_, checkGpu_);
             }
         } else {
             return true;
@@ -527,7 +528,7 @@ Melown.Map.prototype.drawSurfaceTile = function(tile_, node_, cameraPos_, pixelS
     }
 };
 
-Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
+Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_, checkGpu_) {
     if (!tile_.surfaceMesh_) {
         if (tile_.resourceSurface_.virtual_) {
             return true;
@@ -541,7 +542,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
     var channel_ = this.drawChannel_;
     var ret_ = false;
 
-    if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
+    if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_, checkGpu_)) {
         if (!preventRedener_) {
             this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_], priority_);
             this.applyCredits(tile_);
@@ -840,7 +841,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
             
         }
 
-        if (this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
+        if (this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_, checkGpu_)) {
             if (!preventRedener_) {
                 this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_], priority_);
                 this.applyCredits(tile_);
@@ -875,7 +876,7 @@ Melown.Map.prototype.drawMeshTile = function(tile_, node_, cameraPos_, pixelSize
     return ret_;
 };
 
-Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_) {
+Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelSize_, priority_, preventRedener_, preventLoad_, checkGpu_) {
     if (tile_.id_[0] <= 1) {
         return true;
     }
@@ -920,7 +921,7 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
         tile_.geodataCounter_ = tile_.surface_.geodataCounter_;
     }
 
-    if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_)) {
+    if (tile_.drawCommands_[channel_].length > 0 && this.areDrawCommandsReady(tile_.drawCommands_[channel_], priority_, preventLoad_, checkGpu_)) {
         if (!preventRedener_) {
             this.processDrawCommands(cameraPos_, tile_.drawCommands_[channel_], priority_);
             this.applyCredits(tile_);

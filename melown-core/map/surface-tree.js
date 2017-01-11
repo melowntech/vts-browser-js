@@ -446,6 +446,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift_) {
     var drawBufferIndex_ = 0;
     var processBufferIndex_ = 0;
     var newProcessBufferIndex_ = 0;
+    var checkGpu_ = true;
     
     processBuffer_[0] = tile_;
     processBufferIndex_ = 1;
@@ -631,6 +632,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
     var geodata_ = tile_.surface_.geodata_;
     var free_ = tile_.surface_.free_;
     var drawGrid_ = (!geodata_ && !free_ && map_.config_.mapHeightfiledWhenUnloaded_);
+    var checkGpu_ = true;
     
     var lodShift_ = 4;//this.freeLayerSurface_ ? 1 : 1;
     var typeFactor_ = 2000;//this.freeLayerSurface_ ? 1 : 1;
@@ -676,7 +678,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                 console.log(JSON.stringify(tile_.id_));
             }*/
             
-            if (depth_ >= maxHiresLodLevels_) {
+            if (drawGrid_ && depth_ >= maxHiresLodLevels_) {
                 drawBuffer_[drawBufferIndex_] = [tile_, true]; //draw grid
                 drawBufferIndex_++;
 
@@ -688,8 +690,8 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
             }*/ 
 
             if (tile_.id_[0] == 12 &&
-                tile_.id_[1] == 690 &&
-                tile_.id_[2] == 1232) {
+                tile_.id_[1] == 1107 &&
+                tile_.id_[2] == 688) {
                 tile_ = tile_;
             }
             
@@ -725,7 +727,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
 
                     var priority_ = ((tile_.id_[0] + lodShift_) * typeFactor_) * tile_.distance_; 
             
-                    if (node_.hasChildren() && !map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, (depth_ > 0))) {
+                    if (node_.hasChildren() && !map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, (depth_ > 0), checkGpu_)) {
 
                         depth_++; //we dont have tile ready, so we try to draw more detailed tiles
             
@@ -747,7 +749,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                                     }*/
                                     
                                     //are draw buffers ready? preventRender=true, preventLoad_=false
-                                    if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, (depth_ > 0))) {
+                                    if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, (depth_ > 0), checkGpu_)) {
                                         drawBuffer_[drawBufferIndex_] = [child_, false];
                                         drawBufferIndex_++;
                                     } else {
@@ -785,7 +787,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                                 var priority_ = ((child_.id_[0] + lodShift_) * typeFactor_) * child_.distance_; 
                                
                                 //are draw buffers ready? preventRender=true, preventLoad_=false
-                                if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, true)) {
+                                if (map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, true, checkGpu_)) {
                                     readyCount_++;
                                     childrenBuffer_.push(child_);
                                 }
@@ -824,7 +826,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
 
                         var priority_ = ((tile_.id_[0] + lodShift_) * typeFactor_) * tile_.distance_; 
 
-                        if (map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, true)) {
+                        if (map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, priority_, true, true, checkGpu_)) {
                             drawBuffer_[drawBufferIndex_] = [tile_, false];
                             drawBufferIndex_++;
 
@@ -832,7 +834,8 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                                 var child_ = tile_.children_[j];
                                 if (child_) {
                                     if (child_.isMetanodeReady(this, child_.id_[0])) { //lod is used as priority
-                                        map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, false);
+                                        priority_ = ((child_.id_[0] + lodShift_) * typeFactor_) * child_.distance_; 
+                                        map_.drawSurfaceTile(child_, child_.metanode_, cameraPos_, child_.texelSize_, priority_, true, false, checkGpu_);
                                     }
                                 }
                             }
@@ -892,7 +895,7 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
             }
 
 
-            if (lastProcessBufferIndex_ == newProcessBufferIndex_ && lastDrawBufferIndex_ == drawBufferIndex_) {
+            if (drawGrid_ && lastProcessBufferIndex_ == newProcessBufferIndex_ && lastDrawBufferIndex_ == drawBufferIndex_) {
                 drawBuffer_[drawBufferIndex_] = [tile_, true]; //draw grid
                 drawBufferIndex_++;
             }
@@ -944,8 +947,8 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
         var tile_ = item_[0];
         if (drawGrid_ && item_[1]) {
             tile_.drawGrid(cameraPos_); 
-        } else {
-            map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, 0, false, false);
+        } else if (!item_[1]) {
+            map_.drawSurfaceTile(tile_, tile_.metanode_, cameraPos_, tile_.texelSize_, 0, false, false, checkGpu_);
         }
     }
 };

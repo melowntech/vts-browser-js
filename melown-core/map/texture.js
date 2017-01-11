@@ -338,6 +338,13 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
             this.map_.resourcesCache_.updateItem(this.cacheItem_);
         }
 
+        if (((this.heightMap_ && !this.imageData_) || (!this.heightMap_ && !this.gpuTexture_)) &&
+              this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
+            //console.log("testure resource build overflow");
+            this.map_.markDirty();
+            return false;
+        }
+
         if (doNotCheckGpu_) {
             if (this.heightMap_) {
                 if (!this.imageData_) {
@@ -359,12 +366,6 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
         } else {
             if (!this.gpuTexture_) {
                 if (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_) {
-                    return false;
-                }
-
-                if (this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
-                    //console.log("testure resource build overflow");
-                    this.map_.markDirty();
                     return false;
                 }
                 

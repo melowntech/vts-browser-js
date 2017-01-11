@@ -40,7 +40,7 @@ Melown.Map.prototype.moveRenderSlotAfter = function(whichId_, whereId_) {
 };
 
 Melown.Map.prototype.removeRenderSlot = function(id_) {
-    var index_ = this.getRenderSlotIndex(id2_);
+    var index_ = this.getRenderSlotIndex(id_);
     if (index_ != -1) {
         this.renderSlots_.splice(index_, 1);
     }
