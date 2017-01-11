@@ -75,14 +75,16 @@ Melown.MapTexture.prototype.killImage = function(killedByCache_) {
 
     if (!this.gpuTexture_) {
         this.loadState_ = 0;
-    } else {
-        this.loadState_ = this.loadState_;
-    }
+    } //else {
+        //this.loadState_ = this.loadState_;
+    //}
 
     this.cacheItem_ = null;
 };
 
 Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
+/*
+    //debug only    
     if (!this.map_.lastRemoved_) {
         this.map_.lastRemoved_ = [];
     }
@@ -95,7 +97,7 @@ Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
     //debug only    
     this.map_.lastRemoved_.unshift(this.mapLoaderUrl_);
     this.map_.lastRemoved_ = this.map_.lastRemoved_.slice(0,20);
-
+*/
 
     if (this.gpuTexture_ != null) {
         this.stats_.gpuTextures_ -= this.gpuTexture_.size_;
@@ -325,6 +327,12 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
             break;
     }
 
+    var maskState_ = true;
+
+    if (this.mask_) {
+        maskState_ = this.mask_.isReady(doNotLoad_, priority_, doNotCheckGpu_);
+    }
+
     if (this.loadState_ == 2) { //loaded
         if (!doNotLoad_ && this.cacheItem_) {
             this.map_.resourcesCache_.updateItem(this.cacheItem_);
@@ -333,20 +341,20 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
         if (doNotCheckGpu_) {
             if (this.heightMap_) {
                 if (!this.imageData_) {
+                    var t = performance.now();
                     this.buildHeightMap();
+                    this.stats_.renderBuild_ += performance.now() - t; 
                 }
             }
 
-            if (this.mask_) {
-                return this.mask_.isReady(doNotLoad_, priority_, doNotCheckGpu_);
-            }
-        
-            return true;
+            return maskState_;
         }
 
         if (this.heightMap_) {
             if (!this.imageData_) {
+                var t = performance.now();
                 this.buildHeightMap();
+                this.stats_.renderBuild_ += performance.now() - t; 
             }
         } else {
             if (!this.gpuTexture_) {
@@ -378,11 +386,8 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
             }
         }
         
-        if (this.mask_) {
-            return this.mask_.isReady(doNotLoad_, priority_, doNotCheckGpu_);
-        }
         
-        return true;
+        return maskState_;
     } else {
         if (this.loadState_ == 0) { 
             if (doNotLoad_) {

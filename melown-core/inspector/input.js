@@ -239,7 +239,7 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                     case 88:
                     case 120:
-                        map_.drawFog_ = !map_.drawFog_; hit_ = true; break; //key X pressed
+                        map_.config_.mapFog_ = !map_.config_.mapFog_; hit_ = true; break; //key X pressed
 
                     case 82:
                     case 114:

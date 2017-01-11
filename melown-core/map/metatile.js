@@ -158,14 +158,23 @@ Melown.MapMetatile.prototype.onLoadError = function() {
     this.mapLoaderCallError_();
 };
 
-Melown.MapMetatile.prototype.onLoaded = function(data_) {
+Melown.MapMetatile.prototype.onLoaded = function(data_, task_) {
     if (this.map_.killed_ == true){
+        return;
+    }
+
+    if (!task_) {
+    //if (this.map_.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
+        this.map_.markDirty();
+        this.map_.addProcessingTask(this.onLoaded.bind(this, data_, true));
         return;
     }
 
     this.size_ += data_.byteLength * 4;
 
+    var t = performance.now();
     this.parseMetatatile({data_:data_, index_: 0});
+    this.map_.stats_.renderBuild_ += performance.now() - t; 
 
     this.cacheItem_= this.map_.metatileCache_.insert(this.kill.bind(this, true), this.size_);
 

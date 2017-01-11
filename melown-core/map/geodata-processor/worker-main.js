@@ -357,12 +357,12 @@ self.onmessage = function (e) {
                 geocent_ = data_["geocent"] || false;
                 processStylesheet(data_["data"]);
             }
-            postMessage("ready");
+            postMessage({"command" : "ready"});
             break;
 
         case "setFont":
             setFont(data_);
-            postMessage("ready");
+            postMessage({"command" : "ready"});
             break;
 
         case "processGeodata":
@@ -374,8 +374,8 @@ self.onmessage = function (e) {
                 optimizeGroupMessages();
             }
             
-            postMessage("allProcessed");
-            postMessage("ready");
+            postMessage({"command" : "allProcessed"});
+            postMessage({"command" : "ready"});
             break;
     }
 };

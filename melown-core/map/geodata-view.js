@@ -63,65 +63,52 @@ Melown.MapGeodataView.prototype.killGeodataView = function(killedByCache_) {
 };
 
 
-Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(message_) {
+Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(command_, message_) {
     if (this.killed_ || this.killedByCache_){
         return;
     }
 
-    if (typeof message_ !== "string" && message_["command"] != null) {
+    switch (command_) {
 
-        //console.log("worker-reply: " + message_["command"]);
+        case "beginGroup":
+            this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.renderer_);
+            this.gpuGroups_.push(this.currentGpuGroup_);
+            break;
 
-        switch (message_["command"]) {
+        case "addRenderJob":
+            if (this.currentGpuGroup_) {
+                this.currentGpuGroup_.addRenderJob(message_);
+            } //else {
+                //message_ = message_;
+            //}
+            break;
 
-            case "beginGroup":
-                this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.renderer_);
-                this.gpuGroups_.push(this.currentGpuGroup_);
-                break;
+        case "endGroup":
+            if (this.currentGpuGroup_) {
+                //this.currentGpuGroup_.optimize();
+                this.size_ += this.currentGpuGroup_.size();
+            } //else {
+                //message_ = message_;
+            //}
+            break;
 
-            case "addRenderJob":
-                if (this.currentGpuGroup_) {
-                    this.currentGpuGroup_.addRenderJob(message_);
-                } //else {
-                    //message_ = message_;
-                //}
-                break;
+        case "allProcessed":
+            this.map_.markDirty();
+            this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGeodataView.bind(this, true), this.size_);
 
-            case "endGroup":
-                if (this.currentGpuGroup_) {
-                    //this.currentGpuGroup_.optimize();
-                    this.size_ += this.currentGpuGroup_.size();
-                } //else {
-                    //message_ = message_;
-                //}
-                break;
-        }
+            this.stats_.gpuGeodata_ += this.size_;
+            this.stats_.graphsFluxGeodata_[0][0]++;
+            this.stats_.graphsFluxGeodata_[0][1] += this.size_;
+            //console.log("geodata: " + this.size_ + " total: " + this.stats_.gpuGeodata_);
 
-    } else {
+            this.ready_ = true;
+            break;
 
-        //console.log("worker-reply: " + message_);
-
-        switch (message_) {
-            case "allProcessed":
-                this.map_.markDirty();
-                this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGeodataView.bind(this, true), this.size_);
-
-                this.stats_.gpuGeodata_ += this.size_;
-                this.stats_.graphsFluxGeodata_[0][0]++;
-                this.stats_.graphsFluxGeodata_[0][1] += this.size_;
-                //console.log("geodata: " + this.size_ + " total: " + this.stats_.gpuGeodata_);
-
-                this.ready_ = true;
-                break;
-
-            case "ready":
-                this.map_.markDirty();
-                //this.ready_ = true;
-                break;
-
-        }
+        case "ready":
+            this.map_.markDirty();
+            //this.ready_ = true;
+            break;
     }
-
 };
 
 Melown.MapGeodataView.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {

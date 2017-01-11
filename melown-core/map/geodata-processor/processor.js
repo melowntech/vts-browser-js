@@ -61,16 +61,19 @@ Melown.MapGeodataProcessor.prototype.onMessage = function(message_) {
     }
 
     message_ = message_.data;
+    
+    var command_ = message_["command"];
 
     //console.log("onmessage");
 
-    if (typeof message_ === "string" && message_ == "ready") {
+    //if (typeof message_ === "string" && message_ == "ready") {
+    if (command_ == "ready") {
         this.ready_ = true;
         //console.log("ready");
     }
 
     if (this.listener_ != null) {
-        this.listener_(message_);
+        this.listener_(command_, message_);
     }
 };
 

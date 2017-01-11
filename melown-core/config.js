@@ -25,7 +25,7 @@ Melown.Core.prototype.initConfig = function() {
         mapHeightLodBlend_ : true,
         mapHeightNodeBlend_ : true,
         mapBasicTileSequence_ : false,
-        mapPreciseBBoxTest_ : true,
+        mapPreciseBBoxTest_ : false,
         mapPreciseDistanceTest_ : false,
         mapHeightfiledWhenUnloaded_ : false,
         mapSmartNodeParsing_ : true,

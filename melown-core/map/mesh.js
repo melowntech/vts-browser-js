@@ -180,15 +180,26 @@ Melown.MapMesh.prototype.onLoadError = function() {
     this.mapLoaderCallError_();
 };
 
-Melown.MapMesh.prototype.onLoaded = function(data_) {
+Melown.MapMesh.prototype.onLoaded = function(data_, task_) {
     if (this.map_.killed_ == true){
+        return;
+    }
+
+    if (!task_) {
+        //this.map_.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
+        this.map_.markDirty();
+        this.map_.addProcessingTask(this.onLoaded.bind(this, data_, true));
         return;
     }
 
     this.fileSize_= data_.byteLength;
 
     var stream_ = {data_:data_, index_:0};
+
+    var t = performance.now();
     this.parseMapMesh(stream_);
+    this.map_.stats_.renderBuild_ += performance.now() - t; 
+    
     this.submeshesKilled_ = false;
 
     this.cacheItem_ = this.map_.resourcesCache_.insert(this.killSubmeshes.bind(this, true), this.size_);

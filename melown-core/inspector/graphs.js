@@ -148,10 +148,11 @@ Melown.Inspector.prototype.graphsZoomPressed = function() {
 
 Melown.Inspector.prototype.graphsGraphPressed = function() {
     switch (this.graphsGraph_) {
-        case "Cache":     this.graphsGraph_ = "Polygons"; break;
-        case "Polygons":  this.graphsGraph_ = "LODs"; break;
-        case "LODs":      this.graphsGraph_ = "Flux"; break;
-        case "Flux":      this.graphsGraph_ = "Cache"; break;
+        case "Cache":      this.graphsGraph_ = "Polygons"; break;
+        case "Polygons":   this.graphsGraph_ = "Processing"; break;
+        case "Processing": this.graphsGraph_ = "LODs"; break;
+        case "LODs":       this.graphsGraph_ = "Flux"; break;
+        case "Flux":       this.graphsGraph_ = "Cache"; break;
     }
 
     this.updateGraphsPanel();
@@ -450,12 +451,13 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
 
 
     case "Polygons":
+    case "Processing":
         {
             var max_ = 0;
             var min_ = 99999999999;
             var total_ = 0;
             var realCount_ = 0;
-            var values_ = stats_.graphsPolygons_;
+            var values_ = (this.graphsGraph_ == "Polygons") ? stats_.graphsPolygons_ : stats_.graphsBuild_;
 
             for (var i = 0; i < samples_; i++) {
                 max_ = values_[i] > max_ ? values_[i] : max_;
@@ -479,14 +481,15 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
 
             if (this.graphsShowCursor_ == true) {
                 var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
-                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Polygons: ' + Math.round(values_[index_]) +'</div>';
+                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graphsGraph_ + ' Max: ' + Math.round(values_[index_]) +'</div>';
             } else {
-                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Polygons Max: ' + max_ +'</div>';
+                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graphsGraph_ + ' Max: ' + max_ +'</div>';
                 str_ += ' &nbsp Min: ' + min_;
                 str_ += ' &nbsp Avrg: ' + Math.round(total_ / realCount_) +'</div>';
             }
         }
         break;
+
 
     case "LODs":
         {

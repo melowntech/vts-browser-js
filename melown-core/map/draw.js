@@ -215,7 +215,7 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_) {
     }
 
     //draw skydome before geodata
-    if (!projected_ && this.drawFog_) {    
+    if (!projected_ && this.drawFog_ && this.referenceFrame_.id_ == "melown2015") {    
 
         var camInfo_ = this.position_.getCameraInfo(true);
         var navigationSrsInfo_ = this.getNavigationSrs().getSrsInfo();
@@ -266,7 +266,6 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_) {
             
             var params3_ = [t1_,5.2 / (t2_-t1_),t2_,0];
         } 
-            
 
         this.renderer_.gpu_.setState(this.drawAuraState_);
         this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],

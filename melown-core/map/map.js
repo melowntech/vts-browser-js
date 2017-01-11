@@ -38,6 +38,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.boundLayers_ = [];
     this.dynamicLayers_ = [];
     this.stylesheets_ = [];
+    this.processingTasks_ = [];
     this.tileBuffer_ = new Array(500);
 
     this.initialView_ = null;
@@ -913,6 +914,22 @@ Melown.Map.prototype.drawMap = function() {
 };
 
 
+Melown.Map.prototype.processProcessingTasks = function() {
+    while (this.processingTasks_.length > 0) {
+        if (this.stats_.renderBuild_ > this.config_.mapMaxProcessingTime_) {
+            this.markDirty();
+            return;
+        }
+
+        this.processingTasks_[0]();
+        this.processingTasks_.shift();
+    }
+};
+
+Melown.Map.prototype.addProcessingTask = function(task_) {
+    this.processingTasks_.push(task_);
+};
+
 Melown.Map.prototype.update = function() {
     if (this.killed_ == true) {
         return;
@@ -955,6 +972,8 @@ Melown.Map.prototype.update = function() {
     if (!this.loaderSuspended_) {
         this.loader_.update();
     }
+
+    this.processProcessingTasks();
 
     if (this.dirty_) {
         this.dirty_ = false;
