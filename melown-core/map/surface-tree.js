@@ -48,10 +48,14 @@ Melown.MapSurfaceTree.prototype.init = function() {
 Melown.MapSurfaceTree.prototype.findSurfaceTile = function(id_) {
     var tile_ = this.surfaceTree_;
 
-    for (var lod_ = 1; lod_ <= id_[0]; lod_++) {
+//    for (var lod_ = 1; lod_ <= id_[0]; lod_++) {
+//        var mask_ = 1 << (lod_-1);
+//        var index_ = 0;
+
+    for (var lod_ = id_[0]; lod_ > 0; lod_--) {
         var mask_ = 1 << (lod_-1);
         var index_ = 0;
-
+        
         if ((id_[1] & mask_) != 0) {
             index_ += 1;
         }
@@ -83,8 +87,11 @@ Melown.MapSurfaceTree.prototype.findNavTile = function(id_) {
     
     var navtile_ = null;
 
-    for (var lod_ = 1; lod_ <= id_[0]; lod_++) {
-        var mask_ = 1 << (id_[0] - lod_);
+//    for (var lod_ = 1; lod_ <= id_[0]; lod_++) {
+//        var mask_ = 1 << (id_[0] - lod_);
+//        var index_ = 0;
+    for (var lod_ = id_[0]; lod_ > 0; lod_--) {
+        var mask_ = 1 << (lod_-1);
         var index_ = 0;
 
         if ((id_[1] & mask_) != 0) {
@@ -678,9 +685,11 @@ Melown.MapSurfaceTree.prototype.drawGeodataSurface = function(shift_) {
                 console.log(JSON.stringify(tile_.id_));
             }*/
             
-            if (drawGrid_ && depth_ >= maxHiresLodLevels_) {
-                drawBuffer_[drawBufferIndex_] = [tile_, true]; //draw grid
-                drawBufferIndex_++;
+            if (depth_ >= maxHiresLodLevels_) {
+                if (drawGrid_) {
+                    drawBuffer_[drawBufferIndex_] = [tile_, true]; //draw grid
+                    drawBufferIndex_++;
+                }
 
                 continue;
             }

@@ -83,6 +83,11 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
 
     this.stats_ = new Melown.MapStats(this);
     this.resourcesTree_ = new Melown.MapResourceTree(this);
+    
+    //this.resourcesTree_.findNode([21,565992,360945], true);
+    //this.resourcesTree_.findNode([21,565993,360945], true);
+    //debugger
+    
     this.replay_ = {
         camera_ : null,
         drawnTiles_ : null,
@@ -969,9 +974,7 @@ Melown.Map.prototype.update = function() {
     var dirty_ = this.dirty_;
     this.stats_.begin(dirty_);
 
-    if (!this.loaderSuspended_) {
-        this.loader_.update();
-    }
+    this.loader_.update();
 
     this.processProcessingTasks();
 
@@ -982,9 +985,7 @@ Melown.Map.prototype.update = function() {
         
         this.processRenderSlots();
 
-        if (!this.loaderSuspended_) {
-            this.loader_.update();
-        }
+        this.loader_.update();
         
         this.core_.callListener("map-update", {});
 

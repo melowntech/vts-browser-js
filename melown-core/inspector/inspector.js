@@ -18,6 +18,7 @@ Melown.Inspector = function(core_) {
     
     this.core_.on("map-update", this.onMapUpdate.bind(this));
    
+    this.shakeCamera_ = false; 
     this.drawReplayCamera_ = false; 
     this.drawRadar_ = false;
     this.radarLod_ = null;
@@ -42,6 +43,10 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
     if (!map_) {
         return;
     }
+
+    if (this.shakeCamera_) {
+        map_.redraw();
+    } 
 
     if (this.drawReplayGlobe_) {
         var renderer_ = this.core_.getRenderer();

@@ -63,7 +63,7 @@ Melown.MapGeodataView.prototype.killGeodataView = function(killedByCache_) {
 };
 
 
-Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(command_, message_) {
+Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(command_, message_, task_) {
     if (this.killed_ || this.killedByCache_){
         return;
     }
@@ -71,25 +71,46 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(command_, m
     switch (command_) {
 
         case "beginGroup":
-            this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.renderer_);
-            this.gpuGroups_.push(this.currentGpuGroup_);
+        
+            if (task_) {
+                this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.renderer_);
+                this.gpuGroups_.push(this.currentGpuGroup_);
+            } else {
+                this.map_.markDirty();
+                this.map_.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command_, message_, true));
+            }
+            
             break;
 
         case "addRenderJob":
-            if (this.currentGpuGroup_) {
-                this.currentGpuGroup_.addRenderJob(message_);
-            } //else {
-                //message_ = message_;
-            //}
+
+            if (task_) {
+                if (this.currentGpuGroup_) {
+                    var t = performance.now();
+                    this.currentGpuGroup_.addRenderJob(message_);
+                    this.stats_.renderBuild_ += performance.now() - t; 
+                } //else {
+                    //message_ = message_;
+                //}
+            } else {
+                this.map_.markDirty();
+                this.map_.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command_, message_, true));
+            }
+
             break;
 
         case "endGroup":
-            if (this.currentGpuGroup_) {
-                //this.currentGpuGroup_.optimize();
-                this.size_ += this.currentGpuGroup_.size();
-            } //else {
-                //message_ = message_;
-            //}
+
+            if (task_) {
+                if (this.currentGpuGroup_) {
+                    //this.currentGpuGroup_.optimize();
+                    this.size_ += this.currentGpuGroup_.size();
+                } //else {
+            } else {
+                this.map_.markDirty();
+                this.map_.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command_, message_, true));
+            }
+
             break;
 
         case "allProcessed":

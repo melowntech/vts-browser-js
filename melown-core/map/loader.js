@@ -174,6 +174,10 @@ Melown.MapLoader.prototype.updateChannel = function(channel_) {
 };
 
 Melown.MapLoader.prototype.update = function() {
+    if (this.map_.loaderSuspended_) {
+        return;
+    }
+
     for (var i = this.pending_.length - 1; i >= 0; i--) {
         if (this.pending_[i].length > 0) {
             this.updateChannel(i);

@@ -257,6 +257,10 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                     case 122:
                         map_.ignoreTexelSize_ = !map_.ignoreTexelSize_; break; //key Z pressed
 
+                    case 78:
+                    case 110:
+                        this.shakeCamera_ = !this.shakeCamera_; break; //key N pressed
+
                     default:
                         blockHit_ = false;
                         break;
