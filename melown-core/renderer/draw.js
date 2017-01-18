@@ -104,7 +104,7 @@ Melown.Renderer.prototype.drawBall = function(position_, size_, shader_, params_
     var proj_ = this.camera_.getProjectionMatrix();
 
     var norm_ = [0,0,0, 0,0,0, 0,0,0];
-    Melown.Math.mat4ToInverseMat3(mv_, norm_);
+    Melown.mat4.toInverseMat3(mv_, norm_);
     Melown.mat3.transpose(norm_);
     
     //var shader_ = this.progStardome_;

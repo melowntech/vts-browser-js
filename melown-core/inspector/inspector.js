@@ -141,7 +141,7 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
         ];
     
         //normal transformation matrix
-        Melown.Math.mat4ToInverseMat3(mv_, norm_);
+        Melown.mat4.toInverseMat3(mv_, norm_);
     
         renderer_.setState(this.replayFrustumState_);
     

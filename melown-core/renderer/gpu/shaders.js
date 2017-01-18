@@ -350,8 +350,8 @@ Melown.atmoVertexShader3 =
      
         //"oPosition = mul(Po, WorldViewProj);\n"+ 
      
-        "float radius = length(position);\n"+
-        "float radius2 = radius * radius;\n"+ 
+        //"float radius = length(position);\n"+
+        //"float radius2 = radius * radius;\n"+ 
         "float camHeight = length(camPos.xyz);\n"+
         "vec3 camToPos = position - camPos.xyz;\n"+
         "float farDist = length(camToPos);\n"+
@@ -370,7 +370,7 @@ Melown.atmoVertexShader3 =
         //"vec3 nearNormal = normalize(nearPos);\n"+
     
         // get distance to surface horizon
-        "float altitude = camHeight - SurfaceRadius;\n"+
+        "float altitude = max(0.0,camHeight - SurfaceRadius);\n"+
         "float horizonDist = sqrt((altitude*altitude) + (2.0 * SurfaceRadius * altitude));\n"+
         "float maxDot = horizonDist / camHeight;\n"+
      

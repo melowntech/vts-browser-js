@@ -261,7 +261,7 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_) {
         } else {
 
             if (this.cameraHeight_ < 5000) { 
-                t1_ = 1.0, t2_ = 1.1;
+                t1_ = 1.05, t2_ = 1.12;
             }
             
             var params3_ = [t1_,5.2 / (t2_-t1_),t2_,0];
