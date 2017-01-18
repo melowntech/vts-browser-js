@@ -14,10 +14,20 @@ Melown.UIControlSearch = function(ui_, visible_) {
     //this.input_.on("change", this.onChange.bind(this));
     this.input_.on("input", this.onChange.bind(this));
     this.input_.on("keydown", this.onKeyUp.bind(this));
-//    this.input_.on("keypress", this.onKeyPress.bind(this));
     this.input_.on("focus", this.onFocus.bind(this));
+    this.input_.on('mousedown', this.onDrag2.bind(this));
+    this.input_.on('mousewheel', this.onDrag.bind(this));
 
     this.list_ = this.control_.getElement("melown-search-list");
+    this.list_.on('mousedown', this.onDrag2.bind(this));
+    this.list_.on('mousewheel', this.onDrag.bind(this));
+
+    this.mapControl_ = this.ui_.getMapControl();
+    this.mapElement_ = this.mapControl_.getMapElement();
+    this.mapElement_.on('mousedown', this.onDrag.bind(this), window);
+    this.mapElement_.on('mousewheel', this.onDrag.bind(this), window);
+
+    this.ignoreDrag_ = false; 
 
     this.urlTemplate_ = "https://www.windytv.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l";
     this.data_ = [];
@@ -223,3 +233,19 @@ Melown.UIControlSearch.prototype.onChange = function(event_) {
     Melown.loadJSON(url_, this.onListLoaded.bind(this, this.searchCounter_), this.onListLoadError.bind(this));
 };
 
+Melown.UIControlSearch.prototype.onDrag2 = function(event_) {
+    this.ignoreDrag_ = true; 
+    var element_ = this.input_.getElement();  
+};
+
+Melown.UIControlSearch.prototype.onDrag = function(event_) {
+    if (this.ignoreDrag_) {
+        this.ignoreDrag_ = false;
+        return; 
+    } 
+
+    var element_ = this.input_.getElement();  
+    element_.value = this.lastSearch_;
+    element_.blur(); //defocus'
+    this.hideList(); 
+};

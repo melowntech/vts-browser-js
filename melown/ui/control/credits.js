@@ -92,25 +92,46 @@ Melown.UIControlCredits.prototype.update = function() {
     if (this.lastHTML_ != html_) {
         this.lastHTML_ = html_;
         this.credits_.setHtml(html_);
+
+        var butt_ = this.control_.getElement("melown-credits-imagery-more");
+        if (butt_) {
+            butt_.on("click", this.onMoreButton.bind(this, butt_, "2"));
+        }
+        
+        butt_ = this.control_.getElement("melown-credits-mapdata-more");
+        if (butt_) {
+            butt_.on("click", this.onMoreButton.bind(this, butt_, "3"));
+        }
     }
 
+    this.lastHTML2_ = html2_;
+    this.lastHTML3_ = html3_;
+
+    /*
     if (this.lastHTML2_ != html2_) {
         var butt_ = this.control_.getElement("melown-credits-imagery-more");
         if (butt_) {
-            butt_.on("click", this.onMoreButton.bind(this, butt_, html2_));
+            butt_.on("click", this.onMoreButton.bind(this, butt_, "2"));
         }
     }
         
     if (this.lastHTML3_ != html3_) {
         var butt_ = this.control_.getElement("melown-credits-mapdata-more");
         if (butt_) {
-            butt_.on("click", this.onMoreButton.bind(this, butt_, html3_));
+            butt_.on("click", this.onMoreButton.bind(this, butt_, "3"));
         }
-    }
+    }*/
 };
 
 Melown.UIControlCredits.prototype.onMoreButton = function(butt_, html_) {
     var rect_ = butt_.getRect();
+    
+    if (html_ == "2") {
+        html_ = this.lastHTML2_;
+    } else {
+        html_ = this.lastHTML3_;
+    }
+    
     this.ui_.popup_.show({"right" : Math.max(0,(rect_["fromRight"]-rect_["width"])) + "px",
                           "bottom" : (rect_["fromBottom"]+7) + "px"}, html_);
 };
