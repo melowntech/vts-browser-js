@@ -140,16 +140,19 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                         break;  //key H pressed
 
-                    case 80:
-                    case 112:
+                    case 81:
+                    case 113:
                        var pos_ = map_.getPosition();
                        console.log("pos-before: " + JSON.stringify(pos_.pos_));
                        pos_.convertViewMode((pos_.getViewMode() == "obj") ? "subj" : "obj");
                        console.log("new mode: " + pos_.getViewMode());
                        console.log("pos-after: " + JSON.stringify(pos_.pos_));
                        map_.setPosition(pos_);
+                        /*this.core_.saveScreenshot(pos_);*/ break;  //key Q pressed
 
-                        /*this.core_.saveScreenshot(pos_);*/ break;  //key P pressed
+                    case 80:
+                    case 112:
+                        map_.renderer_.saveScreenshot("file", "MelownScreenshot.png", "png"); break;  //key P pressed
 
                     case 83:
                     case 115:

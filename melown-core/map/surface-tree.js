@@ -1066,7 +1066,8 @@ Melown.MapSurfaceTree.prototype.traceHeightTileByMap = function(tile_, params_, 
     if (node_.hasNavtile()) {
         if (!tile_.heightMap_) {
             //if (!preventLoad_) {
-                if (!tile_.surface_ || tile_.surface_.virtual_) {
+                //if (!tile_.surface_ || tile_.surface_.virtual_) {
+                if (!tile_.surface_ || !tile_.resourceSurface_) { //surface_.virtual_) {
                     return false; //is it best way how to do it?
                 }
                 

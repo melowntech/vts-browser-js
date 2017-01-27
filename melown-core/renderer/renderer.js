@@ -12,7 +12,7 @@ Melown.StencilLineState_ = null;
  */
 Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.config_ = config_ || {};
-    this.setConfigParams(config_);
+    //this.setConfigParams(config_);
     this.core_ = core_;
     this.progTile_ = null;
     this.progHeightmap_ = null;
@@ -607,7 +607,7 @@ Melown.Renderer.prototype.getZoffsetFactor = function(params_) {
     return (params_[0] + params_[1]*this.distanceFactor_ + params_[2]*this.tiltFactor_)*0.0001;
 };
 
-Melown.Renderer.prototype.saveScreenshot = function() {
+Melown.Renderer.prototype.saveScreenshot = function(output_, filename_, filetype_) {
     //this.updateHitmap_ = true;
 
     var gl_ = this.gpu_.gl_;
@@ -650,8 +650,42 @@ Melown.Renderer.prototype.saveScreenshot = function() {
     imageData_.data.set(data_);
     context_.putImageData(imageData_, 0, 0);
 
+    filetype_ = filetype_ || "jpg"; 
+
     //open image in new window
-    window.open(canvas_.toDataURL("image/jpeg"));
+    
+    if (output_ == "file") {
+        var a = document.createElement("a");
+
+        var dataURI_= canvas_.toDataURL("image/" + filetype_);
+
+        var byteString_ = atob(dataURI_.split(',')[1]);
+        // separate out the mime component
+        var mimeString_ = dataURI_.split(',')[0].split(':')[1].split(';')[0];
+        
+          // write the bytes of the string to an ArrayBuffer
+        var ab = new ArrayBuffer(byteString_.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString_.length; i++) {
+            ia[i] = byteString_.charCodeAt(i);
+        }
+      
+        var file_ = new Blob([ab], {type: filetype_});
+
+        var url_ = URL.createObjectURL(file_);
+        a.href = url_;
+        a.download = filename_;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url_);  
+        }, 0); 
+    } if (output_ == "tab") {
+        window.open(canvas_.toDataURL("image/" + type_));
+    }
+    
+    return imageData_;
 };
 
 
@@ -666,25 +700,11 @@ Melown.Renderer.prototype.getBitmap = function(url_, filter_, tiled_) {
 
     return texture_;
 };
-
+/*
 Melown.Renderer.prototype.setConfigParams = function(params_) {
     if (typeof params_ === "object" && params_ !== null) {
         for (var key_ in params_) {
             this.setConfigParam(key_, params_[key_]);
         }
     }
-};
-
-Melown.Renderer.prototype.setConfigParam = function(key_, value_) {
-    switch (key_) {
-        case "rendererAntialiasing":       this.config_.rendererAntialiasing_ = Melown.validateBool(value_, true); break;
-        case "rendererAllowScreenshots":   this.config_.rendererAllowScreenshots_ = Melown.validateBool(value_, false); break;
-    }
-};
-
-Melown.Renderer.prototype.getConfigParam = function(key_) {
-    switch (key_) {
-        case "rendererAntialiasing":       return this.config_.rendererAntialiasing_;
-        case "rendererAllowScreenshots":   return this.config_.rendererAllowScreenshots_;
-    }
-};
+};*/

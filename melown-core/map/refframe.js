@@ -65,6 +65,7 @@ Melown.MapRefFrame = function(map_, json_) {
 
 Melown.MapRefFrame.prototype.getInfo = function() {
     return {
+        "id" : this.id_,
         "physicalSrs" : this.model_.physicalSrs_.id_,
         "navigationSrs" : this.model_.navigationSrs_.id_,
         "publicSrs" : this.model_.publicSrs_.id_

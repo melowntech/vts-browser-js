@@ -873,6 +873,7 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
         return;
     }
     
+    var fastGrid_ = this.map_.config_.mapFastHeightfiled_;
     
     //if (!(this.id_[0] == 18 && this.id_[1] == 130381 && this.id_[2] == 129151)) {
       //  return;
@@ -897,6 +898,7 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
     var hasPoles_ = map_.referenceFrame_.hasPoles_;
 
     //var pseudomerc_ = (node_.srs_.id_ == "pseudomerc");
+    var subdivision_ = angle_; 
     var angle_ = angle_ || this.metanode_.diskAngle2_;
     
     if ((hasPoles_ && !node_.isPole_) &&  Math.acos(angle_) > Math.PI*0.1) {
@@ -932,15 +934,38 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
         [ur_[0], middle_[1]]
     ];    
 
-    var res_ = map_.getSurfaceHeight(null, lod_, null, node_, middle_, coords_);
-    middle_[2] = res_[0];
-    middle_ = node_.getPhysicalCoords(middle_, true);
-    var coordsRes_ = res_[5];
-    
-    if (!coordsRes_) {
-        coordsRes_ = [[0],[0],[0],[0],[0],[0],[0],[0]];
+    if (fastGrid_) {
+        if (!this.metanode_) {
+            return;
+        }
+        
+        var h = this.metanode_.minHeight_;      
+        var coordsRes_ = [[h],[h],[h],[h],[h],[h],[h],[h]];
+        middle_[2] = h;
+        middle_ = node_.getPhysicalCoords(middle_, true);
+        
+    } else {
+        var res_ = map_.getSurfaceHeight(null, lod_, null, node_, middle_, coords_);
+        middle_[2] = res_[0];
+        middle_ = node_.getPhysicalCoords(middle_, true);
+        var coordsRes_ = res_[5];
+        
+        if (!coordsRes_) {
+            coordsRes_ = [[0],[0],[0],[0],[0],[0],[0],[0]];
+        }
     }
 
+    var renderer_ = map_.renderer_;
+    var buffer_ = map_.planeBuffer_;
+    //var mvp_ = Melown.mat4.create();
+    var mv_ = renderer_.camera_.getModelviewMatrix();
+    var proj_ = renderer_.camera_.getProjectionMatrix();
+    //Melown.mat4.multiply(proj_, mv_, mvp_);
+
+    var sx_ = cameraPos_[0];
+    var sy_ = cameraPos_[1];
+    var sz_ = cameraPos_[2];
+    
     coords_[0][2] = coordsRes_[0][0];
     var n1_ = node_.getPhysicalCoords(coords_[0], true);
 
@@ -964,18 +989,6 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
 
     coords_[7][2] = coordsRes_[7][0];
     var mright_ = node_.getPhysicalCoords(coords_[7], true);
-
-    var renderer_ = map_.renderer_;
-    var buffer_ = map_.planeBuffer_;
-
-    //var mvp_ = Melown.mat4.create();
-    var mv_ = renderer_.camera_.getModelviewMatrix();
-    var proj_ = renderer_.camera_.getProjectionMatrix();
-    //Melown.mat4.multiply(proj_, mv_, mvp_);
-    
-    var sx_ = cameraPos_[0];
-    var sy_ = cameraPos_[1];
-    var sz_ = cameraPos_[2];
 
     buffer_[0] = n4_[0] - sx_;
     buffer_[1] = n4_[1] - sy_;
@@ -1012,6 +1025,7 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
     buffer_[24] = n2_[0] - sx_;
     buffer_[25] = n2_[1] - sy_;
     buffer_[26] = n2_[2] - sz_;
+
 
     if (hasPoles_ && !map_.poleRadius_ && node_.id_[0] == 1 && !node_.isPole_) {
         var p = node_.getPhysicalCoords([node_.extents_.ur_[0], node_.extents_.ur_[1], 0]);

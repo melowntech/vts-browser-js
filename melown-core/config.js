@@ -28,10 +28,11 @@ Melown.Core.prototype.initConfig = function() {
         mapPreciseBBoxTest_ : false,
         mapPreciseDistanceTest_ : false,
         mapHeightfiledWhenUnloaded_ : true,
+        mapFastHeightfiled_ : true,
         mapSmartNodeParsing_ : true,
         mapLoadErrorRetryTime_ : 3000,
         mapLoadErrorMaxRetryCount_ : 3,
-        mapLoadMode_ : "fit", // "topdown", "downtop", "fit", "fitonly"
+        mapLoadMode_ : "topdown", // "topdown", "downtop", "fit", "fitonly"
         mapGeodataLoadMode_ : "fit", //"fitonly"
         mapXhrImageLoad_ : false,
         mapStoreLoadStats_ : true,
@@ -80,7 +81,7 @@ Melown.Core.prototype.setConfigParam = function(key_, value_) {
         }
 
         if (key_.indexOf("renderer") == 0) {
-            this.getRenderer().setConfigParam(key_, value_);
+            this.setRendererConfigParam(key_, value_);
         }
     }
 };
@@ -94,8 +95,22 @@ Melown.Core.prototype.getConfigParam = function(key_) {
         }
 
         if (key_.indexOf("renderer") == 0) {
-            return this.getRenderer().getConfigParam(key_, value_);
+            return this.getRendererConfigParam(key_);
         }
+    }
+};
+
+Melown.Core.prototype.setRendererConfigParam = function(key_, value_) {
+    switch (key_) {
+        case "rendererAntialiasing":       this.config_.rendererAntialiasing_ = Melown.validateBool(value_, true); break;
+        case "rendererAllowScreenshots":   this.config_.rendererAllowScreenshots_ = Melown.validateBool(value_, false); break;
+    }
+};
+
+Melown.Core.prototype.getRendererConfigParam = function(key_) {
+    switch (key_) {
+        case "rendererAntialiasing":       return this.config_.rendererAntialiasing_;
+        case "rendererAllowScreenshots":   return this.config_.rendererAllowScreenshots_;
     }
 };
 

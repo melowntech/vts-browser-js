@@ -357,6 +357,10 @@ Melown.RendererInterface.prototype.drawDebugText = function(options_) {
     return this;    
 };
 
+Melown.RendererInterface.prototype.saveScreenshot = function(output_, filename_, filetype_) {
+    return this.renderer_.saveScreenshot(output_, filename_, filetype_);
+};
+
 Melown.RendererInterface.prototype.getCanvasCoords = function(point_, mvp_) {
     return this.renderer_.project2(point_, mvp_);
 };
@@ -402,4 +406,4 @@ Melown.RendererInterface.prototype["getCanvasSize"] = Melown.RendererInterface.p
 Melown.RendererInterface.prototype["setConfigParams"] = Melown.RendererInterface.prototype.setConfigParams; 
 Melown.RendererInterface.prototype["setConfigParam"] = Melown.RendererInterface.prototype.setConfigParam;
 Melown.RendererInterface.prototype["getConfigParam"] = Melown.RendererInterface.prototype.getConfigParam; 
-
+Melown.RendererInterface.prototype["saveScreenshot"] = Melown.RendererInterface.prototype.saveScreenshot;

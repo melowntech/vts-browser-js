@@ -40,6 +40,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.stylesheets_ = [];
     this.processingTasks_ = [];
     this.tileBuffer_ = new Array(500);
+    this.geodataProcessors_ = [];
 
     this.initialView_ = null;
     this.currentView_ = new Melown.MapView(this, {});
@@ -167,6 +168,7 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.log2_ = Math.log(2);
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
+    this.drawStardomeState_ = this.renderer_.gpu_.createState({zwrite_:false, ztest_:false});
     this.drawBlendedTileState_ = this.renderer_.gpu_.createState({zequal_:true, blend_:true});
     this.drawAuraState_ = this.renderer_.gpu_.createState({zwrite_:false, blend_:true});
     this.drawAtmoState_ = this.renderer_.gpu_.createState({zwrite_:false, ztest_:false, blend_:true});
@@ -449,14 +451,24 @@ Melown.Map.prototype.setView = function(view_, forceRefresh_) {
     }
     
     if (typeof view_ === "string") {
-        view_ = this.getNamedView(view_);
+        view_ = view_.trim();
         
-        if (!view_) {
-            return;
+        if (view_.charAt(0) == "{") {
+            try {
+                view_ = JSON.parse(view_);
+            } catch(e){
+                return;            
+            }
+        } else {
+            view_ = this.getNamedView(view_);
+
+            if (!view_) {
+                return;
+            }
+            
+            //view_ = JSON.parse(JSON.stringify(view_));
+            view_ = view_.getInfo();
         }
-        
-        //view_ = JSON.parse(JSON.stringify(view_));
-        view_ = view_.getInfo();
     }
 
     var string_ = JSON.stringify(view_);
@@ -887,11 +899,12 @@ Melown.Map.prototype.drawMap = function() {
    
     if (this.drawChannel_ != 1) {
         this.renderer_.gpu_.clear(true, false);
+        //this.renderer_.gpu_.clear(true, true, [0,0,0,255]);
     } else { //dender depth map
         this.renderer_.gpu_.clear(true, true, [255,255,255,255]);
     }
 
-    this.renderer_.gpu_.setState(this.drawTileState_);
+    this.renderer_.gpu_.setState(this.drawStardomeState_);
 
     if (this.drawChannel_ != 1) {
         //if (this.getNavigationSrs().isProjected()) {    
@@ -908,6 +921,8 @@ Melown.Map.prototype.drawMap = function() {
         
         //}
     }
+
+    this.renderer_.gpu_.setState(this.drawTileState_);
 
     this.setupDetailDegradation();
 

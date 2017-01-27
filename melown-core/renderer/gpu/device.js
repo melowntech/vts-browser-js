@@ -94,9 +94,13 @@ Melown.GpuDevice.prototype.clear = function(clearDepth_, clearColor_, color_) {
     if (color_ != null) {
         this.gl_.clearColor(color_[0]/255, color_[1]/255, color_[2]/255, color_[3]/255);
     }
-
-    this.gl_.clear((clearDepth_ ? this.gl_.COLOR_BUFFER_BIT : 0) |
-                   (clearColor_ ? this.gl_.DEPTH_BUFFER_BIT : 0) );
+    
+//    if (this.keepFrameBuffer_) {
+//        this.gl_.clear(this.gl_.COLOR_BUFFER_BIT | this.gl_.DEPTH_BUFFER_BIT );
+//    } else {
+        this.gl_.clear((clearColor_ ? this.gl_.COLOR_BUFFER_BIT : 0) |
+                       (clearDepth_ ? this.gl_.DEPTH_BUFFER_BIT : 0) );
+//    }
 };
 
 //aPosition_, attrTexCoord_, attrTexCoord2_, attrBarycentric_, attrNormal_, attrNormal2_, attrNormal3_

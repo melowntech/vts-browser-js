@@ -18,6 +18,7 @@ Melown.MapGeodataView = function(map_, geodata_, extraInfo_) {
         processor_.sendCommand("setStylesheet", { "data" : this.surface_.stylesheet_.data_, "geocent" : (!this.map_.getNavigationSrs().isProjected()) } );
         processor_.sendCommand("setFont", {"chars" : this.renderer_.font_.chars_, "space" : this.renderer_.font_.space_, "size" : this.renderer_.font_.size_});
         this.surface_.geodataProcessor_ = processor_;
+        this.map_.geodataProcessors_.push(processor_);
     } else {
         if (this.surface_.styleChanged_) {
             this.surface_.geodataProcessor_.sendCommand("setStylesheet", { "data" : this.surface_.stylesheet_.data_, "geocent" : (!this.map_.getNavigationSrs().isProjected()) } );
@@ -122,6 +123,7 @@ Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(command_, m
             this.stats_.graphsFluxGeodata_[0][1] += this.size_;
             //console.log("geodata: " + this.size_ + " total: " + this.stats_.gpuGeodata_);
 
+            this.geodataProcessor_.busy_ = false;
             this.ready_ = true;
             break;
 
@@ -146,6 +148,7 @@ Melown.MapGeodataView.prototype.isReady = function(doNotLoad_, priority_, doNotC
             this.killedByCache_ = false;
             this.geodataProcessor_.setListener(this.onGeodataProcessorMessage.bind(this));
             this.geodataProcessor_.sendCommand("processGeodata", this.geodata_.geodata_, this.tile_);
+            this.geodataProcessor_.busy_ = true;
         }
     }
 

@@ -44,8 +44,11 @@ Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
     this.submode_ = options_["submode"] || "none";
     this.submode_ = "none";
     this.maxHeight_ = options_["maxHeight"] || 1000000000;
+    this.minDuration_ = options_["minDuration"] || 0;
     this.maxDuration_ = options_["maxDuration"] || 10000;
     this.samplePeriod_ = options_["samplePeriod"] || 10;
+    this.fade_ = options_["fade"] || "none";
+    this.fadePower_ = options_["fadePower"] || 1;
 
     this.pv_ = options_["pv"] || 0.15;
 
@@ -161,6 +164,7 @@ Melown.MapTrajectory.prototype.detectDuration = function() {
     }    
     
     this.duration_ = Math.min(this.duration_, this.maxDuration_);
+    this.duration_ = Math.max(this.duration_, this.minDuration_);
 };
     
 Melown.MapTrajectory.prototype.generate = function() {
@@ -173,6 +177,45 @@ Melown.MapTrajectory.prototype.generate = function() {
         var p = this.pp1_.clone();
         
         if (this.mode_ == "direct") {
+
+            var x = factor_;
+            
+            switch(this.fade_) {
+                case "in":
+                    switch(this.fadePower_) {
+                        case 1: factor_ = x*x; break;
+                        case 2: factor_ = x*x*x; break;
+                        case 3: factor_ = x*x*x*x; break;
+                        case 4: factor_ = x*x*x*x*x; break;
+                        case 5: factor_ = x*x*x*x*x*x; break;
+                        case 6: factor_ = x*x*x*x*x*x*x; break;
+                    }
+                    break;
+
+                case "out":
+                    x = 1 - x;
+                    switch(this.fadePower_) {
+                        case 1: factor_ = 1 - (x*x); break;
+                        case 2: factor_ = 1 - (x*x*x); break;
+                        case 3: factor_ = 1 - (x*x*x*x); break;
+                        case 4: factor_ = 1 - (x*x*x*x*x); break;
+                        case 5: factor_ = 1 - (x*x*x*x*x*x); break;
+                        case 6: factor_ = 1 - (x*x*x*x*x*x*x); break;
+                    }
+                    break;
+
+                case "inout":
+                    switch(this.fadePower_) {
+                        case 1: factor_ = x*x*(3 - 2*x); break;
+                        case 2: factor_ = x*x*x * (x * (6*x - 15) + 10); break;
+                        case 3: factor_ = x*x*(3 - 2*x); x = factor_; factor_ = x*x*(3 - 2*x); break;
+                        case 4: factor_ = x*x*x * (x * (6*x - 15) + 10); x = factor_; factor_ = x*x*x * (x * (6*x - 15) + 10); break;
+                        case 5: factor_ = x*x*(3 - 2*x); x = factor_; factor_ = x*x*(3 - 2*x); x = factor_; factor_ = x*x*(3 - 2*x); break;
+                        case 6: factor_ = x*x*x * (x * (6*x - 15) + 10); x = factor_; factor_ = x*x*x * (x * (6*x - 15) + 10); x = factor_; factor_ = x*x*x * (x * (6*x - 15) + 10); break;
+                    }
+                    break;
+            }
+            
             p.setCoords(this.getInterpolatedCoords(factor_));
             p.setHeight(this.getInterpolatedHeight(factor_));
             

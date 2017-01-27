@@ -270,6 +270,9 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_) {
         this.renderer_.gpu_.setState(this.drawAuraState_);
         this.renderer_.drawBall([-this.cameraPosition_[0], -this.cameraPosition_[1], -this.cameraPosition_[2]],
                                   earthRadius_ + atmoSize_, this.renderer_.progAtmo_, params_,  params2_, params3_);// this.cameraHeight_ > atmoSize_ ? 1 : -1);
+
+        this.renderer_.gpu_.setState(this.drawTileState_);
+
     }
 
 

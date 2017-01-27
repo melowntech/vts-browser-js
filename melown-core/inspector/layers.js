@@ -104,12 +104,17 @@ Melown.Inspector.prototype.initLayersPanel = function() {
         + "#melown-layers-json-text {"
             + "width: 200px;"
             + "resize: none;"
-            + "height: 200px;"
+            + "height: 180px;"
             + "border: 1px solid #ddd;"
             + "white-space: nowrap;"
             + "padding: 0px;"
         + "}"
 
+        + "#melown-layers-json-text2 {"
+            + "width: 200px;"
+            + "height: 21px;"
+            + "border: 1px solid #ddd;"
+        + "}"
         
         + ".melown-layers-panel-title {"
             + "margin: 0px;"
@@ -168,7 +173,8 @@ Melown.Inspector.prototype.initLayersPanel = function() {
         + '<div id="melown-layers-fl-properties-panel"><p class="melown-layers-panel-title">Free Layer Properties:</p>'
            + '<div id="melown-layers-fl-properties-items"></div></div>'
         + '<div id="melown-layers-json-panel"><p class="melown-layers-panel-title">Definition:</p>'
-           + '<textarea id="melown-layers-json-text" cols="50"></textarea></div>';
+           + '<textarea id="melown-layers-json-text" cols="48"></textarea><br/>'
+           + '<input id="melown-layers-json-text2" type="text"></div>';
 
     this.core_.element_.appendChild(this.layersElement_);
     this.layersViewItems_ = document.getElementById("melown-layers-views-items");
@@ -177,6 +183,7 @@ Melown.Inspector.prototype.initLayersPanel = function() {
     this.layersFreeLayersItems_ = document.getElementById("melown-layers-freelayers-items");
     this.layersFreeLayersPropertiesItems_ = document.getElementById("melown-layers-fl-properties-items");
     this.layersJsonText_ = document.getElementById("melown-layers-json-text");
+    this.layersJsonText2_ = document.getElementById("melown-layers-json-text2");
 
     this.layersElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
     this.layersElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
@@ -812,8 +819,8 @@ Melown.Inspector.prototype.applyMapView = function(jsonOnly_) {
         }
     }
 
-
     this.layersJsonText_.value = JSON.stringify(view_, null, "  ");
+    this.layersJsonText2_.value = encodeURIComponent(JSON.stringify(view_));
 
     if (!jsonOnly_) {
         var map_ = this.core_.getMap();

@@ -197,7 +197,7 @@ Melown.MapInterface.prototype.getPositionCameraCoords = function(position_, mode
 };
 
 Melown.MapInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_, skipOrientation_) {
-    return (new Melown.MapPosition(this.map_, position_)).moveCoordsTo(azimuth_, distance_, skipOrientation_);
+    return (new Melown.MapPosition(this.map_, position_)).moveCoordsTo(azimuth_, distance_, skipOrientation_).pos_;
 };
 
 Melown.MapInterface.prototype.getSurfaceHeight = function(coords_, precision_) {
@@ -317,6 +317,13 @@ Melown.MapInterface.prototype.getScreenRay = function(screenX_, screenY_) {
 };
 
 Melown.MapInterface.prototype.getStats = function() {
+    var busyWorkers_ = 0;
+    for (var i = 0, li = this.map_.geodataProcessors_; i < li; i++) {
+        if (this.map_.geodataProcessors_[i].busy_) {
+            busyWorkers_++;
+        }        
+    }
+
     return {
         "bestMeshTexelSize" : this.map_.bestMeshTexelSize_,
         "bestGeodataTexelSize" : this.map_.bestGeodataTexelSize_, 
@@ -326,6 +333,9 @@ Melown.MapInterface.prototype.getStats = function() {
         "freeLayers" : this.map_.freeLayerSequence_.length,
         "texelSizeFit" : this.map_.texelSizeFit_,
         "loadMode" : this.map_.config_.mapLoadMode_,
+        "processingTasks" : this.map_.processingTasks_.length,
+        "busyWorkers" : busyWorkers_,
+        "dirty" : this.map_.dirty_,
         "drawnTiles" : this.map_.stats_.drawnTiles_,
         "drawnGeodataTiles" : this.map_.stats_.drawnGeodataTiles_
     };
