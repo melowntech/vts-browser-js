@@ -1071,6 +1071,10 @@ Melown.MapSurfaceTree.prototype.traceHeightTileByMap = function(tile_, params_, 
                     return false; //is it best way how to do it?
                 }
                 
+                if (!tile_.resourceSurface_.getNavUrl) { //virtual surface is as resource surface. Is it bug??!!
+                    return false; //is it best way how to do it?
+                }
+                
                 var path_ = tile_.resourceSurface_.getNavUrl(tile_.id_);
                 tile_.heightMap_ = tile_.resources_.getTexture(path_, true);
             //}
