@@ -28,6 +28,7 @@ Melown.UIControlZoom = function(ui_, visible_) {
 };
 
 Melown.UIControlZoom.prototype.onDoNothing = function(event_) {
+    Melown.Utils.preventDefault(event_);    
     Melown.Utils.stopPropagation(event_);    
 };
 

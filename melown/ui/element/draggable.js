@@ -21,6 +21,9 @@ Melown.UIElement.prototype.setDraggableState = function(state_) {
     this.dragLastPos_ = [0,0];
     this.dragAbsMoved_ = [0,0];
     this.dragTouchCount_ = 0;
+    this.dragTouches_ = [];
+    this.dragTouches2_ = [];
+    this.resetPos_ = false;
     
     this.dragable_ = state_;
     this.dragButtons_ = {
@@ -53,6 +56,15 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
     this.dragButtons_[event_.getMouseButton()] = true;
 
     //console.log("bergin: 2#:  " + JSON.stringify(this.dragButtons_));
+
+    //if (event_.getTouchesCount() == 2) {
+        this.dragTouches_ = [];
+        this.dragTouches2_ = [];
+        this.dragTouches_.push(event_.getTouchCoords(0));            
+        this.dragTouches2_.push(event_.getTouchCoords(1));            
+    //}
+
+    this.resetPos_ = true;
 
     this.firstDragDistance_ = 0;
     this.lastDragDistance_ = 0;
@@ -92,17 +104,19 @@ Melown.UIElement.prototype.onDragBegin = function(event_) {
 Melown.UIElement.prototype.onDragMove = function(event_) {
     var pos_ = event_.getMouseCoords();
 
-    //console.log("move: 1#:  " + JSON.stringify(this.dragButtons_));
-
     if (event_.getTouchesCount() != -1) {
         this.updateDragButtonsState(event_, true);
     }
 
     Melown.Utils.preventDefault(event_);
 
-    //console.log("move: 2#:  " + JSON.stringify(this.dragButtons_));
-
+    var mode_ = "";
     var zoom_ = 0;
+    var rotateDelta_ = 0;
+    var panDelta_ = [0,0];
+    var distanceDelta_ = 0;
+
+    //var el_ = document.getElementById("debug123");
     
     var touchCount_ = event_.getTouchesCount();
     if (touchCount_ != this.dragTouchCount_) {
@@ -111,25 +125,114 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
         this.dragTouchCount_ = touchCount_; 
     }
 
-    if (touchCount_ == 2) {
-        var p1_ = event_.getTouchCoords(0); 
-        var p2_ = event_.getTouchCoords(1); 
-        var dx_ = p2_[0] - p1_[0];
-        var dy_ = p2_[1] - p1_[1];
-        var distance_ = Math.sqrt(dx_ * dx_ + dy_* dy_); 
+    if (this.resetPos_) {
+        this.dragCurrentPos_ = [pos_[0], pos_[1]];
+        this.dragLastPos_[0] = pos_[0];
+        this.dragLastPos_[1] = pos_[1];
+        this.resetPos_ = false;
+    }
 
-        if (this.firstDragDistance_ == 0) {
-            this.firstDragDistance_ = distance_;
+    if (touchCount_ == 2) {
+        this.dragTouches_.push(event_.getTouchCoords(0));            
+        this.dragTouches2_.push(event_.getTouchCoords(1));            
+
+        if (this.dragTouches_.length >= 7) {
+            this.dragTouches_.shift();
+            this.dragTouches2_.shift();
         }
 
-        if (!this.zoomDrag_ && Math.abs(this.firstDragDistance_ - distance_) > 25) {
-            this.zoomDrag_ = true;
-            this.firstDragDistance_ = distance_;
-            this.lastDragDistance_ = distance_;
-            //zoom_ = 1.0;
-        } else {
-            zoom_ = this.zoomDrag_ ? (distance_ / this.lastDragDistance_) : 0; 
-            this.lastDragDistance_ = distance_;
+        if (this.dragTouches_.length == 6) {
+
+            //get vector for touch #1
+            var t = this.dragTouches_;
+            var v1x_ = (t[5][0] - t[4][0]) + (t[4][0] - t[3][0]) + (t[3][0] - t[2][0]) + (t[2][0] - t[1][0]) + (t[1][0] - t[0][0]);
+            var v1y_ = (t[5][1] - t[4][1]) + (t[4][1] - t[3][1]) + (t[3][1] - t[2][1]) + (t[2][1] - t[1][1]) + (t[1][1] - t[0][1]);
+
+            //get vector for touch #2
+            t2 = this.dragTouches2_;
+            var v2x_ = (t2[5][0] - t2[4][0]) + (t2[4][0] - t2[3][0]) + (t2[3][0] - t2[2][0]) + (t2[2][0] - t2[1][0]) + (t2[1][0] - t2[0][0]);
+            var v2y_ = (t2[5][1] - t2[4][1]) + (t2[4][1] - t2[3][1]) + (t2[3][1] - t2[2][1]) + (t2[2][1] - t2[1][1]) + (t2[1][1] - t2[0][1]);
+            
+            //get distance of each vector
+            var d1_ = Math.sqrt(v1x_ * v1x_ + v1y_ * v1y_);
+            var d2_ = Math.sqrt(v2x_ * v2x_ + v2y_ * v2y_);
+
+            mode_ = "pan";
+
+            if (d1_ > d2_ * 5 || d2_ > d1_ * 5) { //dectec situation where only one finger is closing to another
+                
+                //make first vector from non moving point to beginnig positon of moving point
+                //make seconf vector from non moving point to ending positon of moving point
+                if (d1_ > d2_ * 5) {
+                    var p1_ = t2[0];
+                    var p2_ = t[0];
+                    var p3_ = t[5];
+                } else {
+                    var p1_ = t[0];
+                    var p2_ = t2[0];
+                    var p3_ = t2[5];
+                }
+                
+                var v1_ = [p2_[0] - p1_[0], p2_[1] - p1_[1]];
+                var v2_ = [p3_[0] - p1_[0], p3_[1] - p1_[1]];
+
+                //normalize vectors                
+                var d =  Math.sqrt(v1_[0] * v1_[0] + v1_[1] * v1_[1]);
+                v1_[0] /= d;
+                v1_[1] /= d;
+                
+                d =  Math.sqrt(v2_[0] * v2_[0] + v2_[1] * v2_[1]);
+                v2_[0] /= d;
+                v2_[1] /= d;
+
+                //measure angle between vectors
+                var cosAngle_ = v1_[0] * v2_[0] + v1_[1] * v2_[1];
+                var cosAngle2_ = -v1_[1] * v2_[0] + v1_[0] * v2_[1]; //v1 is rotated by 90deg
+                
+                rotateDelta_ = (Math.acos(cosAngle2_) * (180.0/Math.PI)) - 90;
+
+                if (cosAngle_ > 0.9999) { //are vectors in same line?
+                    mode_ = "zoom";
+                } else {
+                    panDelta_ = [(v1x_ + v2x_) *0.5, (v1y_ + v2y_) *0.5];
+                }
+
+            } else if (d1_ > 1 && d2_ > 1) { //are bouth vectors in motion
+
+                //normalize vectors
+                var nv1x_ = v1x_ / d1_;
+                var nv1y_ = v1y_ / d1_;
+
+                var nv2x_ = v2x_ / d2_;
+                var nv2y_ = v2y_ / d2_;
+                
+                //do vectors move in same direction
+                var cosAngle_ = nv1x_ * nv2x_ + nv1y_ * nv2y_;
+                
+                if (cosAngle_ < 0.2) {
+                    mode_ = "zoom";
+                } else {
+                    panDelta_ = [(v1x_ + v2x_) *0.5, (v1y_ + v2y_) *0.5];
+                } 
+            }
+            
+            //if (mode_ == "zoom") {
+                var t = this.dragTouches_;
+                var t2 = this.dragTouches2_;
+
+                //get distance between points at the beginig
+                var dx_ = (t2[0][0] - t[0][0]);
+                var dy_ = (t2[0][1] - t[0][1]);
+                var d1_ = Math.sqrt(dx_ * dx_ + dy_ * dy_);
+
+                //get distance between points at the end
+                var dx_ = (t2[5][0] - t[5][0]);
+                var dy_ = (t2[5][1] - t[5][1]);
+                var d2_ = Math.sqrt(dx_ * dx_ + dy_ * dy_);
+
+                //get delta betwwen distances
+                distanceDelta_ = d2_ - d1_;   
+            //}  
         }
     }
 
@@ -142,19 +245,20 @@ Melown.UIElement.prototype.onDragMove = function(event_) {
         "right" : this.dragButtons_["right"],
         "middle" : this.dragButtons_["middle"],
         "zoom" : zoom_,
+        "touchMode" : mode_,
+        "touchPanDelta" : panDelta_,
+        "touchRotateDelta" : rotateDelta_,
+        "touchDistanceDelta" : distanceDelta_,
         "touches" : touchCount_  
         });
+
+    //
+    //el_.innerHTML = "rotDelta" + rotateDelta_;
 
     this.dragLastPos_ = this.dragCurrentPos_;
     this.dragCurrentPos_ = [pos_[0], pos_[1]];
     this.dragAbsMoved_[0] += Math.abs(pos_[0] - this.dragLastPos_[0]);
     this.dragAbsMoved_[1] += Math.abs(pos_[1] - this.dragLastPos_[1]);
-
-    //var el_ = document.getElementsByClassName("melown-logo")[0];
-    //el_.innerHTML = "" + this.firstDragDistance_ + "   " + this.lastDragDistance_ + "   " + zoom_;
-    //el_.innerHTML = "" + this.dragAbsMoved_[0] + "    " + this.dragAbsMoved_[1];
-    //el_.innerHTML = "1111-" + Melown.debugCoutner;
-    //Melown.debugCoutner++;
 };
 
 //Melown.debugCoutner = 0;
@@ -169,7 +273,16 @@ Melown.UIElement.prototype.onDragEnd = function(event_) {
 
     this.updateDragButtonsState(event_, false);
 
+    //if (event_.getTouchesCount() == 2) {
+        this.dragTouches_ = [];
+        this.dragTouches2_ = [];
+        this.dragTouches_.push(event_.getTouchCoords(0));            
+        this.dragTouches2_.push(event_.getTouchCoords(1));            
+    //}
+
     //console.log("end: 2#:  " + JSON.stringify(this.dragButtons_));
+
+    this.resetPos_ = true;
 
     this.firstDragDistance_ = 0;
     this.lastDragDistance_ = 0;

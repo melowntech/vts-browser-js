@@ -214,14 +214,13 @@
 
 .melown-search-list {
     font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.75);
     border-radius: 3px;
     display: none;
     cursor: default;
     position: relative;
     top: 33px;
-    color: #fff;
-    text-shadow: 0 0 3px #000,0 0 3px #000,0 0 3px #000,0 0 3px #000;
+    color: #000;    
 }
 
 .melown-search-listitem {
@@ -230,7 +229,7 @@
 
 .melown-search-listitem-selected {
     padding: 6px 15px;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.9);
     cursor: pointer;
     border-radius: 3px;
 }
@@ -449,4 +448,16 @@
     padding: 5px;
 }
 
+/*
+ * FULLSCREEN
+ */
 
+.melown-fullscreen {
+    position:absolute;
+    right:7px;
+    top:7px;
+    cursor: pointer;
+    width: 48px;
+    height: 48px;
+    z-index: 10;
+}

@@ -249,3 +249,9 @@ Melown.UIControlSearch.prototype.onDrag = function(event_) {
     element_.blur(); //defocus'
     this.hideList(); 
 };
+
+Melown.UIControlSearch.prototype.update = function(event_) {
+
+};
+
+

@@ -224,6 +224,15 @@ Melown.UIEvent.prototype.getTouchesCount = function() {
     return -1;
 };
 
+Melown.UIEvent.prototype.getTouchParameter = function(name_) {
+    switch (this.type_) {
+        case "drag":
+            return this.event_[name_];
+    }
+    
+    return null;
+};
+
 Melown.UIEvent.prototype.getTouchCoords = function(index_, absolute_) {
     switch (this.type_) {
         case "touchstart":

@@ -17,6 +17,8 @@ Melown.ControlMode.MapObserver = function(browser_) {
     this["keydown"] = this.keydown;
     this["keypress"] = this.keypress;
     this["doubleclick"] = this.doubleclick;
+    
+    this.retinaFactor_ = 1.0 / (window.devicePixelRatio || 1);
 };
 
 Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
@@ -36,18 +38,26 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
                || this.browser_.controlMode_.shiftKey_
                || this.browser_.controlMode_.ctrlKey_);
 
+    //event_.getTouchParameter("touchMode");
 
-    if (touches_ == 2 && /*event_.getDragButton("middle")*/ zoom_ != 0 && this.config_.zoomAllowed_) {
+
+    if (touches_ == 2) {//} && /*event_.getDragButton("middle")*/ zoom_ != 0 && this.config_.zoomAllowed_) {
         if (map_.getPositionViewMode(pos_) != "obj") {
             return;
         }
-
-        var factor_ = 1.0 + (zoom_ > 1.0 ? -1 : 1)*0.01;
-        //var factor_ = 1.0 + (delta_[1] > 1.0 ? -1 : 1)*0.025;
         
-        this.viewExtentDeltas_.push(factor_);
-        this.reduceFloatingHeight(0.8);
-        this.browser_.callListener("map-position-zoomed", {});
+        if (event_.getTouchParameter("touchMode") == "pan" && this.config_.rotationAllowed_) {
+            var pan_ = event_.getTouchParameter("touchPanDelta");
+            var sensitivity_ = this.config_.sensitivity_[1] * this.retinaFactor_;
+            this.orientationDeltas_.push([delta_[0] * sensitivity_,  //reverse x for touch
+                                          -delta_[1] * sensitivity_, 0]);
+            this.browser_.callListener("map-position-rotated", {});
+        } else if (this.config_.zoomAllowed_) {
+            var factor_ = 1.0 + (event_.getTouchParameter("touchDistanceDelta") > 1.0 ? -1 : 1)*0.01;
+            this.viewExtentDeltas_.push(factor_);
+            this.reduceFloatingHeight(0.8);
+            this.browser_.callListener("map-position-zoomed", {});
+        }
         
     } else if ((event_.getDragButton("left") && !modifierKey_)
         && this.config_.panAllowed_) { //pan
@@ -59,7 +69,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
                 this.setPosition(pos_);
             }
         } else {
-            var sensitivity_ = this.config_.sensitivity_[0];
+            var sensitivity_ = this.config_.sensitivity_[0] * this.retinaFactor_;
             var fov_ = map_.getPositionFov(pos_);
             var fovCorrection_ = (fov_ > 0.01 && fov_ < 179) ? (1.0 / Math.tan(Melown.radians(fov_*0.5))) : 1.0;
             var azimuth_ = Melown.radians(azimuthDistance_[0]);
@@ -75,7 +85,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
     } else if (((touches_ <= 1 && event_.getDragButton("right")) || event_.getDragButton("middle") || modifierKey_) 
                && this.config_.rotationAllowed_) { //rotate
                    
-        var sensitivity_ = this.config_.sensitivity_[1];
+        var sensitivity_ = this.config_.sensitivity_[1] * this.retinaFactor_;
         this.orientationDeltas_.push([-delta_[0] * sensitivity_,
                                       -delta_[1] * sensitivity_, 0]);
         this.browser_.callListener("map-position-rotated", {});
@@ -83,6 +93,8 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
 };
 
 Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
+    Melown.Utils.preventDefault(event_);    
+
     var map_ = this.browser_.getMap();
     if (!map_ || !this.config_.zoomAllowed_) { 
         return;
@@ -96,7 +108,6 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
     if (this.browser_.controlMode_.altKey_ &&
         this.browser_.controlMode_.shiftKey_ &&
         this.browser_.controlMode_.ctrlKey_) {
-        Melown.Utils.preventDefault(event_);    
         var fov_ = Melown.clamp(map_.getPositionFov(pos_) * factor_, 1, 179);
         pos_ = map_.setPositionFov(pos_, fov_);
         map_.setPosition(pos_);
@@ -112,6 +123,8 @@ Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
 };
 
 Melown.ControlMode.MapObserver.prototype.doubleclick = function(event_) {
+    Melown.Utils.preventDefault(event_);    
+
     var map_ = this.browser_.getMap();
     if (!map_ || !this.config_.jumpAllowed_) {
         return;

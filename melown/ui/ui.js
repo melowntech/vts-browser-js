@@ -26,6 +26,7 @@ Melown.UI.prototype.init = function() {
     this.compass_ = new Melown.UIControlCompass(this, (!loading_ && this.config_.controlCompass_));
     this.credits_ = new Melown.UIControlCredits(this, (!loading_ && this.config_.controlCredits_));
     //this.logo_ = new Melown.UIControlLogo(this, this.config_.controlLogo_);
+    this.fullscreen_ = new Melown.UIControlFullscreen(this, (!loading_ && this.config_.controlFullscreen_));
     this.zoom_ = new Melown.UIControlZoom(this, (!loading_ && this.config_.controlZoom_));
     this.space_ = new Melown.UIControlSpace(this, (!loading_ && this.config_.controlSpace_));
     this.search_ = new Melown.UIControlSearch(this, (!loading_ && this.config_.controlSearch_));
@@ -100,6 +101,7 @@ Melown.UI.prototype.setParam = function(key_) {
         case "controlSearch":      this.setControlVisible("search", this.config_.controlSearch_); break;
         case "controlLink":        this.setControlVisible("link", this.config_.controlLink_); break;
         case "controlLogo":        this.setControlVisible("logo", this.config_.controlLogo_); break;
+        case "controlFullscreen":  this.setControlVisible("fullscreeen", this.config_.controlFullscreen_); break;
         case "controlCredits":     this.setControlVisible("credits", this.config_.controlCredits_); break;
         //case "controlLoading":     this.setControlVisible("loading", this.config_.controlLogo_); break;
     }
@@ -111,6 +113,7 @@ Melown.UI.prototype.tick = function(dirty_) {
         this.space_.update();
         this.credits_.update();
         this.link_.updateLink();                
+        this.search_.update();
     }
 
     if (this.loading_.control_.getVisible()) {

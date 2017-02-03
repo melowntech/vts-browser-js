@@ -38,17 +38,28 @@ Melown.UIControlLoading.prototype.show = function() {
     this.ui_.setControlVisible("space", false);
     this.ui_.setControlVisible("search", false);
     this.ui_.setControlVisible("link", false);
+    this.ui_.setControlVisible("fullscreen", false);
     this.ui_.setControlVisible("credits", false);
     this.ui_.setControlVisible("loading", true);
 };
 
 Melown.UIControlLoading.prototype.hide = function() {
     this.hiding_ = Date.now();
+    
+    var search_ = this.ui_.config_.controlSearch_;
+    if (search_) { //enable search for melown2015 reference frame only
+        var map_ = this.ui_.browser_.getMap();
+        if (map_) {
+            search_ = (map_.getReferenceFrame()["id"] == "melown2015");
+        }
+    } 
+    
     this.ui_.setControlVisible("compass", this.ui_.config_.controlCompass_);
     this.ui_.setControlVisible("zoom", this.ui_.config_.controlZoom_);
     this.ui_.setControlVisible("space", this.ui_.config_.controlSpace_);
-    this.ui_.setControlVisible("search", this.ui_.config_.controlSearch_);
+    this.ui_.setControlVisible("search", search_);
     this.ui_.setControlVisible("link", this.ui_.config_.controlLink_);
+    this.ui_.setControlVisible("fullscreen", this.ui_.config_.controlFullscreen_);
     this.ui_.setControlVisible("credits", this.ui_.config_.controlCredits_);
     this.ui_.setControlVisible("loading", false);
 };
