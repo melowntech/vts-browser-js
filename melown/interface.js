@@ -485,7 +485,7 @@ Melown.BrowserInterface.prototype.getParam = function(key_) {
 };
 
 Melown.getBrowserVersion = function() {
-    return "Browser: 1.14, Core: " + Melown.getCoreVersion();
+    return "Browser: 1.15, Core: " + Melown.getCoreVersion();
 };
 
 //prevent minification
@@ -521,6 +521,7 @@ Melown.BrowserInterface.prototype["getReferenceFrame"] = Melown.BrowserInterface
 Melown.BrowserInterface.prototype["convertPositionViewMode"] = Melown.BrowserInterface.prototype.convertPositionViewMode; 
 Melown.BrowserInterface.prototype["convertPositionHeightMode"] = Melown.BrowserInterface.prototype.convertPositionHeightMode; 
 Melown.BrowserInterface.prototype["convertCoords"] = Melown.BrowserInterface.prototype.convertCoords; 
+Melown.BrowserInterface.prototype["convertCoordsFromNavToPhys"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToPhys; 
 Melown.BrowserInterface.prototype["convertCoordsFromNavToCanvas"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCanvas; 
 Melown.BrowserInterface.prototype["convertCoordsFromPhysToCanvas"] = Melown.BrowserInterface.prototype.convertCoordsFromPhysToCanvas; 
 Melown.BrowserInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.BrowserInterface.prototype.convertCoordsFromNavToCameraSpace;

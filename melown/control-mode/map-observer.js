@@ -18,7 +18,7 @@ Melown.ControlMode.MapObserver = function(browser_) {
     this["keypress"] = this.keypress;
     this["doubleclick"] = this.doubleclick;
     
-    this.retinaFactor_ = 1.0 / (window.devicePixelRatio || 1);
+    this.retinaFactor_ = 1.0 / Math.max(1.0,(window.devicePixelRatio || 1) - 1);
 };
 
 Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
@@ -49,7 +49,7 @@ Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
         if (event_.getTouchParameter("touchMode") == "pan" && this.config_.rotationAllowed_) {
             var pan_ = event_.getTouchParameter("touchPanDelta");
             var sensitivity_ = this.config_.sensitivity_[1] * this.retinaFactor_;
-            this.orientationDeltas_.push([delta_[0] * sensitivity_,  //reverse x for touch
+            this.orientationDeltas_.push([-delta_[0] * sensitivity_, 
                                           -delta_[1] * sensitivity_, 0]);
             this.browser_.callListener("map-position-rotated", {});
         } else if (this.config_.zoomAllowed_) {

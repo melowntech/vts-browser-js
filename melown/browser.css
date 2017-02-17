@@ -7,6 +7,10 @@
     height: 100%;
 }
 
+.melown-browser * {
+    box-sizing: border-box;
+}
+
 /*
  * MAP
  */
@@ -216,6 +220,7 @@
     font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
     background-color: rgba(255, 255, 255, 0.75);
     border-radius: 3px;
+    white-space: nowrap;
     display: none;
     cursor: default;
     position: relative;

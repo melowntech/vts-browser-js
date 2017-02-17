@@ -4,13 +4,22 @@
 Melown.UIControlSearch = function(ui_, visible_) {
     this.ui_ = ui_;
     this.browser_ = ui_.browser_;
+    
+    var element_ = this.browser_.config_.controlSearchElement_;
+    if (element_) {
+        if (typeof element_ === "string") {
+            element_ = document.getElementById(element_);
+        }
+    }
+    
     this.control_ = this.ui_.addControl("search",
       '<div class="melown-search">'
       + '<div class="melown-search-input"><input type="text" id="melown-search-input" autocomplete="off" spellcheck="false" placeholder="Search location..."></div>'      
       + '<div id="melown-search-list" class="melown-search-list"></div>'      
-      + '</div>', visible_);
+      + '</div>', visible_, element_);
 
     this.input_ = this.control_.getElement("melown-search-input");
+    
     //this.input_.on("change", this.onChange.bind(this));
     this.input_.on("input", this.onChange.bind(this));
     this.input_.on("keydown", this.onKeyUp.bind(this));
@@ -35,6 +44,14 @@ Melown.UIControlSearch = function(ui_, visible_) {
     this.itemIndex_ = -1;
     this.searchCounter_ = 0;
     this.coordsSrs_ = "+proj=longlat +datum=WGS84 +no_defs";
+
+    this.initialValueUsed_ = false;
+
+    if (this.browser_.config_.controlSearchValue_) {
+        this.initialValueUsed_ = true;
+        this.input_.getElement().value = this.browser_.config_.controlSearchValue_;
+        this.onChange();
+    }
 };
 
 Melown.UIControlSearch.prototype.processTemplate = function(str_, obj_) {
@@ -97,7 +114,9 @@ Melown.UIControlSearch.prototype.updateList = function(json_) {
             }
         }
 
-        this.showList();
+        if (!this.initialValueUsed_) {
+            this.showList();
+        }
     } else {
         this.hideList();
     }
@@ -251,7 +270,10 @@ Melown.UIControlSearch.prototype.onDrag = function(event_) {
 };
 
 Melown.UIControlSearch.prototype.update = function(event_) {
-
+    if (this.initialValueUsed_ && this.browser_.mapLoaded_) {
+        this.initialValueUsed_ = false;
+        this.onSelectItem(0);
+    }
 };
 
 

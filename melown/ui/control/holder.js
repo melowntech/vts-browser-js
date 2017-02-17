@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Melown.UIControlHolder = function(ui_, html_, visible_) {
+Melown.UIControlHolder = function(ui_, html_, visible_, parentElement_) {
     this.ui_ = ui_;
     this.html_ = html_;
     this.elementsById_ = [];
@@ -15,7 +15,11 @@ Melown.UIControlHolder = function(ui_, html_, visible_) {
     this.setHtml(html_);
 
     //append elemenet to UI
-    this.ui_.element_.appendChild(this.element_);
+    if (parentElement_) {
+        parentElement_.appendChild(this.element_);
+    } else {
+        this.ui_.element_.appendChild(this.element_);
+    }
 };
 
 Melown.UIControlHolder.prototype.setHtml = function(html_) {

@@ -52,8 +52,8 @@ Melown.UI.prototype.kill = function() {
     this.element_ = null;
 };
 
-Melown.UI.prototype.addControl = function(id_, html_, visible_) {
-    var control_ = new Melown.UIControlHolder(this, html_, visible_);
+Melown.UI.prototype.addControl = function(id_, html_, visible_, parentElement_) {
+    var control_ = new Melown.UIControlHolder(this, html_, visible_, parentElement_);
     this.controls_[id_] = control_;
     return control_;
 };
