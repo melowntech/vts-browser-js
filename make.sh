@@ -1,6 +1,9 @@
 CLOSURECOMPILER=../build/tools/closure-compiler/compiler.jar
 
 
+# create lincense header
+echo "/* Melown-js (c) 2011 - 2017 MELOWN TECHNOLOGIES SE */ " > ./build/license-tmp.js
+
 # merge geodata workers
 echo "Melown.MapGeodataProcessorWorker = function() { " | cat - src/core/map/geodata-processor/worker-globals.js src/core/map/geodata-processor/worker-style.js src/core/map/geodata-processor/worker-linestring.js src/core/map/geodata-processor/worker-pointarray.js src/core/map/geodata-processor/worker-polygon.js src/core/map/geodata-processor/worker-text.js src/core/map/geodata-processor/worker-main.js > ./build/geodata-worker-tmp.js
 echo "};">> ./build/geodata-worker-tmp.js 
@@ -83,14 +86,16 @@ cat src/core/utils/matrix.js \
     src/core/update.js > ./build/melown-core-v1-merge-tmp.js
 
 # merge final core lib 
-cat src/core/utils/libs/proj4.js \
+cat ./build/license-tmp.js \
+    src/core/utils/libs/proj4.js \
     src/core/utils/libs/geographics-nomini.js \
     src/core/_nominify.js \
     ./build/melown-core-v1-merge-tmp.js > ./build/melown-core-v1-merge.js
 
 # minify core lib
 # java -jar ${CLOSURECOMPILER} --compilation_level ADVANCED_OPTIMIZATIONS --js _minify.js ../build/melown-core-v1-merge-tmp.js --js_output_file ../build/melown-core-v1-tmp.js
-# cat src/core/utils/libs/proj4.js \
+# cat ./build/license-tmp.js \
+#     src/core/utils/libs/proj4.js \
 #     src/core/utils/libs/geographics-nomini.js \
 #     ./build/melown-core-v1-tmp.js > ./build/melown-core-v1-inspector-mini.js
 # rm ./build/melown-core-v1-tmp.js
@@ -137,7 +142,8 @@ cat ./build/melown-core-v1-merge.js \
 
 #minify lib
 # java -jar compiler/compiler.jar --compilation_level ADVANCED_OPTIMIZATIONS --js melown-core-v1-merge.js ../build/melown-v1-merge.js --js_output_file ../build/melown-v1-tmp.js
-# cat src/core/utils/libs/proj4.js \
+# cat ./build/license-tmp.js \
+#    src/core/utils/libs/proj4.js \
 #    src/core/_nominify.js \
 #    ./build/melown-v1-merge-tmp2.js > ./build/melown-v1-merge.js
 # rm ./build/melown-v1-merge-tmp2.js
@@ -155,6 +161,7 @@ mv ./build/melown-core-v1-merge.js ./build/melown-core.js
 # remove remaining tmps
 rm ./build/geodata-worker-tmp.js 
 rm ./build/melown-core-v1-merge-tmp.js
+rm ./build/license-tmp.js
 
 echo Make complete.
 
