@@ -1,3 +1,0 @@
-[submodule "externals/closure-compiler"]
-	path = externals/closure-compiler
-	url = ../../3rdparty/closure-compiler
