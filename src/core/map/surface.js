@@ -122,7 +122,7 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
     }    
 
 
-    if (this.geodataUrl_ && this.geodataUrl_.indexOf("{geonavtile}") != -1) {
+    if (this.geodataUrl_ && (typeof this.geodataUrl_ === "string") && this.geodataUrl_.indexOf("{geonavtile}") != -1) {
         //this.geodataNavtileInfo_ = true;
         this.geodataNavtileInfo_ = false;
     }
@@ -144,6 +144,26 @@ Melown.MapSurface.prototype.parseJson = function(json_) {
             this.surfaceReference_.push(this.map_.getSurface(this.id_[i]));
         }
     }
+};
+
+Melown.MapSurface.prototype.kill = function() {
+    if (this.geodataProcessor_) {
+        this.geodataProcessor_.kill();
+        this.geodataProcessor_ = null;
+    }
+
+    this.geodataUrl_ = null;
+    this.style_ = null;
+    this.stylesheet_ = null;
+    this.originalStyle_ = null;
+    this.originalStylesheet_ = null;
+};
+
+Melown.MapSurface.prototype.setOptions = function(options_) {
+};
+
+Melown.MapSurface.prototype.getOptions = function() {
+    return this.getInfo();
 };
 
 Melown.MapSurface.prototype.getInfo = function() {
@@ -173,6 +193,10 @@ Melown.MapSurface.prototype.getInfo = function() {
 Melown.MapSurface.prototype.processUrl = function(url_, fallback_) {
     if (!url_) {
         return fallback_;
+    }
+
+    if (typeof json_ !== "string") {
+        return url_;
     }
 
     url_ = url_.trim();
@@ -253,7 +277,6 @@ Melown.MapSurface.prototype.hasMetatile = function(id_) {
             y < this.tileRange_[0][1] || y > this.tileRange_[1][1] ) {
             return false;
         }
-
     } else {
         shift_ = -shift_;
 

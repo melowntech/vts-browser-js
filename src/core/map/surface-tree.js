@@ -130,6 +130,10 @@ Melown.MapSurfaceTree.prototype.draw = function() {
     //if (this.map_.config_.mapBasicTileSequence_) {
         //this.surfaceTracer_ = this.surfaceTracerBasic_;
     //}
+    
+    if (this.freeLayerSurface_ && this.freeLayerSurface_.geodata_ && this.map_.drawChannel_ != 0) {
+        return;
+    }
 
     if (periodicity_ != null) {
         this.drawSurface([0,0,0]);

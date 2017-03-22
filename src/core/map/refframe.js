@@ -97,9 +97,6 @@ Melown.MapRefFrame.prototype.parseNode = function(nodeData_) {
         position_ : nodeId_["position"] || [0,0]
     };
 
-    //node_.divisionNode_ =
-    //node_.refFrame_.loadResources();
-
     return new Melown.MapDivisionNode(this.map_, [node_.id_.lod_, node_.id_.position_[0], node_.id_.position_[1]],
                                                   node_.srs_, node_.extents_, this.heightRange_, node_.partitioning_);
 };
@@ -129,47 +126,6 @@ Melown.MapRefFrame.prototype.parseSpaceExtents = function(extentsData_) {
 Melown.MapRefFrame.prototype.getSpatialDivisionNodes = function() {
     return this.division_.nodes_;
 };
-
-/*
-Melown.MapRefFrame.prototype.getRefFrame = function(id_) {
-    var lod_ = id_[0];
-
-    var refFrame_ = null;
-    var nodes_ = this.division_.nodes_;
-    var rootLod_ = this.division_.rootLod_;
-
-    if (lod_ < rootLod_) {
-        return null;
-    }
-
-    //find root node
-    for (var i = 0, li = nodes_.length_; i < li; i++) {
-        var nodeId_ = nodes_[i].id_;
-
-        if (rootLod_ == nodeId_.lod_) {
-            refFrame_ = nodes_[i].refFrame_;
-        }
-    }
-
-    //find nearest node
-    for (var i = 0, li = nodes_.length_; i < li; i++) {
-        var nodeId_ = nodes_[i].id_;
-
-        if (lod_ >= nodeId_.lod_) {
-            //TODO: reduce nodeId_ to id_
-            var shift_ = (nodeId_.lod_ - lod_);
-            var x = id_[1] >> shift_;
-            var y = id_[2] >> shift_;
-
-            if (nodeId_.position_[0] == x && nodeId_.position_[1] == y) {
-                return nodes_[i].refFrame_;
-            }
-        }
-    }
-
-    return refFrame_;
-};
-*/
 
 Melown.MapRefFrame.prototype.convertCoords = function(coords_, source_, destination_) {
     var sourceSrs_, destinationSrs_;

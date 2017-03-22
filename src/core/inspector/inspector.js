@@ -11,6 +11,9 @@ Melown.Inspector = function(core_) {
     this.initReplayPanel();
     this.initStylesheetsPanel();
 
+    //mouse events
+    //document.addEventListener("click", this.onKeyClick.bind(this), false);
+
     //keyboard events
     document.addEventListener("keyup", this.onKeyUp.bind(this), false);
     document.addEventListener("keypress", this.onKeyPress.bind(this), false);
@@ -23,6 +26,8 @@ Melown.Inspector = function(core_) {
     this.drawRadar_ = false;
     this.radarLod_ = null;
     this.debugValue_ = 0;
+    this.measureMode_ = false;
+    this.measurePoints_ = [];
 };
 
 Melown.Inspector.prototype.addStyle = function(string_) {
@@ -47,6 +52,12 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
     if (this.shakeCamera_) {
         map_.redraw();
     } 
+
+    /*if (this.measureMode_) {
+        var renderer_ = this.core_.getRenderer();
+        var p_ = map_.convertCoordsFromPhysToNav(this.measurePoints_[0]);
+        map_.convertCoordsFromPhysToCanvas(this.measurePoints_[0]);
+    }*/
 
     if (this.drawReplayGlobe_) {
         var renderer_ = this.core_.getRenderer();

@@ -10,6 +10,10 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_, camInfo_) {
     this.drawTileCounter_ = 0;
     var cameraPos_ = this.cameraPosition_;
 
+    if (this.freeLayersHaveGeodata_ && this.drawChannel_ == 0) {
+        this.renderer_.drawGpuJobs();
+    }
+
     if (this.drawEarth_) {
         if (this.replay_.storeNodes_ || this.replay_.storeFreeNodes_) {
             this.replay_.nodeBuffer_ = [];
@@ -96,7 +100,6 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_, camInfo_) {
                 (this.replay_.drawLoaded_ && this.replay_.loaded_)) {
                     
                 if (this.freeLayersHaveGeodata_) {
-                    this.renderer_.drawGpuJobs();
                     this.renderer_.clearJobBuffer();
                 }
             }
@@ -301,7 +304,6 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_, camInfo_) {
             }*/
         
             if (this.freeLayersHaveGeodata_) {
-                this.renderer_.drawGpuJobs();
                 this.renderer_.clearJobBuffer();
             }
         }
@@ -981,7 +983,7 @@ Melown.Map.prototype.drawGeodataTile = function(tile_, node_, cameraPos_, pixelS
 };
 
 Melown.Map.prototype.drawMonoliticGeodata = function(surface_) {
-    if (!surface_) {
+    if (!surface_ || this.drawChannel_ != 0) {
         return;
     }
 
@@ -990,7 +992,12 @@ Melown.Map.prototype.drawMonoliticGeodata = function(surface_) {
     }
 
     if (surface_.monoGeodata_ == null) {
-        var path_ = surface_.getMonoGeodataUrl(surface_.id_);
+        if (typeof surface_.geodataUrl_ === "object") {
+            var path_ = surface_.geodataUrl_;
+        } else {
+            var path_ = surface_.getMonoGeodataUrl(surface_.id_);
+        }
+
         surface_.monoGeodata_ = new Melown.MapGeodata(this, path_, {tile_:null, surface_:surface_});
     }
 
@@ -1124,7 +1131,7 @@ Melown.Map.prototype.updateTileSurfaceBounds = function(tile_, submesh_, surface
 
                     var texture_ = tile_.boundTextures_[layer_.id_];
 
-                    if (!texture_) {
+                    if (!texture_) { //TODO: make sure that we load only textures which we need  
                         var path_ = layer_.getUrl(tile_.id_);
                         texture_ = tile_.resources_.getTexture(path_, null, extraBound_, {tile_: tile_, layer_: layer_}, tile_, false);
                         texture_.isReady(true); //check for mask but do not load

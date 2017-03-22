@@ -17,6 +17,8 @@ Melown.MapGeodata = function(map_, url_, extraInfo_) {
     this.loadState_ = 0;
     this.loadErrorTime_ = null;
     this.loadErrorCounter_ = 0;
+
+    this.map_.markDirty();
 };
 
 Melown.MapGeodata.prototype.kill = function() {
@@ -59,7 +61,17 @@ Melown.MapGeodata.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
             } else {
                 //not loaded
                 //add to loading queue or top position in queue
-                this.scheduleLoad(priority_);
+
+
+                if (typeof this.mapLoaderUrl_ === "object") { //use geodata directly
+                    this.geodata_ = JSON.stringify(this.mapLoaderUrl_);
+                    this.loadState_ = 2;
+                    this.cacheItem_ = this.map_.resourcesCache_.insert(this.killGeodata.bind(this, true), this.geodata_.length);
+                    this.map_.resourcesCache_.updateItem(this.cacheItem_);
+                    return true;
+                } else {
+                    this.scheduleLoad(priority_);
+                }
             }
         } else if (this.loadState_ == 3) { //loadError
             if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_ &&

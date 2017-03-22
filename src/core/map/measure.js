@@ -246,8 +246,8 @@ Melown.Map.prototype.getSurfaceHeightNodeOnly = function(coords_, lod_, storeSta
 
 Melown.Map.prototype.getHeightmapValue = function(coords_, node_, params_) {
     var heightMap_ = params_.heightMap_;
-    var data_ = heightMap_.imageData_;
-    var dataExtents_ = heightMap_.imageExtents_;
+    var data_ = heightMap_.getImageData();
+    var dataExtents_ = heightMap_.getImageExtents();
     var mapExtents_ = params_.heightMapExtents_;
 
     //relative tile coords
@@ -342,6 +342,10 @@ Melown.Map.prototype.getSpatialDivisionNodeAndExtents = function(id_) {
         }
     }
     
+    if (!bestNode_) {
+        return null;
+    }
+    
     var shift_ = id_[0] - bestNode_.id_[0];
     
     var factor_ = 1.0 / Math.pow(2, shift_);
@@ -395,19 +399,24 @@ Melown.Map.prototype.getSpatialDivisionNodeAndExtents2 = function(id_, res_, div
 };
 
 
-Melown.Map.prototype.getMaxSpatialDivisionNodeDepth = function() {
+Melown.Map.prototype.getSpatialDivisionNodeDepths = function() {
     var nodes_ = this.referenceFrame_.getSpatialDivisionNodes();
     var maxLod_ = -1;
+    var minLod_ = Number.MAX_VALUE;
 
     for (var i = 0, li = nodes_.length; i < li; i++) {
         var node_ = nodes_[i];
+
+        if (node_.id_[0] < minLod_) {
+            minLod_ = node_.id_[0];
+        } 
         
         if (node_.id_[0] > maxLod_) {
             maxLod_ = node_.id_[0];
         } 
     }
 
-    return maxLod_;
+    return [minLod_, maxLod_];
 };
 
 Melown.Map.prototype.getOptimalHeightLodBySampleSize = function(coords_, desiredSamplesSize_) {

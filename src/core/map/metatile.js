@@ -427,7 +427,15 @@ Melown.MapMetatile.prototype.parseMetatatileNodes = function(stream_) {
         }
     }
 
-    this.divisionNode_ = this.map_.getSpatialDivisionNodeAndExtents([this.lod_, this.metatileIdx_ + this.offsetx_, this.metatileIdy_ + this.offsety_])[0];
+    if (this.lod_ >= this.map_.minDivisionNodeDepth_) {
+        this.divisionNode_ = this.map_.getSpatialDivisionNodeAndExtents([this.lod_, this.metatileIdx_ + this.offsetx_, this.metatileIdy_ + this.offsety_]);
+        if (this.divisionNode_) {
+            this.divisionNode_ = this.divisionNode_[0];
+        }
+    } else {
+        this.divisionNode_ = null;
+    }
+    
     this.nodes_ = new Array(this.sizex_*this.sizey_);
     
     /*

@@ -256,7 +256,7 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
     var geocent_ = map_.geocent_;
     var version_ = this.metatile_.useVersion_;
 
-    if (!geocent_ && version_ < 4) {
+    if (this.id_[0] < map_.minDivisionNodeDepth_ || (!geocent_ && version_ < 4)) {
         return;
     }
 
@@ -322,10 +322,14 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
           //  var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
           //  node_ = node_;
         //}
-       
+        
         pos_[0] = urx_; 
         pos_[1] = ury_; 
         pos_[2] = h; 
+
+        /*if (this.id_[0] == 17 && this.id_[1] == 53306 && this.id_[2] == 30754) {
+            normal_ = normal_;
+        }*/
         
         var bbox_ = this.bbox2_;
 

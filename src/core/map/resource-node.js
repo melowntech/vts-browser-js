@@ -9,6 +9,7 @@ Melown.MapResourceNode = function(map_, parent_, id_) {
     this.metatiles_ = {};
     this.meshes_ = {};
     this.textures_ = {};
+    this.subtextures_ = {};
     this.geodata_ = {};
     this.credits_ = {};
 
@@ -97,11 +98,34 @@ Melown.MapResourceNode.prototype.getGeodata = function(path_, extraInfo_) {
 // Textures ---------------------------------
 
 Melown.MapResourceNode.prototype.getTexture = function(path_, heightMap_, extraBound_, extraInfo_, tile_, internal_) {
-    var texture_ = this.textures_[path_];
+    if (extraInfo_ && extraInfo_.layer_) {
+        var id_ = path_ + extraInfo_.layer_.id_;
+        var texture_ = this.textures_[id_];
+        
+        if (!texture_) {
+            texture_ = new Melown.MapTexture(this.map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_);
+            this.textures_[id_] = texture_;
+        }
+    } else {
+        var texture_ = this.textures_[path_];
+        
+        if (!texture_) {
+            texture_ = new Melown.MapTexture(this.map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_);
+            this.textures_[path_] = texture_;
+        }
+    }
+    
+    return texture_;
+};
+
+// SubTextures ---------------------------------
+
+Melown.MapResourceNode.prototype.getSubtexture = function(texture_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_) {
+    var texture_ = this.subtextures_[path_];
     
     if (!texture_) {
-        texture_ = new Melown.MapTexture(this.map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_);
-        this.textures_[path_] = texture_;
+        texture_ = new Melown.MapSubtexture(this.map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_);
+        this.subtextures_[path_] = texture_;
     }
     
     return texture_;

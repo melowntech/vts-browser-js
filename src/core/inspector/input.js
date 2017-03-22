@@ -1,4 +1,11 @@
 
+//mouse events
+/*
+Melown.Inspector.prototype.onClick = function(event_) {
+    if (this.measureMode_) {
+        var pos_ = this.core_.hitTest(this.mouseX_, this.mouseY_, "all");
+    }
+};*/
 
 //keyboard events
 Melown.Inspector.prototype.onKeyDown = function(event_) {
@@ -109,10 +116,16 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
 
                 switch(keyCode_) {
 
-                    case 68:
-                    case 100:
-                        break; //key D pressed
+                    case 67:
+                    case 99:
+                        map_.config_.mapDegradeHorizon_ = !map_.config_.mapDegradeHorizon_;
 
+                        //this.measureMode_ = !this.measureMode_;
+                        //this.measurePoints_ = [];
+                        //var pos_ = this.core_.hitTest(this.mouseX_, this.mouseY_, "all");
+                        //console.log("hit pos: " + pos_[0] + " " + pos_[1] + " " + pos_[2] + " " + pos_[3] + " d " + pos_[4]); //key T pressed
+
+                        break; //key C pressed
 
                     case 49: /*this.core_.setControlMode("manual"); done_();*/  break;  //key 1 pressed
                     case 50: /*this.core_.setControlMode("drone"); done_();*/   break;  //key 2 pressed
