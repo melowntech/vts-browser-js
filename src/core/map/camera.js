@@ -39,6 +39,10 @@ Melown.Map.prototype.updateCamera = function() {
     this.cameraDistance2_ = this.position_.getViewDistance();
     this.cameraDistance_ = Math.max(this.cameraTerrainHeight_, this.cameraDistance2_);
     this.cameraDistance_ = Melown.clamp(this.cameraDistance_, 0.1, this.camera_.getFar());
+
+    this.cameraDistanceFactor_ = Math.tan(Melown.radians(this.position_.getFov()*0.5)); 
+
+    this.cameraPerceivedDistance_ = Math.max(this.cameraTerrainHeight_, this.cameraDistance2_ * this.cameraDistanceFactor_);
     
     //this.renderer_.cameraDistance_ = camInfo_.distance_; //needed for fog
     this.renderer_.cameraDistance_ = this.cameraDistance_; //needed for fog
@@ -50,8 +54,9 @@ Melown.Map.prototype.updateCamera = function() {
     this.camera_.setViewHeight(this.position_.getViewExtent());
     //this.camera_.setOrtho(true);
 
-    //convert public coords to physical
-    var worldPos_ = this.convertCoords([this.position_.getCoords()[0], this.position_.getCoords()[1], height_], "navigation", "physical");
+    //convert nav coords to physical
+    var coords_ = this.position_.getCoords();
+    var worldPos_ = this.convertCoords([coords_[0], coords_[1], height_], "navigation", "physical");
     this.cameraCenter_ = [worldPos_[0], worldPos_[1], worldPos_[2]];
 	worldPos_[0] += camInfo_.orbitCoords_[0];
 	worldPos_[1] += camInfo_.orbitCoords_[1];

@@ -1,4 +1,4 @@
-CLOSURECOMPILER=../build/tools/closure-compiler/compiler.jar
+CLOSURECOMPILER=./build/tools/closure-compiler/compiler.jar
 
 
 # create lincense header
@@ -74,6 +74,7 @@ cat src/core/utils/matrix.js \
     src/core/map/submesh.js \
     src/core/map/surface.js \
     src/core/map/surface-sequence.js \
+    src/core/map/subtexture.js \
     src/core/map/texture.js \
     src/core/map/virtual-surface.js \
     src/core/map/surface-tile.js \

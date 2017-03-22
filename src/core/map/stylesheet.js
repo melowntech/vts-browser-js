@@ -83,6 +83,7 @@ Melown.MapStylesheet.prototype.onLoaded = function(data_) {
 
     //this.mapLoaderCallLoaded_();
     this.loadState_ = 2;
+    this.map_.markDirty();
 };
 
 //! Returns RAM usage in bytes.

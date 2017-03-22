@@ -135,6 +135,16 @@ Melown.BrowserInterface.prototype.getBoundLayerInfo = function(layerId_) {
     return (layer_ != null) ? layer_.getInfo() : null;
 };
 
+Melown.BrowserInterface.prototype.addFreeLayer = function(id_, options_) {
+    if(!this.map_) return;
+    return this.map_.addFreeLayer(id_, options_);
+};
+
+Melown.BrowserInterface.prototype.removeFreeLayer = function(id_) {
+    if(!this.map_) return;
+    return this.map_.removeFreeLayer(id_);
+};
+
 Melown.BrowserInterface.prototype.getFreeLayers = function() {
     if(!this.map_) return;
     return this.map_.getFreeLayers();

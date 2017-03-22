@@ -25,7 +25,7 @@ Melown.Core.prototype.initConfig = function() {
         mapHeightLodBlend_ : true,
         mapHeightNodeBlend_ : true,
         mapBasicTileSequence_ : false,
-        mapPreciseBBoxTest_ : true,
+        mapPreciseBBoxTest_ : false,
         mapPreciseDistanceTest_ : false,
         mapHeightfiledWhenUnloaded_ : true,
         mapForceMetatileV3_ : false,
@@ -37,6 +37,8 @@ Melown.Core.prototype.initConfig = function() {
         mapGeodataLoadMode_ : "fit", //"fitonly"
         mapXhrImageLoad_ : false,
         mapStoreLoadStats_ : true,
+        mapDegradeHorizon_ : false,
+        mapDegradeHorizonParams_ : [1, 1500, 97500, 3500], //[1, 3000, 15000, 7000],
         mapFog_ : true,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false,

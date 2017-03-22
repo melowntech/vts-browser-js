@@ -85,6 +85,40 @@ Melown.MapInterface.prototype.getReferenceFrame = function() {
     return this.map_.referenceFrame_.getInfo();
 };
 
+Melown.MapInterface.prototype.addFreeLayer = function(id_, options_) {
+    var layer_ = new Melown.MapSurface(this.map_, options_, "free");
+    this.map_.addFreeLayer(id_, layer_);
+};
+
+Melown.MapInterface.prototype.removeFreeLayer = function(id_) {
+    this.map_.removeFreeLayer(id_); 
+};
+
+/* Melown.MapInterface.prototype.setFreeLayerOptions = function(id_, options_) {
+    this.map_.setFreeLayerOptions(id_, options_); 
+};
+
+Melown.MapInterface.prototype.getFreeLayerOptions = function(id_) {
+    return this.map_.getFreeLayerOptions(id_); 
+}; */
+
+Melown.MapInterface.prototype.addBoundLayer = function(id_, options_) {
+    var layer_ = new Melown.MapBoundLayer(this.map_, options_, id_);
+    this.map_.addBoundLayer(id_, layer_); 
+};
+
+Melown.MapInterface.prototype.removeBoundLayer = function(id_) {
+    this.map_.removeBoundLayer(id_); 
+};
+
+/* Melown.MapInterface.prototype.setBoundLayerOptions = function(id_, options_) {
+    this.map_.setBoundLayerOptions(id_, options_); 
+};
+
+Melown.MapInterface.prototype.getBoundLayerOptions = function(id_) {
+    return this.map_.setBoundLayerOptions(id_); 
+};*/
+
 Melown.MapInterface.prototype.convertPositionViewMode = function(position_, mode_) {
     var pos_ = (new Melown.MapPosition(this.map_, position_)).convertViewMode(mode_);
     return (pos_ != null) ? pos_.pos_ : pos_;
@@ -341,6 +375,14 @@ Melown.MapInterface.prototype.getStats = function() {
     };
 };
 
+Melown.MapInterface.prototype.click = function(screenX_, screenY_, state_) {
+    map_.click(screenX_, screenY_, state_);
+};
+
+Melown.MapInterface.prototype.hover = function(screenX_, screenY_, persistent_, state_) {
+    map_.hover(screenX_, screenY_, persistent_, state_);
+};
+
 Melown.MapPositionInterface = Melown.MapPosition;
 
 Melown.MapInterface.prototype["setPosition"] = Melown.MapInterface.prototype.setPosition;
@@ -361,6 +403,14 @@ Melown.MapInterface.prototype["getSurfaceInfo"] = Melown.MapInterface.prototype.
 Melown.MapInterface.prototype["getSrses"] = Melown.MapInterface.prototype.getSrses; 
 Melown.MapInterface.prototype["getSrsInfo"] = Melown.MapInterface.prototype.getSrsInfo; 
 Melown.MapInterface.prototype["getReferenceFrame"] = Melown.MapInterface.prototype.getReferenceFrame; 
+Melown.MapInterface.prototype["addFreeLayer"] = Melown.MapInterface.prototype.addFreeLayer;
+Melown.MapInterface.prototype["removeFreeLayer"] = Melown.MapInterface.prototype.removeFreeLayer;
+//Melown.MapInterface.prototype["setFreeLayerOptions"] = Melown.MapInterface.prototype.setFreeLayerOptions;
+//Melown.MapInterface.prototype["getFreeLayerOptions"] = Melown.MapInterface.prototype.getFreeLayerOptions;
+Melown.MapInterface.prototype["addBoundLayer"] = Melown.MapInterface.prototype.addBoundLayer;
+Melown.MapInterface.prototype["removeBoundLayer"] = Melown.MapInterface.prototype.removeBoundLayer;
+//Melown.MapInterface.prototype["setBoundLayerOptions"] = Melown.MapInterface.prototype.setBoundLayerOptions;
+//Melown.MapInterface.prototype["getBoundLayerOptions"] = Melown.MapInterface.prototype.getBoundLayerOptions;
 Melown.MapInterface.prototype["convertPositionViewMode"] = Melown.MapInterface.prototype.convertPositionViewMode; 
 Melown.MapInterface.prototype["convertPositionHeightMode"] = Melown.MapInterface.prototype.convertPositionHeightMode; 
 Melown.MapInterface.prototype["convertCoords"] = Melown.MapInterface.prototype.convertCoords;
@@ -406,4 +456,6 @@ Melown.MapInterface.prototype["getGpuCache"] = Melown.MapInterface.prototype.get
 Melown.MapInterface.prototype["getHitCoords"] = Melown.MapInterface.prototype.getHitCoords;
 Melown.MapInterface.prototype["getScreenRay"] = Melown.MapInterface.prototype.getScreenRay;
 Melown.MapInterface.prototype["getStats"] = Melown.MapInterface.prototype.getStats;
+Melown.MapInterface.prototype["click"] = Melown.MapInterface.prototype.click;
+Melown.MapInterface.prototype["hover"] = Melown.MapInterface.prototype.hover;
 

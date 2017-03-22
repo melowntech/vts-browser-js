@@ -111,6 +111,16 @@ Melown.MapBoundLayer.prototype.parseJson = function(json_) {
 
 };
 
+Melown.MapBoundLayer.prototype.kill = function() {
+};
+
+Melown.MapBoundLayer.prototype.setOptions = function(options_) {
+};
+
+Melown.MapBoundLayer.prototype.getOptions = function() {
+    return this.getInfo();
+};
+
 Melown.MapBoundLayer.prototype.getInfo = function() {
     return {
         "type" : this.type_,

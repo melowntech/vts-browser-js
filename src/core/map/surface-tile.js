@@ -595,16 +595,11 @@ Melown.MapSurfaceTile.prototype.createVirtualMetanode = function(tree_, priority
 
 Melown.MapSurfaceTile.prototype.bboxVisible = function(id_, bbox_, cameraPos_, node_) {
     var map_ = this.map_;
+    if (id_[0] < map_.minDivisionNodeDepth_) {
+        return true;
+    }
+    
     var skipGeoTest_ = map_.config_.mapDisableCulling_;
-    /*
-    if (!skipGeoTest_ && id_[0] >= 6 && this.geocent_) {
-        id_ = id_;
-        
-        if (!node_.hasGeometry()) {
-            return false;
-        }
-    }*/
-
     if (!skipGeoTest_ && map_.geocent_) {
         if (node_) {
             if (true) {  //version with perspektive
@@ -803,7 +798,6 @@ Melown.MapSurfaceTile.prototype.getPixelSize22 = function(bbox_, screenPixelSize
 };
 */
 
-
 Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
     var pixelSize_;
     var pixelSize2_;
@@ -876,6 +870,42 @@ Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
 
     this.texelSize_ = pixelSize_[0];
     this.distance_ = pixelSize_[1];
+
+    //degrade horizont
+    if (!map_.config_.mapDegradeHorizon_ || map_.degradeHorizonFactor_ < 1.0) {
+        return;
+    }
+
+    var degradeHorizon_ = map_.config_.mapDegradeHorizonParams_;
+    var degradeFadeStart_ = degradeHorizon_[1];
+    var degradeFadeEnd_ = degradeHorizon_[2];
+
+    //reduce degrade factor by tilt
+    var degradeFactor_ = map_.degradeHorizonFactor_ * map_.degradeHorizonTiltFactor_; 
+    var distance_ = this.distance_ * map_.cameraDistanceFactor_;
+
+    //apply degrade factor smoothly from specified tile distance
+    if (distance_ < degradeFadeStart_) {
+        degradeFactor_ = 1.0;
+    } else if (distance_ > degradeFadeStart_ && distance_ < degradeFadeEnd_) {
+        degradeFactor_ = 1.0 + (degradeFactor_-1.0) * ((distance_ - degradeFadeStart_) / (degradeFadeEnd_ - degradeFadeStart_));
+    }
+
+    degradeFactor_ = Math.max(degradeFactor_, 1.0);
+
+    //reduce degrade factor by observed distance
+    var observerDistance_ = map_.cameraPerceivedDistance_;
+    var distanceFade_ = degradeHorizon_[3];
+
+    if (observerDistance_ > distanceFade_) {
+        degradeFactor_ = 1.0;
+    } else if (observerDistance_ < distanceFade_ && degradeFactor_ > 1.0) {
+        degradeFactor_ = 1.0 + ((degradeFactor_ - 1.0) * (1.0-(observerDistance_ / distanceFade_)));
+    }
+
+    //console.log("degrade: " + degradeFactor_);
+
+    this.texelSize_ /= degradeFactor_;
 };
 
 Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_) {

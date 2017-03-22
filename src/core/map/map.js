@@ -128,7 +128,10 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.tmpVec3_ = new Array(3);
     this.tmpVec5_ = new Array(5);
 
-    this.maxDivisionNodeDepth_ = this.getMaxSpatialDivisionNodeDepth();
+    var res_ = this.getSpatialDivisionNodeDepths();
+
+    this.minDivisionNodeDepth_ = res_[0];
+    this.maxDivisionNodeDepth_ = res_[1];
 
     this.tree_ = new Melown.MapSurfaceTree(this, false);
     this.afterConfigParsed();
@@ -170,6 +173,19 @@ Melown.Map = function(core_, mapConfig_, path_, config_) {
     this.bestGeodataTexelSize_ = 1;
     this.log8_ = Math.log(8);
     this.log2_ = Math.log(2);
+
+    this.dirty_ = true;
+    this.hitMapDirty_ = true;
+    this.geoHitMapDirty_ = true;
+
+    this.clickEvent_ = null;
+    this.hoverEvent_ = null;
+    this.hoverFeature_ = null;
+    this.hoverFeatureId_ = null;
+    this.lastHoverFeature_ = null;
+    this.lastHoverFeatureId_ = null;
+    this.hoverFeatureCounter_ = 0;
+    this.hoverFeatureList_ = [];
 
     this.drawTileState_ = this.renderer_.gpu_.createState({});
     this.drawStardomeState_ = this.renderer_.gpu_.createState({zwrite_:false, ztest_:false});
@@ -386,6 +402,27 @@ Melown.Map.prototype.addBoundLayer = function(id_, layer_) {
     this.boundLayers_[id_] = layer_;
 };
 
+Melown.Map.prototype.setBoundLayerOptions = function(id_, options_) {
+    if (this.boundLayers_[id_]) {
+        this.boundLayers_[id_].setOptions(options_);
+    }
+};
+
+Melown.Map.prototype.getBoundLayerOptions = function(id_) {
+    if (this.boundLayers_[id_]) {
+        return this.boundLayers_[id_].getOptions();
+    }
+    
+    return null;
+};
+
+Melown.Map.prototype.removeBoundLayer = function(id_, layer_) {
+    if (this.boundLayers_[id_]) {
+        this.boundLayers_[id_].kill();
+        this.boundLayers_[id_] = null;
+    }
+};
+
 Melown.Map.prototype.getBoundLayerByNumber = function(number_) {
     var layers_ = this.boundLayers_;
     for (var key_ in layers_) {
@@ -407,6 +444,31 @@ Melown.Map.prototype.getBoundLayers = function() {
 
 Melown.Map.prototype.addFreeLayer = function(id_, layer_) {
     this.freeLayers_[id_] = layer_;
+    this.setView(this.getView());
+    this.markDirty();
+};
+
+Melown.Map.prototype.removeFreeLayer = function(id_) {
+    if (this.freeLayers_[id_]) {
+        this.freeLayers_[id_].kill();
+        this.freeLayers_[id_] = null;
+        this.setView(this.getView());
+        this.markDirty();
+    }
+};
+
+Melown.Map.prototype.setFreeLayerOptions = function(id_, options_) {
+    if (this.freeLayers_[id_]) {
+        this.freeLayers_[id_].setOptions(options_);
+    }
+};
+
+Melown.Map.prototype.getFreeLayerOptions = function(id_) {
+    if (this.freeLayers_[id_]) {
+        return this.freeLayers_[id_].getOptions();
+    }
+    
+    return null;
 };
 
 Melown.Map.prototype.getFreeLayer = function(id_) {
@@ -722,6 +784,8 @@ Melown.Map.prototype.setConfigParam = function(key_, value_) {
         case "mapHeightfiledWhenUnloaded":    this.config_.mapHeightfiledWhenUnloaded_= Melown.validateBool(value_, false); break;
         case "mapForceMetatileV3":            this.config_.mapForceMetatileV3_= Melown.validateBool(value_, false); break;
         case "mapVirtualSurfaces":            this.config_.mapVirtualSurfaces_ = Melown.validateBool(value_, true); break;
+        case "mapDegradeHorizon":             this.config_.mapDegradeHorizon_ = Melown.validateBool(value_, true); break;
+        case "mapDegradeHorizonParams":       this.config_.mapDegradeHorizonParams_ = Melown.validateNumberArray(value_, 4, [0,1,1,1], [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], [1, 3000, 15000, 7000]); break;
         case "mario":                         this.config_.mario_ = Melown.validateBool(value_, true); break;
     }
 };
@@ -760,13 +824,24 @@ Melown.Map.prototype.getConfigParam = function(key_) {
         case "mapHeightfiledWhenUnloaded":    return this.config_.mapHeightfiledWhenUnloaded_;
         case "mapForceMetatileV3":            return this.config_.mapForceMetatileV3_;
         case "mapVirtualSurfaces":            return this.config_.mapVirtualSurfaces_;
+        case "mapDegradeHorizon":             return this.config_.mapDegradeHorizon_;
+        case "mapDegradeHorizonParams":       return this.config_.mapDegradeHorizonParams_;
         case "mario":                         return this.config_.mario_;
     }
+};
+
+Melown.Map.prototype.click = function(screenX_, screenY_, state_) {
+    this.clickEvent_ = [screenX_, screenY_, state_];
+};
+
+Melown.Map.prototype.hover = function(screenX_, screenY_, persistent_, state_) {
+    this.hoverEvent_ = [screenX_, screenY_, persistent_, state_];
 };
 
 Melown.Map.prototype.markDirty = function() {
     this.dirty_ = true;
     this.hitMapDirty_ = true;
+    this.geoHitMapDirty_ = true;
 };
 
 Melown.Map.prototype.getScreenRay = function(screenX_, screenY_) {
@@ -858,6 +933,83 @@ Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
     return navCoords_;
 };
 
+Melown.Map.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_) {
+    if (this.geoHitMapDirty_) {
+        if (this.freeLayersHaveGeodata_) {
+            this.renderer_.switchToFramebuffer("geo");
+            this.renderer_.drawGpuJobs();
+            this.renderer_.switchToFramebuffer("base");
+            this.geoHitMapDirty_ = false;
+        }
+    }
+
+    var res_ = this.renderer_.hitTestGeoLayers(screenX_, screenY_, mode_);
+
+    if (res_[0]) { //do we hit something?
+        //console.log(JSON.stringify([id_, JSON.stringify(this.hoverFeatureList_[id_])]));
+
+        if (mode_ == "hover") {
+            this.lastHoverFeature_ = this.hoverFeature_;
+            this.lastHoverFeatureId_ = this.hoverFeatureId_;
+            this.hoverFeature_ = null;
+            this.hoverFeatureId_ = null;
+            this.hoverFeature_ = this.hoverFeatureList_[id_];
+            this.hoverFeatureId_ = (this.hoverFeature_ != null) ? this.hoverFeature_[0]["id"] : null;
+
+            var relatedEvents_ = [];
+
+            if (this.hoverFeatureId_ != this.lastHoverFeatureId_) {
+                if (this.lastHoverFeatureId_ != null) {
+                    relatedEvents_.push(["leave", this.lastHoverFeature_, this.lastHoverFeatureId_]);
+                }
+
+                if (this.hoverFeatureId_ != null) {
+                    relatedEvents_.push(["enter", this.hoverFeature_, this.hoverFeatureId_]);
+                }
+
+                this.dirty_ = true;
+            }
+
+            if (this.hoverFeature_ != null && this.hoverFeature_[3] == true) {
+                return [this.hoverFeature_, surfaceHit_, relatedEvents_];
+            } else {
+                return [null, false, relatedEvents_];
+            }
+        }
+
+        if (mode_ == "click") {
+            var feature_ = this.hoverFeatureList_[id_];
+            //this.hoverFeatureId_ = (this.hoverFeature_ != null) ? this.hoverFeature_["id"] : null;
+
+            if (feature_ != null && this.hoverFeature_ != null && this.hoverFeature_[2] == true) {
+                return [feature_, surfaceHit_, []];
+            } else {
+                return [null, false, []];
+            }
+        }
+    } else {
+        var relatedEvents_ = [];
+
+        if (mode_ == "hover") {
+            this.lastHoverFeature_ = this.hoverFeature_;
+            this.lastHoverFeatureId_ = this.hoverFeatureId_;
+            this.hoverFeature_ = null;
+            this.hoverFeatureId_ = null;
+
+            if (this.lastHoverFeatureId_ != null) {
+                if (this.lastHoverFeatureId_ != null) {
+                    relatedEvents_.push(["leave", this.lastHoverFeature_, this.lastHoverFeatureId_]);
+                }
+
+                this.dirty_ = true;
+            }
+        }
+
+        return [null, false, relatedEvents_];
+    }
+};
+
+
 Melown.Map.prototype.drawMap = function() {
     if (this.drawChannel_ != 1) {
         this.renderer_.gpu_.setViewport();
@@ -901,6 +1053,9 @@ Melown.Map.prototype.drawMap = function() {
 
     this.renderer_.distanceFactor_ = 1 / Math.max(1,Math.log(this.cameraDistance_) / Math.log(1.04));
     this.renderer_.tiltFactor_ = (Math.abs(this.renderer_.cameraOrientation_[1]/-90));
+
+    this.degradeHorizonFactor_ = 200.0 * this.config_.mapDegradeHorizonParams_[0];
+    this.degradeHorizonTiltFactor_ = 0.5*(1.0+Math.cos(Melown.radians(Math.min(180,Math.abs(this.renderer_.cameraOrientation_[1]*2*3)))));
    
     if (this.drawChannel_ != 1) {
         this.renderer_.gpu_.clear(true, false);
@@ -1016,6 +1171,58 @@ Melown.Map.prototype.update = function() {
 
         //console.log("" + this.stats_.gpuRenderUsed_);
     }
+
+    //hover and click events
+    if (this.clickEvent_ != null || this.hoverEvent_ != null) {
+        //this.updateGeoHitmap_ = this.dirty_;
+
+        if (this.hoverEvent_ != null) {
+            var result_ = this.hitTestGeoLayers(this.hoverEvent_[0], this.hoverEvent_[1], "hover");
+
+            if (result_[1] == true && result_[0] != null) {
+                this.core_.callListener("geo-feature-hover", {"feature": result_[0][0], "screen-pos":this.project(result_[0][1]),
+                                                              "scene-pos":result_[0][1], "state": this.hoverEvent_[3] });
+            }
+
+            var relatedEvents_ = result_[2];
+
+            if (relatedEvents_ != null) {
+                for(var i = 0, li = relatedEvents_.length; i < li; i++) {
+                    var event_ = relatedEvents_[i];
+
+                    switch(event_[0]) {
+                        case "enter":
+                            this.core_.callListener("geo-feature-enter", {"feature": event_[0], "screen-pos":this.project(event_[1]),
+                                                                           "scene-pos":event_[1], "state": this.hoverEvent_[3] });
+                            break;
+
+                        case "leave":
+                            this.core_.callListener("geo-feature-leave", {"feature":event_[0], "screen-pos":this.project(event_[1]),
+                                                                          "scene-pos":event_[1], "state": this.hoverEvent_[3] });
+                            break;
+                    }
+                }
+            }
+
+            //is it persistent event?
+            if (this.hoverEvent_[2] != true) {
+                this.hoverEvent_ = null;
+            }
+        }
+
+        if (this.clickEvent_ != null) {
+            var result_ = this.hitTestGeoLayers(this.clickEvent_[0], this.clickEvent_[1], "click");
+
+            if (result_[1] == true && result_[0] != null) {
+                this.core_.callListener("geo-feature-click", {"feature": result_[0][0], "screen-pos":this.project(result_[0][1]),
+                                                              "scene-pos":result_[0][1], "state": this.hoverEvent_[3] });
+            }
+
+            this.clickEvent_ = null;
+        }
+
+    }
+
 
     this.stats_.end(dirty_);
 };

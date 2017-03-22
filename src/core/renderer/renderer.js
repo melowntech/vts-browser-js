@@ -26,12 +26,6 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.onlyDepth_ = false;
     this.onlyLayers_ = false;
     this.onlyHitLayers_ = false;
-    this.hoverFeature_ = null;
-    this.hoverFeatureId_ = null;
-    this.lastHoverFeature_ = null;
-    this.lastHoverFeatureId_ = null;
-    this.hoverFeatureCounter_ = 0;
-    this.hoverFeatureList_ = [];
     this.renderCounter_ = 1;
     this.hitmapCounter_ = 0;
     this.geoHitmapCounter_ = 0;
@@ -39,8 +33,6 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.onResizeCall_ = onResize_;
     this.math_ = Melown.Math;
 
-    this.clickEvent_ = null;
-    this.hoverEvent_ = null;
     this.touchSurfaceEvent_ = [];
 
     var rect_ = this.div_.getBoundingClientRect();
@@ -307,7 +299,8 @@ Melown.Renderer.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_)
 
     //conver screen coords to texture coords
     if (gl_.checkFramebufferStatus(gl_.FRAMEBUFFER) != gl_.FRAMEBUFFER_COMPLETE) {
-        return [null, false, []];
+        //return [null, false, []];
+        return [false, 0,0,0,0];
     }
 
     var surfaceHit_ = false;
@@ -333,76 +326,11 @@ Melown.Renderer.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_)
 
     }
 
-
     if (surfaceHit_) {
-        //console.log(JSON.stringify([id_, JSON.stringify(this.hoverFeatureList_[id_])]));
+        return [true, pixel_[0], pixel_[1], pixel_[2], pixel_[3]];
+    } 
 
-        if (mode_ == "hover") {
-            this.lastHoverFeature_ = this.hoverFeature_;
-            this.lastHoverFeatureId_ = this.hoverFeatureId_;
-            this.hoverFeature_ = null;
-            this.hoverFeatureId_ = null;
-
-            this.hoverFeature_ = this.hoverFeatureList_[id_];
-            this.hoverFeatureId_ = (this.hoverFeature_ != null) ? this.hoverFeature_[0]["id"] : null;
-
-            var relatedEvents_ = [];
-
-            if (this.hoverFeatureId_ != this.lastHoverFeatureId_) {
-
-                if (this.lastHoverFeatureId_ != null) {
-                    relatedEvents_.push(["leave", this.lastHoverFeature_, this.lastHoverFeatureId_]);
-                }
-
-                if (this.hoverFeatureId_ != null) {
-                    relatedEvents_.push(["enter", this.hoverFeature_, this.hoverFeatureId_]);
-                }
-
-                this.dirty_ = true;
-            }
-
-            if (this.hoverFeature_ != null && this.hoverFeature_[3] == true) {
-                return [this.hoverFeature_, surfaceHit_, relatedEvents_];
-            } else {
-                return [null, false, relatedEvents_];
-            }
-        }
-
-        if (mode_ == "click") {
-
-            var feature_ = this.hoverFeatureList_[id_];
-            //this.hoverFeatureId_ = (this.hoverFeature_ != null) ? this.hoverFeature_["id"] : null;
-
-            if (feature_ != null && this.hoverFeature_ != null && this.hoverFeature_[2] == true) {
-                return [feature_, surfaceHit_, []];
-            } else {
-                return [null, false, []];
-            }
-
-        }
-    } else {
-
-        var relatedEvents_ = [];
-
-        if (mode_ == "hover") {
-            this.lastHoverFeature_ = this.hoverFeature_;
-            this.lastHoverFeatureId_ = this.hoverFeatureId_;
-            this.hoverFeature_ = null;
-            this.hoverFeatureId_ = null;
-
-            if (this.lastHoverFeatureId_ != null) {
-
-                if (this.lastHoverFeatureId_ != null) {
-                    relatedEvents_.push(["leave", this.lastHoverFeature_, this.lastHoverFeatureId_]);
-                }
-
-                this.dirty_ = true;
-            }
-        }
-
-        return [null, false, relatedEvents_];
-    }
-
+    return [false, 0,0,0,0];
 };
 
 Melown.Renderer.prototype.switchToFramebuffer = function(type_) {
@@ -423,6 +351,7 @@ Melown.Renderer.prototype.switchToFramebuffer = function(type_) {
             this.camera_.update();
             //this.updateCamera();
             this.onlyDepth_ = false;
+            this.onlyHitLayers_ = false;
             break;
 
         case "depth":
@@ -443,17 +372,45 @@ Melown.Renderer.prototype.switchToFramebuffer = function(type_) {
             this.curSize_ = [size_, size_];
             //this.gpu_.resize(this.curSize_, true);
 
-            var width_ = this.oldSize_[0];
-            var height_ = this.oldSize_[1];
+            //var width_ = this.oldSize_[0];
+            //var height_ = this.oldSize_[1];
             //this.camera_.setAspect(width_ / height_);
 
             this.gpu_.clear();
             //this.camera_.setAspect(2.5);
             this.camera_.update();
             this.onlyDepth_ = true;
+            this.onlyHitLayers_ = false;
             break;
 
         case "geo":
+            
+            this.hoverFeatureCounter_ = 0;
+            
+            var size_ = this.hitmapSize_;
+            
+            //set texture framebuffer
+            this.gpu_.setFramebuffer(this.geoHitmapTexture_);
+            
+            var oldSize_ = [ this.curSize_[0], this.curSize_[1] ];
+            
+            var width_ = size_;
+            var height_ = size_;
+            
+            gl_.clearColor(1.0,1.0, 1.0, 1.0);
+            gl_.enable(gl_.DEPTH_TEST);
+            
+            //clear screen
+            gl_.viewport(0, 0, size_, size_);
+            gl_.clear(gl_.COLOR_BUFFER_BIT | gl_.DEPTH_BUFFER_BIT);
+            
+            this.curSize_ = [width_, height_];
+            
+            //render scene
+            this.onlyHitLayers_ = true;
+            
+            this.gpu_.clear();
+            this.updateCamera();
             break;
     }
 };
@@ -499,103 +456,6 @@ Melown.Renderer.prototype.hitTest = function(screenX_, screenY_) {
     return [this.lastHitPosition_[0], this.lastHitPosition_[1], this.lastHitPosition_[2], surfaceHit_, screenRay_, depth_, cameraPos_];
 };
 
-Melown.Renderer.prototype.hitTestOld = function(screenX_, screenY_, mode_) {
-    //this.core_.hover(screenX_, screenY_, false, { test:true});
-    //return [0,0,0,false];
-
-    this.updateHitmap_ = true;
-
-    var gl_ = this.gpu_.gl_;
-
-    if (this.updateHitmap_ == true) {
-
-        var size_ = this.hitmapSize_;
-
-        //set texture framebuffer
-        this.gpu_.setFramebuffer(this.hitmapTexture_);
-
-        var oldSize_ = [ this.curSize_[0], this.curSize_[1] ];
-
-        var width_ = size_;
-        var height_ = size_;
-
-        gl_.clearColor(1.0,1.0, 1.0, 1.0);
-        //gl_.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl_.enable(gl_.DEPTH_TEST);
-
-        //clear screen
-        gl_.viewport(0, 0, size_, size_);
-        gl_.clear(gl_.COLOR_BUFFER_BIT | gl_.DEPTH_BUFFER_BIT);
-
-        this.curSize_ = [width_, height_];
-
-        //gl_.viewport(0, 0, width_, height_);
-        //render scene
-        this.onlyDepth_ = true;
-        //this.paintGL();
-
-        this.gpu_.clear();
-
-        this.camera_.update();
-        //maxPixelSize_ = this.planet_.draw();
-        this.drawTiles(this.planet_);
-
-        this.onlyDepth_ = false;
-
-        //return screen framebuffer
-        width_ = oldSize_[0];
-        height_ = oldSize_[1];
-
-        gl_.clearColor(0.0, 0.0, 0.0, 1.0);
-
-        this.gpu_.setFramebuffer(null);
-
-        this.camera_.setAspect(width_ / height_);
-        this.curSize_ = [width_, height_];
-        this.gpu_.resize(this.curSize_, true);
-        this.camera_.update();
-        this.updateCamera();
-
-        this.updateHitmap_ = false;
-    }
-
-    //conver screen coords to texture coords
-    if (gl_.checkFramebufferStatus(gl_.FRAMEBUFFER) != gl_.FRAMEBUFFER_COMPLETE) {
-        return [0,0,0,0];
-    }
-
-    var x_ = 0, y_ = 0;
-
-    //get screen coords
-    //if (this.curSize_[0] > this.curSize_[1]) {
-    x_ = Math.floor(screenX_ * (this.hitmapSize_ / this.curSize_[0]));
-    y_ = Math.floor(screenY_ * (this.hitmapSize_ / this.curSize_[1]));
-
-    //console.log("hit screen: " + x_ + " " + y_);
-
-    //get pixel value from framebuffer
-    var pixel_ = this.hitmapTexture_.readFramebufferPixels(x_, this.hitmapSize_ - y_ - 1, 1, 1);
-
-    //convert rgb values into depth
-    var depth_ = (pixel_[0] * (1.0/255)) + (pixel_[1]) + (pixel_[2]*255.0) + (pixel_[3]*65025.0);// + (pixel_[3]*16581375.0);
-
-    var surfaceHit_ = !(pixel_[0] == 255 && pixel_[1] == 255 && pixel_[2] == 255 && pixel_[3] == 255);
-
-    //get screen ray
-    var screenRay_ = this.getScreenRay(screenX_, screenY_);
-    var cameraPos_ = this.cameraPosition();
-
-    //compute hit postion
-    this.lastHitPosition_ = [cameraPos_[0] + screenRay_[0]*depth_, cameraPos_[1] + screenRay_[1]*depth_, cameraPos_[2] + screenRay_[2]*depth_];
-
-
-    //this.hitTestGeoLayers(screenX_, screenY_, "hover");
-    this.core_.hover(screenX_, screenY_, false, { test:true});
-    //this.core_.click(screenX_, screenY_, { test2:true});
-
-
-    return [this.lastHitPosition_[0], this.lastHitPosition_[1], this.lastHitPosition_[2], surfaceHit_];
-};
 
 Melown.Renderer.prototype.getZoffsetFactor = function(params_) {
     //var offsetFactor_ = 1.0 + this.distanceFactor_*params_[1]*((1-params_[2])+params_[2]*this.tiltFactor_);

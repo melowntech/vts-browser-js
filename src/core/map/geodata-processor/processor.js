@@ -28,7 +28,7 @@ Melown.MapGeodataProcessor = function(surface_, listener_) {
     } else {
 
         //debug worker
-        this.processWorker_ = new Worker("../melown-core-api/melown-core/map/geodata-processor/worker-debug.js");
+        this.processWorker_ = new Worker("../src/core/map/geodata-processor/worker-debug.js");
         
         this.processWorker_.onerror = function(event){
             throw new Error(event.message + " (" + event.filename + ":" + event.lineno + ")");
