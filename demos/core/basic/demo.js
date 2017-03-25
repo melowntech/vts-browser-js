@@ -1,8 +1,13 @@
+require('../../../src/core/interface');
+require('../../../src/core/core');
+require('../../../src/core/update');
+require('../../../src/core/config');
+require('../../../src/core/utils/utils');
 
 var core = null;
 var isMapProjected = false;
 
-function startDemo() {
+(function() {
     //check vadstena support (webgl)
     if (!Melown.checkSupport()) {
         alert("Unfturtunately, Melown Maps needs browser support for WebGL. Sorry.");
@@ -26,7 +31,7 @@ function startDemo() {
     window.addEventListener("DOMMouseScroll", onMouseWheel, true);
     window.addEventListener("mousewheel", onMouseWheel, true);
     document.onselectstart = function(){ return false; }; //removes text cusor during draging
-}
+})();
 
 function onMapLoaded() {
     var map = core.getMap();
@@ -186,4 +191,3 @@ function reduceFloatingHeight(pos, factor) {
     
     return pos;
 };
-

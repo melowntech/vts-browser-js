@@ -1,3 +1,5 @@
+require('./surface-tile');
+
 /**
  * @constructor
  */

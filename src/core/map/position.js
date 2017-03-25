@@ -1,3 +1,4 @@
+require('core/utils/math');
 
 /**
  * @constructor

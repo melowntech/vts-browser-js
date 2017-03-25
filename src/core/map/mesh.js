@@ -1,3 +1,5 @@
+require('./submesh');
+
 /**
  * @constructor
  */

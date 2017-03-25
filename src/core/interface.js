@@ -1,3 +1,4 @@
+require('./_minify.js');
 
 Melown.MapCore = function(element_, config_) {
     element_ = (typeof element_ !== "string") ? element_ : document.getElementById(element_);
@@ -70,8 +71,5 @@ Melown.CoreInterface.prototype["callListener"] = Melown.CoreInterface.prototype.
 Melown["getCoreVersion"] = Melown.getCoreVersion;
 Melown["checkSupport"] = Melown.checkSupport;
 
-
-
-
-
-
+module.exports["MapCore"] = Melown.MapCore;
+module.exports["CoreInterface"] = Melown.CoreInterface;

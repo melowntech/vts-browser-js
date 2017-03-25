@@ -1,0 +1,38 @@
+{
+  "name": "melown-js",
+  "version": "1.0.0",
+  "description": "JavaScript WebGL 3D maps rendering engine",
+  "main": "src/core/core.js",
+  "scripts": {
+    "test": "mocha --reporter spec",
+    "dev": "WEBPACK_ENV=dev webpack --progress --colors --watch",
+    "build": "WEBPACK_ENV=build webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/melown/melown-js.git"
+  },
+  "keywords": [
+    "Web",
+    "JavaScript",
+    "3D",
+    "map",
+    "WebGL"
+  ],
+  "author": "David Levinsky",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/melown/melown-js/issues"
+  },
+  "homepage": "https://github.com/melown/melown-js#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "copy-webpack-plugin": "^4.0.1",
+    "install": "^0.8.7",
+    "mocha": "^3.2.0",
+    "serve": "^5.0.4",
+    "webpack": "^2.3.1",
+    "webpack-dev-server": "^2.4.2",
+    "yarn": "^0.21.3"
+  }
+}

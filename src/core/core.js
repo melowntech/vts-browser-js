@@ -1,3 +1,27 @@
+require('./_minify.js');
+require('./inspector/inspector');
+require('./inspector/stats');
+require('./inspector/graphs');
+require('./inspector/layers');
+require('./inspector/replay');
+require('./inspector/stylesheets');
+require('./inspector/input');
+require('./renderer/renderer');
+require('./renderer/draw');
+require('./renderer/interface');
+require('./renderer/init');
+require('./utils/url');
+require('./utils/platform');
+require('./map/map');
+require('./map/url');
+require('./map/config');
+require('./map/measure');
+require('./map/surface-sequence');
+require('./map/render-slots');
+require('./map/interface');
+require('./map/camera');
+require('./map/draw');
+require('./utils/utils');
 
 /**
  * @constructor
@@ -315,7 +339,6 @@ Melown.checkSupport = function() {
 };
 
 
-
-
-
-
+module.exports.Core = Melown.Core;
+module.exports.checkSupport = Melown.checkSupport;
+module.exports.getCoreVersion = Melown.getCoreVersion;

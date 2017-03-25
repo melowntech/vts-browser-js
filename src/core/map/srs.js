@@ -1,3 +1,5 @@
+require('./texture');
+
 /**
  * @constructor
  */
