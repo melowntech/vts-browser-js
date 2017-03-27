@@ -936,25 +936,46 @@ Melown.Map.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
 Melown.Map.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_) {
     if (this.geoHitMapDirty_) {
         if (this.freeLayersHaveGeodata_) {
+            this.renderer_.gpu_.setState(this.drawTileState_);
             this.renderer_.switchToFramebuffer("geo");
+            //this.renderer_.onlyHitLayers_ = true;
             this.renderer_.drawGpuJobs();
+            //this.renderer_.onlyHitLayers_ = false;
             this.renderer_.switchToFramebuffer("base");
             this.geoHitMapDirty_ = false;
         }
+    }
+
+    if (!this.freeLayersHaveGeodata_) {
+        this.lastHoverFeature_ = null;
+        this.lastHoverFeatureId_ = null;
+        this.hoverFeature_ = null;
+        this.hoverFeatureId_ = null;
+
+        return [null, false, []];
     }
 
     var res_ = this.renderer_.hitTestGeoLayers(screenX_, screenY_, mode_);
 
     if (res_[0]) { //do we hit something?
         //console.log(JSON.stringify([id_, JSON.stringify(this.hoverFeatureList_[id_])]));
+        
+        var id_ = (res_[1]) + (res_[2]<<8);
+        var elementId_ = (res_[3]) + (res_[4]<<8);
+		
+		var feature_ = this.hoverFeatureList_[id_];
 
         if (mode_ == "hover") {
             this.lastHoverFeature_ = this.hoverFeature_;
             this.lastHoverFeatureId_ = this.hoverFeatureId_;
-            this.hoverFeature_ = null;
-            this.hoverFeatureId_ = null;
-            this.hoverFeature_ = this.hoverFeatureList_[id_];
-            this.hoverFeatureId_ = (this.hoverFeature_ != null) ? this.hoverFeature_[0]["id"] : null;
+            
+			if (feature_ && feature_[3] == true) {
+				this.hoverFeature_ = feature_;
+				this.hoverFeatureId_ = (feature_ != null) ? feature_[0]["#id"] : null;
+			} else {
+				this.hoverFeature_ = null;
+				this.hoverFeatureId_ = null;
+			}
 
             var relatedEvents_ = [];
 
@@ -971,18 +992,17 @@ Melown.Map.prototype.hitTestGeoLayers = function(screenX_, screenY_, mode_) {
             }
 
             if (this.hoverFeature_ != null && this.hoverFeature_[3] == true) {
-                return [this.hoverFeature_, surfaceHit_, relatedEvents_];
+                return [this.hoverFeature_, true, relatedEvents_];
             } else {
                 return [null, false, relatedEvents_];
             }
         }
 
         if (mode_ == "click") {
-            var feature_ = this.hoverFeatureList_[id_];
             //this.hoverFeatureId_ = (this.hoverFeature_ != null) ? this.hoverFeature_["id"] : null;
 
-            if (feature_ != null && this.hoverFeature_ != null && this.hoverFeature_[2] == true) {
-                return [feature_, surfaceHit_, []];
+            if (feature_ != null && feature_[2] == true) {
+                return [feature_, true, []];
             } else {
                 return [null, false, []];
             }
@@ -1031,6 +1051,10 @@ Melown.Map.prototype.drawMap = function() {
     var camInfo_ = this.updateCamera();
     this.renderer_.dirty_ = true;
     this.renderer_.drawFog_ = this.drawFog_;
+
+    this.renderer_.hoverFeatureCounter_ = 0;
+    this.renderer_.hoverFeatureList_ = this.hoverFeatureList_;
+    this.renderer_.hoverFeature_ = this.hoverFeature_;
 
     this.renderer_.cameraPosition_ = this.cameraPosition_;
     this.renderer_.cameraOrientation_ = this.position_.getOrientation();
@@ -1180,8 +1204,8 @@ Melown.Map.prototype.update = function() {
             var result_ = this.hitTestGeoLayers(this.hoverEvent_[0], this.hoverEvent_[1], "hover");
 
             if (result_[1] == true && result_[0] != null) {
-                this.core_.callListener("geo-feature-hover", {"feature": result_[0][0], "screen-pos":this.project(result_[0][1]),
-                                                              "scene-pos":result_[0][1], "state": this.hoverEvent_[3] });
+                this.core_.callListener("geo-feature-hover", {"feature": result_[0][0], "canvas-coords":this.renderer_.project2(result_[0][1], this.camera_.getMvpMatrix()),
+                                                              "camera-coords":result_[0][1], "state": this.hoverEvent_[3] }, true);
             }
 
             var relatedEvents_ = result_[2];
@@ -1192,13 +1216,13 @@ Melown.Map.prototype.update = function() {
 
                     switch(event_[0]) {
                         case "enter":
-                            this.core_.callListener("geo-feature-enter", {"feature": event_[0], "screen-pos":this.project(event_[1]),
-                                                                           "scene-pos":event_[1], "state": this.hoverEvent_[3] });
+                            this.core_.callListener("geo-feature-enter", {"feature": event_[1][0], "canvas-coords":this.renderer_.project2(event_[1][1], this.camera_.getMvpMatrix()),
+                                                                           "camera-coords":event_[1][1], "state": this.hoverEvent_[3] }, true);
                             break;
 
                         case "leave":
-                            this.core_.callListener("geo-feature-leave", {"feature":event_[0], "screen-pos":this.project(event_[1]),
-                                                                          "scene-pos":event_[1], "state": this.hoverEvent_[3] });
+                            this.core_.callListener("geo-feature-leave", {"feature":event_[1][0], "canvas-coords":this.renderer_.project2(event_[1][1], this.camera_.getMvpMatrix()),
+                                                                          "camera-coords":event_[1][1], "state": this.hoverEvent_[3] }, true);
                             break;
                     }
                 }
@@ -1214,8 +1238,8 @@ Melown.Map.prototype.update = function() {
             var result_ = this.hitTestGeoLayers(this.clickEvent_[0], this.clickEvent_[1], "click");
 
             if (result_[1] == true && result_[0] != null) {
-                this.core_.callListener("geo-feature-click", {"feature": result_[0][0], "screen-pos":this.project(result_[0][1]),
-                                                              "scene-pos":result_[0][1], "state": this.hoverEvent_[3] });
+                this.core_.callListener("geo-feature-click", {"feature": result_[0][0], "canvas-coords":this.renderer_.project2(result_[0][1], this.camera_.getMvpMatrix()),
+                                                              "camera-coords":result_[0][1], "state": this.clickEvent_[2] }, true);
             }
 
             this.clickEvent_ = null;

@@ -31,32 +31,27 @@ var processLayerFeaturePass = function(type_, feature_, lod_, layer_, zIndex_, e
 
 };
 
-var processLayerFeature = function(type_, feature_, lod_, layer_, featureIndex_) {
-    //var layer_ = getLayer(feature_["style"], type_, featureIndex_);
-    var visible_ = getLayerPropertyValue(layer_, "visible", feature_, lod_);
-    var zIndex_ = getLayerPropertyValue(layer_, "z-index", feature_, lod_);
+var processFeature = function(type_, feature_, lod_, featureIndex_, featureType_, group_) {
+    
+    //loop layers
+    for (var key_ in stylesheetLayers_) {
+        var layer_ = stylesheetLayers_[key_];
+        var filter_ =  getLayerPropertyValue(layer_, "filter", feature_, lod_);
 
-    if (visible_ == false) {
-        return;
+        feature_.properties_ = feature_["properties"] || {};
+
+        if (feature_["id"]) {
+            feature_.properties_["#id"] = feature_["id"]; 
+        }
+        
+        if (!filter_ || getFilterResult(filter_, feature_, featureType_, group_)) {
+            processLayerFeature(type_, feature_, lod_, layer_, featureIndex_);
+        }
     }
+}
 
-    var eventInfo_ = feature_.properties_;
-
-    var hoverLayerId_ = getLayerPropertyValue(layer_, "hover-style", feature_, lod_);
-    var hoverlayer_ = (hoverLayerId_ != "") ? getLayer(hoverLayerId_, type_, featureIndex_) : null;
-
-    if (hoverlayer_ != null) {
-        hitState_ = 1;
-        processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
-        hitState_ = 2;
-        processLayerFeaturePass(type_, feature_, lod_, hoverlayer_, zIndex_, eventInfo_);
-    } else {
-        hitState_ = 0;
-        processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
-    }
-
-
-    var multiPass_ = getLayerPropertyValue(layer_, "next-pass", feature_, lod_);
+var processLayerFeatureMultipass = function(type_, feature_, lod_, layer_, featureIndex_, eventInfo_) {
+   var multiPass_ = getLayerPropertyValue(layer_, "next-pass", feature_, lod_);
 
     if (multiPass_ != null) {
         for (var i = 0, li = multiPass_.length; i < li; i++) {
@@ -69,37 +64,51 @@ var processLayerFeature = function(type_, feature_, lod_, layer_, featureIndex_)
                 continue;
             }
 
-            hoverLayerId_ = getLayerPropertyValue(layer_, "hover-style", feature_, lod_);
+            hoverLayerId_ = getLayerPropertyValue(layer_, "hover-layer", feature_, lod_);
             hoverlayer_ = (hoverLayerId_ != "") ? getLayer(hoverLayerId_, type_, featureIndex_) : null;
 
             if (hoverlayer_ != null) {
+                var lastHitState_ = hitState_;
                 hitState_ = 1;
                 processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
                 hitState_ = 2;
                 processLayerFeaturePass(type_, feature_, lod_, hoverlayer_, zIndex_, eventInfo_);
+                hitState_ = lastHitState_;
             } else {
-                hitState_ = 0;
+                //hitState_ = 0;
                 processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
             }
         }
     }
-
 };
 
-var processFeature = function(type_, feature_, lod_, featureIndex_, featureType_, group_) {
-    
-    //loop layers
-    for (var key_ in stylesheetLayers_) {
-        var layer_ = stylesheetLayers_[key_];
-        var filter_ =  getLayerPropertyValue(layer_, "filter", feature_, lod_);
 
-        feature_.properties_ = feature_["properties"] || {};
-        
-        if (!filter_ || getFilterResult(filter_, feature_, featureType_, group_)) {
-            processLayerFeature(type_, feature_, lod_, layer_, featureIndex_);
-        }
+var processLayerFeature = function(type_, feature_, lod_, layer_, featureIndex_) {
+    //var layer_ = getLayer(feature_["style"], type_, featureIndex_);
+    var visible_ = getLayerPropertyValue(layer_, "visible", feature_, lod_);
+    var zIndex_ = getLayerPropertyValue(layer_, "z-index", feature_, lod_);
+
+    if (visible_ == false) {
+        return;
     }
-    
+
+    var eventInfo_ = feature_.properties_;
+
+    var hoverLayerId_ = getLayerPropertyValue(layer_, "hover-layer", feature_, lod_);
+    var hoverlayer_ = (hoverLayerId_ != "") ? getLayer(hoverLayerId_, type_, featureIndex_) : null;
+
+    if (hoverlayer_ != null) {
+        hitState_ = 1;
+        processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
+        processLayerFeatureMultipass(type_, feature_, lod_, layer_, featureIndex_, eventInfo_);
+        hitState_ = 2;
+        processLayerFeaturePass(type_, feature_, lod_, hoverlayer_, zIndex_, eventInfo_);
+        processLayerFeatureMultipass(type_, feature_, lod_, hoverlayer_, featureIndex_, eventInfo_);
+    } else {
+        hitState_ = 0;
+        processLayerFeaturePass(type_, feature_, lod_, layer_, zIndex_, eventInfo_);
+        processLayerFeatureMultipass(type_, feature_, lod_, layer_, featureIndex_, eventInfo_);
+    }
 };
 
 

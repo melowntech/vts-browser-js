@@ -33,6 +33,9 @@ Melown.Renderer = function(core_, div_, onUpdate_, onResize_, config_) {
     this.onResizeCall_ = onResize_;
     this.math_ = Melown.Math;
 
+    this.hoverFeatureCounter_ = 0;
+    this.hoverFeatureList_ = [];
+
     this.touchSurfaceEvent_ = [];
 
     var rect_ = this.div_.getBoundingClientRect();
@@ -410,7 +413,7 @@ Melown.Renderer.prototype.switchToFramebuffer = function(type_) {
             this.onlyHitLayers_ = true;
             
             this.gpu_.clear();
-            this.updateCamera();
+            this.camera_.update();
             break;
     }
 };

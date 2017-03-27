@@ -183,7 +183,7 @@ var inheritLayer = function(layerId_, layer_, layerData_, stylesheetLayersData_,
     //do we need inherite Layer?
     if (layerData_["inherit"] != null) {
         //get inherited Layer
-        var LayerToInherit_ = stylesheetLayersData_["Layers"][layerData_["inherit"]];
+        var LayerToInherit_ = stylesheetLayersData_["layers"][layerData_["inherit"]];
 
         if (LayerToInherit_ != null) {
 
@@ -379,7 +379,7 @@ var validateValue = function(layerId_, key_, value_, type_, arrayLength_, min_, 
                             typeof valueItem_[0] == "number" &&
                             typeof valueItem_[1] == "string") {
 
-                            if (stylesheetLayersData_["Layers"][valueItem_[1]] == null) {
+                            if (stylesheetLayersData_["layers"][valueItem_[1]] == null) {
 
                             }
 
@@ -551,7 +551,7 @@ var validateLayerPropertyValue = function(layerId_, key_, value_) {
        case "zbuffer-offset": return validateValue(layerId_, key_, value_, "object", 3, 0, Number.MAX_VALUE); break;
 
        case "hover-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "hover-style":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "hover-layer":  return validateValue(layerId_, key_, value_, "string"); break;
        case "enter-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
        case "leave-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
        case "click-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
@@ -617,7 +617,7 @@ var getDefaultLayerPropertyValue = function(key_) {
        case "zbuffer-offset": return [0,0,0];
 
        case "hover-event": return false;
-       case "hover-style": return "";
+       case "hover-layer": return "";
        case "enter-event": return false;
        case "leave-event": return false;
        case "click-event": return false;

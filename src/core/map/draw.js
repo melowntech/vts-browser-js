@@ -11,7 +11,7 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_, camInfo_) {
     var cameraPos_ = this.cameraPosition_;
 
     if (this.freeLayersHaveGeodata_ && this.drawChannel_ == 0) {
-        this.renderer_.drawGpuJobs();
+        this.renderer_.clearJobBuffer();
     }
 
     if (this.drawEarth_) {
@@ -99,8 +99,8 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_, camInfo_) {
             if ((this.replay_.drawFreeTiles_ && this.replay_.drawnFreeTiles_) ||
                 (this.replay_.drawLoaded_ && this.replay_.loaded_)) {
                     
-                if (this.freeLayersHaveGeodata_) {
-                    this.renderer_.clearJobBuffer();
+                if (this.freeLayersHaveGeodata_ && this.drawChannel_ == 0) {
+                    this.renderer_.drawGpuJobs();
                 }
             }
     
@@ -150,7 +150,7 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_, camInfo_) {
         for (var i = 0, li = this.freeLayerSequence_.length; i < li; i++) {
             var layer_ = this.freeLayerSequence_[i];
             if (layer_.ready_ && layer_.tree_ && 
-                (!layer_.geodata_ || (layer_.stylesheet_ && layer_.stylesheet_.isReady())) ) {
+                (!layer_.geodata_ || (layer_.stylesheet_ && layer_.stylesheet_.isReady())) && this.drawChannel_ == 0) {
                 
                 if (layer_.type_ == "geodata") {
                     this.drawMonoliticGeodata(layer_);
@@ -303,8 +303,8 @@ Melown.Map.prototype.draw = function(skipFreeLayers_, projected_, camInfo_) {
                 }
             }*/
         
-            if (this.freeLayersHaveGeodata_) {
-                this.renderer_.clearJobBuffer();
+            if (this.freeLayersHaveGeodata_ && this.drawChannel_ == 0) {
+                this.renderer_.drawGpuJobs();
             }
         }
     }
