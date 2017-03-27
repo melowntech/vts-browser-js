@@ -1,3 +1,8 @@
+require('core/interface');
+require('core/core');
+require('core/update');
+require('core/config');
+require('core/utils/utils');
 
 var core = null;
 var woodTexture = null;
@@ -39,7 +44,7 @@ function startDemo() {
 
 function loadTextrures() {
     //load texture used for cubes    
-    var woodImage = Melown.Http.imageFactory("./wood.png",
+    var woodImage = Melown.Http.imageFactory("/images/wood.png",
         (function(){
             woodTexture = core.getRenderer().createTexture({ "source": woodImage });
         }).bind(this)
@@ -393,3 +398,4 @@ function reduceFloatingHeight(pos, factor) {
     return pos;
 };
 
+startDemo();

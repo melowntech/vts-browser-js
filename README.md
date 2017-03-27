@@ -11,10 +11,10 @@ npm install
 
 (`yarn install` will be ready soon)
 
-## Build
+## Build (constantly)
 
 ```
-webpack
+webpack --watch --progress
 ```
 
 ## Run dev server

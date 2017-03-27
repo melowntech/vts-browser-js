@@ -1,3 +1,8 @@
+require('core/interface');
+require('core/core');
+require('core/update');
+require('core/config');
+require('core/utils/utils');
 
 var core = null;
 var demoTexture = null;
@@ -41,6 +46,8 @@ function startDemo() {
     window.addEventListener("DOMMouseScroll", onMouseWheel, true);
     window.addEventListener("mousewheel", onMouseWheel, true);
     document.onselectstart = function(){ return false; }; //removes text cusor during draging
+
+    document.getElementById('switch').onchange = function() {switchMap();}
 }
 
 
@@ -96,7 +103,7 @@ function onCustomRender() {
 } 
 
 
-function switchMap() {
+export function switchMap() {
     var map = core.getMap();
     
     if (map) {
@@ -272,3 +279,5 @@ function reduceFloatingHeight(pos, factor) {
     return pos;
 };
 
+
+startDemo();

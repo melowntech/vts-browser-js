@@ -1,3 +1,8 @@
+require('core/interface');
+require('core/core');
+require('core/update');
+require('core/config');
+require('core/utils/utils');
 
 var core = null;
 var pointTexture = null;
@@ -237,3 +242,5 @@ function reduceFloatingHeight(pos, factor) {
     return pos;
 };
 
+
+startDemo();
