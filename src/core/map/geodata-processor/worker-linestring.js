@@ -532,7 +532,8 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
             type_: messageData_["type"],
             color_ : lineColor_,
             zIndex_ : zIndex_,
-            zOffset_ : zbufferOffset_
+            zOffset_ : zbufferOffset_,
+            state_ : hitState_
         });
         
         if (normalBuffer_) {
