@@ -600,6 +600,8 @@ Melown.Renderer.prototype.drawGpuJobs = function() {
 
     Melown.StencilLineState_ = this.gpu_.createState({blend_:true, stencil_:true, culling_: false});
     Melown.LineLabelState_ = this.gpu_.createState({blend_:true, culling_: false});
+    Melown.StencilLineHitState_ = this.gpu_.createState({blend_:false, stencil_:true, culling_: false});
+    Melown.LineLabelHitState_ = this.gpu_.createState({blend_:false, culling_: false});
 
     var screenPixelSize_ = [1.0/this.curSize_[0], 1.0/this.curSize_[1]];
 
@@ -629,9 +631,18 @@ Melown.Renderer.prototype.drawGpuJobs = function() {
             }
         }
 
-        for (var j = 0; j < lj; j++) {
-            Melown.drawGpuJob(gpu_, gl_, this, buffer_[j], screenPixelSize_);
-            //buffer_[j] = null;
+
+        if (this.onlyHitLayers_) {
+            for (var j = 0; j < lj; j++) {
+                if (buffer_[j].hitable_) {
+                    Melown.drawGpuJob(gpu_, gl_, this, buffer_[j], screenPixelSize_);
+                }
+            }
+        } else {
+            for (var j = 0; j < lj; j++) {
+                Melown.drawGpuJob(gpu_, gl_, this, buffer_[j], screenPixelSize_);
+                //buffer_[j] = null;
+            }
         }
 
         //this.jobZBufferSize_[i] = 0;

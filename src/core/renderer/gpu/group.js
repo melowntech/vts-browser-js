@@ -380,18 +380,18 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
     }
 
     if (job_.state_ != 0) {
-        var id_ = job_.eventInfo_["id"];
+        var id_ = job_.eventInfo_["#id"];
 
         if (id_ != null && renderer_.hoverFeature_ != null) {
             if (job_.state_ == 1){  // 1 = no hover state
 
-                if (renderer_.hoverFeature_[0]["id"] == id_) { //are we hovering over feature?
+                if (renderer_.hoverFeature_[0]["#id"] == id_) { //are we hovering over feature?
                     return;
                 }
 
             } else { // 2 = hover state
 
-                if (renderer_.hoverFeature_[0]["id"] != id_) { //are we hovering over feature?
+                if (renderer_.hoverFeature_[0]["#id"] != id_) { //are we hovering over feature?
                     return;
                 }
 
@@ -409,13 +409,19 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
 
     if (hitmapRender_) {
         var c = renderer_.hoverFeatureCounter_;
-        color_ = [(c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255, 1];
+        //color_ = [(c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255, 1];
+        color_ = [(c&255)/255, ((c>>8)&255)/255, 0, 0];
         renderer_.hoverFeatureList_[c] = [job_.eventInfo_, job_.center_, job_.clickEvent_, job_.hoverEvent_, job_.enterEvent_, job_.leaveEvent_];
         renderer_.hoverFeatureCounter_++;
     }
 
     switch(job_.type_) {
         case "flat-line":
+            if (hitmapRender_) {
+                gpu_.setState(Melown.StencilLineHitState_);
+            } else {
+                gpu_.setState(Melown.StencilLineState_);
+            }
 
             gpu_.setState(Melown.StencilLineState_);
             var prog_ = renderer_.progLine_;
@@ -438,8 +444,12 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
         case "flat-tline":
         case "pixel-line":
         case "pixel-tline":
-
-            gpu_.setState(Melown.StencilLineState_);
+            if (hitmapRender_) {
+                gpu_.setState(Melown.StencilLineHitState_);
+            } else {
+                gpu_.setState(Melown.StencilLineState_);
+            }
+            
             var prog_ = job_.program_;
             var texture_ = null;
             var textureParams_ = [0,0,0,0];
@@ -505,13 +515,17 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
             break;
 
         case "line-label":
+            if (hitmapRender_) {
+                gpu_.setState(Melown.LineLabelHitState_);
+            } else {
+                gpu_.setState(Melown.LineLabelState_);
+            }
 
             var texture_ = hitmapRender_ ? renderer_.whiteTexture_ : renderer_.font_.texture_;
             
             //var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
             //var forward_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0];
 
-            gpu_.setState(Melown.LineLabelState_);
             var prog_ = renderer_.progText_;
 
             gpu_.bindTexture(texture_);
@@ -541,6 +555,11 @@ Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
 
         case "icon":
         case "label":
+            if (hitmapRender_) {
+                gpu_.setState(Melown.LineLabelHitState_);
+            } else {
+                gpu_.setState(Melown.LineLabelState_);
+            }
 
             var texture_ = hitmapRender_ ? renderer_.whiteTexture_ : job_.texture_;
 
