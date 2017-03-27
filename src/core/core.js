@@ -241,11 +241,15 @@ Melown.Core.prototype.on = function(name_, listener_) {
 
 
 // private
-Melown.Core.prototype.callListener = function(name_, event_) {
+Melown.Core.prototype.callListener = function(name_, event_, log_) {
     for (var i = 0; i < this.listeners_.length; i++) {
         if (this.listeners_[i].name_ == name_) {
             this.listeners_[i].listener_(event_);
         }
+    }
+    
+    if (log_) {
+        console.log("event " + name_ + ": " + JSON.stringify(event_));
     }
 };
 
@@ -268,7 +272,7 @@ string getCoreVersion()
 */
 
 Melown.getCoreVersion = function(full_) {
-    return (full_ ? "Core: " : "") + "1.94";
+    return (full_ ? "Core: " : "") + "1.95";
 };
 
 

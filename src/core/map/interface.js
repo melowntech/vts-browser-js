@@ -376,11 +376,11 @@ Melown.MapInterface.prototype.getStats = function() {
 };
 
 Melown.MapInterface.prototype.click = function(screenX_, screenY_, state_) {
-    map_.click(screenX_, screenY_, state_);
+    this.map_.click(screenX_, screenY_, state_);
 };
 
 Melown.MapInterface.prototype.hover = function(screenX_, screenY_, persistent_, state_) {
-    map_.hover(screenX_, screenY_, persistent_, state_);
+    this.map_.hover(screenX_, screenY_, persistent_, state_);
 };
 
 Melown.MapPositionInterface = Melown.MapPosition;
