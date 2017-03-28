@@ -1,7 +1,8 @@
+require('browser/interface');
 
 var browser = null;
 
-function startDemo() {
+(function startDemo() {
     browser = Melown.MapBrowser("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
         position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 1764, 90 ]
@@ -9,7 +10,7 @@ function startDemo() {
 
     browser.on("map-loaded", onMapLoaded);
     loadImage();
-}
+})();
 
 var demoTexture = null;
 

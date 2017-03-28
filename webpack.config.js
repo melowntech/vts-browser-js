@@ -4,6 +4,7 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var CommonChunks = require('copy-webpack-plugin');
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 var env = process.env.WEBPACK_ENV;
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 
 var libraryName = 'bundle';
@@ -24,17 +25,22 @@ var config = {
     'browser-lines-and-images': __dirname + '/demos/browser-lines-and-images/demo.js',
     'browser-meshes': __dirname + '/demos/browser-meshes/demo.js',
     'browser-meshes-hit-test': __dirname + '/demos/browser-meshes-hit-test/demo.js',
+    'browser-view-switch': __dirname + '/demos/browser-view-switch/demo.js',
   },
   devtool: 'source-map',
   output: {
     path: __dirname + '/build/demos/',
     filename: '[name]/' + outFile,
-    library: libraryName
+    library: libraryName,
+    chunkFilename: "[id].js"
   },
   module: {
     loaders: [
     {
         include: [path.resolve(__dirname, "src/")]
+    },
+    {
+      test: /\.css$/, loader: ExtractTextPlugin.extract({fallback: "style-loader", use: "css-loader"})
     }
     ]
   },
@@ -71,7 +77,8 @@ var config = {
         { from: 'demos/browser-hit-surface/index.html', to: __dirname + '/build/demos/browser-hit-surface/', toType: 'dir'},
         { from: 'demos/browser-lines-and-images/index.html', to: __dirname + '/build/demos/browser-lines-and-images/', toType: 'dir'},
         { from: 'demos/browser-meshes/index.html', to: __dirname + '/build/demos/browser-meshes/', toType: 'dir'},
-        { from: 'demos/browser-meshes-hit-test/index.html', to: __dirname + '/build/demos/browser-meshes-hit-test/', toType: 'dir'}
+        { from: 'demos/browser-meshes-hit-test/index.html', to: __dirname + '/build/demos/browser-meshes-hit-test/', toType: 'dir'},
+        { from: 'demos/browser-view-switch/index.html', to: __dirname + '/build/demos/browser-view-switch/', toType: 'dir'}
 
     ]),
     new webpack.optimize.CommonsChunkPlugin({
@@ -97,9 +104,13 @@ var config = {
           'browser-hit-surface',
           'browser-lines-and-images',
           'browser-meshes',
-          'browser-meshes-hit-test'
+          'browser-meshes-hit-test',
+          'browser-view-switch'
         ],
         filename: 'melown-browser.js' // Name of the output file
+    }),
+    new ExtractTextPlugin({
+      filename: "melown-browser.css"
     })
   ]
 };

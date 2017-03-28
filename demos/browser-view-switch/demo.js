@@ -1,9 +1,10 @@
+require('browser/interface');
 
 var browser = null;
 var ui = null;
 var button = null;
 
-function startDemo() {
+(function startDemo() {
     browser = Melown.MapBrowser("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json"
     });
@@ -16,7 +17,7 @@ function startDemo() {
     
     button = panel.getElement("switch");
     button.on("change", onSwitchView);
-}
+})();
 
 function onSwitchView() {
     if (button.getElement().checked) {
