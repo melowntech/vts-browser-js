@@ -1,3 +1,6 @@
+require('core/_minify');
+require('browser/browser');
+require('browser/config');
 
 Melown.MapBrowser = function(element_, config_) {
     var interface_ = new Melown.BrowserInterface(element_, config_);

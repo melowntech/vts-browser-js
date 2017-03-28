@@ -1,3 +1,4 @@
+require('browser/utility/utility');
 
 Melown.UIElement.prototype.on = function(type_, function_, externalElement_) {
     this.addEvent(type_, function_, externalElement_);

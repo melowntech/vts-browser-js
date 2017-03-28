@@ -1,4 +1,7 @@
 require('./_minify.js');
+require('core/core');
+require('core/config');
+require('core/update');
 
 Melown.MapCore = function(element_, config_) {
     element_ = (typeof element_ !== "string") ? element_ : document.getElementById(element_);

@@ -26,7 +26,7 @@ function startDemo() {
     core.on("map-loaded", onMapLoaded);
 
     //load texture used for cubes    
-    var woodImage = Melown.Http.imageFactory("./wood.png",
+    var woodImage = Melown.Http.imageFactory("/images/wood.png",
         (function(){
             woodTexture = core.getRenderer().createTexture({ "source": woodImage });
         }).bind(this)
