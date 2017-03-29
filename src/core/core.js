@@ -1,4 +1,3 @@
-require('./_minify.js');
 require('./inspector/inspector');
 require('./inspector/stats');
 require('./inspector/graphs');

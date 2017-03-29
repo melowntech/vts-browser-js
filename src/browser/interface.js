@@ -3,7 +3,6 @@ require('browser/presenter/css/panel.css');
 require('browser/presenter/css/subtitles.css');
 require('browser/browser.css');
 
-require('core/_minify');
 require('browser/browser');
 require('browser/config');
 

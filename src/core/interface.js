@@ -1,4 +1,3 @@
-require('./_minify.js');
 require('core/core');
 require('core/config');
 require('core/update');
