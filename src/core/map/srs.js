@@ -127,7 +127,7 @@ Melown.MapSrs.prototype.getGeoidGridDelta = function(coords_, original_) {
         var px_ = mapCoords_[0] - this.geoidGrid_.extents_.ll_[0];
         var py_ = this.geoidGrid_.extents_.ur_[1] - mapCoords_[1];
 
-        var imageExtens_ = this.geoidGridMap_.imageExtents_;
+        var imageExtens_ = this.geoidGridMap_.getImageExtents();
 
         px_ *= imageExtens_[0] / (this.geoidGrid_.extents_.ur_[0] - this.geoidGrid_.extents_.ll_[0]);
         py_ *= imageExtens_[1] / (this.geoidGrid_.extents_.ur_[1] - this.geoidGrid_.extents_.ll_[1]);
@@ -141,7 +141,7 @@ Melown.MapSrs.prototype.getGeoidGridDelta = function(coords_, original_) {
         var fx_ = px_ - ix_;
         var fy_ = py_ - iy_;
 
-        var data_ = this.geoidGridMap_.imageData_;
+        var data_ = this.geoidGridMap_.getImageData();
         var index_ = iy_ * imageExtens_[0];
         var index2_ = index_ + imageExtens_[0];
         var h00_ = data_[(index_ + ix_)*4];
