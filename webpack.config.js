@@ -36,6 +36,8 @@ var config = {
   output: {
     path: __dirname + '/build/',
     filename: '[name].js',
+    libraryTarget: "var",
+    library: "Melown"
   },
   module: {
     loaders: [

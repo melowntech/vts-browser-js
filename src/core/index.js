@@ -1,4 +1,3 @@
 Melown = {};
 require('core/interface');
-
-window.Melown = Melown;
+module.exports = Melown;
