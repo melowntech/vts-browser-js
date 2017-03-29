@@ -1,3 +1,4 @@
+import Proj4 from 'proj4';
 require('./inspector/inspector');
 require('./inspector/stats');
 require('./inspector/graphs');
@@ -45,7 +46,7 @@ Melown.Core = function(element_, config_, interface_) {
     this.mapInterface_ = null;
     this.renderer_ = new Melown.Renderer(this, this.element_, null, this.onResize.bind(this), this.config_);
     this.rendererInterface_ = new Melown.RendererInterface(this.renderer_);
-    this.proj4_ = window["_mproj4_"];
+    this.proj4_ = Proj4;
 
     //platform detection
     Melown.Platform.init();
@@ -336,8 +337,3 @@ Melown.checkSupport = function() {
 
     return true;
 };
-
-
-module.exports.Core = Melown.Core;
-module.exports.checkSupport = Melown.checkSupport;
-module.exports.getCoreVersion = Melown.getCoreVersion;
