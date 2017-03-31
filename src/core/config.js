@@ -42,6 +42,7 @@ Melown.Core.prototype.initConfig = function() {
         mapFog_ : true,
         rendererAntialiasing_ : true,
         rendererAllowScreenshots_ : false,
+        inspector_ : true, 
         authorization_ : null, 
         mario_ : false
     };
@@ -73,6 +74,8 @@ Melown.Core.prototype.setConfigParam = function(key_, value_) {
         this.config_.map_ = Melown.validateString(value_, null);
     } else if (key_ == "mapVirtualSurfaces") {
         this.config_.mapVirtualSurfaces_ = Melown.validateBool(value_, true);
+    } else if (key_ == "inspector") {
+        this.config_.inspector_ = Melown.validateBool(value_, true);
     } else if (key_ == "authorization") {
         this.config_.authorization_ = ((typeof value_ === "string") || (typeof value_ === "function")) ? value_ : null;   
     } else {
@@ -92,6 +95,8 @@ Melown.Core.prototype.setConfigParam = function(key_, value_) {
 Melown.Core.prototype.getConfigParam = function(key_) {
     if (key_ == "map") {
         return this.config_.map_;
+    } else if (key_ == "inspector") {
+        return this.config_.inspector_;
     } else {
         if (key_.indexOf("map") == 0 && this.getMap() != null) {
             return this.getMap().getConfigParam(key_, value_);

@@ -25,6 +25,7 @@ Melown.Renderer.prototype.initShaders = function() {
     //this.progDepthSkydome_ = new Melown.GpuProgram(this.gpu_, Melown.skydomeVertexShader, Melown.skydomeFragmentShader);
 
     this.progBBox_ = new Melown.GpuProgram(this.gpu_, Melown.bboxVertexShader, Melown.bboxFragmentShader);
+    this.progBBox2_ = new Melown.GpuProgram(this.gpu_, Melown.bbox2VertexShader, Melown.bboxFragmentShader);
     this.progLine_ = new Melown.GpuProgram(this.gpu_, Melown.lineVertexShader, Melown.lineFragmentShader);
     this.progLine3_ = new Melown.GpuProgram(this.gpu_, Melown.line3VertexShader, Melown.line3FragmentShader);
     this.progLine4_ = new Melown.GpuProgram(this.gpu_, Melown.line4VertexShader, Melown.line4FragmentShader);
@@ -261,6 +262,7 @@ Melown.Renderer.prototype.initSkydome = function() {
 
 Melown.Renderer.prototype.initBBox = function() {
     this.bboxMesh_ = new Melown.GpuBBox(this.gpu_);
+    this.bboxMesh2_ = new Melown.GpuBBox(this.gpu_, true);
 
     this.font_ = new Melown.GpuFont(this.gpu_, this.core_);
 

@@ -94,6 +94,8 @@ Melown.Inspector.prototype.onKeyUp = function(event_, press_) {
                 switch(keyCode_) {
                     case 68:
                     case 100:
+
+                        this.enableInspector();
                     
                     //load image    
                         

@@ -2,7 +2,7 @@
 /**
  * @constructor
  */
-Melown.GpuBBox = function(gpu_) {
+Melown.GpuBBox = function(gpu_, free_) {
     this.gl_ = gpu_.gl_;
 
     var gl_ = this.gl_;
@@ -10,26 +10,44 @@ Melown.GpuBBox = function(gpu_) {
     if (gl_ == null)
         return;
 
+    this.free_ = free_;
     this.vertexPositionBuffer_ = null;
 
     //create vertex buffer
     this.vertexPositionBuffer_ = gl_.createBuffer();
     gl_.bindBuffer(gl_.ARRAY_BUFFER, this.vertexPositionBuffer_);
 
-    var vertices_ = [0,0,0, 1,0,0,
-                     1,0,0, 1,1,0,
-                     1,1,0, 0,1,0,
-                     0,1,0, 0,0,0,
+    if (free_) {
+        var vertices_ = [0,0,0, 0,0,1,
+                         0,0,1, 0,0,2,
+                         0,0,2, 0,0,3,
+                         0,0,3, 0,0,0,
 
-                     0,0,1, 1,0,1,
-                     1,0,1, 1,1,1,
-                     1,1,1, 0,1,1,
-                     0,1,1, 0,0,1,
+                         0,0,4, 0,0,5,
+                         0,0,5, 0,0,6,
+                         0,0,6, 0,0,7,
+                         0,0,7, 0,0,4,
 
-                     0,0,0, 0,0,1,
-                     1,0,0, 1,0,1,
-                     1,1,0, 1,1,1,
-                     0,1,0, 0,1,1 ];
+                         0,0,0, 0,0,4,
+                         0,0,1, 0,0,5,
+                         0,0,2, 0,0,6,
+                         0,0,3, 0,0,7 ];
+    } else {
+        var vertices_ = [0,0,0, 1,0,0,
+                         1,0,0, 1,1,0,
+                         1,1,0, 0,1,0,
+                         0,1,0, 0,0,0,
+
+                         0,0,1, 1,0,1,
+                         1,0,1, 1,1,1,
+                         1,1,1, 0,1,1,
+                         0,1,1, 0,0,1,
+
+                         0,0,0, 0,0,1,
+                         1,0,0, 1,0,1,
+                         1,1,0, 1,1,1,
+                         0,1,0, 0,1,1 ];
+    }
 
     gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
     this.vertexPositionBuffer_.itemSize = 3;

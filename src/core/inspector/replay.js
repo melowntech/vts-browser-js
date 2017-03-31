@@ -6,7 +6,7 @@ Melown.Inspector.prototype.initReplayPanel = function() {
             + "font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;"
             + "display: none;"
             + "padding:15px;"
-            + "width: 600px;"
+            + "width: 615px;"
             + "font-size: 14px;"
             + "position: absolute;"
             + "right: 10px;"

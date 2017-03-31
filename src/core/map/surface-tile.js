@@ -606,14 +606,15 @@ Melown.MapSurfaceTile.prototype.bboxVisible = function(id_, bbox_, cameraPos_, n
                 var p2_ = node_.diskPos_;
                 var p1_ = map_.cameraPosition_;
                 var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                Melown.vec3.normalize(camVec_);
+                var distance_ = Melown.vec3.normalize4(camVec_) * map_.cameraDistanceFactor_;
+                //Melown.vec3.normalize(camVec_);
                 
                 var a = Melown.vec3.dot(camVec_, node_.diskNormal_);
             } else {
                 var a = Melown.vec3.dot(map_.cameraVector_, node_.diskNormal_);
             }
             
-            if (a > node_.diskAngle_) {
+            if (distance_ > 150000 && a > node_.diskAngle_) {
                 return false;
             }
         }
@@ -755,7 +756,8 @@ Melown.MapSurfaceTile.prototype.getPixelSize = function(bbox_, screenPixelSize_,
 Melown.MapSurfaceTile.prototype.getPixelSize3 = function(node_, screenPixelSize_, factor_) {
     var d = (this.map_.cameraGeocentDistance_*factor_) - node_.diskDistance_;
     if (d < 0) {
-        return [Number.POSITIVE_INFINITY, 0.1];
+        d = -d;
+        //return [Number.POSITIVE_INFINITY, 0.1];
     } 
 
     var a = Melown.vec3.dot(this.map_.cameraGeocentNormal_, node_.diskNormal_);
@@ -979,8 +981,38 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
             return;
         }
         
-        var h = this.metanode_.minHeight_;      
+        var h = this.metanode_.minZ_, n;      
         var coordsRes_ = [[h],[h],[h],[h],[h],[h],[h],[h]];
+
+        /*if (this.map_.drawFog_) {
+            var metatile_ = this.metanode_.metatile_;
+
+            n = metatile_.getNode([0, this.id_[1] + 1, this.id_[2] + 1]);
+            coordsRes_[0] = n ? [(n.minZ_ + h)*0.5] : [h];
+
+            n = metatile_.getNode([0, this.id_[1] + 1, this.id_[2] - 1]);
+            coordsRes_[1] = n ? [(n.minZ_ + h)*0.5] : [h];
+
+            n = metatile_.getNode([0, this.id_[1] - 1, this.id_[2] + 1]);
+            coordsRes_[2] = n ? [(n.minZ_ + h)*0.5] : [h];
+
+            n = metatile_.getNode([0, this.id_[1] - 1, this.id_[2] + 1]);
+            coordsRes_[3] = n ? [(n.minZ_ + h)*0.5] : [h];
+
+            n = metatile_.getNode([0, this.id_[1], this.id_[2] + 1]);
+            coordsRes_[4] = n ? [(n.minZ_ + h)*0.5] : [h];
+
+            n = metatile_.getNode([0, this.id_[1], this.id_[2] - 1]);
+            coordsRes_[5] = n ? [(n.minZ_ + h)*0.5] : [h];
+
+            n = metatile_.getNode([0, this.id_[1] - 1, this.id_[2]]);
+            coordsRes_[6] = n ? [(n.minZ_ + h)*0.5] : [h];
+
+            n = metatile_.getNode([0, this.id_[1] + 1, this.id_[2]]);
+            coordsRes_[7] = n ? [(n.minZ_ + h)*0.5] : [h];
+
+        }*/
+
         middle_[2] = h;
         middle_ = node_.getPhysicalCoords(middle_, true);
         

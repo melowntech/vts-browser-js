@@ -23,11 +23,11 @@ Melown.Inspector.prototype.initStylesheetsPanel = function() {
 
         + "#melown-stylesheets-panel-header {"
             + "width: 100%;"
-            + "height: 30px;"
+            + "height: 28px;"
         + "}"
 
         + "#melown-stylesheets-panel-combo {"
-            + "width: 1130px;"
+            + "width: 1115px;"
             + "height: 21px;"
         + "}"
 
@@ -37,7 +37,7 @@ Melown.Inspector.prototype.initStylesheetsPanel = function() {
 
         + "#melown-stylesheets-panel-text {"
             + "width: 100%;"
-            + "height: 320px;"
+            + "height: 300px;"
             + "resize: none;"
             + "white-space: nowrap;"
         + "}"
@@ -52,6 +52,7 @@ Melown.Inspector.prototype.initStylesheetsPanel = function() {
           + '</div>'
           + '<textarea id="melown-stylesheets-panel-text" cols="50"></textarea>';
 
+    //this.inspectorElement_.appendChild(this.stylesheetsElement_);
     this.core_.element_.appendChild(this.stylesheetsElement_);
 
     this.stylesheetsOptionsElement_ = document.getElementById("melown-stylesheets-panel-combo");
@@ -193,6 +194,4 @@ Melown.Inspector.prototype.buildStylesheetsCombo = function() {
     var stylesheet_ = map_.getStylesheet(styles_[0]);
     this.stylesheetsTextElement_.value = this.niceStyleFormat(stylesheet_);
 };
-
-
 

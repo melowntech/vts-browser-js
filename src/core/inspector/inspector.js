@@ -4,22 +4,17 @@
  */
 Melown.Inspector = function(core_) {
     this.core_ = core_;
-
-    this.initStatsPanel();
-    this.initGraphsPanel();
-    this.initLayersPanel();
-    this.initReplayPanel();
-    this.initStylesheetsPanel();
+    this.enabled_ = false;
 
     //mouse events
     //document.addEventListener("click", this.onKeyClick.bind(this), false);
 
-    //keyboard events
-    document.addEventListener("keyup", this.onKeyUp.bind(this), false);
-    document.addEventListener("keypress", this.onKeyPress.bind(this), false);
-    document.addEventListener("keydown", this.onKeyDown.bind(this), false);
-    
-    this.core_.on("map-update", this.onMapUpdate.bind(this));
+    if (this.core_.config_.inspector_) {
+        //keyboard events
+        document.addEventListener("keyup", this.onKeyUp.bind(this), false);
+        document.addEventListener("keypress", this.onKeyPress.bind(this), false);
+        document.addEventListener("keydown", this.onKeyDown.bind(this), false);
+    }
    
     this.shakeCamera_ = false; 
     this.drawReplayCamera_ = false; 
@@ -28,6 +23,19 @@ Melown.Inspector = function(core_) {
     this.debugValue_ = 0;
     this.measureMode_ = false;
     this.measurePoints_ = [];
+};
+
+Melown.Inspector.prototype.enableInspector = function() {
+    if (!this.enabled_) {
+        this.initStatsPanel();
+        this.initGraphsPanel();
+        this.initLayersPanel();
+        this.initReplayPanel();
+        this.initStylesheetsPanel();
+
+        this.core_.on("map-update", this.onMapUpdate.bind(this));
+        this.enabled_ = true;
+    }
 };
 
 Melown.Inspector.prototype.addStyle = function(string_) {

@@ -51,6 +51,7 @@ cat src/core/utils/matrix.js \
     src/core/map/resource-node.js \
     src/core/map/cache.js \
     src/core/map/position.js \
+    src/core/map/convert.js \
     src/core/map/camera.js \
     src/core/map/config.js \
     src/core/map/credit.js \

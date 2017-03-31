@@ -195,7 +195,7 @@ Melown.MapSurface.prototype.processUrl = function(url_, fallback_) {
         return fallback_;
     }
 
-    if (typeof json_ !== "string") {
+    if (typeof url_ !== "string") {
         return url_;
     }
 

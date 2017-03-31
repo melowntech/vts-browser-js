@@ -44,7 +44,7 @@ Melown.Inspector.prototype.initStatsPanel = function() {
     this.statsElement_ = document.createElement("div");
     this.statsElement_.id = "melown-stats-panel";
     this.statsElement_.innerHTML =
-        '<span id="melown-stats-panel-title">Render statistics</h3>'+
+        '<span id="melown-stats-panel-title">Render statistics &nbsp;&nbsp;&nbsp;v' + Melown.getCoreVersion() + '</h3>'+
         '<p id="melown-stats-panel-info"></p>'+
         '<input id="melown-stats-panel-pos" type="text">';
 
@@ -79,6 +79,10 @@ Melown.Inspector.prototype.switchStatsPanel = function() {
 };
 
 Melown.Inspector.prototype.updateStatsPanel = function(stats_) {
+    if (!this.statsInfoElement_) {
+        return;
+    }
+
     var text2_ =
             "FPS: " + Math.round(stats_.fps_) + "<br/>" +
             "Render time: " + Math.round(stats_.renderTime_*1000) + "<br/>" +

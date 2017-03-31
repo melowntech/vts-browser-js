@@ -1270,9 +1270,9 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
         var d = Math.sqrt(dx_*dx_ + dy_*dy_ + dz_*dz_);
     
         var pos_ =  this.core_.getRendererInterface().getCanvasCoords(
-                        [(node_.bbox2_[12] + node_.bbox2_[15] + node_.bbox2_[18] + node_.bbox2_[21])*0.25 + node_.diskNormal_[0] * d*0.2 - cameraPos_[0],
-                         (node_.bbox2_[13] + node_.bbox2_[16] + node_.bbox2_[19] + node_.bbox2_[22])*0.25 + node_.diskNormal_[1] * d*0.2 - cameraPos_[1],
-                         (node_.bbox2_[14] + node_.bbox2_[17] + node_.bbox2_[20] + node_.bbox2_[23])*0.25 + node_.diskNormal_[2] * d*0.2 - cameraPos_[2]],
+                        [(node_.bbox2_[12] + node_.bbox2_[15] + node_.bbox2_[18] + node_.bbox2_[21])*0.25 + node_.diskNormal_[0] * d*0.1 - cameraPos_[0],
+                         (node_.bbox2_[13] + node_.bbox2_[16] + node_.bbox2_[19] + node_.bbox2_[22])*0.25 + node_.diskNormal_[1] * d*0.1 - cameraPos_[1],
+                         (node_.bbox2_[14] + node_.bbox2_[17] + node_.bbox2_[20] + node_.bbox2_[23])*0.25 + node_.diskNormal_[2] * d*0.1 - cameraPos_[2]],
                          this.camera_.getMvpMatrix());
         
         /*

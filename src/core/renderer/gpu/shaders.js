@@ -6,6 +6,15 @@ Melown.bboxVertexShader =
         "gl_Position = uMVP * vec4(aPosition, 1.0);\n"+
     "}";
 
+Melown.bbox2VertexShader =
+    "attribute vec3 aPosition;\n"+
+    "uniform mat4 uMVP;\n"+
+    "uniform float uPoints[8*3];\n"+
+    "void main(){ \n"+
+        "int index = int(aPosition.z) * 3; \n"+
+        "gl_Position = uMVP * vec4(uPoints[index], uPoints[index+1], uPoints[index+2], 1.0);\n"+
+    "}";
+
 Melown.bboxFragmentShader = "precision mediump float;\n"+
     "void main() {\n"+
         "gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n"+

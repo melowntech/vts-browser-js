@@ -570,11 +570,55 @@ Melown.MapMetanode.prototype.drawBBox2 = function(cameraPos_) {
         //pos_ = ["obj", pos_[0], pos_[1], "fix", pos_[2], 0, 0, 0, 10, 90 ];
         
     var bbox_ = this.bbox2_;
+    var buffer_ = this.map_.bboxBuffer_;
+    var camPos_ = this.map_.cameraPosition_;
+    var renderer_ = this.map_.renderer_;
+    var prog_ = renderer_.progBBox2_;
+
+    for (var i = 0, li = 8*3; i < li; i+=3) {
+        //var pos_ = ["obj", bbox_[i], bbox_[i+1], "fix", bbox_[i+2], 0, 0, 0, 10, 90 ];
+        //var coords_ = this.map_.getPositionCameraCoords((new Melown.MapPosition(pos_)), null, true);
+
+        buffer_[i] = bbox_[i] - camPos_[0];
+        buffer_[i+1] = bbox_[i+1] - camPos_[1];
+        buffer_[i+2] = bbox_[i+2] - camPos_[2];
+    }
+    
+
+    renderer_.gpu_.useProgram(prog_, ["aPosition"]);
+
+    prog_.setFloatArray("uPoints", buffer_);
+
+    //var mvp_ = Melown.mat4.create();
+    //var mv_ = Melown.mat4.create();
+
+    //Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), this.getWorldMatrix(cameraPos_), mv_);
+
+    //var proj_ = renderer_.camera_.getProjectionMatrix();
+    //Melown.mat4.multiply(proj_, mv_, mvp_);
+
+    var mvp_ = renderer_.camera_.getMvpMatrix();
+
+    prog_.setMat4("uMVP", mvp_);
+
+    //draw bbox
+    renderer_.bboxMesh2_.draw(prog_, "aPosition");
+
+};
+
+Melown.MapMetanode.prototype.drawBBox3 = function(cameraPos_) {
+    var spoints_ = []; 
+    //for (var i = 0, li = this.bbox2_.length; i < li; i++) {
+        //var pos_ = this.bbox2_[i];
+        //pos_ = ["obj", pos_[0], pos_[1], "fix", pos_[2], 0, 0, 0, 10, 90 ];
+        
+    var bbox_ = this.bbox2_;
 
     for (var i = 0, li = 8*3; i < li; i+=3) {
         var pos_ = ["obj", bbox_[i], bbox_[i+1], "fix", bbox_[i+2], 0, 0, 0, 10, 90 ];
 
         spoints_.push((new Melown.MapPosition(this.map_, pos_)).getCanvasCoords(null, true));
+        //spoints_.push(this.map_.getPositionCanvasCoords((new Melown.MapPosition(pos_)), null, true));
     }
     
     var renderer_ = this.map_.renderer_;
