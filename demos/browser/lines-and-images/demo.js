@@ -1,5 +1,3 @@
-require('browser/interface');
-
 var browser = null;
 
 (function startDemo() {

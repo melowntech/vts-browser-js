@@ -1,9 +1,3 @@
-require('core/interface');
-require('core/core');
-require('core/update');
-require('core/config');
-require('core/utils/utils');
-
 var core = null;
 var pointTexture = null;
 var clickCoords = null;

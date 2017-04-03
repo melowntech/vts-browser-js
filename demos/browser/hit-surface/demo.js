@@ -1,5 +1,3 @@
-require('browser/interface');
-
 var browser = null;
 var pointTexture = null;
 var clickCoords = null;

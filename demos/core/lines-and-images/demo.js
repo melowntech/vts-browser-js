@@ -1,9 +1,3 @@
-require('core/interface');
-require('core/core');
-require('core/update');
-require('core/config');
-require('core/utils/utils');
-
 var core = null;
 var demoTexture = null;
 var isMapProjected = false;
@@ -103,7 +97,7 @@ function onCustomRender() {
 } 
 
 
-export function switchMap() {
+function switchMap() {
     var map = core.getMap();
     
     if (map) {

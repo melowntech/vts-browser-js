@@ -1,5 +1,3 @@
-require('browser/interface');
-
 var browser = null;
 var ui = null;
 var list = null;
