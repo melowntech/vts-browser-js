@@ -1,7 +1,4 @@
-
 //! An index-less mesh. Each triangle has three items in the array 'vertices'.
-
-if (Melown_MERGE != true){ if (!Melown) { var Melown = {}; } } //IE need it in very file
 
 /** @const */ MelownSubmeshFlags_InternalTexcoords =  1;
 /** @const */ MelownSubmeshFlags_ExternalTexcoords =  2;

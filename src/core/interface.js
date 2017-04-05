@@ -1,3 +1,6 @@
+require('core/core');
+require('core/config');
+require('core/update');
 
 Melown.MapCore = function(element_, config_) {
     element_ = (typeof element_ !== "string") ? element_ : document.getElementById(element_);
@@ -56,22 +59,3 @@ Melown.CoreInterface.prototype.callListener = function(name_, event_) {
     if (!this.core_) { return null; }
     this.core_.callListener(name_, event_);
 };
-
-//prevent minification
-Melown["MapCore"] = Melown.MapCore;
-Melown["mapCore"] = Melown.MapCore;
-Melown.CoreInterface.prototype["destroy"] = Melown.CoreInterface.prototype.destroy;
-Melown.CoreInterface.prototype["loadMap"] = Melown.CoreInterface.prototype.loadMap;
-Melown.CoreInterface.prototype["destroyMap"] = Melown.CoreInterface.prototype.destroyMap;
-Melown.CoreInterface.prototype["getMap"] = Melown.CoreInterface.prototype.getMap;
-Melown.CoreInterface.prototype["getRenderer"] = Melown.CoreInterface.prototype.getRenderer;
-Melown.CoreInterface.prototype["on"] = Melown.CoreInterface.prototype.on;
-Melown.CoreInterface.prototype["callListener"] = Melown.CoreInterface.prototype.callListener;
-Melown["getCoreVersion"] = Melown.getCoreVersion;
-Melown["checkSupport"] = Melown.checkSupport;
-
-
-
-
-
-

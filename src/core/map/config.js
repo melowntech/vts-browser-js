@@ -1,3 +1,8 @@
+require('./srs');
+require('./refframe');
+require('./credit');
+require('./surface');
+require('./bound-layer');
 
 Melown.Map.prototype.parseConfig = function() {
     //if (this.mapConfig_["version"] < 4) {

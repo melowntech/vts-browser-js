@@ -1,3 +1,5 @@
+require('./division-node');
+
 /**
  * @constructor
  */

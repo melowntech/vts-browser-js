@@ -1,3 +1,13 @@
+require('browser/ui/ui');
+require('core/interface');
+require('browser/autopilot/autopilot');
+require('browser/rois/rois');
+require('browser/control-mode/control-mode');
+require('browser/control-mode/map-observer');
+require('browser/control-mode/disabled');
+require('browser/control-mode/pano');
+require('browser/presenter/presenter');
+
 /** 
  * @constructor
  */

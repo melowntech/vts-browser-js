@@ -1,3 +1,13 @@
+require('./position');
+require('./view');
+require('./cache');
+require('./loader');
+require('./stats');
+require('./resource-tree');
+require('./surface-tree');
+
+/** **/
+
 /** @const */ var Melown_STILE_METADATA = 0;
 /** @const */ var Melown_STILE_MESH = 1;
 /** @const */ var Melown_STILE_TEXTURE = 2;

@@ -1,4 +1,3 @@
-
 var core = null;
 var pointTexture = null;
 var clickCoords = null;
@@ -237,3 +236,5 @@ function reduceFloatingHeight(pos, factor) {
     return pos;
 };
 
+
+startDemo();

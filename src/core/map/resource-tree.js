@@ -1,3 +1,5 @@
+require('./resource-node');
+
 /**
  * @constructor
  */

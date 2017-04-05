@@ -1,3 +1,4 @@
+require('./bbox');
 
 Melown.RendererGeometry = {};
 

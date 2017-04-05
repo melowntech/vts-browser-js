@@ -1,3 +1,4 @@
+require('core/utils/matrix')
 
 /**
  * @constructor

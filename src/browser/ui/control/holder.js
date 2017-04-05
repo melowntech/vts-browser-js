@@ -1,3 +1,7 @@
+require('browser/ui/element/element');
+require('browser/ui/element/events');
+require('browser/ui/element/draggable');
+
 /**
  * @constructor
  */
