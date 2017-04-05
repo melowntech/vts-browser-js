@@ -1,3 +1,4 @@
+require('browser/utility/utility');
 
 //Melown.Utils.dragging_ = false;
 

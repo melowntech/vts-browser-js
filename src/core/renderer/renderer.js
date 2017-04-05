@@ -1,3 +1,5 @@
+require('./gpu/device');
+require('./camera');
 
 //! maximum allowed projected texel size (affects LOD selection, i.e., display
 //! quality, and also control constraints)

@@ -1,4 +1,4 @@
-
+require('./core');
 
 Melown.Core.prototype.initConfig = function() {
     this.config_ = {

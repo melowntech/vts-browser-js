@@ -1,3 +1,5 @@
+var GeographicLib = require("geographiclib");
+require('core/utils/math');
 
 /**
  * @constructor

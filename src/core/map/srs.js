@@ -1,3 +1,6 @@
+require('./texture');
+var GeographicLib = require("geographiclib");
+
 /**
  * @constructor
  */

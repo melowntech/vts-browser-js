@@ -1,9 +1,8 @@
-
 var browser = null;
 var woodTexture = null;
 var cubeMesh = null;
 
-function startDemo() {
+(function startDemo() {
     browser = Melown.MapBrowser("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
         position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 964, 90 ]
@@ -17,11 +16,11 @@ function startDemo() {
 
     //create cube mesh        
     createCube();    
-}
+})();
 
 function loadTexture() {
     //load texture used for cubes    
-    var woodImage = Melown.Http.imageFactory("./wood.png",
+    var woodImage = Melown.Http.imageFactory("/demos/images/wood.png",
         (function(){
             woodTexture = browser.getRenderer().createTexture({ "source": woodImage });
         }).bind(this)

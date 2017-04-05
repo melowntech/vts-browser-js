@@ -1,3 +1,12 @@
+require('./gpu/program');
+require('./gpu/shaders');
+require('./gpu/mesh');
+require('./gpu/texture');
+require('./gpu/bbox');
+require('./gpu/font');
+require('./gpu/pixel-line3');
+require('./geometry');
+
 Melown.GpuBarycentricBuffer_ = null;
 
 Melown.Renderer.prototype.initShaders = function() {

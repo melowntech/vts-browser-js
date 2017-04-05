@@ -1,9 +1,8 @@
-
 var browser = null;
 var ui = null;
 var list = null;
 
-function startDemo() {
+(function startDemo() {
     browser = Melown.MapBrowser("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
         position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 3764, 90 ]
@@ -19,7 +18,7 @@ function startDemo() {
     
     list = panel.getElement("panel");
     list.on("change", onFlyToNewDestination);
-}
+})();
 
 function onFlyToNewDestination() {
     switch (list.getElement().elements["destination"].value) {

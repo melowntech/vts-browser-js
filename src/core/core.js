@@ -1,3 +1,27 @@
+import Proj4 from 'proj4';
+require('./inspector/inspector');
+require('./inspector/stats');
+require('./inspector/graphs');
+require('./inspector/layers');
+require('./inspector/replay');
+require('./inspector/stylesheets');
+require('./inspector/input');
+require('./renderer/renderer');
+require('./renderer/draw');
+require('./renderer/interface');
+require('./renderer/init');
+require('./utils/url');
+require('./utils/platform');
+require('./map/map');
+require('./map/url');
+require('./map/config');
+require('./map/measure');
+require('./map/surface-sequence');
+require('./map/render-slots');
+require('./map/interface');
+require('./map/camera');
+require('./map/draw');
+require('./utils/utils');
 
 /**
  * @constructor
@@ -22,7 +46,7 @@ Melown.Core = function(element_, config_, interface_) {
     this.mapInterface_ = null;
     this.renderer_ = new Melown.Renderer(this, this.element_, null, this.onResize.bind(this), this.config_);
     this.rendererInterface_ = new Melown.RendererInterface(this.renderer_);
-    this.proj4_ = window["_mproj4_"];
+    this.proj4_ = Proj4;
 
     //platform detection
     Melown.Platform.init();
@@ -313,9 +337,3 @@ Melown.checkSupport = function() {
 
     return true;
 };
-
-
-
-
-
-

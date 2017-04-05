@@ -1,4 +1,3 @@
-
 var core = null;
 var demoTexture = null;
 var isMapProjected = false;
@@ -41,6 +40,8 @@ function startDemo() {
     window.addEventListener("DOMMouseScroll", onMouseWheel, true);
     window.addEventListener("mousewheel", onMouseWheel, true);
     document.onselectstart = function(){ return false; }; //removes text cusor during draging
+
+    document.getElementById('switch').onchange = function() {switchMap();}
 }
 
 
@@ -272,3 +273,5 @@ function reduceFloatingHeight(pos, factor) {
     return pos;
 };
 
+
+startDemo();

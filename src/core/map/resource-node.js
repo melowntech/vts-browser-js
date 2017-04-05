@@ -1,3 +1,6 @@
+require('./metatile');
+require('./mesh');
+
 /**
  * @constructor
  */

@@ -1,4 +1,3 @@
-
 var core = null;
 var woodTexture = null;
 var pointTexture = null;
@@ -39,7 +38,7 @@ function startDemo() {
 
 function loadTextrures() {
     //load texture used for cubes    
-    var woodImage = Melown.Http.imageFactory("./wood.png",
+    var woodImage = Melown.Http.imageFactory("/demos/images/wood.png",
         (function(){
             woodTexture = core.getRenderer().createTexture({ "source": woodImage });
         }).bind(this)
@@ -393,3 +392,4 @@ function reduceFloatingHeight(pos, factor) {
     return pos;
 };
 
+startDemo();

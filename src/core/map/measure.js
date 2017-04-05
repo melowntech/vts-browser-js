@@ -1,3 +1,4 @@
+var GeographicLib = require("geographiclib");
 
 Melown.Map.prototype.getSurfaceHeight = function(coords_, lod_, storeStats_, node_, nodeCoords_, coordsArray_) {
     if (!node_) {

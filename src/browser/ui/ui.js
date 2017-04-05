@@ -1,3 +1,18 @@
+require('browser/utility/dom');
+require('browser/ui/control/map');
+require('browser/ui/control/holder');
+require('browser/ui/control/compass');
+require('browser/ui/control/credits');
+require('browser/ui/control/fullscreen');
+require('browser/ui/control/zoom');
+require('browser/ui/control/space');
+require('browser/ui/control/search');
+require('browser/ui/control/link');
+require('browser/ui/control/layers');
+require('browser/ui/control/fallback');
+require('browser/ui/control/popup');
+require('browser/ui/control/loading');
+
 /**
  * @constructor
  */
