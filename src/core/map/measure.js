@@ -374,9 +374,10 @@ Melown.Map.prototype.getSpatialDivisionNodeFromId = function(id_) {
 };
 
 Melown.Map.prototype.getSpatialDivisionNodeAndExtents2 = function(id_, res_, divisionNode_) {
-    //if (!divisionNode_) {
-      //  debugger
-    //}
+    if (!divisionNode_) {
+        //debugger
+        return [null, 0,0,0,0];
+    }
     
     var shift_ = id_[0] - divisionNode_.id_[0];
     var factor_ = 1.0 / Math.pow(2, shift_);

@@ -1300,8 +1300,19 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
 
     //draw positions
     if (this.drawPositions_) {
-        var text_ = "" + min_[0].toFixed(1) + " " + min_[1].toFixed(1) + " " + min_[2].toFixed(1);
-        this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+3*factor_), 4*factor_, text_, [0,1,1,1], pos_[2]);
+        //var text_ = "" + min_[0].toFixed(1) + " " + min_[1].toFixed(1) + " " + min_[2].toFixed(1);
+        //var text_ = "" + Math.floor(node_.corners_[0]) + " " + Math.floor(node_.corners_[1]) + " " + Math.floor(node_.corners_[2]) + " " + Math.floor(node_.corners_[3]);
+        var b = node_.border2_;
+        if (b) {
+            var text_ = "" + Math.floor(b[0]) + " " + Math.floor(b[1]) + " " + Math.floor(b[2]) + " " + Math.floor(b[3]) + " " + Math.floor(b[4]) + " " + Math.floor(b[5]) + " " + Math.floor(b[6]) + " " + Math.floor(b[7]) + " " + Math.floor(b[8]);
+            this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+3*factor_), 4*factor_, text_, [0,1,1,1], pos_[2]);
+        }
+
+        var b = node_.border_;
+        if (b) {
+            var text_ = "" + Math.floor(b[0]) + " " + Math.floor(b[1]) + " " + Math.floor(b[2]) + " " + Math.floor(b[3]) + " " + Math.floor(b[4]) + " " + Math.floor(b[5]) + " " + Math.floor(b[6]) + " " + Math.floor(b[7]) + " " + Math.floor(b[8]);
+            this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]+10*factor_), 4*factor_, text_, [0,1,1,1], pos_[2]);
+        }
     }
 
     //draw face count
@@ -1380,7 +1391,7 @@ Melown.Map.prototype.drawTileInfo = function(tile_, node_, cameraPos_, mesh_, pi
     if (this.drawNodeInfo_) {
         var children_ = ((node_.flags_ & ((15)<<4))>>4);
         var text_ = "v" + node_.metatile_.version_ + "-" + node_.flags_.toString(2) + "-" + ((children_ & 1) ? "1" : "0") + ((children_ & 2) ? "1" : "0") + ((children_ & 4) ? "1" : "0") + ((children_ & 8) ? "1" : "0");
-        text_ += "-" + node_.minHeight_ + "/" + node_.maxHeight_+ "-" + Math.floor(node_.minZ_) + "/" + Math.floor(node_.maxZ_); 
+        text_ += "-" + node_.minHeight_ + "/" + node_.maxHeight_+ "-" + Math.floor(node_.minZ_) + "/" + Math.floor(node_.maxZ_)+ "-" + Math.floor(node_.surrogatez_);
         this.renderer_.drawText(Math.round(pos_[0]-this.renderer_.getTextSize(4*factor_, text_)*0.5), Math.round(pos_[1]-18*factor_), 4*factor_, text_, [1,0,1,1], pos_[2]);
     }
     

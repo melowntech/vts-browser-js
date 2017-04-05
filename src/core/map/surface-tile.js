@@ -753,7 +753,7 @@ Melown.MapSurfaceTile.prototype.getPixelSize = function(bbox_, screenPixelSize_,
 };
 
 
-Melown.MapSurfaceTile.prototype.getPixelSize3 = function(node_, screenPixelSize_, factor_) {
+Melown.MapSurfaceTile.prototype.getPixelSize3Old = function(node_, screenPixelSize_, factor_) {
     var d = (this.map_.cameraGeocentDistance_*factor_) - node_.diskDistance_;
     if (d < 0) {
         d = -d;
@@ -773,6 +773,50 @@ Melown.MapSurfaceTile.prototype.getPixelSize3 = function(node_, screenPixelSize_
 
     var factor_ = this.map_.camera_.scaleFactor2(d);
     return [factor_ * screenPixelSize_, d];
+};
+
+Melown.MapSurfaceTile.prototype.getPixelSize3 = function(node_, screenPixelSize_, factor_) {
+    //if (this.map_.drawIndices_) {
+      //  return this.getPixelSize3Old(node_, screenPixelSize_, factor_);
+    //}
+
+    var cameraDistance_ = this.map_.cameraGeocentDistance_;// * factor_;
+
+    var a = Melown.vec3.dot(this.map_.cameraGeocentNormal_, node_.diskNormal_); //get angle between tile normal and cameraGeocentNormal
+    var d = cameraDistance_ - (node_.diskDistance_ + (node_.maxZ_ - node_.minZ_)); //vertical distance from top bbox level
+    
+    if (a < node_.diskAngle2_) { //is camera inside tile conus?
+        
+        //get horizontal distance
+        var a2 = Math.acos(a); 
+        var a3 = node_.diskAngle2A_;
+        a2 = a2 - a3; 
+        var l1 = Math.tan(a2) * node_.diskDistance_;// * factor_;
+
+        if (d < 0) { //is camera is belown top bbox level?
+            var d2 = cameraDistance_ - node_.diskDistance_;
+            if (d2 < 0) { //is camera is belown bottom bbox level?
+                d = -d2;
+                d = Math.sqrt(l1*l1 + d*d);
+            } else { //is camera inside bbox
+                d = l1;
+            }
+        } else {
+            d = Math.sqrt(l1*l1 + d*d);
+        }
+
+    } else {
+        if (d < 0) { //is camera is belown top bbox level?
+            var d2 = cameraDistance_ - node_.diskDistance_;
+            if (d2 < 0) { //is camera is belown bottom bbox level?
+                d = -d2;
+            } else { //is camera inside bbox
+                return [Number.POSITIVE_INFINITY, 0.1];
+            }
+        } 
+    }
+
+    return [this.map_.camera_.scaleFactor2(d) * screenPixelSize_, d];
 };
 
 /*
@@ -974,44 +1018,125 @@ Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_
     
         [ll_[0], middle_[1]],
         [ur_[0], middle_[1]]
-    ];    
+    ];
+
+    var flatGrid_ = true; 
 
     if (fastGrid_) {
         if (!this.metanode_) {
             return;
         }
+
+        if (flatGrid_) {
+            //var h = this.metanode_.minZ_;
+            var h = this.metanode_.surrogatez_;
+    
+            //if (this.map_.drawLods_) { h = this.metanode_.minZ_; }
+
+
+            var coordsRes_ = [[h],[h],[h],[h],[h],[h],[h],[h]]; 
+
+            //middle_[2] = h;
+            //middle_ = node_.getPhysicalCoords(middle_, true);
+
+        } else {
+
+            var mnode_ = this.metanode_; 
+            
+            if (!mnode_.hmap_) {
+                
+                var border_ = mnode_.border_;
+                var n;
+                
+                if (!border_) {
+                    mnode_.border_ = new Array(9);
+                    border_ = mnode_.border_;
+                    border_[4] = mnode_.minZ_;
+                }
+                
+                var skip_ = false;
+                
+                if (border_[0] == null) {
+                    n = this.map_.tree_.getNodeById([this.id_[0], this.id_[1] - 1, this.id_[2] - 1]);
+                    if (n) { border_[0] = n.minZ_; } else { skip_ = true; }
+                }
+
+                if (border_[1] == null) {
+                    n = this.map_.tree_.getNodeById([this.id_[0], this.id_[1], this.id_[2] - 1]);
+                    if (n) { border_[1] = n.minZ_; } else { skip_ = true; }
+                }
+
+                if (border_[2] == null) {
+                    n = this.map_.tree_.getNodeById([this.id_[0], this.id_[1] + 1, this.id_[2] - 1]);
+                    if (n) { border_[2] = n.minZ_; } else { skip_ = true; }
+                }
+
+                if (border_[3] == null) {
+                    n = this.map_.tree_.getNodeById([this.id_[0], this.id_[1] - 1, this.id_[2]]);
+                    if (n) { border_[3] = n.minZ_; } else { skip_ = true; }
+                }
+
+                if (border_[5] == null) {
+                    n = this.map_.tree_.getNodeById([this.id_[0], this.id_[1] + 1, this.id_[2]]);
+                    if (n) { border_[5] = n.minZ_; } else { skip_ = true; }
+                }
+
+                if (border_[6] == null) {
+                    n = this.map_.tree_.getNodeById([this.id_[0], this.id_[1] - 1, this.id_[2] + 1]);
+                    if (n) { border_[6] = n.minZ_; } else { skip_ = true; }
+                }
+
+                if (border_[7] == null) {
+                    n = this.map_.tree_.getNodeById([this.id_[0], this.id_[1], this.id_[2] + 1]);
+                    if (n) { border_[7] = n.minZ_; } else { skip_ = true; }
+                }
+
+                if (border_[8] == null) {
+                    n = this.map_.tree_.getNodeById([this.id_[0], this.id_[1] + 1, this.id_[2] + 1]);
+                    if (n) { border_[8] = n.minZ_; } else { skip_ = true; }
+                }
+                
+                if (skip_) {
+                    return;
+                }
+
+                var border2_ = mnode_.border2_;
+                
+                if (!border2_) {
+                    mnode_.border2_ = [
+                       (border_[0] + border_[1] + border_[3] + border_[4]) * 0.25, 
+                       (border_[1] + border_[4]) * 0.5,
+                       (border_[2] + border_[1] + border_[5] + border_[4]) * 0.25,
+                       (border_[3] + border_[4]) * 0.5,
+                        mnode_.minZ_,
+                       (border_[5] + border_[4]) * 0.5,
+                       (border_[6] + border_[7] + border_[3] + border_[4]) * 0.25,
+                       (border_[7] + border_[4]) * 0.5,
+                       (border_[8] + border_[7] + border_[5] + border_[4]) * 0.25
+                    ];
+                }
+                
+            }
+            
+            var h = this.metanode_.minZ_;      
+            var coordsRes_ = [[h],[h],[h],[h],[h],[h],[h],[h]];
+
+            coordsRes_[0] = [(border_[8] + border_[7] + border_[5] + border_[4]) * 0.25];
+            coordsRes_[1] = [(border_[2] + border_[1] + border_[5] + border_[4]) * 0.25];
+            coordsRes_[2] = [(border_[0] + border_[1] + border_[3] + border_[4]) * 0.25];
+            coordsRes_[3] = [(border_[6] + border_[7] + border_[3] + border_[4]) * 0.25];
+            coordsRes_[4] = [(border_[7] + border_[4]) * 0.5];
+            coordsRes_[5] = [(border_[1] + border_[4]) * 0.5];
+
+            
+            if (this.map_.drawFog_) {
+                coordsRes_[6] = [(border_[3] + border_[4]) * 0.5];
+                coordsRes_[7] = [(border_[5] + border_[4]) * 0.5];
+            }
+
+        }
         
-        var h = this.metanode_.minZ_, n;      
-        var coordsRes_ = [[h],[h],[h],[h],[h],[h],[h],[h]];
-
-        /*if (this.map_.drawFog_) {
-            var metatile_ = this.metanode_.metatile_;
-
-            n = metatile_.getNode([0, this.id_[1] + 1, this.id_[2] + 1]);
-            coordsRes_[0] = n ? [(n.minZ_ + h)*0.5] : [h];
-
-            n = metatile_.getNode([0, this.id_[1] + 1, this.id_[2] - 1]);
-            coordsRes_[1] = n ? [(n.minZ_ + h)*0.5] : [h];
-
-            n = metatile_.getNode([0, this.id_[1] - 1, this.id_[2] + 1]);
-            coordsRes_[2] = n ? [(n.minZ_ + h)*0.5] : [h];
-
-            n = metatile_.getNode([0, this.id_[1] - 1, this.id_[2] + 1]);
-            coordsRes_[3] = n ? [(n.minZ_ + h)*0.5] : [h];
-
-            n = metatile_.getNode([0, this.id_[1], this.id_[2] + 1]);
-            coordsRes_[4] = n ? [(n.minZ_ + h)*0.5] : [h];
-
-            n = metatile_.getNode([0, this.id_[1], this.id_[2] - 1]);
-            coordsRes_[5] = n ? [(n.minZ_ + h)*0.5] : [h];
-
-            n = metatile_.getNode([0, this.id_[1] - 1, this.id_[2]]);
-            coordsRes_[6] = n ? [(n.minZ_ + h)*0.5] : [h];
-
-            n = metatile_.getNode([0, this.id_[1] + 1, this.id_[2]]);
-            coordsRes_[7] = n ? [(n.minZ_ + h)*0.5] : [h];
-
-        }*/
+		
 
         middle_[2] = h;
         middle_ = node_.getPhysicalCoords(middle_, true);

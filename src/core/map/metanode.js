@@ -24,6 +24,7 @@ Melown.MapMetanode = function(metatile_, id_, stream_, divisionNode_) {
     this.diskNormal_ = new Array(3); 
     this.diskAngle_ = 1;
     this.diskAngle2_ = 1;
+    this.diskAngle2A_ = 1;
     //this.bboxHeight_ = 1;
     this.bbox2_ = new Array(24);
 
@@ -211,6 +212,7 @@ Melown.MapMetanode.prototype.clone = function() {
     node_.maxHeight_ = this.maxHeight_;
     node_.minZ_ = this.minZ_;
     node_.maxZ_ = this.maxZ_;
+    node_.surrogatez_ = this.surrogatez_;
     node_.internalTextureCount_ = this.internalTextureCount_;
     node_.pixelSize_ = this.pixelSize_;
     node_.displaySize_ = this.displaySize_;
@@ -235,6 +237,7 @@ Melown.MapMetanode.prototype.clone = function() {
         node_.diskNormal_ = this.diskNormal_; 
         node_.diskAngle_ = this.diskAngle_;
         node_.diskAngle2_ = this.diskAngle2_;
+        node_.diskAngle2A_ = this.diskAngle2A_;
         node_.diskDistance_ = this.diskDistance_; 
         node_.bbox2_ = this.bbox2_;  
 
@@ -272,6 +275,10 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
             
             var divisionNode_ = this.map_.getSpatialDivisionNodeFromId(this.id_);
 
+            if (!divisionNode_) {
+                return;
+            }
+
             this.map_.getSpatialDivisionNodeAndExtents2(this.id_, pos2_, divisionNode_);
             var node_ = pos2_[0]; 
             var llx_ = pos2_[1];
@@ -289,6 +296,11 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
         } else {
             var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
             var divisionNode_ = res_[0]; 
+
+            if (!divisionNode_) {
+                return;
+            }
+                        
             var llx_ = res_[1][0][0];
             var lly_ = res_[1][0][1];
             var urx_ = res_[1][1][0];
@@ -508,6 +520,7 @@ Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
         //get cos angle based at 90deg
         this.diskAngle_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
         this.diskAngle2_ = maxDelta_;
+        this.diskAngle2A_ = Math.acos(maxDelta_); //optimalization
 
         //shift center closer to earth
         //var factor_ = this.bbox_.maxSize_ * 0.2; 

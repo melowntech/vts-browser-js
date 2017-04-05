@@ -1151,3 +1151,60 @@ Melown.MapSurfaceTree.prototype.traceHeightTileByNodeOnly = function(tile_, para
     return (tile_.id_[0] != params_.desiredLod_);
 };
 
+
+Melown.MapSurfaceTree.prototype.getNodeById = function(id_) {
+    var tile_ = this.surfaceTree_;
+	var createNonexisted_ = true;
+
+    if (tile_ == null) {
+        return;
+    }
+
+    for (var lod_ = id_[0]; lod_ > 0; lod_--) {
+        var mask_ = 1 << (lod_-1);
+        var index_ = 0;
+
+        if ((id_[1] & mask_) != 0) {
+            index_ += 1;
+        }
+
+        if ((id_[2] & mask_) != 0) {
+            index_ += 2;
+        }
+        
+        if (!tile_.children_[index_]) {
+
+            if (!tile_.isMetanodeReady(this, 0)) {
+                return null;
+            }
+
+            if (!tile_.metanode_.hasChild(index_)) {
+                return null;
+            }
+
+            tile_.addChild(index_);
+        } 
+
+        tile_ = tile_.children_[index_];
+    }
+
+	if (!tile_) {
+		return;
+	}
+
+    if (!tile_.isMetanodeReady(this, 0)) {
+        return;
+    }
+	
+	var node_ = tile_.metanode_;
+    tile_.metanode_.metatile_.used();
+
+    return node_;
+
+	/*
+    if (tile_.lastSurface_ && tile_.lastSurface_ == tile_.surface_) {
+        tile_.lastSurface_ = null;
+        tile_.restoreLastState();
+        //return;
+    }*/
+};
