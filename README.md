@@ -14,19 +14,19 @@ npm install
 ## Build (constantly)
 
 ```
-webpack --watch
+node_modules/.bin/webpack --watch
 ```
 
 ## Build compressed version
 
 ```
-NODE_ENV=production webpack
+NODE_ENV=production node_modules/.bin/webpack
 ```
 
 ## Run dev server
 
 ```
-webpack-dev-server  --inline
+node_modules/.bin/webpack-dev-server  --inline
 ```
 
 And go to http://localhost:8080/demos/core/basic/
