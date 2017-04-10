@@ -9,6 +9,7 @@ var fs = require("fs");
 
 
 var PROD = (process.env.NODE_ENV === 'production')
+var TARGET_DIR = PROD ? __dirname + "/dist/" : __dirname + "/build/";
 
 var plugins = [
     new ExtractTextPlugin({
@@ -39,7 +40,7 @@ var config = {
   },
   devtool: 'source-map',
   output: {
-    path: __dirname + '/build/',
+    path: TARGET_DIR,
     filename: '[name].js',
     libraryTarget: "var",
     library: "Melown"
