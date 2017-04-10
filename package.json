@@ -1,13 +1,15 @@
 {
-  "name": "melown-js",
+  "name": "vts-browser-js",
   "version": "1.0.0",
   "description": "JavaScript WebGL 3D maps rendering engine",
-  "main": "src/core/core.js",
-  "scripts": {
-    "test": "mocha --reporter spec",
+  "main": "src/browser/index.js",
+  "secripts": {
+    "test": "echo 'There are no tests implemented yet'",
     "install": "npm-git install",
-    "dev": "WEBPACK_ENV=dev webpack --progress --colors --watch",
-    "build": "WEBPACK_ENV=build webpack"
+    "clean": "node_modules/.bin/rimraf build",
+    "dev": "WEBPACK_ENV=dev node_modules/.bin/webpack --progress --colors --watch --hide-modules",
+    "build": "NODE_ENV=production node_modules/.bin/webpack --progress --colors --hide-modules",
+    "start": "node_modules/.bin/webpack-dev-server --content-base ./ --inline"
   },
   "repository": {
     "type": "git",
@@ -20,7 +22,7 @@
     "map",
     "WebGL"
   ],
-  "author": "David Levinsky",
+  "author": "David Levinsky <david.levinsky@melown.com> http://melown.com",
   "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/melown/melown-js/issues"
@@ -38,6 +40,7 @@
     "install": "^0.8.7",
     "license-webpack-plugin": "^0.4.3",
     "mocha": "^3.2.0",
+    "rimraf": "^2.6.1",
     "serve": "^5.0.4",
     "style-loader": "^0.16.1",
     "webpack": "^2.3.1",
