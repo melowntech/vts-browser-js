@@ -1,6 +1,6 @@
 {
   "name": "melown-js",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "JavaScript WebGL 3D maps rendering engine",
   "main": "src/core/core.js",
   "scripts": {
