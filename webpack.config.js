@@ -4,13 +4,18 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var CommonChunks = require('copy-webpack-plugin');
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var LicenseWebpackPlugin = require('license-webpack-plugin');
+var fs = require("fs");
+
 
 var PROD = (process.env.NODE_ENV === 'production')
 
 var plugins = [
     new ExtractTextPlugin({
       filename: "melown-browser.css"
-    })
+    }),
+    new LicenseWebpackPlugin({pattern: /^(MIT|ISC|BSD.*)$/}),
+    new webpack.BannerPlugin(fs.readFileSync('./LICENSE', 'utf8'))
 ];
 
 if (PROD) {
