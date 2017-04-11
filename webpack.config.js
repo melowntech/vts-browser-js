@@ -20,7 +20,7 @@ var plugins = [
 ];
 
 if (PROD) {
-    plugins.push(new UglifyJsPlugin({
+    plugins.unshift(new UglifyJsPlugin({
       compress: true,
       mangle: true,
       extractComments: {},
