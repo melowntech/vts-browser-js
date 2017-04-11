@@ -36,11 +36,21 @@ yarn install
 If you are developing some web page, you might be wanting to rebuild & refresh
 every time, some file is saved. You can run `webpack`
 
+The unzipped file (along with source map and CSS) is stored in `build/`
+directory. You may now start the dev server (see lower) and open browser at
+[http://localhost:8080](http://localhost:8080) to see some demos in the `demos/`
+directory.
+
 ```
 node_modules/.bin/webpack --watch
 ```
 
 ## Build compressed version
+
+The compressed version - it's intended to be used in in production env. You can
+include in the `<script ...></script>` tags (along with CSS) there.
+
+Compressed version is build in the `dist/` directory.
 
 ```
 NODE_ENV=production node_modules/.bin/webpack
@@ -48,11 +58,15 @@ NODE_ENV=production node_modules/.bin/webpack
 
 ## Run dev server
 
+The development server is serving local files at
+[http://localhost:8080](http://localhost:8080). It also live-reloads the web
+application, when any source file has changed. 
+
 ```
 node_modules/.bin/webpack-dev-server  --inline
 ```
 
-And go to http://localhost:8080/demos/core/basic/
+And go to [http://localhost:8080/demos/core/basic/](http://localhost:8080/demos/core/basic/)
 
 ## Makefile
 

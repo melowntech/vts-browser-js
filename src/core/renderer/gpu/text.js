@@ -3,7 +3,7 @@
  * @constructor
  */
 Melown.GpuText = function(gpu_, core_, font_, withNormals_) {
-    //this.bbox_ = mesh_.bbox_; //!< bbox copy from Mesh
+    //this.bbox_ = mesh_.bbox_; //< bbox copy from Mesh
     this.gpu_ = gpu_;
     this.gl_ = gpu_.gl_;
     this.core_ = core_;
@@ -396,7 +396,7 @@ Melown.GpuText.prototype.compile = function() {
 
 };
 
-//! Draws the mesh, given the two vertex shader attributes locations.
+// Draws the mesh, given the two vertex shader attributes locations.
 Melown.GpuText.prototype.draw = function(program_, attrPosition_, attrTexCoord_) {
     var gl_ = this.gl_;
     if (gl_ == null)
@@ -417,7 +417,7 @@ Melown.GpuText.prototype.draw = function(program_, attrPosition_, attrTexCoord_)
     gl_.drawArrays(gl_.TRIANGLES, 0, this.vertexPositionBuffer_.numItems);
 };
 
-//! Returns GPU RAM used, in bytes.
+// Returns GPU RAM used, in bytes.
 Melown.GpuText.prototype.size = function(){ return this.size_; };
 
 Melown.GpuText.prototype.bbox = function(){ return this.bbox_; };

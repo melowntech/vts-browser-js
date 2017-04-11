@@ -217,7 +217,7 @@ var optimizeGroupMessages = function() {
         var type_ = job_["type"];
         var signature_ = message_.signature_;
         
-        if (!message_["hitable"] && !message_.reduced_ &&  //!message_["culling"] &&
+        if (!message_["hitable"] && !message_.reduced_ &&  //message_["culling"] &&
             !(type_ == "icon" || type_ == "label")) {
             
             switch(type_) {

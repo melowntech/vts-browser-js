@@ -39,7 +39,7 @@ Melown.GpuTexture.prototype.kill = function() {
     */
 };
 
-//! Returns GPU RAM used, in bytes.
+// Returns GPU RAM used, in bytes.
 Melown.GpuTexture.prototype.size = function() {
     return this.size_;
 };

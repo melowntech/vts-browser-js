@@ -122,7 +122,7 @@ Melown.GpuFont.prototype.generate = function(font_, size_) {
     this.texture_.size_ = textureLX_ * textureLY_ * 4;
 };
 
-//! Returns GPU RAM used, in bytes.
+// Returns GPU RAM used, in bytes.
 Melown.GpuFont.prototype.size = function(){ return this.size_; };
 
 

@@ -253,7 +253,7 @@ Melown.MapGeodata.prototype.onLoaded = function(data_) {
     this.mapLoaderCallLoaded_();
 };
 
-//! Returns RAM usage in bytes.
+// Returns RAM usage in bytes.
 Melown.MapGeodata.prototype.size = function () {
     return this.size_;
 };

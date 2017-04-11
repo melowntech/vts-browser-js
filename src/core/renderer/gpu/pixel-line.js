@@ -196,7 +196,7 @@ Melown.GpuPixelLine.prototype.compile = function() {
 
 };
 
-//! Draws the mesh, given the two vertex shader attributes locations.
+// Draws the mesh, given the two vertex shader attributes locations.
 Melown.GpuPixelLine.prototype.draw = function(program_, attrPosition_, attrNormal_, attrTexCoord_, attrBarycenteric_) {
     var gl_ = this.gl_;
     if (gl_ == null || this.vertexPositionBuffer_ == null || this.vertexNormalBuffer_ == null){
@@ -218,7 +218,7 @@ Melown.GpuPixelLine.prototype.draw = function(program_, attrPosition_, attrNorma
     gl_.drawArrays(gl_.TRIANGLES, 0, this.vertexPositionBuffer_.numItems);
 };
 
-//! Returns GPU RAM used, in bytes.
+// Returns GPU RAM used, in bytes.
 Melown.GpuPixelLine.prototype.size = function(){ return this.size_; };
 
 Melown.GpuPixelLine.prototype.bbox = function(){ return this.bbox_; };

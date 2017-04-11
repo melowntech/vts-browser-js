@@ -44,7 +44,7 @@ Melown.GpuBBox.prototype.kill = function() {
     this.gl_.deleteBuffer(this.vertexPositionBuffer_);
 };
 
-//! Draws the mesh, given the two vertex shader attributes locations.
+// Draws the mesh, given the two vertex shader attributes locations.
 Melown.GpuBBox.prototype.draw = function(program_, attrPosition_) {
     var gl_ = this.gl_;
     if (gl_ == null)

@@ -217,7 +217,7 @@ Melown.MapMesh.prototype.onLoaded = function(data_, task_) {
     this.mapLoaderCallLoaded_();
 };
 
-//! Returns RAM usage in bytes.
+// Returns RAM usage in bytes.
 Melown.MapMesh.prototype.size = function () {
     return this.size_;
 };
@@ -226,7 +226,7 @@ Melown.MapMesh.prototype.fileSize = function () {
     return this.fileSize_;
 };
 
-//! Returns RAM usage in bytes.
+// Returns RAM usage in bytes.
 Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
 /*
     struct MapMesh {

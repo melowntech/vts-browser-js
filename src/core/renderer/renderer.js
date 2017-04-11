@@ -1,8 +1,8 @@
 require('./gpu/device');
 require('./camera');
 
-//! maximum allowed projected texel size (affects LOD selection, i.e., display
-//! quality, and also control constraints)
+// maximum allowed projected texel size (affects LOD selection, i.e., display
+// quality, and also control constraints)
 Melown.resolutionThreshold_ = 1.1;
 Melown.texelSizeFactor_ = 1.0;
 Melown.noTextures_ = false;

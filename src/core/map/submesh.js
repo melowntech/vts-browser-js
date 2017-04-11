@@ -1,4 +1,4 @@
-//! An index-less mesh. Each triangle has three items in the array 'vertices'.
+// An index-less mesh. Each triangle has three items in the array 'vertices'.
 
 /** @const */ MelownSubmeshFlags_InternalTexcoords =  1;
 /** @const */ MelownSubmeshFlags_ExternalTexcoords =  2;
@@ -35,7 +35,7 @@ Melown.MapSubmesh.prototype.kill = function () {
     this.externalUVs_ = null;
 };
 
-//! Reads the mesh from the binary representation.
+// Reads the mesh from the binary representation.
 Melown.MapSubmesh.prototype.parseSubmesh = function (stream_) {
 
 /*
@@ -580,7 +580,7 @@ struct FacesBlock {
 };
 
 
-//! Returns RAM usage in bytes.
+// Returns RAM usage in bytes.
 Melown.MapSubmesh.prototype.size = function () {
     return this.size_;
 };

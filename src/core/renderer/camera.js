@@ -57,8 +57,8 @@ Melown.Camera.prototype.setRotationMatrix = function(matrix_){
 };
 
 
-//! Sets the viewport aspect ratio (width / height). Should be called
-//! whenever the rendering viewport changes.
+// Sets the viewport aspect ratio (width / height). Should be called
+// whenever the rendering viewport changes.
 Melown.Camera.prototype.setAspect = function(aspect_) {
     this.aspect_ = aspect_;
     this.dirty_ = true;
@@ -102,33 +102,33 @@ Melown.Camera.prototype.getFar = function(){ return this.far_; };
 Melown.Camera.prototype.getViewHeight = function(){ return this.viewHeight_; };
 Melown.Camera.prototype.getOrtho = function(){ return this.ortho_; };
 
-//! Returns rotation matrix
+// Returns rotation matrix
 Melown.Camera.prototype.getRotationviewMatrix = function() {
     if (this.dirty_) this.update();
     return this.rotationview_;
 };
 
 
-//! Returns a matrix that transforms the world space to camera space.
+// Returns a matrix that transforms the world space to camera space.
 Melown.Camera.prototype.getModelviewMatrix = function(){
     if (this.dirty_) this.update();
     return this.modelview_;
 };
 
-//! Returns a matrix that transforms the camera space to screen space.
+// Returns a matrix that transforms the camera space to screen space.
 Melown.Camera.prototype.getProjectionMatrix = function() {
     if (this.dirty_) this.update();
     return this.projection_;
 };
 
-//! Returns projectionMatrix() * modelviewMatrix()
+// Returns projectionMatrix() * modelviewMatrix()
 Melown.Camera.prototype.getMvpMatrix = function() {
     if (this.dirty_) this.update();
     return this.mvp_;
 };
 
-//! Returns how much a length unit located at a point in world space is
-//! stretched when projected to the sceen space.
+// Returns how much a length unit located at a point in world space is
+// stretched when projected to the sceen space.
 Melown.Camera.prototype.scaleFactor = function(worldPos_, returnDist_) {
     if (this.dirty_) this.update();
 
@@ -168,7 +168,7 @@ Melown.Camera.prototype.distance = function(worldPos_) {
     return Melown.vec3.length(delta_);
 };
 
-//! Returns true if point is inside camera frustum.
+// Returns true if point is inside camera frustum.
 Melown.Camera.prototype.pointVisible = function(point_, shift_) {
     if (this.dirty_) this.update();
 
@@ -190,7 +190,7 @@ Melown.Camera.prototype.pointVisible = function(point_, shift_) {
     return true;
 };
 
-//! Returns true if the box intersects the camera frustum.
+// Returns true if the box intersects the camera frustum.
 Melown.Camera.prototype.pointsVisible = function(points_, shift_) {
     if (this.dirty_) this.update();
    
@@ -228,7 +228,7 @@ Melown.Camera.prototype.pointsVisible = function(points_, shift_) {
     return true;
 };
 
-//! Returns true if the box intersects the camera frustum.
+// Returns true if the box intersects the camera frustum.
 Melown.Camera.prototype.bboxVisible = function(bbox_, shift_) {
     if (this.dirty_) this.update();
 

@@ -371,8 +371,7 @@ Melown.MapSurfaceTile.prototype.checkSurface = function(tree_, priority_) {
             
             //check if tile exist
             if (this.id_[0] > 0) { //surface_.lodRange_[0]) {
-                //!!!!!!removed for debug
-                ///* ????????
+                // removed for debug
                 var parent_ = this.parent_;
                 if (parent_) { 
                     
@@ -573,7 +572,7 @@ Melown.MapSurfaceTile.prototype.createVirtualMetanode = function(tree_, priority
                     }*/
                    
                     if (metatile_.useVersion_ < 4) {
-                        //!!!!!!removed for debug
+                        // removed for debug
                         node_.bbox_.min_[0] = Math.min(node_.bbox_.min_[0], metanode_.bbox_.min_[0]); 
                         node_.bbox_.min_[1] = Math.min(node_.bbox_.min_[1], metanode_.bbox_.min_[1]); 
                         node_.bbox_.min_[2] = Math.min(node_.bbox_.min_[2], metanode_.bbox_.min_[2]); 

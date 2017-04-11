@@ -363,7 +363,7 @@ var processLineStringPass = function(lineString_, lod_, style_, zIndex_, eventIn
     
         var p1 = [p[0], p[1], p[2]];
     
-        if (true /*!skipJoins_ || lineLabel_*/) {
+        if (true) { // (!skipJoins_ || lineLabel_*/)
 
             //add joins
             for (var i = 0, li = points_.length; i < li; i++) {

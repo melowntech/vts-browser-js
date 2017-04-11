@@ -3,7 +3,7 @@
  */
 Melown.GpuMesh = function(gpu_, meshData_, fileSize_, core_) {
     this.gl_ = gpu_.gl_;
-    this.bbox_ = meshData_.bbox_; //!< bbox copy from Mesh
+    this.bbox_ = meshData_.bbox_; //< bbox copy from Mesh
     this.fileSize_ = fileSize_; //used for stats
     this.core_ = core_;
     this.vertexBuffer_ = null;
@@ -97,7 +97,7 @@ Melown.GpuMesh.prototype.kill = function() {
     }*/
 };
 
-//! Draws the mesh, given the two vertex shader attributes locations.
+// Draws the mesh, given the two vertex shader attributes locations.
 Melown.GpuMesh.prototype.draw = function(program_, attrVertex_, attrUV_, attrUV2_, attrBarycenteric_) {
     var gl_ = this.gl_;
     if (gl_ == null || !this.valid_) {
@@ -145,7 +145,7 @@ window.onerror = (function(e,d,c){
   a += b; 
 });*/
 
-//! Returns GPU RAM used, in bytes.
+// Returns GPU RAM used, in bytes.
 Melown.GpuMesh.prototype.size = function(){ return this.size_; };
 
 Melown.GpuMesh.prototype.bbox = function(){ return this.bbox_; };

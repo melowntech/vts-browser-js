@@ -73,7 +73,7 @@ Melown.GpuTile.prototype.size = function() {
 };
 
 
-//! Manages GPU memory -- uploads/releases GpuTiles
+// Manages GPU memory -- uploads/releases GpuTiles
 /**
  * @constructor
  */

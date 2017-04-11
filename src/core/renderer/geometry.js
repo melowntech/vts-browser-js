@@ -29,8 +29,8 @@ Melown.RendererGeometry.setFaceUVs = function(uvs_, a, b, c, index_) {
 };
 
 
-//! Procedural mesh representing a heightmap block
-//! Creates a grid of size x size vertices, all coords are [0..1].
+// Procedural mesh representing a heightmap block
+// Creates a grid of size x size vertices, all coords are [0..1].
 Melown.RendererGeometry.buildHeightmap = function(size_) {
     size_--;
 
@@ -157,9 +157,9 @@ Melown.RendererGeometry.spherePos = function(lon_, lat_) {
 };
 
 
-//! Creates an approximation of a unit sphere, note that all coords are
-//! in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
-//! are oriented inwards.
+// Creates an approximation of a unit sphere, note that all coords are
+// in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
+// are oriented inwards.
 Melown.RendererGeometry.buildSkydome = function(latitudeBands_, longitudeBands_) {
     var g = Melown.RendererGeometry;
     var numFaces_ = (latitudeBands_ * longitudeBands_) * 2;
