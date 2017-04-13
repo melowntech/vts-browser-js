@@ -1,51 +1,58 @@
-/**
- * @constructor
- */
-Melown.BBox = function(xmin_, ymin_, zmin_, xmax_, ymax_, zmax_) {
-    this.min_ = [];
-    this.max_ = [];
 
-    this.min_[0] = (xmin_ != null) ? xmin_ : Number.POSITIVE_INFINITY;
-    this.min_[1] = (ymin_ != null) ? ymin_ : Number.POSITIVE_INFINITY;
-    this.min_[2] = (zmin_ != null) ? zmin_ : Number.POSITIVE_INFINITY;
+var BBox = function(xmin, ymin, zmin, xmax, ymax, zmax) {
+    this.min = [];
+    this.max = [];
 
-    this.max_[0] = (xmax_ != null) ? xmax_ : Number.NEGATIVE_INFINITY;
-    this.max_[1] = (ymax_ != null) ? ymax_ : Number.NEGATIVE_INFINITY;
-    this.max_[2] = (zmax_ != null) ? zmax_ : Number.NEGATIVE_INFINITY;
+    this.min[0] = (xmin != null) ? xmin : Number.POSITIVEINFINITY;
+    this.min[1] = (ymin != null) ? ymin : Number.POSITIVEINFINITY;
+    this.min[2] = (zmin != null) ? zmin : Number.POSITIVEINFINITY;
+
+    this.max[0] = (xmax != null) ? xmax : Number.NEGATIVEINFINITY;
+    this.max[1] = (ymax != null) ? ymax : Number.NEGATIVEINFINITY;
+    this.max[2] = (zmax != null) ? zmax : Number.NEGATIVEINFINITY;
 
     /*
-    this.maxSize_ = Math.max(this.max_[0] - this.min_[0],
-                             this.max_[1] - this.min_[1],
-                             this.max_[2] - this.min_[2]);*/
+    this.maxSize = Math.max(this.max[0] - this.min[0],
+                             this.max[1] - this.min[1],
+                             this.max[2] - this.min[2]);*/
     this.updateMaxSize();
 };
 
-Melown.BBox.prototype.clone = function() {
-    return new Melown.BBox(this.min_[0], this.min_[1], this.min_[2],
-                           this.max_[0], this.max_[1], this.max_[2]);
+
+BBox.prototype.clone = function() {
+    return new BBox(this.min[0], this.min[1], this.min[2],
+                    this.max[0], this.max[1], this.max[2]);
 };
 
-Melown.BBox.prototype.side = function(index_) {
-    return this.max_[index_] - this.min_[index_];
+
+BBox.prototype.side = function(index) {
+    return this.max[index] - this.min[index];
 };
 
-Melown.BBox.prototype.updateMaxSize = function() {
-    this.maxSize_ = Math.abs(Math.max(this.max_[0] - this.min_[0],
-                                      this.max_[1] - this.min_[1],
-                                      this.max_[2] - this.min_[2]));
+
+BBox.prototype.updateMaxSize = function() {
+    this.maxSize = Math.abs(Math.max(this.max[0] - this.min[0],
+                                      this.max[1] - this.min[1],
+                                      this.max[2] - this.min[2]));
 };
 
-Melown.BBox.prototype.center = function(vec_) {
-    if (vec_ != null) {
-        vec_[0] = (this.min_[0] + this.max_[0])*0.5;
-        vec_[1] = (this.min_[1] + this.max_[1])*0.5;
-        return vec_;
+
+BBox.prototype.center = function(vec) {
+    if (vec != null) {
+        vec[0] = (this.min[0] + this.max[0])*0.5;
+        vec[1] = (this.min[1] + this.max[1])*0.5;
+        return vec;
     } else {
-        return [(this.min_[0] + this.max_[0])*0.5, (this.min_[1] + this.max_[1])*0.5, (this.min_[2] + this.max_[2])*0.5];
+        return [(this.min[0] + this.max[0])*0.5, (this.min[1] + this.max[1])*0.5, (this.min[2] + this.max[2])*0.5];
     }
 };
 
-Melown.BBox.prototype.translateXY = function(delta_) {
-    return new Melown.BBox(this.min_[0] - delta_[0], this.min_[1] - delta_[1], this.min_[2],
-                           this.max_[0] - delta_[0], this.max_[1] - delta_[1], this.max_[2]);
+
+BBox.prototype.translateXY = function(delta) {
+    return new BBox(this.min[0] - delta[0], this.min[1] - delta[1], this.min[2],
+                    this.max[0] - delta[0], this.max[1] - delta[1], this.max[2]);
 };
+
+
+export default BBox;
+

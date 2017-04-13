@@ -1,462 +1,463 @@
-require('core/map/trajectory');
-/**
- * @constructor
- */
-Melown.MapInterface = function(map_) {
-    this.map_ = map_;
-    this.config_ = map_.config_;
+
+import MapTrajectory_ from './trajectory';
+import MapBoundLayer_ from './bound-layer';
+import MapSurface_ from './surface';
+import MapPosition_ from './position';
+
+//get rid of compiler mess
+var MapTrajectory = MapTrajectory_;
+var MapBoundLayer = MapBoundLayer_;
+var MapSurface = MapSurface_;
+var MapPosition = MapPosition_;
+
+
+var MapInterface = function(map) {
+    this.map = map;
+    this.config = map.config;
 };
 
-Melown.MapInterface.prototype.setPosition = function(position_) {
-    this.map_.setPosition(position_);
+
+MapInterface.prototype.setPosition = function(position) {
+    this.map.setPosition(position);
     return this;    
 };
 
-Melown.MapInterface.prototype.getPosition = function(type_) {
-    return this.map_.getPosition().pos_;
+
+MapInterface.prototype.getPosition = function(type) {
+    return this.map.getPosition();
 };
 
-Melown.MapInterface.prototype.setView = function(view_) {
-    this.map_.setView(view_);
+
+MapInterface.prototype.setView = function(view) {
+    this.map.setView(view);
     return this;    
 };
 
-Melown.MapInterface.prototype.getView = function() {
-    return this.map_.getView();
+
+MapInterface.prototype.getView = function() {
+    return this.map.getView();
 };
 
-Melown.MapInterface.prototype.getCredits = function() {
-    return this.map_.getCredits();
+
+MapInterface.prototype.getCredits = function() {
+    return this.map.getCredits();
 };
 
-Melown.MapInterface.prototype.getCurrentCredits = function() {
-    return this.map_.getVisibleCredits();
+
+MapInterface.prototype.getCurrentCredits = function() {
+    return this.map.getVisibleCredits();
 };
 
-Melown.MapInterface.prototype.getCreditInfo = function(creditId_) {
-    var credit_ = this.map_.getCreditById(creditId_);
-    return credit_ ? credit_.getInfo() : {};
+
+MapInterface.prototype.getCreditInfo = function(creditId) {
+    var credit = this.map.getCreditById(creditId);
+    return credit ? credit.getInfo() : {};
 };
 
-Melown.MapInterface.prototype.getViews = function() {
-    return this.map_.getNamedViews();
+
+MapInterface.prototype.getViews = function() {
+    return this.map.getNamedViews();
 };
 
-Melown.MapInterface.prototype.getViewInfo = function(viewId_) {
-    var view_ = this.map_.getNamedView(viewId_);
-    return view_ ? view_.getInfo() : {};
+
+MapInterface.prototype.getViewInfo = function(viewId) {
+    var view = this.map.getNamedView(viewId);
+    return view ? view.getInfo() : {};
 };
 
-Melown.MapInterface.prototype.getBoundLayers = function() {
-    return this.map_.getBoundLayers();
+
+MapInterface.prototype.getBoundLayers = function() {
+    return this.map.getBoundLayers();
 };
 
-Melown.MapInterface.prototype.getBoundLayerInfo = function(layerId_) {
-    return this.map_.getBoundLayerInfo(layerId_);
+
+MapInterface.prototype.getBoundLayerInfo = function(layerId) {
+    return this.map.getBoundLayerInfo(layerId);
 };
 
-Melown.MapInterface.prototype.getFreeLayers = function() {
-    return this.map_.getFreeLayers();
+
+MapInterface.prototype.getFreeLayers = function() {
+    return this.map.getFreeLayers();
 };
 
-Melown.MapInterface.prototype.getFreeLayerInfo = function(layerId_) {
-    var layer_ = this.map_.getFreeLayer(layerId_);
-    return layer_ ? layer_.getInfo() : {};
+
+MapInterface.prototype.getFreeLayerInfo = function(layerId) {
+    var layer = this.map.getFreeLayer(layerId);
+    return layer ? layer.getInfo() : {};
 };
 
-Melown.MapInterface.prototype.getSurfaces = function() {
-    return this.map_.getSurfaces();
+
+MapInterface.prototype.getSurfaces = function() {
+    return this.map.getSurfaces();
 };
 
-Melown.MapInterface.prototype.getSurfaceInfo = function(surfaceId_) {
-    var surface_ = this.map_.getFreeLayer(surfaceId_);
-    return surface_ ? surface_.getInfo() : {};
+
+MapInterface.prototype.getSurfaceInfo = function(surfaceId) {
+    var surface = this.map.getFreeLayer(surfaceId);
+    return surface ? surface.getInfo() : {};
 };
 
-Melown.MapInterface.prototype.getSrses = function() {
-    return this.map_.getSrses(surfaceId_);
+
+MapInterface.prototype.getSrses = function() {
+    return this.map.getSrses(surfaceId);
 };
 
-Melown.MapInterface.prototype.getSrsInfo = function(srsId_) {
-    var srs_ = this.map_.getSrs(srsId_);
-    return srs_ ? srs_.getInfo() : {};
+
+MapInterface.prototype.getSrsInfo = function(srsId) {
+    var srs = this.map.getSrs(srsId);
+    return srs ? srs.getInfo() : {};
 };
 
-Melown.MapInterface.prototype.getReferenceFrame = function() {
-    return this.map_.referenceFrame_.getInfo();
+
+MapInterface.prototype.getReferenceFrame = function() {
+    return this.map.referenceFrame.getInfo();
 };
 
-Melown.MapInterface.prototype.addFreeLayer = function(id_, options_) {
-    var layer_ = new Melown.MapSurface(this.map_, options_, "free");
-    this.map_.addFreeLayer(id_, layer_);
+
+MapInterface.prototype.addFreeLayer = function(id, options) {
+    var layer = new MapSurface(this.map, options, "free");
+    this.map.addFreeLayer(id, layer);
 };
 
-Melown.MapInterface.prototype.removeFreeLayer = function(id_) {
-    this.map_.removeFreeLayer(id_); 
+
+MapInterface.prototype.removeFreeLayer = function(id) {
+    this.map.removeFreeLayer(id); 
 };
 
-/* Melown.MapInterface.prototype.setFreeLayerOptions = function(id_, options_) {
-    this.map_.setFreeLayerOptions(id_, options_); 
+
+/* MapInterface.prototype.setFreeLayerOptions = function(id, options) {
+    this.map.setFreeLayerOptions(id, options); 
 };
 
-Melown.MapInterface.prototype.getFreeLayerOptions = function(id_) {
-    return this.map_.getFreeLayerOptions(id_); 
+
+MapInterface.prototype.getFreeLayerOptions = function(id) {
+    return this.map.getFreeLayerOptions(id); 
 }; */
 
-Melown.MapInterface.prototype.addBoundLayer = function(id_, options_) {
-    var layer_ = new Melown.MapBoundLayer(this.map_, options_, id_);
-    this.map_.addBoundLayer(id_, layer_); 
+
+MapInterface.prototype.addBoundLayer = function(id, options) {
+    var layer = new MapBoundLayer(this.map, options, id);
+    this.map.addBoundLayer(id, layer); 
 };
 
-Melown.MapInterface.prototype.removeBoundLayer = function(id_) {
-    this.map_.removeBoundLayer(id_); 
+
+MapInterface.prototype.removeBoundLayer = function(id) {
+    this.map.removeBoundLayer(id); 
 };
 
-/* Melown.MapInterface.prototype.setBoundLayerOptions = function(id_, options_) {
-    this.map_.setBoundLayerOptions(id_, options_); 
+
+/* MapInterface.prototype.setBoundLayerOptions = function(id, options) {
+    this.map.setBoundLayerOptions(id, options); 
 };
 
-Melown.MapInterface.prototype.getBoundLayerOptions = function(id_) {
-    return this.map_.setBoundLayerOptions(id_); 
+
+MapInterface.prototype.getBoundLayerOptions = function(id) {
+    return this.map.setBoundLayerOptions(id); 
 };*/
 
-Melown.MapInterface.prototype.convertPositionViewMode = function(position_, mode_) {
-    var pos_ = (new Melown.MapPosition(this.map_, position_)).convertViewMode(mode_);
-    return (pos_ != null) ? pos_.pos_ : pos_;
+MapInterface.prototype.convertPositionViewMode = function(position, mode) {
+    return this.map.convert.convertPositionViewMode((new MapPosition(position)), mode);
 };
 
-Melown.MapInterface.prototype.convertPositionHeightMode = function(position_, mode_, noPrecisionCheck_) {
-    var pos_ = (new Melown.MapPosition(this.map_, position_)).convertHeightMode(mode_, noPrecisionCheck_);
-    return (pos_ != null) ? pos_.pos_ : pos_;
+
+MapInterface.prototype.convertPositionHeightMode = function(position, mode, noPrecisionCheck) {
+    return this.map.convert.convertPositionHeightMode((new MapPosition(position)), mode, noPrecisionCheck);
 };
 
-Melown.MapInterface.prototype.convertCoords = function(sourceSrs_, destinationSrs_, coords_) {
-    var srs_ = this.map_.getSrs(sourceSrs_);
-    var srs2_ = this.map_.getSrs(destinationSrs_);
-    if (!srs_ || !srs2_) {
+
+MapInterface.prototype.convertCoords = function(sourceSrs, destinationSrs, coords) {
+    var srs = this.map.getSrs(sourceSrs);
+    var srs2 = this.map.getSrs(destinationSrs);
+    if (!srs || !srs2) {
         return null;
     }
 
-    return srs2_.convertCoordsFrom(coords_, srs_);
+    return srs2.convertCoordsFrom(coords, srs);
 };
 
-Melown.MapInterface.prototype.convertCoordsFromNavToPhys = function(pos_, mode_, lod_) {
-    var p_ = ["obj", pos_[0], pos_[1], mode_, pos_[2], 0, 0, 0, 10, 90 ];
-    return (new Melown.MapPosition(this.map_, p_)).getPhysCoords(lod_);
+
+MapInterface.prototype.convertCoordsFromNavToPhys = function(pos, mode, lod) {
+    var p = ["obj", pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    return this.map.convert.getPositionPhysCoords((new MapPosition(p)), lod);
 };
 
-Melown.MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos_, mode_, lod_) {
-    var p_ = ["obj", pos_[0], pos_[1], mode_, pos_[2], 0, 0, 0, 10, 90 ];
-    return (new Melown.MapPosition(this.map_, p_)).getCanvasCoords(lod_);
+
+MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos, mode, lod) {
+    var p = ["obj", pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    return this.map.convert.getPositionCanvasCoords((new MapPosition(p)), lod);
 };
 
-Melown.MapInterface.prototype.convertCoordsFromPhysToCanvas = function(pos_) {
-    var p_ = ["obj", pos_[0], pos_[1], "fix", pos_[2], 0, 0, 0, 10, 90 ];
-    return (new Melown.MapPosition(this.map_, p_)).getCanvasCoords(null, true);
+
+MapInterface.prototype.convertCoordsFromPhysToCanvas = function(pos) {
+    var p = ["obj", pos[0], pos[1], "fix", pos[2], 0, 0, 0, 10, 55 ];
+    return this.map.convert.getPositionCanvasCoords((new MapPosition(p)), null, true);
 };
 
-Melown.MapInterface.prototype.convertCoordsFromNavToCameraSpace = function(pos_, mode_, lod_) {
-    var p_ = ["obj", pos_[0], pos_[1], mode_, pos_[2], 0, 0, 0, 10, 90 ];
-    return (new Melown.MapPosition(this.map_, p_)).getCameraSpaceCoords(lod_);
+
+MapInterface.prototype.convertCoordsFromNavToCameraSpace = function(pos, mode, lod) {
+    var p = ["obj", pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    return this.map.convert.getPositionCameraSpaceCoords((new MapPosition(p)), lod);
 };
 
-Melown.MapInterface.prototype.convertCoordsFromPhysToCameraSpace = function(pos_) {
-    var p = this.map_.cameraPosition_;
-    return [pos_[0] - p[0], pos_[1] - p[1], pos_[2] - p[2]];
+
+MapInterface.prototype.convertCoordsFromPhysToCameraSpace = function(pos) {
+    var p = this.map.camera.position;
+    return [pos[0] - p[0], pos[1] - p[1], pos[2] - p[2]];
 };
 
-Melown.MapInterface.prototype.clonePosition = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).pos_;
+
+MapInterface.prototype.getPositionCanvasCoords = function(position, lod) {
+    return this.map.convert.getPositionCanvasCoords(new MapPosition(position), lod);
 };
 
-Melown.MapInterface.prototype.arePositionsSame = function(position_, position2_) {
-    p1_ = new Melown.MapPosition(this.map_, position_);
-    p2_ = new Melown.MapPosition(this.map_, position2_);
-    return !(p1_.isDifferent(p2_));
+
+MapInterface.prototype.getPositionCameraCoords = function(position, mode) {
+    return this.map.convert.getPositionCameraCoords(new MapPosition(position), mode);
 };
 
-Melown.MapInterface.prototype.setPositionCoords = function(position_, coords_) {
-    return (new Melown.MapPosition(this.map_, position_)).setCoords(coords_).pos_;
+
+MapInterface.prototype.movePositionCoordsTo = function(position, azimuth, distance, skipOrientation) {
+    return this.map.convert.movePositionCoordsTo(new MapPosition(position), azimuth, distance, skipOrientation);
 };
 
-Melown.MapInterface.prototype.getPositionCoords = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getCoords();
+
+MapInterface.prototype.getSurfaceHeight = function(coords, precision) {
+    return this.map.measure.getSurfaceHeight(coords, this.map.measure.getOptimalHeightLodBySampleSize(coords, precision));
 };
 
-Melown.MapInterface.prototype.setPositionHeight = function(position_, height_) {
-    return (new Melown.MapPosition(this.map_, position_)).setHeight(height_).pos_;
+
+MapInterface.prototype.getDistance = function(coords, coords2, includingHeight) {
+    return this.map.measure.getDistancet(coords, coords2, includingHeight);
 };
 
-Melown.MapInterface.prototype.getPositionHeight = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getHeight();
+
+MapInterface.prototype.getAzimuthCorrection = function(coords, coords2) {
+    return this.map.measure.getAzimuthCorrection(coords, coords2);
 };
 
-Melown.MapInterface.prototype.setPositionOrientation = function(position_, orientation_) {
-    return (new Melown.MapPosition(this.map_, position_)).setOrientation(orientation_).pos_;
-};
 
-Melown.MapInterface.prototype.getPositionOrientation = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getOrientation();
-};
-
-Melown.MapInterface.prototype.setPositionViewExtent = function(position_, extent_) {
-    return (new Melown.MapPosition(this.map_, position_)).setViewExtent(extent_).pos_;
-};
-
-Melown.MapInterface.prototype.getPositionViewExtent = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getViewExtent();
-};
-
-Melown.MapInterface.prototype.setPositionFov = function(position_, fov_) {
-    return (new Melown.MapPosition(this.map_, position_)).setFov(fov_);
-};
-
-Melown.MapInterface.prototype.getPositionFov = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getFov();
-};
-
-Melown.MapInterface.prototype.getPositionViewMode = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getViewMode();
-};
-
-Melown.MapInterface.prototype.getPositionHeightMode = function(position_) {
-    return (new Melown.MapPosition(this.map_, position_)).getHeightMode();
-};
-
-Melown.MapInterface.prototype.getPositionCanvasCoords = function(position_, lod_) {
-    return (new Melown.MapPosition(this.map_, position_)).getCanvasCoords(lod_);
-};
-
-Melown.MapInterface.prototype.getPositionCameraCoords = function(position_, mode_) {
-    return (new Melown.MapPosition(this.map_, position_)).getCameraCoords(mode_);
-};
-
-Melown.MapInterface.prototype.movePositionCoordsTo = function(position_, azimuth_, distance_, skipOrientation_) {
-    return (new Melown.MapPosition(this.map_, position_)).moveCoordsTo(azimuth_, distance_, skipOrientation_).pos_;
-};
-
-Melown.MapInterface.prototype.getSurfaceHeight = function(coords_, precision_) {
-    return this.map_.getSurfaceHeight(coords_, this.map_.getOptimalHeightLodBySampleSize(coords_, precision_));
-};
-
-Melown.MapInterface.prototype.getDistance = function(coords_, coords2_, includingHeight_) {
-    return this.map_.getDistancet(coords_, coords2_, includingHeight_);
-};
-
-Melown.MapInterface.prototype.getAzimuthCorrection = function(coords_, coords2_) {
-    return this.map_.getAzimuthCorrection(coords_, coords2_);
-};
-
-Melown.MapInterface.prototype.getCameraInfo = function() {
-    var camera_ = this.map_.camera_;
+MapInterface.prototype.getCameraInfo = function() {
+    var camera = this.map.camera;
     return {
-        "projection-matrix" : camera_.projection_.slice(),
-        "view-matrix" : camera_.modelview_.slice(),
-        "view-projection-matrix" : camera_.mvp_.slice(),
-        "rotation-matrix" : camera_.rotationview_.slice(),
-        "position" : this.map_.cameraPosition_.slice(),
-        "vector" : this.map_.cameraVector_.slice(),
-        "distance" : this.map_.cameraDistance_
+        "projection-matrix" : camera.camera.projection.slice(),
+        "view-matrix" : camera.camera.modelview.slice(),
+        "view-projection-matrix" : camera.camera.mvp.slice(),
+        "rotation-matrix" : camera.camera.rotationview.slice(),
+        "position" : this.map.camera.position.slice(),
+        "vector" : this.map.camera.vector.slice(),
+        "distance" : this.map.camera.distance
     };
 };
 
-Melown.MapInterface.prototype.isPointInsideCameraFrustum = function(point_) {
-    return this.map_.camera_.pointVisible(point_, this.map_.cameraPosition_);
+
+MapInterface.prototype.isPointInsideCameraFrustum = function(point) {
+    return this.map.camera.camera.pointVisible(point, this.map.camera.position);
 };
 
-Melown.MapInterface.prototype.isBBoxInsideCameraFrustum = function(bbox_) {
-    return this.map_.camera_.bboxVisible({min_:bbox_[0], max_:bbox_[1]}, this.map_.cameraPosition_);
+
+MapInterface.prototype.isBBoxInsideCameraFrustum = function(bbox) {
+    return this.map.camera.camera.bboxVisible({min:bbox[0], max:bbox[1]}, this.map.camera.position);
 };
 
-Melown.MapInterface.prototype.generateTrajectory = function(p1_, p2_, options_) {
-    p1_ = new Melown.MapPosition(this.map_, p1_);
-    p2_ = new Melown.MapPosition(this.map_, p2_);
-    return (new Melown.MapTrajectory(this.map_, p1_, p2_, options_)).generate();
+
+MapInterface.prototype.generateTrajectory = function(p1, p2, options) {
+    p1 = new MapPosition(p1);
+    p2 = new MapPosition(p2);
+    return (new MapTrajectory(this.map, p1, p2, options)).generate();
 };
 
-Melown.MapInterface.prototype.generatePIHTrajectory = function(position_, azimuth_, distance_, options_) {
-    var p_ = new Melown.MapPosition(this.map_, position_);
-    options_["distance"] = distance_;
-    options_["azimuth"] = azimuth_;
-    options_["distanceAzimuth"] = true;
-    return (new Melown.MapTrajectory(this.map_, p_, p_, options_)).generate();
+
+MapInterface.prototype.generatePIHTrajectory = function(position, azimuth, distance, options) {
+    var p = new MapPosition(position);
+    options["distance"] = distance;
+    options["azimuth"] = azimuth;
+    options["distanceAzimuth"] = true;
+    return (new MapTrajectory(this.map, p, p, options)).generate();
 };
 
-Melown.RendererInterface.prototype.setConfigParams = function(params_) {
-    this.map_.setConfigParams(params_);
+
+MapInterface.prototype.setConfigParams = function(params) {
+    this.map.setConfigParams(params);
     return this;
 };
 
-Melown.MapInterface.prototype.setConfigParam = function(key_, value_) {
-    this.map_.setConfigParam(key_, value_);
+
+MapInterface.prototype.setConfigParam = function(key, value) {
+    this.map.setConfigParam(key, value);
     return this;
 };
 
-Melown.MapInterface.prototype.getConfigParam = function(key_) {
-    return this.map_.getConfigParam(key_, value_);
+
+MapInterface.prototype.getConfigParam = function(key) {
+    return this.map.getConfigParam(key, value);
 };
 
-Melown.MapInterface.prototype.redraw = function() {
-    this.map_.markDirty();
+
+MapInterface.prototype.redraw = function() {
+    this.map.markDirty();
     return this;
 };
 
-Melown.MapInterface.prototype.addRenderSlot = function(id_, callback_, enabled_) {
-    this.map_.addRenderSlot(id_, callback_, enabled_);
+
+MapInterface.prototype.addRenderSlot = function(id, callback, enabled) {
+    this.map.renderSlots.addRenderSlot(id, callback, enabled);
     return this;    
 };
 
-Melown.MapInterface.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
-    this.map_.moveRenderSlotBefore(whichId_, whereId_);
+
+MapInterface.prototype.moveRenderSlotBefore = function(whichId, whereId) {
+    this.map.renderSlots.moveRenderSlotBefore(whichId, whereId);
     return this;    
 };
 
-Melown.MapInterface.prototype.moveRenderSlotAfter = function(whichId_, whereId_) {
-    this.map_.moveRenderSlotAfter(whichId_, whereId_);
+
+MapInterface.prototype.moveRenderSlotAfter = function(whichId, whereId) {
+    this.map.renderSlots.moveRenderSlotAfter(whichId, whereId);
     return this;    
 };
 
-Melown.MapInterface.prototype.removeRenderSlot = function(id_) {
-    this.map_.removeRenderSlot(id_);
+
+MapInterface.prototype.removeRenderSlot = function(id) {
+    this.map.renderSlots.removeRenderSlot(id);
     return this;    
 };
 
-Melown.MapInterface.prototype.setRenderSlotEnabled = function(id_, state_) {
-    this.map_.setRenderSlotEnabled(id_, state_);
+
+MapInterface.prototype.setRenderSlotEnabled = function(id, state) {
+    this.map.renderSlots.setRenderSlotEnabled(id, state);
     return this;    
 };
 
-Melown.MapInterface.prototype.getRenderSlotEnabled = function(id_) {
-    return this.map_.getRenderSlotEnabled(id_);
+
+MapInterface.prototype.getRenderSlotEnabled = function(id) {
+    return this.map.renderSlots.getRenderSlotEnabled(id);
 };
 
-Melown.MapInterface.prototype.setLoaderSuspended = function(state_) {
-    this.map_.loaderSuspended_ = state_;
+
+MapInterface.prototype.setLoaderSuspended = function(state) {
+    this.map.loaderSuspended = state;
     return this;
 };
 
-Melown.MapInterface.prototype.getLoaderSuspended = function() {
-    return this.map_.loaderSuspended_;
+
+MapInterface.prototype.getLoaderSuspended = function() {
+    return this.map.loaderSuspended;
 };
 
-Melown.MapInterface.prototype.getGpuCache = function() {
-    return this.map_.gpuCache_;
+
+MapInterface.prototype.getGpuCache = function() {
+    return this.map.gpuCache;
 };
 
-Melown.MapInterface.prototype.getHitCoords = function(screenX_, screenY_, mode_, lod_) {
-    return this.map_.getHitCoords(screenX_, screenY_, mode_, lod_);
+
+MapInterface.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
+    return this.map.getHitCoords(screenX, screenY, mode, lod);
 };
 
-Melown.MapInterface.prototype.getScreenRay = function(screenX_, screenY_) {
-    return this.map_.getScreenRay(screenX_, screenY_);
+
+MapInterface.prototype.getScreenRay = function(screenX, screenY) {
+    return this.map.getScreenRay(screenX, screenY);
 };
 
-Melown.MapInterface.prototype.getStats = function() {
-    var busyWorkers_ = 0;
-    for (var i = 0, li = this.map_.geodataProcessors_; i < li; i++) {
-        if (this.map_.geodataProcessors_[i].busy_) {
-            busyWorkers_++;
+
+MapInterface.prototype.getStats = function() {
+    var busyWorkers = 0;
+    for (var i = 0, li = this.map.geodataProcessors; i < li; i++) {
+        if (this.map.geodataProcessors[i].busy) {
+            busyWorkers++;
         }        
     }
 
     return {
-        "bestMeshTexelSize" : this.map_.bestMeshTexelSize_,
-        "bestGeodataTexelSize" : this.map_.bestGeodataTexelSize_, 
-        "downloading" : this.map_.loader_.downloading_.length,
-        "lastDownload" : this.map_.loader_.lastDownloadTime_, 
-        "surfaces" : this.map_.tree_.surfaceSequence_.length,
-        "freeLayers" : this.map_.freeLayerSequence_.length,
-        "texelSizeFit" : this.map_.texelSizeFit_,
-        "loadMode" : this.map_.config_.mapLoadMode_,
-        "processingTasks" : this.map_.processingTasks_.length,
-        "busyWorkers" : busyWorkers_,
-        "dirty" : this.map_.dirty_,
-        "drawnTiles" : this.map_.stats_.drawnTiles_,
-        "drawnGeodataTiles" : this.map_.stats_.drawnGeodataTiles_
+        "bestMeshTexelSize" : this.map.bestMeshTexelSize,
+        "bestGeodataTexelSize" : this.map.bestGeodataTexelSize, 
+        "downloading" : this.map.loader.downloading.length,
+        "lastDownload" : this.map.loader.lastDownloadTime, 
+        "surfaces" : this.map.tree.surfaceSequence.length,
+        "freeLayers" : this.map.freeLayerSequence.length,
+        "texelSizeFit" : this.map.texelSizeFit,
+        "loadMode" : this.map.config.mapLoadMode,
+        "processingTasks" : this.map.processingTasks.length,
+        "busyWorkers" : busyWorkers,
+        "dirty" : this.map.dirty,
+        "drawnTiles" : this.map.stats.drawnTiles,
+        "drawnGeodataTiles" : this.map.stats.drawnGeodataTiles
     };
 };
 
-Melown.MapInterface.prototype.click = function(screenX_, screenY_, state_) {
-    this.map_.click(screenX_, screenY_, state_);
+
+MapInterface.prototype.click = function(screenX, screenY, state) {
+    this.map.click(screenX, screenY, state);
 };
 
-Melown.MapInterface.prototype.hover = function(screenX_, screenY_, persistent_, state_) {
-    this.map_.hover(screenX_, screenY_, persistent_, state_);
+
+MapInterface.prototype.hover = function(screenX, screenY, persistent, state) {
+    this.map.hover(screenX, screenY, persistent, state);
 };
 
-Melown.MapPositionInterface = Melown.MapPosition;
 
-Melown.MapInterface.prototype["setPosition"] = Melown.MapInterface.prototype.setPosition;
-Melown.MapInterface.prototype["getPosition"] = Melown.MapInterface.prototype.getPosition;
-Melown.MapInterface.prototype["setView"] = Melown.MapInterface.prototype.setView;
-Melown.MapInterface.prototype["getView"] = Melown.MapInterface.prototype.getView;
-Melown.MapInterface.prototype["getCredits"] = Melown.MapInterface.prototype.getCredits;
-Melown.MapInterface.prototype["getCurrentCredits"] = Melown.MapInterface.prototype.getCurrentCredits;
-Melown.MapInterface.prototype["getCreditInfo"] = Melown.MapInterface.prototype.getCreditInfo;
-Melown.MapInterface.prototype["getViews"] = Melown.MapInterface.prototype.getViews;
-Melown.MapInterface.prototype["getViewInfo"] = Melown.MapInterface.prototype.getViewInfo;
-Melown.MapInterface.prototype["getBoundLayers"] = Melown.MapInterface.prototype.getBoundLayers; 
-Melown.MapInterface.prototype["getBoundLayerInfo"] = Melown.MapInterface.prototype.getBoundLayerInfo; 
-Melown.MapInterface.prototype["getFreeLayers"] = Melown.MapInterface.prototype.getFreeLayers;
-Melown.MapInterface.prototype["getFreeLayerInfo"] = Melown.MapInterface.prototype.getFreeLayerInfo; 
-Melown.MapInterface.prototype["getSurfaces"] = Melown.MapInterface.prototype.getSurfaces;
-Melown.MapInterface.prototype["getSurfaceInfo"] = Melown.MapInterface.prototype.getSurfaceInfo; 
-Melown.MapInterface.prototype["getSrses"] = Melown.MapInterface.prototype.getSrses; 
-Melown.MapInterface.prototype["getSrsInfo"] = Melown.MapInterface.prototype.getSrsInfo; 
-Melown.MapInterface.prototype["getReferenceFrame"] = Melown.MapInterface.prototype.getReferenceFrame; 
-Melown.MapInterface.prototype["addFreeLayer"] = Melown.MapInterface.prototype.addFreeLayer;
-Melown.MapInterface.prototype["removeFreeLayer"] = Melown.MapInterface.prototype.removeFreeLayer;
-//Melown.MapInterface.prototype["setFreeLayerOptions"] = Melown.MapInterface.prototype.setFreeLayerOptions;
-//Melown.MapInterface.prototype["getFreeLayerOptions"] = Melown.MapInterface.prototype.getFreeLayerOptions;
-Melown.MapInterface.prototype["addBoundLayer"] = Melown.MapInterface.prototype.addBoundLayer;
-Melown.MapInterface.prototype["removeBoundLayer"] = Melown.MapInterface.prototype.removeBoundLayer;
-//Melown.MapInterface.prototype["setBoundLayerOptions"] = Melown.MapInterface.prototype.setBoundLayerOptions;
-//Melown.MapInterface.prototype["getBoundLayerOptions"] = Melown.MapInterface.prototype.getBoundLayerOptions;
-Melown.MapInterface.prototype["convertPositionViewMode"] = Melown.MapInterface.prototype.convertPositionViewMode; 
-Melown.MapInterface.prototype["convertPositionHeightMode"] = Melown.MapInterface.prototype.convertPositionHeightMode; 
-Melown.MapInterface.prototype["convertCoords"] = Melown.MapInterface.prototype.convertCoords;
-Melown.MapInterface.prototype["convertCoordsFromNavToCanvas"] = Melown.MapInterface.prototype.convertCoordsFromNavToCanvas;
-Melown.MapInterface.prototype["convertCoordsFromPhysToCanvas"] = Melown.MapInterface.prototype.convertCoordsFromPhysToCanvas;
-Melown.MapInterface.prototype["convertCoordsFromNavToCameraSpace"] = Melown.MapInterface.prototype.convertCoordsFromNavToCameraSpace; //remove?
-Melown.MapInterface.prototype["convertCoordsFromPhysToCameraSpace"] = Melown.MapInterface.prototype.convertCoordsFromPhysToCameraSpace;
-Melown.MapInterface.prototype["clonePosition"] = Melown.MapInterface.prototype.clonePosition; 
-Melown.MapInterface.prototype["setPositionCoords"] = Melown.MapInterface.prototype.setPositionCoords; 
-Melown.MapInterface.prototype["getPositionCoords"] = Melown.MapInterface.prototype.getPositionCoords; 
-Melown.MapInterface.prototype["setPositionHeight"] = Melown.MapInterface.prototype.setPositionHeight; 
-Melown.MapInterface.prototype["getPositionHeight"] = Melown.MapInterface.prototype.getPositionHeight; 
-Melown.MapInterface.prototype["setPositionOrientation"] = Melown.MapInterface.prototype.setPositionOrientation; 
-Melown.MapInterface.prototype["getPositionOrientation"] = Melown.MapInterface.prototype.getPositionOrientation; 
-Melown.MapInterface.prototype["setPositionViewExtent"] = Melown.MapInterface.prototype.setPositionViewExtent;
-Melown.MapInterface.prototype["getPositionViewExtent"] = Melown.MapInterface.prototype.getPositionViewExtent; 
-Melown.MapInterface.prototype["setPositionFov"] = Melown.MapInterface.prototype.setPositionFov;
-Melown.MapInterface.prototype["getPositionFov"] = Melown.MapInterface.prototype.getPositionFov; 
-Melown.MapInterface.prototype["getPositionViewMode"] = Melown.MapInterface.prototype.getPositionViewMode; 
-Melown.MapInterface.prototype["getPositionHeightMode"] = Melown.MapInterface.prototype.getPositionHeightMode; 
-Melown.MapInterface.prototype["getPositionCanvasCoords"] = Melown.MapInterface.prototype.getPositionCanvasCoords; 
-Melown.MapInterface.prototype["getPositionCameraCoords"] = Melown.MapInterface.prototype.getPositionCameraCoords; 
-Melown.MapInterface.prototype["movePositionCoordsTo"] = Melown.MapInterface.prototype.movePositionCoordsTo;
-Melown.MapInterface.prototype["getSurfaceHeight"] = Melown.MapInterface.prototype.getSurfaceHeight;
-Melown.MapInterface.prototype["getDistance"] = Melown.MapInterface.prototype.getDistance;
-Melown.MapInterface.prototype["getAzimuthCorrection"] = Melown.MapInterface.prototype.getAzimuthCorrection; 
-Melown.MapInterface.prototype["getCameraInfo"] = Melown.MapInterface.prototype.getCameraInfo;
-Melown.MapInterface.prototype["isPointInsideCameraFrustum"] = Melown.MapInterface.prototype.isPointInsideCameraFrustum;
-Melown.MapInterface.prototype["isBBoxInsideCameraFrustum"] = Melown.MapInterface.prototype.isBBoxInsideCameraFrustum;
-Melown.MapInterface.prototype["generateTrajectory"] = Melown.MapInterface.prototype.generateTrajectory; 
-Melown.MapInterface.prototype["setConfigParam"] = Melown.MapInterface.prototype.setConfigParam;
-Melown.MapInterface.prototype["getConfigParam"] = Melown.MapInterface.prototype.getConfigParam; 
-Melown.MapInterface.prototype["redraw"] = Melown.MapInterface.prototype.redraw;
-Melown.MapInterface.prototype["addRenderSlot"] = Melown.MapInterface.prototype.addRenderSlot; 
-Melown.MapInterface.prototype["moveRenderSlotBefore"] = Melown.MapInterface.prototype.moveRenderSlotBefore; 
-Melown.MapInterface.prototype["moveRenderSlotAfter"] = Melown.MapInterface.prototype.moveRenderSlotAfter;
-Melown.MapInterface.prototype["removeRenderSlot"] = Melown.MapInterface.prototype.removeRenderSlot;
-Melown.MapInterface.prototype["setRenderSlotEnabled"] = Melown.MapInterface.prototype.setRenderSlotEnabled; 
-Melown.MapInterface.prototype["getRenderSlotEnabled"] = Melown.MapInterface.prototype.getRenderSlotEnabled; 
-Melown.MapInterface.prototype["setLoaderSuspended"] = Melown.MapInterface.prototype.setLoaderSuspended;
-Melown.MapInterface.prototype["getLoaderSuspended"] = Melown.MapInterface.prototype.getLoaderSuspended; 
-Melown.MapInterface.prototype["getGpuCache"] = Melown.MapInterface.prototype.getGpuCache;
-Melown.MapInterface.prototype["getHitCoords"] = Melown.MapInterface.prototype.getHitCoords;
-Melown.MapInterface.prototype["getScreenRay"] = Melown.MapInterface.prototype.getScreenRay;
-Melown.MapInterface.prototype["getStats"] = Melown.MapInterface.prototype.getStats;
-Melown.MapInterface.prototype["click"] = Melown.MapInterface.prototype.click;
-Melown.MapInterface.prototype["hover"] = Melown.MapInterface.prototype.hover;
+export default MapInterface;
 
+
+/*
+MapInterface.prototype["setPosition"] = MapInterface.prototype.setPosition;
+MapInterface.prototype["getPosition"] = MapInterface.prototype.getPosition;
+MapInterface.prototype["setView"] = MapInterface.prototype.setView;
+MapInterface.prototype["getView"] = MapInterface.prototype.getView;
+MapInterface.prototype["getCredits"] = MapInterface.prototype.getCredits;
+MapInterface.prototype["getCurrentCredits"] = MapInterface.prototype.getCurrentCredits;
+MapInterface.prototype["getCreditInfo"] = MapInterface.prototype.getCreditInfo;
+MapInterface.prototype["getViews"] = MapInterface.prototype.getViews;
+MapInterface.prototype["getViewInfo"] = MapInterface.prototype.getViewInfo;
+MapInterface.prototype["getBoundLayers"] = MapInterface.prototype.getBoundLayers; 
+MapInterface.prototype["getBoundLayerInfo"] = MapInterface.prototype.getBoundLayerInfo; 
+MapInterface.prototype["getFreeLayers"] = MapInterface.prototype.getFreeLayers;
+MapInterface.prototype["getFreeLayerInfo"] = MapInterface.prototype.getFreeLayerInfo; 
+MapInterface.prototype["getSurfaces"] = MapInterface.prototype.getSurfaces;
+MapInterface.prototype["getSurfaceInfo"] = MapInterface.prototype.getSurfaceInfo; 
+MapInterface.prototype["getSrses"] = MapInterface.prototype.getSrses; 
+MapInterface.prototype["getSrsInfo"] = MapInterface.prototype.getSrsInfo; 
+MapInterface.prototype["getReferenceFrame"] = MapInterface.prototype.getReferenceFrame; 
+MapInterface.prototype["addFreeLayer"] = MapInterface.prototype.addFreeLayer;
+MapInterface.prototype["removeFreeLayer"] = MapInterface.prototype.removeFreeLayer;
+//MapInterface.prototype["setFreeLayerOptions"] = MapInterface.prototype.setFreeLayerOptions;
+//MapInterface.prototype["getFreeLayerOptions"] = MapInterface.prototype.getFreeLayerOptions;
+MapInterface.prototype["addBoundLayer"] = MapInterface.prototype.addBoundLayer;
+MapInterface.prototype["removeBoundLayer"] = MapInterface.prototype.removeBoundLayer;
+//MapInterface.prototype["setBoundLayerOptions"] = MapInterface.prototype.setBoundLayerOptions;
+//MapInterface.prototype["getBoundLayerOptions"] = MapInterface.prototype.getBoundLayerOptions;
+MapInterface.prototype["convertPositionViewMode"] = MapInterface.prototype.convertPositionViewMode; 
+MapInterface.prototype["convertPositionHeightMode"] = MapInterface.prototype.convertPositionHeightMode; 
+MapInterface.prototype["convertCoords"] = MapInterface.prototype.convertCoords;
+MapInterface.prototype["convertCoordsFromNavToCanvas"] = MapInterface.prototype.convertCoordsFromNavToCanvas;
+MapInterface.prototype["convertCoordsFromPhysToCanvas"] = MapInterface.prototype.convertCoordsFromPhysToCanvas;
+MapInterface.prototype["convertCoordsFromNavToCameraSpace"] = MapInterface.prototype.convertCoordsFromNavToCameraSpace; //remove?
+MapInterface.prototype["convertCoordsFromPhysToCameraSpace"] = MapInterface.prototype.convertCoordsFromPhysToCameraSpace;
+MapInterface.prototype["getPositionCanvasCoords"] = MapInterface.prototype.getPositionCanvasCoords; 
+MapInterface.prototype["getPositionCameraCoords"] = MapInterface.prototype.getPositionCameraCoords; 
+MapInterface.prototype["movePositionCoordsTo"] = MapInterface.prototype.movePositionCoordsTo;
+MapInterface.prototype["getSurfaceHeight"] = MapInterface.prototype.getSurfaceHeight;
+MapInterface.prototype["getDistance"] = MapInterface.prototype.getDistance;
+MapInterface.prototype["getAzimuthCorrection"] = MapInterface.prototype.getAzimuthCorrection; 
+MapInterface.prototype["getCameraInfo"] = MapInterface.prototype.getCameraInfo;
+MapInterface.prototype["isPointInsideCameraFrustum"] = MapInterface.prototype.isPointInsideCameraFrustum;
+MapInterface.prototype["isBBoxInsideCameraFrustum"] = MapInterface.prototype.isBBoxInsideCameraFrustum;
+MapInterface.prototype["generateTrajectory"] = MapInterface.prototype.generateTrajectory; 
+MapInterface.prototype["setConfigParam"] = MapInterface.prototype.setConfigParam;
+MapInterface.prototype["getConfigParam"] = MapInterface.prototype.getConfigParam; 
+MapInterface.prototype["redraw"] = MapInterface.prototype.redraw;
+MapInterface.prototype["addRenderSlot"] = MapInterface.prototype.addRenderSlot; 
+MapInterface.prototype["moveRenderSlotBefore"] = MapInterface.prototype.moveRenderSlotBefore; 
+MapInterface.prototype["moveRenderSlotAfter"] = MapInterface.prototype.moveRenderSlotAfter;
+MapInterface.prototype["removeRenderSlot"] = MapInterface.prototype.removeRenderSlot;
+MapInterface.prototype["setRenderSlotEnabled"] = MapInterface.prototype.setRenderSlotEnabled; 
+MapInterface.prototype["getRenderSlotEnabled"] = MapInterface.prototype.getRenderSlotEnabled; 
+MapInterface.prototype["setLoaderSuspended"] = MapInterface.prototype.setLoaderSuspended;
+MapInterface.prototype["getLoaderSuspended"] = MapInterface.prototype.getLoaderSuspended; 
+MapInterface.prototype["getGpuCache"] = MapInterface.prototype.getGpuCache;
+MapInterface.prototype["getHitCoords"] = MapInterface.prototype.getHitCoords;
+MapInterface.prototype["getScreenRay"] = MapInterface.prototype.getScreenRay;
+MapInterface.prototype["getStats"] = MapInterface.prototype.getStats;
+MapInterface.prototype["click"] = MapInterface.prototype.click;
+MapInterface.prototype["hover"] = MapInterface.prototype.hover;
+*/

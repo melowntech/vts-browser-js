@@ -1,57 +1,66 @@
+
 /**
  * @constructor
  */
-Melown.Roi.ProcessQueue = function(options_) {
-    this.options_ = options_;
+var RoiProcessQueue = function(options) {
+    this.options = options;
 
     // queue
-    this.enqueued_ = [];
+    this.enqueued = [];
 
     // options properties
-    this.opsPerTick_ = 1;
+    this.opsPerTick = 1;
 
-    if (typeof this.options_ === 'object' && this.options_ !== null) {
-        this.opsPerTick_ = this.options_.opsPerTick_ || 1;
+    if (typeof this.options === 'object' && this.options !== null) {
+        this.opsPerTick = this.options.opsPerTick || 1;
     }
 };
 
-Melown.Roi.ProcessQueue.prototype.tick = function() {
-    for (var i = 0; i < this.opsPerTick_; i++) {
-        if (this.enqueued_.length) {
-            var task_ = this.enqueued_.pop();
-            task_();
+
+RoiProcessQueue.prototype.tick = function() {
+    for (var i = 0; i < this.opsPerTick; i++) {
+        if (this.enqueued.length) {
+            var task = this.enqueued.pop();
+            task();
         } else {
             break;
         }
     }
 };
 
-Melown.Roi.ProcessQueue.prototype.enqueue = function(task_) {
-    if (typeof task_ !== 'function') {
+
+RoiProcessQueue.prototype.enqueue = function(task) {
+    if (typeof task !== 'function') {
         return;
     }
-    for (var i in this.enqueued_) {
-        if (this.enqueued_[i] === task_) {
-            this.enqueued_.splice(i, 1);
+    for (var i in this.enqueued) {
+        if (this.enqueued[i] === task) {
+            this.enqueued.splice(i, 1);
             break;
         }
     }
-    this.enqueued_.push(task_);
+    this.enqueued.push(task);
 };
 
-Melown.Roi.ProcessQueue.prototype.enqueued = function() {
-    this.enqueued_;
+
+RoiProcessQueue.prototype.enqueued = function() {
+    this.enqueued;
 };
 
-Melown.Roi.ProcessQueue.prototype.denqueue = function(task_) {
-    if (typeof task_ !== 'function') {
+
+RoiProcessQueue.prototype.denqueue = function(task) {
+    if (typeof task !== 'function') {
         return;
     }
 
-    for (var i in this.enqueued_) {
-        if (this.enqueued_[i] === task_) {
-            this.enqueued_.splice(i, 1);
+    for (var i in this.enqueued) {
+        if (this.enqueued[i] === task) {
+            this.enqueued.splice(i, 1);
             break;
         }
     }
 };
+
+
+export default RoiProcessQueue;
+

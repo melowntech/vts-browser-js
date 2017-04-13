@@ -1,95 +1,153 @@
 
-Melown.Map.prototype.updateCamera = function() {
-    var controlMode_ = "observer";
-    var position_ = [0,0,0];
-    var orientation_ = this.position_.getOrientation();
+import {vec3 as vec3_} from '../utils/matrix';
+import {math as math_} from '../utils/math';
 
-    this.updateCameraMatrix_ = Melown.mat4.create();
+//get rid of compiler mess
+var vec3 = vec3_;
+var math = math_;
+
+
+var MapCamera = function(map) {
+    this.map = map;
+    this.camera = map.renderer.camera;
+    this.distance = 10;
+    this.distance2 = 10;
+    this.position = [0,0,0];
+    this.vector = [0,0,1];
+    this.center = [0,0,0];
+    this.height = 0;
+    this.terrainHeight = 0;
+    this.lastTerrainHeight = 0;
+};
+
+
+MapCamera.prototype.update = function() {
+    var controlMode = "observer";
+    var map = this.map;
+    var position = [0,0,0];
+    var orientation = map.position.getOrientation();
 
     //check position orientaion ...
-    this.position_.check();
+    map.position.check();
 
-    //var height_ = 227;
-    var height_ = this.position_.getHeight();
+    //var height = 227;
+    var height = map.position.getHeight();
 
-    var lod_ =  this.getOptimalHeightLod(this.position_.getCoords(), this.position_.getViewExtent(), this.config_.mapNavSamplesPerViewExtent_);
-    //var surfaceHeight_ = [226,true,true]; //this.getSurfaceHeight(this.position_.getCoords(), lod_, true);
-    var surfaceHeight_ = this.getSurfaceHeight(this.position_.getCoords(), lod_, true);
+    var lod =  map.measure.getOptimalHeightLod(map.position.getCoords(), map.position.getViewExtent(), map.config.mapNavSamplesPerViewExtent);
+    //var surfaceHeight = [226,true,true]; //map.getSurfaceHeight(map.position.getCoords(), lod, true);
+    var surfaceHeight = map.measure.getSurfaceHeight(map.position.getCoords(), lod, true);
     
-    this.stats_.heightTerrain_ = surfaceHeight_[0];
-    this.stats_.heightDelta_ = height_;
+    map.stats.heightTerrain = surfaceHeight[0];
+    map.stats.heightDelta = height;
 
-    //console.log("terrain height:" + surfaceHeight_[0] + "  pos height:" + this.position_.getHeight());
+    //console.log("terrain height:" + surfaceHeight[0] + "  pos height:" + map.position.getHeight());
 
-    if (this.position_.getHeightMode() == "float") {
-        height_ += surfaceHeight_[0];
+    if (map.position.getHeightMode() == "float") {
+        height += surfaceHeight[0];
     }
 
-    var camInfo_ = this.position_.getCameraInfo(this.getNavigationSrs().isProjected());
+    var camInfo = map.measure.getPositionCameraInfo(map.position, map.getNavigationSrs().isProjected());
 
-    this.camera_.setPosition(camInfo_.orbitCoords_);
-    this.camera_.setRotationMatrix(camInfo_.rotMatrix_);
-    this.cameraVector_ = camInfo_.vector_;
-    this.cameraVector2_ = camInfo_.vector2_;
-    this.cameraPosition_ = camInfo_.orbitCoords_;
-    this.cameraHeight_ = camInfo_.orbitHeight_ + height_;
-    this.cameraTerrainHeight_ = this.cameraHeight_ - surfaceHeight_[0];
+    this.camera.setPosition(camInfo.orbitCoords);
+    this.camera.setRotationMatrix(camInfo.rotMatrix);
+    this.vector = camInfo.vector;
+    this.vector2 = camInfo.vector2;
+    this.position = camInfo.orbitCoords;
+    this.height = camInfo.orbitHeight + height;
+    this.terrainHeight = this.height - surfaceHeight[0];
 
     //get camera distance
-    this.cameraDistance2_ = this.position_.getViewDistance();
-    this.cameraDistance_ = Math.max(this.cameraTerrainHeight_, this.cameraDistance2_);
-    this.cameraDistance_ = Melown.clamp(this.cameraDistance_, 0.1, this.camera_.getFar());
+    this.distance2 = map.position.getViewDistance();
+    this.distance = Math.max(this.terrainHeight, this.distance2);
+    this.distance = math.clamp(this.distance, 0.1, this.camera.getFar());
 
-    this.cameraDistanceFactor_ = Math.tan(Melown.radians(this.position_.getFov()*0.5)); 
+    this.distanceFactor = Math.tan(math.radians(map.position.getFov()*0.5)); 
 
-    this.cameraPerceivedDistance_ = Math.max(this.cameraTerrainHeight_, this.cameraDistance2_ * this.cameraDistanceFactor_);
+    this.perceivedDistance = Math.max(this.terrainHeight, this.distance2 * this.distanceFactor);
     
-    //this.renderer_.cameraDistance_ = camInfo_.distance_; //needed for fog
-    this.renderer_.cameraDistance_ = this.cameraDistance_; //needed for fog
+    //this.renderer.cameraDistance = camInfo.distance; //needed for fog
+    map.renderer.cameraDistance = this.distance; //needed for fog
 
-    if (!this.getNavigationSrs().isProjected()) { //HACK!!!!!!!!
-        //this.position_.setHeight(0);
-    }
-
-    this.camera_.setViewHeight(this.position_.getViewExtent());
-    //this.camera_.setOrtho(true);
+    this.camera.setViewHeight(map.position.getViewExtent());
+    //this.camera.setOrtho(true);
 
     //convert nav coords to physical
-    var coords_ = this.position_.getCoords();
-    var worldPos_ = this.convertCoords([coords_[0], coords_[1], height_], "navigation", "physical");
-    this.cameraCenter_ = [worldPos_[0], worldPos_[1], worldPos_[2]];
-	worldPos_[0] += camInfo_.orbitCoords_[0];
-	worldPos_[1] += camInfo_.orbitCoords_[1];
-	worldPos_[2] += camInfo_.orbitCoords_[2];
-    this.camera_.setPosition([0,0,0]); //always zeros
-    this.cameraPosition_ = worldPos_;
+    var coords = map.position.getCoords();
+    var worldPos = map.convert.convertCoords([coords[0], coords[1], height], "navigation", "physical");
+    this.center = [worldPos[0], worldPos[1], worldPos[2]];
+	worldPos[0] += camInfo.orbitCoords[0];
+	worldPos[1] += camInfo.orbitCoords[1];
+	worldPos[2] += camInfo.orbitCoords[2];
+    this.camera.setPosition([0,0,0]); //always zeros
+    this.position = worldPos;
+
+    if (!map.getNavigationSrs().isProjected()) { //HACK!!!!!!!!
+        this.geocentDistance = vec3.length(this.position);
+
+        var n = [0,0,0];
+        vec3.normalize(this.position, n);
+        this.geocentNormal = n;
+    }
+
     
-    //console.log("word-pos: " + JSON.stringify(worldPos_));
+    //console.log("word-pos: " + JSON.stringify(worldPos));
 
     //set near and far of camera by distance of orbit
-    var factor_ = Math.max(this.cameraHeight_, this.cameraDistance_) / 600000;
+    var factor = Math.max(this.height, this.distance) / 600000;
 
-    var near_ = Math.max(2, 2 * (factor_ * 20));
-    factor_ = Math.max(1.0, factor_);
-    var far_ = 600000 * (factor_ * 10);
+    var near = Math.max(2, 2 * (factor * 20));
+    factor = Math.max(1.0, factor);
+    var far = 600000 * (factor * 10);
 
-    //console.log("near: " + near_ + "  far: " + far_);
+    //console.log("near: " + near + "  far: " + far);
 
-    this.camera_.setParams(this.position_.getFov()*0.5, near_, far_ * 2.0);
+    this.camera.setParams(map.position.getFov()*0.5, near, far * 2.0);
     
-    return camInfo_;
+    return camInfo;
 };
 
-Melown.Map.prototype.cameraHeight = function() {
+
+MapCamera.prototype.getCameraHeight = function() {
     //TODO: get camera height
-    //var cameraPos_ = this.camera_.position_;
-    //return (this.camera_.getPosition()[2] - this.planet_.surfaceHeight([this.position_[0] + cameraPos_[0], this.position_[1] + cameraPos_[1]])[0]);
+    //var cameraPos = this.camera.position;
+    //return (this.camera.getPosition()[2] - this.planet.surfaceHeight([this.position[0] + cameraPos[0], this.position[1] + cameraPos[1]])[0]);
 
     //hack - distance intead of height
-    //return this.cameraDistance_;
-    return this.cameraHeight_;
+    //return this.cameraDistance;
+    return this.cameraHeight;
 };
 
 
+MapCamera.prototype.getMvpMatrix = function() {
+    return this.camera.getMvpMatrix();
+};
+
+
+MapCamera.prototype.getRotationMatrix = function() {
+    return this.camera.getRotationMatrix();
+};
+
+
+MapCamera.prototype.getRotationviewMatrix = function() {
+    return this.camera.getRotationviewMatrix();
+};
+
+
+MapCamera.prototype.getFar = function() {
+    return this.camera.getFar();
+};
+
+
+MapCamera.prototype.getFov = function() {
+    return this.camera.getFov();
+};
+
+
+MapCamera.prototype.getAspect = function() {
+    return this.camera.getAspect();
+};
+
+
+export default MapCamera;
 
 

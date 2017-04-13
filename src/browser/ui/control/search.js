@@ -1,120 +1,131 @@
-/**
- * @constructor
- */
-Melown.UIControlSearch = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.browser_ = ui_.browser_;
+
+import Dom_ from '../../utility/dom';
+import {utils as utils_} from '../../../core/utils/utils';
+
+//get rid of compiler mess
+var dom = Dom_;
+var utils = utils_;
+
+
+var UIControlSearch = function(ui, visible) {
+    this.ui = ui;
+    this.browser = ui.browser;
     
-    var element_ = this.browser_.config_.controlSearchElement_;
-    if (element_) {
-        if (typeof element_ === "string") {
-            element_ = document.getElementById(element_);
+    var element = this.browser.config.controlSearchElement;
+    if (element) {
+        if (typeof element === "string") {
+            element = document.getElementById(element);
         }
     }
     
-    this.control_ = this.ui_.addControl("search",
-      '<div class="melown-search">'
-      + '<div class="melown-search-input"><input type="text" id="melown-search-input" autocomplete="off" spellcheck="false" placeholder="Search location..."></div>'      
-      + '<div id="melown-search-list" class="melown-search-list"></div>'      
-      + '</div>', visible_, element_);
+    this.control = this.ui.addControl("search",
+      '<div class="vts-search">'
+      + '<div class="vts-search-input"><input type="text" id="vts-search-input" autocomplete="off" spellcheck="false" placeholder="Search location..."></div>'      
+      + '<div id="vts-search-list" class="vts-search-list"></div>'      
+      + '</div>', visible, element);
 
-    this.input_ = this.control_.getElement("melown-search-input");
+    this.input = this.control.getElement("vts-search-input");
     
-    //this.input_.on("change", this.onChange.bind(this));
-    this.input_.on("input", this.onChange.bind(this));
-    this.input_.on("keydown", this.onKeyUp.bind(this));
-    this.input_.on("focus", this.onFocus.bind(this));
-    this.input_.on('mousedown', this.onDrag2.bind(this));
-    this.input_.on('mousewheel', this.onDrag.bind(this));
+    //this.input.on("change", this.onChange.bind(this));
+    this.input.on("input", this.onChange.bind(this));
+    this.input.on("keydown", this.onKeyUp.bind(this));
+    this.input.on("focus", this.onFocus.bind(this));
+    this.input.on('mousedown', this.onDrag2.bind(this));
+    this.input.on('mousewheel', this.onDrag.bind(this));
 
-    this.list_ = this.control_.getElement("melown-search-list");
-    this.list_.on('mousedown', this.onDrag2.bind(this));
-    this.list_.on('mousewheel', this.onDrag.bind(this));
+    this.list = this.control.getElement("vts-search-list");
+    this.list.on('mousedown', this.onDrag2.bind(this));
+    this.list.on('mousewheel', this.onDrag.bind(this));
 
-    this.mapControl_ = this.ui_.getMapControl();
-    this.mapElement_ = this.mapControl_.getMapElement();
-    this.mapElement_.on('mousedown', this.onDrag.bind(this), window);
-    this.mapElement_.on('mousewheel', this.onDrag.bind(this), window);
+    this.mapControl = this.ui.getMapControl();
+    this.mapElement = this.mapControl.getMapElement();
+    this.mapElement.on('mousedown', this.onDrag.bind(this), window);
+    this.mapElement.on('mousewheel', this.onDrag.bind(this), window);
 
-    this.ignoreDrag_ = false; 
+    this.ignoreDrag = false; 
 
-    this.urlTemplate_ = "https://www.windytv.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l";
-    this.data_ = [];
-    this.lastSearch_ = "";
-    this.itemIndex_ = -1;
-    this.searchCounter_ = 0;
-    this.coordsSrs_ = "+proj=longlat +datum=WGS84 +no_defs";
+    this.urlTemplate = "https://www.windytv.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l";
+    this.data = [];
+    this.lastSearch = "";
+    this.itemIndex = -1;
+    this.searchCounter = 0;
+    this.coordsSrs = "+proj=longlat +datum=WGS84 +nodefs";
 
-    this.initialValueUsed_ = false;
+    this.initialValueUsed = false;
 
-    if (this.browser_.config_.controlSearchValue_) {
-        this.initialValueUsed_ = true;
-        this.input_.getElement().value = this.browser_.config_.controlSearchValue_;
+    if (this.browser.config.controlSearchValue) {
+        this.initialValueUsed = true;
+        this.input.getElement().value = this.browser.config.controlSearchValue;
         this.onChange();
     }
 };
 
-Melown.UIControlSearch.prototype.processTemplate = function(str_, obj_) {
-    return str_.replace(/\{([_$a-zA-Z0-9][_$a-zA-Z0-9]*)\}/g, function(s, match_) {
-        return (match_ in obj_ ? obj_[match_] : s);
+
+UIControlSearch.prototype.processTemplate = function(str, obj) {
+    return str.replace(/\{([$a-zA-Z0-9][$a-zA-Z0-9]*)\}/g, function(s, match) {
+        return (match in obj ? obj[match] : s);
     });
 };
 
-Melown.UIControlSearch.prototype.showList = function(event_) {
-    this.list_.setStyle("display", "block");
+
+UIControlSearch.prototype.showList = function(event) {
+    this.list.setStyle("display", "block");
 };
 
-Melown.UIControlSearch.prototype.hideList = function(event_) {
-    //this.data_ = {};
-    this.list_.setStyle("display", "none");
+
+UIControlSearch.prototype.hideList = function(event) {
+    //this.data = {};
+    this.list.setStyle("display", "none");
 };
 
-Melown.UIControlSearch.prototype.moveSelector = function(delta_) {
-    //this.data_ = {};
-    this.itemIndex_ += delta_;
 
-    if (this.itemIndex_ >= this.data_.length) {
-        this.itemIndex_ = this.data_.length - 1;
+UIControlSearch.prototype.moveSelector = function(delta) {
+    //this.data = {};
+    this.itemIndex += delta;
+
+    if (this.itemIndex >= this.data.length) {
+        this.itemIndex = this.data.length - 1;
     }
     
-    if (this.itemIndex_ < 0) {
-        this.itemIndex_ = 0;
+    if (this.itemIndex < 0) {
+        this.itemIndex = 0;
     }
     
-    this.updateList({"data" : this.data_});
+    this.updateList({"data" : this.data});
 };
 
-Melown.UIControlSearch.prototype.updateList = function(json_) {
-    if (json_["data"]) {
-        var list_ = "";
-        var data_ = json_["data"];
-        data_ = data_.slice(0,10);
-        this.data_ = data_; 
+
+UIControlSearch.prototype.updateList = function(json) {
+    if (json["data"]) {
+        var list = "";
+        var data = json["data"];
+        data = data.slice(0,10);
+        this.data = data; 
         
-        for (var i = 0, li = data_.length; i < li; i++) {
-            var item_ = data_[i];
+        for (var i = 0, li = data.length; i < li; i++) {
+            var item = data[i];
 
-            if (this.itemIndex_ == i) {
-                list_ += '<div id="melown-search-item' + i + '"'+ ' class="melown-search-listitem-selected">' + item_["title"] + ' ' + (item_["region"] ? item_["region"] : "") + '</div>';
+            if (this.itemIndex == i) {
+                list += '<div id="vts-search-item' + i + '"'+ ' class="vts-search-listitem-selected">' + item["title"] + ' ' + (item["region"] ? item["region"] : "") + '</div>';
             } else {
-                list_ += '<div id="melown-search-item' + i + '"'+ ' class="melown-search-listitem">' + item_["title"] + ' ' + (item_["region"] ? item_["region"] : "") + '</div>';
+                list += '<div id="vts-search-item' + i + '"'+ ' class="vts-search-listitem">' + item["title"] + ' ' + (item["region"] ? item["region"] : "") + '</div>';
             }
                 
         }
         
-        this.list_.setHtml(list_);
+        this.list.setHtml(list);
 
-        for (var i = 0, li = data_.length; i < li; i++) {
-            var id_ = "melown-search-item" + i;
-            var item_ = this.control_.getElement(id_);
+        for (var i = 0, li = data.length; i < li; i++) {
+            var id = "vts-search-item" + i;
+            var item = this.control.getElement(id);
             
-            if (item_) {
-                item_.on("click", this.onSelectItem.bind(this, i));
-                item_.on("mouseenter", this.onHoverItem.bind(this, i));
+            if (item) {
+                item.on("click", this.onSelectItem.bind(this, i));
+                item.on("mouseenter", this.onHoverItem.bind(this, i));
             }
         }
 
-        if (!this.initialValueUsed_) {
+        if (!this.initialValueUsed) {
             this.showList();
         }
     } else {
@@ -122,158 +133,171 @@ Melown.UIControlSearch.prototype.updateList = function(json_) {
     }
 };
 
-Melown.UIControlSearch.prototype.onSelectItem = function(index_, event_) {
-    var map_ = this.browser_.getMap();
-    if (map_ == null) {
+
+UIControlSearch.prototype.onSelectItem = function(index, event) {
+    var map = this.browser.getMap();
+    if (map == null) {
         return;
     }
 
-    var pos_ = map_.getPosition();
-    //var coords_ = map_.getPositionCoords(pos_);                
+    var pos = map.getPosition();
+    //var coords = map.getPositionCoords(pos);                
 
-    var item_ = this.data_[index_];
-    if (item_) {
-        var coords_ = [item_["lon"], item_["lat"]];
+    var item = this.data[index];
+    if (item) {
+        var coords = [item["lon"], item["lat"]];
         
         //conver coords from location srs to map navigation srs         
-        var refFrame_ = map_.getReferenceFrame();
-        var navigationSrsId_ = refFrame_["navigationSrs"];
-        var navigationSrs_ = map_.getSrsInfo(navigationSrsId_);
+        var refFrame = map.getReferenceFrame();
+        var navigationSrsId = refFrame["navigationSrs"];
+        var navigationSrs = map.getSrsInfo(navigationSrsId);
         
-        var proj4_ = this.browser_.getProj4();
-        coords_ = proj4_(this.coordsSrs_, navigationSrs_["srsDef"], coords_);
+        var proj4 = this.browser.getProj4();
+        coords = proj4(this.coordsSrs, navigationSrs["srsDef"], coords);
+        coords[2] = 0;
 
-        pos_ = map_.setPositionCoords(pos_, coords_);
+        pos.setCoords(coords);
         
         //try to guess view extent from location type
-        var viewExtent_ = 10000;                
+        var viewExtent = 10000;                
 
-        switch(item_["type"]) {
-            case "peak": viewExtent_ = 20000; break;
-            case "city": viewExtent_ = 30000; break;                
-            case "street": viewExtent_ = 4000; break;
-            case "residential": viewExtent_ = 3000; break;               
+        switch(item["type"]) {
+            case "peak": viewExtent = 20000; break;
+            case "city": viewExtent = 30000; break;                
+            case "street": viewExtent = 4000; break;
+            case "residential": viewExtent = 3000; break;               
         }
         
-        pos_ = map_.setPositionViewExtent(pos_, viewExtent_);                
-        pos_ = map_.setPositionOrientation(pos_, [0,-60,0]);                
+        pos.setViewExtent(viewExtent);                
+        pos.setOrientation([0,-60,0]);                
 
-        map_.setPosition(pos_);
+        map.setPosition(pos);
         
-        this.itemIndex_ = index_;
-        this.lastSearch_ = item_["title"];
+        this.itemIndex = index;
+        this.lastSearch = item["title"];
         
-        var element_ = this.input_.getElement();  
-        element_.value = this.lastSearch_;
-        element_.blur(); //defocus 
+        var element = this.input.getElement();  
+        element.value = this.lastSearch;
+        element.blur(); //defocus 
     }
 
     this.hideList();
 };
 
-Melown.UIControlSearch.prototype.onHoverItem = function(index_, event_) {
-    if (this.itemIndex_ == index_) {
+
+UIControlSearch.prototype.onHoverItem = function(index, event) {
+    if (this.itemIndex == index) {
         return;
     }
 
-    this.itemIndex_ = index_;
-    this.updateList({"data" : this.data_});
+    this.itemIndex = index;
+    this.updateList({"data" : this.data});
 };
 
-Melown.UIControlSearch.prototype.onListLoaded = function(counter_, data_) {
-    if (this.searchCounter_ == counter_) {
-        this.updateList(data_);
+
+UIControlSearch.prototype.onListLoaded = function(counter, data) {
+    if (this.searchCounter == counter) {
+        this.updateList(data);
     }
 };
 
-Melown.UIControlSearch.prototype.onListLoadError = function(event_) {
+
+UIControlSearch.prototype.onListLoadError = function(event) {
 };
 
-Melown.UIControlSearch.prototype.onFocus = function(event_) {
-    this.lastSearch_ = "";
-    var element_ = this.input_.getElement();  
-    element_.value = this.lastSearch_;
+
+UIControlSearch.prototype.onFocus = function(event) {
+    this.lastSearch = "";
+    var element = this.input.getElement();  
+    element.value = this.lastSearch;
     this.hideList();
 };
 
-Melown.UIControlSearch.prototype.onKeyPress = function(event_) {
+
+UIControlSearch.prototype.onKeyPress = function(event) {
         console.log("press");
 
-    this.onKeyUp(event_);
+    this.onKeyUp(event);
 };
 
-Melown.UIControlSearch.prototype.onKeyUp = function(event_) {
-    var code_ = event_.getKeyCode();
+
+UIControlSearch.prototype.onKeyUp = function(event) {
+    var code = event.getKeyCode();
     
-    switch(code_) {
+    switch(code) {
         case 38:  //up
             this.moveSelector(-1);
-            Melown.Utils.preventDefault(event_);
-            Melown.Utils.stopPropagation(event_);    
+            dom.preventDefault(event);
+            dom.stopPropagation(event);    
             break;
 
         case 40:  //down
             this.moveSelector(1); 
-            Melown.Utils.preventDefault(event_);
-            Melown.Utils.stopPropagation(event_);    
+            dom.preventDefault(event);
+            dom.stopPropagation(event);    
             break;
 
         case 9:  //tab
         case 13: //enter
         
-            this.onSelectItem(Math.max(0,this.itemIndex_), null); 
+            this.onSelectItem(Math.max(0,this.itemIndex), null); 
             break;
     }
 };
 
-Melown.UIControlSearch.prototype.onChange = function(event_) {
-    var value_ = this.input_.getElement().value;
-    value_ = value_.trim();
 
-    //console.log("value: " + value_ + "  last-value: " + this.lastSearch_);
+UIControlSearch.prototype.onChange = function(event) {
+    var value = this.input.getElement().value;
+    value = value.trim();
 
-    if (value_ == this.lastSearch_) {
+    //console.log("value: " + value + "  last-value: " + this.lastSearch);
+
+    if (value == this.lastSearch) {
         //console.log("value-same");
         return;        
     }
     
-    this.lastSearch_ = value_;
+    this.lastSearch = value;
     
-    if (value_ == "") {
+    if (value == "") {
         //console.log("value-null");
         this.hideList();        
     }    
     
-    var url_ = this.processTemplate(this.urlTemplate_, { "value" : value_ });
-    //console.log(url_);
-    this.searchCounter_++;
-    this.itemIndex_ = -1;
+    var url = this.processTemplate(this.urlTemplate, { "value" : value });
+    //console.log(url);
+    this.searchCounter++;
+    this.itemIndex = -1;
    
-    Melown.loadJSON(url_, this.onListLoaded.bind(this, this.searchCounter_), this.onListLoadError.bind(this));
+    utils.loadJSON(url, this.onListLoaded.bind(this, this.searchCounter), this.onListLoadError.bind(this));
 };
 
-Melown.UIControlSearch.prototype.onDrag2 = function(event_) {
-    this.ignoreDrag_ = true; 
-    var element_ = this.input_.getElement();  
+
+UIControlSearch.prototype.onDrag2 = function(event) {
+    this.ignoreDrag = true; 
+    var element = this.input.getElement();  
 };
 
-Melown.UIControlSearch.prototype.onDrag = function(event_) {
-    if (this.ignoreDrag_) {
-        this.ignoreDrag_ = false;
+
+UIControlSearch.prototype.onDrag = function(event) {
+    if (this.ignoreDrag) {
+        this.ignoreDrag = false;
         return; 
     } 
 
-    var element_ = this.input_.getElement();  
-    element_.value = this.lastSearch_;
-    element_.blur(); //defocus'
+    var element = this.input.getElement();  
+    element.value = this.lastSearch;
+    element.blur(); //defocus'
     this.hideList(); 
 };
 
-Melown.UIControlSearch.prototype.update = function(event_) {
-    if (this.initialValueUsed_ && this.browser_.mapLoaded_) {
-        this.initialValueUsed_ = false;
+
+UIControlSearch.prototype.update = function(event) {
+    if (this.initialValueUsed && this.browser.mapLoaded) {
+        this.initialValueUsed = false;
         this.onSelectItem(0);
     }
 };
 
 
+export default UIControlSearch;

@@ -1,153 +1,163 @@
-//---------------------------------------------------
-// this file loaded from geoWorkerDebug
-//---------------------------------------------------
+import {globals as globals_} from "./worker-globals.js";
+var globals = globals_;
 
-var processPolygonPass = function(polygon_, lod_, style_, zIndex_, eventInfo_) {
-    //console.log( "processPolygonsPass >>>>>>> ");
-    
-    var vertices_ = polygon_["vertices"] || [];
-    if (vertices_.length == 0) {
+import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from "./worker-style.js";
+var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
+
+import {postGroupMessage as postGroupMessage_} from "./worker-message.js";
+var postGroupMessage = postGroupMessage_;
+
+//get rid of compiler mess
+
+
+var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
+    var vertices = polygon["vertices"] || [];
+    if (vertices.length == 0) {
         return;
     }
     
     // borders as points
-    if (getLayerPropertyValue(style_, "point", polygon_, lod_) ||
-        getLayerPropertyValue(style_, "label", polygon_, lod_)) {
-            processPolygonLines(polygon_, vertices_, lod_, style_, zIndex_, eventInfo_, false);
+    if (getLayerPropertyValue(style, "point", polygon, lod) ||
+        getLayerPropertyValue(style, "label", polygon, lod)) {
+            processPolygonLines(polygon, vertices, lod, style, zIndex, eventInfo, false);
     }
     
     // borders as lines
-    if (getLayerPropertyValue(style_, "line", polygon_, lod_) ||
-        getLayerPropertyValue(style_, "line-label", polygon_, lod_)) {
-            processPolygonLines(polygon_, vertices_, lod_, style_, zIndex_, eventInfo_, true);
+    if (getLayerPropertyValue(style, "line", polygon, lod) ||
+        getLayerPropertyValue(style, "line-label", polygon, lod)) {
+            processPolygonLines(polygon, vertices, lod, style, zIndex, eventInfo, true);
     }
     
-    var spolygon_ = getLayerPropertyValue(style_, "polygon", polygon_, lod_);
+    var spolygon = getLayerPropertyValue(style, "polygon", polygon, lod);
     
-    if (spolygon_ == false) {
+    if (spolygon == false) {
         return;
     }
     
-    var surface_ = polygon_["surface"] || [];
-    if (surface_.length == 0) {
+    var surface = polygon["surface"] || [];
+    if (surface.length == 0) {
         return;
     }
     
-    var hoverEvent_ = getLayerPropertyValue(style_, "hover-event", polygon_, lod_);
-    var clickEvent_ = getLayerPropertyValue(style_, "click-event", polygon_, lod_);
-    var drawEvent_ = getLayerPropertyValue(style_, "draw-event", polygon_, lod_);
-    var enterEvent_ = getLayerPropertyValue(style_, "enter-event", polygon_, lod_);
-    var leaveEvent_ = getLayerPropertyValue(style_, "leave-event", polygon_, lod_);
+    var hoverEvent = getLayerPropertyValue(style, "hover-event", polygon, lod);
+    var clickEvent = getLayerPropertyValue(style, "click-event", polygon, lod);
+    var drawEvent = getLayerPropertyValue(style, "draw-event", polygon, lod);
+    var enterEvent = getLayerPropertyValue(style, "enter-event", polygon, lod);
+    var leaveEvent = getLayerPropertyValue(style, "leave-event", polygon, lod);
 
-    var zbufferOffset_ = getLayerPropertyValue(style_, "zbuffer-offset", polygon_, lod_);
+    var zbufferOffset = getLayerPropertyValue(style, "zbuffer-offset", polygon, lod);
     
-    var polygonColor_ = getLayerPropertyValue(style_, "polygon-color", polygon_, lod_);
+    var polygonColor = getLayerPropertyValue(style, "polygon-color", polygon, lod);
     
-    var center_ = [0,0,0];
+    var center = [0,0,0];
    
     // allocate vertex buffer
-    var trisCount_ = surface_.length / 3;
-    var vertexCount_ = trisCount_ * 3;
-    var vertexBuffer_ = new Array (vertexCount_ * 3);
+    var trisCount = surface.length / 3;
+    var vertexCount = trisCount * 3;
+    var vertexBuffer = new Array (vertexCount * 3);
     
-    var dpoints_ = false;
-    var surfaceI_ = 0;
-    var index_ = 0;
+    var dpoints = false;
+    var surfaceI = 0;
+    var index = 0;
     var p1;
     var offs;
+
+    var forceOrigin = globals.forceOrigin;
+    var forceScale = globals.forceScale;    
     
-    //console.log("vertexCount_ = " + vertexCount_);
+    //console.log("vertexCount = " + vertexCount);
     //add tris
-    for (var i = 0; i < vertexCount_; i++) {
-        offs = 3 * surface_[surfaceI_++];
-        p1 = [vertices_[offs++], vertices_[offs++], vertices_[offs]];
+    for (var i = 0; i < vertexCount; i++) {
+        offs = 3 * surface[surfaceI++];
+        p1 = [vertices[offs++], vertices[offs++], vertices[offs]];
         
-        if (forceOrigin_ == true) {
-            p1 = [p1[0] - tileX_, p1[1] - tileY_, p1[2]];
+        if (forceOrigin == true) {
+            p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
         }
 
-        if (forceScale_ != null) {
-            p1 = [p1[0] * forceScale_[0], p1[1] * forceScale_[1], p1[2] * forceScale_[2]];
+        if (forceScale != null) {
+            p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
         }
         
-        center_[0] += p1[0];
-        center_[1] += p1[1];
-        center_[2] += p1[2];
+        center[0] += p1[0];
+        center[1] += p1[1];
+        center[2] += p1[2];
 
         //add vertex
-        vertexBuffer_[index_++] = p1[0];
-        vertexBuffer_[index_++] = p1[1];
-        vertexBuffer_[index_++] = p1[2];
+        vertexBuffer[index++] = p1[0];
+        vertexBuffer[index++] = p1[1];
+        vertexBuffer[index++] = p1[2];
     }
     
-    //console.log( "vertexBuffer_: " + vertexBuffer_ );
+    //console.log( "vertexBuffer: " + vertexBuffer );
     
-    if (vertexCount_ > 0) {
-        var k = 1.0 / vertexCount_;
-        center_[0] *= k;
-        center_[1] *= k;
-        center_[2] *= k;
+    if (vertexCount > 0) {
+        var k = 1.0 / vertexCount;
+        center[0] *= k;
+        center[1] *= k;
+        center[2] *= k;
     }
-    center_[0] += groupOrigin_[0];
-    center_[1] += groupOrigin_[1];
-    center_[2] += groupOrigin_[2];
 
-    var hitable_ = hoverEvent_ || clickEvent_ || enterEvent_ || leaveEvent_;
+    center[0] += globals.groupOrigin[0];
+    center[1] += globals.groupOrigin[1];
+    center[2] += globals.groupOrigin[2];
+
+    var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
     
-    var messageData_ = {"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer_,
-                        "color":polygonColor_, "z-index":zIndex_, "center": center_,
-                        "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                        "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                        "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                        "lod":(autoLod_ ? null : tileLod_) };
+    var messageData = {"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer,
+                        "color":polygonColor, "z-index":zIndex, "center": center,
+                        "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
+                        "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
+                        "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
+                        "lod":(globals.autoLod ? null : globals.tileLod) };
 
-    postGroupMessage(messageData_);
+    postGroupMessage(messageData);
 };
 
-var createEmptyFeatureFromPolygon = function(polygon_) {
-    var feature_ = {};
-    for(var key_ in polygon_) {
-        if(key_ != "surface" && key_ != "vertices" && key_ != "borders") {
-            feature_[key_] = polygon_[key_];
+var createEmptyFeatureFromPolygon = function(polygon) {
+    var feature = {};
+    for(var key in polygon) {
+        if(key != "surface" && key != "vertices" && key != "borders") {
+            feature[key] = polygon[key];
         }
     }
-    return feature_;
+    return feature;
 };
 
-var processPolygonLines = function(polygon_, vertices_, lod_, style_, zIndex_, eventInfo_, processLines_) {
-    //console.log( "processPolygonLines >>>>>>> " + processLines_);
-    var borders_ = polygon_["borders"] || [];
-    if (borders_.length == 0) {
+var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventInfo, processLines) {
+    var borders = polygon["borders"] || [];
+    if (borders.length == 0) {
         return;
     }
-    var feature_ = createEmptyFeatureFromPolygon(polygon_);
-    var bordersCount_ = borders_.length;
-    for (var j = 0; j < bordersCount_; j++) {
-        var border_ = borders_[j];
-        var pointsCount_ = border_.length;
-        if (pointsCount_ > 0) {
-            var points_;
-            if (processLines_) {
-                points_ = new Array(pointsCount_ + 1);
+    var feature = createEmptyFeatureFromPolygon(polygon);
+    var bordersCount = borders.length;
+    for (var j = 0; j < bordersCount; j++) {
+        var border = borders[j];
+        var pointsCount = border.length;
+        if (pointsCount > 0) {
+            var points;
+            if (processLines) {
+                points = new Array(pointsCount + 1);
             }
             else {
-                points_ = new Array(pointsCount_);
+                points = new Array(pointsCount);
             }
-            for (var i = 0; i < pointsCount_; i++) {
-                var offs = 3 * border_[i];
-                points_[i] = [vertices_[offs++], vertices_[offs++], vertices_[offs]];
-                if (processLines_ && i == 0) {
-                    points_[pointsCount_] = points_[0];
+            for (var i = 0; i < pointsCount; i++) {
+                var offs = 3 * border[i];
+                points[i] = [vertices[offs++], vertices[offs++], vertices[offs]];
+                if (processLines && i == 0) {
+                    points[pointsCount] = points[0];
                 }
             }
-            feature_["points"] = points_;
-            if(processLines_) {
-                processLineStringPass(feature_, lod_, style_, zIndex_, eventInfo_);
+            feature["points"] = points;
+            if(processLines) {
+                processLineStringPass(feature, lod, style, zIndex, eventInfo);
             }
             else {
-                processPointArrayPass(feature_, lod_, style_, zIndex_, eventInfo_);
+                processPointArrayPass(feature, lod, style, zIndex, eventInfo);
             }
         }
     }
 };
  
+export {processPolygonPass};

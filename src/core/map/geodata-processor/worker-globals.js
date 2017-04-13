@@ -1,45 +1,43 @@
-//---------------------------------------------------
-// this file loaded from geoWorkerDebug or merged
-// into one function in case of minification process
-//---------------------------------------------------
 
-var layerId_ = {};
-var stylesheetData_ = {};
-var stylesheetLayers_ = {};
-var stylesheetBitmaps_ = {};
-var stylesheetConstants_ = {};
-var forceOrigin_ = false;
-var bboxMin_ = [0,0,0];
-var bboxMax_ = [1,1,1];
-var bboxDelta_ = [1,1,1];
-var bboxResolution_ = 4096;
-var geocent_ = false;
-var tileX_ = 0;
-var tileY_ = 0;
-var tileLod_ = 0;
-var fonts_ = {};
-var hitState_ = 0;
-var groupOptimize_ = true;
-var groupOrigin_ = [0,0,0];
-var messageBuffer_ = new Array(65536);
-var messageBuffer2_ = new Array(65536);
-var messageBufferIndex_ = 0;
-var messageBufferSize_ = messageBuffer_.length;
-var autoLod_ = false;
-
-var clamp = function(value_, min_, max_) {
-    if (value_ < min_) {
-        value_ = min_;
-    }
-
-    if (value_ > max_) {
-        value_ = max_;
-    }
-
-    return value_;
+var globals = {
+    stylesheetData : {},
+    stylesheetLayers : {},
+    stylesheetBitmaps : {},
+    stylesheetConstants : {},
+    forceOrigin : false,
+    forceScale : [1,1,1],
+    bboxMin : [0,0,0],
+    bboxMax : [1,1,1],
+    geocent : false,
+    tileX : 0,
+    tileY : 0,
+    tileLod : 0,
+    fonts : {},
+    hitState : 0,
+    groupOptimize : true,
+    groupOrigin : [0,0,0],
+    messageBuffer : new Array(65536),
+    messageBuffer2 : new Array(65536),
+    messageBufferIndex : 0,
+    messageBufferSize : 65536,
+    autoLod : false
 };
 
-vec3Normalize = function(a, b) {
+
+function clamp(value, min, max) {
+    if (value < min) {
+        value = min;
+    }
+
+    if (value > max) {
+        value = max;
+    }
+
+    return value;
+};
+
+
+function vec3Normalize(a, b) {
     b || (b = a);
     var c = a[0],
         d = a[1],
@@ -65,14 +63,16 @@ vec3Normalize = function(a, b) {
     return b;
 };
 
-vec3Length = function(a) {
+
+function vec3Length(a) {
     var b = a[0],
         c = a[1];
     a = a[2];
     return Math.sqrt(b * b + c * c + a * a);
 };
 
-var vec3Cross = function(a, b, c) {
+
+function vec3Cross(a, b, c) {
     c || (c = a);
     var d = a[0],
         e = a[1];
@@ -86,7 +86,8 @@ var vec3Cross = function(a, b, c) {
     return c;
 };
 
-vec3AnyPerpendicular = function(a, b) {
+
+function vec3AnyPerpendicular(a, b) {
     b || (b = a);
     var c = a[0],
         d = a[1],
@@ -106,3 +107,5 @@ vec3AnyPerpendicular = function(a, b) {
     return b;
 };
 
+
+export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, vec3AnyPerpendicular};

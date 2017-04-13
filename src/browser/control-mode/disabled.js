@@ -1,6 +1,7 @@
-/**
- * @constructor
- */
-Melown.ControlMode.Disabled = function() {
+
+var ControlModeDisabled = function() {
 
 };
+
+
+export default ControlModeDisabled;

@@ -1,43 +1,47 @@
-/**
- * @constructor
- */
-Melown.MapView = function(map_, json_) {
-    //this.map_ = map_;
-    //this.id_ = json_["id"] || null;
-    this.parse(json_);
+
+var MapView = function(map, json) {
+    //this.map = map;
+    //this.id = json["id"] || null;
+    this.parse(json);
 };
 
-Melown.MapView.prototype.parse = function(json_) {
-    this.description_ = json_["description"] || "";
-    //this.boundLayers_ = json_["boundLayers"] || [];
-    this.freeLayers_ = json_["freeLayers"] || {};
-    this.surfaces_ = {};    
 
-    if (json_["surfaces"]) {
-        var surfaces_ = json_["surfaces"]; 
-        if (Array.isArray(surfaces_)) { //convert from old version
-            for (var i = 0, li = surfaces_.length; i < li; i++) {
-                this.surfaces_[surfaces_[i]] = [];
+MapView.prototype.parse = function(json) {
+    this.description = json["description"] || "";
+    //this.boundLayers = json["boundLayers"] || [];
+    this.freeLayers = json["freeLayers"] || {};
+    this.surfaces = {};    
+
+    if (json["surfaces"]) {
+        var surfaces = json["surfaces"]; 
+        if (Array.isArray(surfaces)) { //convert from old version
+            for (var i = 0, li = surfaces.length; i < li; i++) {
+                this.surfaces[surfaces[i]] = [];
             }
         } else {
-            this.surfaces_ = surfaces_;            
+            this.surfaces = surfaces;            
         }
     }
 
-    if (!this.freeLayers_ || Array.isArray(this.freeLayers_)) { //convert from old version
-        this.freeLayers_ = {};
+    if (!this.freeLayers || Array.isArray(this.freeLayers)) { //convert from old version
+        this.freeLayers = {};
     } else {
-        this.freeLayers_ = JSON.parse(JSON.stringify(this.freeLayers_));
+        this.freeLayers = JSON.parse(JSON.stringify(this.freeLayers));
     }
     
-    this.surfaces_ = JSON.parse(JSON.stringify(this.surfaces_));
+    this.surfaces = JSON.parse(JSON.stringify(this.surfaces));
 };
 
-Melown.MapView.prototype.getInfo = function() {
+
+MapView.prototype.getInfo = function() {
     return {
-        "description" : JSON.parse(JSON.stringify(this.description_)),
-        "surfaces" : JSON.parse(JSON.stringify(this.surfaces_)),
-        //"boundLayers" : JSON.parse(JSON.stringify(this.boundLayers_)),
-        "freeLayers" : JSON.parse(JSON.stringify(this.freeLayers_))
+        "description" : JSON.parse(JSON.stringify(this.description)),
+        "surfaces" : JSON.parse(JSON.stringify(this.surfaces)),
+        //"boundLayers" : JSON.parse(JSON.stringify(this.boundLayers)),
+        "freeLayers" : JSON.parse(JSON.stringify(this.freeLayers))
     };
 };
+
+
+export default MapView;
+

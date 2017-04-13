@@ -1,79 +1,100 @@
 
-Melown.Map.prototype.createRenderSlot = function(id_, callback_, enabled_) {
-    return { id:id_,
-             callback_:callback_,
-             enabled_ : enabled_
+
+var MapRenderSlots = function(map) {
+    this.map = map;
+    this.draw = map.draw;
+    this.renderer = map.renderer;
+    this.config = map.config;
+    this.renderSlots = [];
+};
+
+
+MapRenderSlots.prototype.createRenderSlot = function(id, callback, enabled) {
+    return { id:id,
+             callback:callback,
+             enabled : enabled
            };
 };
 
-Melown.Map.prototype.addRenderSlot = function(id_, callback_, enabled_) {
-    this.renderSlots_.push(this.createRenderSlot(id_, callback_, enabled_));
+
+MapRenderSlots.prototype.addRenderSlot = function(id, callback, enabled) {
+    this.renderSlots.push(this.createRenderSlot(id, callback, enabled));
 };
 
-Melown.Map.prototype.getRenderSlotIndex = function(id_) {
-    return this.searchArrayIndexById(this.renderSlots_, id_); 
+
+MapRenderSlots.prototype.getRenderSlotIndex = function(id) {
+    return this.map.searchArrayIndexById(this.renderSlots, id); 
 };
 
-Melown.Map.prototype.checkRenderSlotId = function(id_) {
-    if (id_ == "after-map-render") {
+
+MapRenderSlots.prototype.checkRenderSlotId = function(id) {
+    if (id == "after-map-render") {
         return "map"; 
     } else {
-        return id_;
+        return id;
     }
 };
 
-Melown.Map.prototype.moveRenderSlotBefore = function(whichId_, whereId_) {
-    var from_ = this.getRenderSlotIndex(this.checkRenderSlotId(whichId_));
-    var to_ = this.getRenderSlotIndex(whereId_);
-    if (from_ != -1 && to_ != -1) { 
-        this.renderSlots_.splice(to_, 0, this.renderSlots_.splice(from_, 1)[0]);
+
+MapRenderSlots.prototype.moveRenderSlotBefore = function(whichId, whereId) {
+    var from = this.getRenderSlotIndex(this.checkRenderSlotId(whichId));
+    var to = this.getRenderSlotIndex(whereId);
+    if (from != -1 && to != -1 && to != from-1) { 
+        this.renderSlots.splice(to, 0, this.renderSlots.splice(from, 1)[0]);
     }
 };
 
-Melown.Map.prototype.moveRenderSlotAfter = function(whichId_, whereId_) {
-    var from_ = this.getRenderSlotIndex(this.checkRenderSlotId(whichId_));
-    var to_ = this.getRenderSlotIndex(whereId_);
-    if (from_ != -1 && to_ != -1) {
-        to_++; 
-        this.renderSlots_.splice(to_, 0, this.renderSlots_.splice(from_, 1)[0]);
+
+MapRenderSlots.prototype.moveRenderSlotAfter = function(whichId, whereId) {
+    var from = this.getRenderSlotIndex(this.checkRenderSlotId(whichId));
+    var to = this.getRenderSlotIndex(whereId);
+    if (from != -1 && to != -1 && to != from+1) {
+        to++; 
+        this.renderSlots.splice(to, 0, this.renderSlots.splice(from, 1)[0]);
     }
 };
 
-Melown.Map.prototype.removeRenderSlot = function(id_) {
-    var index_ = this.getRenderSlotIndex(id_);
-    if (index_ != -1) {
-        this.renderSlots_.splice(index_, 1);
+
+MapRenderSlots.prototype.removeRenderSlot = function(id) {
+    var index = this.getRenderSlotIndex(id);
+    if (index != -1) {
+        this.renderSlots.splice(index, 1);
     }
 };
 
-Melown.Map.prototype.setRenderSlotEnabled = function(id_, state_) {
-    var index_ = this.getRenderSlotIndex(id_);
-    if (index_ != -1) {
-        this.renderSlots_[index_].enabled_ = state_;
+
+MapRenderSlots.prototype.setRenderSlotEnabled = function(id, state) {
+    var index = this.getRenderSlotIndex(id);
+    if (index != -1) {
+        this.renderSlots[index].enabled = state;
     }
 };
 
-Melown.Map.prototype.getRenderSlotEnabled = function(id_) {
-    var index_ = this.getRenderSlotIndex(id2_);
-    if (index_ != -1) {
-        return this.renderSlots_[index_].enabled_;
+
+MapRenderSlots.prototype.getRenderSlotEnabled = function(id) {
+    var index = this.getRenderSlotIndex(id2);
+    if (index != -1) {
+        return this.renderSlots[index].enabled;
     }
     
     return false;
 };
 
-Melown.Map.prototype.processRenderSlots = function(id_, callback_) {
-    if (this.drawChannel_ != 1) {
-        this.renderer_.gpu_.setViewport(); //just in case
+
+MapRenderSlots.prototype.processRenderSlots = function(id, callback) {
+    if (this.draw.drawChannel != 1) {
+        this.renderer.gpu.setViewport(); //just in case
     }
 
-    for (var i = 0, li = this.renderSlots_.length; i < li; i++) {
-        var slot_ = this.renderSlots_[i];
+    for (var i = 0, li = this.renderSlots.length; i < li; i++) {
+        var slot = this.renderSlots[i];
 
-        if (slot_.enabled_ && slot_.callback_) {
-            slot_.callback_(this.drawChannelNames_[this.drawChannel_]);
+        if (slot.enabled && slot.callback) {
+            slot.callback(this.draw.drawChannelNames[this.draw.drawChannel]);
         }
     }
 };
 
+
+export default MapRenderSlots;
 

@@ -1,35 +1,44 @@
-/**
- * @constructor
- */
-Melown.Roi.LoadingQueue = function(options_) {
-    this.options_ = options_;
+
+import {utils as utils_} from '../../core/utils/utils';
+
+//get rid of compiler mess
+var utils = utils_;
+
+
+var RoiLoadingQueue = function(options) {
+    this.options = options;
+
+    // states
+    this.stateDownloaded = 'downloaded';
+    this.stateFailed = 'failed';
+    this.stateBegin = 'begin';
 
     // queues
-    this.enqueued_ = [];
-    this.inProgress_ = [];
-    this.finished_ = [];
+    this.enqueued = [];
+    this.inProgress = [];
+    this.finished = [];
 
     // event listeners
-    this.listeners_ = {
-        Melown_Pano_LQ_Downloaded : [],
-        Melown_Pano_LQ_Failed : [],
-        Melown_Pano_LQ_Begin : []
+    this.listeners = {
+        downloaded : [],
+        failed : [],
+        begin : []
     };
 
     // options properties
-    this.slots_ = 1;
-    this.finishedSlots_ = 5;
+    this.slots = 1;
+    this.finishedSlots = 5;
 
-    if (typeof this.options_ === 'object' && this.options_ !== null) {
-        this.slots_ = this.options_.slots_ || 1;
-        this.finishedSlots_ = this.options_.finishedSlots_ || 5;
+    if (typeof this.options === 'object' && this.options !== null) {
+        this.slots = this.options.slots || 1;
+        this.finishedSlots = this.options.finishedSlots || 5;
     }
 };
 
 /**
  * @enum {int}
  */
-Melown.Roi.LoadingQueue.Status = {
+RoiLoadingQueue.Status = {
     Enqueued : 0,
     Downloading : 1,
     Finished : 2,
@@ -39,42 +48,38 @@ Melown.Roi.LoadingQueue.Status = {
 /**
  * @enum {int}
  */
-Melown.Roi.LoadingQueue.Type = {
+RoiLoadingQueue.Type = {
     Binary : 0,
     JSON : 1,
     Image : 2
 }
-Melown.Roi.LoadingQueue.TypeCheck = function(type_) {
-    var keys_ = Object.keys(Melown.Roi.LoadingQueue.Type);
-    var valid_ = false;
-    for (var i in keys_) {
-        if (Melown.Roi.LoadingQueue.Type[keys_[i]] === type_) {
-            valid_ = true;
+RoiLoadingQueue.TypeCheck = function(type) {
+    var keys = Object.keys(RoiLoadingQueue.Type);
+    var valid = false;
+    for (var i in keys) {
+        if (RoiLoadingQueue.Type[keys[i]] === type) {
+            valid = true;
             break;
         }
     }
-    return valid_;
+    return valid;
 };
-
-Melown_Roi_LQ_Downloaded = 'downloaded';
-Melown_Roi_LQ_Failed = 'failed';
-Melown_Roi_LQ_Begin = 'begin';
 
 // Public methods
 
 // Type is required hint for queue
-Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) {
-    var clb_ = clb_ || function(){};
+RoiLoadingQueue.prototype.enqueue = function(resourceUrl, type, clb) {
+    var clb = clb || function(){};
 
-    if (typeof resourceUrl_ !== 'string'
-        ) {// TODO: || !Melown.Utils.URLSanity(resourceUrl_)) {
+    if (typeof resourceUrl !== 'string'
+        ) {// TODO: || !URLSanity(resourceUrl)) {
         var err = new Error('Loading Queue: URL given to enqueue is not valid URL');
         console.error(err);
         clb(err);
         return null;
     }
 
-    if (!Melown.Roi.LoadingQueue.TypeCheck(type_)) {
+    if (!RoiLoadingQueue.TypeCheck(type)) {
         var err = new Error('Loading Queue: Given hint type is not valid type');
         console.error(err);
         clb(err);
@@ -82,190 +87,202 @@ Melown.Roi.LoadingQueue.prototype.enqueue = function(resourceUrl_, type_, clb_) 
     }
 
     // find item and update (or create if doesnt exists yet)
-    var item_ = this._pickItem(resourceUrl_);
-    if (item_ === null) {
-        item_ = {
-            url_ : resourceUrl_,
-            type_ : type_,
-            state_ : Melown.Roi.LoadingQueue.Status.Enqueued,
-            clb_ : [clb_],
-            data_ : null
+    var item = this.pickItem(resourceUrl);
+    if (item === null) {
+        item = {
+            url : resourceUrl,
+            type : type,
+            state : RoiLoadingQueue.Status.Enqueued,
+            clb : [clb],
+            data : null
         }
     } else {
-        if (item_.state_ === Melown.Pano.LoadingQueue.Status.Enqueued) {
-            item_.type_ = type_;
+        if (item.state === PanoLoadingQueue.Status.Enqueued) {
+            item.type = type;
 
-            var insertCallback_ = true;
-            for (var i in item_.clb_) {
-                if (item_.clb_[i] === clb_) {
-                    insertCallback_ = false;
+            var insertCallback = true;
+            for (var i in item.clb) {
+                if (item.clb[i] === clb) {
+                    insertCallback = false;
                     break;
                 }
             }
-            if (insertCallback_) {
-                item_.clb_ = clb_;
+            if (insertCallback) {
+                item.clb = clb;
             }
         }
     }
 
     // enqueue item to proper queue
-    if (item_.state_ === Melown.Roi.LoadingQueue.Status.Enqueued) {
-        this.enqueued_.push(item_);
-    } else if (item_.state_ === Melown.Roi.LoadingQueue.Status.Downloading) {
-        this.inProgress_.push(item_);
-    } else if (item_.state_ === Melown.Roi.LoadingQueue.Status.Finished) {
-        this.finished_.push(item_);
-        clb_(null, item_);
+    if (item.state === RoiLoadingQueue.Status.Enqueued) {
+        this.enqueued.push(item);
+    } else if (item.state === RoiLoadingQueue.Status.Downloading) {
+        this.inProgress.push(item);
+    } else if (item.state === RoiLoadingQueue.Status.Finished) {
+        this.finished.push(item);
+        clb(null, item);
     }
 
-    this._next();
+    this.next();
 
-    return item_;
+    return item;
 };
 
-Melown.Roi.LoadingQueue.prototype.dequeue = function(resourceUrl_) {
-    var item_ = this._pickItem(resourceUrl_);
-    if (item_.state_ === Melown.Roi.LoadingQueue.Status.Downloading) {
-        this._cancel(item_);
+
+RoiLoadingQueue.prototype.dequeue = function(resourceUrl) {
+    var item = this.pickItem(resourceUrl);
+    if (item.state === RoiLoadingQueue.Status.Downloading) {
+        this.cancel(item);
     }
-    return item_;
+    return item;
 };
 
-Melown.Roi.LoadingQueue.prototype.on = function(event_, action_) {
-    if (typeof action_ !== 'function'
-        || (event_ !== Melown_Roi_LQ_Downloaded
-            && event_ !== Melown_Roi_LQ_Failed
-            && event_ !== Melown_Roi_LQ_Begin)) {
+
+RoiLoadingQueue.prototype.on = function(event, action) {
+    if (typeof action !== 'function'
+        || (event !== this.stateDownloaded
+            && event !== this.stateFailed
+            && event !== this.stateBegin)) {
         return;
     }
-    for (var i in this.listeners_[event_]) {
-        if (this.listeners_[event_][i] === action_) {
-            this.listeners_[event_].push(action_);
+    for (var i in this.listeners[event]) {
+        if (this.listeners[event][i] === action) {
+            this.listeners[event].push(action);
         }
     }
 };
 
-Melown.Roi.LoadingQueue.prototype.removeListener = function(event_, action_) {
-    if (typeof action_ !== 'function'
-        || (event_ !== Melown_Roi_LQ_Downloaded
-            && event_ !== Melown_Roi_LQ_Failed
-            && event_ !== Melown_Roi_LQ_Begin)) {
+
+RoiLoadingQueue.prototype.removeListener = function(event, action) {
+    if (typeof action !== 'function'
+        || (event !== this.stateDownloaded
+            && event !== this.stateFailed
+            && event !== this.stateBegin)) {
         return;
     }
-    for (var i in this.listeners_[event_]) {
-        if (this.listeners_[event_][i] === action_) {
-            this.listeners_[event_].slice(i, 1);
+    for (var i in this.listeners[event]) {
+        if (this.listeners[event][i] === action) {
+            this.listeners[event].slice(i, 1);
         }
     }
 };
+
 
 // Accessor methods
 
-Melown.Roi.LoadingQueue.prototype.enqueued = function() {
-    return this.enqueued_;
+RoiLoadingQueue.prototype.enqueued = function() {
+    return this.enqueued;
 };
 
-Melown.Roi.LoadingQueue.prototype.downloading = function() {
-    return this.inProgress_;
+
+RoiLoadingQueue.prototype.downloading = function() {
+    return this.inProgress;
 };
 
-Melown.Roi.LoadingQueue.prototype.item = function(resourceUrl_) {
-    return this._pickItem(resourceUrl_, true);
+
+RoiLoadingQueue.prototype.item = function(resourceUrl) {
+    return this.pickItem(resourceUrl, true);
 };
 
 // Private methods
 
-Melown.Roi.LoadingQueue.prototype._next = function() {
-    if (this.inProgress_.length === this.slots_) {
+RoiLoadingQueue.prototype.next = function() {
+    if (this.inProgress.length === this.slots) {
         return;
     }
-    var its_ = this.enqueued_.splice(0, 1);
-    if (its_.length === 0) {
+    var its = this.enqueued.splice(0, 1);
+    if (its.length === 0) {
         return;
     }
 
-    var item_ = its_[0];
-    this.inProgress_.push(item_);
+    var item = its[0];
+    this.inProgress.push(item);
 
-    if (item_.type_ === Melown.Roi.LoadingQueue.Type.Binary) {
+    if (item.type === RoiLoadingQueue.Type.Binary) {
         // TODO
-        this._finalizeItem(item_, new Error('Not implemented yet'), null);
-    } else if (item_.type_ === Melown.Roi.LoadingQueue.Type.JSON) {
+        this.finalizeItem(item, new Error('Not implemented yet'), null);
+    } else if (item.type === RoiLoadingQueue.Type.JSON) {
         // TODO
-        this._finalizeItem(item_, new Error('Not implemented yet'), null);
-    } else if (item_.type_ === Melown.Roi.LoadingQueue.Type.Image) {
-        item_.data_ = Melown.Http.imageFactory(item_.url_, function(data_) {
-            this._finalizeItem(item_, null, item_.data_);
-        }.bind(this), function(data_) {
-            this._finalizeItem(item_, new Error(data_), null);
+        this.finalizeItem(item, new Error('Not implemented yet'), null);
+    } else if (item.type === RoiLoadingQueue.Type.Image) {
+        item.data = utils.loadImage(item.url, function(data) {
+            this.finalizeItem(item, null, item.data);
+        }.bind(this), function(data) {
+            this.finalizeItem(item, new Error(data), null);
         }.bind(this));
 
-        // item_.data_ = new Image();
-        // item_.data_.addEventListener('load', function(data_) {
-        //     this._finalizeItem(item_, null, item_.data_);
+        // item.data = new Image();
+        // item.data.addEventListener('load', function(data) {
+        //     this.finalizeItem(item, null, item.data);
         // }.bind(this), false);
-        // item_.data_.addEventListener('error', function(data_) {
-        //     this._finalizeItem(item_, new Error(data_), null);
+        // item.data.addEventListener('error', function(data) {
+        //     this.finalizeItem(item, new Error(data), null);
         // }.bind(this), false);
-        // //item_.data_.crossOrigin = "anonymous";
-        // item_.data_.src = item_.url_;
+        // //item.data.crossOrigin = "anonymous";
+        // item.data.src = item.url;
     }
 };
 
-Melown.Roi.LoadingQueue.prototype._cancel = function(item_) {
+
+RoiLoadingQueue.prototype.cancel = function(item) {
     // TODO
 };
 
-Melown.Roi.LoadingQueue.prototype._pickItem = function(itemUrl_, nremove_) {
-    var item_ = null;
-    var resourceUrl_ = itemUrl_.url_;
-    for (var i in this.enqueued_) {
-        if (this.enqueued_[i].url_ === resourceUrl_) {
-            item_ = this.enqueued_[i];
-            nremove_ || this.enqueued_.splice(i, 1);
+
+RoiLoadingQueue.prototype.pickItem = function(itemUrl, nremove) {
+    var item = null;
+    var resourceUrl = itemUrl.url;
+    for (var i in this.enqueued) {
+        if (this.enqueued[i].url === resourceUrl) {
+            item = this.enqueued[i];
+            nremove || this.enqueued.splice(i, 1);
             break;
         }
     }
-    if (item_ === null) {
-        for (var i in this.inProgress_) {
-            if (this.inProgress_[i].url_ === resourceUrl_) {
-                item_ = this.inProgress_[i];
-                nremove_ || this.inProgress_.splice(i, 1);
+    if (item === null) {
+        for (var i in this.inProgress) {
+            if (this.inProgress[i].url === resourceUrl) {
+                item = this.inProgress[i];
+                nremove || this.inProgress.splice(i, 1);
                 break;
             }
         }
     }
-    if (item_ === null) {
-        for (var i in this.finished_) {
-            if (this.finished_[i].url_ === resourceUrl_) {
-                item_ = this.finished_[i];
-                nremove_ || this.finished_.splice(i, 1);
+    if (item === null) {
+        for (var i in this.finished) {
+            if (this.finished[i].url === resourceUrl) {
+                item = this.finished[i];
+                nremove || this.finished.splice(i, 1);
                 break;
             }
         }
     }
-    return item_;
+    return item;
 };
 
-Melown.Roi.LoadingQueue.prototype._finalizeItem = function(item_, error_, data_) {
+
+RoiLoadingQueue.prototype.finalizeItem = function(item, error, data) {
     // remove from progress queue pass it to finished queue
-    this.inProgress_.splice(this.inProgress_.indexOf(item_), 1);
-    if (!error_) {
-        item_.data_ = data_;
-        while (this.finished_.length > this.finishedSlots_ - 1) {
-            this.finished_.splice(0,1);
+    this.inProgress.splice(this.inProgress.indexOf(item), 1);
+    if (!error) {
+        item.data = data;
+        while (this.finished.length > this.finishedSlots - 1) {
+            this.finished.splice(0,1);
         }
-        this.finished_.push(item_);
+        this.finished.push(item);
     }
 
     // pass data to item
-    item_.data_ = data_;
+    item.data = data;
 
     // invoke all callbacks
-    for (var i in item_.clb_) {
-        item_.clb_[i](error_, data_);
+    for (var i in item.clb) {
+        item.clb[i](error, data);
     }
 
     // try to load next
-    this._next();
+    this.next();
 };
+
+
+export default RoiLoadingQueue;

@@ -1,87 +1,94 @@
-require('./resource-node');
 
-/**
- * @constructor
- */
-Melown.MapResourceTree = function(map_) {
-    this.map_ = map_;
-    this.tree_ = new Melown.MapResourceNode(map_, null, [0,0,0]); 
+import MapResourceNode_ from './resource-node';
+
+//get rid of compiler mess
+var MapResourceNode = MapResourceNode_;
+
+
+var MapResourceTree = function(map) {
+    this.map = map;
+    this.tree = new MapResourceNode(map, null, [0,0,0]); 
 };
 
-Melown.MapResourceTree.prototype.kill = function() {
-    this.tree_.kill();
+
+MapResourceTree.prototype.kill = function() {
+    this.tree.kill();
 };
 
-Melown.MapResourceTree.prototype.findNode = function(id_, createNonexisted_) {
-    var node_ = this.tree_; //TODO: fix is it same way as findNavTile
 
-    //console.log("--------------findNode: " + JSON.stringify(id_));
+MapResourceTree.prototype.findNode = function(id, createNonexisted) {
+    var node = this.tree; //TODO: fix is it same way as findNavTile
 
-//    for (var lod_ = 1; lod_ <= id_[0]; lod_++) {
-    for (var lod_ = id_[0]; lod_ > 0; lod_--) {
-        var mask_ = 1 << (lod_-1);
-        var index_ = 0;
+    //console.log("--------------findNode: " + JSON.stringify(id));
 
-        if ((id_[1] & mask_) != 0) {
-            index_ += 1;
+//    for (var lod = 1; lod <= id[0]; lod++) {
+    for (var lod = id[0]; lod > 0; lod--) {
+        var mask = 1 << (lod-1);
+        var index = 0;
+
+        if ((id[1] & mask) != 0) {
+            index += 1;
         }
 
-        if ((id_[2] & mask_) != 0) {
-            index_ += 2;
+        if ((id[2] & mask) != 0) {
+            index += 2;
         }
         
-        if (!node_.children_[index_]) {
-            if (createNonexisted_) {
-                node_.addChild(index_);
-                //console.log("addNode: " + JSON.stringify(node_.children_[index_].id_));
+        if (!node.children[index]) {
+            if (createNonexisted) {
+                node.addChild(index);
+                //console.log("addNode: " + JSON.stringify(node.children[index].id));
             } else {
                 return null;
             }
         } 
 
-        node_ = node_.children_[index_];
+        node = node.children[index];
     }
     
-    return node_;
+    return node;
 };
 
-Melown.MapResourceTree.prototype.findAgregatedNode = function(id_, agregation_, createNonexisted_) {
-    var rootLod_ = 0;  //TODO: fix is it same way as findNavTile
-    var node_ = this.tree_;
-    var ix_ = ((id_[1] >> agregation_) << agregation_);
-    var iy_ = ((id_[2] >> agregation_) << agregation_);
+
+MapResourceTree.prototype.findAgregatedNode = function(id, agregation, createNonexisted) {
+    var rootLod = 0;  //TODO: fix is it same way as findNavTile
+    var node = this.tree;
+    var ix = ((id[1] >> agregation) << agregation);
+    var iy = ((id[2] >> agregation) << agregation);
 
 
-//    for (var lod_ = id_[0]; lod_ > rootLod_; lod_--) {
-//        var i = lod_ - rootLod_;
-//        var index_ = 0;
-//        var mask_ = 1 << (i-1);
+//    for (var lod = id[0]; lod > rootLod; lod--) {
+//        var i = lod - rootLod;
+//        var index = 0;
+//        var mask = 1 << (i-1);
 
-    for (var lod_ = id_[0]; lod_ > 0; lod_--) {
-        var mask_ = 1 << (lod_-1);
-        var index_ = 0;
+    for (var lod = id[0]; lod > 0; lod--) {
+        var mask = 1 << (lod-1);
+        var index = 0;
 
-        if ((ix_ & mask_) != 0) {
-            index_ += 1;
+        if ((ix & mask) != 0) {
+            index += 1;
         }
 
-        if ((iy_ & mask_) != 0) {
-            index_ += 2;
+        if ((iy & mask) != 0) {
+            index += 2;
         }
 
-        if (!node_.children_[index_]) {
-            if (createNonexisted_) {
-                node_.addChild(index_);
+        if (!node.children[index]) {
+            if (createNonexisted) {
+                node.addChild(index);
             } else {
                 return null;
             }
         } 
 
-        node_ = node_.children_[index_];
+        node = node.children[index];
     }
 
-    return node_;
+    return node;
 };
 
+
+export default MapResourceTree;
 
 

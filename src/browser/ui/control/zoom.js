@@ -1,62 +1,71 @@
-/**
- * @constructor
- */
-Melown.UIControlZoom = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.browser_ = ui_.browser_;
-    this.control_ = this.ui_.addControl("zoom",
-      '<div id="melown-zoom"'
-      + ' class="melown-zoom">'
 
-        + '<div id="melown-zoom-plus" class="melown-zoom-plus">'
+import Dom_ from '../../utility/dom';
+
+//get rid of compiler mess
+var dom = Dom_;
+
+
+var UIControlZoom = function(ui, visible) {
+    this.ui = ui;
+    this.browser = ui.browser;
+    this.control = this.ui.addControl("zoom",
+      '<div id="vts-zoom"'
+      + ' class="vts-zoom">'
+
+        + '<div id="vts-zoom-plus" class="vts-zoom-plus">'
             + '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAASUlEQVRIx+2Tyw0AIAhDq0d2KsMzFFddQBO9+En6rqR5kFBAiBVINpJtJ1NPLCbJe5IyG7j78IMyEwBgZsNcRJQrl6gnkgjxIx12Cg3wDaLBUAAAAABJRU5ErkJggg==">'
         + '</div>'
 
-        + '<div id="melown-zoom-minus" class="melown-zoom-minus">'
+        + '<div id="vts-zoom-minus" class="vts-zoom-minus">'
           + '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAALUlEQVRIx2NgGAWjYBSMAqoCRlwSdnZ2/8kx8NChQxhmMo2G8ygYBaNgFGAHAElYBARpOBYqAAAAAElFTkSuQmCC">'
         + '</div>'
 
-     + ' </div>', visible_);
+     + ' </div>', visible);
 
-    var plus_ = this.control_.getElement("melown-zoom-plus");
-    plus_.on("click", this.onZoomIn.bind(this));
-    plus_.on("dblclick", this.onDoNothing.bind(this));
+    var plus = this.control.getElement("vts-zoom-plus");
+    plus.on("click", this.onZoomIn.bind(this));
+    plus.on("dblclick", this.onDoNothing.bind(this));
 
-    var minus_ = this.control_.getElement("melown-zoom-minus");
-    minus_.on("click", this.onZoomOut.bind(this));
-    minus_.on("dblclick", this.onDoNothing.bind(this));
+    var minus = this.control.getElement("vts-zoom-minus");
+    minus.on("click", this.onZoomOut.bind(this));
+    minus.on("dblclick", this.onDoNothing.bind(this));
 };
 
-Melown.UIControlZoom.prototype.onDoNothing = function(event_) {
-    Melown.Utils.preventDefault(event_);    
-    Melown.Utils.stopPropagation(event_);    
+
+UIControlZoom.prototype.onDoNothing = function(event) {
+    dom.preventDefault(event);    
+    dom.stopPropagation(event);    
 };
 
-Melown.UIControlZoom.prototype.onZoomIn = function() {
+
+UIControlZoom.prototype.onZoomIn = function() {
     this.repeat(7, 0.96, 50);
 };
 
-Melown.UIControlZoom.prototype.onZoomOut = function() {
+
+UIControlZoom.prototype.onZoomOut = function() {
     this.repeat(7, 1.04, 50);
 };
 
-Melown.UIControlZoom.prototype.repeat = function(count_, factor_, delay_) {
-    if (count_ <= 0) {
+
+UIControlZoom.prototype.repeat = function(count, factor, delay) {
+    if (count <= 0) {
         return;
     }
 
-    var map_ = this.browser_.getMap();
-    if (map_ == null) {
+    var map = this.browser.getMap();
+    if (map == null) {
         return;
     }
     
-    var controller_ = this.browser_.controlMode_.getCurrentController();
+    var controller = this.browser.controlMode.getCurrentController();
     
-    if (controller_.viewExtentDeltas_) {
-        controller_.viewExtentDeltas_.push(factor_);
+    if (controller.viewExtentDeltas) {
+        controller.viewExtentDeltas.push(factor);
     }
 
-    setTimeout(this.repeat.bind(this, --count_, factor_, delay_), delay_);
+    setTimeout(this.repeat.bind(this, --count, factor, delay), delay);
 };
 
 
+export default UIControlZoom;

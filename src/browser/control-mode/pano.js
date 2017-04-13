@@ -1,15 +1,20 @@
-/**
- * @constructor
- */
-Melown.ControlMode.Pano = function(browser_) {
-    this.browser_ = browser_;
-    this.config_ = null;
 
-    this.center_ = [0, 0];
-    this.dragging_ = false;
-    this.velocity_ = [0, 0];
 
-    this.impulse_ = [0, 0];
+import {math as math_} from '../../core/utils/math';
+
+//get rid of compiler mess
+var math = math_;
+
+
+var ControlModePano = function(browser) {
+    this.browser = browser;
+    this.config = null;
+
+    this.center = [0, 0];
+    this.dragging = false;
+    this.velocity = [0, 0];
+
+    this.impulse = [0, 0];
 
     this["drag"] = this.drag;
     this["down"] = this.drag;
@@ -22,94 +27,108 @@ Melown.ControlMode.Pano = function(browser_) {
     this["keypress"] = this.keypress;
 };
 
-Melown.ControlMode.Pano.prototype.drag = function(event_) {
-    if (!this.dragging_) {
+
+ControlModePano.prototype.drag = function(event) {
+    if (!this.dragging) {
         return;
     }
 
-    var mouse_ = event_.getMouseCoords();
-    var delta_ = [mouse_[0] - this.center_[0], mouse_[1] - this.center_[1]];
-    var sensitivity_ = 0.008;
-    this.velocity_[0] = delta_[0] * sensitivity_;
-    this.velocity_[1] = delta_[1] * sensitivity_;
+    var mouse = event.getMouseCoords();
+    var delta = [mouse[0] - this.center[0], mouse[1] - this.center[1]];
+    var sensitivity = 0.008;
+    this.velocity[0] = delta[0] * sensitivity;
+    this.velocity[1] = delta[1] * sensitivity;
 
-    this.impulse_[0] = delta_[0] * sensitivity_;
-    this.impulse_[1] = delta_[1] * sensitivity_;
+    this.impulse[0] = delta[0] * sensitivity;
+    this.impulse[1] = delta[1] * sensitivity;
 };
 
-Melown.ControlMode.Pano.prototype.down = function(event_) {
-    if (event_.getMouseButton() === 'left') {
-        this.center_ = event_.getMouseCoords();
-        this.dragging_ = true;
+
+ControlModePano.prototype.down = function(event) {
+    if (event.getMouseButton() === 'left') {
+        this.center = event.getMouseCoords();
+        this.dragging = true;
     }
 };
 
-Melown.ControlMode.Pano.prototype.up = function(event_) {
-    if (event_.getMouseButton() === 'left') {
-        this.dragging_ = false;
+
+ControlModePano.prototype.up = function(event) {
+    if (event.getMouseButton() === 'left') {
+        this.dragging = false;
     }
 };
 
-Melown.ControlMode.Pano.prototype.wheel = function(event_) {
-    var map_ = this.browser_.getMap();
-    if (map_ == null) {
+
+ControlModePano.prototype.wheel = function(event) {
+    var map = this.browser.getMap();
+    if (map == null) {
         return;
     }
 
-    var pos_ = map_.getPosition();
-    var delta_ = event_.getWheelDelta();
+    var pos = map.getPosition();
+    var delta = event.getWheelDelta();
 
-    var factor_ = (delta_ > 0 ? -1 : 1) * 1;
-    pos_[9] = Melown.clamp(pos_[9] + factor_, 1, 179);
+    var factor = (delta > 0 ? -1 : 1) * 1;
+    pos.setViewExtent(math.clamp(pos.getViewExtent() + factor, 1, 179));
 
-    map_.setPosition(pos_);
+    map.setPosition(pos);
 };
 
-Melown.ControlMode.Pano.prototype.keyup = function(event_) {
+
+ControlModePano.prototype.keyup = function(event) {
 };
 
-Melown.ControlMode.Pano.prototype.keydown = function(event_) {
+
+ControlModePano.prototype.keydown = function(event) {
 };
 
-Melown.ControlMode.Pano.prototype.keypress = function(event_) {
+
+ControlModePano.prototype.keypress = function(event) {
 };
 
-Melown.ControlMode.Pano.prototype.tick = function(event_) {
-    if (this.velocity_[0] == 0.0 && this.velocity_[1] == 0.0) {
+
+ControlModePano.prototype.tick = function(event) {
+    if (this.velocity[0] == 0.0 && this.velocity[1] == 0.0) {
         return;
     }
 
-    var map_ = this.browser_.getMap();
-    if (map_ == null) {
+    var map = this.browser.getMap();
+    if (map == null) {
         return;
     }
     
-    var pos_ = map_.getPosition();
-    pos_[5] -= this.velocity_[0];
-    pos_[6] -= this.velocity_[1];
-    map_.setPosition(pos_);
+    var pos = map.getPosition();
+    var coords = pos.getCoords();
+    coords[0] -= this.velocity[0];
+    coords[1] -= this.velocity[1];
+    pos.setCoords(coords);
+    map.setPosition(pos);
 
     // friction
-    if (this.dragging_) {
+    if (this.dragging) {
         return;
     }
-    var step_ = 0.9;
-    var treshold_ = 0.0005;
+    var step = 0.9;
+    var treshold = 0.0005;
 
-    if (Math.abs(this.velocity_[0]) < treshold_) {
-        this.velocity_[0] = 0.0;
+    if (Math.abs(this.velocity[0]) < treshold) {
+        this.velocity[0] = 0.0;
     } else {
-        this.velocity_[0] *= step_;
+        this.velocity[0] *= step;
     }
 
-    if (Math.abs(this.velocity_[1]) < treshold_) {
-        this.velocity_[1] = 0.0;
+    if (Math.abs(this.velocity[1]) < treshold) {
+        this.velocity[1] = 0.0;
     } else {
-        this.velocity_[1] *= step_;
+        this.velocity[1] *= step;
     }
-
 };
 
-Melown.ControlMode.Pano.prototype.reset = function(config_) {
-    this.config_ = config_;
+
+ControlModePano.prototype.reset = function(config) {
+    this.config = config;
 };
+
+
+export default ControlModePano;
+

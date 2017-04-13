@@ -1,34 +1,38 @@
-/**
- * @constructor
- */
-Melown.MapDivisionNode = function(map_, id_, srs_, extents_, heightRange_, partitioning_) {
-    this.map_ = map_;
-    this.id_ = id_;
-    this.srs_ = this.map_.getMapsSrs(srs_);
-    this.extents_ = extents_;
-    this.heightRange_ =  heightRange_;
-    this.partitioning_ = partitioning_;
-    this.isPole_ = (id_[0] == 1 && ((id_[1] == 0 && id_[2] == 1)||(id_[1] == 1 && id_[2] == 0)));
-};
 
-Melown.MapDivisionNode.prototype.getInnerCoords = function (coords_) {
-    return this.srs_.convertCoordsFrom(coords_, this.map_.getNavigationSrs());
-};
-
-Melown.MapDivisionNode.prototype.getOuterCoords = function (coords_) {
-    return this.srs_.convertCoordsTo(coords_, this.map_.getNavigationSrs());
-};
-
-Melown.MapDivisionNode.prototype.getPhysicalCoords = function (coords_, skipVerticalAdjust_) {
-    return this.srs_.convertCoordsTo(coords_, this.map_.getPhysicalSrs(), skipVerticalAdjust_);
-};
-
-Melown.MapDivisionNode.prototype.getPhysicalCoordsFast = function (coords_, skipVerticalAdjust_, coords2_, index_, index2_) {
-    return this.srs_.convertCoordsToFast(coords_, this.map_.getPhysicalSrs(), skipVerticalAdjust_, coords2_, index_, index2_);
-};
-
-Melown.MapDivisionNode.prototype.getExtents = function (coords_) {
-    return this.srs_.convertCoordsFrom(coords_, this.map_.getNavigationSrs());
+var MapDivisionNode = function(map, id, srs, extents, heightRange, partitioning) {
+    this.map = map;
+    this.id = id;
+    this.srs = this.map.getMapsSrs(srs);
+    this.extents = extents;
+    this.heightRange =  heightRange;
+    this.partitioning = partitioning;
+    this.isPole = (id[0] == 1 && ((id[1] == 0 && id[2] == 1)||(id[1] == 1 && id[2] == 0)));
 };
 
 
+MapDivisionNode.prototype.getInnerCoords = function (coords) {
+    return this.srs.convertCoordsFrom(coords, this.map.getNavigationSrs());
+};
+
+
+MapDivisionNode.prototype.getOuterCoords = function (coords) {
+    return this.srs.convertCoordsTo(coords, this.map.getNavigationSrs());
+};
+
+
+MapDivisionNode.prototype.getPhysicalCoords = function (coords, skipVerticalAdjust) {
+    return this.srs.convertCoordsTo(coords, this.map.getPhysicalSrs(), skipVerticalAdjust);
+};
+
+
+MapDivisionNode.prototype.getPhysicalCoordsFast = function (coords, skipVerticalAdjust, coords2, index, index2) {
+    return this.srs.convertCoordsToFast(coords, this.map.getPhysicalSrs(), skipVerticalAdjust, coords2, index, index2);
+};
+
+
+MapDivisionNode.prototype.getExtents = function (coords) {
+    return this.srs.convertCoordsFrom(coords, this.map.getNavigationSrs());
+};
+
+
+export default MapDivisionNode;

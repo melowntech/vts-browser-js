@@ -1,398 +1,410 @@
-/**
- * @constructor
- */
-Melown.MapSurfaceTile = function(map_, parent_, id_) {
-    this.map_ = map_;
-    this.id_ = id_;
-    this.parent_ = parent_;
-    this.viewCounter_ = map_.viewCounter_;
-    this.renderCounter_ = 0;
-    this.renderReady_ = false;
-    this.geodataCounter_ = 0;
-    this.texelSize_ = 1;
-    this.texelSize2_ = 1;
-    this.distance_ = 1;
 
-    this.metanode_ = null;  //[metanode, cacheItem]
-    this.lastMetanode_ = null;
-    this.boundmetaresources_ = null; //link to bound layers metatile storage
+import {vec3 as vec3_, mat4 as mat4_} from '../utils/matrix';
 
-    this.surface_ = null; //surface or glue
-    this.surfaceMesh_ = null;
-    this.surfaceGeodata_ = null;     //probably only used in free layers
-    this.surfaceGeodataView_ = null; //probably only used in free layers
-    this.surfaceTextures_ = [];
-    this.resourceSurface_ = null; //surface directing to resources
+//get rid of compiler mess
+var vec3 = vec3_, mat4 = mat4_;
 
-    this.virtual_ = false;
-    this.virtualReady_ = false;
-    this.virtualSurfaces_ = [];
-    
-    this.resetDrawCommands_ = false;
-    this.drawCommands_ = [[], [], []];
-    
-    this.bounds_ = {};
-    this.boundLayers_ = {};
-    this.boundTextures_ = {};
-    this.updateBounds_ = true;
 
-    this.heightMap_ = null;
-    this.drawCommands_ = [[], [], []];
-    this.imageryCredits_ = {};
-    this.glueImageryCredits_ = {};
-    this.mapdataCredits_ = {};
+var MapSurfaceTile = function(map, parent, id) {
+    this.map = map;
+    this.id = id;
+    this.parent = parent;
+    this.viewCounter = map.viewCounter;
+    this.renderCounter = 0;
+    this.renderReady = false;
+    this.geodataCounter = 0;
+    this.texelSize = 1;
+    this.texelSize2 = 1;
+    this.distance = 1;
+
+    this.metanode = null;  //[metanode, cacheItem]
+    this.lastMetanode = null;
+    this.boundmetaresources = null; //link to bound layers metatile storage
+
+    this.surface = null; //surface or glue
+    this.surfaceMesh = null;
+    this.surfaceGeodata = null;     //probably only used in free layers
+    this.surfaceGeodataView = null; //probably only used in free layers
+    this.surfaceTextures = [];
+    this.resourceSurface = null; //surface directing to resources
+
+    this.virtual = false;
+    this.virtualReady = false;
+    this.virtualSurfaces = [];
     
-    this.resources_ = this.map_.resourcesTree_.findNode(id_, true);   // link to resource tree
-    this.metaresources_ = this.map_.resourcesTree_.findAgregatedNode(id_, 5, true); //link to meta resource tree
-    this.boundresources_ = this.map_.resourcesTree_.findAgregatedNode(id_, 8, true); //link to meta resource tree
+    this.resetDrawCommands = false;
+    this.drawCommands = [[], [], []];
     
-    /*if (!this.resources_) {
+    this.bounds = {};
+    this.boundLayers = {};
+    this.boundTextures = {};
+    this.updateBounds = true;
+
+    this.heightMap = null;
+    this.drawCommands = [[], [], []];
+    this.imageryCredits = {};
+    this.glueImageryCredits = {};
+    this.mapdataCredits = {};
+    
+    this.resources = this.map.resourcesTree.findNode(id, true);   // link to resource tree
+    this.metaresources = this.map.resourcesTree.findAgregatedNode(id, 5, true); //link to meta resource tree
+    this.boundresources = this.map.resourcesTree.findAgregatedNode(id, 8, true); //link to meta resource tree
+    
+    /*if (!this.resources) {
         debugger;
     }*/
 
-    this.children_ = [null, null, null, null];
+    this.children = [null, null, null, null];
 };
 
-Melown.MapSurfaceTile.prototype.kill = function() {
+
+MapSurfaceTile.prototype.kill = function() {
     //kill children
     for (var i = 0; i < 4; i++) {
-        if (this.children_[i] != null) {
-            this.children_[i].kill();
+        if (this.children[i] != null) {
+            this.children[i].kill();
         }
     }
 /*
-    if (this.surfaceMesh_ != null) {
-        this.surfaceMesh_.kill();
+    if (this.surfaceMesh != null) {
+        this.surfaceMesh.kill();
     }
 
-    for (var key in this.surfaceTextures_) {
-        if (this.surfaceTextures_[key_] != null) {
-            this.surfaceTextures_[key_].kill();
+    for (var key in this.surfaceTextures) {
+        if (this.surfaceTextures[key] != null) {
+            this.surfaceTextures[key].kill();
         }
     }
 
-    if (this.surfaceGeodata_ != null) {
-        this.surfaceGeodata_.kill();
+    if (this.surfaceGeodata != null) {
+        this.surfaceGeodata.kill();
     }
 
-    if (this.surfaceGeodataView_ != null) {
-        this.surfaceGeodataView_.kill();
+    if (this.surfaceGeodataView != null) {
+        this.surfaceGeodataView.kill();
     }
 
-    if (this.heightMap_ != null) {
-        this.heightMap_.kill();
+    if (this.heightMap != null) {
+        this.heightMap.kill();
     }
 
-    for (var key_ in this.boundTextures_) {
-        if (this.boundTextures_[key_] != null) {
-            this.boundTextures_[key_].kill();
+    for (var key in this.boundTextures) {
+        if (this.boundTextures[key] != null) {
+            this.boundTextures[key].kill();
         }
     }
 */
-    this.resources_ = null;
-    this.metaresources_ = null;
-    this.metanode_ = null;
+    this.resources = null;
+    this.metaresources = null;
+    this.metanode = null;
 
-    this.surface_ = null;
-    this.surfaceMesh_ = null;
-    this.surfaceTextures_ = [];
-    this.surfaceGeodata_ = null;
-    this.surfaceGeodataView_ = null;
-    this.resourceSurface_ = null;
+    this.surface = null;
+    this.surfaceMesh = null;
+    this.surfaceTextures = [];
+    this.surfaceGeodata = null;
+    this.surfaceGeodataView = null;
+    this.resourceSurface = null;
 
-    this.bounds_ = {};
-    this.boundLayers_ = {};
-    this.boundTextures_ = {};
-    this.updateBounds_ = true;
+    this.bounds = {};
+    this.boundLayers = {};
+    this.boundTextures = {};
+    this.updateBounds = true;
 
-    this.virtual_ = false;
-    this.virtualReady_ = false;
-    this.virtualSurfaces_ = [];
+    this.virtual = false;
+    this.virtualReady = false;
+    this.virtualSurfaces = [];
 
-    this.renderReady_ = false;
-    this.lastSurface_ = null;
-    this.lastState_ = null;
-    this.lastRenderState_ = null;
+    this.renderReady = false;
+    this.lastSurface = null;
+    this.lastState = null;
+    this.lastRenderState = null;
         
-    this.heightMap_ = null;
-    this.drawCommands_ = [[], [], []];
-    this.imageryCredits_ = {};
-    this.glueImageryCredits_ = {};
-    this.mapdataCredits_ = {};
+    this.heightMap = null;
+    this.drawCommands = [[], [], []];
+    this.imageryCredits = {};
+    this.glueImageryCredits = {};
+    this.mapdataCredits = {};
 
-    this.verifyChildren_ = false;
-    this.children_ = [null, null, null, null];
+    this.verifyChildren = false;
+    this.children = [null, null, null, null];
 
-    var parent_ = this.parent_;
-    this.parent_ = null;
+    var parent = this.parent;
+    this.parent = null;
 
-    if (parent_ != null) {
-        parent_.removeChild(this);
+    if (parent != null) {
+        parent.removeChild(this);
     }
 };
 
-Melown.MapSurfaceTile.prototype.validate = function() {
+
+MapSurfaceTile.prototype.validate = function() {
     //is tile empty?
-    if (this.metaresources_ == null || !this.metaresources_.getMetatile(this.surface_, null, this)) {
+    if (this.metaresources == null || !this.metaresources.getMetatile(this.surface, null, this)) {
         //this.kill();
     }
 };
 
-Melown.MapSurfaceTile.prototype.viewSwitched = function() {
+
+MapSurfaceTile.prototype.viewSwitched = function() {
     //store last state for view switching
-    this.lastSurface_ = this.surface_;
-    this.lastState_ = {
-        surfaceMesh_ : this.surfaceMesh_,
-        surfaceTextures_ : this.surfaceTextures_,
-        boundTextures_ : this.boundTextures_,
-        surfaceGeodata_ : this.surfaceGeodata_,
-        surfaceGeodataView_ : this.surfaceGeodataView_,
-        resourceSurface_ : this.resourceSurface_ 
+    this.lastSurface = this.surface;
+    this.lastState = {
+        surfaceMesh : this.surfaceMesh,
+        surfaceTextures : this.surfaceTextures,
+        boundTextures : this.boundTextures,
+        surfaceGeodata : this.surfaceGeodata,
+        surfaceGeodataView : this.surfaceGeodataView,
+        resourceSurface : this.resourceSurface 
     };    
 
-    if (this.drawCommands_[0].length > 0) {  // check only visible chanel
-        this.lastRenderState_ = {
-            drawCommands_ : this.drawCommands_,
-            imageryCredits_ : this.imageryCredits_,
-            mapdataCredits_ : this.mapdataCredits_
+    if (this.drawCommands[0].length > 0) {  // check only visible chanel
+        this.lastRenderState = {
+            drawCommands : this.drawCommands,
+            imageryCredits : this.imageryCredits,
+            mapdataCredits : this.mapdataCredits
         };
     } else {
-        this.lastRenderState_ = null;
+        this.lastRenderState = null;
     }
 
     
     //zero surface related data    
-    this.verifyChildren_ = true;
-    this.renderReady_ = false;
-    this.lastMetanode_ = this.metanode_;
-    //this.metanode_ = null; //keep old value for smart switching
+    this.verifyChildren = true;
+    this.renderReady = false;
+    this.lastMetanode = this.metanode;
+    //this.metanode = null; //keep old value for smart switching
 
 
-    //this.lastMetanode_ = null;
-    //this.metanode_ = null;
+    //this.lastMetanode = null;
+    //this.metanode = null;
 
-    for (var key_ in this.bounds_) {
-        this.bounds_[key_] = {
-            sequence_ : [],
-            alpha_ : [],
-            transparent_ : false,
-            viewCoutner_ : 0
+    for (var key in this.bounds) {
+        this.bounds[key] = {
+            sequence : [],
+            alpha : [],
+            transparent : false,
+            viewCoutner : 0
         };
     }
 
-    this.boundLayers_ = {};
-    this.boundTextures_ = {};
-    this.updateBounds_ = true;
-    this.transparentBounds_ = false;
+    this.boundLayers = {};
+    this.boundTextures = {};
+    this.updateBounds = true;
+    this.transparentBounds = false;
 
-    this.surface_ = null;
-    this.surfaceMesh_ = null;
-    this.surfaceTextures_ = [];
-    this.surfaceGeodata_ = null;
-    this.surfaceGeodataView_ = null;
-    this.resourceSurface_ = null;
+    this.surface = null;
+    this.surfaceMesh = null;
+    this.surfaceTextures = [];
+    this.surfaceGeodata = null;
+    this.surfaceGeodataView = null;
+    this.resourceSurface = null;
     
-    this.virtual_ = false;
-    this.virtualReady_ = false;
-    this.virtualSurfaces_ = [];
+    this.virtual = false;
+    this.virtualReady = false;
+    this.virtualSurfaces = [];
     
-    this.drawCommands_ = [[], [], []];
-    this.imageryCredits_ = {};
-    this.glueImageryCredits_ = {};
-    this.mapdataCredits_ = {};
+    this.drawCommands = [[], [], []];
+    this.imageryCredits = {};
+    this.glueImageryCredits = {};
+    this.mapdataCredits = {};
 };
 
-Melown.MapSurfaceTile.prototype.restoreLastState = function() {
-    if (!this.lastState_) {
+
+MapSurfaceTile.prototype.restoreLastState = function() {
+    if (!this.lastState) {
         return;
     }
-    this.surfaceMesh_ = this.lastState_.surfaceMesh_;
-    this.surfaceTextures_ = this.lastState_.surfaceTextures_; 
-    this.boundTextures_ = this.lastState_.boundTextures_;
-    this.surfaceGeodata_ = this.lastState_.surfaceGeodata_;
-    this.surfaceGeodataView_ = this.lastState_.surfaceGeodataView_;
-    this.resourceSurface_ = this.lastState_.resourceSurface_; 
-    this.lastSurface_ = null;
-    this.lastState_ = null;
-    this.lastResourceSurface_ = null;
+    this.surfaceMesh = this.lastState.surfaceMesh;
+    this.surfaceTextures = this.lastState.surfaceTextures; 
+    this.boundTextures = this.lastState.boundTextures;
+    this.surfaceGeodata = this.lastState.surfaceGeodata;
+    this.surfaceGeodataView = this.lastState.surfaceGeodataView;
+    this.resourceSurface = this.lastState.resourceSurface; 
+    this.lastSurface = null;
+    this.lastState = null;
+    this.lastResourceSurface = null;
 };
 
-Melown.MapSurfaceTile.prototype.addChild = function(index_) {
-    if (this.children_[index_]) {
+
+MapSurfaceTile.prototype.addChild = function(index) {
+    if (this.children[index]) {
         return;
     }
     
-    var id_ = this.id_;
-    var childId_ = [id_[0] + 1, id_[1] << 1, id_[2] << 1];
+    var id = this.id;
+    var childId = [id[0] + 1, id[1] << 1, id[2] << 1];
 
-    switch (index_) {
-        case 1: childId_[1]++; break;
-        case 2: childId_[2]++; break;
-        case 3: childId_[1]++; childId_[2]++; break;
+    switch (index) {
+        case 1: childId[1]++; break;
+        case 2: childId[2]++; break;
+        case 3: childId[1]++; childId[2]++; break;
     }
 
-    this.children_[index_] = new Melown.MapSurfaceTile(this.map_, this, childId_);
+    this.children[index] = new MapSurfaceTile(this.map, this, childId);
 };
 
-Melown.MapSurfaceTile.prototype.removeChildByIndex = function(index_) {
-    if (this.children_[index_] != null) {
-        this.children_[index_].kill();
-        this.children_[index_] = null;
+
+MapSurfaceTile.prototype.removeChildByIndex = function(index) {
+    if (this.children[index] != null) {
+        this.children[index].kill();
+        this.children[index] = null;
     }
     
     //remove resrource node?
 };
 
-Melown.MapSurfaceTile.prototype.removeChild = function(tile_) {
+
+MapSurfaceTile.prototype.removeChild = function(tile) {
     for (var i = 0; i < 4; i++) {
-        if (this.children_[i] == tile_) {
-            this.children_[i].kill();
-            this.children_[i] = null;
+        if (this.children[i] == tile) {
+            this.children[i].kill();
+            this.children[i] = null;
         }
     }
 };
 
-Melown.MapSurfaceTile.prototype.isMetanodeReady = function(tree_, priority_, preventLoad_) {
-    //has map view changed?
-    if (this.map_.viewCounter_ != this.viewCoutner_) {
-        this.viewSwitched();
-        this.viewCoutner_ = this.map_.viewCounter_;
-        this.map_.markDirty(); 
 
-        if (this.lastRenderState_) {
-            this.lastRenderState_ = this.lastRenderState_; //debug
+MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad) {
+    //has map view changed?
+    if (this.map.viewCounter != this.viewCoutner) {
+        this.viewSwitched();
+        this.viewCoutner = this.map.viewCounter;
+        this.map.markDirty(); 
+
+        if (this.lastRenderState) {
+            this.lastRenderState = this.lastRenderState; //debug
         }
     }
         
-    if (!preventLoad_) {
+    if (!preventLoad) {
    
         //provide surface for tile
-        if (this.virtualSurfacesUncomplete_ || (this.surface_ == null && this.virtualSurfaces_.length == 0) ) { //|| this.virtualSurfacesUncomplete_) {
-            this.checkSurface(tree_, priority_);
+        if (this.virtualSurfacesUncomplete || (this.surface == null && this.virtualSurfaces.length == 0) ) { //|| this.virtualSurfacesUncomplete) {
+            this.checkSurface(tree, priority);
         }
    
         //provide metanode for tile
-        if (this.metanode_ == null || this.lastMetanode_) {
+        if (this.metanode == null || this.lastMetanode) {
             
-            if (!this.virtualSurfacesUncomplete_) {
-                var ret_ = this.checkMetanode(tree_, priority_);
+            if (!this.virtualSurfacesUncomplete) {
+                var ret = this.checkMetanode(tree, priority);
                 
-                if (!ret_ && !(this.metanode_ != null && this.lastMetanode_)) { //metanode is not ready yet
+                if (!ret && !(this.metanode != null && this.lastMetanode)) { //metanode is not ready yet
                     return;
                 }
             }
             
-            if (this.lastMetanode_) {
-                processFlag2_ = true;
+            if (this.lastMetanode) {
+                processFlag2 = true;
             }
         }
         
     }
 
-    if (this.metanode_ == null) { // || processFlag3_) { //only for wrong data
+    if (this.metanode == null) { // || processFlag3) { //only for wrong data
         return false;
     }
 
-    this.metanode_.metatile_.used();
+    this.metanode.metatile.used();
 
-    if (this.lastSurface_ && this.lastSurface_ == this.surface_) {
-        this.lastSurface_ = null;
+    if (this.lastSurface && this.lastSurface == this.surface) {
+        this.lastSurface = null;
         this.restoreLastState();
         //return;
     }
 
-    if (this.surface_) {
-        if (this.surface_.virtual_) {
-            this.resourceSurface_ = this.surface_.getSurface(this.metanode_.sourceReference_);
-            if (!this.resourceSurface_) {
-                this.resourceSurface_ = this.surface_;
+    if (this.surface) {
+        if (this.surface.virtual) {
+            this.resourceSurface = this.surface.getSurface(this.metanode.sourceReference);
+            if (!this.resourceSurface) {
+                this.resourceSurface = this.surface;
             }
         } else {
-            this.resourceSurface_ = this.surface_;
+            this.resourceSurface = this.surface;
         }
     }
-
 
     return true;
 };
 
-Melown.MapSurfaceTile.prototype.checkSurface = function(tree_, priority_) {
-    this.surface_ = null;
-    this.virtual_ = false;
-    this.virtualReady_ = false;
-    this.virtualSurfaces_ = [];
-    this.virtualSurfacesUncomplete_ = false;
+
+MapSurfaceTile.prototype.checkSurface = function(tree, priority) {
+    this.surface = null;
+    this.virtual = false;
+    this.virtualReady = false;
+    this.virtualSurfaces = [];
+    this.virtualSurfacesUncomplete = false;
     
-    if (tree_.freeLayerSurface_) {  //free layer has only one surface
-        this.surface_ = tree_.freeLayerSurface_;
+    if (tree.freeLayerSurface) {  //free layer has only one surface
+        this.surface = tree.freeLayerSurface;
         return; 
     }
 
     /*
-    if (this.id_[0] == 0 && this.id_[1] == 0 && this.id_[2] == 0) {
-        tree_ = tree_;
+    if (this.id[0] == 0 && this.id[1] == 0 && this.id[2] == 0) {
+        tree = tree;
     }
 
-    if (this.id_[0] == 1 && this.id_[1] == 0 && this.id_[2] == 0) {
-        tree_ = tree_;
+    if (this.id[0] == 1 && this.id[1] == 0 && this.id[2] == 0) {
+        tree = tree;
     }
 
-    if (this.id_[0] == 2 && this.id_[1] == 1 && this.id_[2] == 1) {
-        tree_ = tree_;
+    if (this.id[0] == 2 && this.id[1] == 1 && this.id[2] == 1) {
+        tree = tree;
     }
 
-    if (this.id_[0] == 3 && this.id_[1] == 3 && this.id_[2] == 3) {
-        tree_ = tree_;
+    if (this.id[0] == 3 && this.id[1] == 3 && this.id[2] == 3) {
+        tree = tree;
     }
 
-    if (this.id_[0] == 4 && this.id_[1] == 7 && this.id_[2] == 7) {
-        tree_ = tree_;
+    if (this.id[0] == 4 && this.id[1] == 7 && this.id[2] == 7) {
+        tree = tree;
     }
 
-    if (this.id_[0] == 15 && this.id_[1] == 16297 && this.id_[2] == 16143) {
-        tree_ = tree_;
+    if (this.id[0] == 15 && this.id[1] == 16297 && this.id[2] == 16143) {
+        tree = tree;
     }
 
-    if (this.id_[0] == 16 && this.id_[1] == 32595 && this.id_[2] == 32287) {
-        tree_ = tree_;
+    if (this.id[0] == 16 && this.id[1] == 32595 && this.id[2] == 32287) {
+        tree = tree;
     }*/
 
-    var sequence_ = tree_.surfaceSequence_;
+    var sequence = tree.surfaceSequence;
 
     //multiple surfaces
     //build virtual surfaces array
     //find surfaces with content
-    for (var i = 0, li = sequence_.length; i < li; i++) {
-        var surface_ = sequence_[i][0];
-        var alien_ = sequence_[i][1];
+    for (var i = 0, li = sequence.length; i < li; i++) {
+        var surface = sequence[i][0];
+        var alien = sequence[i][1];
 
-        var res_ = surface_.hasTile2(this.id_);
-        if (res_[0] == true) {
+        var res = surface.hasTile2(this.id);
+        if (res[0] == true) {
             
             //check if tile exist
-            if (this.id_[0] > 0) { //surface_.lodRange_[0]) {
-                //!!!!!!removed for debug
-                ///* ????????
-                var parent_ = this.parent_;
-                if (parent_) { 
+            if (this.id[0] > 0) { //surface.lodRange[0]) {
+                // removed for debug !!!!!
+                // ????????
+                var parent = this.parent;
+                if (parent) { 
                     
-                    if (parent_.virtualSurfacesUncomplete_) {
-                        this.virtualSurfacesUncomplete_ = true;
-                        this.virtualSurfaces_ = [];
+                    if (parent.virtualSurfacesUncomplete) {
+                        this.virtualSurfacesUncomplete = true;
+                        this.virtualSurfaces = [];
                         return;
                     }
                     
-                    var metatile_ = parent_.metaresources_.getMetatile(surface_, null, this);
-                    if (metatile_) {
+                    var metatile = parent.metaresources.getMetatile(surface, null, this);
+                    if (metatile) {
                         
-                        if (!metatile_.isReady(priority_)) {
-                            this.virtualSurfacesUncomplete_ = true;
+                        if (!metatile.isReady(priority)) {
+                            this.virtualSurfacesUncomplete = true;
                             continue;
                         }
                         
-                        var node_ = metatile_.getNode(parent_.id_);
-                        if (node_) {
-                            if (!node_.hasChildById(this.id_)) {
+                        var node = metatile.getNode(parent.id);
+                        if (node) {
+                            if (!node.hasChildById(this.id)) {
                                 continue;
                             }
                         } else {
@@ -405,57 +417,58 @@ Melown.MapSurfaceTile.prototype.checkSurface = function(tree_, priority_) {
             }
     
             //store surface
-            this.virtualSurfaces_.push([surface_, alien_]);        
+            this.virtualSurfaces.push([surface, alien]);        
         }
     }
 
-  //  if (this.virtualSurfacesUncomplete_) {
-  //      this.metanode_ = null;
+  //  if (this.virtualSurfacesUncomplete) {
+  //      this.metanode = null;
   //  }
 
     //
-    if (this.virtualSurfaces_.length > 1) {
-        this.virtual_ = true;
+    if (this.virtualSurfaces.length > 1) {
+        this.virtual = true;
     } else {
-        this.surface_ = (this.virtualSurfaces_[0]) ? this.virtualSurfaces_[0][0] : null;
+        this.surface = (this.virtualSurfaces[0]) ? this.virtualSurfaces[0][0] : null;
     }
 };
 
-Melown.MapSurfaceTile.prototype.checkMetanode = function(tree_, priority_) {
-    if (this.virtual_) {
-        if (this.isVirtualMetanodeReady(tree_, priority_)) {
-            this.metanode_ = this.createVirtualMetanode(tree_, priority_);
-            this.lastMetanode_ = null;
-            this.map_.markDirty();
+
+MapSurfaceTile.prototype.checkMetanode = function(tree, priority) {
+    if (this.virtual) {
+        if (this.isVirtualMetanodeReady(tree, priority)) {
+            this.metanode = this.createVirtualMetanode(tree, priority);
+            this.lastMetanode = null;
+            this.map.markDirty();
         } else {
             return false;
         }
     }
 
-    //var surface_ = this.surface_ || this.surface_; ?????
-    var surface_ = this.surface_;
+    //var surface = this.surface || this.surface; ?????
+    var surface = this.surface;
 
-    if (surface_ == null) {
+    if (surface == null) {
         return false;
     }
 
-    var metatile_ = this.metaresources_.getMetatile(surface_, true, this);
+    var metatile = this.metaresources.getMetatile(surface, true, this);
 
-    if (metatile_.isReady(priority_) == true) {
+    if (metatile.isReady(priority) == true) {
 
-        if (!this.virtual_) {
-            this.metanode_ = metatile_.getNode(this.id_);
-            this.lastMetanode_ = null;
-            this.map_.markDirty(); 
+        if (!this.virtual) {
+            this.metanode = metatile.getNode(this.id);
+            this.lastMetanode = null;
+            this.map.markDirty(); 
         }
 
-        if (this.metanode_ != null) {
-            this.metanode_.tile_ = this; //used only for validate
-            this.lastMetanode_ = null;
-            this.map_.markDirty(); 
+        if (this.metanode != null) {
+            this.metanode.tile = this; //used only for validate
+            this.lastMetanode = null;
+            this.map.markDirty(); 
 
             for (var i = 0; i < 4; i++) {
-                if (this.metanode_.hasChild(i) == true) {
+                if (this.metanode.hasChild(i) == true) {
                     this.addChild(i);
                 } else {
                     this.removeChildByIndex(i);
@@ -470,71 +483,73 @@ Melown.MapSurfaceTile.prototype.checkMetanode = function(tree_, priority_) {
     return true;
 };
 
-Melown.MapSurfaceTile.prototype.isVirtualMetanodeReady = function(tree_, priority_) {
-    var surfaces_ = this.virtualSurfaces_;
-    var readyCount_ = 0;
 
-    for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = surfaces_[i][0];
-        var metatile_ = this.metaresources_.getMetatile(surface_, true, this);
+MapSurfaceTile.prototype.isVirtualMetanodeReady = function(tree, priority) {
+    var surfaces = this.virtualSurfaces;
+    var readyCount = 0;
 
-        if (metatile_.isReady(priority_) == true) {
-            readyCount_++;
+    for (var i = 0, li = surfaces.length; i < li; i++) {
+        var surface = surfaces[i][0];
+        var metatile = this.metaresources.getMetatile(surface, true, this);
+
+        if (metatile.isReady(priority) == true) {
+            readyCount++;
         }
     }
     
-    if (readyCount_ == li) {
+    if (readyCount == li) {
         return true;        
     } else {
         return false;
     }
 };
 
-Melown.MapSurfaceTile.prototype.createVirtualMetanode = function(tree_, priority_) {
-    var surfaces_ = this.virtualSurfaces_;
-    var first_ = false;
-    var node_ = null;
+
+MapSurfaceTile.prototype.createVirtualMetanode = function(tree, priority) {
+    var surfaces = this.virtualSurfaces;
+    var first = false;
+    var node = null;
 
     //get top most existing surface
-    for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = surfaces_[i][0];
-        var alien_ = surfaces_[i][1];
-        var metatile_ = this.metaresources_.getMetatile(surface_, null, this);
+    for (var i = 0, li = surfaces.length; i < li; i++) {
+        var surface = surfaces[i][0];
+        var alien = surfaces[i][1];
+        var metatile = this.metaresources.getMetatile(surface, null, this);
 
-        if (metatile_.isReady(priority_) == true) {
-            var metanode_ = metatile_.getNode(this.id_);
+        if (metatile.isReady(priority) == true) {
+            var metanode = metatile.getNode(this.id);
 
-            if (metanode_ != null) {
-                if (alien_ != metanode_.alien_) {
+            if (metanode != null) {
+                if (alien != metanode.alien) {
                     continue;
                 }
 
                 //does metanode have surface reference?
                 //internalTextureCount is reference to surface
-                if (!alien_ && surface_.glue_ && !metanode_.hasGeometry() &&
-                    metanode_.internalTextureCount_ > 0) {
+                if (!alien && surface.glue && !metanode.hasGeometry() &&
+                    metanode.internalTextureCount > 0) {
                     
-                    var desiredSurfaceIndex_ = metanode_.internalTextureCount_ - 1;
-                    desiredSurfaceIndex_ = this.map_.getSurface(surface_.id_[desiredSurfaceIndex_]).viewSurfaceIndex_;
+                    var desiredSurfaceIndex = metanode.internalTextureCount - 1;
+                    desiredSurfaceIndex = this.map.getSurface(surface.id[desiredSurfaceIndex]).viewSurfaceIndex;
                     
-                    var jump_ = false; 
+                    var jump = false; 
                         
                     for (var j = i; j < li; j++) {
-                        if (surfaces_[j].viewSurfaceIndex_ <= desiredSurfaceIndex_) {
-                            jump_ = (j > i);
+                        if (surfaces[j].viewSurfaceIndex <= desiredSurfaceIndex) {
+                            jump = (j > i);
                             i = j - 1;
                             break;
                         }
                     }
                     
-                    if (jump_) {
+                    if (jump) {
                         continue;
                     }                         
                 }
                 
-                if (metanode_.hasGeometry()) {
-                    node_ = metanode_.clone();
-                    this.surface_ = surface_;
+                if (metanode.hasGeometry()) {
+                    node = metanode.clone();
+                    this.surface = surface;
                     break;
                 }
             }
@@ -542,589 +557,758 @@ Melown.MapSurfaceTile.prototype.createVirtualMetanode = function(tree_, priority
     }
 
     //extend bbox, credits and children flags by other surfaces
-    for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = surfaces_[i][0];
-        var metatile_ = this.metaresources_.getMetatile(surface_, null, this);
+    for (var i = 0, li = surfaces.length; i < li; i++) {
+        var surface = surfaces[i][0];
+        var metatile = this.metaresources.getMetatile(surface, null, this);
 
-        if (metatile_.isReady(priority_) == true) {
-            var metanode_ = metatile_.getNode(this.id_);
+        if (metatile.isReady(priority) == true) {
+            var metanode = metatile.getNode(this.id);
 
-            if (metanode_ != null) {
+            if (metanode != null) {
                 //does metanode have surface reference?
                 //internalTextureCount is reference to surface
                 /*
-                if (surface_.glue_ && !metanode_.hasGeometry() &&
-                    metanode_.internalTextureCount_ > 0) {
-                    i = this.map_.surfaceSequenceIndices_[metanode_.internalTextureCount_ - 1] - 1;
+                if (surface.glue && !metanode.hasGeometry() &&
+                    metanode.internalTextureCount > 0) {
+                    i = this.map.surfaceSequenceIndices[metanode.internalTextureCount - 1] - 1;
                     continue;
                 }*/
 
-                if (!node_) { //just in case all surfaces are without geometry
-                    node_ = metanode_.clone();
-                    this.surface_ = surface_;
+                if (!node) { //just in case all surfaces are without geometry
+                    node = metanode.clone();
+                    this.surface = surface;
                 } else {
-                    node_.flags_ |= metanode_.flags_ & ((15)<<4); 
+                    node.flags |= metanode.flags & ((15)<<4); 
 
                     /*
-                    for (var j = 0, lj = metanode_.credits_.length; j <lj; j++) {
-                        if (node_.credits_.indexOf(metanode_.credits_[j]) == -1) {
-                            node_.credits_.push(metanode_.credits_[j]);
+                    for (var j = 0, lj = metanode.credits.length; j <lj; j++) {
+                        if (node.credits.indexOf(metanode.credits[j]) == -1) {
+                            node.credits.push(metanode.credits[j]);
                         } 
                     }*/
                    
-                    if (metatile_.useVersion_ < 4) {
-                        //!!!!!!removed for debug
-                        node_.bbox_.min_[0] = Math.min(node_.bbox_.min_[0], metanode_.bbox_.min_[0]); 
-                        node_.bbox_.min_[1] = Math.min(node_.bbox_.min_[1], metanode_.bbox_.min_[1]); 
-                        node_.bbox_.min_[2] = Math.min(node_.bbox_.min_[2], metanode_.bbox_.min_[2]); 
-                        node_.bbox_.max_[0] = Math.max(node_.bbox_.max_[0], metanode_.bbox_.max_[0]); 
-                        node_.bbox_.max_[1] = Math.max(node_.bbox_.max_[1], metanode_.bbox_.max_[1]); 
-                        node_.bbox_.max_[2] = Math.max(node_.bbox_.max_[2], metanode_.bbox_.max_[2]);
+                    if (metatile.useVersion < 4) {
+                        // removed for debug !!!!!
+                        node.bbox.min[0] = Math.min(node.bbox.min[0], metanode.bbox.min[0]); 
+                        node.bbox.min[1] = Math.min(node.bbox.min[1], metanode.bbox.min[1]); 
+                        node.bbox.min[2] = Math.min(node.bbox.min[2], metanode.bbox.min[2]); 
+                        node.bbox.max[0] = Math.max(node.bbox.max[0], metanode.bbox.max[0]); 
+                        node.bbox.max[1] = Math.max(node.bbox.max[1], metanode.bbox.max[1]); 
+                        node.bbox.max[2] = Math.max(node.bbox.max[2], metanode.bbox.max[2]);
                     }
                 }
             }
         }
     }
     
-    if (node_) {
-        node_.generateCullingHelpers(true);
+    if (node) {
+        node.generateCullingHelpers(true);
     }
     
-    return node_;
+    return node;
 };
 
-Melown.MapSurfaceTile.prototype.bboxVisible = function(id_, bbox_, cameraPos_, node_) {
-    var map_ = this.map_;
-    if (id_[0] < map_.minDivisionNodeDepth_) {
+
+MapSurfaceTile.prototype.bboxVisible = function(id, bbox, cameraPos, node) {
+    var map = this.map;
+    var camera = map.camera;
+    if (id[0] < map.measure.minDivisionNodeDepth) {
         return true;
     }
     
-    var skipGeoTest_ = map_.config_.mapDisableCulling_;
-    if (!skipGeoTest_ && map_.geocent_) {
-        if (node_) {
+    var skipGeoTest = map.config.mapDisableCulling;
+    if (!skipGeoTest && map.isGeocent) {
+        if (node) {
             if (true) {  //version with perspektive
-                var p2_ = node_.diskPos_;
-                var p1_ = map_.cameraPosition_;
-                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                Melown.vec3.normalize(camVec_);
+                var p2 = node.diskPos;
+                var p1 = camera.position;
+                var camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                var distance = vec3.normalize4(camVec) * camera.distanceFactor;
+                //vec3.normalize(camVec);
                 
-                var a = Melown.vec3.dot(camVec_, node_.diskNormal_);
+                var a = vec3.dot(camVec, node.diskNormal);
             } else {
-                var a = Melown.vec3.dot(map_.cameraVector_, node_.diskNormal_);
+                var a = vec3.dot(camera.vector, node.diskNormal);
             }
             
-            if (a > node_.diskAngle_) {
+            if (distance > 150000 && a > node.diskAngle) {
                 return false;
             }
         }
     }
 
-    if (node_.metatile_.useVersion_ >= 4) {
-        return map_.camera_.pointsVisible(node_.bbox2_, cameraPos_);
+    if (node.metatile.useVersion >= 4) {
+        return camera.camera.pointsVisible(node.bbox2, cameraPos);
     } else {
-        if (!(map_.geocent_ && (map_.config_.mapPreciseBBoxTest_)) || id_[0] < 4) {
-            return map_.camera_.bboxVisible(bbox_, cameraPos_);
+        if (!(map.isGeocent && (map.config.mapPreciseBBoxTest)) || id[0] < 4) {
+            return camera.camera.bboxVisible(bbox, cameraPos);
         } else {
-            return map_.camera_.pointsVisible(node_.bbox2_, cameraPos_);
+            return camera.camera.pointsVisible(node.bbox2, cameraPos);
         }
     }
 };
 
-Melown.MapSurfaceTile.prototype.getPixelSize = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
-    var min_ = bbox_.min_;
-    var max_ = bbox_.max_;
-    var tilePos1x_ = min_[0] - cameraPos_[0];
-    var tilePos1y_ = min_[1] - cameraPos_[1];
-    var tilePos2x_ = max_[0] - cameraPos_[0];
-    var tilePos2y_ = min_[1] - cameraPos_[1];
-    var tilePos3x_ = max_[0] - cameraPos_[0];
-    var tilePos3y_ = max_[1] - cameraPos_[1];
-    var tilePos4x_ = min_[0] - cameraPos_[0];
-    var tilePos4y_ = max_[1] - cameraPos_[1];
-    var h1_ = min_[2] - cameraPos_[2];
-    var h2_ = max_[2] - cameraPos_[2];
+
+MapSurfaceTile.prototype.getPixelSize = function(bbox, screenPixelSize, cameraPos, worldPos, returnDistance) {
+    var min = bbox.min;
+    var max = bbox.max;
+    var tilePos1x = min[0] - cameraPos[0];
+    var tilePos1y = min[1] - cameraPos[1];
+    var tilePos2x = max[0] - cameraPos[0];
+    var tilePos2y = min[1] - cameraPos[1];
+    var tilePos3x = max[0] - cameraPos[0];
+    var tilePos3y = max[1] - cameraPos[1];
+    var tilePos4x = min[0] - cameraPos[0];
+    var tilePos4y = max[1] - cameraPos[1];
+    var h1 = min[2] - cameraPos[2];
+    var h2 = max[2] - cameraPos[2];
     
     //camera inside bbox
-    if (!this.map_.config_.mapLowresBackground_) {
-        if (cameraPos_[0] > min_[0] && cameraPos_[0] < max_[0] &&
-            cameraPos_[1] > min_[1] && cameraPos_[1] < max_[1] &&
-            cameraPos_[2] > min_[2] && cameraPos_[2] < max_[2]) {
+    if (!this.map.config.mapLowresBackground) {
+        if (cameraPos[0] > min[0] && cameraPos[0] < max[0] &&
+            cameraPos[1] > min[1] && cameraPos[1] < max[1] &&
+            cameraPos[2] > min[2] && cameraPos[2] < max[2]) {
     
-            if (returnDistance_ == true) {
-                return [Number.POSITIVE_INFINITY, 0.1];
+            if (returnDistance == true) {
+                return [Number.POSITIVEINFINITY, 0.1];
             }
         
-            return Number.POSITIVE_INFINITY;
+            return Number.POSITIVEINFINITY;
         }
     }
 
-    var factor_ = 0;
-    var camera_ = this.map_.camera_;
+    var factor = 0;
+    var camera = this.map.camera.camera;
 
     //find bbox sector
-    if (0 < tilePos1y_) { //top row - zero means camera position in y
-        if (0 < tilePos1x_) { // left top corner
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([tilePos1x_, tilePos1y_, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([tilePos1x_, tilePos1y_, h1_], returnDistance_);
+    if (0 < tilePos1y) { //top row - zero means camera position in y
+        if (0 < tilePos1x) { // left top corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([tilePos1x_, tilePos1y_, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, (h1 + h2)*0.5], returnDistance);
             }
-        } else if (0 > tilePos2x_) { // right top corner
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([tilePos2x_, tilePos2y_, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([tilePos2x_, tilePos2y_, h1_], returnDistance_);
+        } else if (0 > tilePos2x) { // right top corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([tilePos2x_, tilePos2y_, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, (h1 + h2)*0.5], returnDistance);
             }
         } else { //top side
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([(tilePos1x_ + tilePos2x_)*0.5, tilePos2y_, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([(tilePos1x_ + tilePos2x_)*0.5, tilePos2y_, h1_], returnDistance_);
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([(tilePos1x_ + tilePos2x_)*0.5, tilePos2y_, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, (h1 + h2)*0.5], returnDistance);
             }
         }
-    } else if (0 > tilePos4y_) { //bottom row
-        if (0 < tilePos4x_) { // left bottom corner
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([tilePos4x_, tilePos4y_, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([tilePos4x_, tilePos4y_, h1_], returnDistance_);
+    } else if (0 > tilePos4y) { //bottom row
+        if (0 < tilePos4x) { // left bottom corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([tilePos4x_, tilePos4y_, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, (h1 + h2)*0.5], returnDistance);
             }
-        } else if (0 > tilePos3x_) { // right bottom corner
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([tilePos3x_, tilePos3y_, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([tilePos3x_, tilePos3y_, h1_], returnDistance_);
+        } else if (0 > tilePos3x) { // right bottom corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([tilePos3x_, tilePos3y_, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, (h1 + h2)*0.5], returnDistance);
             }
         } else { //bottom side
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([(tilePos4x_ + tilePos3x_)*0.5, tilePos3y_, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([(tilePos4x_ + tilePos3x_)*0.5, tilePos3y_, h1_], returnDistance_);
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([(tilePos4x_ + tilePos3x_)*0.5, tilePos3y_, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, (h1 + h2)*0.5], returnDistance);
             }
         }
     } else { //middle row
-        if (0 < tilePos4x_) { // left side
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([tilePos1x_, (tilePos2y_ + tilePos3y_)*0.5, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([tilePos1x_, (tilePos2y_ + tilePos3y_)*0.5, h1_], returnDistance_);
+        if (0 < tilePos4x) { // left side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([tilePos1x_, (tilePos2y_ + tilePos3y_)*0.5, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
             }
-        } else if (0 > tilePos3x_) { // right side
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([tilePos2x_, (tilePos2y_ + tilePos3y_)*0.5, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([tilePos2x_, (tilePos2y_ + tilePos3y_)*0.5, h1_], returnDistance_);
+        } else if (0 > tilePos3x) { // right side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([tilePos2x_, (tilePos2y_ + tilePos3y_)*0.5, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
             }
         } else { //center
-            if (0 > h2_) { // hi
-                factor_ = camera_.scaleFactor([(tilePos1x_ + tilePos2x_)*0.5, (tilePos2y_ + tilePos3y_)*0.5, h2_], returnDistance_);
-            } else if (0 < h1_) { // low
-                factor_ = camera_.scaleFactor([(tilePos1x_ + tilePos2x_)*0.5, (tilePos2y_ + tilePos3y_)*0.5, h1_], returnDistance_);
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
             } else { // middle
-                factor_ = camera_.scaleFactor([(tilePos1x_ + tilePos2x_)*0.5, (tilePos2y_ + tilePos3y_)*0.5, (h1_ + h2_)*0.5], returnDistance_);
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
             }
         }
     }
 
-    //console.log("new: " + (factor_ * screenPixelSize_) + " old:" + this.tilePixelSize2(node_) );
+    //console.log("new: " + (factor * screenPixelSize) + " old:" + this.tilePixelSize2(node) );
 
-    if (returnDistance_ == true) {
-        return [(factor_[0] * screenPixelSize_), factor_[1]];
+    if (returnDistance == true) {
+        return [(factor[0] * screenPixelSize), factor[1]];
     }
 
-    return (factor_ * screenPixelSize_);
+    return (factor * screenPixelSize);
 };
 
 
-Melown.MapSurfaceTile.prototype.getPixelSize3 = function(node_, screenPixelSize_, factor_) {
-    var d = (this.map_.cameraGeocentDistance_*factor_) - node_.diskDistance_;
+MapSurfaceTile.prototype.getPixelSize3Old = function(node, screenPixelSize, factor) {
+    var camera = this.map.camera;
+    var d = (camera.geocentDistance*factor) - node.diskDistance;
     if (d < 0) {
-        return [Number.POSITIVE_INFINITY, 0.1];
+        d = -d;
+        //return [Number.POSITIVEINFINITY, 0.1];
     } 
 
-    var a = Melown.vec3.dot(this.map_.cameraGeocentNormal_, node_.diskNormal_);
+    var a = vec3.dot(camera.geocentNormal, node.diskNormal);
     
-    if (a < node_.diskAngle2_) {
+    if (a < node.diskAngle2) {
         var a2 = Math.acos(a); 
-        var a3 = Math.acos(node_.diskAngle2_);
+        var a3 = Math.acos(node.diskAngle2);
         a2 = a2 - a3; 
 
-        var l1 = Math.tan(a2) * node_.diskDistance_;
+        var l1 = Math.tan(a2) * node.diskDistance;
         d = Math.sqrt(l1*l1 + d*d);
     }
 
-    var factor_ = this.map_.camera_.scaleFactor2(d);
-    return [factor_ * screenPixelSize_, d];
+    var factor = camera.camera.scaleFactor2(d);
+    return [factor * screenPixelSize, d];
+};
+
+
+MapSurfaceTile.prototype.getPixelSize3 = function(node, screenPixelSize, factor) {
+    //if (this.map.drawIndices) {
+      //  return this.getPixelSize3Old(node, screenPixelSize, factor);
+    //}
+    var camera = this.map.camera;
+    var cameraDistance = camera.geocentDistance;// * factor;
+
+    var a = vec3.dot(camera.geocentNormal, node.diskNormal); //get angle between tile normal and cameraGeocentNormal
+    var d = cameraDistance - (node.diskDistance + (node.maxZ - node.minZ)); //vertical distance from top bbox level
+    
+    if (a < node.diskAngle2) { //is camera inside tile conus?
+        
+        //get horizontal distance
+        var a2 = Math.acos(a); 
+        var a3 = node.diskAngle2A;
+        a2 = a2 - a3; 
+        var l1 = Math.tan(a2) * node.diskDistance;// * factor;
+
+        if (d < 0) { //is camera is belown top bbox level?
+            var d2 = cameraDistance - node.diskDistance;
+            if (d2 < 0) { //is camera is belown bottom bbox level?
+                d = -d2;
+                d = Math.sqrt(l1*l1 + d*d);
+            } else { //is camera inside bbox
+                d = l1;
+            }
+        } else {
+            d = Math.sqrt(l1*l1 + d*d);
+        }
+
+    } else {
+        if (d < 0) { //is camera is belown top bbox level?
+            var d2 = cameraDistance - node.diskDistance;
+            if (d2 < 0) { //is camera is belown bottom bbox level?
+                d = -d2;
+            } else { //is camera inside bbox
+                return [Number.POSITIVEINFINITY, 0.1];
+            }
+        } 
+    }
+
+    return [camera.camera.scaleFactor2(d) * screenPixelSize, d];
 };
 
 /*
 
-Melown.MapSurfaceTile.prototype.getPixelSize22 = function(bbox_, screenPixelSize_, cameraPos_, worldPos_, returnDistance_) {
-    var min_ = bbox_.min_;
-    var max_ = bbox_.max_;
-    var p1_ = bbox_.center();
-    bbox_.updateMaxSize();
-    var d = bbox_.maxSize_ * 0.5; 
+MapSurfaceTile.prototype.getPixelSize22 = function(bbox, screenPixelSize, cameraPos, worldPos, returnDistance) {
+    var min = bbox.min;
+    var max = bbox.max;
+    var p1 = bbox.center();
+    bbox.updateMaxSize();
+    var d = bbox.maxSize * 0.5; 
     
-    var dd_ = [cameraPos_[0]-p1_[0],
-               cameraPos_[1]-p1_[1],
-               cameraPos_[2]-p1_[2]]; 
+    var dd = [cameraPos[0]-p1[0],
+               cameraPos[1]-p1[1],
+               cameraPos[2]-p1[2]]; 
 
-    var d2_ = Melown.vec3.length(dd_) - (bbox_.maxSize_ * 0.5);
+    var d2 = vec3.length(dd) - (bbox.maxSize * 0.5);
 
-    var factor_ = this.camera_.scaleFactor2(d2_);
+    var factor = this.camera.scaleFactor2(d2);
 
-    if (returnDistance_ == true) {
-        return [(factor_[0] * screenPixelSize_), factor_[1]];
+    if (returnDistance == true) {
+        return [(factor[0] * screenPixelSize), factor[1]];
     }
 
-    return (factor_ * screenPixelSize_);
+    return (factor * screenPixelSize);
 };
 */
 
-Melown.MapSurfaceTile.prototype.updateTexelSize = function() {
-    var pixelSize_;
-    var pixelSize2_;
-    var map_ = this.map_;
-    var texelSizeFit_ = map_.texelSizeFit_;
-    var node_ = this.metanode_;
-    var cameraPos_ = map_.cameraPosition_;
-    var preciseDistance_ = (map_.geocent_ && (map_.config_.mapPreciseDistanceTest_ || node_.metatile_.useVersion_ >= 4));  
+MapSurfaceTile.prototype.updateTexelSize = function() {
+    var pixelSize;
+    var pixelSize2;
+    var map = this.map;
+    var draw = map.draw;
+    var camera = map.camera;
+    var texelSizeFit = draw.texelSizeFit;
+    var node = this.metanode;
+    var cameraPos = map.camera.position;
+    var preciseDistance = (map.isGeocent && (map.config.mapPreciseDistanceTest || node.metatile.useVersion >= 4));  
 
-    if (node_.hasGeometry()) {
-        var screenPixelSize_ = Number.POSITIVE_INFINITY;
+    if (node.hasGeometry()) {
+        var screenPixelSize = Number.POSITIVEINFINITY;
 
-        if (node_.usedTexelSize()) {
-            screenPixelSize_ = map_.ndcToScreenPixel_ * node_.pixelSize_;
-        } else if (node_.usedDisplaySize()) {
-            screenPixelSize_ = map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / node_.displaySize_);
+        if (node.usedTexelSize()) {
+            screenPixelSize = draw.ndcToScreenPixel * node.pixelSize;
+        } else if (node.usedDisplaySize()) {
+            screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / node.displaySize);
         }
 
-        if (map_.camera_.ortho_ == true) {
-            var height_ = map_.camera_.getViewHeight();
-            pixelSize_ = [(screenPixelSize_*2.0) / height_, height_];
+        if (camera.camera.ortho == true) {
+            var height = camera.camera.getViewHeight();
+            pixelSize = [(screenPixelSize*2.0) / height, height];
         } else {
             
-            if (node_.usedDisplaySize()) { 
+            if (node.usedDisplaySize()) { 
                
-                if (!preciseDistance_) {
-                    screenPixelSize_ = map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256);
+                if (!preciseDistance) {
+                    screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / 256);
 
-                    var factor_ = (node_.displaySize_ / 256) * map_.cameraDistance_;
-                    //var factor_ = (256 / 256) * this.map_.cameraDistance_;
+                    var factor = (node.displaySize / 256) * camera.distance;
+                    //var factor = (256 / 256) * this.map.cameraDistance;
                     
-                    var v = map_.cameraVector_; //move camera away hack
-                    var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
+                    var v = camera.vector; //move camera away hack
+                    var p = [cameraPos[0] - v[0] * factor, cameraPos[1] - v[1] * factor, cameraPos[2] - v[2] * factor];
 
-                    pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, p, p, true);
+                    pixelSize = this.getPixelSize(node.bbox, screenPixelSize, p, p, true);
                 } else {
-                    screenPixelSize_ = map_.ndcToScreenPixel_ * (node_.bbox_.maxSize_ / 256) * (256 / node_.displaySize_);
+                    screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / 256) * (256 / node.displaySize);
 
-                    pixelSize_ = this.getPixelSize3(node_, screenPixelSize_, 1);
+                    pixelSize = this.getPixelSize3(node, screenPixelSize, 1);
                 }
             } else {
                 
-                if (!preciseDistance_ && texelSizeFit_ > 1.1) {
-                    screenPixelSize_ = map_.ndcToScreenPixel_ * node_.pixelSize_ * (texelSizeFit_ / 1.1);
-                    var factor_ = (texelSizeFit_ / 1.1) * map_.cameraDistance_;
+                if (!preciseDistance && texelSizeFit > 1.1) {
+                    screenPixelSize = draw.ndcToScreenPixel * node.pixelSize * (texelSizeFit / 1.1);
+                    var factor = (texelSizeFit / 1.1) * camera.distance;
                     
-                    var v = map_.cameraVector_; //move camera away hack
-                    var p = [cameraPos_[0] - v[0] * factor_, cameraPos_[1] - v[1] * factor_, cameraPos_[2] - v[2] * factor_];
+                    var v = camera.vector; //move camera away hack
+                    var p = [cameraPos[0] - v[0] * factor, cameraPos[1] - v[1] * factor, cameraPos[2] - v[2] * factor];
                     
-                    pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, p, p, true);
+                    pixelSize = this.getPixelSize(node.bbox, screenPixelSize, p, p, true);
                 } else {
-                    if (preciseDistance_) {
-                        pixelSize_ = this.getPixelSize3(node_, screenPixelSize_, 1);
+                    if (preciseDistance) {
+                        pixelSize = this.getPixelSize3(node, screenPixelSize, 1);
                     } else {
-                        pixelSize_ = this.getPixelSize(node_.bbox_, screenPixelSize_, cameraPos_, cameraPos_, true);
+                        pixelSize = this.getPixelSize(node.bbox, screenPixelSize, cameraPos, cameraPos, true);
                     }
                 }
             }
         }
     } else {
-        if (preciseDistance_) {
-            pixelSize_ = this.getPixelSize3(node_, 1, 1);
+        if (preciseDistance) {
+            pixelSize = this.getPixelSize3(node, 1, 1);
         } else {
-            pixelSize_ = this.getPixelSize(node_.bbox_, 1, cameraPos_, cameraPos_, true);
+            pixelSize = this.getPixelSize(node.bbox, 1, cameraPos, cameraPos, true);
         }
 
-        //pixelSize_ = this.getPixelSize(node_.bbox_, 1, cameraPos_, cameraPos_, true);
-        pixelSize_[0] = Number.POSITIVE_INFINITY;
+        //pixelSize = this.getPixelSize(node.bbox, 1, cameraPos, cameraPos, true);
+        pixelSize[0] = Number.POSITIVEINFINITY;
     }
 
-    this.texelSize_ = pixelSize_[0];
-    this.distance_ = pixelSize_[1];
+    this.texelSize = pixelSize[0];
+    this.distance = pixelSize[1];
 
     //degrade horizont
-    if (!map_.config_.mapDegradeHorizon_ || map_.degradeHorizonFactor_ < 1.0) {
+    if (!map.config.mapDegradeHorizon || draw.degradeHorizonFactor < 1.0) {
         return;
     }
 
-    var degradeHorizon_ = map_.config_.mapDegradeHorizonParams_;
-    var degradeFadeStart_ = degradeHorizon_[1];
-    var degradeFadeEnd_ = degradeHorizon_[2];
+    var degradeHorizon = map.config.mapDegradeHorizonParams;
+    var degradeFadeStart = degradeHorizon[1];
+    var degradeFadeEnd = degradeHorizon[2];
 
     //reduce degrade factor by tilt
-    var degradeFactor_ = map_.degradeHorizonFactor_ * map_.degradeHorizonTiltFactor_; 
-    var distance_ = this.distance_ * map_.cameraDistanceFactor_;
+    var degradeFactor = draw.degradeHorizonFactor * draw.degradeHorizonTiltFactor; 
+    var distance = this.distance * camera.distanceFactor;
 
     //apply degrade factor smoothly from specified tile distance
-    if (distance_ < degradeFadeStart_) {
-        degradeFactor_ = 1.0;
-    } else if (distance_ > degradeFadeStart_ && distance_ < degradeFadeEnd_) {
-        degradeFactor_ = 1.0 + (degradeFactor_-1.0) * ((distance_ - degradeFadeStart_) / (degradeFadeEnd_ - degradeFadeStart_));
+    if (distance < degradeFadeStart) {
+        degradeFactor = 1.0;
+    } else if (distance > degradeFadeStart && distance < degradeFadeEnd) {
+        degradeFactor = 1.0 + (degradeFactor-1.0) * ((distance - degradeFadeStart) / (degradeFadeEnd - degradeFadeStart));
     }
 
-    degradeFactor_ = Math.max(degradeFactor_, 1.0);
+    degradeFactor = Math.max(degradeFactor, 1.0);
 
     //reduce degrade factor by observed distance
-    var observerDistance_ = map_.cameraPerceivedDistance_;
-    var distanceFade_ = degradeHorizon_[3];
+    var observerDistance = camera.perceivedDistance;
+    var distanceFade = degradeHorizon[3];
 
-    if (observerDistance_ > distanceFade_) {
-        degradeFactor_ = 1.0;
-    } else if (observerDistance_ < distanceFade_ && degradeFactor_ > 1.0) {
-        degradeFactor_ = 1.0 + ((degradeFactor_ - 1.0) * (1.0-(observerDistance_ / distanceFade_)));
+    if (observerDistance > distanceFade) {
+        degradeFactor = 1.0;
+    } else if (observerDistance < distanceFade && degradeFactor > 1.0) {
+        degradeFactor = 1.0 + ((degradeFactor - 1.0) * (1.0-(observerDistance / distanceFade)));
     }
 
-    //console.log("degrade: " + degradeFactor_);
+    //console.log("degrade: " + degradeFactor);
 
-    this.texelSize_ /= degradeFactor_;
+    this.texelSize /= degradeFactor;
 };
 
-Melown.MapSurfaceTile.prototype.drawGrid = function(cameraPos_, divNode_, angle_) {
-    if ((this.texelSize_ == Number.POSITIVE_INFINITY || this.texelSize_ > 4.4) && this.metanode_ && this.metanode_.hasChildren()) {
+
+MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
+    if ((this.texelSize == Number.POSITIVEINFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
         return;
     }
     
-    var fastGrid_ = this.map_.config_.mapFastHeightfiled_;
+    var fastGrid = this.map.config.mapFastHeightfiled;
     
-    //if (!(this.id_[0] == 18 && this.id_[1] == 130381 && this.id_[2] == 129151)) {
+    //if (!(this.id[0] == 18 && this.id[1] == 130381 && this.id[2] == 129151)) {
       //  return;
     //}
 
-    var map_ = this.map_;
+    var map = this.map;
     
-    if (divNode_) {
-        var node_ = divNode_[0]; 
-        var ll_ = divNode_[1][0];
-        var ur_ = divNode_[1][1];
+    if (divNode) {
+        var node = divNode[0]; 
+        var ll = divNode[1][0];
+        var ur = divNode[1][1];
     } else {
-        var res_ = map_.getSpatialDivisionNodeAndExtents(this.id_);
-        var node_ = res_[0]; 
-        var ll_ = res_[1][0];
-        var ur_ = res_[1][1];
+        var res = map.measure.getSpatialDivisionNodeAndExtents(this.id);
+        var node = res[0]; 
+        var ll = res[1][0];
+        var ur = res[1][1];
     }
    
-    var middle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5];
-    var normal_ = [0,0,0];
+    var middle = [(ur[0] + ll[0])* 0.5, (ur[1] + ll[1])* 0.5];
+    var normal = [0,0,0];
 
-    var hasPoles_ = map_.referenceFrame_.hasPoles_;
+    var hasPoles = map.referenceFrame.hasPoles;
 
-    //var pseudomerc_ = (node_.srs_.id_ == "pseudomerc");
-    var subdivision_ = angle_; 
-    var angle_ = angle_ || this.metanode_.diskAngle2_;
+    //var pseudomerc = (node.srs.id == "pseudomerc");
+    var subdivision = angle; 
+    var angle = angle || this.metanode.diskAngle2;
     
-    if ((hasPoles_ && !node_.isPole_) &&  Math.acos(angle_) > Math.PI*0.1) {
-        angle_ = Math.cos(Math.acos(angle_) * 0.5); 
+    if ((hasPoles && !node.isPole) &&  Math.acos(angle) > Math.PI*0.1) {
+        angle = Math.cos(Math.acos(angle) * 0.5); 
         
-        this.drawGrid(cameraPos_, [node_, [ [ll_[0], ll_[1]],  [middle_[0], middle_[1]] ] ], angle_);
-        this.drawGrid(cameraPos_, [node_, [ [middle_[0], ll_[1]],  [ur_[0], middle_[1]] ] ], angle_);
+        this.drawGrid(cameraPos, [node, [ [ll[0], ll[1]],  [middle[0], middle[1]] ] ], angle);
+        this.drawGrid(cameraPos, [node, [ [middle[0], ll[1]],  [ur[0], middle[1]] ] ], angle);
 
-        this.drawGrid(cameraPos_, [node_, [ [ll_[0], middle_[1]],  [middle_[0], ur_[1]] ] ], angle_);
-        this.drawGrid(cameraPos_, [node_, [ [middle_[0], middle_[1]],  [ur_[0], ur_[1]] ] ], angle_);
+        this.drawGrid(cameraPos, [node, [ [ll[0], middle[1]],  [middle[0], ur[1]] ] ], angle);
+        this.drawGrid(cameraPos, [node, [ [middle[0], middle[1]],  [ur[0], ur[1]] ] ], angle);
        
         return;
     }
      
-    var desiredSamplesPerViewExtent_ = 5;
-    var nodeExtent_ = node_.extents_.ur_[1] - node_.extents_.ll_[1];
-    var viewExtent_ = this.distance_ ;//* 0.1;
-    var lod_ = Math.log((desiredSamplesPerViewExtent_ * nodeExtent_) / viewExtent_) / map_.log2_;
-    lod_ = Math.max(0,lod_ - 8 + node_.id_[0]);
+    var desiredSamplesPerViewExtent = 5;
+    var nodeExtent = node.extents.ur[1] - node.extents.ll[1];
+    var viewExtent = this.distance ;//* 0.1;
+    var lod = Math.log((desiredSamplesPerViewExtent * nodeExtent) / viewExtent) / map.log2;
+    lod = Math.max(0,lod - 8 + node.id[0]);
     
-    //var lod_ = map_.getOptimalHeightLod(middle_, this.distance_, 5);
+    //var lod = map.measure.getOptimalHeightLod(middle, this.distance, 5);
     
-    var coords_ = [
-        [ur_[0], ur_[1]],
-        [ur_[0], ll_[1]],
-        [ll_[0], ll_[1]],
-        [ll_[0], ur_[1]],
+    var coords = [
+        [ur[0], ur[1]],
+        [ur[0], ll[1]],
+        [ll[0], ll[1]],
+        [ll[0], ur[1]],
 
-        [middle_[0], ur_[1]],
-        [middle_[0], ll_[1]],
+        [middle[0], ur[1]],
+        [middle[0], ll[1]],
     
-        [ll_[0], middle_[1]],
-        [ur_[0], middle_[1]]
+        [ll[0], middle[1]],
+        [ur[0], middle[1]]
     ];    
 
-    if (fastGrid_) {
-        if (!this.metanode_) {
+    var flatGrid = true; 
+
+    if (fastGrid) {
+        if (!this.metanode) {
             return;
         }
         
-        var h = this.metanode_.minHeight_;      
-        var coordsRes_ = [[h],[h],[h],[h],[h],[h],[h],[h]];
-        middle_[2] = h;
-        middle_ = node_.getPhysicalCoords(middle_, true);
+        if (flatGrid) {
+            //var h = this.metanode.minZ;
+            var h = this.metanode.surrogatez;
+    
+            //if (this.map.drawLods) { h = this.metanode.minZ; }
+
+
+        var coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
+
+            //middle[2] = h;
+            //middle = node.getPhysicalCoords(middle, true);
+
+        } else {
+
+            var mnode = this.metanode; 
+            
+            if (!mnode.hmap) {
+                
+                var border = mnode.border;
+                var n;
+                
+                if (!border) {
+                    mnode.border = new Array(9);
+                    border = mnode.border;
+                    border[4] = mnode.minZ;
+                }
+                
+                var skip = false;
+                
+                if (border[0] == null) {
+                    n = this.map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2] - 1]);
+                    if (n) { border[0] = n.minZ; } else { skip = true; }
+                }
+
+                if (border[1] == null) {
+                    n = this.map.tree.getNodeById([this.id[0], this.id[1], this.id[2] - 1]);
+                    if (n) { border[1] = n.minZ; } else { skip = true; }
+                }
+
+                if (border[2] == null) {
+                    n = this.map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2] - 1]);
+                    if (n) { border[2] = n.minZ; } else { skip = true; }
+                }
+
+                if (border[3] == null) {
+                    n = this.map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2]]);
+                    if (n) { border[3] = n.minZ; } else { skip = true; }
+                }
+
+                if (border[5] == null) {
+                    n = this.map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2]]);
+                    if (n) { border[5] = n.minZ; } else { skip = true; }
+                }
+
+                if (border[6] == null) {
+                    n = this.map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2] + 1]);
+                    if (n) { border[6] = n.minZ; } else { skip = true; }
+                }
+
+                if (border[7] == null) {
+                    n = this.map.tree.getNodeById([this.id[0], this.id[1], this.id[2] + 1]);
+                    if (n) { border[7] = n.minZ; } else { skip = true; }
+                }
+
+                if (border[8] == null) {
+                    n = this.map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2] + 1]);
+                    if (n) { border[8] = n.minZ; } else { skip = true; }
+                }
+                
+                if (skip) {
+                    return;
+                }
+
+                var border2 = mnode.border2;
+                
+                if (!border2) {
+                    mnode.border2 = [
+                       (border[0] + border[1] + border[3] + border[4]) * 0.25, 
+                       (border[1] + border[4]) * 0.5,
+                       (border[2] + border[1] + border[5] + border[4]) * 0.25,
+                       (border[3] + border[4]) * 0.5,
+                        mnode.minZ,
+                       (border[5] + border[4]) * 0.5,
+                       (border[6] + border[7] + border[3] + border[4]) * 0.25,
+                       (border[7] + border[4]) * 0.5,
+                       (border[8] + border[7] + border[5] + border[4]) * 0.25
+                    ];
+                }
+                
+            }
+            
+            var h = this.metanode.minZ;      
+            var coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
+
+            coordsRes[0] = [(border[8] + border[7] + border[5] + border[4]) * 0.25];
+            coordsRes[1] = [(border[2] + border[1] + border[5] + border[4]) * 0.25];
+            coordsRes[2] = [(border[0] + border[1] + border[3] + border[4]) * 0.25];
+            coordsRes[3] = [(border[6] + border[7] + border[3] + border[4]) * 0.25];
+            coordsRes[4] = [(border[7] + border[4]) * 0.5];
+            coordsRes[5] = [(border[1] + border[4]) * 0.5];
+
+            
+            if (this.map.drawFog) {
+                coordsRes[6] = [(border[3] + border[4]) * 0.5];
+                coordsRes[7] = [(border[5] + border[4]) * 0.5];
+            }
+
+        }
+        
+		
+
+        middle[2] = h;
+        middle = node.getPhysicalCoords(middle, true);
         
     } else {
-        var res_ = map_.getSurfaceHeight(null, lod_, null, node_, middle_, coords_);
-        middle_[2] = res_[0];
-        middle_ = node_.getPhysicalCoords(middle_, true);
-        var coordsRes_ = res_[5];
+        var res = map.measure.getSurfaceHeight(null, lod, null, node, middle, coords);
+        middle[2] = res[0];
+        middle = node.getPhysicalCoords(middle, true);
+        var coordsRes = res[5];
         
-        if (!coordsRes_) {
-            coordsRes_ = [[0],[0],[0],[0],[0],[0],[0],[0]];
+        if (!coordsRes) {
+            coordsRes = [[0],[0],[0],[0],[0],[0],[0],[0]];
         }
     }
 
-    var renderer_ = map_.renderer_;
-    var buffer_ = map_.planeBuffer_;
-    //var mvp_ = Melown.mat4.create();
-    var mv_ = renderer_.camera_.getModelviewMatrix();
-    var proj_ = renderer_.camera_.getProjectionMatrix();
-    //Melown.mat4.multiply(proj_, mv_, mvp_);
+    var renderer = map.renderer;
+    var buffer = map.draw.planeBuffer;
+    //var mvp = mat4.create();
+    var mv = renderer.camera.getModelviewMatrix();
+    var proj = renderer.camera.getProjectionMatrix();
+    //mat4.multiply(proj, mv, mvp);
 
-    var sx_ = cameraPos_[0];
-    var sy_ = cameraPos_[1];
-    var sz_ = cameraPos_[2];
+    var sx = cameraPos[0];
+    var sy = cameraPos[1];
+    var sz = cameraPos[2];
     
-    coords_[0][2] = coordsRes_[0][0];
-    var n1_ = node_.getPhysicalCoords(coords_[0], true);
+    coords[0][2] = coordsRes[0][0];
+    var n1 = node.getPhysicalCoords(coords[0], true);
 
-    coords_[1][2] = coordsRes_[1][0];
-    var n2_ = node_.getPhysicalCoords(coords_[1], true);
+    coords[1][2] = coordsRes[1][0];
+    var n2 = node.getPhysicalCoords(coords[1], true);
 
-    coords_[2][2] = coordsRes_[2][0];
-    var n3_ = node_.getPhysicalCoords(coords_[2], true);
+    coords[2][2] = coordsRes[2][0];
+    var n3 = node.getPhysicalCoords(coords[2], true);
 
-    coords_[3][2] = coordsRes_[3][0];
-    var n4_ = node_.getPhysicalCoords(coords_[3], true);
+    coords[3][2] = coordsRes[3][0];
+    var n4 = node.getPhysicalCoords(coords[3], true);
 
-    coords_[4][2] = coordsRes_[4][0];
-    var mtop_ = node_.getPhysicalCoords(coords_[4], true);
+    coords[4][2] = coordsRes[4][0];
+    var mtop = node.getPhysicalCoords(coords[4], true);
 
-    coords_[5][2] = coordsRes_[5][0];
-    var mbottom_ = node_.getPhysicalCoords(coords_[5], true);
+    coords[5][2] = coordsRes[5][0];
+    var mbottom = node.getPhysicalCoords(coords[5], true);
 
-    coords_[6][2] = coordsRes_[6][0];
-    var mleft_ = node_.getPhysicalCoords(coords_[6], true);
+    coords[6][2] = coordsRes[6][0];
+    var mleft = node.getPhysicalCoords(coords[6], true);
 
-    coords_[7][2] = coordsRes_[7][0];
-    var mright_ = node_.getPhysicalCoords(coords_[7], true);
+    coords[7][2] = coordsRes[7][0];
+    var mright = node.getPhysicalCoords(coords[7], true);
 
-    buffer_[0] = n4_[0] - sx_;
-    buffer_[1] = n4_[1] - sy_;
-    buffer_[2] = n4_[2] - sz_;
+    buffer[0] = n4[0] - sx;
+    buffer[1] = n4[1] - sy;
+    buffer[2] = n4[2] - sz;
     
-    buffer_[3] = mtop_[0] - sx_;
-    buffer_[4] = mtop_[1] - sy_;
-    buffer_[5] = mtop_[2] - sz_;
+    buffer[3] = mtop[0] - sx;
+    buffer[4] = mtop[1] - sy;
+    buffer[5] = mtop[2] - sz;
 
-    buffer_[6] = n1_[0] - sx_;
-    buffer_[7] = n1_[1] - sy_;
-    buffer_[8] = n1_[2] - sz_;
+    buffer[6] = n1[0] - sx;
+    buffer[7] = n1[1] - sy;
+    buffer[8] = n1[2] - sz;
 
-    buffer_[9] = mleft_[0] - sx_;
-    buffer_[10] = mleft_[1] - sy_;
-    buffer_[11] = mleft_[2] - sz_;
+    buffer[9] = mleft[0] - sx;
+    buffer[10] = mleft[1] - sy;
+    buffer[11] = mleft[2] - sz;
             
-    buffer_[12] = middle_[0] - sx_;
-    buffer_[13] = middle_[1] - sy_;
-    buffer_[14] = middle_[2] - sz_;
+    buffer[12] = middle[0] - sx;
+    buffer[13] = middle[1] - sy;
+    buffer[14] = middle[2] - sz;
             
-    buffer_[15] = mright_[0] - sx_;
-    buffer_[16] = mright_[1] - sy_;
-    buffer_[17] = mright_[2] - sz_;
+    buffer[15] = mright[0] - sx;
+    buffer[16] = mright[1] - sy;
+    buffer[17] = mright[2] - sz;
         
-    buffer_[18] = n3_[0] - sx_;
-    buffer_[19] = n3_[1] - sy_;
-    buffer_[20] = n3_[2] - sz_;
+    buffer[18] = n3[0] - sx;
+    buffer[19] = n3[1] - sy;
+    buffer[20] = n3[2] - sz;
     
-    buffer_[21] = mbottom_[0] - sx_;
-    buffer_[22] = mbottom_[1] - sy_;
-    buffer_[23] = mbottom_[2] - sz_;
+    buffer[21] = mbottom[0] - sx;
+    buffer[22] = mbottom[1] - sy;
+    buffer[23] = mbottom[2] - sz;
     
-    buffer_[24] = n2_[0] - sx_;
-    buffer_[25] = n2_[1] - sy_;
-    buffer_[26] = n2_[2] - sz_;
+    buffer[24] = n2[0] - sx;
+    buffer[25] = n2[1] - sy;
+    buffer[26] = n2[2] - sz;
 
 
-    if (hasPoles_ && !map_.poleRadius_ && node_.id_[0] == 1 && !node_.isPole_) {
-        var p = node_.getPhysicalCoords([node_.extents_.ur_[0], node_.extents_.ur_[1], 0]);
-        map_.poleRadius_ = Math.sqrt(p[0]*p[0]+p[1]*p[1]); 
-        map_.poleRadiusFactor_ = 8 * Math.pow(2.0, 552058 / map_.poleRadius_); 
+    if (hasPoles && !map.poleRadius && node.id[0] == 1 && !node.isPole) {
+        var p = node.getPhysicalCoords([node.extents.ur[0], node.extents.ur[1], 0]);
+        map.poleRadius = Math.sqrt(p[0]*p[0]+p[1]*p[1]); 
+        map.poleRadiusFactor = 8 * Math.pow(2.0, 552058 / map.poleRadius); 
     }
 
-    var factor_ = 1;
+    var factor = 1;
 
-    if (hasPoles_ && node_.isPole_) {
-        var factor_ = map_.poleRadiusFactor_; 
-        var prog_ = renderer_.progPlane2_; 
-        renderer_.gpu_.useProgram(prog_, ["aPosition", "aTexCoord"]);
-        prog_.setVec4("uParams4", [-sx_, -sy_, map_.poleRadius_, 0]);
+    if (hasPoles && node.isPole) {
+        var factor = map.poleRadiusFactor; 
+        var prog = renderer.progPlane2; 
+        renderer.gpu.useProgram(prog, ["aPosition", "aTexCoord"]);
+        prog.setVec4("uParams4", [-sx, -sy, map.poleRadius, 0]);
     } else {
-        var prog_ = renderer_.progPlane_; 
-        renderer_.gpu_.useProgram(prog_, ["aPosition", "aTexCoord"]);
+        var prog = renderer.progPlane; 
+        renderer.gpu.useProgram(prog, ["aPosition", "aTexCoord"]);
     }
 
-    prog_.setMat4("uMV", mv_);
-    prog_.setMat4("uProj", proj_);
-    prog_.setFloatArray("uPoints", buffer_);
+    prog.setMat4("uMV", mv);
+    prog.setMat4("uProj", proj);
+    prog.setFloatArray("uPoints", buffer);
     
     /*
-    var lx_ = (ur_[0] - ll_[0]);
-    var ly_ = (ll_[1] - ur_[1]);
-    var px_ = (ll_[0] - node_.extents_.ll_[0]) / lx_;
-    var py_ = (ur_[1] - node_.extents_.ll_[1]) / ly_;
+    var lx = (ur[0] - ll[0]);
+    var ly = (ll[1] - ur[1]);
+    var px = (ll[0] - node.extents.ll[0]) / lx;
+    var py = (ur[1] - node.extents.ll[1]) / ly;
     
-    var llx_ = (node_.extents_.ur_[0] - node_.extents_.ll_[0]) / lx_;
-    var lly_ = (node_.extents_.ur_[1] - node_.extents_.ll_[1]) / ly_;
+    var llx = (node.extents.ur[0] - node.extents.ll[0]) / lx;
+    var lly = (node.extents.ur[1] - node.extents.ll[1]) / ly;
 
-    px_ = px_ / llx_;
-    py_ = py_ / lly_;
-    llx_ = 1.0/llx_;
-    lly_ = 1.0/lly_;
+    px = px / llx;
+    py = py / lly;
+    llx = 1.0/llx;
+    lly = 1.0/lly;
     
-    llx_ *= step1_;
-    lly_ *= step1_;
-    px_ *= step1_;
-    py_ *= step1_;
+    llx *= step1;
+    lly *= step1;
+    px *= step1;
+    py *= step1;
     */
 
-    var step1_ = node_.gridStep1_ * factor_;
+    var step1 = node.gridStep1 * factor;
 
-    var lx_ = 1.0 / (ur_[0] - ll_[0]);
-    var ly_ = 1.0 / (ll_[1] - ur_[1]);
-    var llx_ = step1_ / ((node_.extents_.ur_[0] - node_.extents_.ll_[0]) * lx_);
-    var lly_ = step1_ / ((node_.extents_.ur_[1] - node_.extents_.ll_[1]) * ly_);
-    var px_ = (ll_[0] - node_.extents_.ll_[0]) * lx_ * llx_;
-    var py_ = (ur_[1] - node_.extents_.ll_[1]) * ly_ * lly_;
+    var lx = 1.0 / (ur[0] - ll[0]);
+    var ly = 1.0 / (ll[1] - ur[1]);
+    var llx = step1 / ((node.extents.ur[0] - node.extents.ll[0]) * lx);
+    var lly = step1 / ((node.extents.ur[1] - node.extents.ll[1]) * ly);
+    var px = (ll[0] - node.extents.ll[0]) * lx * llx;
+    var py = (ur[1] - node.extents.ll[1]) * ly * lly;
 
-    prog_.setVec4("uParams", [step1_ * factor_, this.map_.fogDensity_, 1/15, node_.gridStep2_ * factor_]);
-    prog_.setVec4("uParams3", [(py_ - Math.floor(py_)), (px_ - Math.floor(px_)), lly_, llx_]);
-    prog_.setVec4("uParams2", [0, 0, node_.gridBlend_, 0]);
+    prog.setVec4("uParams", [step1 * factor, this.map.fogDensity, 1/15, node.gridStep2 * factor]);
+    prog.setVec4("uParams3", [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
+    prog.setVec4("uParams2", [0, 0, node.gridBlend, 0]);
 
-    renderer_.gpu_.bindTexture(renderer_.heightmapTexture_);
+    renderer.gpu.bindTexture(renderer.heightmapTexture);
     
     //draw bbox
-    renderer_.planeMesh_.draw(prog_, "aPosition", "aTexCoord");    
+    renderer.planeMesh.draw(prog, "aPosition", "aTexCoord");    
+}; 
 
-};  
+
+export default MapSurfaceTile;
+
+

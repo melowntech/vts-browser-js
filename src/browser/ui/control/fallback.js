@@ -1,15 +1,16 @@
-/**
- * @constructor
- */
-Melown.UIControlFallback = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.control_ = this.ui_.addControl("fallback",
-      '<div class="melown-fallback">'
 
-        + '<div class="melown-fallback-text">'
-            + '<p>Melown Maps is <a href="http://get.webgl.org/">WebGL</a> dependent service.</p>'
-            + '<p>You can read more about Melown Maps in our <a/ href="https://www.melown.com/maps/about.html">About section</a>.</p>'
+
+var UIControlFallback = function(ui, visible) {
+    this.ui = ui;
+    this.control = this.ui.addControl("fallback",
+      '<div class="vts-fallback">'
+
+        + '<div class="vts-fallback-text">'
+            + '<p>VTS Browser needs <a href="http://get.webgl.org/">WebGL</a> capable web browser.</p>'
         + '</div>'
 
-      + ' </div>', visible_);
+      + ' </div>', visible);
 };
+
+
+export default UIControlFallback;

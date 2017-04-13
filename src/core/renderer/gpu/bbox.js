@@ -1,22 +1,37 @@
 
-/**
- * @constructor
- */
-Melown.GpuBBox = function(gpu_) {
-    this.gl_ = gpu_.gl_;
 
-    var gl_ = this.gl_;
+var GpuBBox = function(gpu, free) {
+    this.gl = gpu.gl;
 
-    if (gl_ == null)
+    var gl = this.gl;
+
+    if (gl == null)
         return;
 
-    this.vertexPositionBuffer_ = null;
+    this.free = free;
+    this.vertexPositionBuffer = null;
 
     //create vertex buffer
-    this.vertexPositionBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, this.vertexPositionBuffer_);
+    this.vertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
 
-    var vertices_ = [0,0,0, 1,0,0,
+    if (free) {
+        var vertices = [0,0,0, 0,0,1,
+                         0,0,1, 0,0,2,
+                         0,0,2, 0,0,3,
+                         0,0,3, 0,0,0,
+
+                         0,0,4, 0,0,5,
+                         0,0,5, 0,0,6,
+                         0,0,6, 0,0,7,
+                         0,0,7, 0,0,4,
+
+                         0,0,0, 0,0,4,
+                         0,0,1, 0,0,5,
+                         0,0,2, 0,0,6,
+                         0,0,3, 0,0,7 ];
+    } else {
+    var vertices = [0,0,0, 1,0,0,
                      1,0,0, 1,1,0,
                      1,1,0, 0,1,0,
                      0,1,0, 0,0,0,
@@ -30,34 +45,38 @@ Melown.GpuBBox = function(gpu_) {
                      1,0,0, 1,0,1,
                      1,1,0, 1,1,1,
                      0,1,0, 0,1,1 ];
+    }
 
-    gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-    this.vertexPositionBuffer_.itemSize = 3;
-    this.vertexPositionBuffer_.numItems = vertices_.length / 3;
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    this.vertexPositionBuffer.itemSize = 3;
+    this.vertexPositionBuffer.numItems = vertices.length / 3;
 
-    this.size_ = 4 + 4 * 8;
-    this.lines_ = this.vertexPositionBuffer_.numItems / 3;
+    this.size = 4 + 4 * 8;
+    this.lines = this.vertexPositionBuffer.numItems / 3;
 };
 
 //destructor
-Melown.GpuBBox.prototype.kill = function() {
-    this.gl_.deleteBuffer(this.vertexPositionBuffer_);
+GpuBBox.prototype.kill = function() {
+    this.gl.deleteBuffer(this.vertexPositionBuffer);
 };
 
-//! Draws the mesh, given the two vertex shader attributes locations.
-Melown.GpuBBox.prototype.draw = function(program_, attrPosition_) {
-    var gl_ = this.gl_;
-    if (gl_ == null)
+// Draws the mesh, given the two vertex shader attributes locations.
+GpuBBox.prototype.draw = function(program, attrPosition) {
+    var gl = this.gl;
+    if (gl == null)
         return;
 
-    var vertexPositionAttribute_ = program_.getAttribute(attrPosition_);
+    var vertexPositionAttribute = program.getAttribute(attrPosition);
 
     //bind vetex positions
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, this.vertexPositionBuffer_);
-    gl_.vertexAttribPointer(vertexPositionAttribute_, this.vertexPositionBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
+    gl.vertexAttribPointer(vertexPositionAttribute, this.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
     //draw lines
-    gl_.drawArrays(gl_.LINES, 0, this.vertexPositionBuffer_.numItems);
+    gl.drawArrays(gl.LINES, 0, this.vertexPositionBuffer.numItems);
 
 };
+
+
+export default GpuBBox;
 

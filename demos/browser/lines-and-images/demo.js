@@ -1,34 +1,47 @@
 var browser = null;
+var renderer = null;
+var map = null;
 
 (function startDemo() {
-    browser = Melown.MapBrowser("map-div", {
+    browser = vts.browser("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
         position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 1764, 90 ]
     });
+
+    if (!browser) {
+        console.log("Your web browser does not support WebGL");
+        return;
+    }
+
+    renderer = browser.renderer;
 
     browser.on("map-loaded", onMapLoaded);
     loadImage();
 })();
 
+
 var demoTexture = null;
 
+
 function loadImage() {
-    var demoImage = Melown.Http.imageFactory(
+    var demoImage = vts.utils.loadImage(
                    "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png",
                     (function(){
-                       demoTexture = browser.getRenderer().createTexture({ "source": demoImage });
+                       demoTexture = renderer.createTexture({ "source": demoImage });
                     }));
 }
 
+
 function onMapLoaded() {
-    browser.addRenderSlot("custom-render", onCustomRender, true);
-    browser.moveRenderSlotAfter("after-map-render", "map");
+    map = browser.map;
+    map.addRenderSlot("custom-render", onCustomRender, true);
+    map.moveRenderSlotAfter("after-map-render", "custom-render");
 };
+
 
 function onCustomRender() {
     if (demoTexture) {
-        var renderer = browser.getRenderer();
-        var coords = browser.convertCoordsFromNavToCanvas([1683559, 6604129, 0], "float");
+        var coords = map.convertCoordsFromNavToCanvas([1683559, 6604129, 0], "float");
 
         var totalPoints = 32;
         var points = new Array(totalPoints);
@@ -36,7 +49,7 @@ function onCustomRender() {
         var scale = [400, 100];
         
         for (var i = 0; i < totalPoints; i++) {
-            points[i] = browser.convertCoordsFromNavToCanvas(
+            points[i] = map.convertCoordsFromNavToCanvas(
                          [p[0] + (i / totalPoints) * scale[0],
                          p[1] + Math.sin(2 * Math.PI * (i / totalPoints)) * scale[1],
                          p[2]], "float");
@@ -59,7 +72,6 @@ function onCustomRender() {
             "depth-test" : false,
             "blend" : true
             });
-            
     }    
 }
 

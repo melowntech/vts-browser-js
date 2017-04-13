@@ -1,57 +1,57 @@
 
-Melown.Platform = {
+var platform = {
 
-    initialized_ : false,
+    initialized : false,
 
     init: function () {
 
-        var self_ = Melown.Platform;
+        var self = platform;
 
-        self_.browser = self_.searchString(self_.dataBrowser) || "An unknown browser";
-        self_.version = self_.searchVersion(navigator.userAgent.toLowerCase()) || self_.searchVersion(navigator.appVersion) || "an unknown version";
-        self_.OS = self_.searchString(self_.dataOS) || "an unknown os: ua: " + navigator.userAgent + " pl: " + navigator.platform;
+        self.browser = self.searchString(self.dataBrowser) || "An unknown browser";
+        self.version = self.searchVersion(navigator.userAgent.toLowerCase()) || self.searchVersion(navigator.appVersion) || "an unknown version";
+        self.OS = self.searchString(self.dataOS) || "an unknown os: ua: " + navigator.userAgent + " pl: " + navigator.platform;
 
-        self_.mobile_ = (self_.OS == "iphone/ipod" || self_.OS == "android" || self_.OS == "ipad" || self_.OS == "windows ce"  || self_.OS == "windows phone" || self_.OS == "kindle");
-        self_.mobileAndroid_ = (self_.OS == "android");
-        self_.initialized_ = true;
+        self.mobile = (self.OS == "iphone/ipod" || self.OS == "android" || self.OS == "ipad" || self.OS == "windows ce"  || self.OS == "windows phone" || self.OS == "kindle");
+        self.mobileAndroid = (self.OS == "android");
+        self.initialized = true;
     },
 
     getBrowser : function() {
-        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
-        return Melown.Platform.browser;
+        if(!platform.initialized) { platform.init(); }
+        return platform.browser;
     },
 
     getBrowserVersion : function() {
-        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
-        return Melown.Platform.browser;
+        if(!platform.initialized) { platform.init(); }
+        return platform.browser;
     },
 
     getOS : function() {
-        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
-        return Melown.Platform.browser;
+        if(!platform.initialized) { platform.init(); }
+        return platform.browser;
     },
 
     isMobile : function() {
-        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
-        return Melown.Platform.mobile_;
+        if(!platform.initialized) { platform.init(); }
+        return platform.mobile;
     },
     
     isAndroid : function() {
-        if(!Melown.Platform.initialized_) { Melown.Platform.init(); }
-        return Melown.Platform.mobileAndroid_;
+        if(!platform.initialized) { platform.init(); }
+        return platform.mobileAndroid;
     },
 
     searchString: function (data) {
-        var self_ = Melown.Platform;
+        var self = platform;
         for (var i=0; i<data.length; i++) {
             var dataString = data[i].string;
             var dataProp = data[i].prop;
-            self_.versionSearchString = data[i].versionSearch || data[i].identity;
+            self.versionSearchString = data[i].versionSearch || data[i].identity;
 
             if (dataString) {
                 if (dataString.toLowerCase().indexOf(data[i].subString) != -1) {
                     if (data[i].version != null) {
-                        self_.version = data[i].version;
+                        self.version = data[i].version;
                     }
                     return data[i].identity;
                 }
@@ -62,13 +62,13 @@ Melown.Platform = {
     },
 
     searchVersion: function (dataString) {
-        var self_ = Melown.Platform;
-        if (self_.version != null) {
-            return self_.version;
+        var self = platform;
+        if (self.version != null) {
+            return self.version;
         }
-        var index = dataString.indexOf(self_.versionSearchString);
+        var index = dataString.indexOf(self.versionSearchString);
         if (index == -1) return;
-        return parseFloat(dataString.substring(index+self_.versionSearchString.length+1));
+        return parseFloat(dataString.substring(index+self.versionSearchString.length+1));
     },
 
     dataBrowser: [
@@ -215,9 +215,14 @@ Melown.Platform = {
 
 };
 
-Melown["getBrowser"] = Melown.Platform.getBrowser;
-Melown["getBrowserVersion"] = Melown.Platform.getBrowserVersion;
-Melown["getOS"] = Melown.Platform.getOS;
-Melown["isPlatformMobileDevice"] = Melown.Platform.isMobile;
-Melown["isPlatformAndroid"] = Melown.Platform.isAndroid;
+export {platform};
 
+//export default platform;
+
+/*
+Mel["getBrowser"] = platform.getBrowser;
+Mel["getBrowserVersion"] = platform.getBrowserVersion;
+Mel["getOS"] = platform.getOS;
+Mel["isplatformMobileDevice"] = platform.isMobile;
+Mel["isplatformAndroid"] = platform.isAndroid;
+*/

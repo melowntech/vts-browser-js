@@ -1,28 +1,39 @@
 var browser = null;
+var map = null;
+var renderer = null;
 var pointTexture = null;
 var clickCoords = null;
 
+
 (function startDemo() {
-    browser = Melown.MapBrowser("map-div", {
+    browser = vts.browser("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
         position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 964, 90 ]
     });
+
+    if (!browser) {
+        console.log("Your web browser does not support WebGL");
+        return;
+    }
+
+    renderer = browser.renderer;
 
     //callback once is map config loaded
     browser.on("map-loaded", onMapLoaded);
 
     //add mouse down callback
-    browser.getMapElement().on('mousedown', onMouseDown);
+    browser.ui.getMapElement().on('mousedown', onMouseDown);
 
     loadTexture();
 })();
 
+
 function loadTexture() {
     //load icon used for displaing hit point
-    var pointImage = Melown.Http.imageFactory(
+    var pointImage = vts.utils.loadImage(
         "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png",
         (function(){
-            pointTexture = browser.getRenderer().createTexture({ "source": pointImage });
+            pointTexture = renderer.createTexture({ "source": pointImage });
         }).bind(this)
         );
 }
@@ -31,21 +42,24 @@ function loadTexture() {
 function onMapLoaded() {
     //add render slots
     //render slots are called during map render
-    browser.addRenderSlot("custom-points", onDrawPoints, true);
-    browser.moveRenderSlotAfter("after-map-render", "custom-points");
+    map = browser.map;
+    map.addRenderSlot("custom-points", onDrawPoints, true);
+    map.moveRenderSlotAfter("after-map-render", "custom-points");
 }
+
 
 function onMouseDown(event) {
     if (event.getMouseButton() == "left") {
         var coords = event.getMouseCoords();
 
         //get hit coords with fixed height
-        clickCoords = browser.getHitCoords(coords[0], coords[1], "fixed");
+        clickCoords = map.getHitCoords(coords[0], coords[1], "fixed");
         
         //force map redraw to display hit point
-        browser.redraw();
+        map.redraw();
     }
 }
+
 
 function onDrawPoints(renderChannel) {
     if (renderChannel == "hit") {
@@ -53,10 +67,8 @@ function onDrawPoints(renderChannel) {
     }
 
     if (clickCoords) { //draw hit point
-        var renderer = browser.getRenderer();
-        
         //conver hit coords to canvas coords
-        coords = browser.convertCoordsFromNavToCanvas(clickCoords, "fixed");
+        coords = map.convertCoordsFromNavToCanvas(clickCoords, "fixed");
 
         renderer.drawImage({
             "rect" : [coords[0]-12, coords[1]-12, 24, 24],

@@ -1,215 +1,228 @@
 
-/**
- * @constructor
- */
-Melown.MapGeodataView = function(map_, geodata_, extraInfo_) {
-    this.map_ = map_;
-    this.stats_ = map_.stats_;
-    this.geodata_ = geodata_;
-    this.gpu_ = this.map_.renderer_.gpu_;
-    this.renderer_ = this.map_.renderer_;
-    this.gpuGroups_ = [];
-    this.currentGpuGroup_ = null;
-    this.tile_ = extraInfo_.tile_;
-    this.surface_ = extraInfo_.surface_;
+import {mat4 as mat4_} from '../utils/matrix';
+import {math as math_} from '../utils/math';
+import GpuGroup_ from '../renderer/gpu/group';
+import MapGeodataProcessor_ from './geodata-processor/processor';
 
-    if (!this.surface_.geodataProcessor_) {
-        var processor_ = new Melown.MapGeodataProcessor(this, this.onGeodataProcessorMessage.bind(this));
-        processor_.sendCommand("setStylesheet", { "data" : this.surface_.stylesheet_.data_, "geocent" : (!this.map_.getNavigationSrs().isProjected()) } );
-        processor_.sendCommand("setFont", {"chars" : this.renderer_.font_.chars_, "space" : this.renderer_.font_.space_, "size" : this.renderer_.font_.size_});
-        this.surface_.geodataProcessor_ = processor_;
-        this.map_.geodataProcessors_.push(processor_);
+//get rid of compiler mess
+var mat4 = mat4_;
+var math = math_;
+var GpuGroup = GpuGroup_;
+var MapGeodataProcessor = MapGeodataProcessor_;
+
+
+var MapGeodataView = function(map, geodata, extraInfo) {
+    this.map = map;
+    this.stats = map.stats;
+    this.geodata = geodata;
+    this.gpu = this.map.renderer.gpu;
+    this.renderer = this.map.renderer;
+    this.gpuGroups = [];
+    this.currentGpuGroup = null;
+    this.tile = extraInfo.tile;
+    this.surface = extraInfo.surface;
+
+    if (!this.surface.geodataProcessor) {
+        var processor = new MapGeodataProcessor(this, this.onGeodataProcessorMessage.bind(this));
+        processor.sendCommand("setStylesheet", { "data" : this.surface.stylesheet.data, "geocent" : (!this.map.getNavigationSrs().isProjected()) } );
+        processor.sendCommand("setFont", {"chars" : this.renderer.font.chars, "space" : this.renderer.font.space, "size" : this.renderer.font.size});
+        this.surface.geodataProcessor = processor;
+        this.map.geodataProcessors.push(processor);
     } else {
-        if (this.surface_.styleChanged_) {
-            this.surface_.geodataProcessor_.sendCommand("setStylesheet", { "data" : this.surface_.stylesheet_.data_, "geocent" : (!this.map_.getNavigationSrs().isProjected()) } );
-            this.surface_.styleChanged_ = false;
+        if (this.surface.styleChanged) {
+            this.surface.geodataProcessor.sendCommand("setStylesheet", { "data" : this.surface.stylesheet.data, "geocent" : (!this.map.getNavigationSrs().isProjected()) } );
+            this.surface.styleChanged = false;
         }
     }
 
-    this.geodataProcessor_ = this.surface_.geodataProcessor_;
-    this.statsCounter_ = 0;
-    this.size_ = 0;
-    this.killed_ = false;
-    this.killedByCache_ = false;
-    this.ready_ = false;
+    this.geodataProcessor = this.surface.geodataProcessor;
+    this.statsCounter = 0;
+    this.size = 0;
+    this.killed = false;
+    this.killedByCache = false;
+    this.ready = false;
     this.isReady();
 };
 
-Melown.MapGeodataView.prototype.kill = function() {
-    this.killed_ = true;
-    this.geodata_ = null;
+
+MapGeodataView.prototype.kill = function() {
+    this.killed = true;
+    this.geodata = null;
     this.killGeodataView(false);
 };
 
-Melown.MapGeodataView.prototype.killGeodataView = function(killedByCache_) {
-    this.killedByCache_ = killedByCache_;
 
-    for (var i = 0, li = this.gpuGroups_.length; i < li; i++) {
-        this.gpuGroups_[i].kill();
+MapGeodataView.prototype.killGeodataView = function(killedByCache) {
+    this.killedByCache = killedByCache;
+
+    for (var i = 0, li = this.gpuGroups.length; i < li; i++) {
+        this.gpuGroups[i].kill();
     }
 
-    this.gpuGroups_ = [];
+    this.gpuGroups = [];
 
-    if (killedByCache_ != true && this.gpuCacheItem_ != null) {
-        this.map_.gpuCache_.remove(this.gpuCacheItem_);
+    if (killedByCache != true && this.gpuCacheItem != null) {
+        this.map.gpuCache.remove(this.gpuCacheItem);
     }
 
-    this.stats_.gpuGeodata_ -= this.size_;
-    this.stats_.graphsFluxGeodata_[1][0]++;
-    this.stats_.graphsFluxGeodata_[1][1] += this.size_;
+    this.stats.gpuGeodata -= this.size;
+    this.stats.graphsFluxGeodata[1][0]++;
+    this.stats.graphsFluxGeodata[1][1] += this.size;
     
-    this.ready_ = false;
-    this.size_ = 0;
-    this.gpuCacheItem_ = null;
+    this.ready = false;
+    this.size = 0;
+    this.gpuCacheItem = null;
 };
 
 
-Melown.MapGeodataView.prototype.onGeodataProcessorMessage = function(command_, message_, task_) {
-    if (this.killed_ || this.killedByCache_){
+MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, task) {
+    if (this.killed || this.killedByCache){
         return;
     }
 
-    switch (command_) {
+    switch (command) {
 
         case "beginGroup":
         
-            if (task_) {
-                this.currentGpuGroup_ = new Melown.GpuGroup(message_["id"], message_["bbox"], message_["origin"], this.gpu_, this.renderer_);
-                this.gpuGroups_.push(this.currentGpuGroup_);
+            if (task) {
+                this.currentGpuGroup = new GpuGroup(message["id"], message["bbox"], message["origin"], this.gpu, this.renderer);
+                this.gpuGroups.push(this.currentGpuGroup);
             } else {
-                this.map_.markDirty();
-                this.map_.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command_, message_, true));
+                this.map.markDirty();
+                this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
             }
             
             break;
 
         case "addRenderJob":
 
-            if (task_) {
-                if (this.currentGpuGroup_) {
+            if (task) {
+                if (this.currentGpuGroup) {
                     var t = performance.now();
-                    this.currentGpuGroup_.addRenderJob(message_);
-                    this.stats_.renderBuild_ += performance.now() - t; 
+                    this.currentGpuGroup.addRenderJob(message);
+                    this.stats.renderBuild += performance.now() - t; 
                 } //else {
-                    //message_ = message_;
+                    //message = message;
                 //}
             } else {
-                this.map_.markDirty();
-                this.map_.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command_, message_, true));
+                this.map.markDirty();
+                this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
             }
 
             break;
 
         case "endGroup":
 
-            if (task_) {
-                if (this.currentGpuGroup_) {
-                    //this.currentGpuGroup_.optimize();
-                    this.size_ += this.currentGpuGroup_.size();
+            if (task) {
+                if (this.currentGpuGroup) {
+                    //this.currentGpuGroup.optimize();
+                    this.size += this.currentGpuGroup.size;
                 } //else {
             } else {
-                this.map_.markDirty();
-                this.map_.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command_, message_, true));
+                this.map.markDirty();
+                this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
             }
 
             break;
 
         case "allProcessed":
-            this.map_.markDirty();
-            this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGeodataView.bind(this, true), this.size_);
+            this.map.markDirty();
+            this.gpuCacheItem = this.map.gpuCache.insert(this.killGeodataView.bind(this, true), this.size);
 
-            this.stats_.gpuGeodata_ += this.size_;
-            this.stats_.graphsFluxGeodata_[0][0]++;
-            this.stats_.graphsFluxGeodata_[0][1] += this.size_;
-            //console.log("geodata: " + this.size_ + " total: " + this.stats_.gpuGeodata_);
+            this.stats.gpuGeodata += this.size;
+            this.stats.graphsFluxGeodata[0][0]++;
+            this.stats.graphsFluxGeodata[0][1] += this.size;
+            //console.log("geodata: " + this.size + " total: " + this.stats.gpuGeodata);
 
-            this.geodataProcessor_.busy_ = false;
-            this.ready_ = true;
+            this.geodataProcessor.busy = false;
+            this.ready = true;
             break;
 
         case "ready":
-            this.map_.markDirty();
-            //this.ready_ = true;
+            this.map.markDirty();
+            //this.ready = true;
             break;
     }
 };
 
-Melown.MapGeodataView.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {
-    if (this.killed_) {
+
+MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
+    if (this.killed) {
         return false;
     }
 
-    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
-    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
+    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
+    doNotLoad = doNotLoad || doNotUseGpu;
     
-    //if (!this.ready_ && !doNotUseGpu_ && this.geodataProcessor_.isReady()) {
-    if (!this.ready_ && !doNotLoad_) {
-        if (this.geodata_.isReady(doNotLoad_, priority_, doNotCheckGpu_) && this.geodataProcessor_.isReady()) {
-            this.killedByCache_ = false;
-            this.geodataProcessor_.setListener(this.onGeodataProcessorMessage.bind(this));
-            this.geodataProcessor_.sendCommand("processGeodata", this.geodata_.geodata_, this.tile_);
-            this.geodataProcessor_.busy_ = true;
+    //if (!this.ready && !doNotUseGpu && this.geodataProcessor.isReady()) {
+    if (!this.ready && !doNotLoad) {
+        if (this.geodata.isReady(doNotLoad, priority, doNotCheckGpu) && this.geodataProcessor.isReady()) {
+            this.killedByCache = false;
+            this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));
+            this.geodataProcessor.sendCommand("processGeodata", this.geodata.geodata, this.tile);
+            this.geodataProcessor.busy = true;
         }
     }
 
-    if (!doNotLoad_ && this.gpuCacheItem_) {
-        this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+    if (!doNotLoad && this.gpuCacheItem) {
+        this.map.gpuCache.updateItem(this.gpuCacheItem);
     }
 
-    return this.ready_;
+    return this.ready;
 };
 
-Melown.MapGeodataView.prototype.getWorldMatrix = function(bbox_, geoPos_, matrix_) {
-    var m = matrix_;
+
+MapGeodataView.prototype.getWorldMatrix = function(bbox, geoPos, matrix) {
+    var m = matrix;
 
     if (m != null) {/*
-        m[0] = bbox_.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
-        m[4] = 0; m[5] = bbox_.side(1); m[6] = 0; m[7] = 0;
-        m[8] = 0; m[9] = 0; m[10] = bbox_.side(2); m[11] = 0;
-        m[12] = this.bbox_.min_[0] - geoPos_[0]; m[13] = this.bbox_.min_[1] - geoPos_[1]; m[14] = this.bbox_.min_[2] - geoPos_[2]; m[15] = 1;*/
+        m[0] = bbox.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
+        m[4] = 0; m[5] = bbox.side(1); m[6] = 0; m[7] = 0;
+        m[8] = 0; m[9] = 0; m[10] = bbox.side(2); m[11] = 0;
+        m[12] = this.bbox.min[0] - geoPos[0]; m[13] = this.bbox.min[1] - geoPos[1]; m[14] = this.bbox.min[2] - geoPos[2]; m[15] = 1;*/
     } else {
-        var m = Melown.mat4.create();
+        var m = mat4.create();
 
-        Melown.mat4.multiply( Melown.translationMatrix(bbox_.min_[0] - geoPos_[0], bbox_.min_[1] - geoPos_[1], bbox_.min_[2] - geoPos_[2]),
-                       Melown.scaleMatrix(1, 1, 1), m);
+        mat4.multiply( math.translationMatrix(bbox.min[0] - geoPos[0], bbox.min[1] - geoPos[1], bbox.min[2] - geoPos[2]),
+                       math.scaleMatrix(1, 1, 1), m);
     }
 
     return m;
 };
 
 
-Melown.MapGeodataView.prototype.draw = function(cameraPos_) {
-    if (this.ready_) {
-        var renderer_ = this.renderer_;
+MapGeodataView.prototype.draw = function(cameraPos) {
+    if (this.ready) {
+        var renderer = this.renderer;
 
-        for (var i = 0, li = this.gpuGroups_.length; i < li; i++) {
-            var group_ = this.gpuGroups_[i]; 
+        for (var i = 0, li = this.gpuGroups.length; i < li; i++) {
+            var group = this.gpuGroups[i]; 
 
-            var mvp_ = Melown.mat4.create();
-            var mv_ = Melown.mat4.create();
+            var mvp = mat4.create();
+            var mv = mat4.create();
         
-            Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), this.getWorldMatrix(group_.bbox_, cameraPos_), mv_);
+            mat4.multiply(renderer.camera.getModelviewMatrix(), this.getWorldMatrix(group.bbox, cameraPos), mv);
         
-            var proj_ = renderer_.camera_.getProjectionMatrix();
-            Melown.mat4.multiply(proj_, mv_, mvp_);
+            var proj = renderer.camera.getProjectionMatrix();
+            mat4.multiply(proj, mv, mvp);
             
-            group_.draw(mv_, mvp_);
+            group.draw(mv, mvp);
 
-            this.stats_.drawnFaces_ += group_.polygons_;
-            this.stats_.drawCalls_ += group_.jobs_.length;
+            this.stats.drawnFaces += group.polygons;
+            this.stats.drawCalls += group.jobs.length;
         }
         
-        if (this.statsCoutner_ != this.stats_.counter_) {
-            this.statsCoutner_ = this.stats_.counter_;
-            this.stats_.gpuRenderUsed_ += this.size_;
+        if (this.statsCoutner != this.stats.counter) {
+            this.statsCoutner = this.stats.counter;
+            this.stats.gpuRenderUsed += this.size;
         }
         
     }
-    return this.ready_;
+    return this.ready;
 };
 
-Melown.MapGeodataView.prototype.size = function() {
-    return this.size_;
-};
+//MapGeodataView.prototype.size = function() {
+    //return this.size;
+//};
 
-
+export default MapGeodataView;

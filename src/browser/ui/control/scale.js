@@ -1,9 +1,10 @@
-/**
- * @constructor
- */
-Melown.UIControlScale = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.control_ = this.ui_.addControl("scale",
-      '<div class="melown-scale"'
-      + '</div>', visible_);
+
+var UIControlScale = function(ui, visible) {
+    this.ui = ui;
+    this.control = this.ui.addControl("scale",
+      '<div class="vts-scale"'
+      + '</div>', visible);
 };
+
+
+export default UIControlScale;

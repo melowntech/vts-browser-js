@@ -1,208 +1,220 @@
-require('./metanode');
 
-/**
- * @constructor
- */
-Melown.MapMetatile = function(metaresources_, surface_, tile_) {
-    this.metaresources_= metaresources_; //this is metastorage tile
-    this.map_ = metaresources_.map_;
-    this.surface_ = surface_;
-    this.id_ = metaresources_.id_;
-    this.tile_ = tile_; // used only for stats
-    this.nodes_ = [];
-    this.drawCounter_ = 0;
-    this.loadState_ = 0;
-    this.loadErrorTime_ = null;
-    this.loadErrorCounter_ = 0;
-    this.size_ = 0;
-    this.cacheItem_ = null;
+import {utils as utils_} from '../utils/utils';
+import MapMetanode_ from './metanode';
+
+//get rid of compiler mess
+var utils = utils_;
+var MapMetanode = MapMetanode_;
+
+
+var MapMetatile = function(metaresources, surface, tile) {
+    this.metaresources= metaresources; //this is metastorage tile
+    this.map = metaresources.map;
+    this.surface = surface;
+    this.id = metaresources.id;
+    this.tile = tile; // used only for stats
+    this.nodes = [];
+    this.drawCounter = 0;
+    this.loadState = 0;
+    this.loadErrorTime = null;
+    this.loadErrorCounter = 0;
+    this.size = 0;
+    this.cacheItem = null;
 };
 
-Melown.MapMetatile.prototype.kill = function(killedByCache_) {
-    if (killedByCache_ != true && this.cacheItem_ != null) {
-        this.map_.metatileCache_.remove(this.cacheItem_);
+
+MapMetatile.prototype.kill = function(killedByCache) {
+    if (killedByCache != true && this.cacheItem != null) {
+        this.map.metatileCache.remove(this.cacheItem);
     }
 
-    if (this.metaresources_) {
-        this.metaresources_.removeMetatile(this);
-        //this.metaresources_.validate();
-        //this.metaresources_ = null;
+    if (this.metaresources) {
+        this.metaresources.removeMetatile(this);
+        //this.metaresources.validate();
+        //this.metaresources = null;
     }
 
-    this.loadState_ = 0;
-    this.surface_ = 0;
-    this.cacheItem_ = null;
+    this.loadState = 0;
+    this.surface = 0;
+    this.cacheItem = null;
 
-    this.nodes_ = [];
+    this.nodes = [];
 };
 
-Melown.MapMetatile.prototype.clone = function(surface_) {
-    var metatile_ = new Melown.MapMetatile(this.metaresources_, surface_);
-    metatile_.nodes_ = this.nodes_;
-    metatile_.loadState_ = this.loadState_;
-    metatile_.nodes_ = this.nodes_;
-    metatile_.size_ = this.size_;
 
-    metatile_.lod_ = this.lod_;
-    metatile_.metatileIdx_ = this.metatileIdx_;
-    metatile_.metatileIdy_ = this.metatileIdy_;
-    metatile_.offsetx_ = this.offsetx_;
-    metatile_.offsety_ = this.offsety_;
-    metatile_.sizex_ = this.sizex_;
-    metatile_.sizey_ = this.sizey_;
-    metatile_.version_ = this.version_;
-    metatile_.credits_ = this.credits_;
+MapMetatile.prototype.clone = function(surface) {
+    var metatile = new MapMetatile(this.metaresources, surface);
+    metatile.nodes = this.nodes;
+    metatile.loadState = this.loadState;
+    metatile.nodes = this.nodes;
+    metatile.size = this.size;
 
-    if (this.version_ < 2) {
-        metatile_.nodeSize_ = this.nodeSize_;
+    metatile.lod = this.lod;
+    metatile.metatileIdx = this.metatileIdx;
+    metatile.metatileIdy = this.metatileIdy;
+    metatile.offsetx = this.offsetx;
+    metatile.offsety = this.offsety;
+    metatile.sizex = this.sizex;
+    metatile.sizey = this.sizey;
+    metatile.version = this.version;
+    metatile.credits = this.credits;
+
+    if (this.version < 2) {
+        metatile.nodeSize = this.nodeSize;
     } else {
-        metatile_.flags_ = this.flags_;
-        metatile_.creditCount_ = this.creditCount_;
-        metatile_.flagPlanes_ = this.flagPlanes_;
+        metatile.flags = this.flags;
+        metatile.creditCount = this.creditCount;
+        metatile.flagPlanes = this.flagPlanes;
     }
 
-    metatile_.cacheItem_= this.map_.metatileCache_.insert(metatile_.kill.bind(metatile_, true), metatile_.size_);
-    return metatile_;
+    metatile.cacheItem= this.map.metatileCache.insert(metatile.kill.bind(metatile, true), metatile.size);
+    return metatile;
 };
 
-Melown.MapMetatile.prototype.isReady = function (/*doNotLoad_,*/ priority_) {
-    //if (this.id_[0] == 18 &&
-    //    this.id_[1] == 130400 &&
-    //    this.id_[2] == 129088) {
+
+MapMetatile.prototype.isReady = function (/*doNotLoad,*/ priority) {
+    //if (this.id[0] == 18 &&
+    //    this.id[1] == 130400 &&
+    //    this.id[2] == 129088) {
     //    debugger;
     //}
 
-    if (this.loadState_ == 2) { //loaded
+    if (this.loadState == 2) { //loaded
         return true;
     } else {
 
-        if (this.loadState_ == 0) { 
-            //if (doNotLoad_) {
+        if (this.loadState == 0) { 
+            //if (doNotLoad) {
                 //remove from queue
-                //if (this.mapLoaderUrl_) {
-                  //  this.map_.loader_.remove(this.mapLoaderUrl_);
+                //if (this.mapLoaderUrl) {
+                  //  this.map.loader.remove(this.mapLoaderUrl);
                 //}
             //} else {
                 //not loaded
                 //add to loading queue or top position in queue
-                if (this.loadState_ == 3) { //loadError
-                    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_ &&
-                        performance.now() > this.loadErrorTime_ + this.map_.config_.mapLoadErrorRetryTime_) {
+                if (this.loadState == 3) { //loadError
+                    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
+                        performance.now() > this.loadErrorTime + this.map.config.mapLoadErrorRetryTime) {
 
-                        this.scheduleLoad(priority_);                    
+                        this.scheduleLoad(priority);                    
                     }
                 } else {
-                    this.scheduleLoad(priority_);
+                    this.scheduleLoad(priority);
                 }
             //}
         } //else load in progress
         
         return false;
     }
-
 };
 
-Melown.MapMetatile.prototype.used = function() {
-    if (this.cacheItem_ != null) {
-        this.map_.metatileCache_.updateItem(this.cacheItem_);
+
+MapMetatile.prototype.used = function() {
+    if (this.cacheItem != null) {
+        this.map.metatileCache.updateItem(this.cacheItem);
     }
-
 };
 
-Melown.MapMetatile.prototype.getNode = function(id_) {
-    var x = id_[1] - this.id_[1] - this.offsetx_;
-    var y = id_[2] - this.id_[2] - this.offsety_;
+
+MapMetatile.prototype.getNode = function(id) {
+    var x = id[1] - this.id[1] - this.offsetx;
+    var y = id[2] - this.id[2] - this.offsety;
     
-    if (x < 0 || y < 0 || x >= this.sizex_ || y >= this.sizey_) {
+    if (x < 0 || y < 0 || x >= this.sizex || y >= this.sizey) {
         return null;
     }
     
-    var node_ = this.nodes_[this.sizex_ * y + x];
+    var node = this.nodes[this.sizex * y + x];
 
-    if (!node_) {
-        var index_ = this.sizex_ * y + x;
-        var stream_ = {data_:this.data_, index_:this.metanodesIndex_ + (index_ * this.metanodeSize_)};
-        var node_ = (new Melown.MapMetanode(this, [this.lod_, this.metatileIdx_ + this.offsetx_ + x, this.metatileIdy_ + this.offsety_ + y], stream_, this.divisionNode_)); 
-        this.nodes_[index_] = node_;
+    if (!node) {
+        var index = this.sizex * y + x;
+        var stream = {data:this.data, index:this.metanodesIndex + (index * this.metanodeSize)};
+        var node = (new MapMetanode(this, [this.lod, this.metatileIdx + this.offsetx + x, this.metatileIdy + this.offsety + y], stream, this.divisionNode)); 
+        this.nodes[index] = node;
         this.applyMetanodeCredits(x, y);
         this.applyMetatanodeBitplanes(x, y); 
     }
 
 /*    
-    if (!node_.ready_) {
-        node_.generateCullingHelpers();
-        node_.ready_ = true;
+    if (!node.ready) {
+        node.generateCullingHelpers();
+        node.ready = true;
     }
 */
     
-    return node_;
+    return node;
 };
 
-Melown.MapMetatile.prototype.scheduleLoad = function() {
-    if (this.mapLoaderUrl_ == null) {
-        this.mapLoaderUrl_ = this.surface_.getMetaUrl(this.id_);
+
+MapMetatile.prototype.scheduleLoad = function() {
+    if (this.mapLoaderUrl == null) {
+        this.mapLoaderUrl = this.surface.getMetaUrl(this.id);
     }
 
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), null, this.tile_, "metatile");
+    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this), null, this.tile, "metatile");
 };
 
-Melown.MapMetatile.prototype.onLoad = function(url_, onLoaded_, onError_) {
-    this.mapLoaderCallLoaded_ = onLoaded_;
-    this.mapLoaderCallError_ = onError_;
 
-    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
-    this.loadState_ = 1;
+MapMetatile.prototype.onLoad = function(url, onLoaded, onError) {
+    this.mapLoaderCallLoaded = onLoaded;
+    this.mapLoaderCallError = onError;
+
+    utils.loadBinary(url, this.onLoaded.bind(this), this.onLoadError.bind(this), (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);
+    this.loadState = 1;
 };
 
-Melown.MapMetatile.prototype.onLoadError = function() {
-    if (this.map_.killed_ == true){
+
+MapMetatile.prototype.onLoadError = function() {
+    if (this.map.killed == true){
         return;
     }
 
-    this.loadState_ = 3;
-    this.loadErrorTime_ = performance.now();
-    this.loadErrorCounter_ ++;
+    this.loadState = 3;
+    this.loadErrorTime = performance.now();
+    this.loadErrorCounter ++;
 
     //make sure we try to load it again
-    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_) { 
-        setTimeout((function(){ if (!this.map_.killed_) { this.map_.markDirty(); } }).bind(this), this.map_.config_.mapLoadErrorRetryTime_);
+    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount) { 
+        setTimeout((function(){ if (!this.map.killed) { this.map.markDirty(); } }).bind(this), this.map.config.mapLoadErrorRetryTime);
     }    
 
-    this.mapLoaderCallError_();
+    this.mapLoaderCallError();
 };
 
-Melown.MapMetatile.prototype.onLoaded = function(data_, task_) {
-    if (this.map_.killed_ == true){
+
+MapMetatile.prototype.onLoaded = function(data, task) {
+    if (this.map.killed == true){
         return;
     }
 
-    if (!task_) {
-    //if (this.map_.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
-        this.map_.markDirty();
-        this.map_.addProcessingTask(this.onLoaded.bind(this, data_, true));
+    if (!task) {
+    //if (this.map.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
+        this.map.markDirty();
+        this.map.addProcessingTask(this.onLoaded.bind(this, data, true));
         return;
     }
 
-    data_ = new DataView(data_);
+    data = new DataView(data);
 
-    this.size_ += data_.byteLength * 4;
+    this.size += data.byteLength * 4;
     
-    this.data_ = data_;
+    this.data = data;
 
     var t = performance.now();
-    this.parseMetatatile({data_:data_, index_: 0});
-    this.map_.stats_.renderBuild_ += performance.now() - t; 
+    this.parseMetatatile({data:data, index: 0});
+    this.map.stats.renderBuild += performance.now() - t; 
 
-    this.cacheItem_= this.map_.metatileCache_.insert(this.kill.bind(this, true), this.size_);
+    this.cacheItem= this.map.metatileCache.insert(this.kill.bind(this, true), this.size);
 
-    this.map_.markDirty();
-    this.loadState_ = 2;
-    this.loadErrorTime_ = null;
-    this.loadErrorCounter_ = 0;
-    this.mapLoaderCallLoaded_();
+    this.map.markDirty();
+    this.loadState = 2;
+    this.loadErrorTime = null;
+    this.loadErrorCounter = 0;
+    this.mapLoaderCallLoaded();
 };
 
-Melown.MapMetatile.prototype.parseMetatatile = function(stream_) {
+
+MapMetatile.prototype.parseMetatatile = function(stream) {
 
 /*
     struct Header {
@@ -219,71 +231,72 @@ Melown.MapMetatile.prototype.parseMetatatile = function(stream_) {
     };
 */
 
-    var streamData_ = stream_.data_;
-    var magic_ = "";
+    var streamData = stream.data;
+    var magic = "";
 
-    magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
-    magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
+    magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
+    magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
 
-    if (magic_ != "MT") {
+    if (magic != "MT") {
         return;
     }
 
-    this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    this.version = streamData.getUint16(stream.index, true); stream.index += 2;
 
-    if (this.version_ > 5) {
+    if (this.version > 5) {
         return;
     }
 
-    this.lod_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+    this.lod = streamData.getUint8(stream.index, true); stream.index += 1;
 
-    this.metatileIdx_ = streamData_.getUint32(stream_.index_, true); stream_.index_ += 4;
-    this.metatileIdy_ = streamData_.getUint32(stream_.index_, true); stream_.index_ += 4;
+    this.metatileIdx = streamData.getUint32(stream.index, true); stream.index += 4;
+    this.metatileIdy = streamData.getUint32(stream.index, true); stream.index += 4;
 
-    this.offsetx_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-    this.offsety_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    this.offsetx = streamData.getUint16(stream.index, true); stream.index += 2;
+    this.offsety = streamData.getUint16(stream.index, true); stream.index += 2;
 
-    this.sizex_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-    this.sizey_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    this.sizex = streamData.getUint16(stream.index, true); stream.index += 2;
+    this.sizey = streamData.getUint16(stream.index, true); stream.index += 2;
     
-    this.flagPlanes_ = new Array(8);
+    this.flagPlanes = new Array(8);
 
-    if (this.version_ < 2) {
-        this.nodeSize_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+    if (this.version < 2) {
+        this.nodeSize = streamData.getUint8(stream.index, true); stream.index += 1;
     } else {
-        this.flags_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
-        this.creditCount_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
-        this.parseFlagPlanes(stream_);
+        this.flags = streamData.getUint8(stream.index, true); stream.index += 1;
+        this.creditCount = streamData.getUint8(stream.index, true); stream.index += 1;
+        this.parseFlagPlanes(stream);
     }
 
-    this.parseMetatatileCredits(stream_);
-    this.parseMetatatileNodes(stream_);
+    this.parseMetatatileCredits(stream);
+    this.parseMetatatileNodes(stream);
     
-    this.useVersion_ = (this.map_.config_.mapForceMetatileV3_ && this.version_ < 5) ? 3 : this.version_; 
+    this.useVersion = (this.map.config.mapForceMetatileV3 && this.version < 5) ? 3 : this.version; 
 };
 
 
-Melown.MapMetatile.prototype.parseFlagPlanes = function(stream_) {
-    var streamData_ = stream_.data_;
+MapMetatile.prototype.parseFlagPlanes = function(stream) {
+    var streamData = stream.data;
 
     //rounded to bytes
-    var bitplaneSize_ = ((this.sizex_ * this.sizey_ + 7) >> 3);
+    var bitplaneSize = ((this.sizex * this.sizey + 7) >> 3);
 
     for (var i = 0; i < 6; i++) {
-        if ((this.flags_ & (1 << i)) != 0) {
+        if ((this.flags & (1 << i)) != 0) {
 
-            var bitplane_ = new Uint8Array(bitplaneSize_);
+            var bitplane = new Uint8Array(bitplaneSize);
     
-            for (var j = 0; j < bitplaneSize_; j++) {
-                bitplane_[j] = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+            for (var j = 0; j < bitplaneSize; j++) {
+                bitplane[j] = streamData.getUint8(stream.index, true); stream.index += 1;
             }
     
-            this.flagPlanes_[i] = bitplane_; 
+            this.flagPlanes[i] = bitplane; 
         }
     }
 };
 
-Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
+
+MapMetatile.prototype.parseMetatatileCredits = function(stream) {
 
 /*
     struct CreditBlock {
@@ -292,56 +305,56 @@ Melown.MapMetatile.prototype.parseMetatatileCredits = function(stream_) {
     };
 */
 
-    var streamData_ = stream_.data_;
+    var streamData = stream.data;
     
-    if (this.version_ < 2) {
-        this.creditCount_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
-        this.creditSize_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    if (this.version < 2) {
+        this.creditCount = streamData.getUint8(stream.index, true); stream.index += 1;
+        this.creditSize = streamData.getUint16(stream.index, true); stream.index += 2;
     }
     
-    if (this.creditCount_ == 0) {
-        this.credits_ = [];
+    if (this.creditCount == 0) {
+        this.credits = [];
         return;
     }
 
     //rounded to bytes
-    var bitfieldSize_ = ((this.sizex_ * this.sizey_ + 7) >> 3);
+    var bitfieldSize = ((this.sizex * this.sizey + 7) >> 3);
 
-    this.credits_ = new Array(this.creditCount_);
+    this.credits = new Array(this.creditCount);
 
-    for (var i = 0, li = this.credits_.length; i < li; i++) {
-        var creditId_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-        var bitfield_ = new Uint8Array(bitfieldSize_);
+    for (var i = 0, li = this.credits.length; i < li; i++) {
+        var creditId = streamData.getUint16(stream.index, true); stream.index += 2;
+        var bitfield = new Uint8Array(bitfieldSize);
 
-        for (var j = 0; j < bitfieldSize_; j++) {
-            bitfield_[j] = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+        for (var j = 0; j < bitfieldSize; j++) {
+            bitfield[j] = streamData.getUint8(stream.index, true); stream.index += 1;
         }
     
-        var credit_ = this.map_.getCreditByNumber(creditId_);
-        var stringId_ = credit_ ? credit_.key_ : null;
+        var credit = this.map.getCreditByNumber(creditId);
+        var stringId = credit ? credit.key : null;
 
-        this.credits_[i] = { creditId_ : stringId_, creditMask_: bitfield_};
+        this.credits[i] = { creditId : stringId, creditMask: bitfield};
     }
-
 };
 
-Melown.MapMetatile.prototype.applyMetatatileBitplanes = function() {
+
+MapMetatile.prototype.applyMetatatileBitplanes = function() {
     for (var i = 0; i < 1; i++) {
-        if (this.flagPlanes_[i]) {
+        if (this.flagPlanes[i]) {
             
-            bitplane_ = this.flagPlanes_[i]; 
+            bitplane = this.flagPlanes[i]; 
     
-            for (var y = 0; y < this.sizey_; y++) {
-                for (var x = 0; x < this.sizex_; x++) {
-                    var byteIndex_ = this.sizex_ * y + x;
-                    var bitIndex_ = byteIndex_ & 7;
-                    var bitMask_ = 1 << bitIndex_;
-                    byteIndex_ >>= 3;
+            for (var y = 0; y < this.sizey; y++) {
+                for (var x = 0; x < this.sizex; x++) {
+                    var byteIndex = this.sizex * y + x;
+                    var bitIndex = byteIndex & 7;
+                    var bitMask = 1 << bitIndex;
+                    byteIndex >>= 3;
                     
-                    if (bitplane_[byteIndex_] & bitMask_) {
+                    if (bitplane[byteIndex] & bitMask) {
                         switch(i) {
                             case 0:
-                                this.nodes_[y*this.sizex_+x].alien_ = true;
+                                this.nodes[y*this.sizex+x].alien = true;
                                 break;       
                         }
                     }
@@ -351,19 +364,20 @@ Melown.MapMetatile.prototype.applyMetatatileBitplanes = function() {
     }
 };
 
-Melown.MapMetatile.prototype.applyMetatanodeBitplanes = function(x, y) {
+
+MapMetatile.prototype.applyMetatanodeBitplanes = function(x, y) {
     for (var i = 0; i < 1; i++) {
-        if (this.flagPlanes_[i]) {
-            bitplane_ = this.flagPlanes_[i]; 
-            var byteIndex_ = this.sizex_ * y + x;
-            var bitIndex_ = byteIndex_ & 7;
-            var bitMask_ = 1 << bitIndex_;
-            byteIndex_ >>= 3;
+        if (this.flagPlanes[i]) {
+            bitplane = this.flagPlanes[i]; 
+            var byteIndex = this.sizex * y + x;
+            var bitIndex = byteIndex & 7;
+            var bitMask = 1 << bitIndex;
+            byteIndex >>= 3;
             
-            if (bitplane_[byteIndex_] & bitMask_) {
+            if (bitplane[byteIndex] & bitMask) {
                 switch(i) {
                     case 0:
-                        this.nodes_[y*this.sizex_+x].alien_ = true;
+                        this.nodes[y*this.sizex+x].alien = true;
                         break;       
                 }
             }
@@ -371,19 +385,20 @@ Melown.MapMetatile.prototype.applyMetatanodeBitplanes = function(x, y) {
     }
 };
 
-Melown.MapMetatile.prototype.applyMetatatileCredits = function() {
-    for (var y = 0; y < this.sizey_; y++) {
-        for (var x = 0; x < this.sizex_; x++) {
-            var byteIndex_ = this.sizex_ * y + x;
-            var bitIndex_ = byteIndex_ & 7;
-            var bitMask_ = 1 << bitIndex_;
-            byteIndex_ >>= 3;
 
-            for (var i = 0, li = this.credits_.length; i < li; i++) {
-                if (this.credits_[i].creditMask_[byteIndex_] & bitMask_) {
-                    var id_ = this.credits_[i].creditId_;
-                    if (id_) {
-                        this.nodes_[y*this.sizex_+x].credits_.push(id_);
+MapMetatile.prototype.applyMetatatileCredits = function() {
+    for (var y = 0; y < this.sizey; y++) {
+        for (var x = 0; x < this.sizex; x++) {
+            var byteIndex = this.sizex * y + x;
+            var bitIndex = byteIndex & 7;
+            var bitMask = 1 << bitIndex;
+            byteIndex >>= 3;
+
+            for (var i = 0, li = this.credits.length; i < li; i++) {
+                if (this.credits[i].creditMask[byteIndex] & bitMask) {
+                    var id = this.credits[i].creditId;
+                    if (id) {
+                        this.nodes[y*this.sizex+x].credits.push(id);
                     }
                 }
             }
@@ -391,62 +406,64 @@ Melown.MapMetatile.prototype.applyMetatatileCredits = function() {
     }
 };
 
-Melown.MapMetatile.prototype.applyMetanodeCredits = function(x, y) {
-    var byteIndex_ = this.sizex_ * y + x;
-    var bitIndex_ = byteIndex_ & 7;
-    var bitMask_ = 1 << bitIndex_;
-    byteIndex_ >>= 3;
 
-    for (var i = 0, li = this.credits_.length; i < li; i++) {
-        if (this.credits_[i].creditMask_[byteIndex_] & bitMask_) {
-            var id_ = this.credits_[i].creditId_;
-            if (id_) {
-                this.nodes_[y*this.sizex_+x].credits_.push(id_);
+MapMetatile.prototype.applyMetanodeCredits = function(x, y) {
+    var byteIndex = this.sizex * y + x;
+    var bitIndex = byteIndex & 7;
+    var bitMask = 1 << bitIndex;
+    byteIndex >>= 3;
+
+    for (var i = 0, li = this.credits.length; i < li; i++) {
+        if (this.credits[i].creditMask[byteIndex] & bitMask) {
+            var id = this.credits[i].creditId;
+            if (id) {
+                this.nodes[y*this.sizex+x].credits.push(id);
             }
         }
     }
 };
 
-Melown.MapMetatile.prototype.parseMetatatileNodes = function(stream_) {
-    this.metanodesIndex_ = stream_.index_;
-    this.metanodeSize_ = 1 + 1 + 2 + 2 + 2 + 2;
+
+MapMetatile.prototype.parseMetatatileNodes = function(stream) {
+    this.metanodesIndex = stream.index;
+    this.metanodeSize = 1 + 1 + 2 + 2 + 2 + 2;
     
-    if (this.version_ >= 5) {
-        this.metanodeSize_ += 3 * 4;
+    if (this.version >= 5) {
+        this.metanodeSize += 3 * 4;
     } else {
-        this.metanodeSize_ += Math.floor((6 * (this.id_[0] + 2) + 7) / 8);
+        this.metanodeSize += Math.floor((6 * (this.id[0] + 2) + 7) / 8);
 
-        if (this.version_ == 4) {
-            this.metanodeSize_ += 3 * 4;
+        if (this.version == 4) {
+            this.metanodeSize += 3 * 4;
         }
     }
 
-    if (this.version_ >= 3) {
-        if (this.flags_ & (1<<7)) {
-            this.metanodeSize_ += 2;
-        } else if (this.flags_ & (1<<6)) {
-            this.metanodeSize_ += 1;
+    if (this.version >= 3) {
+        if (this.flags & (1<<7)) {
+            this.metanodeSize += 2;
+        } else if (this.flags & (1<<6)) {
+            this.metanodeSize += 1;
         }
     }
 
-    if (this.lod_ >= this.map_.minDivisionNodeDepth_) {
-        this.divisionNode_ = this.map_.getSpatialDivisionNodeAndExtents([this.lod_, this.metatileIdx_ + this.offsetx_, this.metatileIdy_ + this.offsety_]);
-        if (this.divisionNode_) {
-            this.divisionNode_ = this.divisionNode_[0];
+    if (this.lod >= this.map.measure.minDivisionNodeDepth) {
+        this.divisionNode = this.map.measure.getSpatialDivisionNodeAndExtents([this.lod, this.metatileIdx + this.offsetx, this.metatileIdy + this.offsety]);
+        if (this.divisionNode) {
+            this.divisionNode = this.divisionNode[0];
         }
     } else {
-        this.divisionNode_ = null;
+        this.divisionNode = null;
     }
     
-    this.nodes_ = new Array(this.sizex_*this.sizey_);
+    this.nodes = new Array(this.sizex*this.sizey);
     
     /*
-    var index_ = 0;
+    var index = 0;
 
-    for (var y = 0; y < this.sizey_; y++) {
-        for (var x = 0; x < this.sizex_; x++) {
-            this.nodes_[index_] = (new Melown.MapMetanode(this, [this.lod_, this.metatileIdx_ + this.offsetx_ + x, this.metatileIdy_ + this.offsety_ + y], stream_, divisionNode_));
-            index_++;
+    for (var y = 0; y < this.sizey; y++) {
+        for (var x = 0; x < this.sizex; x++) {
+            this.nodes[index] = (new MapMetanode(this, [this.lod, this.metatileIdx + this.offsetx + x, this.metatileIdy + this.offsety + y], stream, divisionNode));
+            index++;
         }
     }
     
@@ -455,3 +472,5 @@ Melown.MapMetatile.prototype.parseMetatatileNodes = function(stream_) {
     */
 };
 
+
+export default MapMetatile;

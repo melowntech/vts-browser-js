@@ -1,7 +1,15 @@
 
-Melown.Inspector.prototype.initGraphsPanel = function() {
-    this.addStyle( ""
-        + "#melown-graphs-panel {"
+var InspectorGraphs = function(inspector) {
+    this.inspector = inspector;
+    this.core = inspector.core;
+};
+
+
+InspectorGraphs.prototype.init = function() {
+    var inspector = this.inspector;
+
+    inspector.addStyle( ""
+        + "#vts-graphs-panel {"
             + "position:absolute;"
             + "left:10px;"
             + "top:10px;"
@@ -16,17 +24,17 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
             + "display:none;"
         + "}"
 
-        + ".melown-graphs-canvas {"
+        + ".vts-graphs-canvas {"
             + "border: solid 1px #bbb;"
             + "image-rendering : pixelated;"
         + "}"
 
-        + ".melown-graphs-info {"
+        + ".vts-graphs-info {"
             + "padding: 5px 2px;"
             + "font-size: 10px;"
         + "}"
 
-        + ".melown-graphs-button {"
+        + ".vts-graphs-button {"
             + "padding: 2px 5px;"
             + "display:inline-block;"
             + "margin-right: 4px;"
@@ -34,125 +42,118 @@ Melown.Inspector.prototype.initGraphsPanel = function() {
             + "cursor:pointer;"
         + "}"
 
-        + ".melown-graphs-button:hover {"
+        + ".vts-graphs-button:hover {"
             + "box-shadow: 0 0 1px #0066ff;"
         + "}"
     );
 
-    this.graphsElement_ = document.createElement("div");
-    this.graphsElement_.id = "melown-graphs-panel";
-    this.graphsElement_.innerHTML = ""
-        + '<canvas id="melown-graphs-render" class="melown-graphs-canvas" width="900" height="100" ></canvas>'
-        + '<div id="melown-graphs-info" class="melown-graphs-info" >&FilledSmallSquare; Frame: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: 1234 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Mesh: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMesh: 1234</div>'
-        + '<canvas id="melown-graphs-cache" class="melown-graphs-canvas" width="900" height="100" ></canvas>'
-        + '<div id="melown-graphs-info2" class="melown-graphs-info" >&FilledSmallSquare; Cache: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Used: 123 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> Mesh: &nbsp 1234</div>'
-        + '<div id="melown-graphs-rec" class="melown-graphs-button" >Recording On</div>'
-        + '<div id="melown-graphs-ref" class="melown-graphs-button" >Refresh On</div>'
-        + '<div id="melown-graphs-res" class="melown-graphs-button" >Reset</div>'
-        + '<div id="melown-graphs-zoom" class="melown-graphs-button" >Scale: Max value</div>'
-        + '<div id="melown-graphs-magnify" class="melown-graphs-button" >Magnify Off</div>'
-        + '<div id="melown-graphs-graph" class="melown-graphs-button" >Graph: Cache</div>';
+    this.element = document.createElement("div");
+    this.element.id = "vts-graphs-panel";
+    this.element.innerHTML = ""
+        + '<canvas id="vts-graphs-render" class="vts-graphs-canvas" width="900" height="100" ></canvas>'
+        + '<div id="vts-graphs-info" class="vts-graphs-info" >&FilledSmallSquare; Frame: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: 1234 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Mesh: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMesh: 1234</div>'
+        + '<canvas id="vts-graphs-cache" class="vts-graphs-canvas" width="900" height="100" ></canvas>'
+        + '<div id="vts-graphs-info2" class="vts-graphs-info" >&FilledSmallSquare; Cache: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Used: 123 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> Mesh: &nbsp 1234</div>'
+        + '<div id="vts-graphs-rec" class="vts-graphs-button" >Recording On</div>'
+        + '<div id="vts-graphs-ref" class="vts-graphs-button" >Refresh On</div>'
+        + '<div id="vts-graphs-res" class="vts-graphs-button" >Reset</div>'
+        + '<div id="vts-graphs-zoom" class="vts-graphs-button" >Scale: Max value</div>'
+        + '<div id="vts-graphs-magnify" class="vts-graphs-button" >Magnify Off</div>'
+        + '<div id="vts-graphs-graph" class="vts-graphs-button" >Graph: Cache</div>';
 
-    this.core_.element_.appendChild(this.graphsElement_);
-    this.graphsCanvasRender_ = document.getElementById("melown-graphs-render");
-    this.graphsCanvasCache_ = document.getElementById("melown-graphs-cache");
-    this.graphsCanvasRenderCtx_ = this.graphsCanvasRender_.getContext("2d");
-    this.graphsCanvasCacheCtx_ = this.graphsCanvasCache_.getContext("2d");
+    this.core.element.appendChild(this.element);
+    this.canvasRender = document.getElementById("vts-graphs-render");
+    this.canvasCache = document.getElementById("vts-graphs-cache");
+    this.canvasRenderCtx = this.canvasRender.getContext("2d");
+    this.canvasCacheCtx = this.canvasCache.getContext("2d");
 
-    document.getElementById("melown-graphs-rec").onclick = this.graphsRecordingPressed.bind(this);
+    document.getElementById("vts-graphs-rec").onclick = this.recordingPressed.bind(this);
 
-    document.getElementById("melown-graphs-rec").onclick = this.graphsRecordingPressed.bind(this);
-    document.getElementById("melown-graphs-ref").onclick = this.graphsRefreshPressed.bind(this);
-    document.getElementById("melown-graphs-res").onclick = this.graphsResetPressed.bind(this);
-    document.getElementById("melown-graphs-zoom").onclick = this.graphsZoomPressed.bind(this);
-    document.getElementById("melown-graphs-magnify").onclick = this.graphsMagnifyPressed.bind(this);
-    document.getElementById("melown-graphs-graph").onclick = this.graphsGraphPressed.bind(this);
+    document.getElementById("vts-graphs-rec").onclick = this.recordingPressed.bind(this);
+    document.getElementById("vts-graphs-ref").onclick = this.refreshPressed.bind(this);
+    document.getElementById("vts-graphs-res").onclick = this.resetPressed.bind(this);
+    document.getElementById("vts-graphs-zoom").onclick = this.zoomPressed.bind(this);
+    document.getElementById("vts-graphs-magnify").onclick = this.magnifyPressed.bind(this);
+    document.getElementById("vts-graphs-graph").onclick = this.graphPressed.bind(this);
 
-    document.getElementById("melown-graphs-render").onmousemove = this.onGraphsMouseMove.bind(this);
-    document.getElementById("melown-graphs-render").onmouseout = this.onGraphsMouseOut.bind(this);
-    document.getElementById("melown-graphs-cache").onmousemove = this.onGraphsMouseMove.bind(this);
-    document.getElementById("melown-graphs-cache").onmouseout = this.onGraphsMouseOut.bind(this);
+    document.getElementById("vts-graphs-render").onmousemove = this.onMouseMove.bind(this);
+    document.getElementById("vts-graphs-render").onmouseout = this.onMouseOut.bind(this);
+    document.getElementById("vts-graphs-cache").onmousemove = this.onMouseMove.bind(this);
+    document.getElementById("vts-graphs-cache").onmouseout = this.onMouseOut.bind(this);
 
-    this.graphsElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
-    this.graphsElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
-    this.graphsElement_.addEventListener("mousewheel", this.doNothing.bind(this), false);
-    this.graphsElement_.addEventListener("dblclick", this.doNothing.bind(this), false);
+    this.element.addEventListener("mouseup", inspector.doNothing.bind(this), true);
+    this.element.addEventListener("mousedown", inspector.doNothing.bind(this), true);
+    this.element.addEventListener("mousewheel", inspector.doNothing.bind(this), false);
+    this.element.addEventListener("dblclick", inspector.doNothing.bind(this), false);
 
+    this.zoom = "max";
+    this.graph = "Cache";
+    this.refresh = true;
 
-    this.graphsZoom_ = "max";
-    this.graphsGraph_ = "Cache";
-    this.graphsRefresh_ = true;
-
-    this.graphsPanelVisible_ = false;
+    this.panelVisible = false;
 };
 
-Melown.Inspector.prototype.showGraphsPanel = function() {
-    this.graphsElement_.style.display = "block";
-    this.graphsPanelVisible_ = true;
-    this.graphsRecordingPressed(true);
+
+InspectorGraphs.prototype.showPanel = function() {
+    this.element.style.display = "block";
+    this.panelVisible = true;
+    this.recordingPressed(true);
 };
 
-Melown.Inspector.prototype.hideGraphsPanel = function() {
-    this.graphsElement_.style.display = "none";
-    this.graphsPanelVisible_ = false;
-    this.graphsRecordingPressed(true);
+
+InspectorGraphs.prototype.hidePanel = function() {
+    this.element.style.display = "none";
+    this.panelVisible = false;
+    this.recordingPressed(true);
 };
 
-Melown.Inspector.prototype.switchGraphsPanel = function() {
-    if (this.graphsPanelVisible_ == true) {
-        this.hideGraphsPanel();
+
+InspectorGraphs.prototype.switchPanel = function() {
+    if (this.panelVisible == true) {
+        this.hidePanel();
     } else {
-        this.showGraphsPanel();
+        this.showPanel();
     }
 };
 
-Melown.Inspector.prototype.graphsRecordingPressed = function(state_) {
-    var map_ = this.core_.getMap();
 
-    if (map_ == null) {
+InspectorGraphs.prototype.recordingPressed = function(state) {
+    var map = this.core.getMap();
+
+    if (map == null) {
         return;
     }
 
-    map_.stats_.recordGraphs_ = (state_ == null) ? state_ : !map_.stats_.recordGraphs_;
+    map.stats.recordGraphs = (state == null) ? state : !map.stats.recordGraphs;
     this.updateGraphsPanel();
     this.updateGraphs(null, true);
 };
 
-Melown.Inspector.prototype.graphsRefreshPressed = function() {
-    this.graphsRefresh_ = !this.graphsRefresh_;
+
+InspectorGraphs.prototype.refreshPressed = function() {
+    this.refresh = !this.refresh;
     this.updateGraphsPanel();
     this.updateGraphs();
 };
 
-Melown.Inspector.prototype.graphsResetPressed = function() {
-    var map_ = this.core_.getMap();
 
-    if (map_ == null) {
+InspectorGraphs.prototype.resetPressed = function() {
+    var map = this.core.getMap();
+
+    if (map == null) {
         return;
     }
 
-    map_.stats_.resetGraphs();
+    map.stats.resetGraphs();
     this.updateGraphs(null, true);
 };
 
-Melown.Inspector.prototype.graphsZoomPressed = function() {
-    switch (this.graphsZoom_) {
-        case "max":     this.graphsZoom_ = "120avrg"; break;
-        case "120avrg": this.graphsZoom_ = "180avrg"; break;
-        case "180avrg": this.graphsZoom_ = "max"; break;
-    }
 
-    this.updateGraphsPanel();
-    this.updateGraphs();
-};
-
-Melown.Inspector.prototype.graphsGraphPressed = function() {
-    switch (this.graphsGraph_) {
-        case "Cache":      this.graphsGraph_ = "Polygons"; break;
-        case "Polygons":   this.graphsGraph_ = "Processing"; break;
-        case "Processing": this.graphsGraph_ = "LODs"; break;
-        case "LODs":       this.graphsGraph_ = "Flux"; break;
-        case "Flux":       this.graphsGraph_ = "Cache"; break;
+InspectorGraphs.prototype.zoomPressed = function() {
+    switch (this.zoom) {
+        case "max":     this.zoom = "120avrg"; break;
+        case "120avrg": this.zoom = "180avrg"; break;
+        case "180avrg": this.zoom = "max"; break;
     }
 
     this.updateGraphsPanel();
@@ -160,290 +161,299 @@ Melown.Inspector.prototype.graphsGraphPressed = function() {
 };
 
 
-Melown.Inspector.prototype.graphsMagnifyPressed = function() {
-    this.graphsMagnify_ = !this.graphsMagnify_;
+InspectorGraphs.prototype.graphPressed = function() {
+    switch (this.graph) {
+        case "Cache":      this.graph = "Polygons"; break;
+        case "Polygons":   this.graph = "Processing"; break;
+        case "Processing": this.graph = "LODs"; break;
+        case "LODs":       this.graph = "Flux"; break;
+        case "Flux":       this.graph = "Cache"; break;
+    }
 
-    if (this.graphsMagnify_ == true) {
-        this.graphsCanvasRender_.style.width = "1400px";
-        this.graphsCanvasRender_.style.height = "200px";
-        this.graphsCanvasCache_.style.width = "1400px";
-        this.graphsCanvasCache_.style.height = "200px";
-        document.getElementById("melown-graphs-magnify").innerHTML = "Magnify On";
+    this.updateGraphsPanel();
+    this.updateGraphs();
+};
+
+
+InspectorGraphs.prototype.magnifyPressed = function() {
+    this.magnify = !this.magnify;
+
+    if (this.magnify == true) {
+        this.canvasRender.style.width = "1400px";
+        this.canvasRender.style.height = "200px";
+        this.canvasCache.style.width = "1400px";
+        this.canvasCache.style.height = "200px";
+        document.getElementById("vts-graphs-magnify").innerHTML = "Magnify On";
     } else {
-        this.graphsCanvasRender_.style.width = "900px";
-        this.graphsCanvasRender_.style.height = "100px";
-        this.graphsCanvasCache_.style.width = "900px";
-        this.graphsCanvasCache_.style.height = "100px";
-        document.getElementById("melown-graphs-magnify").innerHTML = "Magnify Off";
+        this.canvasRender.style.width = "900px";
+        this.canvasRender.style.height = "100px";
+        this.canvasCache.style.width = "900px";
+        this.canvasCache.style.height = "100px";
+        document.getElementById("vts-graphs-magnify").innerHTML = "Magnify Off";
     }
 
     this.updateGraphsPanel();
     this.updateGraphs();
 };
 
-Melown.Inspector.prototype.updateGraphsPanel = function() {
-    var map_ = this.core_.getMap();
 
-    if (map_ == null) {
+InspectorGraphs.prototype.updateGraphsPanel = function() {
+    var map = this.core.getMap();
+
+    if (map == null) {
         return;
     }
 
-    if (map_.stats_.recordGraphs_ == true) {
-        document.getElementById("melown-graphs-rec").innerHTML = "Recording On";
+    if (map.stats.recordGraphs == true) {
+        document.getElementById("vts-graphs-rec").innerHTML = "Recording On";
     } else {
-        document.getElementById("melown-graphs-rec").innerHTML = "Recording Off";
+        document.getElementById("vts-graphs-rec").innerHTML = "Recording Off";
     }
 
-    if (this.graphsRefresh_ == true) {
-        document.getElementById("melown-graphs-ref").innerHTML = "Refresh On";
+    if (this.refresh == true) {
+        document.getElementById("vts-graphs-ref").innerHTML = "Refresh On";
     } else {
-        document.getElementById("melown-graphs-ref").innerHTML = "Refresh Off";
+        document.getElementById("vts-graphs-ref").innerHTML = "Refresh Off";
     }
 
-    switch (this.graphsZoom_) {
+    switch (this.zoom) {
         case "max":
-            document.getElementById("melown-graphs-zoom").innerHTML = "Scale: Max value";
+            document.getElementById("vts-graphs-zoom").innerHTML = "Scale: Max value";
             break;
 
         case "120avrg":
-            document.getElementById("melown-graphs-zoom").innerHTML = "Scale: 100% Avrg";
+            document.getElementById("vts-graphs-zoom").innerHTML = "Scale: 100% Avrg";
             break;
 
         case "180avrg":
-            document.getElementById("melown-graphs-zoom").innerHTML = "Scale: 50% Avrg";
+            document.getElementById("vts-graphs-zoom").innerHTML = "Scale: 50% Avrg";
             break;
     }
 
-    document.getElementById("melown-graphs-graph").innerHTML = "Graph: " + this.graphsGraph_;
+    document.getElementById("vts-graphs-graph").innerHTML = "Graph: " + this.graph;
 };
 
-Melown.Inspector.prototype.onGraphsMouseMove = function(event_) {
-    var x = event_.clientX - this.graphsCanvasRender_.getBoundingClientRect().left;
-    this.graphsShowCursor_ = true;
 
-    if (this.graphsMagnify_ == true) {
+InspectorGraphs.prototype.onMouseMove = function(event) {
+    var x = event.clientX - this.canvasRender.getBoundingClientRect().left;
+    this.showCursor = true;
+
+    if (this.magnify == true) {
         x = Math.floor(x * 900/1400);
     }
 
-    this.graphsCursorIndex_ = x;
+    this.cursorIndex = x;
 
-    var map_ = this.core_.getMap();
+    var map = this.core.getMap();
 
-    if (map_ == null) {
+    if (map == null) {
         return;
     }
 
-    if (map_.stats_.recordGraphs_ != true) {
+    if (map.stats.recordGraphs != true) {
         this.updateGraphs(null);
     }
 };
 
-Melown.Inspector.prototype.onGraphsMouseOut = function() {
-    this.graphsShowCursor_ = false;
+
+InspectorGraphs.prototype.onMouseOut = function() {
+    this.showCursor = false;
     this.updateGraphs(null);
 };
 
 
-Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
-    var map_ = this.core_.getMap();
+InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
+    var map = this.core.getMap();
 
-    if (map_ == null || (this.graphsRefresh_ == false && !ignoreRefresh_) || this.graphsPanelVisible_ == false) {
+    if (map == null || (this.refresh == false && !ignoreRefresh) || this.panelVisible == false) {
         return;
     }
 
-    stats_ = stats_ || map_.stats_;
+    stats = stats || map.stats;
 
-    var width_ = this.graphsCanvasRender_.width;
-    var height_ = this.graphsCanvasRender_.height;
-    var ctx_ = this.graphsCanvasRenderCtx_;
+    var width = this.canvasRender.width;
+    var height = this.canvasRender.height;
+    var ctx = this.canvasRenderCtx;
 
-    var samples_ = stats_.graphsTimeSamples_;
-    var samplesIndex_ = stats_.graphsTimeIndex_;
+    var samples = stats.graphsTimeSamples;
+    var samplesIndex = stats.graphsTimeIndex;
 
-    var factorX_ = width_ / samples_;
+    var factorX = width / samples;
 
-    ctx_.clearRect(0, 0, width_, height_);
+    ctx.clearRect(0, 0, width, height);
 
-    var maxValue_ = 0;
-    var totalFrame_ = 0;
-    var totalRender_ = 0;
-    var totalTexture_ = 0;
-    var totalMeshes_ = 0;
-    var totalGpuMeshes_ = 0;
-    var realCount_ = 0;
+    var maxValue = 0;
+    var totalFrame = 0;
+    var totalRender = 0;
+    var totalTexture = 0;
+    var totalMeshes = 0;
+    var totalGpuMeshes = 0;
+    var realCount = 0;
 
-    var valuesFrame_ = stats_.graphsFrameTimes_;
-    var valuesRender_ = stats_.graphsRenderTimes_;
-    var valuesTextures_ = stats_.graphsCreateTextureTimes_;
-    var valuesMeshes_ = stats_.graphsCreateMeshTimes_;
-    var valuesGpuMeshes_ = stats_.graphsCreateGpuMeshTimes_;
+    var valuesFrame = stats.graphsFrameTimes;
+    var valuesRender = stats.graphsRenderTimes;
+    var valuesTextures = stats.graphsCreateTextureTimes;
+    var valuesMeshes = stats.graphsCreateMeshTimes;
+    var valuesGpuMeshes = stats.graphsCreateGpuMeshTimes;
 
-    for (var i = 0; i < samples_; i++) {
-        totalFrame_ += valuesFrame_[i];
-        totalRender_ += valuesRender_[i];
-        totalTexture_ += valuesTextures_[i];
-        totalMeshes_ += valuesMeshes_[i];
-        totalGpuMeshes_ += valuesGpuMeshes_[i];
+    for (var i = 0; i < samples; i++) {
+        totalFrame += valuesFrame[i];
+        totalRender += valuesRender[i];
+        totalTexture += valuesTextures[i];
+        totalMeshes += valuesMeshes[i];
+        totalGpuMeshes += valuesGpuMeshes[i];
 
-        var v = valuesFrame_[i];
+        var v = valuesFrame[i];
 
-        if (v > maxValue_) {
-            maxValue_ = v;
+        if (v > maxValue) {
+            maxValue = v;
         }
 
         if (v > 0) {
-            realCount_++;
+            realCount++;
         }
     }
 
-    if (this.graphsZoom_ == "120avrg") {
-        maxValue_ = (totalFrame_ / realCount_) * 1.0;
+    if (this.zoom == "120avrg") {
+        maxValue = (totalFrame / realCount) * 1.0;
     }
 
-    if (this.graphsZoom_ == "180avrg") {
-        maxValue_ = (totalFrame_ / realCount_) * 0.5;
+    if (this.zoom == "180avrg") {
+        maxValue = (totalFrame / realCount) * 0.5;
     }
 
-    var factorY_ = height_ / maxValue_;
+    var factorY = height / maxValue;
 
-    for (var i = 0; i < samples_; i++) {
-        var index_ = samplesIndex_ + i;
-        index_ %= samples_;
+    for (var i = 0; i < samples; i++) {
+        var index = samplesIndex + i;
+        index %= samples;
 
-        ctx_.fillStyle="#000000";
-        ctx_.fillRect(i*factorX_, height_, 1, -(valuesFrame_[index_])*factorY_);
-        ctx_.fillStyle="#ff0000";
-        ctx_.fillRect(i*factorX_, height_, 1, -(valuesRender_[index_])*factorY_);
+        ctx.fillStyle="#000000";
+        ctx.fillRect(i*factorX, height, 1, -(valuesFrame[index])*factorY);
+        ctx.fillStyle="#ff0000";
+        ctx.fillRect(i*factorX, height, 1, -(valuesRender[index])*factorY);
 
-        ctx_.fillStyle="#0000ff";
-        ctx_.fillRect(i*factorX_, height_, 1, -(valuesTextures_[index_])*factorY_);
+        ctx.fillStyle="#0000ff";
+        ctx.fillRect(i*factorX, height, 1, -(valuesTextures[index])*factorY);
 
-        var y = height_ -(valuesTextures_[index_])*factorY_;
+        var y = height -(valuesTextures[index])*factorY;
 
-        ctx_.fillStyle="#007700";
-        ctx_.fillRect(i*factorX_, y, 1, -(valuesMeshes_[index_])*factorY_);
+        ctx.fillStyle="#007700";
+        ctx.fillRect(i*factorX, y, 1, -(valuesMeshes[index])*factorY);
 
-        y -= (valuesMeshes_[index_])*factorY_;
+        y -= (valuesMeshes[index])*factorY;
 
-        ctx_.fillStyle="#00ff00";
-        ctx_.fillRect(i*factorX_, y, 1, -(valuesGpuMeshes_[index_])*factorY_);
+        ctx.fillStyle="#00ff00";
+        ctx.fillRect(i*factorX, y, 1, -(valuesGpuMeshes[index])*factorY);
 
     }
 
-    if (this.graphsShowCursor_ == true) {
-        ctx_.fillStyle="#aa00aa";
-        var index_ = (this.graphsCursorIndex_) % samples_;
-        ctx_.fillRect(Math.floor(index_*factorX_)-1, 0, 1, height_);
-        ctx_.fillRect(Math.floor(index_*factorX_)+1, 0, 1, height_);
-        index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
+    if (this.showCursor == true) {
+        ctx.fillStyle="#aa00aa";
+        var index = (this.cursorIndex) % samples;
+        ctx.fillRect(Math.floor(index*factorX)-1, 0, 1, height);
+        ctx.fillRect(Math.floor(index*factorX)+1, 0, 1, height);
+        index = (this.cursorIndex + samplesIndex) % samples;
 
-        var str_ = '&FilledSmallSquare; Frame: ' + valuesFrame_[index_].toFixed(2) +
-                   ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + valuesRender_[index_].toFixed(2) +
-                   ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + valuesTextures_[index_].toFixed(2) +
-                   ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + valuesMeshes_[index_].toFixed(2) +
-                   ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + valuesGpuMeshes_[index_].toFixed(2) + '</div>';
+        var str = '&FilledSmallSquare; Frame: ' + valuesFrame[index].toFixed(2) +
+                   ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + valuesRender[index].toFixed(2) +
+                   ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + valuesTextures[index].toFixed(2) +
+                   ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + valuesMeshes[index].toFixed(2) +
+                   ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + valuesGpuMeshes[index].toFixed(2) + '</div>';
     } else {
-        var str_ = '&FilledSmallSquare; Frame: ' + Math.round(totalFrame_) +
-                   ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + Math.round(totalRender_) +
-                   ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.round(totalTexture_) +
-                   ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.round(totalMeshes_) +
-                   ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + Math.round(totalGpuMeshes_) +'</div>';
+        var str = '&FilledSmallSquare; Frame: ' + Math.round(totalFrame) +
+                   ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + Math.round(totalRender) +
+                   ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.round(totalTexture) +
+                   ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.round(totalMeshes) +
+                   ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + Math.round(totalGpuMeshes) +'</div>';
     }
 
-    document.getElementById("melown-graphs-info").innerHTML = str_;
+    document.getElementById("vts-graphs-info").innerHTML = str;
 
+    var width = this.canvasCache.width;
+    var height = this.canvasCache.height;
+    var ctx = this.canvasCacheCtx;
 
+    var factorX = width / samples;
 
+    ctx.clearRect(0, 0, width, height);
 
-
-
-    var width_ = this.graphsCanvasCache_.width;
-    var height_ = this.graphsCanvasCache_.height;
-    var ctx_ = this.graphsCanvasCacheCtx_;
-
-    //var samples_ = graphs_["samples"];
-    //var samplesIndex_ = graphs_["index"];
-
-    var factorX_ = width_ / samples_;
-
-    ctx_.clearRect(0, 0, width_, height_);
-
-    switch (this.graphsGraph_) {
+    switch (this.graph) {
     case "Cache":
         {
-            var factorY_ = height_ / ((map_.gpuCache_.maxCost_+map_.resourcesCache_.maxCost_+map_.metatileCache_.maxCost_));
+            var factorY = height / ((map.gpuCache.maxCost+map.resourcesCache.maxCost+map.metatileCache.maxCost));
 
-            var maxMetatiles_ = 0;
-            var maxResources_ = 0;
-            var maxTextures_ = 0;
-            var maxMeshes_ = 0;
-            var maxGeodata_ = 0;
-            var maxGpu_ = 0;
+            var maxMetatiles = 0;
+            var maxResources = 0;
+            var maxTextures = 0;
+            var maxMeshes = 0;
+            var maxGeodata = 0;
+            var maxGpu = 0;
 
-            var valuesMetatiles_ = stats_.graphsCpuMemoryMetatiles_;
-            var valuesResources_ = stats_.graphsCpuMemoryUsed_;
-            var valuesTextures_ = stats_.graphsGpuMemoryTextures_;
-            var valuesMeshes_ = stats_.graphsGpuMemoryMeshes_;
-            var valuesGeodata_ = stats_.graphsGpuMemoryGeodata_;
-            var valuesGpu_ = stats_.graphsGpuMemoryRender_;
+            var valuesMetatiles = stats.graphsCpuMemoryMetatiles;
+            var valuesResources = stats.graphsCpuMemoryUsed;
+            var valuesTextures = stats.graphsGpuMemoryTextures;
+            var valuesMeshes = stats.graphsGpuMemoryMeshes;
+            var valuesGeodata = stats.graphsGpuMemoryGeodata;
+            var valuesGpu = stats.graphsGpuMemoryRender;
 
-            for (var i = 0; i < samples_; i++) {
-                maxMetatiles_ = valuesMetatiles_[i] > maxMetatiles_ ? valuesMetatiles_[i] : maxMetatiles_;
-                maxResources_ = valuesResources_[i] > maxResources_ ? valuesResources_[i] : maxResources_;
-                maxTextures_ = valuesTextures_[i] > maxTextures_ ? valuesTextures_[i] : maxTextures_;
-                maxMeshes_ = valuesMeshes_[i] > maxMeshes_ ? valuesMeshes_[i] : maxMeshes_;
-                maxGeodata_ = valuesGeodata_[i] > maxGeodata_ ? valuesGeodata_[i] : maxGeodata_;
-                maxGpu_ = valuesGpu_[i] > maxGpu_ ? valuesGpu_[i] : maxGpu_;
+            for (var i = 0; i < samples; i++) {
+                maxMetatiles = valuesMetatiles[i] > maxMetatiles ? valuesMetatiles[i] : maxMetatiles;
+                maxResources = valuesResources[i] > maxResources ? valuesResources[i] : maxResources;
+                maxTextures = valuesTextures[i] > maxTextures ? valuesTextures[i] : maxTextures;
+                maxMeshes = valuesMeshes[i] > maxMeshes ? valuesMeshes[i] : maxMeshes;
+                maxGeodata = valuesGeodata[i] > maxGeodata ? valuesGeodata[i] : maxGeodata;
+                maxGpu = valuesGpu[i] > maxGpu ? valuesGpu[i] : maxGpu;
             }
 
-            for (var i = 0; i < samples_; i++) {
-                var index_ = samplesIndex_ + i;
-                index_ %= samples_;
+            for (var i = 0; i < samples; i++) {
+                var index = samplesIndex + i;
+                index %= samples;
 
-                var value_ = valuesMetatiles_[index_] + valuesMeshes_[index_] + valuesTextures_[index_] + valuesGeodata_[index_] + valuesResources_[index_];
-                ctx_.fillStyle="#000000";
-                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
-                value_ -= valuesResources_[index_];
+                var value = valuesMetatiles[index] + valuesMeshes[index] + valuesTextures[index] + valuesGeodata[index] + valuesResources[index];
+                ctx.fillStyle="#000000";
+                ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
+                value -= valuesResources[index];
 
-                ctx_.fillStyle="#0000ff";
-                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
-                value_ -= valuesTextures_[index_];
+                ctx.fillStyle="#0000ff";
+                ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
+                value -= valuesTextures[index];
 
-                ctx_.fillStyle="#009999";
-                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
-                value_ -= valuesGeodata_[index_];
+                ctx.fillStyle="#009999";
+                ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
+                value -= valuesGeodata[index];
 
-                ctx_.fillStyle="#007700";
-                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
-                value_ -= valuesMeshes_[index_];
+                ctx.fillStyle="#007700";
+                ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
+                value -= valuesMeshes[index];
 
-                ctx_.fillStyle="#ff0000";
-                ctx_.fillRect(i*factorX_, height_, 1, -(value_)*factorY_);
+                ctx.fillStyle="#ff0000";
+                ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
 
-                value_ = valuesGpu_[index_];
-                ctx_.fillStyle="#ffff00";
-                ctx_.fillRect(i*factorX_, height_ -(value_)*factorY_, 1, 1);
+                value = valuesGpu[index];
+                ctx.fillStyle="#ffff00";
+                ctx.fillRect(i*factorX, height -(value)*factorY, 1, 1);
             }
 
-            if (this.graphsShowCursor_ == true) {
-                var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
-                var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles_[index_] + valuesResources_[index_] + valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures_[index_] + valuesMeshes_[index_])/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te: ' + Math.ceil(valuesTextures_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(valuesMeshes_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(valuesGeodata_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(valuesMetatiles_[index_]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(valuesGpu_[index_]/(1024*1024)) + "MB" +'</div>';
+            if (this.showCursor == true) {
+                var index = (this.cursorIndex + samplesIndex) % samples;
+                var str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles[index] + valuesResources[index] + valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources[index]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te: ' + Math.ceil(valuesTextures[index]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(valuesMeshes[index]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(valuesGeodata[index]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(valuesMetatiles[index]/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(valuesGpu[index]/(1024*1024)) + "MB" +'</div>';
             } else {
-                var str_ = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles_ + maxResources_ + maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures_ + maxMeshes_)/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te ' + Math.ceil(maxTextures_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(maxMeshes_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(maxGeodata_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(maxMetatiles_/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(maxGpu_/(1024*1024)) + "MB" +'</div>';
+                var str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles + maxResources + maxTextures + maxMeshes)/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures + maxMeshes)/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te ' + Math.ceil(maxTextures/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(maxMeshes/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(maxGeodata/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(maxMetatiles/(1024*1024)) + "MB" +
+                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(maxGpu/(1024*1024)) + "MB" +'</div>';
             }
 
         }
@@ -453,39 +463,39 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
     case "Polygons":
     case "Processing":
         {
-            var max_ = 0;
-            var min_ = 99999999999;
-            var total_ = 0;
-            var realCount_ = 0;
-            var values_ = (this.graphsGraph_ == "Polygons") ? stats_.graphsPolygons_ : stats_.graphsBuild_;
+            var max = 0;
+            var min = 99999999999;
+            var total = 0;
+            var realCount = 0;
+            var values = (this.graph == "Polygons") ? stats.graphsPolygons : stats.graphsBuild;
 
-            for (var i = 0; i < samples_; i++) {
-                max_ = values_[i] > max_ ? values_[i] : max_;
+            for (var i = 0; i < samples; i++) {
+                max = values[i] > max ? values[i] : max;
 
-                if (values_[i] > 0) {
-                    min_ = values_[i] < min_ ? values_[i] : min_;
-                    total_ += values_[i];
-                    realCount_++;
+                if (values[i] > 0) {
+                    min = values[i] < min ? values[i] : min;
+                    total += values[i];
+                    realCount++;
                 }
             }
 
-            var factorY_ = height_ / max_;
+            var factorY = height / max;
 
-            for (var i = 0; i < samples_; i++) {
-                var index_ = samplesIndex_ + i;
-                index_ %= samples_;
+            for (var i = 0; i < samples; i++) {
+                var index = samplesIndex + i;
+                index %= samples;
 
-                ctx_.fillStyle="#007700";
-                ctx_.fillRect(i*factorX_, height_, 1, -(values_[index_])*factorY_);
+                ctx.fillStyle="#007700";
+                ctx.fillRect(i*factorX, height, 1, -(values[index])*factorY);
             }
 
-            if (this.graphsShowCursor_ == true) {
-                var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
-                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graphsGraph_ + ' Max: ' + Math.round(values_[index_]) +'</div>';
+            if (this.showCursor == true) {
+                var index = (this.cursorIndex + samplesIndex) % samples;
+                var str = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graph + ' Max: ' + Math.round(values[index]) +'</div>';
             } else {
-                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graphsGraph_ + ' Max: ' + max_ +'</div>';
-                str_ += ' &nbsp Min: ' + min_;
-                str_ += ' &nbsp Avrg: ' + Math.round(total_ / realCount_) +'</div>';
+                var str = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graph + ' Max: ' + max +'</div>';
+                str += ' &nbsp Min: ' + min;
+                str += ' &nbsp Avrg: ' + Math.round(total / realCount) +'</div>';
             }
         }
         break;
@@ -493,182 +503,182 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
 
     case "LODs":
         {
-            var max_ = 0;
-            var values_ = stats_.graphsLODs_;
+            var max = 0;
+            var values = stats.graphsLODs;
 
-            for (var i = 0; i < samples_; i++) {
-                max_ = values_[i][0] > max_ ? values_[i][0] : max_;
+            for (var i = 0; i < samples; i++) {
+                max = values[i][0] > max ? values[i][0] : max;
             }
 
-            var factorY_ = height_ / max_;
+            var factorY = height / max;
 
-            ctx_.fillStyle="#000000";
-            ctx_.fillRect(0, 0, width_, height_);
+            ctx.fillStyle="#000000";
+            ctx.fillRect(0, 0, width, height);
 
-            for (var i = 0; i < samples_; i++) {
-                var index_ = samplesIndex_ + i;
-                index_ %= samples_;
+            for (var i = 0; i < samples; i++) {
+                var index = samplesIndex + i;
+                index %= samples;
 
-                //ctx_.fillStyle="#000000";
-                //ctx_.fillRect(i*factorX_, height_, 1, -(values_[index_][0])*factorY_);
+                //ctx.fillStyle="#000000";
+                //ctx.fillRect(i*factorX, height, 1, -(values[index][0])*factorY);
 
-                var y = height_;
+                var y = height;
                 
-                var lods_ = values_[index_][1]; 
+                var lods = values[index][1]; 
 
-                for (var j = 0, lj = lods_.length; j < lj; j++) {
-                    if (lods_[j]) {
-                        ctx_.fillStyle="hsl("+((j*23)%360)+",100%,50%)";
-                        var value_ = Math.round((lods_[j])*factorY_);
-                        ctx_.fillRect(i*factorX_, y, 1, -value_);
-                        y -= value_;
+                for (var j = 0, lj = lods.length; j < lj; j++) {
+                    if (lods[j]) {
+                        ctx.fillStyle="hsl("+((j*23)%360)+",100%,50%)";
+                        var value = Math.round((lods[j])*factorY);
+                        ctx.fillRect(i*factorX, y, 1, -value);
+                        y -= value;
                     }
                 }
 
             }
 
-            if (this.graphsShowCursor_ == true) {
-                var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
+            if (this.showCursor == true) {
+                var index = (this.cursorIndex + samplesIndex) % samples;
 
-                var str_ = "LODs:" + values_[index_][0];
-                var lods_ = values_[index_][1]; 
+                var str = "LODs:" + values[index][0];
+                var lods = values[index][1]; 
 
-                for (var j = 0, lj = lods_.length; j < lj; j++) {
-                    if (lods_[j]) {
-                        str_ += '<span style="color:hsl('+((j*23)%360)+',100%,50%)">&FilledSmallSquare;</span>'+j+':'+lods_[j];
+                for (var j = 0, lj = lods.length; j < lj; j++) {
+                    if (lods[j]) {
+                        str += '<span style="color:hsl('+((j*23)%360)+',100%,50%)">&FilledSmallSquare;</span>'+j+':'+lods[j];
                     }
                 }
 
             } else {
-                var str_ = "LODs:" + values_[index_][0];
+                var str = "LODs:" + values[index][0];
             }
 
-            str_ += '</div>';
+            str += '</div>';
         }
         break;
 
     case "Flux":
         {
-            var maxCount_ = 0;
-            var maxSize_ = 0;
+            var maxCount = 0;
+            var maxSize = 0;
 
-            var maxTexPlusCount_ = 0;
-            var maxTexPlusSize_ = 0;
-            var maxTexMinusCount_ = 0;
-            var maxTexMinusSize_ = 0;
+            var maxTexPlusCount = 0;
+            var maxTexPlusSize = 0;
+            var maxTexMinusCount = 0;
+            var maxTexMinusSize = 0;
 
-            var maxMeshPlusCount_ = 0;
-            var maxMeshPlusSize_ = 0;
-            var maxMeshMinusCount_ = 0;
-            var maxMeshMinusSize_ = 0;
+            var maxMeshPlusCount = 0;
+            var maxMeshPlusSize = 0;
+            var maxMeshMinusCount = 0;
+            var maxMeshMinusSize = 0;
 
-            var maxGeodataPlusCount_ = 0;
-            var maxGeodataPlusSize_ = 0;
-            var maxGeodataMinusCount_ = 0;
-            var maxGeodataMinusSize_ = 0;
+            var maxGeodataPlusCount = 0;
+            var maxGeodataPlusSize = 0;
+            var maxGeodataMinusCount = 0;
+            var maxGeodataMinusSize = 0;
 
-            var valuesTextures_ = stats_.graphsFluxTextures_;
-            var valuesMeshes_ = stats_.graphsFluxMeshes_;
-            var valuesGeodata_ = stats_.graphsFluxGeodatas_;
+            var valuesTextures = stats.graphsFluxTextures;
+            var valuesMeshes = stats.graphsFluxMeshes;
+            var valuesGeodata = stats.graphsFluxGeodatas;
 
-            for (var i = 0; i < samples_; i++) {
-                var tmp_ = valuesTextures_[i][0][0] + valuesMeshes_[i][0][0];
-                maxCount_ = tmp_ > maxCount_ ? tmp_ : maxCount_;
-                tmp_ = valuesTextures_[i][1][0] + valuesMeshes_[i][1][0];
-                maxCount_ = tmp_ > maxCount_ ? tmp_ : maxCount_;
+            for (var i = 0; i < samples; i++) {
+                var tmp = valuesTextures[i][0][0] + valuesMeshes[i][0][0];
+                maxCount = tmp > maxCount ? tmp : maxCount;
+                tmp = valuesTextures[i][1][0] + valuesMeshes[i][1][0];
+                maxCount = tmp > maxCount ? tmp : maxCount;
 
-                tmp_ = valuesTextures_[i][0][1] + valuesMeshes_[i][0][1];
-                maxSize_ = tmp_ > maxSize_ ? tmp_ : maxSize_;
-                tmp_ = valuesTextures_[i][1][1] + valuesMeshes_[i][1][1];
-                maxSize_ = tmp_ > maxSize_ ? tmp_ : maxSize_;
+                tmp = valuesTextures[i][0][1] + valuesMeshes[i][0][1];
+                maxSize = tmp > maxSize ? tmp : maxSize;
+                tmp = valuesTextures[i][1][1] + valuesMeshes[i][1][1];
+                maxSize = tmp > maxSize ? tmp : maxSize;
 
-                maxTexPlusCount_ = valuesTextures_[i][0][0] > maxTexPlusCount_ ? valuesTextures_[i][0][0] : maxTexPlusCount_;
-                maxTexPlusSize_ = valuesTextures_[i][0][1] > maxTexPlusSize_ ? valuesTextures_[i][0][1] : maxTexPlusSize_;
-                maxTexMinusCount_ = valuesTextures_[i][1][0] > maxTexMinusCount_ ? valuesTextures_[i][1][0] : maxTexMinusCount_;
-                maxTexMinusSize_ = valuesTextures_[i][1][1] ? valuesTextures_[i][1][1] : maxTexMinusSize_;
+                maxTexPlusCount = valuesTextures[i][0][0] > maxTexPlusCount ? valuesTextures[i][0][0] : maxTexPlusCount;
+                maxTexPlusSize = valuesTextures[i][0][1] > maxTexPlusSize ? valuesTextures[i][0][1] : maxTexPlusSize;
+                maxTexMinusCount = valuesTextures[i][1][0] > maxTexMinusCount ? valuesTextures[i][1][0] : maxTexMinusCount;
+                maxTexMinusSize = valuesTextures[i][1][1] ? valuesTextures[i][1][1] : maxTexMinusSize;
 
-                maxMeshPlusCount_ = valuesMeshes_[i][0][0] > maxMeshPlusCount_ ? valuesMeshes_[i][0][0] : maxMeshPlusCount_;
-                maxMeshPlusSize_ = valuesMeshes_[i][0][1] > maxMeshPlusSize_ ? valuesMeshes_[i][0][1] : maxMeshPlusSize_;
-                maxMeshMinusCount_ = valuesMeshes_[i][1][0] > maxMeshMinusCount_ ? valuesMeshes_[i][1][0] : maxMeshMinusCount_;
-                maxMeshMinusSize_ = valuesMeshes_[i][1][1] > maxMeshMinusSize_ ? valuesMeshes_[i][1][1] : maxMeshMinusSize_;
+                maxMeshPlusCount = valuesMeshes[i][0][0] > maxMeshPlusCount ? valuesMeshes[i][0][0] : maxMeshPlusCount;
+                maxMeshPlusSize = valuesMeshes[i][0][1] > maxMeshPlusSize ? valuesMeshes[i][0][1] : maxMeshPlusSize;
+                maxMeshMinusCount = valuesMeshes[i][1][0] > maxMeshMinusCount ? valuesMeshes[i][1][0] : maxMeshMinusCount;
+                maxMeshMinusSize = valuesMeshes[i][1][1] > maxMeshMinusSize ? valuesMeshes[i][1][1] : maxMeshMinusSize;
 
-                maxGeodataPlusCount_ = valuesGeodata_[i][0][0] > maxGeodataPlusCount_ ? valuesGeodata_[i][0][0] : maxGeodataPlusCount_;
-                maxGeodataPlusSize_ = valuesGeodata_[i][0][1] > maxGeodataPlusSize_ ? valuesGeodata_[i][0][1] : maxGeodataPlusSize_;
-                maxGeodataMinusCount_ = valuesGeodata_[i][1][0] > maxGeodataMinusCount_ ? valuesGeodata_[i][1][0] : maxGeodataMinusCount_;
-                maxGeodataMinusSize_ = valuesGeodata_[i][1][1] > maxGeodataMinusSize_ ? valuesGeodata_[i][1][1] : maxGeodataMinusSize_;
+                maxGeodataPlusCount = valuesGeodata[i][0][0] > maxGeodataPlusCount ? valuesGeodata[i][0][0] : maxGeodataPlusCount;
+                maxGeodataPlusSize = valuesGeodata[i][0][1] > maxGeodataPlusSize ? valuesGeodata[i][0][1] : maxGeodataPlusSize;
+                maxGeodataMinusCount = valuesGeodata[i][1][0] > maxGeodataMinusCount ? valuesGeodata[i][1][0] : maxGeodataMinusCount;
+                maxGeodataMinusSize = valuesGeodata[i][1][1] > maxGeodataMinusSize ? valuesGeodata[i][1][1] : maxGeodataMinusSize;
             }
 
-            var factorY_ = (height_*0.25-2) / maxCount_;
-            var factorY2_ = (height_*0.25-2) / maxSize_;
+            var factorY = (height*0.25-2) / maxCount;
+            var factorY2 = (height*0.25-2) / maxSize;
 
-            var base_ = Math.floor(height_*0.25);
-            var base2_ = Math.floor(height_*0.75);
+            var base = Math.floor(height*0.25);
+            var base2 = Math.floor(height*0.75);
 
-            for (var i = 0; i < samples_; i++) {
-                var index_ = samplesIndex_ + i;
-                index_ %= samples_;
+            for (var i = 0; i < samples; i++) {
+                var index = samplesIndex + i;
+                index %= samples;
                 
-                var y1Up_ = base_;
-                var y1Down_ = base_+1;
-                var y2Up_ = base2_;
-                var y2Down_ = base2_+1;
+                var y1Up = base;
+                var y1Down = base+1;
+                var y2Up = base2;
+                var y2Down = base2+1;
 
-                ctx_.fillStyle="#0000aa";
-                ctx_.fillRect(i*factorX_, y1Up_, 1, -(valuesTextures_[index_][0][0])*factorY_);
-                ctx_.fillRect(i*factorX_, y1Down_, 1, (valuesTextures_[index_][1][0])*factorY_);
+                ctx.fillStyle="#0000aa";
+                ctx.fillRect(i*factorX, y1Up, 1, -(valuesTextures[index][0][0])*factorY);
+                ctx.fillRect(i*factorX, y1Down, 1, (valuesTextures[index][1][0])*factorY);
 
-                ctx_.fillRect(i*factorX_, y2Up_, 1, -(valuesTextures_[index_][0][1])*factorY2_);
-                ctx_.fillRect(i*factorX_, y2Down_, 1, (valuesTextures_[index_][1][1])*factorY2_);
+                ctx.fillRect(i*factorX, y2Up, 1, -(valuesTextures[index][0][1])*factorY2);
+                ctx.fillRect(i*factorX, y2Down, 1, (valuesTextures[index][1][1])*factorY2);
 
-                y1Up_ -= (valuesTextures_[index_][0][0])*factorY_;
-                y1Down_ += (valuesTextures_[index_][1][0])*factorY_;
-                y2Up_ -= (valuesTextures_[index_][0][1])*factorY2_;
-                y2Down_ += (valuesTextures_[index_][1][1])*factorY2_;
+                y1Up -= (valuesTextures[index][0][0])*factorY;
+                y1Down += (valuesTextures[index][1][0])*factorY;
+                y2Up -= (valuesTextures[index][0][1])*factorY2;
+                y2Down += (valuesTextures[index][1][1])*factorY2;
 
-                ctx_.fillStyle="#007700";
-                ctx_.fillRect(i*factorX_, y1Up_, 1, -(valuesMeshes_[index_][0][0])*factorY_);
-                ctx_.fillRect(i*factorX_, y1Down_, 1, (valuesMeshes_[index_][1][0])*factorY_);
+                ctx.fillStyle="#007700";
+                ctx.fillRect(i*factorX, y1Up, 1, -(valuesMeshes[index][0][0])*factorY);
+                ctx.fillRect(i*factorX, y1Down, 1, (valuesMeshes[index][1][0])*factorY);
 
-                ctx_.fillRect(i*factorX_, y2Up_, 1, -(valuesMeshes_[index_][0][1])*factorY2_);
-                ctx_.fillRect(i*factorX_, y2Down_, 1, (valuesMeshes_[index_][1][1])*factorY2_);
+                ctx.fillRect(i*factorX, y2Up, 1, -(valuesMeshes[index][0][1])*factorY2);
+                ctx.fillRect(i*factorX, y2Down, 1, (valuesMeshes[index][1][1])*factorY2);
 
-                y1Up_ -= (valuesMeshes_[index_][0][0])*factorY_;
-                y1Down_ += (valuesMeshes_[index_][1][0])*factorY_;
-                y2Up_ -= (valuesMeshes_[index_][0][1])*factorY2_;
-                y2Down_ += (valuesMeshes_[index_][1][1])*factorY2_;
+                y1Up -= (valuesMeshes[index][0][0])*factorY;
+                y1Down += (valuesMeshes[index][1][0])*factorY;
+                y2Up -= (valuesMeshes[index][0][1])*factorY2;
+                y2Down += (valuesMeshes[index][1][1])*factorY2;
 
-                ctx_.fillStyle="#009999";
-                ctx_.fillRect(i*factorX_, y1Up_, 1, -(valuesGeodata_[index_][0][0])*factorY_);
-                ctx_.fillRect(i*factorX_, y1Down_, 1, (valuesGeodata_[index_][1][0])*factorY_);
+                ctx.fillStyle="#009999";
+                ctx.fillRect(i*factorX, y1Up, 1, -(valuesGeodata[index][0][0])*factorY);
+                ctx.fillRect(i*factorX, y1Down, 1, (valuesGeodata[index][1][0])*factorY);
 
-                ctx_.fillRect(i*factorX_, y2Up_, 1, -(valuesGeodata_[index_][0][1])*factorY2_);
-                ctx_.fillRect(i*factorX_, y2Down_, 1, (valuesGeodata_[index_][1][1])*factorY2_);
+                ctx.fillRect(i*factorX, y2Up, 1, -(valuesGeodata[index][0][1])*factorY2);
+                ctx.fillRect(i*factorX, y2Down, 1, (valuesGeodata[index][1][1])*factorY2);
 
-                ctx_.fillStyle="#aaaaaa";
-                ctx_.fillRect(0, Math.floor(height_*0.5), width_, 1);
-                ctx_.fillStyle="#dddddd";
-                ctx_.fillRect(0, base_, width_, 1);
-                ctx_.fillRect(0, base2_, width_, 1);
+                ctx.fillStyle="#aaaaaa";
+                ctx.fillRect(0, Math.floor(height*0.5), width, 1);
+                ctx.fillStyle="#dddddd";
+                ctx.fillRect(0, base, width, 1);
+                ctx.fillRect(0, base2, width, 1);
             }
 
 
-            if (this.graphsShowCursor_ == true) {
-                var index_ = (this.graphsCursorIndex_ + samplesIndex_) % samples_;
-                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + valuesTextures_[index_][0][0] + "/" + valuesTextures_[index_][1][0];
-                str_ += ' &nbsp Size +/-: ' + (valuesTextures_[index_][0][1]/1024/1024).toFixed(2) + "/" + (valuesTextures_[index_][1][1]/1024/1024).toFixed(2);
-                str_ += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + valuesMeshes_[index_][0][0] + "/" + valuesMeshes_[index_][1][0];
-                str_ += ' &nbsp Size +/-: ' + (valuesMeshes_[index_][0][1]/1024/1024).toFixed(2) + "/" + (valuesMeshes_[index_][1][1]/1024/1024).toFixed(2);
-                str_ += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + valuesGeodata_[index_][0][0] + "/" + valuesGeodata_[index_][1][0];
-                str_ += ' &nbsp Size +/-: ' + (valuesGeodata_[index_][0][1]/1024/1024).toFixed(2) + "/" + (valuesGeodata_[index_][1][1]/1024/1024).toFixed(2);
-                str_ += '</div>';
+            if (this.showCursor == true) {
+                var index = (this.cursorIndex + samplesIndex) % samples;
+                var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + valuesTextures[index][0][0] + "/" + valuesTextures[index][1][0];
+                str += ' &nbsp Size +/-: ' + (valuesTextures[index][0][1]/1024/1024).toFixed(2) + "/" + (valuesTextures[index][1][1]/1024/1024).toFixed(2);
+                str += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + valuesMeshes[index][0][0] + "/" + valuesMeshes[index][1][0];
+                str += ' &nbsp Size +/-: ' + (valuesMeshes[index][0][1]/1024/1024).toFixed(2) + "/" + (valuesMeshes[index][1][1]/1024/1024).toFixed(2);
+                str += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + valuesGeodata[index][0][0] + "/" + valuesGeodata[index][1][0];
+                str += ' &nbsp Size +/-: ' + (valuesGeodata[index][0][1]/1024/1024).toFixed(2) + "/" + (valuesGeodata[index][1][1]/1024/1024).toFixed(2);
+                str += '</div>';
             } else {
-                var str_ = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + maxTexPlusCount_ + "/" + maxTexMinusCount_;
-                str_ += ' &nbsp Size +/-: ' + (maxTexPlusSize_/1024/1024).toFixed(2) + "/" + (maxTexMinusSize_/1024/1024).toFixed(2);
-                str_ += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + maxMeshPlusCount_ + "/" + maxMeshMinusCount_;
-                str_ += ' &nbsp Size +/-: ' + (maxMeshPlusSize_/1024/1024).toFixed(2) + "/" + (maxMeshMinusSize_/1024/1024).toFixed(2);
-                str_ += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + maxGeodataPlusCount_ + "/" + maxGeodataMinusCount_;
-                str_ += ' &nbsp Size +/-: ' + (maxGeodataPlusSize_/1024/1024).toFixed(2) + "/" + (maxGeodataMinusSize_/1024/1024).toFixed(2);
-                str_ += '</div>';
+                var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + maxTexPlusCount + "/" + maxTexMinusCount;
+                str += ' &nbsp Size +/-: ' + (maxTexPlusSize/1024/1024).toFixed(2) + "/" + (maxTexMinusSize/1024/1024).toFixed(2);
+                str += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + maxMeshPlusCount + "/" + maxMeshMinusCount;
+                str += ' &nbsp Size +/-: ' + (maxMeshPlusSize/1024/1024).toFixed(2) + "/" + (maxMeshMinusSize/1024/1024).toFixed(2);
+                str += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + maxGeodataPlusCount + "/" + maxGeodataMinusCount;
+                str += ' &nbsp Size +/-: ' + (maxGeodataPlusSize/1024/1024).toFixed(2) + "/" + (maxGeodataMinusSize/1024/1024).toFixed(2);
+                str += '</div>';
             }
 
         }
@@ -676,16 +686,16 @@ Melown.Inspector.prototype.updateGraphs = function(stats_, ignoreRefresh_) {
 
     }
 
-    if (this.graphsShowCursor_ == true) {
-        ctx_.fillStyle="#aa00aa";
-        var index_ = (this.graphsCursorIndex_) % samples_;
-        ctx_.fillRect(Math.floor(index_*factorX_)-1, 0, 1, height_);
-        ctx_.fillRect(Math.floor(index_*factorX_)+1, 0, 1, height_);
+    if (this.showCursor == true) {
+        ctx.fillStyle="#aa00aa";
+        var index = (this.cursorIndex) % samples;
+        ctx.fillRect(Math.floor(index*factorX)-1, 0, 1, height);
+        ctx.fillRect(Math.floor(index*factorX)+1, 0, 1, height);
     }
 
-    document.getElementById("melown-graphs-info2").innerHTML = str_;
-
+    document.getElementById("vts-graphs-info2").innerHTML = str;
 };
 
 
+export default InspectorGraphs;
 

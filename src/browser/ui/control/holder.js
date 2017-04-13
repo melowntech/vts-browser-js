@@ -1,67 +1,74 @@
-require('browser/ui/element/element');
-require('browser/ui/element/events');
-require('browser/ui/element/draggable');
 
-/**
- * @constructor
- */
-Melown.UIControlHolder = function(ui_, html_, visible_, parentElement_) {
-    this.ui_ = ui_;
-    this.html_ = html_;
-    this.elementsById_ = [];
-    this.visible_ = (visible_ != null) ? visible_ : true;
+import UIElement_ from '../element/element';
+
+//get rid of compiler mess
+var UIElement = UIElement_;
+
+
+var UIControlHolder = function(ui, html, visible, parentElement) {
+    this.ui = ui;
+    this.html = html;
+    this.elementsById = [];
+    this.visible = (visible != null) ? visible : true;
 
     //create holder element
-    this.element_ = document.createElement("div");
-    this.setVisible(this.visible_);
+    this.element = document.createElement("div");
+    this.setVisible(this.visible);
 
     //set element content
-    this.setHtml(html_);
+    this.setHtml(html);
 
     //append elemenet to UI
-    if (parentElement_) {
-        parentElement_.appendChild(this.element_);
+    if (parentElement) {
+        parentElement.appendChild(this.element);
     } else {
-        this.ui_.element_.appendChild(this.element_);
+        this.ui.element.appendChild(this.element);
     }
 };
 
-Melown.UIControlHolder.prototype.setHtml = function(html_) {
-    this.element_.innerHTML = html_;
 
-    var allElements_ = this.element_.getElementsByTagName('*');
+UIControlHolder.prototype.setHtml = function(html) {
+    this.element.innerHTML = html;
+
+    var allElements = this.element.getElementsByTagName('*');
 
     //store all elements with id attribute to the table
-    for (var i = 0, li = allElements_.length; i < li; i++) {
-        var id_ = allElements_[i].getAttribute("id");
+    for (var i = 0, li = allElements.length; i < li; i++) {
+        var id = allElements[i].getAttribute("id");
 
-        if (id_ !== null) {
+        if (id !== null) {
             //store element to the table
-            this.elementsById_[id_] = new Melown.UIElement(this, allElements_[i]);
+            this.elementsById[id] = new UIElement(this, allElements[i]);
         }
     }
 };
 
-Melown.UIControlHolder.prototype.getElement = function(id_) {
-    return this.elementsById_[id_];
-};
 
-Melown.UIControlHolder.prototype.setVisible = function(state_) {
-    this.element_.style.display = state_ ? "block" : "none";
-    this.visible_ = state_;
-};
-
-Melown.UIControlHolder.prototype.getVisible = function() {
-    return this.visible_;
+UIControlHolder.prototype.getElement = function(id) {
+    return this.elementsById[id];
 };
 
 
+UIControlHolder.prototype.setVisible = function(state) {
+    this.element.style.display = state ? "block" : "none";
+    this.visible = state;
+};
+
+
+UIControlHolder.prototype.getVisible = function() {
+    return this.visible;
+};
+
+
+export default UIControlHolder;
+
+/*
 //prevent minification
-Melown.UIControlHolder.prototype["setHtml"] = Melown.UIControlHolder.prototype.setHtml; 
-Melown.UIControlHolder.prototype["getElement"] = Melown.UIControlHolder.prototype.getElement; 
-Melown.UIControlHolder.prototype["setVisible"] = Melown.UIControlHolder.prototype.setVisible; 
-Melown.UIControlHolder.prototype["getVisible"] = Melown.UIControlHolder.prototype.getVisible; 
-
+UIControlHolder.prototype["setHtml"] = UIControlHolder.prototype.setHtml; 
+UIControlHolder.prototype["getElement"] = UIControlHolder.prototype.getElement; 
+UIControlHolder.prototype["setVisible"] = UIControlHolder.prototype.setVisible; 
+UIControlHolder.prototype["getVisible"] = UIControlHolder.prototype.getVisible; 
+*/
 
 
 

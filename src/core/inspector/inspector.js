@@ -1,94 +1,134 @@
 
-/**
- * @constructor
- */
-Melown.Inspector = function(core_) {
-    this.core_ = core_;
+import {mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
+import {math as math_} from '../utils/math';
+import InspectorInput_ from './input';
+import InspectorStats_ from './stats';
+import InspectorGraphs_ from './graphs';
+import InspectorLayers_ from './layers';
+import InspectorReplay_ from './replay';
+import InspectorStylesheets_ from './stylesheets';
 
-    this.initStatsPanel();
-    this.initGraphsPanel();
-    this.initLayersPanel();
-    this.initReplayPanel();
-    this.initStylesheetsPanel();
+//get rid of compiler mess
+var mat3 = mat3_, mat4 = mat4_;
+var math = math_;
+var InspectorInput = InspectorInput_;
+var InspectorStats = InspectorStats_;
+var InspectorGraphs = InspectorGraphs_;
+var InspectorLayers = InspectorLayers_;
+var InspectorReplay = InspectorReplay_;
+var InspectorStylesheets = InspectorStylesheets_;
 
-    //mouse events
-    //document.addEventListener("click", this.onKeyClick.bind(this), false);
 
-    //keyboard events
-    document.addEventListener("keyup", this.onKeyUp.bind(this), false);
-    document.addEventListener("keypress", this.onKeyPress.bind(this), false);
-    document.addEventListener("keydown", this.onKeyDown.bind(this), false);
-    
-    this.core_.on("map-update", this.onMapUpdate.bind(this));
-   
-    this.shakeCamera_ = false; 
-    this.drawReplayCamera_ = false; 
-    this.drawRadar_ = false;
-    this.radarLod_ = null;
-    this.debugValue_ = 0;
-    this.measureMode_ = false;
-    this.measurePoints_ = [];
+var Inspector = function(core) {
+    this.core = core;
+    this.enabled = false;
+    this.input = new InspectorInput(this);
+    this.stats = new InspectorStats(this);
+    this.graphs = new InspectorGraphs(this);
+    this.layers = new InspectorLayers(this);
+    this.replay = new InspectorReplay(this);
+    this.stylesheets = new InspectorStylesheets(this);
+
+    if (this.core.config.inspector) {
+        this.input.init();
+    }
+
+    this.shakeCamera = false; 
+    this.drawReplayCamera = false; 
+    this.drawRadar = false;
+    this.radarLod = null;
+    this.debugValue = 0;
+    this.measureMode = false;
+    this.measurePoints = [];
 };
 
-Melown.Inspector.prototype.addStyle = function(string_) {
-    var style_ = document.createElement('style');
-    style_.type = 'text/css';
-    style_.innerHTML = string_;
-    document.getElementsByTagName('head')[0].appendChild(style_);
+
+Inspector.prototype.enableInspector = function() {
+    if (!this.enabled) {
+        this.stats.init();
+        this.graphs.init();
+        this.layers.init();
+        this.replay.init();
+        this.stylesheets.init();
+
+        this.core.on("map-update", this.onMapUpdate.bind(this));
+        this.enabled = true;
+    }
 };
+
+
+Inspector.prototype.addStyle = function(string) {
+    var style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = string;
+    document.getElementsByTagName('head')[0].appendChild(style);
+};
+
 
 //used to block mouse events
-Melown.Inspector.prototype.doNothing = function(e) {
+Inspector.prototype.doNothing = function(e) {
     e.stopPropagation();
     return false;
 };
 
-Melown.Inspector.prototype.onMapUpdate = function(string_) {
-    var map_ = this.core_.getMapInterface();
-    if (!map_) {
+
+Inspector.prototype.preventDefault = function(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    } else {
+        e.returnValue = false;
+    }
+};
+
+
+Inspector.prototype.onMapUpdate = function(string) {
+    var map = this.core.getMapInterface();
+    if (!map) {
         return;
     }
 
-    if (this.shakeCamera_) {
-        map_.redraw();
+    if (this.shakeCamera) {
+        map.redraw();
     } 
 
-    /*if (this.measureMode_) {
-        var renderer_ = this.core_.getRenderer();
-        var p_ = map_.convertCoordsFromPhysToNav(this.measurePoints_[0]);
-        map_.convertCoordsFromPhysToCanvas(this.measurePoints_[0]);
+    /*if (this.measureMode) {
+        var renderer = this.core.getRenderer();
+        var p = map.convertCoordsFromPhysToNav(this.measurePoints[0]);
+        map.convertCoordsFromPhysToCanvas(this.measurePoints[0]);
     }*/
 
-    if (this.drawReplayGlobe_) {
-        var renderer_ = this.core_.getRenderer();
-        var p_ = map_.convertCoordsFromPhysToCameraSpace([0,0,0]);
-        renderer_.drawTBall(p_, 12742000 * 0.5, renderer_.progStardome_, this.replayGlobeTexture_, 12742000 * 0.5, true);
+    if (this.replay.drawGlobe) {
+        var renderer = this.core.getRenderer();
+        var p = map.convertCoordsFromPhysToCameraSpace([0,0,0]);
+        renderer.draw.drawTBall(p, 12742000 * 0.5, renderer.progStardome, this.replay.globeTexture, 12742000 * 0.5, true);
     }
 
-    if (this.drawReplayCamera_) {
-        var renderer_ = this.core_.getRendererInterface();
+    if (this.replay.drawCamera) {
+        var renderer = this.core.getRendererInterface();
 
-        var slines_ = []; 
-        for (var i = 0, li = this.replayCameraLines_.length; i < li; i++) {
-            slines_.push(map_.convertCoordsFromPhysToCanvas(this.replayCameraLines_[i]));
+        var lines = this.replay.cameraLines;
+        var slines = []; 
+        for (var i = 0, li = lines.length; i < li; i++) {
+            slines.push(map.convertCoordsFromPhysToCanvas(lines[i]));
         }
         
-        renderer_.drawLineString({
-            "points" : slines_,
+        renderer.drawLineString({
+            "points" : slines,
             "size" : 2.0,
             "color" : [0,128,255,255],
             "depth-test" : false,
             "blend" : false
             });            
 
-        for (var i = 0, li = this.replayCameraLines3_.length; i < li; i++) {
-            var slines_ = []; 
-            for (var j = 0, lj = this.replayCameraLines3_[i].length; j < lj; j++) {
-                slines_.push(map_.convertCoordsFromPhysToCanvas(this.replayCameraLines3_[i][j]));
+        var lines = this.replay.cameraLines3;
+        for (var i = 0, li = lines.length; i < li; i++) {
+            var slines = []; 
+            for (var j = 0, lj = lines[i].length; j < lj; j++) {
+                slines.push(map.convertCoordsFromPhysToCanvas(lines[i][j]));
             }
 
-            renderer_.drawLineString({
-                "points" : slines_,
+            renderer.drawLineString({
+                "points" : slines,
                 "size" : 2.0,
                 "color" : [0,255,128,255],
                 "depth-test" : false,
@@ -96,15 +136,15 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
                 });   
         }
 
-
-        for (var i = 0, li = this.replayCameraLines2_.length; i < li; i++) {
-            var slines_ = []; 
-            for (var j = 0, lj = this.replayCameraLines2_[i].length; j < lj; j++) {
-                slines_.push(map_.convertCoordsFromPhysToCanvas(this.replayCameraLines2_[i][j]));
+        var lines = this.replay.cameraLines2;
+        for (var i = 0, li = lines.length; i < li; i++) {
+            var slines = []; 
+            for (var j = 0, lj = lines[i].length; j < lj; j++) {
+                slines.push(map.convertCoordsFromPhysToCanvas(lines[i][j]));
             }
 
-            renderer_.drawLineString({
-                "points" : slines_,
+            renderer.drawLineString({
+                "points" : slines,
                 "size" : 2.0,
                 "color" : [0,255,255,255],
                 "depth-test" : false,
@@ -113,29 +153,29 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
         }
 
 
-        var cameInfo = map_.getCameraInfo();
-        var p1_ = map_.convertCoordsFromPhysToCameraSpace(this.replayCameraLines_[0]);
+        var cameInfo = map.getCameraInfo();
+        var p1 = map.convertCoordsFromPhysToCameraSpace(this.replay.cameraLines[0]);
 
-        var map2_ = this.core_.getMap();
+        var map2 = this.core.getMap();
     
-        //var m2_ = map2_.camera_.getRotationviewMatrix();
-        var mv_ = Melown.mat4.create(this.replayCameraMatrix_);
-        //Melown.mat4.inverse(m2_, mv_);
+        //var m2 = map2.camera.getRotationviewMatrix();
+        var mv = mat4.create(this.replay.cameraMatrix);
+        //mat4.inverse(m2, mv);
     
         //matrix which tranforms mesh position and scale
         /*
-        var mv_ = [
+        var mv = [
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
-            p1_[0], p1_[1], p1_[2], 1
+            p1[0], p1[1], p1[2], 1
         ];*/
-        mv_[12] = p1_[0];
-        mv_[13] = p1_[1];
-        mv_[14] = p1_[2];
+        mv[12] = p1[0];
+        mv[13] = p1[1];
+        mv[14] = p1[2];
     
         //setup material 
-        var material_ = [ 
+        var material = [ 
             255,128,128, 0, //ambient,
             0,0,0,0, //diffuse
             0,0,0,0, //specular 
@@ -143,80 +183,80 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
         ];
     
         //multiply cube matrix with camera view matrix
-        Melown.Math.mat4Multiply(cameInfo["view-matrix"], mv_, mv_);
+        mat4.multiply(cameInfo["view-matrix"], mv, mv);
     
-        var norm_ = [
+        var norm = [
             0,0,0,
             0,0,0,
             0,0,0
         ];
     
         //normal transformation matrix
-        Melown.mat4.toInverseMat3(mv_, norm_);
+        mat4.toInverseMat3(mv, norm);
     
-        renderer_.setState(this.replayFrustumState_);
+        renderer.setState(this.replay.frustumState);
     
         //draw cube
-        renderer_.drawMesh({
-                "mesh" : this.replayFrustumMesh_,
+        renderer.drawMesh({
+                "mesh" : this.replay.frustumMesh,
                 "texture" : null,
                 "shader" : "shaded",
                 "shader-variables" : {
-                    "uMV" : ["mat4", mv_],
-                    "uNorm" : ["mat3", norm_],
-                    "uMaterial" : ["mat4", material_]
+                    "uMV" : ["mat4", mv],
+                    "uNorm" : ["mat3", norm],
+                    "uMaterial" : ["mat4", material]
                 }
             });
     }
     
-    if (this.drawRadar_ && this.circleTexture_) {
-        var renderer_ = this.core_.getRendererInterface();
-        var pos_ = map_.getPosition();
-        var count_ = 16;
-        var step_ = map_.getPositionViewExtent(pos_) / (count_ * 4);
+    if (this.drawRadar && this.circleTexture) {
+        var renderer = this.core.getRendererInterface();
+        var pos = map.getPosition();
+        var count = 16;
+        var step = pos.getViewExtent() / (count * 4);
 
-        var cbuffer_ = new Array(count_ * count_);
+        var cbuffer = new Array(count * count);
 
 /*        
-        var coords_ = map_.getPositionCoords(pos_);
+        var coords = pos.getCoords();
 
-        for (var j = 0; j < count_; j++) {
-            for (var i = 0; i < count_; i++) {
-                var screenCoords_ = map_.convertCoordsFromNavToCanvas([coords_[0] + i*step_ - count_*0.5*step_,
-                                                                       coords_[1] + j*step_ - count_*0.5*step_, 0], "float", this.radarLod_);
+        for (var j = 0; j < count; j++) {
+            for (var i = 0; i < count; i++) {
+                var screenCoords = map.convertCoordsFromNavToCanvas([coords[0] + i*step - count*0.5*step,
+                                                                       coords[1] + j*step - count*0.5*step, 0], "float", this.radarLod);
         
-                cbuffer_[j * count_ + i] = screenCoords_;
+                cbuffer[j * count + i] = screenCoords;
             }            
         }
 */
 
 
-        for (var j = 0; j < count_; j++) {
-            for (var i = 0; i < count_; i++) {
-                var dx_ =  i*step_ - count_*0.5*step_;
-                var dy_ =  j*step_ - count_*0.5*step_;
-                var a = Math.atan2(dy_, dx_);
-                var l = Math.sqrt(dx_*dx_ + dy_*dy_);
+        for (var j = 0; j < count; j++) {
+            for (var i = 0; i < count; i++) {
+                var dx =  i*step - count*0.5*step;
+                var dy =  j*step - count*0.5*step;
+                var a = Math.atan2(dy, dx);
+                var l = Math.sqrt(dx*dx + dy*dy);
 
-                var pos2_ = map_.movePositionCoordsTo(pos_, Melown.degrees(a), l);
-                var coords_ = map_.getPositionCoords(pos2_);
+                var pos2 = map.movePositionCoordsTo(pos, math.degrees(a), l);
+                var coords = pos2.getCoords();
                 
-                var screenCoords_ = map_.convertCoordsFromNavToCanvas([coords_[0], coords_[1], 0], "float", this.radarLod_);
+                var screenCoords = map.convertCoordsFromNavToCanvas([coords[0], coords[1], 0], "float", this.radarLod);
 
-                cbuffer_[j * count_ + i] = screenCoords_;
+                cbuffer[j * count + i] = screenCoords;
             }            
         }
 
 
-        var lbuffer_ = new Array(count_);
+        var lbuffer = new Array(count);
 
-        for (var j = 0; j < count_; j++) {
-            for (var i = 0; i < count_; i++) {
-                lbuffer_[i] =  cbuffer_[j * count_ + i];
+        for (var j = 0; j < count; j++) {
+            for (var i = 0; i < count; i++) {
+                lbuffer[i] =  cbuffer[j * count + i];
             }
             
-            renderer_.drawLineString({
-                "points" : lbuffer_,
+            renderer.drawLineString({
+                "points" : lbuffer,
                 "size" : 2.0,
                 "color" : [0,255,255,255],
                 "depth-test" : false,
@@ -225,13 +265,13 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
         }
 
 
-        for (var i = 0; i < count_; i++) {
-            for (var j = 0; j < count_; j++) {
-                lbuffer_[j] =  cbuffer_[j * count_ + i];
+        for (var i = 0; i < count; i++) {
+            for (var j = 0; j < count; j++) {
+                lbuffer[j] =  cbuffer[j * count + i];
             }
             
-            renderer_.drawLineString({
-                "points" : lbuffer_,
+            renderer.drawLineString({
+                "points" : lbuffer,
                 "size" : 2.0,
                 "color" : [0,255,255,255],
                 "depth-test" : false,
@@ -239,17 +279,19 @@ Melown.Inspector.prototype.onMapUpdate = function(string_) {
                 });            
         }
 
-        for (var i = 0, li = cbuffer_.length; i < li; i++) {
-            var p = cbuffer_[i];
-            renderer_.drawImage({
+        for (var i = 0, li = cbuffer.length; i < li; i++) {
+            var p = cbuffer[i];
+            renderer.drawImage({
                 "rect" : [p[0]-10, p[1]-10, 20, 20],
-                "texture" : this.circleTexture_,
+                "texture" : this.circleTexture,
                 "color" : [255,0,255,255],
                 "depth" : p[2],
                 "depth-test" : false,
                 "blend" : true
                 });
         }
-        
     }
 };
+
+
+export default Inspector;

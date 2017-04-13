@@ -1,24 +1,32 @@
-/**
- * @constructor
- */
-Melown.MapBoundLayer = function(map_, json_, id_) {
-    this.map_ = map_;
-    this.id_ = id_;
-    this.currentAlpha_ = 1.0;
 
-    this.tileSize_ = [256,256];
-    this.lodRange_ = [0,100];
-    this.credits_ = [];
-    this.tileRange_ = [[0,0],[0,0]];
-    this.jsonUrl_ = null;
-    this.baseUrl_ = this.map_.baseUrl_;
-    this.baseUrlSchema_ = this.map_.baseUrlSchema_;
-    this.baseUrlOrigin_ = this.map_.baseUrlOrigin_;
-    this.ready_ = false;
+import MapCredit_ from './credit';
+import {utils as utils_} from '../utils/utils';
+import {utilsUrl as utilsUrl_} from '../utils/url';
+
+//get rid of compiler mess
+var utils = utils_;
+var MapCredit = MapCredit_;
+var utilsUrl = utilsUrl_;
+
+
+var MapBoundLayer = function(map, json, id) {
+    this.map = map;
+    this.id = id;
+    this.currentAlpha = 1.0;
+
+    this.tileSize = [256,256];
+    this.lodRange = [0,100];
+    this.credits = [];
+    this.tileRange = [[0,0],[0,0]];
+    this.jsonUrl = null;
+    this.baseUrl = this.map.url.baseUrl;
+    this.baseUrlSchema = this.map.url.baseUrlSchema;
+    this.baseUrlOrigin = this.map.url.baseUrlOrigin;
+    this.ready = false;
 
     //hack
-    if (id_ == "esri-world-imagery") {
-        json_["availability"] = {
+    if (id == "esri-world-imagery") {
+        json["availability"] = {
              // "type" : "negative-type",
              // "mime": "image/png"
              // "type" : "negative-code",
@@ -28,180 +36,191 @@ Melown.MapBoundLayer = function(map_, json_, id_) {
             };  
     }
     
-    if (typeof json_ === "string") {
-        this.jsonUrl_ = this.map_.processUrl(json_);
-        this.baseUrl_ = Melown.Url.getBase(this.jsonUrl_);
-        this.baseUrlSchema_ = Melown.Url.getSchema(this.jsonUrl_);
-        this.baseUrlOrigin_ = Melown.Url.getOrigin(this.jsonUrl_);
+    if (typeof json === "string") {
+        this.jsonUrl = this.map.url.processUrl(json);
+        this.baseUrl = utilsUrl_.getBase(this.jsonUrl);
+        this.baseUrlSchema = utilsUrl_.getSchema(this.jsonUrl);
+        this.baseUrlOrigin = utilsUrl_.getOrigin(this.jsonUrl);
         
-        var onLoaded_ = (function(data_){
-            this.parseJson(data_);            
-            this.ready_ = true;
-            this.map_.refreshView();
+        var onLoaded = (function(data){
+            this.parseJson(data);            
+            this.ready = true;
+            this.map.refreshView();
         }).bind(this);
         
-        var onError_ = (function(){ }).bind(this);
+        var onError = (function(){ }).bind(this);
 
-        Melown.loadJSON(this.jsonUrl_, onLoaded_, onError_, null, (Melown["useCredentials"] ? (this.jsonUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
-        //Melown.loadJSON(this.url_, onLoaded_, onError_, null, Melown["useCredentials"]);
+        utils.loadJSON(this.jsonUrl, onLoaded, onError, null, (utils.useCredentials ? (this.jsonUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);
+        //utils.loadJSON(this.url, onLoaded, onError, null, utils.useCredentials);
     } else {
-        this.parseJson(json_);
-        this.ready_ = true;
+        this.parseJson(json);
+        this.ready = true;
     }
     
 };
 
-Melown.MapBoundLayer.prototype.parseJson = function(json_) {
-    this.numberId_ = json_["id"] || null;
-    this.type_ = json_["type"] || "raster";
-    this.url_ = this.processUrl(json_["url"], "");
-    this.tileSize_ = json_["tileSize"] || [256,256];
-    this.lodRange_ = json_["lodRange"] || [0,0];
-    this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
-    this.metaUrl_ = this.processUrl(json_["metaUrl"]);
-    this.maskUrl_ = this.processUrl(json_["maskUrl"]);
-    this.isTransparent_ = json_["isTransparent"] || false;
-    this.credits_ = json_["credits"] || [];
-    this.creditsUrl_ = null;
 
-    this.specificity_ = Math.pow(2,this.lodRange_[0]) / ((this.tileRange_[1][0] - this.tileRange_[1][0]+1)*(this.tileRange_[1][1] - this.tileRange_[1][1]+1));    
+MapBoundLayer.prototype.parseJson = function(json) {
+    this.numberId = json["id"] || null;
+    this.type = json["type"] || "raster";
+    this.url = this.processUrl(json["url"], "");
+    this.tileSize = json["tileSize"] || [256,256];
+    this.lodRange = json["lodRange"] || [0,0];
+    this.tileRange = json["tileRange"] || [[0,0],[0,0]];
+    this.metaUrl = this.processUrl(json["metaUrl"]);
+    this.maskUrl = this.processUrl(json["maskUrl"]);
+    this.isTransparent = json["isTransparent"] || false;
+    this.credits = json["credits"] || [];
+    this.creditsUrl = null;
 
-    this.availability_ = json_["availability"] ? {} : null;
+    this.specificity = Math.pow(2,this.lodRange[0]) / ((this.tileRange[1][0] - this.tileRange[1][0]+1)*(this.tileRange[1][1] - this.tileRange[1][1]+1));    
 
-    if (this.availability_) {
-        var p = json_["availability"];
-        this.availability_.type_ = p["type"];
-        this.availability_.mime_ = p["mime"];
-        this.availability_.codes_ = p["codes"];
-        this.availability_.size_ = p["size"];
-        //this.availability_.coverageUrl_ = p["coverageUrl"];
+    this.availability = json["availability"] ? {} : null;
+
+    if (this.availability) {
+        var p = json["availability"];
+        this.availability.type = p["type"];
+        this.availability.mime = p["mime"];
+        this.availability.codes = p["codes"];
+        this.availability.size = p["size"];
+        //this.availability.coverageUrl = p["coverageUrl"];
     }
 
-    if (this.metaUrl_ && this.maskUrl_) {
-        this.availability_ = {
-            type_ : "metatile"
+    if (this.metaUrl && this.maskUrl) {
+        this.availability = {
+            type : "metatile"
         };
     }
 
-    switch(typeof this.credits_) {
+    switch(typeof this.credits) {
         case "string":
-            this.creditsUrl_ = this.credits_;
-            this.credits_ = [];
+            this.creditsUrl = this.credits;
+            this.credits = [];
             break;
 
         case "object":
         
-            if (!Array.isArray(this.credits_)) {
-                var credits_ = this.credits_;
-                this.credits_ = [];
+            if (!Array.isArray(this.credits)) {
+                var credits = this.credits;
+                this.credits = [];
                 
-                for (var key_ in credits_){
-                    this.map_.addCredit(key_, new Melown.MapCredit(this.map_, credits_[key_]));
-                    this.credits_.push(key_);
+                for (var key in credits){
+                    this.map.addCredit(key, new MapCredit(this.map, credits[key]));
+                    this.credits.push(key);
                 }
             }
 
-            for (var i = 0, li = this.credits_.length; i < li; i++) {
-                var credit_ = this.map_.getCreditById(this.credits_[i]);
-                //this.creditsNumbers_.push(credit_ ? credit_.id_ : null); 
+            for (var i = 0, li = this.credits.length; i < li; i++) {
+                var credit = this.map.getCreditById(this.credits[i]);
+                //this.creditsNumbers.push(credit ? credit.id : null); 
             }
         
             break;
     }
-
 };
 
-Melown.MapBoundLayer.prototype.kill = function() {
+
+MapBoundLayer.prototype.kill = function() {
 };
 
-Melown.MapBoundLayer.prototype.setOptions = function(options_) {
+
+MapBoundLayer.prototype.setOptions = function(options) {
 };
 
-Melown.MapBoundLayer.prototype.getOptions = function() {
+
+MapBoundLayer.prototype.getOptions = function() {
     return this.getInfo();
 };
 
-Melown.MapBoundLayer.prototype.getInfo = function() {
+
+MapBoundLayer.prototype.getInfo = function() {
     return {
-        "type" : this.type_,
-        "url" : this.url_,
-        "tileSize" : this.tileSize_,
-        "credits" : this.credits_,
-        "lodRange" : this.lodRange_,
-        "tileRange" : this.tileRange_,
-        "mataUrl" : this.metaUrl_,
-        "maskUrl" : this.maskUrl_,
-        "isTransparent" : this.isTransparent_
+        "type" : this.type,
+        "url" : this.url,
+        "tileSize" : this.tileSize,
+        "credits" : this.credits,
+        "lodRange" : this.lodRange,
+        "tileRange" : this.tileRange,
+        "mataUrl" : this.metaUrl,
+        "maskUrl" : this.maskUrl,
+        "isTransparent" : this.isTransparent
     };
 };
 
-Melown.MapBoundLayer.prototype.processUrl = function(url_, fallback_) {
-    if (!url_) {
-        return fallback_;
+
+MapBoundLayer.prototype.processUrl = function(url, fallback) {
+    if (!url) {
+        return fallback;
     }
 
-    url_ = url_.trim();
+    url = url.trim();
     
-    if (url_.indexOf("://") != -1) { //absolute
-        return url_;
-    } else if (url_.indexOf("//") == 0) {  //absolute without schema
-        return this.baseUrlSchema_ + url_;
-    } else if (url_.indexOf("/") == 0) {  //absolute without host
-        return this.baseUrlOrigin_ + url_;
+    if (url.indexOf("://") != -1) { //absolute
+        return url;
+    } else if (url.indexOf("//") == 0) {  //absolute without schema
+        return this.baseUrlSchema + url;
+    } else if (url.indexOf("/") == 0) {  //absolute without host
+        return this.baseUrlOrigin + url;
     } else {  //relative
-        return this.baseUrl_ + url_; 
+        return this.baseUrl + url; 
     }
 };
 
-Melown.MapBoundLayer.prototype.hasTile = function(id_) {
-    var shift_ = id_[0] - this.lodRange_[0];
 
-    if (shift_ < 0) {
+MapBoundLayer.prototype.hasTile = function(id) {
+    var shift = id[0] - this.lodRange[0];
+
+    if (shift < 0) {
         return false;
     }
 
-    var x = id_[1] >> shift_;
-    var y = id_[2] >> shift_;
+    var x = id[1] >> shift;
+    var y = id[2] >> shift;
 
-    if (id_[0] < this.lodRange_[0] || id_[0] > this.lodRange_[1] ||
-        x < this.tileRange_[0][0] || x > this.tileRange_[1][0] ||
-        y < this.tileRange_[0][1] || y > this.tileRange_[1][1] ) {
+    if (id[0] < this.lodRange[0] || id[0] > this.lodRange[1] ||
+        x < this.tileRange[0][0] || x > this.tileRange[1][0] ||
+        y < this.tileRange[0][1] || y > this.tileRange[1][1] ) {
         return false;
     }
 
     return true;
 };
 
-Melown.MapBoundLayer.prototype.hasTileOrInfluence = function(id_) {
-    var shift_ = id_[0] - this.lodRange_[0];
 
-    if (shift_ < 0) {
+MapBoundLayer.prototype.hasTileOrInfluence = function(id) {
+    var shift = id[0] - this.lodRange[0];
+
+    if (shift < 0) {
         return false;
     }
 
-    var x = id_[1] >> shift_;
-    var y = id_[2] >> shift_;
+    var x = id[1] >> shift;
+    var y = id[2] >> shift;
 
-    if (x < this.tileRange_[0][0] || x > this.tileRange_[1][0] ||
-        y < this.tileRange_[0][1] || y > this.tileRange_[1][1] ) {
+    if (x < this.tileRange[0][0] || x > this.tileRange[1][0] ||
+        y < this.tileRange[0][1] || y > this.tileRange[1][1] ) {
         return 0;
     }
 
-    return (id_[0] > this.lodRange_[1]) ? 1 : 2;
-};
-
-Melown.MapBoundLayer.prototype.getUrl = function(id_, skipBaseUrl_) {
-    return this.map_.makeUrl(this.url_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
-};
-
-Melown.MapBoundLayer.prototype.getMetatileUrl = function(id_, skipBaseUrl_) {
-    return this.map_.makeUrl(this.metaUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
-};
-
-Melown.MapBoundLayer.prototype.getMaskUrl = function(id_, skipBaseUrl_) {
-    return this.map_.makeUrl(this.maskUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
+    return (id[0] > this.lodRange[1]) ? 1 : 2;
 };
 
 
+MapBoundLayer.prototype.getUrl = function(id, skipBaseUrl) {
+    return this.map.url.makeUrl(this.url, {lod:id[0], ix:id[1], iy:id[2] }, null, skipBaseUrl);
+};
+
+
+MapBoundLayer.prototype.getMetatileUrl = function(id, skipBaseUrl) {
+    return this.map.url.makeUrl(this.metaUrl, {lod:id[0], ix:id[1], iy:id[2] }, null, skipBaseUrl);
+};
+
+
+MapBoundLayer.prototype.getMaskUrl = function(id, skipBaseUrl) {
+    return this.map.url.makeUrl(this.maskUrl, {lod:id[0], ix:id[1], iy:id[2] }, null, skipBaseUrl);
+};
+
+
+export default MapBoundLayer;
 
 

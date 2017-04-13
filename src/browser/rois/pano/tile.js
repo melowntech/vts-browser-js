@@ -1,36 +1,45 @@
-Melown.Roi.Pano.Tile = function(face_, position_, index_, lod_, scale_, url_) {
-    this.face_ = face_;
-    this.position_ = [position_[0], position_[1]];
-    this.index_ = [index_[0], index_[1]];
-    this.lod_ = lod_;
-    this.scale_ = scale_;
-    this.mat_ = null;
-    this.children_ = [];
-    this.resources_ = {
-        url_ : url_,
-        image_ : null,
-        texture_ : null
+
+
+var RoiPanoTile = function(face, position, index, lod, scale, url) {
+    this.face = face;
+    this.position = [position[0], position[1]];
+    this.index = [index[0], index[1]];
+    this.lod = lod;
+    this.scale = scale;
+    this.mat = null;
+    this.children = [];
+    this.resources = {
+        url : url,
+        image : null,
+        texture : null
     };
 };
 
-Melown.Roi.Pano.Tile.prototype.applendChild = function(tile_) {
-    this.children_.push(tile_);
+
+RoiPanoTile.prototype.applendChild = function(tile) {
+    this.children.push(tile);
 };
 
-Melown.Roi.Pano.Tile.prototype.url = function() {
-    return this.resources_.url_;
+
+RoiPanoTile.prototype.url = function() {
+    return this.resources.url;
 };
 
-Melown.Roi.Pano.Tile.prototype.image = function(image_) {
-    if (image_ === undefined) {
-        return this.resources_.image_
+
+RoiPanoTile.prototype.image = function(image) {
+    if (image === undefined) {
+        return this.resources.image
     }
-    this.resources_.image_ = image_;
+    this.resources.image = image;
 };
 
-Melown.Roi.Pano.Tile.prototype.texture = function(texture_) {
-    if (texture_ === undefined) {
-        return this.resources_.texture_
+
+RoiPanoTile.prototype.texture = function(texture) {
+    if (texture === undefined) {
+        return this.resources.texture
     }
-    this.resources_.texture_ = texture_;
+    this.resources.texture = texture;
 };
+
+
+export default RoiPanoTile;

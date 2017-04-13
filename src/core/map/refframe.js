@@ -1,152 +1,162 @@
-require('./division-node');
 
-/**
- * @constructor
- */
-Melown.MapRefFrame = function(map_, json_) {
-    this.map_ = map_;
-    this.proj4_ = map_.proj4_;
-    this.valid_ = false;
-    this.id_ = json_["id"] || null;
-    this.description_ = json_["description"] || "";
-    this.nodesMap_ = [];
+import MapDivisionNode_ from './division-node';
 
-    var model_ = json_["model"];
+//get rid of compiler mess
+var MapDivisionNode = MapDivisionNode_;
 
-    if (model_ == null) {
+
+var MapRefFrame = function(map, json) {
+    this.map = map;
+    this.proj4 = map.proj4;
+    this.valid = false;
+    this.id = json["id"] || null;
+    this.description = json["description"] || "";
+    this.nodesMap = [];
+
+    var model = json["model"];
+
+    if (model == null) {
         return;
     }
 
-    this.model_ = {
-        physicalSrs_ : map_.getMapsSrs(model_["physicalSrs"]),
-        navigationSrs_ : map_.getMapsSrs(model_["navigationSrs"]),
-        publicSrs_ : map_.getMapsSrs(model_["publicSrs"])
+    this.model = {
+        physicalSrs : map.getMapsSrs(model["physicalSrs"]),
+        navigationSrs : map.getMapsSrs(model["navigationSrs"]),
+        publicSrs : map.getMapsSrs(model["publicSrs"])
     };
 
-    this.params_ = {};
+    this.params = {};
 
-    if (json_["parameters"] != null) {
-        var params_ = json_["parameters"];
-        this.params_.metaBinaryOrder_ = params_["metaBinaryOrder"] || 1;
-        this.params_.navDelta_ = params_["navDelta"] || 8;
+    if (json["parameters"] != null) {
+        var params = json["parameters"];
+        this.params.metaBinaryOrder = params["metaBinaryOrder"] || 1;
+        this.params.navDelta = params["navDelta"] || 8;
     }
 
-    var division_ = json_["division"];
+    var division = json["division"];
 
-    if (division_ == null) {
+    if (division == null) {
         return;
     }
 
-    this.division_ = {
-        rootLod_ : division_["rootLod"] || 0,
-        arity_ : division_["arity"] || null,
-        heightRange_ : division_["heightRange"] || [0,1]
+    this.division = {
+        rootLod : division["rootLod"] || 0,
+        arity : division["arity"] || null,
+        heightRange : division["heightRange"] || [0,1]
     };
 
-    var extents_ = this.parseSpaceExtents(division_["extents"]);
-    this.division_.extents_ = extents_;
+    var extents = this.parseSpaceExtents(division["extents"]);
+    this.division.extents = extents;
 
-    map_.spaceExtentSize_ = [extents_.ur_[0] - extents_.ll_[0], extents_.ur_[1] - extents_.ll_[1], extents_.ur_[2] - extents_.ll_[2]];
-    map_.spaceExtentOffset_ = extents_.ll_;
+    map.spaceExtentSize = [extents.ur[0] - extents.ll[0], extents.ur[1] - extents.ll[1], extents.ur[2] - extents.ll[2]];
+    map.spaceExtentOffset = extents.ll;
 
-    var divisionNodes_ = division_["nodes"];
-    this.division_.nodes_ = [];
+    var divisionNodes = division["nodes"];
+    this.division.nodes = [];
 
-    if (divisionNodes_ == null) {
+    if (divisionNodes == null) {
         return;
     }
 
-    this.hasPoles_ = (divisionNodes_.length == 4); 
+    this.hasPoles = (divisionNodes.length == 4); 
 
-    for (var i = 0, li = divisionNodes_.length; i < li; i++) {
-        var node_ = this.parseNode(divisionNodes_[i]);
-        this.nodesMap_["" + node_.id_[0] + "."  + node_.id_[1] + "." + node_.id_[2]] = node_;
-        this.division_.nodes_.push(node_);
+    for (var i = 0, li = divisionNodes.length; i < li; i++) {
+        var node = this.parseNode(divisionNodes[i]);
+        this.nodesMap["" + node.id[0] + "."  + node.id[1] + "." + node.id[2]] = node;
+        this.division.nodes.push(node);
     }
 
-    this.valid_ = true;
+    this.valid = true;
 };
 
-Melown.MapRefFrame.prototype.getInfo = function() {
+
+MapRefFrame.prototype.getInfo = function() {
     return {
-        "id" : this.id_,
-        "physicalSrs" : this.model_.physicalSrs_.id_,
-        "navigationSrs" : this.model_.navigationSrs_.id_,
-        "publicSrs" : this.model_.publicSrs_.id_
+        "id" : this.id,
+        "physicalSrs" : this.model.physicalSrs.id,
+        "navigationSrs" : this.model.navigationSrs.id,
+        "publicSrs" : this.model.publicSrs.id
     };
 };
 
-Melown.MapRefFrame.prototype.getGlobalHeightRange = function() {
-    return this.division_.heightRange_;     
+
+MapRefFrame.prototype.getGlobalHeightRange = function() {
+    return this.division.heightRange;     
 };
 
-Melown.MapRefFrame.prototype.parseNode = function(nodeData_) {
-    var node_ = {
-        srs_ : nodeData_["srs"],
-        partitioning_ : nodeData_["partitioning"]
+
+MapRefFrame.prototype.parseNode = function(nodeData) {
+    var node = {
+        srs : nodeData["srs"],
+        partitioning : nodeData["partitioning"]
     };
 
-    node_.extents_ = this.parseExtents(nodeData_["extents"]);
+    node.extents = this.parseExtents(nodeData["extents"]);
 
-    var nodeId_ = nodeData_["id"];
+    var nodeId = nodeData["id"];
 
-    if (nodeId_ == null) {
+    if (nodeId == null) {
         return;
     }
 
-    node_.id_ = {
-        lod_ : nodeId_["lod"] || 0,
-        position_ : nodeId_["position"] || [0,0]
+    node.id = {
+        lod : nodeId["lod"] || 0,
+        position : nodeId["position"] || [0,0]
     };
 
-    return new Melown.MapDivisionNode(this.map_, [node_.id_.lod_, node_.id_.position_[0], node_.id_.position_[1]],
-                                                  node_.srs_, node_.extents_, this.heightRange_, node_.partitioning_);
+    return new MapDivisionNode(this.map, [node.id.lod, node.id.position[0], node.id.position[1]],
+                                           node.srs, node.extents, this.heightRange, node.partitioning);
 };
 
-Melown.MapRefFrame.prototype.parseExtents = function(extentsData_) {
-    if (extentsData_ == null) {
-        return { ll_ : [0,0], ur_ : [1,1] };
-    }
 
-    return {
-        ll_ : extentsData_["ll"] || [0,0],
-        ur_ : extentsData_["ur"] || [1,1]
-    };
-};
-
-Melown.MapRefFrame.prototype.parseSpaceExtents = function(extentsData_) {
-    if (extentsData_ == null) {
-        return { ll_ : [0,0,0], ur_ : [1,1,1] };
+MapRefFrame.prototype.parseExtents = function(extentsData) {
+    if (extentsData == null) {
+        return { ll : [0,0], ur : [1,1] };
     }
 
     return {
-        ll_ : extentsData_["ll"] || [0,0,0],
-        ur_ : extentsData_["ur"] || [1,1,1]
+        ll : extentsData["ll"] || [0,0],
+        ur : extentsData["ur"] || [1,1]
     };
 };
 
-Melown.MapRefFrame.prototype.getSpatialDivisionNodes = function() {
-    return this.division_.nodes_;
-};
 
-Melown.MapRefFrame.prototype.convertCoords = function(coords_, source_, destination_) {
-    var sourceSrs_, destinationSrs_;
-
-    switch(source_) {
-        case "public":     sourceSrs_ = this.model_.publicSrs_;     break;
-        case "physical":   sourceSrs_ = this.model_.physicalSrs_;   break;
-        case "navigation": sourceSrs_ = this.model_.navigationSrs_; break;
+MapRefFrame.prototype.parseSpaceExtents = function(extentsData) {
+    if (extentsData == null) {
+        return { ll : [0,0,0], ur : [1,1,1] };
     }
 
-    switch(destination_) {
-        case "public":     destinationSrs_ = this.model_.publicSrs_;     break;
-        case "physical":   destinationSrs_ = this.model_.physicalSrs_;   break;
-        case "navigation": destinationSrs_ = this.model_.navigationSrs_; break;
-    }
-
-    return sourceSrs_.convertCoordsTo(coords_, destinationSrs_);
+    return {
+        ll : extentsData["ll"] || [0,0,0],
+        ur : extentsData["ur"] || [1,1,1]
+    };
 };
 
 
+MapRefFrame.prototype.getSpatialDivisionNodes = function() {
+    return this.division.nodes;
+};
+
+
+MapRefFrame.prototype.convertCoords = function(coords, source, destination) {
+    var sourceSrs, destinationSrs;
+
+    switch(source) {
+        case "public":     sourceSrs = this.model.publicSrs;     break;
+        case "physical":   sourceSrs = this.model.physicalSrs;   break;
+        case "navigation": sourceSrs = this.model.navigationSrs; break;
+    }
+
+    switch(destination) {
+        case "public":     destinationSrs = this.model.publicSrs;     break;
+        case "physical":   destinationSrs = this.model.physicalSrs;   break;
+        case "navigation": destinationSrs = this.model.navigationSrs; break;
+    }
+
+    return sourceSrs.convertCoordsTo(coords, destinationSrs);
+};
+
+
+export default MapRefFrame;
 
 

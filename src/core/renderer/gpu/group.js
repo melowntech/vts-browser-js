@@ -1,666 +1,390 @@
 
-/**
- * @constructor
- */
-Melown.GpuGroup = function(id_, bbox_, origin_, gpu_, renderer_) {
-    this.id_ = id_;
-    this.bbox_ = null;
-    this.origin_ = origin_ || [0,0,0];
-    this.gpu_ = gpu_;
-    this.gl_ = gpu_.gl_;
-    this.renderer_ = renderer_;
-    this.jobs_ = [];
-    this.reduced_ = 0;
+import {vec3 as vec3_, mat4 as mat4_} from '../../utils/matrix';
+import BBox_ from '../bbox';
+import {math as math_} from '../../utils/math';
 
-    if (bbox_ != null && bbox_[0] != null && bbox_[1] != null) {
-        this.bbox_ = new Melown.BBox(bbox_[0][0], bbox_[0][1], bbox_[0][2], bbox_[1][0], bbox_[1][1], bbox_[1][2]);
+//get rid of compiler mess
+var vec3 = vec3_, mat4 = mat4_;
+var BBox = BBox_;
+var math = math_;
+
+
+var GpuGroup = function(id, bbox, origin, gpu, renderer) {
+    this.id = id;
+    this.bbox = null;
+    this.origin = origin || [0,0,0];
+    this.gpu = gpu;
+    this.gl = gpu.gl;
+    this.renderer = renderer;
+    this.jobs = [];
+    this.reduced = 0;
+
+    if (bbox != null && bbox[0] != null && bbox[1] != null) {
+        this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
     }
     
-    this.size_ = 0;
-    this.polygons_ = 0;
+    this.size = 0;
+    this.polygons = 0;
 };
 
 //destructor
-Melown.GpuGroup.prototype.kill = function() {
-    for (var i = 0, li = this.jobs_.length; i < li; i++) {
-        var job_ = this.jobs_[i]; 
+GpuGroup.prototype.kill = function() {
+    for (var i = 0, li = this.jobs.length; i < li; i++) {
+        var job = this.jobs[i]; 
 
-        switch(job_.type_) {
+        switch(job.type) {
             case "flat-line":
-                if (job_.vertexPositionBuffer_) this.gl_.deleteBuffer(job_.vertexPositionBuffer_);
+                if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
                 break;
 
             case "flat-tline":
             case "pixel-line":
             case "pixel-tline":
-                if (job_.vertexPositionBuffer_) this.gl_.deleteBuffer(job_.vertexPositionBuffer_);
-                if (job_.vertexNormalBuffer_) this.gl_.deleteBuffer(job_.vertexNormalBuffer_);
+                if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
+                if (job.vertexNormalBuffer) this.gl.deleteBuffer(job.vertexNormalBuffer);
                 break;
 
             case "line-label":
-                if (job_.vertexPositionBuffer_) this.gl_.deleteBuffer(job_.vertexPositionBuffer_);
-                if (job_.vertexTexcoordBuffer_) this.gl_.deleteBuffer(job_.vertexTexcoordBuffer_);
+                if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
+                if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
                 break;
 
             case "icon":
             case "label":
-                if (job_.vertexPositionBuffer_) this.gl_.deleteBuffer(job_.vertexPositionBuffer_);
-                if (job_.vertexTexcoordBuffer_) this.gl_.deleteBuffer(job_.vertexTexcoordBuffer_);
-                if (job_.vertexOriginBuffer_) this.gl_.deleteBuffer(job_.vertexOriginBuffer_);
+                if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
+                if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
+                if (job.vertexOriginBuffer) this.gl.deleteBuffer(job.vertexOriginBuffer);
                 break;
         }
     }
 };
 
-Melown.GpuGroup.prototype.size = function() {
-    return this.size_;
+
+GpuGroup.prototype.size = function() {
+    return this.size;
 };
 
-Melown.GpuGroup.prototype.getZbufferOffset = function(params_) {
-    return this.size_;
+
+GpuGroup.prototype.getZbufferOffset = function(params) {
+    return this.size;
 };
 
-Melown.GpuGroup.prototype.addLineJob = function(data_) {
-    var gl_ = this.gl_;
 
-    var vertices_ = data_["vertexBuffer"];
-    var color_ = data_["color"];
+GpuGroup.prototype.addLineJob = function(data) {
+    var gl = this.gl;
+
+    var vertices = data["vertexBuffer"];
+    var color = data["color"];
     var f = 1.0/255;
 
-    var job_ = {};
-    job_.type_ = "flat-line";
-    job_.program_ = data_["program"];
-    job_.color_ = [color_[0]*f, color_[1]*f, color_[2]*f, color_[3]*f];
-    job_.zIndex_ = data_["z-index"] + 256;
-    job_.clickEvent_ = data_["click-event"];
-    job_.hoverEvent_ = data_["hover-event"];
-    job_.enterEvent_ = data_["enter-event"];
-    job_.leaveEvent_ = data_["leave-event"];
-    job_.hitable_ = data_["hitable"];
-    job_.eventInfo_ = data_["eventInfo"];
-    job_.state_ = data_["state"];
-    job_.center_ = data_["center"];
-    job_.lod_ = data_["lod"];
-    job_.lineWidth_ = data_["line-width"];
-    job_.zbufferOffset_ = data_["zbuffer-offset"];
-    job_.reduced_ = false;
-    job_.ready_ = true;
+    var job = {};
+    job.type = "flat-line";
+    job.program = data["program"];
+    job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
+    job.zIndex = data["z-index"] + 256;
+    job.clickEvent = data["click-event"];
+    job.hoverEvent = data["hover-event"];
+    job.enterEvent = data["enter-event"];
+    job.leaveEvent = data["leave-event"];
+    job.hitable = data["hitable"];
+    job.eventInfo = data["eventInfo"];
+    job.state = data["state"];
+    job.center = data["center"];
+    job.lod = data["lod"];
+    job.lineWidth = data["line-width"];
+    job.zbufferOffset = data["zbuffer-offset"];
+    job.reduced = false;
+    job.ready = true;
 
     //create vertex buffer
-    job_.vertexPositionBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
+    job.vertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
 
-    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-    gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
-    job_.vertexPositionBuffer_.itemSize = 3;
-    job_.vertexPositionBuffer_.numItems = vertices_.length / 3;
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    job.vertexPositionBuffer.itemSize = 3;
+    job.vertexPositionBuffer.numItems = vertices.length / 3;
 
-    this.jobs_.push(job_);
+    this.jobs.push(job);
 
-    this.size_ += vertices_.length * 4;
-    this.polygons_ += vertices_.length / 3;
+    this.size += vertices.length * 4;
+    this.polygons += vertices.length / 3;
 };
 
-Melown.GpuGroup.prototype.addExtentedLineJob = function(data_) {
-    var gl_ = this.gl_;
 
-    var vertices_ = data_["vertexBuffer"];
-    var normals_ = data_["normalBuffer"];
-    var color_ = data_["color"];
+GpuGroup.prototype.addExtentedLineJob = function(data) {
+    var gl = this.gl;
+
+    var vertices = data["vertexBuffer"];
+    var normals = data["normalBuffer"];
+    var color = data["color"];
     var f = 1.0/255;
 
-    var job_ = {};
-    job_.type_ = data_["type"];
-    job_.program_ = data_["program"];
-    job_.color_ = [color_[0]*f, color_[1]*f, color_[2]*f, color_[3]*f];
-    job_.zIndex_ = data_["z-index"] + 256;
-    job_.clickEvent_ = data_["click-event"];
-    job_.hoverEvent_ = data_["hover-event"];
-    job_.hitable_ = data_["hitable"];
-    job_.eventInfo_ = data_["eventInfo"];
-    job_.enterEvent_ = data_["enter-event"];
-    job_.leaveEvent_ = data_["leave-event"];
-    job_.state_ = data_["state"];
-    job_.center_ = data_["center"];
-    job_.lod_ = data_["lod"];
-    job_.lineWidth_ = data_["line-width"];
-    job_.zbufferOffset_ = data_["zbuffer-offset"];
-    job_.reduced_ = false;
-    job_.ready_ = true;
+    var job = {};
+    job.type = data["type"];
+    job.program = data["program"];
+    job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
+    job.zIndex = data["z-index"] + 256;
+    job.clickEvent = data["click-event"];
+    job.hoverEvent = data["hover-event"];
+    job.hitable = data["hitable"];
+    job.eventInfo = data["eventInfo"];
+    job.enterEvent = data["enter-event"];
+    job.leaveEvent = data["leave-event"];
+    job.state = data["state"];
+    job.center = data["center"];
+    job.lod = data["lod"];
+    job.lineWidth = data["line-width"];
+    job.zbufferOffset = data["zbuffer-offset"];
+    job.reduced = false;
+    job.ready = true;
 
-    if (data_["texture"] != null) {
-        var texture_ = data_["texture"];
-        var bitmap_ = texture_[0];
-        job_.texture_ = [this.renderer_.getBitmap(bitmap_["url"], bitmap_["filter"] || "linear", bitmap_["tiled"] || false),
-                                                  texture_[1], texture_[2], texture_[3], texture_[4]];
-        var background_ = data_["background"];
+    if (data["texture"] != null) {
+        var texture = data["texture"];
+        var bitmap = texture[0];
+        job.texture = [this.renderer.getBitmap(bitmap["url"], bitmap["filter"] || "linear", bitmap["tiled"] || false),
+                                                  texture[1], texture[2], texture[3], texture[4]];
+        var background = data["background"];
 
-        if (background_[3] != 0) {
-            job_.background_ = [background_[0]*f, background_[1]*f, background_[2]*f, background_[3]*f];
+        if (background[3] != 0) {
+            job.background = [background[0]*f, background[1]*f, background[2]*f, background[3]*f];
         }
     }
 
-    switch(job_.type_) {
-        case "flat-tline":   job_.program_ = (background_[3] != 0) ? this.renderer_.progTBLine_ : this.renderer_.progTLine_;  break;
-        case "pixel-line":   job_.program_ = this.renderer_.progLine3_;  break;
-        case "pixel-tline":  job_.program_ = (background_[3] != 0) ? this.renderer_.progTPBLine_ : this.renderer_.progTPLine_; break;
+    switch(job.type) {
+        case "flat-tline":   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
+        case "pixel-line":   job.program = this.renderer.progLine3;  break;
+        case "pixel-tline":  job.program = (background[3] != 0) ? this.renderer.progTPBLine : this.renderer.progTPLine; break;
     }
 
     //create vertex buffer
-    job_.vertexPositionBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
+    job.vertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
 
-    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-    gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
-    job_.vertexPositionBuffer_.itemSize = 4;
-    job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    job.vertexPositionBuffer.itemSize = 4;
+    job.vertexPositionBuffer.numItems = vertices.length / 4;
 
     //create normal buffer
-    job_.vertexNormalBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexNormalBuffer_);
+    job.vertexNormalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexNormalBuffer);
 
-    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(normals_), gl_.STATIC_DRAW);
-    gl_.bufferData(gl_.ARRAY_BUFFER, normals_, gl_.STATIC_DRAW);
-    job_.vertexNormalBuffer_.itemSize = 4;
-    job_.vertexNormalBuffer_.numItems = normals_.length / 4;
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+    job.vertexNormalBuffer.itemSize = 4;
+    job.vertexNormalBuffer.numItems = normals.length / 4;
 
-    this.jobs_.push(job_);
+    this.jobs.push(job);
 
-    this.size_ += vertices_.length * 4 + normals_.length * 4;
-    this.polygons_ += vertices_.length / 4;
+    this.size += vertices.length * 4 + normals.length * 4;
+    this.polygons += vertices.length / 4;
 };
 
-Melown.GpuGroup.prototype.addLineLabelJob = function(data_) {
-    var gl_ = this.gl_;
 
-    var vertices_ = data_["vertexBuffer"];
-    var texcoords_ = data_["texcoordsBuffer"];
-    var color_ = data_["color"];
+GpuGroup.prototype.addLineLabelJob = function(data) {
+    var gl = this.gl;
+
+    var vertices = data["vertexBuffer"];
+    var texcoords = data["texcoordsBuffer"];
+    var color = data["color"];
     var f = 1.0/255;
 
-    var job_ = {};
-    job_.type_ = "line-label";
-    job_.program_ = data_["program"];
-    job_.color_ = [color_[0]*f, color_[1]*f, color_[2]*f, color_[3]*f];
-    job_.zIndex_ = data_["z-index"] + 256;
-    job_.clickEvent_ = data_["click-event"];
-    job_.hoverEvent_ = data_["hover-event"];
-    job_.enterEvent_ = data_["enter-event"];
-    job_.leaveEvent_ = data_["leave-event"];
-    job_.hitable_ = data_["hitable"];
-    job_.eventInfo_ = data_["eventInfo"];
-    job_.state_ = data_["state"];
-    job_.center_ = data_["center"];
-    job_.lod_ = data_["lod"];
-    job_.zbufferOffset_ = data_["zbuffer-offset"];
-    job_.reduced_ = false;
-    job_.ready_ = true;
+    var job = {};
+    job.type = "line-label";
+    job.program = data["program"];
+    job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
+    job.zIndex = data["z-index"] + 256;
+    job.clickEvent = data["click-event"];
+    job.hoverEvent = data["hover-event"];
+    job.enterEvent = data["enter-event"];
+    job.leaveEvent = data["leave-event"];
+    job.hitable = data["hitable"];
+    job.eventInfo = data["eventInfo"];
+    job.state = data["state"];
+    job.center = data["center"];
+    job.lod = data["lod"];
+    job.zbufferOffset = data["zbuffer-offset"];
+    job.reduced = false;
+    job.ready = true;
 
     //create vertex buffer
-    job_.vertexPositionBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
+    job.vertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
 
-    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-    gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
-    job_.vertexPositionBuffer_.itemSize = 4;
-    job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    job.vertexPositionBuffer.itemSize = 4;
+    job.vertexPositionBuffer.numItems = vertices.length / 4;
 
     //create normal buffer
-    job_.vertexTexcoordBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
+    job.vertexTexcoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
 
-    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(texcoords_), gl_.STATIC_DRAW);
-    gl_.bufferData(gl_.ARRAY_BUFFER, texcoords_, gl_.STATIC_DRAW);
-    job_.vertexTexcoordBuffer_.itemSize = 4;
-    job_.vertexTexcoordBuffer_.numItems = texcoords_.length / 4;
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoords), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
+    job.vertexTexcoordBuffer.itemSize = 4;
+    job.vertexTexcoordBuffer.numItems = texcoords.length / 4;
 
-    this.jobs_.push(job_);
+    this.jobs.push(job);
 
-    this.size_ += vertices_.length * 4 + texcoords_.length * 4;
-    this.polygons_ += vertices_.length / 4;
+    this.size += vertices.length * 4 + texcoords.length * 4;
+    this.polygons += vertices.length / 4;
 };
 
-Melown.GpuGroup.prototype.addIconJob = function(data_, label_) {
-    var gl_ = this.gl_;
 
-    var vertices_ = data_["vertexBuffer"];
-    var texcoords_ = data_["texcoordsBuffer"];
-    var origins_ = data_["originBuffer"];
-    var color_ = data_["color"];
-    var s = data_["stick"];
+GpuGroup.prototype.addIconJob = function(data, label) {
+    var gl = this.gl;
+
+    var vertices = data["vertexBuffer"];
+    var texcoords = data["texcoordsBuffer"];
+    var origins = data["originBuffer"];
+    var color = data["color"];
+    var s = data["stick"];
     var f = 1.0/255;
 
-    var job_ = {};
-    job_.type_ = label_ ? "label" : "icon";
-    job_.program_ = data_["program"];
-    job_.color_ = [color_[0]*f, color_[1]*f, color_[2]*f, color_[3]*f];
-    job_.zIndex_ = data_["z-index"] + 256;
-    job_.visibility_ = data_["visibility"];
-    job_.culling_ = data_["culling"];
-    job_.clickEvent_ = data_["click-event"];
-    job_.hoverEvent_ = data_["hover-event"];
-    job_.enterEvent_ = data_["enter-event"];
-    job_.leaveEvent_ = data_["leave-event"];
-    job_.hitable_ = data_["hitable"];
-    job_.eventInfo_ = data_["eventInfo"];
-    job_.state_ = data_["state"];
-    job_.center_ = data_["center"];
-    job_.stick_ = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f];
-    job_.lod_ = data_["lod"];
-    job_.zbufferOffset_ = data_["zbuffer-offset"];
-    job_.reduced_ = false;
-    job_.ready_ = true;
+    var job = {};
+    job.type = label ? "label" : "icon";
+    job.program = data["program"];
+    job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
+    job.zIndex = data["z-index"] + 256;
+    job.visibility = data["visibility"];
+    job.culling = data["culling"];
+    job.clickEvent = data["click-event"];
+    job.hoverEvent = data["hover-event"];
+    job.enterEvent = data["enter-event"];
+    job.leaveEvent = data["leave-event"];
+    job.hitable = data["hitable"];
+    job.eventInfo = data["eventInfo"];
+    job.state = data["state"];
+    job.center = data["center"];
+    job.stick = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f];
+    job.lod = data["lod"];
+    job.zbufferOffset = data["zbuffer-offset"];
+    job.reduced = false;
+    job.ready = true;
 
-    if (label_ != true) {
-        var icon_ = data_["icon"];
-        job_.texture_ = this.renderer_.getBitmap(icon_["url"], icon_["filter"] || "linear", icon_["tiled"] || false);
+    if (label != true) {
+        var icon = data["icon"];
+        job.texture = this.renderer.getBitmap(icon["url"], icon["filter"] || "linear", icon["tiled"] || false);
     } else {
-        job_.texture_ = this.renderer_.font_.texture_;
+        job.texture = this.renderer.font.texture;
     }
 
     //create vertex buffer
-    job_.vertexPositionBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
+    job.vertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
 
-    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(vertices_), gl_.STATIC_DRAW);
-    gl_.bufferData(gl_.ARRAY_BUFFER, vertices_, gl_.STATIC_DRAW);
-    job_.vertexPositionBuffer_.itemSize = 4;
-    job_.vertexPositionBuffer_.numItems = vertices_.length / 4;
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    job.vertexPositionBuffer.itemSize = 4;
+    job.vertexPositionBuffer.numItems = vertices.length / 4;
 
     //create normal buffer
-    job_.vertexTexcoordBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
+    job.vertexTexcoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
 
-    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(texcoords_), gl_.STATIC_DRAW);
-    gl_.bufferData(gl_.ARRAY_BUFFER, texcoords_, gl_.STATIC_DRAW);
-    job_.vertexTexcoordBuffer_.itemSize = 4;
-    job_.vertexTexcoordBuffer_.numItems = texcoords_.length / 4;
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoords), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
+    job.vertexTexcoordBuffer.itemSize = 4;
+    job.vertexTexcoordBuffer.numItems = texcoords.length / 4;
 
     //create origin buffer
-    job_.vertexOriginBuffer_ = gl_.createBuffer();
-    gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexOriginBuffer_);
+    job.vertexOriginBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexOriginBuffer);
 
-    //gl_.bufferData(gl_.ARRAY_BUFFER, new Float32Array(origins_), gl_.STATIC_DRAW);
-    gl_.bufferData(gl_.ARRAY_BUFFER, origins_, gl_.STATIC_DRAW);
-    job_.vertexOriginBuffer_.itemSize = 3;
-    job_.vertexOriginBuffer_.numItems = origins_.length / 3;
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(origins), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, origins, gl.STATIC_DRAW);
+    job.vertexOriginBuffer.itemSize = 3;
+    job.vertexOriginBuffer.numItems = origins.length / 3;
 
-    this.jobs_.push(job_);
+    this.jobs.push(job);
 
-    this.size_ += job_.vertexPositionBuffer_.numItems * 4 +
-                  job_.vertexOriginBuffer_.numItems * 4 +
-                  job_.vertexTexcoordBuffer_.numItems * 4;
-    this.polygons_ += job_.vertexPositionBuffer_.numItems / 4;
+    this.size += job.vertexPositionBuffer.numItems * 4 +
+                  job.vertexOriginBuffer.numItems * 4 +
+                  job.vertexTexcoordBuffer.numItems * 4;
+    this.polygons += job.vertexPositionBuffer.numItems / 4;
 };
 
-Melown.GpuGroup.prototype.addRenderJob = function(data_) {
-    switch(data_["type"]) {
-        case "flat-line":   this.addLineJob(data_); break;
-        case "flat-tline":  this.addExtentedLineJob(data_); break;
-        case "pixel-line":  this.addExtentedLineJob(data_); break;
-        case "pixel-tline": this.addExtentedLineJob(data_); break;
-        case "line-label":  this.addLineLabelJob(data_); break;
-        case "icon":        this.addIconJob(data_); break;
-        case "label":       this.addIconJob(data_, true); break;
-        case "optimize":    this.optimaze(data_); break;
+
+GpuGroup.prototype.addRenderJob = function(data) {
+    switch(data["type"]) {
+        case "flat-line":   this.addLineJob(data); break;
+        case "flat-tline":  this.addExtentedLineJob(data); break;
+        case "pixel-line":  this.addExtentedLineJob(data); break;
+        case "pixel-tline": this.addExtentedLineJob(data); break;
+        case "line-label":  this.addLineLabelJob(data); break;
+        case "icon":        this.addIconJob(data); break;
+        case "label":       this.addIconJob(data, true); break;
+        case "optimize":    this.optimaze(data); break;
     }
 };
 
-Melown.GpuGroup.prototype.draw = function(mv_, mvp_, applyOrigin_) {
-    if (this.id_ != null) {
-        if (this.renderer_.layerGroupVisible_[this.id_] === false) {
+
+GpuGroup.prototype.draw = function(mv, mvp, applyOrigin) {
+    if (this.id != null) {
+        if (this.renderer.layerGroupVisible[this.id] === false) {
             return;
         }
     }
 
-    if (applyOrigin_ == true) {
-        var mvp2_ = Melown.mat4.create();
-        var mv2_ = Melown.mat4.create();
+    if (applyOrigin == true) {
+        var mvp2 = mat4.create();
+        var mv2 = mat4.create();
 
-        var pos_ = this.renderer_.position_;
+        var pos = this.renderer.position;
 
-        var transform_ = this.renderer_.layerGroupTransform_[this.id_];
+        var transform = this.renderer.layerGroupTransform[this.id];
 
-        if (transform_ != null) {
-            var origin_ = transform_[1];
-            origin_ = [origin_[0] - pos_[0], origin_[1] - pos_[1], origin_[2]];
-            Melown.mat4.multiply(Melown.translationMatrix(origin_[0], origin_[1], origin_[2]), transform_[0], mv2_);
-            Melown.mat4.multiply(mv_, mv2_, mv2_);
+        if (transform != null) {
+            var origin = transform[1];
+            origin = [origin[0] - pos[0], origin[1] - pos[1], origin[2]];
+            mat4.multiply(math.translationMatrix(origin[0], origin[1], origin[2]), transform[0], mv2);
+            mat4.multiply(mv, mv2, mv2);
         } else {
-            var origin_ = [this.origin_[0] - pos_[0], this.origin_[1] - pos_[1], this.origin_[2]];
-            Melown.mat4.multiply(mv_, Melown.translationMatrix(origin_[0], origin_[1], origin_[2]), mv2_);
+            var origin = [this.origin[0] - pos[0], this.origin[1] - pos[1], this.origin[2]];
+            mat4.multiply(mv, math.translationMatrix(origin[0], origin[1], origin[2]), mv2);
         }
 
-        Melown.mat4.multiply(mvp_, mv2_, mvp2_);
-        mv_ = mv2_;
-        mvp_ = mvp2_;
+        mat4.multiply(mvp, mv2, mvp2);
+        mv = mv2;
+        mvp = mvp2;
     }
 
-    var gl_ = this.gl_;
-    var gpu_ = this.gpu_;
+    var gl = this.gl;
+    var gpu = this.gpu;
 
-    var cameraPos_ = this.renderer_.cameraPosition_;
+    var cameraPos = this.renderer.cameraPosition;
     
-    var jobZBuffer_ = this.renderer_.jobZBuffer_;
-    var jobZBufferSize_ = this.renderer_.jobZBufferSize_;
+    var jobZBuffer = this.renderer.jobZBuffer;
+    var jobZBufferSize = this.renderer.jobZBufferSize;
 
-    var onlyHitable_ = this.renderer_.onlyHitLayers_;
+    var onlyHitable = this.renderer.onlyHitLayers;
 
-    for (var i = 0, li = this.jobs_.length; i < li; i++) {
-        var job_ = this.jobs_[i];
+    for (var i = 0, li = this.jobs.length; i < li; i++) {
+        var job = this.jobs[i];
 
-        if ((job_.type_ == "icon" || job_.type_ == "label") && job_.visibility_ > 0) {
-            var center_ = job_.center_;
-            if (Melown.vec3.length([center_[0]-cameraPos_[0],
-                                    center_[1]-cameraPos_[1],
-                                    center_[2]-cameraPos_[2]]) > job_.visibility_) {
+        if ((job.type == "icon" || job.type == "label") && job.visibility > 0) {
+            var center = job.center;
+            if (vec3.length([center[0]-cameraPos[0],
+                                    center[1]-cameraPos[1],
+                                    center[2]-cameraPos[2]]) > job.visibility) {
                 continue;
             }
         }
 
-        if (onlyHitable_ && !job_.hitable_) {
+        if (onlyHitable && !job.hitable) {
             continue;
         }
 
-        job_.mv_ = mv_;
-        job_.mvp_ = mvp_;
+        job.mv = mv;
+        job.mvp = mvp;
 
-        var zIndex_ = job_.zIndex_;
-        jobZBuffer_[zIndex_][jobZBufferSize_[zIndex_]] = job_;
-        jobZBufferSize_[zIndex_]++;
+        var zIndex = job.zIndex;
+        jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
+        jobZBufferSize[zIndex]++;
     }
 };
 
-Melown.drawGpuJob = function(gpu_, gl_, renderer_, job_, screenPixelSize_) {
-    var mv_ = job_.mv_;
-    var mvp_ = job_.mvp_;
 
-    if (!job_.ready_) {
-        return;
-    }
-
-    if (job_.state_ != 0) {
-        var id_ = job_.eventInfo_["#id"];
-
-        if (id_ != null && renderer_.hoverFeature_ != null) {
-            if (job_.state_ == 1){  // 1 = no hover state
-
-                if (renderer_.hoverFeature_[0]["#id"] == id_) { //are we hovering over feature?
-                    return;
-                }
-
-            } else { // 2 = hover state
-
-                if (renderer_.hoverFeature_[0]["#id"] != id_) { //are we hovering over feature?
-                    return;
-                }
-
-            }
-        } else { //id id provided
-            if (job_.state_ == 2) { //skip hover style
-                return;
-            }
-        }
-    }
-
-    var hitmapRender_ = job_.hitable_ && renderer_.onlyHitLayers_;
-
-    var color_ = job_.color_;
-
-    if (hitmapRender_) {
-        var c = renderer_.hoverFeatureCounter_;
-        //color_ = [(c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255, 1];
-        color_ = [(c&255)/255, ((c>>8)&255)/255, 0, 0];
-        renderer_.hoverFeatureList_[c] = [job_.eventInfo_, job_.center_, job_.clickEvent_, job_.hoverEvent_, job_.enterEvent_, job_.leaveEvent_];
-        renderer_.hoverFeatureCounter_++;
-    }
-
-    switch(job_.type_) {
-        case "flat-line":
-            if (hitmapRender_) {
-                gpu_.setState(Melown.StencilLineHitState_);
-            } else {
-                gpu_.setState(Melown.StencilLineState_);
-            }
-
-            gpu_.setState(Melown.StencilLineState_);
-            var prog_ = renderer_.progLine_;
-
-            gpu_.useProgram(prog_, ["aPosition"]);
-            prog_.setVec4("uColor", color_);
-            prog_.setMat4("uMVP", mvp_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
-
-            var vertexPositionAttribute_ = prog_.getAttribute("aPosition");
-
-            //bind vetex positions
-            gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-            gl_.vertexAttribPointer(vertexPositionAttribute_, job_.vertexPositionBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
-
-            //draw polygons
-            gl_.drawArrays(gl_.TRIANGLES, 0, job_.vertexPositionBuffer_.numItems);
-
-            break;
-
-        case "flat-tline":
-        case "pixel-line":
-        case "pixel-tline":
-            if (hitmapRender_) {
-                gpu_.setState(Melown.StencilLineHitState_);
-            } else {
-                gpu_.setState(Melown.StencilLineState_);
-            }
-            
-            var prog_ = job_.program_;
-            var texture_ = null;
-            var textureParams_ = [0,0,0,0];
-
-            if (job_.type_ != "pixel-line") {
-
-                if (hitmapRender_) {
-                    texture_ = renderer_.whiteTexture_;
-                } else {
-                    var t = job_.texture_;
-
-                    if (t == null || t[0] == null) {
-                        return;
-                    }
-
-                    texture_ = t[0];
-                    textureParams_ = [0, t[1]/t[0].height_, (t[1]+t[2])/t[0].height_, 0];
-
-                    if (job_.type_ == "flat-tline") {
-                        textureParams_[0] = 1/job_.lineWidth_/(texture_.width_/t[2]);
-                    } else {
-                        var lod_ = job_.lod_; // || job_.layer_.currentLod_;
-                        var tileSize_ = 256;//job_.layer_.core_.mapConfig_.tileSize(lod_);
-                        var tilePixelSize_ = tileSize_ / 256;//job_.layer_.tilePixels_;
-                        textureParams_[0] = 1/texture_.width_/tilePixelSize_;
-                    }
-                }
-
-                if (texture_.loaded_ == false) {
-                    return;
-                }
-
-                gpu_.bindTexture(texture_);
-            }
-
-            gpu_.useProgram(prog_, ["aPosition","aNormal"]);
-            prog_.setVec4("uColor", color_);
-            prog_.setVec2("uScale", screenPixelSize_);
-            prog_.setMat4("uMVP", mvp_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
-
-            if (job_.type_ != "pixel-line") {
-                if (job_.background_ != null) {
-                    prog_.setVec4("uColor2", job_.background_);
-                }
-                prog_.setVec4("uParams", textureParams_);
-                prog_.setSampler("uSampler", 0);
-            }
-
-            var vertexPositionAttribute_ = prog_.getAttribute("aPosition");
-            var vertexNormalAttribute_ = prog_.getAttribute("aNormal");
-
-            //bind vetex positions
-            gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-            gl_.vertexAttribPointer(vertexPositionAttribute_, job_.vertexPositionBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
-
-            //bind vetex normals
-            gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexNormalBuffer_);
-            gl_.vertexAttribPointer(vertexNormalAttribute_, job_.vertexNormalBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
-
-            //draw polygons
-            gl_.drawArrays(gl_.TRIANGLES, 0, job_.vertexPositionBuffer_.numItems);
-
-            break;
-
-        case "line-label":
-            if (hitmapRender_) {
-                gpu_.setState(Melown.LineLabelHitState_);
-            } else {
-                gpu_.setState(Melown.LineLabelState_);
-            }
-
-            var texture_ = hitmapRender_ ? renderer_.whiteTexture_ : renderer_.font_.texture_;
-            
-            //var yaw_ = Melown.radians(renderer_.cameraOrientation_[0]);
-            //var forward_ = [-Math.sin(yaw_), Math.cos(yaw_), 0, 0];
-
-            var prog_ = renderer_.progText_;
-
-            gpu_.bindTexture(texture_);
-
-            gpu_.useProgram(prog_, ["aPosition", "aTexCoord"]);
-            prog_.setSampler("uSampler", 0);
-            prog_.setMat4("uMVP", mvp_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
-            prog_.setVec4("uVec", renderer_.labelVector_);
-            prog_.setVec4("uColor", color_);
-            //prog_.setVec2("uScale", screenPixelSize_);
-
-            var vertexPositionAttribute_ = prog_.getAttribute("aPosition");
-            var vertexTexcoordAttribute_ = prog_.getAttribute("aTexCoord");
-
-            //bind vetex positions
-            gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-            gl_.vertexAttribPointer(vertexPositionAttribute_, job_.vertexPositionBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
-
-            //bind vetex texcoords
-            gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
-            gl_.vertexAttribPointer(vertexTexcoordAttribute_, job_.vertexTexcoordBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
-
-            //draw polygons
-            gl_.drawArrays(gl_.TRIANGLES, 0, job_.vertexPositionBuffer_.numItems);
-
-            break;
-
-        case "icon":
-        case "label":
-            if (hitmapRender_) {
-                gpu_.setState(Melown.LineLabelHitState_);
-            } else {
-                gpu_.setState(Melown.LineLabelState_);
-            }
-
-            var texture_ = hitmapRender_ ? renderer_.whiteTexture_ : job_.texture_;
-
-            if (texture_.loaded_ == false) {
-                return;
-            }
-
-             if (job_.culling_ != 180) {
-                var p2_ = job_.center_;
-                var p1_ = renderer_.cameraPosition_;
-                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-
-                if (job_.visibility_ != 0) {
-                    var l = Melown.vec3.length(camVec_);
-                    if (l > job_.visibility_) {
-                        return;
-                    }
-
-                    l = 1/l;
-                    camVec_[0] *= l;                       
-                    camVec_[1] *= l;                       
-                    camVec_[2] *= l;                       
-                } else {
-                    Melown.vec3.normalize(camVec_);
-                }
-                
-                job_.normal_ = [0,0,0];
-                Melown.vec3.normalize(job_.center_, job_.normal_);
-                
-                var a = -Melown.vec3.dot(camVec_, job_.normal_);
-                if (a < Math.cos(Melown.radians(job_.culling_))) {
-                    return;
-                }
-            } else if (job_.visibility_ != 0) {
-                var p2_ = job_.center_;
-                var p1_ = renderer_.cameraPosition_;
-                var camVec_ = [p2_[0] - p1_[0], p2_[1] - p1_[1], p2_[2] - p1_[2]];
-                var l = Melown.vec3.length(camVec_);
-                if (l > job_.visibility_) {
-                    return;
-                }
-            }
-            
-            //console.log(""+JSON.stringify(renderer_.cameraPosition_));
-            
-            //value larger then 0 means that visibility is tested
-            //if (job_.visibility_ != 0) {
-                //job_.visibility_
-            //}
-
-            gpu_.setState(Melown.LineLabelState_);
-            
-            var stickShift_ = 0;
-
-            if (job_.stick_[0] != 0) {
-                var s = job_.stick_;
-                stickShift_ = renderer_.cameraTiltFator_ * s[0];
-                
-                if (stickShift_ < s[1]) {
-                    stickShift_ = 0;
-                } else if (s[2] != 0) {
-                    var pp_ = renderer_.project2(job_.center_, mvp_);
-                    pp_[0] = Math.round(pp_[0]);
-
-                    renderer_.drawLineString([[pp_[0], pp_[1], pp_[2]], [pp_[0], pp_[1]-stickShift_, pp_[2]]], s[2], [s[3], s[4], s[5], s[6]], null, null, null, true);
-                }
-            }
-
-            var prog_ = renderer_.progIcon_;
-
-            gpu_.bindTexture(texture_);
-
-            gpu_.useProgram(prog_, ["aPosition", "aTexCoord", "aOrigin"]);
-            prog_.setSampler("uSampler", 0);
-            prog_.setMat4("uMVP", mvp_, renderer_.getZoffsetFactor(job_.zbufferOffset_));
-            prog_.setVec4("uScale", [screenPixelSize_[0], screenPixelSize_[1], (job_.type_ == "label" ? 1.0 : 1.0 / texture_.width_), stickShift_*2]);
-            prog_.setVec4("uColor", color_);
-            //prog_.setVec2("uScale", screenPixelSize_);
-
-            var vertexPositionAttribute_ = prog_.getAttribute("aPosition");
-            var vertexTexcoordAttribute_ = prog_.getAttribute("aTexCoord");
-            var vertexOriginAttribute_ = prog_.getAttribute("aOrigin");
-
-            //bind vetex positions
-            gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexPositionBuffer_);
-            gl_.vertexAttribPointer(vertexPositionAttribute_, job_.vertexPositionBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
-
-            //bind vetex texcoordds
-            gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexTexcoordBuffer_);
-            gl_.vertexAttribPointer(vertexTexcoordAttribute_, job_.vertexTexcoordBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
-
-            //bind vetex origin
-            gl_.bindBuffer(gl_.ARRAY_BUFFER, job_.vertexOriginBuffer_);
-            gl_.vertexAttribPointer(vertexOriginAttribute_, job_.vertexOriginBuffer_.itemSize, gl_.FLOAT, false, 0, 0);
-
-            //draw polygons
-            gl_.drawArrays(gl_.TRIANGLES, 0, job_.vertexPositionBuffer_.numItems);
-
-            break;
-    }
-
-};
-
-
+export default GpuGroup;

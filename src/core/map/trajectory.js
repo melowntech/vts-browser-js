@@ -1,411 +1,418 @@
-/**
- * @constructor
- */
-Melown.MapTrajectory = function(map_, p1_, p2_, options_) {
-    this.map_ = map_;
-    this.p1_ = p1_.clone();
-    this.p2_ = p2_.clone();
-    this.op2_ = p2_.clone();
 
-    var hm1_ = this.p1_.getHeightMode();
-    var hm2_ = this.p2_.getHeightMode();
+import {math as math_} from '../utils/math';
+
+//get rid of compiler mess
+var math = math_;
+
+
+var MapTrajectory = function(map, p1, p2, options) {
+    this.map = map;
+    this.p1 = p1.clone();
+    this.p2 = p2.clone();
+    this.op2 = p2.clone();
+
+    var hm1 = this.p1.getHeightMode();
+    var hm2 = this.p2.getHeightMode();
     
-    if (hm1_ == "fix" && hm2_ == "float") {
-        this.p1_.convertHeightMode("float", true);
-    } else if (hm1_ == "float" && hm2_ == "fix") {
-        this.p1_.convertHeightMode("fix", true);
+    if (hm1 == "fix" && hm2 == "float") {
+        this.p1 = this.map.convert.convertPositionHeightMode(this.p1, "float", true);
+    } else if (hm1 == "float" && hm2 == "fix") {
+        this.p1 = this.map.convert.convertPositionHeightMode(this.p1, "fix", true);
     } 
     
-    var vm1_ = this.p1_.getViewMode();
-    var vm2_ = this.p2_.getViewMode();
+    var vm1 = this.p1.getViewMode();
+    var vm2 = this.p2.getViewMode();
 
-    if (vm1_ == "subj" && vm2_ == "obj") {
-        this.p2_.convertViewMode("subj");
-    } else if (vm1_ == "obj" && vm2_ == "subj") {
-        this.p1_.convertViewMode("subj");
+    if (vm1 == "subj" && vm2 == "obj") {
+        this.p2 = this.map.convert.convertPositionViewMode(this.p2, "subj");
+    } else if (vm1 == "obj" && vm2 == "subj") {
+        this.p1 = this.map.convert.convertPositionViewMode(this.p1, "subj");
     } 
     
-    this.p1_.pos_[5] = this.p1_.pos_[5] < 0 ? (360 + (this.p1_.pos_[5] % 360)) : (this.p1_.pos_[5] % 360);  
-    this.p2_.pos_[5] = this.p2_.pos_[5] < 0 ? (360 + (this.p2_.pos_[5] % 360)) : (this.p2_.pos_[5] % 360);  
+    this.p1.pos[5] = this.p1.pos[5] < 0 ? (360 + (this.p1.pos[5] % 360)) : (this.p1.pos[5] % 360);  
+    this.p2.pos[5] = this.p2.pos[5] < 0 ? (360 + (this.p2.pos[5] % 360)) : (this.p2.pos[5] % 360);  
     
-    this.pp1_ = this.p1_.clone();
+    this.pp1 = this.p1.clone();
 
-    /*
-    if (this.p1_.getHeightMode() != this.p2_.getHeightMode()) {
-        this.p2_.convertHeightMode(this.p1_.getHeightMode(), true);
-    }*/
-     
-    //this.pp1_.convertHeightMode("fix", true);
-    //this.pp2_.convertHeightMode("fix", true);
-    //this.pp1_.convertViewMode("subj");
-    //this.pp2_.convertViewMode("subj");
+    this.mode = options["mode"] || "auto";
+    this.submode = options["submode"] || "none";
+    this.submode = "none";
+    this.maxHeight = options["maxHeight"] || 1000000000;
+    this.minDuration = options["minDuration"] || 0;
+    this.maxDuration = options["maxDuration"] || 10000;
+    this.samplePeriod = options["samplePeriod"] || 10;
+    this.fade = options["fade"] || "none";
+    this.fadePower = options["fadePower"] || 1;
 
-    this.mode_ = options_["mode"] || "auto";
-    this.submode_ = options_["submode"] || "none";
-    this.submode_ = "none";
-    this.maxHeight_ = options_["maxHeight"] || 1000000000;
-    this.minDuration_ = options_["minDuration"] || 0;
-    this.maxDuration_ = options_["maxDuration"] || 10000;
-    this.samplePeriod_ = options_["samplePeriod"] || 10;
-    this.fade_ = options_["fade"] || "none";
-    this.fadePower_ = options_["fadePower"] || 1;
+    this.pv = options["pv"] || 0.15;
 
-    this.pv_ = options_["pv"] || 0.15;
-
-    if (!this.map_.getNavigationSrs().isProjected()) {
-        this.geodesic_ = this.map_.getGeodesic();
+    if (!this.map.getNavigationSrs().isProjected()) {
+        this.geodesic = this.map.measure.getGeodesic();
     } 
     
-    if (options_["distanceAzimuth"]) {
-        this.distanceAzimuth_ = true;
+    if (options["distanceAzimuth"]) {
+        this.distanceAzimuth = true;
         
-        this.pp2_ = this.p1_.clone();
-        if (options_["destHeight"]) {
-            this.pp2_.setHeight(options_["destHeight"]);
+        this.pp2 = this.p1.clone();
+        if (options["destHeight"]) {
+            this.pp2.setHeight(options["destHeight"]);
         }
 
-        if (options_["destOrientation"]) {
-            this.pp2_.setHeight(options_["destOrientation"]);
+        if (options["destOrientation"]) {
+            this.pp2.setHeight(options["destOrientation"]);
         }
         
-        if (options_["destFov"]) {
-            this.pp2_.setHeight(options_["destFov"]);
+        if (options["destFov"]) {
+            this.pp2.setHeight(options["destFov"]);
         }
 
-        this.geoAzimuth_ = options_["azimuth"] || 0; 
-        this.geoDistance_ = options_["distance"] || 100;
-        this.distance_ = this.geoDistance_; 
-        this.azimuth_ = this.geoAzimuth_ % 360;
-        this.azimuth_ = (this.azimuth_ < 0) ? (360 + this.azimuth_) : this.azimuth_;
+        this.geoAzimuth = options["azimuth"] || 0; 
+        this.geoDistance = options["distance"] || 100;
+        this.distance = this.geoDistance; 
+        this.azimuth = this.geoAzimuth % 360;
+        this.azimuth = (this.azimuth < 0) ? (360 + this.azimuth) : this.azimuth;
 
     } else {
-        this.distanceAzimuth_ = false;
+        this.distanceAzimuth = false;
             
-        this.pp2_ = this.p2_.clone();
+        this.pp2 = this.p2.clone();
 
         //get distance and azimut
-        var res_ = this.map_.getDistance(this.pp1_.getCoords(), this.pp2_.getCoords());
-        this.distance_ = res_[0];
-        this.azimuth_ = (res_[1] - 90) % 360;
-        this.azimuth_ = (this.azimuth_ < 0) ? (360 + this.azimuth_) : this.azimuth_;
+        var res = this.map.measure.getDistance(this.pp1.getCoords(), this.pp2.getCoords());
+        this.distance = res[0];
+        this.azimuth = (res[1] - 90) % 360;
+        this.azimuth = (this.azimuth < 0) ? (360 + this.azimuth) : this.azimuth;
 
-        if (!this.map_.getNavigationSrs().isProjected()) {
-            var res_ = this.geodesic_["Inverse"](this.pp1_.pos_[2], this.pp1_.pos_[1], this.pp2_.pos_[2], this.pp2_.pos_[1]);
-            this.geoAzimuth_ = res_["azi1"]; 
-            this.geoDistance_ = res_["s12"];
-            this.azimuth_ = this.geoAzimuth_ % 360;
-            this.azimuth_ = (this.azimuth_ < 0) ? (360 + this.azimuth_) : this.azimuth_;
+        if (!this.map.getNavigationSrs().isProjected()) {
+            var res = this.geodesic["Inverse"](this.pp1.pos[2], this.pp1.pos[1], this.pp2.pos[2], this.pp2.pos[1]);
+            this.geoAzimuth = res["azi1"]; 
+            this.geoDistance = res["s12"];
+            this.azimuth = this.geoAzimuth % 360;
+            this.azimuth = (this.azimuth < 0) ? (360 + this.azimuth) : this.azimuth;
         }
 
     }
     
-    //console.log("azim: " + Math.round(this.azimuth_) + " p1: " + this.p1_.pos_[5]  + " p2: " + this.p2_.pos_[5]);
+    //console.log("azim: " + Math.round(this.azimuth) + " p1: " + this.p1.pos[5]  + " p2: " + this.p2.pos[5]);
 
-    
     this.detectMode();
     this.detectDuration();
-    this.detectFlightHeight(options_["height"]);
+    this.detectFlightHeight(options["height"]);
 };
 
-Melown.MapTrajectory.prototype.detectFlightHeight = function(flightHeight_) {
-    if (this.mode_ == "ballistic") {
-        this.flightHeight_ = Math.max(this.pp1_.getHeight(), this.pp2_.getHeight());
-        this.flightHeight_ += flightHeight_ || (this.distance_ * 0.5);
-        this.flightHeight_ = Math.min(this.flightHeight_, this.maxHeight_);
-        this.flightHeight_ -= Math.max(this.pp1_.getHeight(), this.pp2_.getHeight());
+
+MapTrajectory.prototype.detectFlightHeight = function(flightHeight) {
+    if (this.mode == "ballistic") {
+        this.flightHeight = Math.max(this.pp1.getHeight(), this.pp2.getHeight());
+        this.flightHeight += flightHeight || (this.distance * 0.5);
+        this.flightHeight = Math.min(this.flightHeight, this.maxHeight);
+        this.flightHeight -= Math.max(this.pp1.getHeight(), this.pp2.getHeight());
     }
 };
 
-Melown.MapTrajectory.prototype.detectMode = function() {
-    if (this.mode_ == "auto") {
-        this.mode_ = (this.distance_ > 2000) ? "ballistic" : "direct";
+
+MapTrajectory.prototype.detectMode = function() {
+    if (this.mode == "auto") {
+        this.mode = (this.distance > 2000) ? "ballistic" : "direct";
     }
 };
 
-Melown.MapTrajectory.prototype.detectDuration = function() {
-    this.duration_ = 0;
-    this.headingDuration_ = 1000;
+
+MapTrajectory.prototype.detectDuration = function() {
+    this.duration = 0;
+    this.headingDuration = 1000;
     
-    if (this.distance_ < 500) {
-        this.duration_ = 1000;
-    } else if (this.distance_ < 2000) {
-        this.duration_ = 2000;
+    if (this.distance < 500) {
+        this.duration = 1000;
+    } else if (this.distance < 2000) {
+        this.duration = 2000;
     } else {
-        this.duration_ = this.distance_ / 100;
+        this.duration = this.distance / 100;
 
-        if (this.duration_ < 300) {
-            this.duration_ = 3000;
+        if (this.duration < 300) {
+            this.duration = 3000;
         } else {
-            this.headingDuration_ = 1500;
+            this.headingDuration = 1500;
         }
         
-        if (this.duration_ < 6000) {
-            this.duration_ = 6000;
+        if (this.duration < 6000) {
+            this.duration = 6000;
         }
 
-        if (this.duration_ > 10000) {
-            this.duration_ = 10000;
+        if (this.duration > 10000) {
+            this.duration = 10000;
         }
 
-        if (this.mode_ != "direct") {
-           this.duration_ *= 1.8;
-           this.headingDuration_ *= 1.8;
+        if (this.mode != "direct") {
+           this.duration *= 1.8;
+           this.headingDuration *= 1.8;
         }
     }
     
-    if (this.mode_ != "direct") {
-        var minDuration_ = 3 * this.headingDuration_; 
-        this.duration_ = Math.max(this.duration_, minDuration_);
+    if (this.mode != "direct") {
+        var minDuration = 3 * this.headingDuration; 
+        this.duration = Math.max(this.duration, minDuration);
         
-        if (this.maxDuration_ < minDuration_) {
-            this.duration_ = this.maxDuration_;
-            this.headingDuration_ = this.maxDuration_ / 3;
+        if (this.maxDuration < minDuration) {
+            this.duration = this.maxDuration;
+            this.headingDuration = this.maxDuration / 3;
         }   
     }    
     
-    this.duration_ = Math.min(this.duration_, this.maxDuration_);
-    this.duration_ = Math.max(this.duration_, this.minDuration_);
+    this.duration = Math.min(this.duration, this.maxDuration);
+    this.duration = Math.max(this.duration, this.minDuration);
 };
-    
-Melown.MapTrajectory.prototype.generate = function() {
-    var samples_ = new Array(Math.ceil(this.duration_ / this.samplePeriod_)+(this.distanceAzimuth_?0:1));
-    var index_ = 0;
-    
-    for (var time_ = 0; time_ <= this.duration_; time_ += this.samplePeriod_) {
-        var factor_ = time_ / this.duration_;
 
-        var p = this.pp1_.clone();
+    
+MapTrajectory.prototype.generate = function() {
+    var samples = new Array(Math.ceil(this.duration / this.samplePeriod)+(this.distanceAzimuth?0:1));
+    var index = 0;
+    
+    for (var time = 0; time <= this.duration; time += this.samplePeriod) {
+        var factor = time / this.duration;
+
+        var p = this.pp1.clone();
         
-        if (this.mode_ == "direct") {
+        if (this.mode == "direct") {
 
-            var x = factor_;
+            var x = factor;
             
-            switch(this.fade_) {
+            switch(this.fade) {
                 case "in":
-                    switch(this.fadePower_) {
-                        case 1: factor_ = x*x; break;
-                        case 2: factor_ = x*x*x; break;
-                        case 3: factor_ = x*x*x*x; break;
-                        case 4: factor_ = x*x*x*x*x; break;
-                        case 5: factor_ = x*x*x*x*x*x; break;
-                        case 6: factor_ = x*x*x*x*x*x*x; break;
+                    switch(this.fadePower) {
+                        case 1: factor = x*x; break;
+                        case 2: factor = x*x*x; break;
+                        case 3: factor = x*x*x*x; break;
+                        case 4: factor = x*x*x*x*x; break;
+                        case 5: factor = x*x*x*x*x*x; break;
+                        case 6: factor = x*x*x*x*x*x*x; break;
                     }
                     break;
 
                 case "out":
                     x = 1 - x;
-                    switch(this.fadePower_) {
-                        case 1: factor_ = 1 - (x*x); break;
-                        case 2: factor_ = 1 - (x*x*x); break;
-                        case 3: factor_ = 1 - (x*x*x*x); break;
-                        case 4: factor_ = 1 - (x*x*x*x*x); break;
-                        case 5: factor_ = 1 - (x*x*x*x*x*x); break;
-                        case 6: factor_ = 1 - (x*x*x*x*x*x*x); break;
+                    switch(this.fadePower) {
+                        case 1: factor = 1 - (x*x); break;
+                        case 2: factor = 1 - (x*x*x); break;
+                        case 3: factor = 1 - (x*x*x*x); break;
+                        case 4: factor = 1 - (x*x*x*x*x); break;
+                        case 5: factor = 1 - (x*x*x*x*x*x); break;
+                        case 6: factor = 1 - (x*x*x*x*x*x*x); break;
                     }
                     break;
 
                 case "inout":
-                    switch(this.fadePower_) {
-                        case 1: factor_ = x*x*(3 - 2*x); break;
-                        case 2: factor_ = x*x*x * (x * (6*x - 15) + 10); break;
-                        case 3: factor_ = x*x*(3 - 2*x); x = factor_; factor_ = x*x*(3 - 2*x); break;
-                        case 4: factor_ = x*x*x * (x * (6*x - 15) + 10); x = factor_; factor_ = x*x*x * (x * (6*x - 15) + 10); break;
-                        case 5: factor_ = x*x*(3 - 2*x); x = factor_; factor_ = x*x*(3 - 2*x); x = factor_; factor_ = x*x*(3 - 2*x); break;
-                        case 6: factor_ = x*x*x * (x * (6*x - 15) + 10); x = factor_; factor_ = x*x*x * (x * (6*x - 15) + 10); x = factor_; factor_ = x*x*x * (x * (6*x - 15) + 10); break;
+                    switch(this.fadePower) {
+                        case 1: factor = x*x*(3 - 2*x); break;
+                        case 2: factor = x*x*x * (x * (6*x - 15) + 10); break;
+                        case 3: factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); break;
+                        case 4: factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); break;
+                        case 5: factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); break;
+                        case 6: factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); break;
                     }
                     break;
             }
             
-            p.setCoords(this.getInterpolatedCoords(factor_));
-            p.setHeight(this.getInterpolatedHeight(factor_));
+            p.setCoords(this.getInterpolatedCoords(factor));
+            p.setHeight(this.getInterpolatedHeight(factor));
             
-            var o1_ = this.pp1_.getOrientation(); 
-            var o2_ = this.pp2_.getOrientation(); 
+            var o1 = this.pp1.getOrientation(); 
+            var o2 = this.pp2.getOrientation(); 
 
-            p.setOrientation(this.getInterpolatedOrinetation(o1_, o2_, factor_));
-            p.setFov(this.getInterpolatedFov(factor_));
-            p.setViewExtent(this.getInterpolatedViewExtent(factor_));
+            p.setOrientation(this.getInterpolatedOrinetation(o1, o2, factor));
+            p.setFov(this.getInterpolatedFov(factor));
+            p.setViewExtent(this.getInterpolatedViewExtent(factor));
             
-            samples_[index_] = p.pos_;
-            index_++;
+            samples[index] = p.pos;
+            index++;
         } else {
 
             //http://en.wikipedia.org/wiki/Smoothstep
-            var x = factor_;
-            factor_ =  x*x*(3 - 2*x);
-            x = factor_;
-            factor_ =  x*x*(3 - 2*x);
+            var x = factor;
+            factor =  x*x*(3 - 2*x);
+            x = factor;
+            factor =  x*x*(3 - 2*x);
 
             //factor2 includes slow start and end of flight
-            factor2_ =  this.getSmoothFactor(time_);
+            var factor2 =  this.getSmoothFactor(time);
             
-            if (this.submode_ == "piha") {
+            if (this.submode == "piha") {
                 
-                var distanceFactor_ = (this.distance_ / this.duration_ * (time_ - this.duration_ / (2 * Math.PI) * Math.sin(2 * Math.PI / this.duration_ * time_))) / this.distance_;
+                var distanceFactor = (this.distance / this.duration * (time - this.duration / (2 * Math.PI) * Math.sin(2 * Math.PI / this.duration * time))) / this.distance;
 
-                //var f = (time_ / this.duration_) * Math.PI * 2;
-                //var distanceFactor_ = ((f - Math.sin(f)) / (2 * Math.PI));
+                //var f = (time / this.duration) * Math.PI * 2;
+                //var distanceFactor = ((f - Math.sin(f)) / (2 * Math.PI));
                 
-                var pv_ = this.pv_;
-                var h1_ = this.pp1_.getCoords()[2]; 
-                var h2_ = this.pp2_.getCoords()[2]; 
+                var pv = this.pv;
+                var h1 = this.pp1.getCoords()[2]; 
+                var h2 = this.pp2.getCoords()[2]; 
 
-                var height_ = this.distance_ / ((this.duration_*0.001) * pv_ * Math.tan(Melown.radians(this.pp1_.getFov()) * 0.5))
-                              * (1 - Math.cos(2 * Math.PI * time_ / this.duration_))
-                              + h1_ + (h2_ - h1_) * time_  / this.duration_;
+                var height = this.distance / ((this.duration*0.001) * pv * Math.tan(math.radians(this.pp1.getFov()) * 0.5))
+                              * (1 - Math.cos(2 * Math.PI * time / this.duration))
+                              + h1 + (h2 - h1) * time  / this.duration;
 
-                var coords_ = this.getInterpolatedCoords(distanceFactor_);
+                var coords = this.getInterpolatedCoords(distanceFactor);
 
-                p.setCoords(coords_);
-                p.setHeight(height_);            
+                p.setCoords(coords);
+                p.setHeight(height);            
             } else {
 
-                var coords_ = this.getInterpolatedCoords(factor2_);
+                var coords = this.getInterpolatedCoords(factor2);
     
-                p.setCoords(coords_);
-                p.setHeight(this.getSineHeight(factor_));            
+                p.setCoords(coords);
+                p.setHeight(this.getSineHeight(factor));            
             }
             
-            if (coords_[3] != null) { //used for correction in planet mode
-                this.azimuth_ = coords_[3];
+            if (coords[3] != null) { //used for correction in planet mode
+                this.azimuth = coords[3];
             }
 
-            p.setOrientation(this.getFlightOrienation(time_));
-            p.setFov(this.getInterpolatedFov(factor_));
-            p.setViewExtent(this.getInterpolatedViewExtent(factor_));
+            p.setOrientation(this.getFlightOrienation(time));
+            p.setFov(this.getInterpolatedFov(factor));
+            p.setViewExtent(this.getInterpolatedViewExtent(factor));
             
             //p.convertViewMode("subj");
             //console.log("pos: " + p.toString());
 
-            samples_[index_] = p.pos_;
-            samples_[index_] = p.pos_;
-            index_++;
+            samples[index] = p.pos;
+            samples[index] = p.pos;
+            index++;
         }
     }
     
-    if (!this.distanceAzimuth_) {
-        samples_[index_] = this.op2_.clone().pos_;
+    if (!this.distanceAzimuth) {
+        samples[index] = this.op2.clone().pos;
     }
 
-    //console.log("pos2: " + this.p2_.toString());
+    //console.log("pos2: " + this.p2.toString());
 
-    return samples_;
+    return samples;
 };
 
-Melown.MapTrajectory.prototype.getInterpolatedCoords = function(factor_) {
-    var c1_ = this.pp1_.getCoords(); 
-    var c2_ = this.pp2_.getCoords(); 
 
-    if (!this.map_.getNavigationSrs().isProjected()) {
-        var res_ = this.geodesic_["Direct"](c1_[1], c1_[0], this.geoAzimuth_, this.geoDistance_ * factor_);
+MapTrajectory.prototype.getInterpolatedCoords = function(factor) {
+    var c1 = this.pp1.getCoords(); 
+    var c2 = this.pp2.getCoords(); 
 
-        var azimut_ = res_["azi1"] - res_["azi2"];
+    if (!this.map.getNavigationSrs().isProjected()) {
+        var res = this.geodesic["Direct"](c1[1], c1[0], this.geoAzimuth, this.geoDistance * factor);
 
-        //var azimut_ = (azimut_ - 90) % 360;
-        azimut_ = (this.azimuth_ < 0) ? (360 + azimut_) : azimut_;
+        var azimut = res["azi1"] - res["azi2"];
 
-        //azimut_ = this.azimuth_;
+        //var azimut = (azimut - 90) % 360;
+        azimut = (this.azimuth < 0) ? (360 + azimut) : azimut;
+
+        //azimut = this.azimuth;
 
 
-        return [ res_["lon2"], res_["lat2"],
-                 c1_[2] + (c2_[2] - c1_[2]) * factor_, azimut_];
+        return [ res["lon2"], res["lat2"],
+                 c1[2] + (c2[2] - c1[2]) * factor, azimut];
 
     } else {
-        return [ c1_[0] + (c2_[0] - c1_[0]) * factor_,
-                 c1_[1] + (c2_[1] - c1_[1]) * factor_,
-                 c1_[2] + (c2_[2] - c1_[2]) * factor_ ];
+        return [ c1[0] + (c2[0] - c1[0]) * factor,
+                 c1[1] + (c2[1] - c1[1]) * factor,
+                 c1[2] + (c2[2] - c1[2]) * factor ];
     }
 };
 
-Melown.MapTrajectory.prototype.getInterpolatedOrinetation = function(o1_, o2_, factor_) {
-    var od1_ = o2_[0] - o1_[0];
-    var od2_ = o2_[1] - o1_[1];
-    var od3_ = o2_[2] - o1_[2];
 
-    if (Math.abs(od1_) > 180) {
-        if (od1_ > 0) {
-            od1_ = -(360 - od1_);
+MapTrajectory.prototype.getInterpolatedOrinetation = function(o1, o2, factor) {
+    var od1 = o2[0] - o1[0];
+    var od2 = o2[1] - o1[1];
+    var od3 = o2[2] - o1[2];
+
+    if (Math.abs(od1) > 180) {
+        if (od1 > 0) {
+            od1 = -(360 - od1);
         } else {
-            od1_ = 360 - Math.abs(od1_);
+            od1 = 360 - Math.abs(od1);
         }
     }
 
-    return [ o1_[0] + od1_ * factor_,
-             o1_[1] + od2_ * factor_,
-             o1_[2] + od3_ * factor_ ];
+    return [ o1[0] + od1 * factor,
+             o1[1] + od2 * factor,
+             o1[2] + od3 * factor ];
 };
 
-Melown.MapTrajectory.prototype.getInterpolatedFov = function(factor_) {
-    var f1_ = this.pp1_.getFov(); 
-    var f2_ = this.pp2_.getFov(); 
-    return f1_ + (f2_ - f1_) * factor_;
+
+MapTrajectory.prototype.getInterpolatedFov = function(factor) {
+    var f1 = this.pp1.getFov(); 
+    var f2 = this.pp2.getFov(); 
+    return f1 + (f2 - f1) * factor;
 };
 
-Melown.MapTrajectory.prototype.getInterpolatedViewExtent = function(factor_) {
-    var v1_ = this.pp1_.getViewExtent(); 
-    var v2_ = this.pp2_.getViewExtent(); 
-    return v1_ + (v2_ - v1_) * factor_;
+
+MapTrajectory.prototype.getInterpolatedViewExtent = function(factor) {
+    var v1 = this.pp1.getViewExtent(); 
+    var v2 = this.pp2.getViewExtent(); 
+    return v1 + (v2 - v1) * factor;
 };
 
-Melown.MapTrajectory.prototype.getInterpolatedHeight = function(factor_) {
-    var h1_ = this.pp1_.getHeight(); 
-    var h2_ = this.pp2_.getHeight(); 
-    return h1_ + (h2_ - h1_) * factor_;
+
+MapTrajectory.prototype.getInterpolatedHeight = function(factor) {
+    var h1 = this.pp1.getHeight(); 
+    var h2 = this.pp2.getHeight(); 
+    return h1 + (h2 - h1) * factor;
 };
 
-Melown.MapTrajectory.prototype.getSineHeight = function(factor_) {
-    var c1_ = this.pp1_.getCoords(); 
-    var c2_ = this.pp2_.getCoords(); 
 
-    return c1_[2] + (c2_[2] - c1_[2]) * factor_ +
-           Math.sin(Math.PI * factor_) * this.flightHeight_;
+MapTrajectory.prototype.getSineHeight = function(factor) {
+    var c1 = this.pp1.getCoords(); 
+    var c2 = this.pp2.getCoords(); 
+
+    return c1[2] + (c2[2] - c1[2]) * factor +
+           Math.sin(Math.PI * factor) * this.flightHeight;
 };
 
-Melown.MapTrajectory.prototype.getSmoothFactor = function(time_) {
+
+MapTrajectory.prototype.getSmoothFactor = function(time) {
     var x = 0;
 
-    if (time_ < this.headingDuration_) {
+    if (time < this.headingDuration) {
         x = 0;
-    } else if (time_ > (this.duration_ - this.headingDuration_)) {
+    } else if (time > (this.duration - this.headingDuration)) {
         x = 1.0;
     } else {
-        x = Math.min(1.0, (time_-this.headingDuration_) / (this.duration_ - this.headingDuration_*2));
+        x = Math.min(1.0, (time-this.headingDuration) / (this.duration - this.headingDuration*2));
     }
 
     x = x*x*(3 - 2*x);
     return x*x*(3 - 2*x);
 };
 
-Melown.MapTrajectory.prototype.getFlightOrienation = function(time_) {
-    var o1_ = null;
-    var o2_ = null;
-    var fo_ = [0, -90, 0]; //flight orientation
-    var factor_ = 0;
+
+MapTrajectory.prototype.getFlightOrienation = function(time) {
+    var o1 = null;
+    var o2 = null;
+    var fo = [0, -90, 0]; //flight orientation
+    var factor = 0;
 
     //get fly direction angle
-    fo_[0] = this.azimuth_ % 360;
+    fo[0] = this.azimuth % 360;
 
-    if (fo_[0] < 0) {
-        fo_[0] = 360 - Math.abs(fo_[0]);
+    if (fo[0] < 0) {
+        fo[0] = 360 - Math.abs(fo[0]);
     }
 
-    if (time_ <= this.headingDuration_) { //start sequence
-        factor_ = time_ / this.headingDuration_;
-        o1_ = this.pp1_.getOrientation();
-        o2_ = fo_;
-    } else if (time_ >= this.duration_ - this.headingDuration_) { //end sequence
-        factor_ = (time_ - (this.duration_ - this.headingDuration_)) / this.headingDuration_;
-        o1_ = fo_;
-        o2_ = this.pp2_.getOrientation();
+    if (time <= this.headingDuration) { //start sequence
+        factor = time / this.headingDuration;
+        o1 = this.pp1.getOrientation();
+        o2 = fo;
+    } else if (time >= this.duration - this.headingDuration) { //end sequence
+        factor = (time - (this.duration - this.headingDuration)) / this.headingDuration;
+        o1 = fo;
+        o2 = this.pp2.getOrientation();
     } else { //fly sequence
-        factor_ = 0;
-        o1_ = fo_;
-        o2_ = fo_;
+        factor = 0;
+        o1 = fo;
+        o2 = fo;
     }    
     
-    return this.getInterpolatedOrinetation(o1_, o2_, factor_);
+    return this.getInterpolatedOrinetation(o1, o2, factor);
 };
 
+
+export default MapTrajectory;
 
 
 

@@ -1,5 +1,11 @@
 
-.melown-browser {
+.vts-browser * {
+    /*all: initial;*/
+    box-sizing: border-box;
+}
+
+.vts-browser {
+    /*all: initial;*/
     position: absolute;
     left: 0px;
     top: 0px;
@@ -7,15 +13,11 @@
     height: 100%;
 }
 
-.melown-browser * {
-    box-sizing: border-box;
-}
-
 /*
  * MAP
  */
 
-.melown-map {
+.vts-map {
     position: absolute;
     left: 0px;
     top: 0px;
@@ -27,7 +29,7 @@
  * LOGO
  */
 
-.melown-logo {
+.vts-logo {
     color:#fff;
     text-shadow: 0 0 2px #000;
     text-decoration: none;
@@ -41,7 +43,7 @@
  * POPUP
  */
 
-.melown-popup-background {
+.vts-popup-background {
     position:absolute;
     left:0px;
     top:0px;
@@ -52,7 +54,7 @@
     background-color: rgba(0,0,0,0.5);    
 }
 
-#melown-popup {
+#vts-popup {
     position:absolute;
     z-index: 6;
     padding: 5px;
@@ -68,7 +70,7 @@
  * CREDITS
  */
 
-.melown-credits {
+.vts-credits {
     position: absolute;
     right: 2px;
     bottom: 2px;
@@ -83,7 +85,7 @@
     overflow: hidden;    
 }
 
-.melown-credits-supercell {
+.vts-credits-supercell {
     display: inline-block;
     text-shadow: 0 0 2px #000;
     max-width: 350px;
@@ -93,7 +95,7 @@
     margin-bottom: 5px;
 }
 
-.melown-credits-cell {
+.vts-credits-cell {
     display: inline-block;
     padding-right: 0px;
     padding-left: 0px;
@@ -106,14 +108,14 @@
     white-space: nowrap;
 }
 
-.melown-credits-cell a {
+.vts-credits-cell a {
     color: #FFFFFF;
     text-decoration: none;
     border-bottom: 1px solid rgba(255,255,255,0.5);
     margin: 0px;
 }
 
-.melown-credits-cell-button {
+.vts-credits-cell-button {
     display: inline-block;
     padding-right: 0px;
     padding-left: 0px;
@@ -126,7 +128,7 @@
     margin-left: 5px;
 }
 
-.melown-credits-separator {
+.vts-credits-separator {
     display: inline-block;
     width : 1px;
     height : 14px;
@@ -135,11 +137,11 @@
     margin-right: 10px;
 }
 
-.melown-credits-list {
+.vts-credits-list {
     line-height:150%;
 }
 
-.melown-credits-list a {
+.vts-credits-list a {
     color: #000;
 }
 
@@ -153,7 +155,7 @@
  * FALLBACK
  */
 
-.melown-fallback {
+.vts-fallback {
     position: absolute;
     top:0px;
     left:0px;
@@ -166,7 +168,7 @@
     z-index: 7
 }
 
-.melown-fallback-text {
+.vts-fallback-text {
   width: 50%;
   left: 25%;
   position: absolute;
@@ -175,11 +177,11 @@
   text-align: center;
 }
 
-.melown-fallback-text a {
+.vts-fallback-text a {
     color: #0066FF;
 }
 
-.melown-fallback-text p {
+.vts-fallback-text p {
     padding: 3px;
     margin: 0px;
 }
@@ -188,14 +190,14 @@
  * SEARCH
  */
 
-.melown-search {
+.vts-search {
     position: absolute;
     top: 10px;
     left: 10px;
     z-index: 5;
 }
 
-.melown-search input[type="text"] {
+.vts-search input[type="text"] {
     padding: 5px 5px 5px 25px;
     border-radius: 1px;
     border: none;
@@ -206,17 +208,17 @@
     font-size: 16px;
 }
 
-.melown-search input[type="text"]:focus {
+.vts-search input[type="text"]:focus {
     outline: none;
 }
 
-.melown-search-input {
+.vts-search-input {
     border-radius: 3px;
     border: 2px solid rgba(255, 255, 255, 0.47);
     position: absolute;
 }
 
-.melown-search-list {
+.vts-search-list {
     font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
     background-color: rgba(255, 255, 255, 0.75);
     border-radius: 3px;
@@ -228,11 +230,11 @@
     color: #000;    
 }
 
-.melown-search-listitem {
+.vts-search-listitem {
     padding: 6px 15px;
 }
 
-.melown-search-listitem-selected {
+.vts-search-listitem-selected {
     padding: 6px 15px;
     background-color: rgba(255, 255, 255, 0.9);
     cursor: pointer;
@@ -240,7 +242,7 @@
 }
 
 /*
-.melown-search-listitem:hover {
+.vts-search-listitem:hover {
     background-color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
     border-radius: 3px;
@@ -250,7 +252,7 @@
  * LOADING
  */
 
-.melown-loading {
+.vts-loading {
     position: absolute;
     top:0px;
     left:0px;
@@ -262,7 +264,7 @@
     z-index: 5;    
 }
 
-.melown-loading-progress {
+.vts-loading-progress {
     width: 50%;
     left: 25%;
     position: absolute;
@@ -271,7 +273,7 @@
     text-align: center;
 }
 
-.melown-loading-dot {
+.vts-loading-dot {
     display: inline-block;
     background-color: #333;
     border-radius: 999px;
@@ -289,7 +291,7 @@
  * COMPASS
  */
 
-#melown-compass {
+#vts-compass {
     position:absolute;
     left:0px;
     bottom:40px;
@@ -306,7 +308,7 @@
     transform: scale(0.9);    
 }
 
-#melown-compass-frame {
+#vts-compass-frame {
     position:absolute;
     right:0px;
     bottom:2px;
@@ -318,7 +320,7 @@
     pointer-events:none;
 }
 
-#melown-compass-frame2 {
+#vts-compass-frame2 {
     position:absolute;
     right:0px;
     bottom:1px;
@@ -331,7 +333,7 @@
     opacity: 0.25;
 }
 
-#melown-compass-frame3 {
+#vts-compass-frame3 {
     position:absolute;
     right:0px;
     bottom:0px;
@@ -348,10 +350,10 @@
  * ZOOM
  */
 
-.melown-zoom {
+.vts-zoom {
 }
 
-.melown-zoom-plus {
+.vts-zoom-plus {
     position:absolute;
     left:10px;
     bottom:10px;
@@ -362,13 +364,13 @@
     opacity: 0.95;
 }
 
-.melown-zoom-plus img {
+.vts-zoom-plus img {
     display: block;
     border-radius: 2px;
     background-color: #fff;
 }
 
-.melown-zoom-minus {
+.vts-zoom-minus {
     position:absolute;
     left:45px;
     bottom:10px;
@@ -379,7 +381,7 @@
     opacity: 0.95;
 }
 
-.melown-zoom-minus img {
+.vts-zoom-minus img {
     display: block;
     border-radius: 2px;
     background-color: #fff;
@@ -389,7 +391,7 @@
  * SPACE
  */
 
-.melown-space {
+.vts-space {
     position:absolute;
     left:80px;
     bottom:10px;
@@ -400,7 +402,7 @@
     opacity: 0.95;
 }
 
-.melown-space-button {
+.vts-space-button {
     border-radius: 2px;
     background-color: #fff;
     display:none;
@@ -410,14 +412,14 @@
  * LINK
  */
 
-.melown-link {
+.vts-link {
     position:absolute;
     left:115px;
     bottom:10px;
     z-index: 4;
 }
 
-.melown-link-button {
+.vts-link-button {
     cursor: pointer;
     opacity: 0.95;
     border-radius: 5px;
@@ -425,13 +427,13 @@
     opacity: 0.95;
 }
 
-.melown-link-button img {
+.vts-link-button img {
     display: block;
     border-radius: 2px;
     background-color: #fff;
 }
 
-.melown-link-text-holder {
+.vts-link-text-holder {
     position: absolute;
     bottom: 0px;
     left: 35px;
@@ -441,13 +443,13 @@
     opacity: 0.95;
 }
 
-.melown-link-text {
+.vts-link-text {
     padding: 2px;
     border-radius: 2px;
     background-color: #fff;
 }
 
-.melown-link-text textarea {
+.vts-link-text textarea {
     border: solid 1px #ddd;
     resize: none;
     padding: 5px;
@@ -457,7 +459,7 @@
  * FULLSCREEN
  */
 
-.melown-fullscreen {
+.vts-fullscreen {
     position:absolute;
     right:7px;
     top:7px;

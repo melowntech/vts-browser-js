@@ -1,38 +1,44 @@
-/**
- * @constructor
- */
-Melown.UIControlFullscreen = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.control_ = this.ui_.addControl("fullscreen",
-      '<img id="melown-fullscreen" class="melown-fullscreen" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAwUlEQVRo3u2YwRWDIBBEIc+SLMKmckpTFkFPePKQQ57DsitR/z/D6KgMDikBAMCTycKYxai9Bul8MYkic+NFS7BOs4FUa/1IrzTn9xk6O6+rrwEMjGayTlS/UXWeujbcDKgpEZRObgYOc1oYt7CIMXCFFLKmTrS+aqAEP8iSAGBYI1s776FLv7eReaWHWd/cyLz3Bas+vxIYGNXIhBTxOhcKNdCaHvPfGPjVYb3OhVjEGLhrI/Pewc9uZDQvAABwZQMKFi+DmFdLbgAAAABJRU5ErkJggg==">'
-      , visible_);
+
+import Dom_ from '../../utility/dom';
+
+//get rid of compiler mess
+var dom = Dom_;
+
+
+var UIControlFullscreen = function(ui, visible) {
+    this.ui = ui;
+    this.control = this.ui.addControl("fullscreen",
+      '<img id="vts-fullscreen" class="vts-fullscreen" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAwUlEQVRo3u2YwRWDIBBEIc+SLMKmckpTFkFPePKQQ57DsitR/z/D6KgMDikBAMCTycKYxai9Bul8MYkic+NFS7BOs4FUa/1IrzTn9xk6O6+rrwEMjGayTlS/UXWeujbcDKgpEZRObgYOc1oYt7CIMXCFFLKmTrS+aqAEP8iSAGBYI1s776FLv7eReaWHWd/cyLz3Bas+vxIYGNXIhBTxOhcKNdCaHvPfGPjVYb3OhVjEGLhrI/Pewc9uZDQvAABwZQMKFi+DmFdLbgAAAABJRU5ErkJggg==">'
+      , visible);
       
-    var img_ = this.control_.getElement("melown-fullscreen");
-    img_.on("click", this.onClick.bind(this));
-    img_.on("dblclick", this.onDoNothing.bind(this));
+    var img = this.control.getElement("vts-fullscreen");
+    img.on("click", this.onClick.bind(this));
+    img.on("dblclick", this.onDoNothing.bind(this));
     
-    this.enabled_ = false;
-};
-
-Melown.UIControlFullscreen.prototype.onDoNothing = function(event_) {
-    Melown.Utils.preventDefault(event_);    
-    Melown.Utils.stopPropagation(event_);    
+    this.enabled = false;
 };
 
 
-Melown.UIControlFullscreen.prototype.requestFullscreen = function(element_) {
-    if(element_.requestFullscreen) {
-        element_.requestFullscreen();
-    } else if(element_.mozRequestFullScreen) {
-        element_.mozRequestFullScreen();
-    } else if(element_.webkitRequestFullscreen) {
-        element_.webkitRequestFullscreen();
-    } else if(element_.msRequestFullscreen) {
-        element_.msRequestFullscreen();
+UIControlFullscreen.prototype.onDoNothing = function(event) {
+    dom.preventDefault(event);    
+    dom.stopPropagation(event);    
+};
+
+
+UIControlFullscreen.prototype.requestFullscreen = function(element) {
+    if(element.requestFullscreen) {
+        element.requestFullscreen();
+    } else if(element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+    } else if(element.webkitRequestFullscreen) {
+        element.webkitRequestFullscreen();
+    } else if(element.msRequestFullscreen) {
+        element.msRequestFullscreen();
     }
 };
 
-Melown.UIControlFullscreen.prototype.exitFullscreen = function() {
+
+UIControlFullscreen.prototype.exitFullscreen = function() {
     if(document.exitFullscreen) {
         document.exitFullscreen();
     } else if(document.mozCancelFullScreen) {
@@ -42,19 +48,24 @@ Melown.UIControlFullscreen.prototype.exitFullscreen = function() {
     }
 };
 
-Melown.UIControlFullscreen.prototype.fullscreenEnabled = function() {
+
+UIControlFullscreen.prototype.fullscreenEnabled = function() {
     return (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled);
 };
 
-Melown.UIControlFullscreen.prototype.onClick = function(event_) {
-    var element_ = this.ui_.element_;
+
+UIControlFullscreen.prototype.onClick = function(event) {
+    var element = this.ui.element;
     
-    if (!this.enabled_) {
+    if (!this.enabled) {
     //if (!this.fullscreenEnabled()) {
-        this.enabled_ = true;
-        this.requestFullscreen(element_);
+        this.enabled = true;
+        this.requestFullscreen(element);
     } else {
-        this.enabled_ = false;
+        this.enabled = false;
         this.exitFullscreen();  
     } 
 };
+
+
+export default UIControlFullscreen;

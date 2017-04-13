@@ -1,310 +1,310 @@
-require('core/utils/http');
 
-/**
- * @constructor
- */
-Melown.GpuTexture = function(gpu_, path_, core_, fileSize_, direct_, repeat_, filter_) {
-    this.gpu_ = gpu_;
-    this.gl_ = gpu_.gl_;
-    this.texture_ = null;
-    this.framebuffer_ = null;
-    this.size_ = 0;
-    this.fileSize_ = fileSize_; //used for stats
-    this.width_ = 0;
-    this.height_ = 0;
-    this.repeat_ = repeat_ || false;
-    this.filter_ = filter_ || "linear";
+import {utils as utils_} from '../../utils/utils';
 
-    this.image_ = null;
-    this.loaded_ = false;
-    this.trilinear_ = false;//true;
-    this.core_ = core_;
+//get rid of compiler mess
+var utils = utils_;
 
-    if (path_ != null) {
-        this.load(path_, null, null, direct_);
+var GpuTexture = function(gpu, path, core, fileSize, direct, repeat, filter) {
+    this.gpu = gpu;
+    this.gl = gpu.gl;
+    this.texture = null;
+    this.framebuffer = null;
+    this.size = 0;
+    this.fileSize = fileSize; //used for stats
+    this.width = 0;
+    this.height = 0;
+    this.repeat = repeat || false;
+    this.filter = filter || "linear";
+
+    this.image = null;
+    this.loaded = false;
+    this.trilinear = false;//true;
+    this.core = core;
+
+    if (path != null) {
+        this.load(path, null, null, direct);
     }
 };
 
 //destructor
-Melown.GpuTexture.prototype.kill = function() {
-    this.gl_.deleteTexture(this.texture_);
+GpuTexture.prototype.kill = function() {
+    this.gl.deleteTexture(this.texture);
     
-    this.texture_ = null;
+    this.texture = null;
 
     /*
-    if (this.core_ != null && this.core_.renderer_ != null) {
-        this.core_.renderer_.statsFluxTexture_[1][0] ++;
-        this.core_.renderer_.statsFluxTexture_[1][1] += this.size_;
+    if (this.core != null && this.core.renderer != null) {
+        this.core.renderer.statsFluxTexture[1][0] ++;
+        this.core.renderer.statsFluxTexture[1][1] += this.size;
     }
     */
 };
 
-//! Returns GPU RAM used, in bytes.
-Melown.GpuTexture.prototype.size = function() {
-    return this.size_;
+// Returns GPU RAM used, in bytes.
+GpuTexture.prototype.size = function() {
+    return this.size;
 };
 
-Melown.GpuTexture.prototype.createFromData = function(lx_, ly_, data_, filter_, repeat_) {
-    var gl_ = this.gl_;
+GpuTexture.prototype.createFromData = function(lx, ly, data, filter, repeat) {
+    var gl = this.gl;
 
-    this.texture_ = gl_.createTexture();
-    gl_.bindTexture(gl_.TEXTURE_2D, this.texture_);
+    this.texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    if (repeat_ == true){
-        repeat_ = gl_.REPEAT;
-        this.repeat_ = true;
+    if (repeat == true){
+        repeat = gl.REPEAT;
+        this.repeat = true;
     } else {
-        repeat_ = gl_.CLAMP_TO_EDGE;
+        repeat = gl.CLAMP_TO_EDGE;
     }
 
-    gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_WRAP_S, repeat_);
-    gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_WRAP_T, repeat_);
-    var mipmaps_ = false;
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, repeat);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, repeat);
+    var mipmaps = false;
 
-    switch (filter_)
-    {
-    case "linear":
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MIN_FILTER, gl_.LINEAR);
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MAG_FILTER, gl_.LINEAR);
-        break;
-    case "trilinear":
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MIN_FILTER, gl_.LINEAR_MIPMAP_LINEAR);
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MAG_FILTER, gl_.LINEAR);
-        mipmaps_ = true;
-        break;
-    default:
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MIN_FILTER, gl_.NEAREST);
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MAG_FILTER, gl_.NEAREST);
-        break;
+    switch (filter) {
+        case "linear":
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            break;
+        case "trilinear":
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            mipmaps = true;
+            break;
+        default:
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            break;
     }
 
-    gl_.pixelStorei(gl_.UNPACK_ALIGNMENT, 1);
-    //gl_.pixelStorei(gl_.UNPACK_FLIP_Y_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-    gl_.texImage2D(gl_.TEXTURE_2D, 0, gl_.RGBA, lx_, ly_, 0, gl_.RGBA, gl_.UNSIGNED_BYTE, data_);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, lx, ly, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
-    if (mipmaps_ == true) {
-        gl_.generateMipmap(gl_.TEXTURE_2D);
+    if (mipmaps == true) {
+        gl.generateMipmap(gl.TEXTURE_2D);
     }
 
-    gl_.bindTexture(gl_.TEXTURE_2D, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 
-    this.width_ = lx_;
-    this.height_ = ly_;
-    this.size_ = lx_ * ly_ * 4;
-    this.loaded_ = true;
+    this.width = lx;
+    this.height = ly;
+    this.size = lx * ly * 4;
+    this.loaded = true;
 };
 
-Melown.GpuTexture.prototype.createFromImage = function(image_, filter_, repeat_) {
-    var gl_ = this.gl_;
+GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
+    var gl = this.gl;
 
-    var timer_ = performance.now();
+    var timer = performance.now();
 
-    this.texture_ = gl_.createTexture();
-    gl_.bindTexture(gl_.TEXTURE_2D, this.texture_);
+    this.texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    if (repeat_ == true) {
-        repeat_ = gl_.REPEAT;
-        this.repeat_ = true;
+    if (repeat == true) {
+        repeat = gl.REPEAT;
+        this.repeat = true;
     } else {
-        repeat_ = gl_.CLAMP_TO_EDGE;
+        repeat = gl.CLAMP_TO_EDGE;
     }
 
-    gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_WRAP_S, repeat_);
-    gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_WRAP_T, repeat_);
-    var mipmaps_ = false;
-    this.filter_ = filter_;
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, repeat);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, repeat);
+    var mipmaps = false;
+    this.filter = filter;
 
-    switch (filter_)
-    {
-    case "linear":
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MIN_FILTER, gl_.LINEAR);
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MAG_FILTER, gl_.LINEAR);
-        break;
-    case "trilinear":
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MIN_FILTER, gl_.LINEAR_MIPMAP_LINEAR);
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MAG_FILTER, gl_.LINEAR);
-        mipmaps_ = true;
-        break;
-    default:
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MIN_FILTER, gl_.NEAREST);
-        gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MAG_FILTER, gl_.NEAREST);
-        break;
+    switch (filter) {
+        case "linear":
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            break;
+        case "trilinear":
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            mipmaps = true;
+            break;
+        default:
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            break;
     }
 
-    //gl_.pixelStorei(gl_.UNPACK_ALIGNMENT, 1);
-    //gl_.pixelStorei(gl_.UNPACK_FLIP_Y_WEBGL, true);
+    //gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-    if (Melown.noTextures_ != true) {
-        gl_.texImage2D(gl_.TEXTURE_2D, 0, gl_.RGBA, gl_.RGBA, gl_.UNSIGNED_BYTE, image_);
-        //if (gl_.getError() == 1281) {
-          //  gl_ = gl_;
+    if (this.gpu.noTextures != true) {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        //if (gl.getError() == 1281) {
+          //  gl = gl;
         //}
-        //console.log(gl_.getError());
+        //console.log(gl.getError());
 
-        if (mipmaps_ == true) {
-            gl_.generateMipmap(gl_.TEXTURE_2D);
+        if (mipmaps == true) {
+            gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
 
-    gl_.bindTexture(gl_.TEXTURE_2D, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 
-    this.width_ = image_.naturalWidth;
-    this.height_ = image_.naturalHeight;
-    this.size_ = image_.naturalWidth * image_.naturalHeight * 4;
-    this.loaded_ = true;
+    this.width = image.naturalWidth;
+    this.height = image.naturalHeight;
+    this.size = image.naturalWidth * image.naturalHeight * 4;
+    this.loaded = true;
 
     /*
-    if (this.core_ != null && this.core_.renderer_!= null) {
-        this.core_.renderer_.dirty_ = true;
-        this.core_.renderer_.statsCreateTextureTime_ += performance.now() - timer_;
-        this.core_.renderer_.statsFluxTexture_[0][0] ++;
-        this.core_.renderer_.statsFluxTexture_[0][1] += this.size_;
+    if (this.core != null && this.core.renderer!= null) {
+        this.core.renderer.dirty = true;
+        this.core.renderer.statsCreateTextureTime += performance.now() - timer;
+        this.core.renderer.statsFluxTexture[0][0] ++;
+        this.core.renderer.statsFluxTexture[0][1] += this.size;
     }*/
 };
 
-Melown.GpuTexture.prototype.load = function(path_, onLoaded_, onError_, direct_) {
-    this.image_ = Melown.Http.imageFactory(path_, (function () {
-        if (this.core_ != null && this.core_.killed_ == true) {
+GpuTexture.prototype.load = function(path, onLoaded, onError, direct) {
+    this.image = utils.loadImage(path, (function () {
+        if (this.core != null && this.core.killed == true) {
             return;
         }
 
-        this.createFromImage(this.image_, this.filter_, this.repeat_);
-        this.image_ = null;
+        this.createFromImage(this.image, this.filter, this.repeat);
+        this.image = null;
 
-        if (onLoaded_) {
-            onLoaded_();
+        if (onLoaded) {
+            onLoaded();
         }
 
     }).bind(this), (function () {
 
-        if (this.core_ != null && this.core_.killed_ == true) {
+        if (this.core != null && this.core.killed == true) {
             return;
         }
 
-        if (onError_) {
-            onError_();
+        if (onError) {
+            onError();
         }
     }).bind(this),
      
-     null, direct_
+     null, direct
      
      );
 
 };
 
-Melown.GpuTexture.prototype.createFramebufferFromData = function(lx_, ly_, data_) {
-    var gl_ = this.gl_;
+GpuTexture.prototype.createFramebufferFromData = function(lx, ly, data) {
+    var gl = this.gl;
 
-    var framebuffer_ = gl_.createFramebuffer();
-    gl_.bindFramebuffer(gl_.FRAMEBUFFER, framebuffer_);
-    framebuffer_.width = lx_;
-    framebuffer_.height = ly_;
+    var framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    framebuffer.width = lx;
+    framebuffer.height = ly;
 
-    var texture_ = gl_.createTexture();
-    gl_.bindTexture(gl_.TEXTURE_2D, texture_);
-    gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_WRAP_S, gl_.CLAMP_TO_EDGE);
-    gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_WRAP_T, gl_.CLAMP_TO_EDGE);
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MIN_FILTER, gl_.NEAREST);
-    gl_.texParameteri(gl_.TEXTURE_2D, gl_.TEXTURE_MAG_FILTER, gl_.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-    gl_.pixelStorei(gl_.UNPACK_ALIGNMENT, 1);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
-    gl_.texImage2D(gl_.TEXTURE_2D, 0, gl_.RGBA, lx_, ly_, 0, gl_.RGBA, gl_.UNSIGNED_BYTE, data_);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, lx, ly, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
 
 
-    var renderbuffer_ = gl_.createRenderbuffer();
-    gl_.bindRenderbuffer(gl_.RENDERBUFFER, renderbuffer_);
-    gl_.renderbufferStorage(gl_.RENDERBUFFER, gl_.DEPTH_COMPONENT16, lx_, ly_);
+    var renderbuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, lx, ly);
 
-    //gl_.framebufferTexture2D(gl_.FRAMEBUFFER, gl_.COLOR_ATTACHMENT0, gl_.TEXTURE_2D, this.texture_.texture_, 0);
-    gl_.framebufferTexture2D(gl_.FRAMEBUFFER, gl_.COLOR_ATTACHMENT0, gl_.TEXTURE_2D, texture_, 0);
+    //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture.texture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
-    gl_.framebufferRenderbuffer(gl_.FRAMEBUFFER, gl_.DEPTH_ATTACHMENT, gl_.RENDERBUFFER, renderbuffer_);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
 
-    this.width_ = lx_;
-    this.height_ = ly_;
-    this.size_ = lx_ * ly_ * 4;
+    this.width = lx;
+    this.height = ly;
+    this.size = lx * ly * 4;
 
-    this.texture_ = texture_;
-    this.renderbuffer_ = renderbuffer_;
-    this.framebuffer_ = framebuffer_;
+    this.texture = texture;
+    this.renderbuffer = renderbuffer;
+    this.framebuffer = framebuffer;
 
-    //gl_.generateMipmap(gl_.TEXTURE_2D);
+    //gl.generateMipmap(gl.TEXTURE_2D);
 /*
-    gl_.clearColor(0.0, 1.0, 0.0, 1.0);
-    //gl_.enable(gl_.DEPTH_TEST);
+    gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    //gl.enable(gl.DEPTH_TEST);
 
     //clear screen
-    gl_.viewport(0, 0, lx_, ly_);
-    gl_.clear(gl_.COLOR_BUFFER_BIT);// | gl_.DEPTH_BUFFER_BIT);
+    gl.viewport(0, 0, lx, ly);
+    gl.clear(gl.COLOR_BUFFER_BIT);// | gl.DEPTH_BUFFER_BIT);
 */
-    gl_.bindTexture(gl_.TEXTURE_2D, null);
-    gl_.bindRenderbuffer(gl_.RENDERBUFFER, null);
-    gl_.bindFramebuffer(gl_.FRAMEBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
-Melown.GpuTexture.prototype.createFramebuffer = function(lx_, ly_) {
-    if (this.texture_ == null){
+GpuTexture.prototype.createFramebuffer = function(lx, ly) {
+    if (this.texture == null){
         return;
     }
 
-    var gl_ = this.gl_;
+    var gl = this.gl;
 
-    var framebuffer_ = gl_.createFramebuffer();
-    gl_.bindFramebuffer(gl_.FRAMEBUFFER, framebuffer_);
-    framebuffer_.width = lx_;
-    framebuffer_.height = ly_;
+    var framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    framebuffer.width = lx;
+    framebuffer.height = ly;
 
-    gl_.bindTexture(gl_.TEXTURE_2D, this.texture_);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    var renderbuffer_ = gl_.createRenderbuffer();
-    gl_.bindRenderbuffer(gl_.RENDERBUFFER, renderbuffer_);
-    gl_.renderbufferStorage(gl_.RENDERBUFFER, gl_.DEPTH_COMPONENT16, lx_, ly_);
+    var renderbuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, lx, ly);
 
-    gl_.framebufferTexture2D(gl_.FRAMEBUFFER, gl_.COLOR_ATTACHMENT0, gl_.TEXTURE_2D, this.texture_, 0);
-    gl_.framebufferRenderbuffer(gl_.FRAMEBUFFER, gl_.DEPTH_ATTACHMENT, gl_.RENDERBUFFER, renderbuffer_);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
 
 /*
-    gl_.clearColor(0.0, 1.0, 0.0, 1.0);
-    //gl_.enable(gl_.DEPTH_TEST);
+    gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    //gl.enable(gl.DEPTH_TEST);
 
     //clear screen
-    gl_.viewport(0, 0, lx_, ly_);
-//    gl_.clear(gl_.COLOR_BUFFER_BIT | gl_.DEPTH_BUFFER_BIT);
-    gl_.clear(gl_.COLOR_BUFFER_BIT);
+    gl.viewport(0, 0, lx, ly);
+//    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 */
 
-    gl_.bindTexture(gl_.TEXTURE_2D, null);
-    gl_.bindRenderbuffer(gl_.RENDERBUFFER, null);
-    gl_.bindFramebuffer(gl_.FRAMEBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    this.framebuffer_ = framebuffer_;
-    this.renderbuffer_ = renderbuffer_;
+    this.framebuffer = framebuffer;
+    this.renderbuffer = renderbuffer;
 
 };
 
 
-Melown.GpuTexture.prototype.readFramebufferPixels = function(x_, y_, lx_, ly_) {
-    if (this.texture_ == null) {
+GpuTexture.prototype.readFramebufferPixels = function(x, y, lx, ly) {
+    if (this.texture == null) {
         return;
     }
 
-    this.gpu_.bindTexture(this);
-    this.gpu_.setFramebuffer(this);
+    this.gpu.bindTexture(this);
+    this.gpu.setFramebuffer(this);
 
-    var gl_ = this.gl_;
+    var gl = this.gl;
 
     // Read the contents of the framebuffer (data stores the pixel data)
-    var data_ = new Uint8Array(lx_ * ly_ * 4);
-    gl_.readPixels(x_, y_, lx_, ly_, gl_.RGBA, gl_.UNSIGNED_BYTE, data_);
+    var data = new Uint8Array(lx * ly * 4);
+    gl.readPixels(x, y, lx, ly, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
-    this.gpu_.setFramebuffer(null);
+    this.gpu.setFramebuffer(null);
 
-    return data_;
+    return data;
 };
 
+export default GpuTexture;
 
 

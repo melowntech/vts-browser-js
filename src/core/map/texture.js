@@ -1,212 +1,197 @@
-require('./subtexture');
 
-/**
- * @constructor
- */
-Melown.MapTexture = function(map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_) {
-    this.map_ = map_;
-    this.stats_ = map_.stats_;
-    this.tile_ = tile_; // used only for stats
-    this.internal_ = internal_; // used only for stats
+import MapSubtexture_ from './subtexture';
+
+//get rid of compiler mess
+var MapSubtexture = MapSubtexture_;
+
+
+var MapTexture = function(map, path, heightMap, extraBound, extraInfo, tile, internal) {
+    this.map = map;
+    this.stats = map.stats;
+    this.tile = tile; // used only for stats
+    this.internal = internal; // used only for stats
     
-    if (tile_) {
-        this.mainTexture_ = tile_.resources_.getSubtexture(this, path_, heightMap_, tile_, internal_); 
+    if (tile) {
+        this.mainTexture = tile.resources.getSubtexture(this, path, heightMap, tile, internal); 
     } else {
-        this.mainTexture_ = new Melown.MapSubtexture(map_, path_, heightMap_, tile_, internal_); 
+        this.mainTexture = new MapSubtexture(map, path, heightMap, tile, internal); 
     }
 
-    this.maskTexture_ = null; 
+    this.maskTexture = null; 
 
-    this.loadState_ = 0;
-    this.loadErrorTime_ = null;
-    this.loadErrorCounter_ = 0;
-    this.neverReady_ = false;
-    this.maskTexture_ = null;
-    this.mapLoaderUrl_ = path_;
-    this.heightMap_ = heightMap_ || false;
-    this.extraBound_ = extraBound_;
-    this.extraInfo_ = extraInfo_;
-    this.statsCounter_ = 0;
-    this.checkStatus_ = 0;
-    this.checkType_ = null;
-    this.checkValue_ = null;
-    this.fastHeaderCheck_ = false;
-    this.fileSize_ = 0;
+    this.loadState = 0;
+    this.loadErrorTime = null;
+    this.loadErrorCounter = 0;
+    this.neverReady = false;
+    this.maskTexture = null;
+    this.mapLoaderUrl = path;
+    this.heightMap = heightMap || false;
+    this.extraBound = extraBound;
+    this.extraInfo = extraInfo;
+    this.statsCounter = 0;
+    this.checkStatus = 0;
+    this.checkType = null;
+    this.checkValue = null;
+    this.fastHeaderCheck = false;
+    this.fileSize = 0;
 
-    if (extraInfo_ && extraInfo_.layer_) {
-        var layer_ = extraInfo_.layer_;
+    if (extraInfo && extraInfo.layer) {
+        var layer = extraInfo.layer;
         
-        if (layer_.availability_) {
-            this.checkType_ = layer_.availability_.type_;
-            switch (this.checkType_) {
-                case "negative-type": this.checkValue_ = layer_.availability_.mime_; break;
-                case "negative-code": this.checkValue_ = layer_.availability_.codes_; break;
-                case "negative-size": this.checkValue_ = layer_.availability_.size_; break;
+        if (layer.availability) {
+            this.checkType = layer.availability.type;
+            switch (this.checkType) {
+                case "negative-type": this.checkValue = layer.availability.mime; break;
+                case "negative-code": this.checkValue = layer.availability.codes; break;
+                case "negative-size": this.checkValue = layer.availability.size; break;
             }
         }       
     }
 };
 
-Melown.MapTexture.prototype.kill = function() {
-    this.mainTexture_.killImage();
-    this.mainTexture_.killGpuTexture();
-    this.mainTexture_ = null;
+
+MapTexture.prototype.kill = function() {
+    this.mainTexture.killImage();
+    this.mainTexture.killGpuTexture();
+    this.mainTexture = null;
     
-    if (this.maskTexture_) {
-        this.maskTexture_.killImage(); 
-        this.maskTexture_.killGpuTexture(); 
+    if (this.maskTexture) {
+        this.maskTexture.killImage(); 
+        this.maskTexture.killGpuTexture(); 
     }
 };
 
-Melown.MapTexture.prototype.killImage = function(killedByCache_) {
-    this.mainTexture_.killImage();
 
-    if (this.maskTexture_) {
-        this.maskTexture_.killImage(); 
+MapTexture.prototype.killImage = function(killedByCache) {
+    this.mainTexture.killImage();
+
+    if (this.maskTexture) {
+        this.maskTexture.killImage(); 
     }
 };
 
-Melown.MapTexture.prototype.killGpuTexture = function(killedByCache_) {
-    this.mainTexture_.killGpuTexture();
 
-    if (this.maskTexture_) {
-        this.maskTexture_.killGpuTexture(); 
+MapTexture.prototype.killGpuTexture = function(killedByCache) {
+    this.mainTexture.killGpuTexture();
+
+    if (this.maskTexture) {
+        this.maskTexture.killGpuTexture(); 
     }
 };
 
-Melown.MapTexture.prototype.setBoundTexture = function(tile_, layer_) {
-    if (tile_ && layer_) {
-        this.extraBound_.sourceTile_ = tile_;
-        this.extraBound_.layer_ = layer_;
+
+MapTexture.prototype.setBoundTexture = function(tile, layer) {
+    if (tile && layer) {
+        this.extraBound.sourceTile = tile;
+        this.extraBound.layer = layer;
         
-        if (!tile_.boundTextures_[layer_.id_]) {
-            tile_.boundLayers_[layer_.id_] = layer_;
-            var path_ = layer_.getUrl(tile_.id_);
-            tile_.boundTextures_[layer_.id_] = tile_.resources_.getTexture(path_, null, null, {tile_: tile_, layer_: layer_}, this.tile_, this.internal_);
+        if (!tile.boundTextures[layer.id]) {
+            tile.boundLayers[layer.id] = layer;
+            var path = layer.getUrl(tile.id);
+            tile.boundTextures[layer.id] = tile.resources.getTexture(path, null, null, {tile: tile, layer: layer}, this.tile, this.internal);
         }
 
-        this.extraBound_.texture_ = tile_.boundTextures_[layer_.id_]; 
-        this.extraBound_.transform_ = this.map_.getTileTextureTransform(tile_, this.extraBound_.tile_);
+        this.extraBound.texture = tile.boundTextures[layer.id]; 
+        this.extraBound.transform = this.map.draw.drawTiles.getTileTextureTransform(tile, this.extraBound.tile);
         
-        this.map_.markDirty();
+        this.map.markDirty();
     }
 };
 
-Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {
-    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
-    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
-    
-    /*if (this.extraInfo_) {
-        if (this.extraInfo_.tile_.id_[0] == Melown.debugId_[0] &&
-            this.extraInfo_.tile_.id_[1] == Melown.debugId_[1] &&
-            this.extraInfo_.tile_.id_[2] == Melown.debugId_[2]) {
-                this.extraInfo_ = this.extraInfo_;
-        }
-    }*/
-   
-/*   
-   if (this.mapLoaderUrl_ == "https://cdn.melown.com/mario/proxy//melown2015/tms/melown/mapycz-ophoto-cz/10-277-172.mask") {
-       this.mapLoaderUrl_ = this.mapLoaderUrl_;
-   }
-*/
-/*   
-   if (this.mapLoaderUrl_ == "https://ecn.t3.tiles.virtualearth.net/tiles/a1202310323212333.jpeg?g=5549") {
-       this.mapLoaderUrl_ = this.mapLoaderUrl_;
-   }
-*/
-   if (this.mapLoaderUrl_ == "https://ecn.t1.tiles.virtualearth.net/tiles/a120231032333003.jpeg?g=5594" ||
-       this.mapLoaderUrl_ == "https://ecn.t2.tiles.virtualearth.net/tiles/a120231032333003.jpeg?g=5594" ||
-       this.mapLoaderUrl_ == "https://ecn.t3.tiles.virtualearth.net/tiles/a120231032333003.jpeg?g=5594" ||
-       this.mapLoaderUrl_ == "https://ecn.t4.tiles.virtualearth.net/tiles/a120231032333003.jpeg?g=5594" ||
-       this.mapLoaderUrl_ == "https://ecn.t5.tiles.virtualearth.net/tiles/a120231032333003.jpeg?g=5594") {
-       this.mapLoaderUrl_ = this.mapLoaderUrl_;
-   }
 
-    if (this.neverReady_) {
+MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
+    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
+    doNotLoad = doNotLoad || doNotUseGpu;
+/*   
+   if (this.mapLoaderUrl == "https://ecn.t3.tiles.virtualearth.net/tiles/a1202310323212333.jpeg?g=5549") {
+       this.mapLoaderUrl = this.mapLoaderUrl;
+   }
+*/
+    if (this.neverReady) {
         return false;
     }
    
-    if (this.extraBound_) {
-        if (this.extraBound_.texture_) {
-            while (this.extraBound_.texture_.extraBound_ || this.extraBound_.texture_.checkStatus_ == -1) {
-//            while (this.extraBound_.texture_.checkStatus_ == -1) {
-                var parent_ = this.extraBound_.sourceTile_.parent_;
-                if (parent_.id_[0] < this.extraBound_.layer_.lodRange_[0]) {
-                    this.neverReady_ = true;
-                    this.extraBound_.tile_.resetDrawCommands_ = true;
-                    this.map_.markDirty();
+    if (this.extraBound) {
+        if (this.extraBound.texture) {
+            while (this.extraBound.texture.extraBound || this.extraBound.texture.checkStatus == -1) {
+//            while (this.extraBound.texture.checkStatus == -1) {
+                var parent = this.extraBound.sourceTile.parent;
+                if (parent.id[0] < this.extraBound.layer.lodRange[0]) {
+                    this.neverReady = true;
+                    this.extraBound.tile.resetDrawCommands = true;
+                    this.map.markDirty();
                     return false;
                 }
  
-                this.setBoundTexture(parent_, this.extraBound_.layer_);
+                this.setBoundTexture(parent, this.extraBound.layer);
             }
             
-            var ready_ = this.extraBound_.texture_.isReady(doNotLoad_, priority_, doNotCheckGpu_);
+            var ready = this.extraBound.texture.isReady(doNotLoad, priority, doNotCheckGpu);
             
-            if (ready_ && this.checkMask_) {
-                this.extraBound_.tile_.resetDrawCommands_ = (this.extraBound_.texture_.getMaskTexture() != null);
-                this.checkMask_ = false;
+            if (ready && this.checkMask) {
+                this.extraBound.tile.resetDrawCommands = (this.extraBound.texture.getMaskTexture() != null);
+                this.checkMask = false;
             }
 
-            return ready_;
+            return ready;
             
         } else {
-            this.setBoundTexture(this.extraBound_.sourceTile_, this.extraBound_.layer_);        
+            this.setBoundTexture(this.extraBound.sourceTile, this.extraBound.layer);        
         }
         
         return false;
     }
 
     /*
-    if (!this.extraBound_ && this.extraInfo_ && !this.maskTexture_) {
-        var layer_ = this.extraInfo_.layer_;
+    if (!this.extraBound && this.extraInfo && !this.maskTexture) {
+        var layer = this.extraInfo.layer;
         
-        if (layer_ && layer_.maskUrl_ && this.checkType_ != "metatile") {
-            var path_ = layer_.getMaskUrl(this.tile_.id_);
-            this.maskTexture_ = this.tile_.resources_.getTexture(path_, null, null, null, this.tile_, this.internal_);
+        if (layer && layer.maskUrl && this.checkType != "metatile") {
+            var path = layer.getMaskUrl(this.tile.id);
+            this.maskTexture = this.tile.resources.getTexture(path, null, null, null, this.tile, this.internal);
         }
     }*/
 
-    switch (this.checkType_) {
+    switch (this.checkType) {
         case "metatile":
 
-            if (this.checkStatus_ != 2) {
-                if (this.checkStatus_ == 0) {
-                    if (this.extraInfo_ && this.extraInfo_.tile_) {
-                        var metaresources_ = this.extraInfo_.tile_.boundmetaresources_;
-                        if (!metaresources_) {
-							metaresources_ = this.map_.resourcesTree_.findAgregatedNode(this.extraInfo_.tile_.id_, 8);
-                            this.extraInfo_.tile_.boundmetaresources_ = metaresources_;
+            if (this.checkStatus != 2) {
+                if (this.checkStatus == 0) {
+                    if (this.extraInfo && this.extraInfo.tile) {
+                        var metaresources = this.extraInfo.tile.boundmetaresources;
+                        if (!metaresources) {
+							metaresources = this.map.resourcesTree.findAgregatedNode(this.extraInfo.tile.id, 8);
+                            this.extraInfo.tile.boundmetaresources = metaresources;
                         }
                         
-                        var layer_ = this.extraInfo_.layer_;
-						var path_ = this.extraInfo_.metaPath_;
+                        var layer = this.extraInfo.layer;
+						var path = this.extraInfo.metaPath;
 						
-						if(!this.extraInfo_.metaPath_) {
-							var path_ = layer_.getMetatileUrl(metaresources_.id_);	
-							this.extraInfo_.metaPath_ = path_;
+						if(!this.extraInfo.metaPath) {
+							var path = layer.getMetatileUrl(metaresources.id);	
+							this.extraInfo.metaPath = path;
 						}
 						
-                        var texture_ = metaresources_.getTexture(path_, true, null, null, this.tile_, this.internal_);
+                        var texture = metaresources.getTexture(path, true, null, null, this.tile, this.internal);
                         
-                        if (this.maskTexture_) {
-                            if (this.maskTexture_.isReady(doNotLoad_, priority_, doNotCheckGpu_, this)) {
-                                this.checkStatus_ = 2;
+                        if (this.maskTexture) {
+                            if (this.maskTexture.isReady(doNotLoad, priority, doNotCheckGpu, this)) {
+                                this.checkStatus = 2;
                             }
                         } else {
-                            if (texture_.isReady(doNotLoad_, priority_, doNotCheckGpu_)) {
-                                var tile_ = this.extraInfo_.tile_;
-                                var value_ = texture_.getHeightMapValue(tile_.id_[1] & 255, tile_.id_[2] & 255);
-                                this.checkStatus_ = (value_ & 128) ? 2 : -1;
+                            if (texture.isReady(doNotLoad, priority, doNotCheckGpu)) {
+                                var tile = this.extraInfo.tile;
+                                var value = texture.getHeightMapValue(tile.id[1] & 255, tile.id[2] & 255);
+                                this.checkStatus = (value & 128) ? 2 : -1;
                                 
                                 
-                                if (this.checkStatus_ == 2) {
-                                    if (!(value_ & 64)) { //load mask
-                                        var path_ = layer_.getMaskUrl(tile_.id_);
-                                        this.maskTexture_ = tile_.resources_.getTexture(path_, null, null, null, this.tile_, this.internal_);
-                                        this.checkStatus_ = 0;
-                                        tile_.resetDrawCommands_ = true;
-                                        this.map_.markDirty();
+                                if (this.checkStatus == 2) {
+                                    if (!(value & 64)) { //load mask
+                                        var path = layer.getMaskUrl(tile.id);
+                                        this.maskTexture = tile.resources.getTexture(path, null, null, null, this.tile, this.internal);
+                                        this.checkStatus = 0;
+                                        tile.resetDrawCommands = true;
+                                        this.map.markDirty();
                                     }
                                 }
                             }
@@ -214,32 +199,32 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
                     }
                 }
                 
-                if (this.checkStatus_ == -1) {
-                    if (!this.extraBound_) {
-                        var parent_ = this.extraInfo_.tile_.parent_;
-                        if (parent_.id_[0] < this.extraInfo_.layer_.lodRange_[0]) {
-                            this.neverReady_ = true;
-                            this.extraInfo_.tile_.resetDrawCommands_ = true;
-                            this.map_.markDirty();
+                if (this.checkStatus == -1) {
+                    if (!this.extraBound) {
+                        var parent = this.extraInfo.tile.parent;
+                        if (parent.id[0] < this.extraInfo.layer.lodRange[0]) {
+                            this.neverReady = true;
+                            this.extraInfo.tile.resetDrawCommands = true;
+                            this.map.markDirty();
                             return false;
                         }
 
-                        this.extraBound_ = { tile_: this.extraInfo_.tile_, layer_: this.extraInfo_.layer_};
-                        this.setBoundTexture(this.extraBound_.tile_.parent_, this.extraBound_.layer_);
-                        this.checkMask_ = true;
+                        this.extraBound = { tile: this.extraInfo.tile, layer: this.extraInfo.layer};
+                        this.setBoundTexture(this.extraBound.tile.parent, this.extraBound.layer);
+                        this.checkMask = true;
                     }
 
-                    while (this.extraBound_.texture_.extraBound_ || this.extraBound_.texture_.checkStatus_ == -1) {
-                    //while (this.extraBound_.texture_.checkStatus_ == -1) {
-                        var parent_ = this.extraBound_.sourceTile_.parent_;
-                        if (parent_.id_[0] < this.extraBound_.layer_.lodRange_[0]) {
-                            this.neverReady_ = true;
-                            this.extraBound_.tile_.resetDrawCommands_ = true;
-                            this.map_.markDirty();
+                    while (this.extraBound.texture.extraBound || this.extraBound.texture.checkStatus == -1) {
+                    //while (this.extraBound.texture.checkStatus == -1) {
+                        var parent = this.extraBound.sourceTile.parent;
+                        if (parent.id[0] < this.extraBound.layer.lodRange[0]) {
+                            this.neverReady = true;
+                            this.extraBound.tile.resetDrawCommands = true;
+                            this.map.markDirty();
                             return false;
                         }
                         
-                        this.setBoundTexture(parent_, this.extraBound_.layer_);        
+                        this.setBoundTexture(parent, this.extraBound.layer);        
                     }
                 }
 
@@ -249,71 +234,81 @@ Melown.MapTexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheck
             break;
     }
 
-    var maskState_ = true;
+    var maskState = true;
 
-    if (this.maskTexture_) {
-        maskState_ = this.maskTexture_.isReady(doNotLoad_, priority_, doNotCheckGpu_, this);
+    if (this.maskTexture) {
+        maskState = this.maskTexture.isReady(doNotLoad, priority, doNotCheckGpu, this);
     }
     
-    return this.mainTexture_.isReady(doNotLoad_, priority_, doNotCheckGpu_, this) && maskState_;
+    return this.mainTexture.isReady(doNotLoad, priority, doNotCheckGpu, this) && maskState;
 };
 
-Melown.MapTexture.prototype.getGpuTexture = function() {
-    if (this.extraBound_) {
-        if (this.extraBound_.texture_) {
-            return this.extraBound_.texture_.getGpuTexture();
+
+MapTexture.prototype.getGpuTexture = function() {
+    if (this.extraBound) {
+        if (this.extraBound.texture) {
+            return this.extraBound.texture.getGpuTexture();
         }
         return null;
     } 
 
-    return this.mainTexture_.getGpuTexture();
+    return this.mainTexture.getGpuTexture();
 };
 
-Melown.MapTexture.prototype.getMaskTexture = function() {
-    if (this.extraBound_) {
-        if (this.extraBound_.texture_) {
-            return this.extraBound_.texture_.getMaskTexture();
+
+MapTexture.prototype.getMaskTexture = function() {
+    if (this.extraBound) {
+        if (this.extraBound.texture) {
+            return this.extraBound.texture.getMaskTexture();
         }
     } 
 
-    return this.maskTexture_;
+    return this.maskTexture;
 };
 
-Melown.MapTexture.prototype.getGpuMaskTexture = function() {
-    if (this.extraBound_) {
-        if (this.extraBound_.texture_ && this.extraBound_.texture_.mask_) {
-            return this.extraBound_.texture_.getGpuMaskTexture();
+
+MapTexture.prototype.getGpuMaskTexture = function() {
+    if (this.extraBound) {
+        if (this.extraBound.texture && this.extraBound.texture.mask) {
+            return this.extraBound.texture.getGpuMaskTexture();
         }
         return null;
     } 
 
-    if (this.maskTexture_) {
-        return this.maskTexture_.getGpuTexture();
+    if (this.maskTexture) {
+        return this.maskTexture.getGpuTexture();
     }
     
     return null;
 };
 
-Melown.MapTexture.prototype.getImageData = function() {
-    return this.mainTexture_.imageData_;
+
+MapTexture.prototype.getImageData = function() {
+    return this.mainTexture.imageData;
 };
 
-Melown.MapTexture.prototype.getImageExtents = function() {
-    return this.mainTexture_.imageExtents_;
+
+MapTexture.prototype.getImageExtents = function() {
+    return this.mainTexture.imageExtents;
 };
 
-Melown.MapTexture.prototype.getHeightMapValue = function(x, y) {
-    return this.mainTexture_.getHeightMapValue(x, y);
+
+MapTexture.prototype.getHeightMapValue = function(x, y) {
+    return this.mainTexture.getHeightMapValue(x, y);
 };
 
-Melown.MapTexture.prototype.getTransform = function() {
-    if (this.extraBound_) {
-        if (this.extraBound_.texture_) {
-            return this.extraBound_.transform_;
+
+MapTexture.prototype.getTransform = function() {
+    if (this.extraBound) {
+        if (this.extraBound.texture) {
+            return this.extraBound.transform;
         }
         return null;
     } 
 
     return [1,1,0,0];
 };
+
+
+export default MapTexture;
 

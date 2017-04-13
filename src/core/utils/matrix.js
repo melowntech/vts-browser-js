@@ -1,10 +1,10 @@
 
-// glMatrix v0.9.5
-Melown.glMatrixArrayType2 = /*typeof Float32Array != "undefined" ? Float32Array : typeof WebGLFloatArray != "undefined" ? WebGLFloatArray :*/ Array;
 
-Melown.vec2 = {};
-Melown.vec2.create = function (a) {
-    var b = new Melown.glMatrixArrayType2(2);
+var vec2 = {};
+
+
+vec2.create = function (a) {
+    var b = new Array(2);
     if (a) {
         b[0] = a[0];
         b[1] = a[1];
@@ -12,9 +12,12 @@ Melown.vec2.create = function (a) {
     return b;
 };
 
-Melown.vec4 = {};
-Melown.vec4.create = function (a) {
-    var b = new Melown.glMatrixArrayType2(4);
+
+var vec4 = {};
+
+
+vec4.create = function (a) {
+    var b = new Array(4);
     if (a) {
         b[0] = a[0];
         b[1] = a[1];
@@ -23,20 +26,28 @@ Melown.vec4.create = function (a) {
     }
     return b;
 };
-Melown.vec4.dot = function (a, b) {
+
+
+vec4.dot = function (a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
 };
-Melown.vec4.dot2 = function (a, b) {
+
+
+vec4.dot2 = function (a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3];
 };
 
-Melown.vec4.dot3 = function (a, b, i, x, y, z) {
+
+vec4.dot3 = function (a, b, i, x, y, z) {
     return a[0] * (b[i]-x) + a[1] * (b[i+1]-y) + a[2] * (b[i+2]-z) + a[3];
 };
 
-Melown.vec3 = {};
-Melown.vec3.create = function (a) {
-    var b = new Melown.glMatrixArrayType2(3);
+
+var vec3 = {};
+
+
+vec3.create = function (a) {
+    var b = new Array(3);
     if (a) {
         b[0] = a[0];
         b[1] = a[1];
@@ -44,13 +55,17 @@ Melown.vec3.create = function (a) {
     }
     return b;
 };
-Melown.vec3.set = function (a, b) {
+
+
+vec3.set = function (a, b) {
     b[0] = a[0];
     b[1] = a[1];
     b[2] = a[2];
     return b;
 };
-Melown.vec3.add = function (a, b, c) {
+
+
+vec3.add = function (a, b, c) {
     if (!c || a == c) {
         a[0] += b[0];
         a[1] += b[1];
@@ -62,7 +77,9 @@ Melown.vec3.add = function (a, b, c) {
     c[2] = a[2] + b[2];
     return c;
 };
-Melown.vec3.subtract = function (a, b, c) {
+
+
+vec3.subtract = function (a, b, c) {
     if (!c || a == c) {
         a[0] -= b[0];
         a[1] -= b[1];
@@ -74,14 +91,18 @@ Melown.vec3.subtract = function (a, b, c) {
     c[2] = a[2] - b[2];
     return c;
 };
-Melown.vec3.negate = function (a, b) {
+
+
+vec3.negate = function (a, b) {
     b || (b = a);
     b[0] = -a[0];
     b[1] = -a[1];
     b[2] = -a[2];
     return b;
 };
-Melown.vec3.scale = function (a, b, c) {
+
+
+vec3.scale = function (a, b, c) {
     if (!c || a == c) {
         a[0] *= b;
         a[1] *= b;
@@ -93,7 +114,9 @@ Melown.vec3.scale = function (a, b, c) {
     c[2] = a[2] * b;
     return c;
 };
-Melown.vec3.normalize = function (a, b) {
+
+
+vec3.normalize = function (a, b) {
     b || (b = a);
     var c = a[0],
         d = a[1],
@@ -118,7 +141,9 @@ Melown.vec3.normalize = function (a, b) {
     b[2] = e * g;
     return b;
 };
-Melown.vec3.normalize2 = function (a, i, b) {
+
+
+vec3.normalize2 = function (a, i, b) {
     var c = a[i],
         d = a[i+1],
         e = a[i+2],
@@ -141,7 +166,9 @@ Melown.vec3.normalize2 = function (a, i, b) {
     b[1] = d * g;
     b[2] = e * g;
 };
-Melown.vec3.normalize3 = function (a, i, b, j) {
+
+
+vec3.normalize3 = function (a, i, b, j) {
     var c = a[i],
         d = a[i+1],
         e = a[i+2],
@@ -165,7 +192,36 @@ Melown.vec3.normalize3 = function (a, i, b, j) {
     b[j+2] = e * g;
 };
 
-Melown.vec3.cross = function (a, b, c) {
+
+vec3.normalize4 = function (a, b, dd) {
+    b || (b = a);
+    var c = a[0],
+        d = a[1],
+        e = a[2],
+        g = Math.sqrt(c * c + d * d + e * e);
+    if (g) {
+        if (g == 1) {
+            b[0] = c;
+            b[1] = d;
+            b[2] = e;
+            return b;
+        }
+    } else {
+        b[0] = 0;
+        b[1] = 0;
+        b[2] = 0;
+        return b;
+    }
+    var dd = g;
+    g = 1 / g;
+    b[0] = c * g;
+    b[1] = d * g;
+    b[2] = e * g;
+    return dd;
+};
+
+
+vec3.cross = function (a, b, c) {
     c || (c = a);
     var d = a[0],
         e = a[1];
@@ -178,28 +234,40 @@ Melown.vec3.cross = function (a, b, c) {
     c[2] = d * f - e * g;
     return c;
 };
-Melown.vec3.length = function (a) {
+
+
+vec3.length = function (a) {
     var b = a[0],
         c = a[1];
     a = a[2];
     return Math.sqrt(b * b + c * c + a * a);
 };
-Melown.vec3.dot = function (a, b) {
+
+
+vec3.dot = function (a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 };
-Melown.vec3.dot2 = function (a, b, i) {
+
+
+vec3.dot2 = function (a, b, i) {
     return a[0] * b[i] + a[1] * b[i+1] + a[2] * b[i+2];
 };
-Melown.vec3.dot3 = function (a, i, b, j) {
+
+
+vec3.dot3 = function (a, i, b, j) {
     return a[i] * b[j] + a[i+1] * b[j+1] + a[i+2] * b[j+2];
 };
-Melown.vec3.squareDistance = function (a, b) {
+
+
+vec3.squareDistance = function (a, b) {
     var dx = b[0] - a[0];
     var dy = b[1] - a[1];
     var dz = b[2] - a[2];
     return dx*dx + dy*dy + dz*dz;
 };
-Melown.vec3.direction = function (a, b, c) {
+
+
+vec3.direction = function (a, b, c) {
     c || (c = a);
     var d = a[0] - b[0],
         e = a[1] - b[1];
@@ -217,19 +285,27 @@ Melown.vec3.direction = function (a, b, c) {
     c[2] = a * b;
     return c;
 };
-Melown.vec3.lerp = function (a, b, c, d) {
+
+
+vec3.lerp = function (a, b, c, d) {
     d || (d = a);
     d[0] = a[0] + c * (b[0] - a[0]);
     d[1] = a[1] + c * (b[1] - a[1]);
     d[2] = a[2] + c * (b[2] - a[2]);
     return d;
 };
-Melown.vec3.str = function (a) {
+
+
+vec3.str = function (a) {
     return "[" + a[0] + ", " + a[1] + ", " + a[2] + "]";
 };
-Melown.mat3 = {};
-Melown.mat3.create = function (a) {
-    var b = new Melown.glMatrixArrayType2(9);
+
+
+var mat3 = {};
+
+
+mat3.create = function (a) {
+    var b = new Array(9);
     if (a) {
         b[0] = a[0];
         b[1] = a[1];
@@ -244,7 +320,9 @@ Melown.mat3.create = function (a) {
     }
     return b;
 };
-Melown.mat3.set = function (a, b) {
+
+
+mat3.set = function (a, b) {
     b[0] = a[0];
     b[1] = a[1];
     b[2] = a[2];
@@ -256,7 +334,9 @@ Melown.mat3.set = function (a, b) {
     b[8] = a[8];
     return b;
 };
-Melown.mat3.identity = function (a) {
+
+
+mat3.identity = function (a) {
     a[0] = 1;
     a[1] = 0;
     a[2] = 0;
@@ -268,7 +348,9 @@ Melown.mat3.identity = function (a) {
     a[8] = 1;
     return a;
 };
-Melown.mat3.transpose = function (a, b) {
+
+
+mat3.transpose = function (a, b) {
     if (!b || a == b) {
         var c = a[1],
             d = a[2],
@@ -292,8 +374,10 @@ Melown.mat3.transpose = function (a, b) {
     b[8] = a[8];
     return b;
 };
-Melown.mat3.toMat4 = function (a, b) {
-    b || (b = Melown.mat4.create());
+
+
+mat3.toMat4 = function (a, b) {
+    b || (b = mat4.create());
     b[0] = a[0];
     b[1] = a[1];
     b[2] = a[2];
@@ -312,12 +396,18 @@ Melown.mat3.toMat4 = function (a, b) {
     b[15] = 1;
     return b;
 };
-Melown.mat3.str = function (a) {
+
+
+mat3.str = function (a) {
     return "[" + a[0] + ", " + a[1] + ", " + a[2] + ", " + a[3] + ", " + a[4] + ", " + a[5] + ", " + a[6] + ", " + a[7] + ", " + a[8] + "]";
 };
-Melown.mat4 = {};
-Melown.mat4.create = function (a) {
-    var b = new Melown.glMatrixArrayType2(16);
+
+
+var mat4 = {};
+
+
+mat4.create = function (a) {
+    var b = new Array(16);
     if (a) {
         b[0] = a[0];
         b[1] = a[1];
@@ -338,7 +428,9 @@ Melown.mat4.create = function (a) {
     }
     return b;
 };
-Melown.mat4.set = function (a, b) {
+
+
+mat4.set = function (a, b) {
     b[0] = a[0];
     b[1] = a[1];
     b[2] = a[2];
@@ -357,7 +449,9 @@ Melown.mat4.set = function (a, b) {
     b[15] = a[15];
     return b;
 };
-Melown.mat4.identity = function (a) {
+
+
+mat4.identity = function (a) {
     a[0] = 1;
     a[1] = 0;
     a[2] = 0;
@@ -376,7 +470,9 @@ Melown.mat4.identity = function (a) {
     a[15] = 1;
     return a;
 };
-Melown.mat4.transpose = function (a, b) {
+
+
+mat4.transpose = function (a, b) {
     if (!b || a == b) {
         var c = a[1],
             d = a[2],
@@ -416,7 +512,9 @@ Melown.mat4.transpose = function (a, b) {
     b[15] = a[15];
     return b;
 };
-Melown.mat4.determinant = function (a) {
+
+
+mat4.determinant = function (a) {
     var b = a[0],
         c = a[1],
         d = a[2],
@@ -435,7 +533,9 @@ Melown.mat4.determinant = function (a) {
     a = a[15];
     return m * k * h * e - j * n * h * e - m * f * l * e + g * n * l * e + j * f * p * e - g * k * p * e - m * k * d * i + j * n * d * i + m * c * l * i - b * n * l * i - j * c * p * i + b * k * p * i + m * f * d * o - g * n * d * o - m * c * h * o + b * n * h * o + g * c * p * o - b * f * p * o - j * f * d * a + g * k * d * a + j * c * h * a - b * k * h * a - g * c * l * a + b * f * l * a;
 };
-Melown.mat4.inverse = function (a, b) {
+
+
+mat4.inverse = function (a, b) {
     b || (b = a);
     var c = a[0],
         d = a[1],
@@ -484,8 +584,10 @@ Melown.mat4.inverse = function (a, b) {
     b[15] = (k * u - l * B + o * A) * q;
     return b;
 };
-Melown.mat4.toRotationMat = function (a, b) {
-    b || (b = Melown.mat4.create());
+
+
+mat4.toRotationMat = function (a, b) {
+    b || (b = mat4.create());
     b[0] = a[0];
     b[1] = a[1];
     b[2] = a[2];
@@ -504,8 +606,10 @@ Melown.mat4.toRotationMat = function (a, b) {
     b[15] = 1;
     return b;
 };
-Melown.mat4.toMat3 = function (a, b) {
-    b || (b = Melown.mat3.create());
+
+
+mat4.toMat3 = function (a, b) {
+    b || (b = mat3.create());
     b[0] = a[0];
     b[1] = a[1];
     b[2] = a[2];
@@ -517,7 +621,9 @@ Melown.mat4.toMat3 = function (a, b) {
     b[8] = a[10];
     return b;
 };
-Melown.mat4.toInverseMat3 = function (a, b) {
+
+
+mat4.toInverseMat3 = function (a, b) {
     var c = a[0],
         d = a[1],
         e = a[2],
@@ -533,7 +639,7 @@ Melown.mat4.toInverseMat3 = function (a, b) {
         n = c * l + d * o + e * m;
     if (!n) return null;
     n = 1 / n;
-    b || (b = Melown.mat3.create());
+    b || (b = mat3.create());
     b[0] = l * n;
     b[1] = (-k * d + e * j) * n;
     b[2] = (h * d - e * f) * n;
@@ -545,7 +651,9 @@ Melown.mat4.toInverseMat3 = function (a, b) {
     b[8] = (f * c - d * g) * n;
     return b;
 };
-Melown.mat4.multiply = function (a, b, c) {
+
+
+mat4.multiply = function (a, b, c) {
     c || (c = a);
     var d = a[0],
         e = a[1],
@@ -598,7 +706,9 @@ Melown.mat4.multiply = function (a, b, c) {
     c[15] = q * f + F * k + G * n + b * a;
     return c;
 };
-Melown.mat4.multiplyVec3 = function (a, b, c) {
+
+
+mat4.multiplyVec3 = function (a, b, c) {
     c || (c = b);
     var d = b[0],
         e = b[1];
@@ -608,7 +718,9 @@ Melown.mat4.multiplyVec3 = function (a, b, c) {
     c[2] = a[2] * d + a[6] * e + a[10] * b + a[14];
     return c;
 };
-Melown.mat4.multiplyVec4 = function (a, b, c) {
+
+
+mat4.multiplyVec4 = function (a, b, c) {
     c || (c = b);
     var d = b[0],
         e = b[1],
@@ -620,7 +732,9 @@ Melown.mat4.multiplyVec4 = function (a, b, c) {
     c[3] = a[3] * d + a[7] * e + a[11] * g + a[15] * b;
     return c;
 };
-Melown.mat4.translate = function (a, b, c) {
+
+
+mat4.translate = function (a, b, c) {
     var d = b[0],
         e = b[1];
     b = b[2];
@@ -661,7 +775,9 @@ Melown.mat4.translate = function (a, b, c) {
     c[15] = i * d + o * e + r * b + a[15];
     return c;
 };
-Melown.mat4.scale = function (a, b, c) {
+
+
+mat4.scale = function (a, b, c) {
     var d = b[0],
         e = b[1];
     b = b[2];
@@ -698,7 +814,9 @@ Melown.mat4.scale = function (a, b, c) {
     c[15] = a[15];
     return c;
 };
-Melown.mat4.rotate = function (a, b, c, d) {
+
+
+mat4.rotate = function (a, b, c, d) {
     var e = c[0],
         g = c[1];
     c = c[2];
@@ -757,7 +875,9 @@ Melown.mat4.rotate = function (a, b, c, d) {
     d[11] = l * z + p * e + B * g;
     return d;
 };
-Melown.mat4.rotateX = function (a, b, c) {
+
+
+mat4.rotateX = function (a, b, c) {
     var d = Math.sin(b);
     b = Math.cos(b);
     var e = a[4],
@@ -790,7 +910,9 @@ Melown.mat4.rotateX = function (a, b, c) {
     c[11] = h * -d + l * b;
     return c;
 };
-Melown.mat4.rotateY = function (a, b, c) {
+
+
+mat4.rotateY = function (a, b, c) {
     var d = Math.sin(b);
     b = Math.cos(b);
     var e = a[0],
@@ -823,7 +945,9 @@ Melown.mat4.rotateY = function (a, b, c) {
     c[11] = h * d + l * b;
     return c;
 };
-Melown.mat4.rotateZ = function (a, b, c) {
+
+
+mat4.rotateZ = function (a, b, c) {
     var d = Math.sin(b);
     b = Math.cos(b);
     var e = a[0],
@@ -856,8 +980,10 @@ Melown.mat4.rotateZ = function (a, b, c) {
     c[7] = h * -d + l * b;
     return c;
 };
-Melown.mat4.frustum = function (a, b, c, d, e, g, f) {
-    f || (f = Melown.mat4.create());
+
+
+mat4.frustum = function (a, b, c, d, e, g, f) {
+    f || (f = mat4.create());
     var h = b - a,
         i = d - c,
         j = g - e;
@@ -879,13 +1005,17 @@ Melown.mat4.frustum = function (a, b, c, d, e, g, f) {
     f[15] = 0;
     return f;
 };
-Melown.mat4.perspective = function (a, b, c, d, e) {
+
+
+mat4.perspective = function (a, b, c, d, e) {
     a = c * Math.tan(a * Math.PI / 360);
     b = a * b;
-    return Melown.mat4.frustum(-b, b, -a, a, c, d, e);
+    return mat4.frustum(-b, b, -a, a, c, d, e);
 };
-Melown.mat4.ortho = function (a, b, c, d, e, g, f) {
-    f || (f = Melown.mat4.create());
+
+
+mat4.ortho = function (a, b, c, d, e, g, f) {
+    f || (f = mat4.create());
     var h = b - a,
         i = d - c,
         j = g - e;
@@ -907,8 +1037,10 @@ Melown.mat4.ortho = function (a, b, c, d, e, g, f) {
     f[15] = 1;
     return f;
 };
-Melown.mat4.lookAt = function (a, b, c, d) {
-    d || (d = Melown.mat4.create());
+
+
+mat4.lookAt = function (a, b, c, d) {
+    d || (d = mat4.create());
     var e = a[0],
         g = a[1];
     a = a[2];
@@ -917,7 +1049,7 @@ Melown.mat4.lookAt = function (a, b, c, d) {
         i = c[2];
     c = b[1];
     var j = b[2];
-    if (e == b[0] && g == c && a == j) return Melown.mat4.identity(d);
+    if (e == b[0] && g == c && a == j) return mat4.identity(d);
     var k, l, o, m;
     c = e - b[0];
     j = g - b[1];
@@ -963,12 +1095,18 @@ Melown.mat4.lookAt = function (a, b, c, d) {
     d[15] = 1;
     return d;
 };
-Melown.mat4.str = function (a) {
+
+
+mat4.str = function (a) {
     return "[" + a[0] + ", " + a[1] + ", " + a[2] + ", " + a[3] + ", " + a[4] + ", " + a[5] + ", " + a[6] + ", " + a[7] + ", " + a[8] + ", " + a[9] + ", " + a[10] + ", " + a[11] + ", " + a[12] + ", " + a[13] + ", " + a[14] + ", " + a[15] + "]";
 };
-Melown.quat4 = {};
-Melown.quat4.create = function (a) {
-    var b = new Melown.glMatrixArrayType2(4);
+
+
+var quat4 = {};
+
+
+quat4.create = function (a) {
+    var b = new Array(4);
     if (a) {
         b[0] = a[0];
         b[1] = a[1];
@@ -977,14 +1115,18 @@ Melown.quat4.create = function (a) {
     }
     return b;
 };
-Melown.quat4.set = function (a, b) {
+
+
+quat4.set = function (a, b) {
     b[0] = a[0];
     b[1] = a[1];
     b[2] = a[2];
     b[3] = a[3];
     return b;
 };
-Melown.quat4.calculateW = function (a, b) {
+
+
+quat4.calculateW = function (a, b) {
     var c = a[0],
         d = a[1],
         e = a[2];
@@ -998,7 +1140,9 @@ Melown.quat4.calculateW = function (a, b) {
     b[3] = -Math.sqrt(Math.abs(1 - c * c - d * d - e * e));
     return b;
 };
-Melown.quat4.inverse = function (a, b) {
+
+
+quat4.inverse = function (a, b) {
     if (!b || a == b) {
         a[0] *= 1;
         a[1] *= 1;
@@ -1011,14 +1155,18 @@ Melown.quat4.inverse = function (a, b) {
     b[3] = a[3];
     return b;
 };
-Melown.quat4.length = function (a) {
+
+
+quat4.length = function (a) {
     var b = a[0],
         c = a[1],
         d = a[2];
     a = a[3];
     return Math.sqrt(b * b + c * c + d * d + a * a);
 };
-Melown.quat4.normalize = function (a, b) {
+
+
+quat4.normalize = function (a, b) {
     b || (b = a);
     var c = a[0],
         d = a[1],
@@ -1039,7 +1187,9 @@ Melown.quat4.normalize = function (a, b) {
     b[3] = g * f;
     return b;
 };
-Melown.quat4.multiply = function (a, b, c) {
+
+
+quat4.multiply = function (a, b, c) {
     c || (c = a);
     var d = a[0],
         e = a[1],
@@ -1055,7 +1205,9 @@ Melown.quat4.multiply = function (a, b, c) {
     c[3] = a * b - d * f - e * h - g * i;
     return c;
 };
-Melown.quat4.multiplyVec3 = function (a, b, c) {
+
+
+quat4.multiplyVec3 = function (a, b, c) {
     c || (c = b);
     var d = b[0],
         e = b[1],
@@ -1073,8 +1225,10 @@ Melown.quat4.multiplyVec3 = function (a, b, c) {
     c[2] = k * a + d * -h + i * -f - j * -b;
     return c;
 };
-Melown.quat4.toMat3 = function (a, b) {
-    b || (b = Melown.mat3.create());
+
+
+quat4.toMat3 = function (a, b) {
+    b || (b = mat3.create());
     var c = a[0],
         d = a[1],
         e = a[2],
@@ -1102,8 +1256,10 @@ Melown.quat4.toMat3 = function (a, b) {
     b[8] = 1 - (j + l);
     return b;
 };
-Melown.quat4.toMat4 = function (a, b) {
-    b || (b = Melown.mat4.create());
+
+
+quat4.toMat4 = function (a, b) {
+    b || (b = mat4.create());
     var c = a[0],
         d = a[1],
         e = a[2],
@@ -1138,7 +1294,9 @@ Melown.quat4.toMat4 = function (a, b) {
     b[15] = 1;
     return b;
 };
-Melown.quat4.slerp = function (a, b, c, d) {
+
+
+quat4.slerp = function (a, b, c, d) {
     d || (d = a);
     var e = c;
     if (a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3] < 0) e = -1 * c;
@@ -1148,26 +1306,31 @@ Melown.quat4.slerp = function (a, b, c, d) {
     d[3] = 1 - c * a[3] + e * b[3];
     return d;
 };
-Melown.quat4.str = function (a) {
+
+
+quat4.str = function (a) {
     return "[" + a[0] + ", " + a[1] + ", " + a[2] + ", " + a[3] + "]";
 };
 
-Melown["Math"] = {};
-Melown["Math"]["mat4Multiply"] = Melown.mat4.multiply;
-Melown["Math"]["mat4Inverse"] = Melown.mat4.inverse;
-Melown["Math"]["mat4ToMat3"] = Melown.mat4.toMat3;
-Melown["Math"]["mat4ToInverseMat3"] = Melown.mat4.toInverseMat3;
-Melown["Math"]["mat4Transpose"] = Melown.mat4.transpose;
-Melown["Math"]["mat3Transpose"] = Melown.mat3.transpose;
-Melown["Math"]["vec3Normalize"] = Melown.vec3.normalize;
-Melown["Math"]["vec3Dot"] = Melown.vec3.dot;
-Melown["Math"]["vec3Cross"] = Melown.vec3.cross;
-Melown["Math"]["vec3Length"] = Melown.vec3.length;
+export {vec2, vec3, vec4, mat3, mat4};
 
 /*
-Melown["Math"]["vec3Scale"] = Melown.vec3.normalize;
-Melown["Math"]["vec3Mul"] = Melown.vec3.normalize;
-Melown["Math"]["vec3Add"] = Melown.vec3.normalize;
-Melown["Math"]["vec3Sub"] = Melown.vec3.normalize;
+Mel["Math"] = {};
+Mel["Math"]["mat4Multiply"] = mat4.multiply;
+Mel["Math"]["mat4Inverse"] = mat4.inverse;
+Mel["Math"]["mat4ToMat3"] = mat4.toMat3;
+Mel["Math"]["mat4ToInverseMat3"] = mat4.toInverseMat3;
+Mel["Math"]["mat4Transpose"] = mat4.transpose;
+Mel["Math"]["mat3Transpose"] = mat3.transpose;
+Mel["Math"]["vec3Normalize"] = vec3.normalize;
+Mel["Math"]["vec3Dot"] = vec3.dot;
+Mel["Math"]["vec3Cross"] = vec3.cross;
+Mel["Math"]["vec3Length"] = vec3.length;
+*/
+/*
+Mel["Math"]["vec3Scale"] = vec3.normalize;
+Mel["Math"]["vec3Mul"] = vec3.normalize;
+Mel["Math"]["vec3Add"] = vec3.normalize;
+Mel["Math"]["vec3Sub"] = vec3.normalize;
 */
 

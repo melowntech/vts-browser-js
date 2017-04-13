@@ -1,210 +1,224 @@
-/**
- * @constructor
- */
-Melown.MapVirtualSurface = function(map_, json_, type_) {
-    this.map_ = map_;
-    this.id_ = null;
-    this.metaUrl_ = "";
-    this.mappingUrl_ = "";
-    this.baseUrl_ = this.map_.baseUrl_;
-    this.baseUrlSchema_ = this.map_.baseUrlSchema_;
-    this.baseUrlOrigin_ = this.map_.baseUrlOrigin_;
-    this.lodRange_ = [0,0];
-    this.tileRange_ = [[0,0],[0,0]];
-    this.surfaces_ = [];
-    this.parseJson(json_);
-    this.virtual_ = true;
-    this.ready_ = false;
+
+import {utils as utils_} from '../utils/utils';
+import BBox_ from '../renderer/bbox';
+
+//get rid of compiler mess
+var BBox = BBox_;
+var utils = utils_;
+
+
+var MapVirtualSurface = function(map, json, type) {
+    this.map = map;
+    this.id = null;
+    this.metaUrl = "";
+    this.mappingUrl = "";
+    this.baseUrl = this.map.url.baseUrl;
+    this.baseUrlSchema = this.map.url.baseUrlSchema;
+    this.baseUrlOrigin = this.map.url.baseUrlOrigin;
+    this.lodRange = [0,0];
+    this.tileRange = [[0,0],[0,0]];
+    this.surfaces = [];
+    this.parseJson(json);
+    this.virtual = true;
+    this.ready = false;
 };
 
-Melown.MapVirtualSurface.prototype.parseJson = function(json_) {
-    this.id_ = json_["id"] || null;
-    this.metaUrl_ = this.processUrl(json_["metaUrl"], "");
-    this.mappingUrl_ = this.processUrl(json_["mapping"], "");
-    this.lodRange_ = json_["lodRange"] || [0,0];
-    this.tileRange_ = json_["tileRange"] || [[0,0],[0,0]];
-    this.strId_ = this.id_ ? this.id_.join(";") : null;
 
-    if (this.id_) {
-        var tmp_ = this.id_.slice();
-        tmp_.sort(); 
-        this.strId_ = tmp_.join(";");
+MapVirtualSurface.prototype.parseJson = function(json) {
+    this.id = json["id"] || null;
+    this.metaUrl = this.processUrl(json["metaUrl"], "");
+    this.mappingUrl = this.processUrl(json["mapping"], "");
+    this.lodRange = json["lodRange"] || [0,0];
+    this.tileRange = json["tileRange"] || [[0,0],[0,0]];
+    this.strId = this.id ? this.id.join(";") : null;
+
+    if (this.id) {
+        var tmp = this.id.slice();
+        tmp.sort(); 
+        this.strId = tmp.join(";");
     }
 
-    if (json_["extents"]) {
-        var ll_ = json_["extents"]["ll"];
-        var ur_ = json_["extents"]["ur"];
-        this.extents_ = new Melown.BBox(ll_[0], ll_[1], ll_[2], ur_[0], ur_[1], ur_[2]);
+    if (json["extents"]) {
+        var ll = json["extents"]["ll"];
+        var ur = json["extents"]["ur"];
+        this.extents = new BBox(ll[0], ll[1], ll[2], ur[0], ur[1], ur[2]);
     } else {
-        this.extents_ = new Melown.BBox(0,0,0,1,1,1);
+        this.extents = new BBox(0,0,0,1,1,1);
     }
 
-    this.specificity_ = Math.pow(2,this.lodRange_[0]) / ((this.tileRange_[1][0] - this.tileRange_[1][0]+1)*(this.tileRange_[1][1] - this.tileRange_[1][1]+1));    
+    this.specificity = Math.pow(2,this.lodRange[0]) / ((this.tileRange[1][0] - this.tileRange[1][0]+1)*(this.tileRange[1][1] - this.tileRange[1][1]+1));    
 
-    Melown.loadBinary(this.mappingUrl_, this.onMappingFileLoaded.bind(this), this.onMappingFileLoadError.bind(this), (Melown["useCredentials"] ? (this.jsonUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
+    utils.loadBinary(this.mappingUrl, this.onMappingFileLoaded.bind(this), this.onMappingFileLoadError.bind(this), (utils.useCredentials ? (this.jsonUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);
 };
 
-Melown.MapVirtualSurface.prototype.onMappingFileLoaded = function(data_) {
-    this.parseMappingFile(new DataView(data_));            
-    this.ready_ = true;
-    this.map_.refreshView();
+
+MapVirtualSurface.prototype.onMappingFileLoaded = function(data) {
+    this.parseMappingFile(new DataView(data));            
+    this.ready = true;
+    this.map.refreshView();
 };
 
-Melown.MapVirtualSurface.prototype.onMappingFileLoadError = function(data_) {
+
+MapVirtualSurface.prototype.onMappingFileLoadError = function(data) {
 };
 
-Melown.MapVirtualSurface.prototype.parseMappingFile = function(data_) {
-    var index_ = 0;
 
-    var magic_ = "";
-    magic_ += String.fromCharCode(data_.getUint8(index_, true)); index_ += 1;
-    magic_ += String.fromCharCode(data_.getUint8(index_, true)); index_ += 1;
+MapVirtualSurface.prototype.parseMappingFile = function(data) {
+    var index = 0;
 
-    if (magic_ != "TM") {
+    var magic = "";
+    magic += String.fromCharCode(data.getUint8(index, true)); index += 1;
+    magic += String.fromCharCode(data.getUint8(index, true)); index += 1;
+
+    if (magic != "TM") {
         return false;
     }
 
-    var count_ = data_.getUint16(index_, true); index_ += 2;
+    var count = data.getUint16(index, true); index += 2;
 
-    for (var i = 0; i < count_; i++) {
-        var size_ = data_.getUint8(index_, true); index_ += 1;
-        var id_ = [];
+    for (var i = 0; i < count; i++) {
+        var size = data.getUint8(index, true); index += 1;
+        var id = [];
 
-        for (var j = 0; j < size_; j++) {
-            var s = data_.getUint16(index_, true); index_ += 2;
-            s = this.id_[s];
+        for (var j = 0; j < size; j++) {
+            var s = data.getUint16(index, true); index += 2;
+            s = this.id[s];
             
             if (s) {
-                id_.push(s);
+                id.push(s);
             }
         }
         
-        if (id_.length == 1) { //get surface
-            this.surfaces_.push(this.map_.getSurface(id_[0]));
+        if (id.length == 1) { //get surface
+            this.surfaces.push(this.map.getSurface(id[0]));
         } else { //get glue
-            this.surfaces_.push(this.map_.getGlue(id_.join(";")));
+            this.surfaces.push(this.map.getGlue(id.join(";")));
         }
     }
 
     return true;    
 };
 
-Melown.MapVirtualSurface.prototype.getInfo = function() {
+
+MapVirtualSurface.prototype.getInfo = function() {
     return {
-        "metaUrl" : this.metaUrl_,
-        "mapping" : this.mappingUrl_,
-        "lodRange" : this.lodRange_,
-        "tileRange" : this.tileRange_
+        "metaUrl" : this.metaUrl,
+        "mapping" : this.mappingUrl,
+        "lodRange" : this.lodRange,
+        "tileRange" : this.tileRange
     };
 };
 
-Melown.MapVirtualSurface.prototype.processUrl = function(url_, fallback_) {
-    if (!url_) {
-        return fallback_;
+
+MapVirtualSurface.prototype.processUrl = function(url, fallback) {
+    if (!url) {
+        return fallback;
     }
 
-    url_ = url_.trim();
+    url = url.trim();
     
-    if (url_.indexOf("://") != -1) { //absolute
-        return url_;
-    } else if (url_.indexOf("//") == 0) {  //absolute without schema
-        return this.baseUrlSchema_ + url_;
-    } else if (url_.indexOf("/") == 0) {  //absolute without host
-        return this.baseUrlOrigin_ + url_;
+    if (url.indexOf("://") != -1) { //absolute
+        return url;
+    } else if (url.indexOf("//") == 0) {  //absolute without schema
+        return this.baseUrlSchema + url;
+    } else if (url.indexOf("/") == 0) {  //absolute without host
+        return this.baseUrlOrigin + url;
     } else {  //relative
-        return this.baseUrl_ + url_; 
+        return this.baseUrl + url; 
     }
 };
 
-Melown.MapVirtualSurface.prototype.hasTile = function(id_) {
-    var shift_ = id_[0] - this.lodRange_[0];
 
-    if (shift_ < 0) {
+MapVirtualSurface.prototype.hasTile = function(id) {
+    var shift = id[0] - this.lodRange[0];
+
+    if (shift < 0) {
         return false;
     }
 
-    var x = id_[1] >> shift_;
-    var y = id_[2] >> shift_;
+    var x = id[1] >> shift;
+    var y = id[2] >> shift;
 
-    if (id_[0] < this.lodRange_[0] || id_[0] > this.lodRange_[1] ||
-        x < this.tileRange_[0][0] || x > this.tileRange_[1][0] ||
-        y < this.tileRange_[0][1] || y > this.tileRange_[1][1] ) {
+    if (id[0] < this.lodRange[0] || id[0] > this.lodRange[1] ||
+        x < this.tileRange[0][0] || x > this.tileRange[1][0] ||
+        y < this.tileRange[0][1] || y > this.tileRange[1][1] ) {
         return false;
     }
 
     return true;
 };
 
-Melown.MapVirtualSurface.prototype.hasTile2 = function(id_) {
-    var shift_ = id_[0] - this.lodRange_[0];
-    var above_ = (shift_ < 0);
 
-    if (id_[0] < this.lodRange_[0]) {
-        shift_ = -shift_;
-        var x1 = this.tileRange_[0][0] >> shift_;
-        var y1 = this.tileRange_[0][1] >> shift_;
-        var x2 = this.tileRange_[1][0] >> shift_;
-        var y2 = this.tileRange_[1][1] >> shift_;
+MapVirtualSurface.prototype.hasTile2 = function(id) {
+    var shift = id[0] - this.lodRange[0];
+    var above = (shift < 0);
+
+    if (id[0] < this.lodRange[0]) {
+        shift = -shift;
+        var x1 = this.tileRange[0][0] >> shift;
+        var y1 = this.tileRange[0][1] >> shift;
+        var x2 = this.tileRange[1][0] >> shift;
+        var y2 = this.tileRange[1][1] >> shift;
     
-        if (id_[0] > this.lodRange_[1] ||
-            id_[1] < x1 || id_[1] > x2 ||
-            id_[2] < y1 || id_[2] > y2 ) {
+        if (id[0] > this.lodRange[1] ||
+            id[1] < x1 || id[1] > x2 ||
+            id[2] < y1 || id[2] > y2 ) {
             return [false , false];
         }
     } else {
-        var x = id_[1] >> shift_;
-        var y = id_[2] >> shift_;
+        var x = id[1] >> shift;
+        var y = id[2] >> shift;
     
-        if (id_[0] > this.lodRange_[1] ||
-            x < this.tileRange_[0][0] || x > this.tileRange_[1][0] ||
-            y < this.tileRange_[0][1] || y > this.tileRange_[1][1] ) {
+        if (id[0] > this.lodRange[1] ||
+            x < this.tileRange[0][0] || x > this.tileRange[1][0] ||
+            y < this.tileRange[0][1] || y > this.tileRange[1][1] ) {
             return [false , false];
         }
     }
 
-    return [true, above_];
+    return [true, above];
 };
 
 
-Melown.MapVirtualSurface.prototype.hasMetatile = function(id_) {
-    if (id_[0] > this.lodRange_[1]) {
+MapVirtualSurface.prototype.hasMetatile = function(id) {
+    if (id[0] > this.lodRange[1]) {
         return false;
     }
 
-    var shift_ = id_[0] - this.lodRange_[0];
+    var shift = id[0] - this.lodRange[0];
 
-    if (shift_ >= 0) {
-        var x = id_[1] >> shift_;
-        var y = id_[2] >> shift_;
+    if (shift >= 0) {
+        var x = id[1] >> shift;
+        var y = id[2] >> shift;
 
-        if (x < this.tileRange_[0][0] || x > this.tileRange_[1][0] ||
-            y < this.tileRange_[0][1] || y > this.tileRange_[1][1] ) {
+        if (x < this.tileRange[0][0] || x > this.tileRange[1][0] ||
+            y < this.tileRange[0][1] || y > this.tileRange[1][1] ) {
             return false;
         }
 
     } else {
-        shift_ = -shift_;
+        shift = -shift;
 
-        if (id_[1] < (this.tileRange_[0][0]>>shift_) || id_[1] > (this.tileRange_[1][0]>>shift_) ||
-            id_[2] < (this.tileRange_[0][1]>>shift_) || id_[2] > (this.tileRange_[1][1]>>shift_) ) {
+        if (id[1] < (this.tileRange[0][0]>>shift) || id[1] > (this.tileRange[1][0]>>shift) ||
+            id[2] < (this.tileRange[0][1]>>shift) || id[2] > (this.tileRange[1][1]>>shift) ) {
             return false;
         }
     }
 
     return true;
 };
+
 
 //used only for glues
-Melown.MapVirtualSurface.prototype.getSurface = function(index_) {
-    return this.surfaces_[index_ - 1];
-};
-
-Melown.MapVirtualSurface.prototype.getMetaUrl = function(id_, skipBaseUrl_) {
-    return this.map_.makeUrl(this.metaUrl_, {lod_:id_[0], ix_:id_[1], iy_:id_[2] }, null, skipBaseUrl_);
+MapVirtualSurface.prototype.getSurface = function(index) {
+    return this.surfaces[index - 1];
 };
 
 
+MapVirtualSurface.prototype.getMetaUrl = function(id, skipBaseUrl) {
+    return this.map.url.makeUrl(this.metaUrl, {lod:id[0], ix:id[1], iy:id[2] }, null, skipBaseUrl);
+};
 
 
-
+export default MapVirtualSurface;
 

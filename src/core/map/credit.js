@@ -1,23 +1,31 @@
-/**
- * @constructor
- */
-Melown.MapCredit = function(map_, json_) {
-    this.map_ = map_;
-    this.id_ = json_["id"] || null;
-    this.notice_ = json_["notice"] || null;
-    this.copyrighted_ = json_["copyrighted"] || true;
-    this.url_ = json_["url"] || null;
-    this.html_ = Melown.simpleWikiLinks(this.notice_);
-    this.plain_ = Melown.simpleWikiLinks(this.notice_);
+
+import {utils as utils_} from '../utils/utils';
+
+//get rid of compiler mess
+var utils = utils_;
+
+var MapCredit = function(map, json) {
+    this.map = map;
+    this.id = json["id"] || null;
+    this.notice = json["notice"] || null;
+    this.copyrighted = json["copyrighted"] || true;
+    this.url = json["url"] || null;
+    this.html = utils.simpleWikiLinks(this.notice);
+    this.plain = utils.simpleWikiLinks(this.notice);
 };
 
-Melown.MapCredit.prototype.getInfo = function() {
+
+MapCredit.prototype.getInfo = function() {
     return {
-        "id" : this.id_,
-        "notice" : this.notice_,
-        //"copyrighted" : this.copyrighted_,
-        //"url" : this.url_
-        "html" : this.html_,
-        "plain" : this.plain_
+        "id" : this.id,
+        "notice" : this.notice,
+        //"copyrighted" : this.copyrighted,
+        //"url" : this.url
+        "html" : this.html,
+        "plain" : this.plain
     };
 };
+
+
+export default MapCredit;
+

@@ -1,61 +1,99 @@
-require('core/core');
-require('core/config');
-require('core/update');
 
-Melown.MapCore = function(element_, config_) {
-    element_ = (typeof element_ !== "string") ? element_ : document.getElementById(element_);
+import Proj4 from 'proj4';
+import {Core as Core_} from './core';
+import {CoreInterface as CoreInterface_} from './interface';
 
-    if (Melown.checkSupport()) {
-        return new Melown.CoreInterface(element_, config_);
-    } else {
-        return null;
-    }
+//get rid of compiler mess
+var CoreInterface = CoreInterface_;
+var Core = Core_;
+var proj4 = Proj4;
+
+
+var CoreInterface = function(element, config) {
+    this.core = new Core(element, config, this);
+
+    Object.defineProperty(this, 'map', {
+        get: function() {
+            if (!this.core) { return null; }
+            return this.core.getMapInterface();
+        }
+    });
+
+    Object.defineProperty(this, 'renderer', {
+        get: function() {
+            if (!this.core) { return null; }
+            return this.core.getRendererInterface();
+        }
+    });
+
+    Object.defineProperty(this, 'proj4', {
+        get: function() {
+            if (!this.core) { return null; }
+            return proj4;
+        }
+    });
 };
 
-/**
- * @constructor
- */
-Melown.CoreInterface = function(element_, config_) {
-    this.core_ = new Melown.Core(element_, config_, this);
-    this.map_ = this.core_.getMap();
+
+CoreInterface.prototype.destroy = function() {
+    this.core.destroy();
+    this.core = null;
 };
 
-Melown.CoreInterface.prototype.destroy = function() {
-    this.core_.destroy();
-    this.core_ = null;
+
+CoreInterface.prototype.loadMap = function(path) {
+    if (!this.core) { return null; }
+    return this.core.loadMap(path);
 };
 
-Melown.CoreInterface.prototype.getMap = function() {
-    if (!this.core_) { return null; }
-    return this.core_.getMapInterface();
+
+CoreInterface.prototype.destroyMap = function() {
+    if (!this.core) { return null; }
+    return this.core.destroyMap();
 };
 
-Melown.CoreInterface.prototype.loadMap = function(path_) {
-    if (!this.core_) { return null; }
-    return this.core_.loadMap(path_);
+
+/*CoreInterface.prototype.getMap = function() {
+    if (!this.core) { return null; }
+    return this.core.getMapInterface();
 };
 
-Melown.CoreInterface.prototype.destroyMap = function() {
-    if (!this.core_) { return null; }
-    return this.core_.destroyMap();
+
+CoreInterface.prototype.getRenderer = function() {
+    if (!this.core) { return null; }
+    return this.core.getRendererInterface();
 };
 
-Melown.CoreInterface.prototype.getRenderer = function() {
-    if (!this.core_) { return null; }
-    return this.core_.getRendererInterface();
+
+CoreInterface.prototype.getProj4 = function() {
+    if (!this.core) { return null; }
+    return this.core.getProj4();
+};*/
+
+
+CoreInterface.prototype.on = function(eventName, call) {
+    if (!this.core) { return null; }
+    this.core.on(eventName, call);
 };
 
-Melown.CoreInterface.prototype.getProj4 = function() {
-    if (!this.core_) { return null; }
-    return this.core_.getProj4();
+CoreInterface.prototype.callListener = function(name, event) {
+    if (!this.core) { return null; }
+    this.core.callListener(name, event);
 };
 
-Melown.CoreInterface.prototype.on = function(eventName_, call_) {
-    if (!this.core_) { return null; }
-    this.core_.on(eventName_, call_);
-};
 
-Melown.CoreInterface.prototype.callListener = function(name_, event_) {
-    if (!this.core_) { return null; }
-    this.core_.callListener(name_, event_);
-};
+export {CoreInterface};
+
+/*
+Mel["MapCore"] = Mel.MapCore;
+Mel["mapCore"] = Mel.MapCore;
+CoreInterface.prototype["destroy"] = CoreInterface.prototype.destroy;
+CoreInterface.prototype["loadMap"] = CoreInterface.prototype.loadMap;
+CoreInterface.prototype["destroyMap"] = CoreInterface.prototype.destroyMap;
+CoreInterface.prototype["getMap"] = CoreInterface.prototype.getMap;
+CoreInterface.prototype["getRenderer"] = CoreInterface.prototype.getRenderer;
+CoreInterface.prototype["on"] = CoreInterface.prototype.on;
+CoreInterface.prototype["callListener"] = CoreInterface.prototype.callListener;
+Mel["getCoreVersion"] = Mel.getCoreVersion;
+Mel["checkSupport"] = Mel.checkSupport;
+*/

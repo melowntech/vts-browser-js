@@ -1,16 +1,19 @@
 var core = null;
+var map = null;
+var renderer = null;
 var demoTexture = null;
 var isMapProjected = false;
 
-function startDemo() {
+
+(function startDemo() {
     //check vadstena support (webgl)
-    if (!Melown.checkSupport()) {
-        alert("Unfturtunately, Melown Maps needs browser support for WebGL. Sorry.");
+    if (!vts.checkSupport()) {
+        alert("VTS browser needs web browser with WebGL support.");
         return;
     }
 
     //init melown core
-    core = Melown.MapCore("map-div", {
+    core = vts.core("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
         position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 1764, 90 ],
         view : {
@@ -21,14 +24,16 @@ function startDemo() {
             "freelayers": []
         }
     });
-    
+
+    renderer = core.renderer;
+   
     core.on("map-loaded", onMapLoaded);
 
     //load image    
-    var demoImage = Melown.Http.imageFactory(
+    var demoImage = vts.utils.loadImage(
         "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png",
         (function(){
-            demoTexture = core.getRenderer().createTexture({ "source": demoImage });
+            demoTexture = renderer.createTexture({ "source": demoImage });
         }).bind(this)
         );
 
@@ -42,25 +47,23 @@ function startDemo() {
     document.onselectstart = function(){ return false; }; //removes text cusor during draging
 
     document.getElementById('switch').onchange = function() {switchMap();}
-}
+})();
 
 
 function onMapLoaded() {
-    var map = core.getMap();
+    map = core.map;
     map.addRenderSlot("custom-render", onCustomRender, true);
-    map.moveRenderSlotAfter("after-map-render", "map");
+    map.moveRenderSlotAfter("after-map-render", "custom-render");
 
     //check whether is map projected (used for navigation)
     var rf = map.getReferenceFrame();
     var srs = map.getSrsInfo(rf["navigationSrs"]);
     isMapProjected = (srs) ? (srs["type"] == "projected") : false; 	
 };
+
     
 function onCustomRender() {
-    var map = core.getMap();
-
     if (demoTexture) {
-        var renderer = core.getRenderer();
         var coords = map.convertCoordsFromNavToCanvas([1683559, 6604129, 0], "float");
 
         var totalPoints = 32;
@@ -92,14 +95,11 @@ function onCustomRender() {
             "depth-test" : false,
             "blend" : true
             });
-            
     }    
 } 
 
 
 function switchMap() {
-    var map = core.getMap();
-    
     if (map) {
         if (document.getElementById("switch").checked) {
             map.setView({
@@ -128,6 +128,7 @@ var mouseLeftDown = false;
 
 var mouseLx = 0;
 var mouseLy = 0;
+
 
 function onMouseDown(event) {
     var right = false;
@@ -175,9 +176,7 @@ function onMouseMove(event) {
     //store coords
     mouseLx = x;
     mouseLy = y;
-
-    var map = core.getMap();
-    
+   
     if (map) {
         var pos = map.getPosition();
         
@@ -185,9 +184,9 @@ function onMouseMove(event) {
             
             //get zoom factor
             var sensitivity = 0.5;
-            var viewExtent = map.getPositionViewExtent(pos);
-            var fov = map.getPositionFov(pos)*0.5;
-            var zoomFactor = ((viewExtent * Math.tan(Melown.radians(fov))) / 800) * sensitivity;
+            var viewExtent = pos.getViewExtent();
+            var fov = pos.getFov()*0.5;
+            var zoomFactor = ((viewExtent * Math.tan(vts.math.radians(fov))) / 800) * sensitivity;
             
             //apply factor to deltas
             dx *= zoomFactor;
@@ -195,7 +194,7 @@ function onMouseMove(event) {
         
             //get azimuth and distance
             var distance = Math.sqrt(dx*dx + dy*dy);    
-            var azimuth = Melown.degrees(Math.atan2(dx, dy)) + map.getPositionOrientation(pos)[0]; 
+            var azimuth = vts.math.degrees(Math.atan2(dx, dy)) + pos.getOrientation()[0]; 
             
             //move position
             pos = map.movePositionCoordsTo(pos, (isMapProjected ? 1 : -1) * azimuth, distance);
@@ -204,19 +203,18 @@ function onMouseMove(event) {
                         
         } else if (mouseRightDown) { //rotate
            
-            var orientation = map.getPositionOrientation(pos);  
+            var orientation = pos.getOrientation();  
 
             var sensitivity_ = 0.4;
             orientation[0] -= dx * sensitivity_;
             orientation[1] -= dy * sensitivity_;
 
-            pos = map.setPositionOrientation(pos, orientation);  
+            pos = pos.setOrientation(orientation);  
             map.setPosition(pos);
         }    
-
-        
     }
 }
+
 
 function onMouseWheel(event) {
     if (event.preventDefault) {
@@ -238,27 +236,26 @@ function onMouseWheel(event) {
         delta = 0;
     }
 
-    var map = core.getMap();
     if (map) {
         var pos = map.getPosition();
 
-        var viewExtent = map.getPositionViewExtent(pos, viewExtent);
+        var viewExtent = pos.getViewExtent();
 
         viewExtent *= 1.0 + (delta > 0 ? -1 : 1)*0.05;
 
-        pos = map.setPositionViewExtent(pos, viewExtent);
+        pos = pos.setViewExtent(viewExtent);
         pos = reduceFloatingHeight(pos, 0.8);
         map.setPosition(pos);
     }  
 }
 
+
 //used to to gradually reduce relative height over terrain
 function reduceFloatingHeight(pos, factor) {
-    var map = core.getMap();
-    if (map.getPositionHeightMode(pos) == "float" &&
-        map.getPositionViewMode(pos) == "obj") {
+    if (pos.getHeightMode() == "float" &&
+        pos.getViewMode() == "obj") {
             
-        var coords = map.getPositionCoords(pos);
+        var coords = pos.getCoords();
         if (coords[2] != 0) {
             coords[2] *= factor;
 
@@ -266,7 +263,7 @@ function reduceFloatingHeight(pos, factor) {
                 coords[2] = 0;
             }
 
-            pos = map.setPositionCoords(pos, coords);
+            pos.setCoords(coords);
         }
     }
     
@@ -274,4 +271,3 @@ function reduceFloatingHeight(pos, factor) {
 };
 
 
-startDemo();
