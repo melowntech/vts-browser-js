@@ -1,66 +1,73 @@
-Melown.isEqual = function(value_, value2_, delta_) {
-    return (Math.abs(value_ - value2_) < delta_);
-};
 
-Melown.clamp = function(value_, min_, max_) {
-    if (value_ < min_) value_ = min_;
-    else if (value_ > max_) value_ = max_;
+import {math as math_} from './math';
+import {utilsUrl as utilsUrl_} from './url';
 
-    return value_;
-};
+//get rid of compiler mess
+var math = math_;
+var utilsUrl = utilsUrl_;
 
-Melown.radians = function(degrees_) {
-    return degrees_ * Math.PI / 180;
-};
 
-Melown.degrees = function(radians_) {
-    return (radians_ / Math.PI) * 180;
-};
+var utils = {}
+utils.useCredentials = false;
+utils.instanceCounter = 0;
 
-Melown.mix = function(a, b, c) {
-    return a + (b - a) * c;
-};
 
-Melown.validateBool = function(value_, defaultValue_) {
-    if (typeof value_ === "boolean") {
-        return value_;
+utils.validateBool = function(value, defaultValue) {
+    if (typeof value === "boolean") {
+        return value;
     } else {
-        return defaultValue_;
+        return defaultValue;
     }
 };
 
-Melown.validateNumber = function(value_, minValue, maxValue, defaultValue_) {
-    if (typeof value_ === "number") {
-        return Melown.clamp(value_, minValue, maxValue);
+
+utils.validateNumber = function(value, minValue, maxValue, defaultValue) {
+    if (typeof value === "number") {
+        return math.clamp(value, minValue, maxValue);
     } else {
-        return defaultValue_;
+        return defaultValue;
     }
 };
 
-Melown.validateString = function(value_, defaultValue_) {
-    if (typeof value_ === "string") {
-        return value_;
+
+utils.validateNumberArray = function(array, arraySize, minValues, maxValues, defaultValues) {
+    if (Array.isArray(array) && array.length == arraySize) {
+        for (var i = 0; i < arraySize; i++) {
+            array[i] = math.clamp(array[i], minValues[i], maxValues[i]);
+        }
+        return array;
     } else {
-        return defaultValue_;
+        return defaultValues;
     }
 };
 
-Melown.padNumber = function(n, width_) {
+
+utils.validateString = function(value, defaultValue) {
+    if (typeof value === "string") {
+        return value;
+    } else {
+        return defaultValue;
+    }
+};
+
+
+utils.padNumber = function(n, width) {
   var z = '0';
 
   if (n < 0) {
       n = (-n) + '';
-      width_--;     //7
-      return n.length >= width_ ? ("-" + n) : "-" + (new Array(width_ - n.length + 1).join(z) + n);
+      width--;     //7
+      return n.length >= width ? ("-" + n) : "-" + (new Array(width - n.length + 1).join(z) + n);
   } else {
       n = n + '';
-      return n.length >= width_ ? n : new Array(width_ - n.length + 1).join(z) + n;
+      return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
   }
 };
 
-Melown.decodeFloat16 = function(binary) {
+
+utils.decodeFloat16 = function(binary) {
     var exponent = (binary & 0x7C00) >> 10;
-        fraction = binary & 0x03FF;
+    var fraction = binary & 0x03FF;
     return (binary >> 15 ? -1 : 1) * (
         exponent ?
         (
@@ -72,80 +79,86 @@ Melown.decodeFloat16 = function(binary) {
     );
 };
 
-Melown.simpleFmtObj = (function obj(str, obj) {
+
+utils.simpleFmtObj = (function obj(str, obj) {
     if (!str || str == "") {
         return "";
     }
 
-    return str.replace(/\{([_$a-zA-Z0-9][_$a-zA-Z0-9]*)\}/g, function(s, match) {
+    return str.replace(/\{([$a-zA-Z0-9][$a-zA-Z0-9]*)\}/g, function(s, match) {
         return (match in obj ? obj[match] : s);
     });
 });
 
-Melown.simpleWikiLinks = (function obj(str_, plain_) {
-    if (!str_ || str_ == "") {
-        return "";
-    }
 
-    var str2_ = Melown.simpleFmtObj(str_, {"copy":"&copy;", "Y": (new Date().getFullYear())}); 
-    
-    return str2_.replace(/\[([^\]]*)\]/g, function(s, match_) {
-        match_  = match_.trim();
-        urls_ = match_.split(" ");//, 1);
-        
-        if (urls_[0].indexOf("//") != -1) {
-            if (plain_) {
-                if (urls_.length > 1) {
-                    return "" + match_.substring(urls_[0].length);
-                } else {
-                    return "" + urls_[0];
-                }
-            } else {
-                if (urls_.length > 1) {
-                    return "<a href=" + urls_[0] + " target='_blank'>" + match_.substring(urls_[0].length)+"</a>";
-                } else {
-                    return "<a href=" + urls_[0] + " target='_blank'>" + urls_[0]+"</a>";
-                }
-            }
-        }
-        
-        return match_;
-    });
-});
-
-Melown.simpleFmtObjOrCall = (function obj(str, obj, call) {
+utils.simpleWikiLinks = (function obj(str, plain) {
     if (!str || str == "") {
         return "";
     }
 
-    return str.replace(/\{([_$a-zA-Z(-9][_$a-zA-Z(-9]*)\}/g, function(s, match) {
+    var str2 = utils.simpleFmtObj(str, {"copy":"&copy;", "Y": (new Date().getFullYear())}); 
+    
+    return str2.replace(/\[([^\]]*)\]/g, function(s, match) {
+        match  = match.trim();
+        var urls = match.split(" ");//, 1);
+        
+        if (urls[0].indexOf("//") != -1) {
+            if (plain) {
+                if (urls.length > 1) {
+                    return "" + match.substring(urls[0].length);
+                } else {
+                    return "" + urls[0];
+                }
+            } else {
+                if (urls.length > 1) {
+                    return "<a href=" + urls[0] + " target='blank'>" + match.substring(urls[0].length)+"</a>";
+                } else {
+                    return "<a href=" + urls[0] + " target='blank'>" + urls[0]+"</a>";
+                }
+            }
+        }
+        
+        return match;
+    });
+});
+
+
+utils.simpleFmtObjOrCall = (function obj(str, obj, call) {
+    if (!str || str == "") {
+        return "";
+    }
+
+    return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
         return (match in obj ? obj[match] : call(match));
     });
 });
 
-Melown.getABGRFromHexaCode = (function(code_) {
-    var result_ = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(code_);
 
-    return result_ ?
-        [ parseInt(result_[4], 16),
-          parseInt(result_[3], 16),
-          parseInt(result_[2], 16),
-          parseInt(result_[1], 16)]
+utils.getABGRFromHexaCode = (function(code) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(code);
+
+    return result ?
+        [ parseInt(result[4], 16),
+          parseInt(result[3], 16),
+          parseInt(result[2], 16),
+          parseInt(result[1], 16)]
     : [0,0,0,255];
 });
 
-Melown.stringifyFunction = (function(function_) {
+
+utils.stringifyFunction = (function(fn) {
     // Stringify the code
-    return '(' + function_ + ').call(self);';
+    return '(' + fn + ').call(self);';
 });
 
-Melown.loadJSON = function(path_, onLoaded_, onError_, skipParse_, withCredentials_, xhrParams_) {
-    var xhr_ = new XMLHttpRequest();
 
-    //xhr_.onload  = (function() {
-    xhr_.onreadystatechange = (function (){
+utils.loadJSON = function(path, onLoaded, onError, skipParse, withCredentials, xhrParams) {
+    var xhr = new XMLHttpRequest();
 
-        switch (xhr_.readyState) {
+    //xhr.onload  = (function() {
+    xhr.onreadystatechange = (function (){
+
+        switch (xhr.readyState) {
             case 0 : // UNINITIALIZED
             case 1 : // LOADING
             case 2 : // LOADED
@@ -153,33 +166,33 @@ Melown.loadJSON = function(path_, onLoaded_, onError_, skipParse_, withCredentia
                 break;
             case 4 : // COMPLETED
     
-                if (xhr_.status >= 400 || xhr_.status == 0) {
-                    if (onError_) {
-                        onError_(xhr_.status);
+                if (xhr.status >= 400 || xhr.status == 0) {
+                    if (onError) {
+                        onError(xhr.status);
                     }
                     break;
                 }
     
-                var data_ = xhr_.response;
-                var parsedData_ = data_;
+                var data = xhr.response;
+                var parsedData = data;
                 
-                if (!skipParse_) {
+                if (!skipParse) {
                     try {
-                        //var parsedData_ = skipParse_ ? data_ : eval("("+data_+")");
-                        parsedData_ = JSON.parse(data_);
+                        //var parsedData = skipParse ? data : eval("("+data+")");
+                        parsedData = JSON.parse(data);
                     } catch(e) {
-                        console.log("JSON Parse Error ("+path_+"): " + (e["message"] ? e["message"] : ""));
+                        console.log("JSON Parse Error ("+path+"): " + (e["message"] ? e["message"] : ""));
                         
-                        if (onError_ ) {
-                            onError_(xhr_.status);
+                        if (onError ) {
+                            onError(xhr.status);
                         }
                 
                         return;
                     }
                 }
                 
-                if (onLoaded_) {
-                    onLoaded_(parsedData_);
+                if (onLoaded) {
+                    onLoaded(parsedData);
                 }
     
                 break;
@@ -188,29 +201,30 @@ Melown.loadJSON = function(path_, onLoaded_, onError_, skipParse_, withCredentia
     }).bind(this);
 
     /*
-    xhr_.onerror  = (function() {
-        if (onError_) {
-            onError_();
+    xhr.onerror  = (function() {
+        if (onError) {
+            onError();
         }
     }).bind(this);*/
 
-    xhr_.open('GET',  path_, true);
-    xhr_.withCredentials = withCredentials_;
+    xhr.open('GET',  path, true);
+    xhr.withCredentials = withCredentials;
     
-    if (xhrParams_ && xhrParams_["token"] /*&& xhrParams_["tokenHeader"]*/) {
-        //xhr_.setRequestHeader(xhrParams_["tokenHeader"], xhrParams_["token"]); //old way
-        xhr_.setRequestHeader("Accept", "token/" + xhrParams_["token"] + ", */*");
+    if (xhrParams && xhrParams["token"] /*&& xhrParams["tokenHeader"]*/) {
+        //xhr.setRequestHeader(xhrParams["tokenHeader"], xhrParams["token"]); //old way
+        xhr.setRequestHeader("Accept", "token/" + xhrParams["token"] + ", */*");
     }
     
-    xhr_.send("");
+    xhr.send("");
 };
 
-Melown.loadBinary = function(path_, onLoaded_, onError_, withCredentials_, xhrParams_, responseType_) {
-    var xhr_ = new XMLHttpRequest();
 
-    xhr_.onreadystatechange = (function (){
+utils.loadBinary = function(path, onLoaded, onError, withCredentials, xhrParams, responseType) {
+    var xhr = new XMLHttpRequest();
 
-        switch (xhr_.readyState) {
+    xhr.onreadystatechange = (function (){
+
+        switch (xhr.readyState) {
             case 0 : // UNINITIALIZED
             case 1 : // LOADING
             case 2 : // LOADED
@@ -218,38 +232,38 @@ Melown.loadBinary = function(path_, onLoaded_, onError_, withCredentials_, xhrPa
             break;
             case 4 : // COMPLETED
     
-                    if (xhr_.status >= 400 || xhr_.status == 0) {
-                        if (onError_) {
-                            onError_(xhr_.status);
+                    if (xhr.status >= 400 || xhr.status == 0) {
+                        if (onError) {
+                            onError(xhr.status);
                         }
                         break;
                     }
     
-                    var abuffer_ = xhr_.response;
+                    var abuffer = xhr.response;
                     
-                    if (!abuffer_) {
-                        if (onError_) {
-                            onError_();
+                    if (!abuffer) {
+                        if (onError) {
+                            onError();
                         }
                         break;
                     }
                     
-                    //if (!responseType_ || responseType_ == "arraybuffer") {
-                        //var data_ = new DataView(abuffer_);
+                    //if (!responseType || responseType == "arraybuffer") {
+                        //var data = new DataView(abuffer);
                     //} else {
-                      //  var data_ = abuffer_;
+                      //  var data = abuffer;
                     //}
     
-                    if (onLoaded_) {
-                        onLoaded_(abuffer_);
+                    if (onLoaded) {
+                        onLoaded(abuffer);
                     }
     
               break;
     
               default:
     
-                if (onError_) {
-                    onError_();
+                if (onError) {
+                    onError();
                 }
     
                 break;
@@ -258,58 +272,108 @@ Melown.loadBinary = function(path_, onLoaded_, onError_, withCredentials_, xhrPa
        }).bind(this);
     
     /*
-    xhr_.onerror  = (function() {
-        if (onError_) {
-            onError_();
+    xhr.onerror  = (function() {
+        if (onError) {
+            onError();
         }
     }).bind(this);*/
 
-    xhr_.open('GET', path_, true);
-    xhr_.responseType = responseType_ ? responseType_ : "arraybuffer";
-    xhr_.withCredentials = withCredentials_;
+    xhr.open('GET', path, true);
+    xhr.responseType = responseType ? responseType : "arraybuffer";
+    xhr.withCredentials = withCredentials;
 
-    if (xhrParams_ && xhrParams_["token"] /*&& xhrParams_["tokenHeader"]*/) {
-        //xhr_.setRequestHeader(xhrParams_["tokenHeader"], xhrParams_["token"]); //old way
-        xhr_.setRequestHeader("Accept", "token/" + xhrParams_["token"] + ", */*");
+    if (xhrParams && xhrParams["token"] /*&& xhrParams["tokenHeader"]*/) {
+        //xhr.setRequestHeader(xhrParams["tokenHeader"], xhrParams["token"]); //old way
+        xhr.setRequestHeader("Accept", "token/" + xhrParams["token"] + ", */*");
     }
 
-    xhr_.send("");
+    xhr.send("");
 };
 
-window.performance = window.performance || {};
-performance.now = (function() {
-  return performance.now       ||
-         performance.mozNow    ||
-         performance.msNow     ||
-         performance.oNow      ||
-         performance.webkitNow ||
-         function() { return new Date().getTime(); };
-})();
 
-//Provides requestAnimationFrame in a cross browser way.
-window.requestAnimFrame = (function() {
+utils.headRequest = function(url, onLoaded, onError, withCredentials, xhrParams, responseType) { 
+    var xhr = new XMLHttpRequest();
 
-  return window.requestAnimationFrame ||
-         window.webkitRequestAnimationFrame ||
-         window.mozRequestAnimationFrame ||
-         window.oRequestAnimationFrame ||
-         window.msRequestAnimationFrame ||
-         function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
-           window.setTimeout(callback, 1000/60);
-         };
-})();
+    xhr.onreadystatechange = (function (){
+
+            switch (xhr.readyState) {
+            case 0 : // UNINITIALIZED
+            case 1 : // LOADING
+            case 2 : // LOADED
+            case 3 : // INTERACTIVE
+                break;
+            case 4 : // COMPLETED
+                if (onLoaded != null) {
+                    onLoaded(xhr.getAllResponseHeaders(), xhr.status);
+                    //onLoaded(xhr.getResponseHeader("X-VE-Tile-Info"), xhr.status);
+                }
+                break;
+    
+            default:
+    
+                if (onError != null) {
+                    onError();
+                }
+    
+                break;
+            }
+
+        }).bind(this);
+
+    xhr.onerror  = (function() {
+        if (onError != null) {
+            onError();
+        }
+    }).bind(this);
+
+    xhr.open('HEAD', url, true);
+    //xhr.responseType = responseType ? responseType : "arraybuffer";
+    xhr.withCredentials = withCredentials;
+
+    if (xhrParams && xhrParams["token"] /*&& xhrParams["tokenHeader"]*/) {
+        //xhr.setRequestHeader(xhrParams["tokenHeader"], xhrParams["token"]); //old way
+        xhr.setRequestHeader("Accept", "token/" + xhrParams["token"] + ", */*");
+    }
+
+    xhr.send("");
+};
+
+
+utils.loadImage = function(url, onload, onerror, withCredentials, direct) {
+    var image = new Image();
+    image.onerror = onerror;
+    image.onload = onload;
+
+    if (!direct){
+        image.crossOrigin = withCredentials ? "use-credentials" : "anonymous";
+    }
+
+    image.src = url;
+    return image;
+};
+
+
+utils.getParamsFromUrl = function(url) {
+    return utilsUrl.getParamsFromUrl(url);
+};
+
+
+export {utils};
 
 // only implement if no native implementation is available
+/*
 if (typeof Array.isArray === 'undefined') {
   Array.isArray = (function(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
   });
-}
+}*/
 
-Melown["isEqual"] = Melown.isEqual;
-Melown["clamp"] = Melown.clamp;
-Melown["mix"] = Melown.mix;
-Melown["radians"] = Melown.radians;
-Melown["degrees"] = Melown.degrees;
-Melown["loadJSON"] = Melown.loadJSON;
-Melown["loadBinary"] = Melown.loadBinary;
+/*
+Mel["isEqual"] = utils.isEqual;
+Mel["clamp"] = utils.clamp;
+Mel["mix"] = utils.mix;
+Mel["radians"] = utils.radians;
+Mel["degrees"] = utils.degrees;
+Mel["loadJSON"] = utils.loadJSON;
+Mel["loadBinary"] = utils.loadBinary;
+*/

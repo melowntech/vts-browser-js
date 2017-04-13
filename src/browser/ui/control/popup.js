@@ -1,30 +1,33 @@
-/**
- * @constructor
- */
-Melown.UIControlPopup = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.browser_ = ui_.browser_;
-    this.control_ = this.ui_.addControl("popup",
-        '<div class="melown-popup-background" id="melown-popup-background">'
-      +    '<div id="melown-popup"</div>'
-      + '</div>', visible_);
 
-    this.lastHTML_ = "";
-    this.popup_ = this.control_.getElement("melown-popup");
-    this.background_ = this.control_.getElement("melown-popup-background");
-    this.background_.on("click", this.hide.bind(this));
+var UIControlPopup = function(ui, visible) {
+    this.ui = ui;
+    this.browser = ui.browser;
+    this.control = this.ui.addControl("popup",
+        '<div class="vts-popup-background" id="vts-popup-background">'
+      +    '<div id="vts-popup"</div>'
+      + '</div>', visible);
+
+    this.lastHTML = "";
+    this.popup = this.control.getElement("vts-popup");
+    this.background = this.control.getElement("vts-popup-background");
+    this.background.on("click", this.hide.bind(this));
 };
 
-Melown.UIControlPopup.prototype.show = function(style_, html_) {
-    this.control_.setVisible(true);
+
+UIControlPopup.prototype.show = function(style, html) {
+    this.control.setVisible(true);
     
-    for (var key_ in style_) {
-        this.popup_.setStyle(key_, style_[key_]);
+    for (var key in style) {
+        this.popup.setStyle(key, style[key]);
     }
 
-    this.popup_.setHtml(html_);
+    this.popup.setHtml(html);
 };
 
-Melown.UIControlPopup.prototype.hide = function() {
-    this.control_.setVisible(false);
+
+UIControlPopup.prototype.hide = function() {
+    this.control.setVisible(false);
 };
+
+
+export default UIControlPopup;

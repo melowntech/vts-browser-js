@@ -1,172 +1,177 @@
-/**
- * @constructor
- */
-Melown.MapCache = function(map_, maxCost_) {
-    this.map_ = map_;
-    this.maxCost_ = (maxCost_ != null) ? maxCost_ : Number.MAX_VALUE;
-    this.last_ = null;
-    this.first_ = null;
 
-    this.totalCost_ = 0;
-    this.totalItems_ = 0;
+
+var MapCache = function(map, maxCost) {
+    this.map = map;
+    this.maxCost = (maxCost != null) ? maxCost : Number.MAXVALUE;
+    this.last = null;
+    this.first = null;
+
+    this.totalCost = 0;
+    this.totalItems = 0;
 };
 
-Melown.MapCache.prototype.updateItem = function(item_) {
-    if (item_ == null) {
+
+MapCache.prototype.updateItem = function(item) {
+    if (item == null) {
         return;
     }
 
-    if (this.first_ == item_) {
+    if (this.first == item) {
         return;
     }
 
     //remove item from list
-    if (item_.prev_ != null) {
-        item_.prev_.next_ = item_.next_;
+    if (item.prev != null) {
+        item.prev.next = item.next;
     }
 
-    if (item_.next_ != null) {
-        item_.next_.prev_ = item_.prev_;
+    if (item.next != null) {
+        item.next.prev = item.prev;
     }
 
-    if (this.last_ == item_) {
-        this.last_ = item_.prev_;
+    if (this.last == item) {
+        this.last = item.prev;
     }
 
-    var first_ = this.first_;
+    var first = this.first;
 
     //add item as first
-    this.first_ = item_;
-    this.first_.next_ = first_;
-    this.first_.prev_ = null;
+    this.first = item;
+    this.first.next = first;
+    this.first.prev = null;
 
-    first_.prev_ = this.first_;
+    first.prev = this.first;
 };
 
-Melown.MapCache.prototype.getMaxCost = function() {
-    return this.maxCost_;
+
+MapCache.prototype.getMaxCost = function() {
+    return this.maxCost;
 };
 
-Melown.MapCache.prototype.setMaxCost = function(cost_) {
-    this.maxCost_ = cost_;
+
+MapCache.prototype.setMaxCost = function(cost) {
+    this.maxCost = cost;
     this.checkCost();
 };
 
-Melown.MapCache.prototype.clear = function() {
-    var item_ = this.first_;
 
-    while (item_ != null) {
-        if (item_.destructor_ != null) {
-            item_.destructor_();
+MapCache.prototype.clear = function() {
+    var item = this.first;
+
+    while (item != null) {
+        if (item.destructor != null) {
+            item.destructor();
         }
-        item_ = item_.next_;
+        item = item.next;
     }
 
-    this.last_ = null;
-    this.first_ = null;
+    this.last = null;
+    this.first = null;
 
-    this.totalCost_ = 0;
-    this.totalItems_ = 0;
+    this.totalCost = 0;
+    this.totalItems = 0;
 };
 
-Melown.MapCache.prototype.insert = function(destructor_, cost_) {
-    this.totalItems_++;
 
-    //console.log("insert: " + hash_ + " items: " + this.totalItems_);
+MapCache.prototype.insert = function(destructor, cost) {
+    this.totalItems++;
 
-    var item_ = { destructor_:destructor_, cost_:cost_, prev_: null, next_:this.first_ };
+    //console.log("insert: " + hash + " items: " + this.totalItems);
 
-    if (this.first_ != null) {
-        this.first_.prev_ = item_;
+    var item = { destructor:destructor, cost:cost, prev: null, next:this.first };
+
+    if (this.first != null) {
+        this.first.prev = item;
     }
 
     //add item as first in list
-    this.first_ = item_;
+    this.first = item;
 
-    if (this.last_ == null) {
-        this.last_ = item_;
+    if (this.last == null) {
+        this.last = item;
     }
 
-    this.totalCost_ += cost_;
+    this.totalCost += cost;
 
-    //console.log("MapCache.prototype.insert:" + this.totalCost_ + " / " + this.maxCost_);
+    //console.log("MapCache.prototype.insert:" + this.totalCost + " / " + this.maxCost);
 
     this.checkCost();
 
-    return item_;
+    return item;
 };
 
-Melown.MapCache.prototype.remove = function(item_) {
-    this.totalItems_++;
-    var hit_ = false;
 
-    if (item_ == this.first_) {
-        this.first_ = item_.next_;
-        hit_ = true;
+MapCache.prototype.remove = function(item) {
+    this.totalItems++;
+    var hit = false;
 
-        if (this.first_ != null) {
-            this.first_.prev_ = null;
+    if (item == this.first) {
+        this.first = item.next;
+        hit = true;
+
+        if (this.first != null) {
+            this.first.prev = null;
         }
     }
 
-    if (item_ == this.last_) {
-        this.last_ = item_.prev_;
-        hit_ = true;
+    if (item == this.last) {
+        this.last = item.prev;
+        hit = true;
 
-        if (this.last_ != null) {
-            this.last_.next_ = null;
+        if (this.last != null) {
+            this.last.next = null;
         }
     }
 
-    if (!hit_) {
-    //if (item_ != this.last_ && item_ != this.first_) {
+    if (!hit) {
+    //if (item != this.last && item != this.first) {
 
-        if (!item_.prev_) {
+        if (!item.prev) {
             debugger;
         } else {
-            item_.prev_.next_ = item_.next_;
+            item.prev.next = item.next;
         }
         
-        if (!item_.next_) {
+        if (!item.next) {
             debugger;
         } else {
-            item_.next_.prev_ = item_.prev_;
+            item.next.prev = item.prev;
         }
         
     }
 
-    this.totalCost_ -= item_.cost_;
+    this.totalCost -= item.cost;
 
     //destroy item
-    item_.destructor_();
+    item.destructor();
 
-    //console.log("MapCache.prototype.remove:" + this.totalCost_ + " / " + this.maxCost_);
+    //console.log("MapCache.prototype.remove:" + this.totalCost + " / " + this.maxCost);
 
     this.checkCost();
 };
 
 
-Melown.MapCache.prototype.checkCost = function() {
-    while (this.totalCost_ > this.maxCost_) {
+MapCache.prototype.checkCost = function() {
+    while (this.totalCost > this.maxCost) {
 
-        this.totalItems_--;
+        this.totalItems--;
 
-        //console.log("remove: " + this.last_.hash_ + " prev: " + this.last_.prev_ + " items: " + this.totalItems_);
+        //console.log("remove: " + this.last.hash + " prev: " + this.last.prev + " items: " + this.totalItems);
 
-        var last_ = this.last_;
+        var last = this.last;
 
-        if (last_ != null) {
+        if (last != null) {
             //set new last
-            this.last_ = this.last_.prev_;
+            this.last = this.last.prev;
 
-            if (this.last_ != null) {
-                this.last_.next_ = null;
+            if (this.last != null) {
+                this.last.next = null;
             }
 
-            this.totalCost_ -= last_.cost_;
+            this.totalCost -= last.cost;
 
             //destroy item
-            last_.destructor_();
+            last.destructor();
 
         } else {
             break;
@@ -174,21 +179,25 @@ Melown.MapCache.prototype.checkCost = function() {
     }
 };
 
-Melown.MapCache.prototype.addItem = function(cost_, destructor_) {
-    return this.insert(destructor_, cost_);
-};
 
-Melown.MapCache.prototype.removeItem = function(item_) {
-    return this.remove(item_);
-};
-
-Melown.MapCache.prototype.itemUsed = function(item_) {
-    return this.updateItem(item_);
+MapCache.prototype.addItem = function(cost, destructor) {
+    return this.insert(destructor, cost);
 };
 
 
-Melown.MapCache.prototype["addItem"] = Melown.MapCache.prototype.addItem;
-Melown.MapCache.prototype["removeItem"] = Melown.MapCache.prototype.removeItem;
-Melown.MapCache.prototype["itemUsed"] = Melown.MapCache.prototype.itemUsed;
+MapCache.prototype.removeItem = function(item) {
+    return this.remove(item);
+};
 
 
+MapCache.prototype.itemUsed = function(item) {
+    return this.updateItem(item);
+};
+
+/*
+MapCache.prototype["addItem"] = MapCache.prototype.addItem;
+MapCache.prototype["removeItem"] = MapCache.prototype.removeItem;
+MapCache.prototype["itemUsed"] = MapCache.prototype.itemUsed;
+*/
+
+export default MapCache;

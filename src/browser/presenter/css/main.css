@@ -1,9 +1,9 @@
-.melown-presenter p {
+.vts-presenter p {
     margin: 0;
     padding: 0;
 }
 
-.melown-presenter button {
+.vts-presenter button {
     position: relative;
     width: 140px;
     height: 26px;
@@ -16,22 +16,22 @@
     opacity: 1;
 }
 
-.melown-presenter button.hidden {
+.vts-presenter button.hidden {
     opacity: 0;
     cursor: default;
 }
 
-.melown-presenter.top-toolbox button {
+.vts-presenter.top-toolbox button {
     float: left;
 }
 
-.melown-presenter.widget .input-wrap {
+.vts-presenter.widget .input-wrap {
     margin: 10px 10px 0px 10px;
     width: 180px;
     min-height: 16px;
 }
 
-.melown-presenter.widget .input-wrap label {
+.vts-presenter.widget .input-wrap label {
     font-size: 12px;
     height: 20px;
     width: 144px;
@@ -41,34 +41,34 @@
     font-weight: bold;
 }
 
-.melown-presenter.input-wrap input[type='range'] {
+.vts-presenter.input-wrap input[type='range'] {
     margin-right: 10px;
     width: 80px;
     display: block;
     float: left;
 }
 
-.melown-presenter.input-wrap span.value {
+.vts-presenter.input-wrap span.value {
     font-size: 12px;
     width: 20px;
     display: block;
 }
 
-.melown-presenter.widget .input-wrap.nested {
+.vts-presenter.widget .input-wrap.nested {
     margin-left: 24px;
     width: 166px;
 }
 
-.melown-presenter.widget .input-wrap.nested label {
+.vts-presenter.widget .input-wrap.nested label {
     width: 130px;
     font-weight: normal;
 }
 
-.melown-presenter.section {
+.vts-presenter.section {
     margin: 0px 0px 26px 0px;
 }
 
-.melown-presenter button, .melown-presenter button:hover {
+.vts-presenter button, .vts-presenter button:hover {
     -webkit-transition: all 0.4s ease;
     -moz-transition: all 0.4s ease;
     transition: all 0.4s ease;

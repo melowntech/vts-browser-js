@@ -1,121 +1,124 @@
-/**
- * @constructor
- */
-Melown.UIControlLoading = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.control_ = this.ui_.addControl("loading",
-      '<div id="melown-loading" class="melown-loading">'
 
-        + '<div class="melown-loading-progress">'
-            + '<div id="melown-loading-dot1" class="melown-loading-dot"></div>'
-            + '<div id="melown-loading-dot2" class="melown-loading-dot"></div>'
-            + '<div id="melown-loading-dot3" class="melown-loading-dot"></div>'
-            + '<div id="melown-loading-dot4" class="melown-loading-dot"></div>'
-            + '<div id="melown-loading-dot5" class="melown-loading-dot"></div>'
+var UIControlLoading = function(ui, visible) {
+    this.ui = ui;
+    this.control = this.ui.addControl("loading",
+      '<div id="vts-loading" class="vts-loading">'
+
+        + '<div class="vts-loading-progress">'
+            + '<div id="vts-loading-dot1" class="vts-loading-dot"></div>'
+            + '<div id="vts-loading-dot2" class="vts-loading-dot"></div>'
+            + '<div id="vts-loading-dot3" class="vts-loading-dot"></div>'
+            + '<div id="vts-loading-dot4" class="vts-loading-dot"></div>'
+            + '<div id="vts-loading-dot5" class="vts-loading-dot"></div>'
         + '</div>'
 
-      + ' </div>', visible_);
+      + ' </div>', visible);
 
-    this.loading_ = this.control_.getElement("melown-loading");
-    this.dots_ = [
-        this.control_.getElement("melown-loading-dot1"),
-        this.control_.getElement("melown-loading-dot2"),
-        this.control_.getElement("melown-loading-dot3"),
-        this.control_.getElement("melown-loading-dot4"),
-        this.control_.getElement("melown-loading-dot5")
+    this.loading = this.control.getElement("vts-loading");
+    this.dots = [
+        this.control.getElement("vts-loading-dot1"),
+        this.control.getElement("vts-loading-dot2"),
+        this.control.getElement("vts-loading-dot3"),
+        this.control.getElement("vts-loading-dot4"),
+        this.control.getElement("vts-loading-dot5")
     ];
     
-    this.time_ = Date.now();
-    this.hiding_ = null;
+    this.time = Date.now();
+    this.hiding = null;
     
     //setTimeout(this.hide.bind(this), 5000);
 };
 
-Melown.UIControlLoading.prototype.show = function() {
-    this.hiding_ = null;
-    this.ui_.setControlVisible("compass", false);
-    this.ui_.setControlVisible("zoom", false);
-    this.ui_.setControlVisible("space", false);
-    this.ui_.setControlVisible("search", false);
-    this.ui_.setControlVisible("link", false);
-    this.ui_.setControlVisible("fullscreen", false);
-    this.ui_.setControlVisible("credits", false);
-    this.ui_.setControlVisible("loading", true);
+
+UIControlLoading.prototype.show = function() {
+    this.hiding = null;
+    this.ui.setControlVisible("compass", false);
+    this.ui.setControlVisible("zoom", false);
+    this.ui.setControlVisible("space", false);
+    this.ui.setControlVisible("search", false);
+    this.ui.setControlVisible("link", false);
+    this.ui.setControlVisible("fullscreen", false);
+    this.ui.setControlVisible("credits", false);
+    this.ui.setControlVisible("loading", true);
 };
 
-Melown.UIControlLoading.prototype.hide = function() {
-    this.hiding_ = Date.now();
+
+UIControlLoading.prototype.hide = function() {
+    this.hiding = Date.now();
     
-    var search_ = this.ui_.config_.controlSearch_;
-    if (search_) { //enable search for melown2015 reference frame only
-        var map_ = this.ui_.browser_.getMap();
-        if (map_) {
-            //search_ = (map_.getReferenceFrame()["id"] == "melown2015");
+    var search = this.ui.config.controlSearch;
+    if (search) { //enable search for melown2015 reference frame only
+        var map = this.ui.browser.getMap();
+        if (map) {
+            //search = (map.getReferenceFrame()["id"] == "melown2015");
             
-            var radius_ = map_.getSrsInfo(map_.getReferenceFrame()["physicalSrs"])["a"];
+            var radius = map.getSrsInfo(map.getReferenceFrame()["physicalSrs"])["a"];
             
-            if (radius_ < (6378137 + 50000) && radius_ > (6378137 - 50000)) { //is it earth
-                search_ = true;  
+            if (radius < (6378137 + 50000) && radius > (6378137 - 50000)) { //is it earth
+                search = true;  
             } else {
-                search_ = false;  
+                search = false;  
             }
-            //search_ = (map_.getSrsInfo(map_.getReferenceFrame()["physical"]) == "melown2015");
+            //search = (map.getSrsInfo(map.getReferenceFrame()["physical"]) == "melown2015");
         }
     } 
     
-    this.ui_.setControlVisible("compass", this.ui_.config_.controlCompass_);
-    this.ui_.setControlVisible("zoom", this.ui_.config_.controlZoom_);
-    this.ui_.setControlVisible("space", this.ui_.config_.controlSpace_);
-    this.ui_.setControlVisible("search", search_);
-    this.ui_.setControlVisible("link", this.ui_.config_.controlLink_);
-    this.ui_.setControlVisible("fullscreen", this.ui_.config_.controlFullscreen_);
-    this.ui_.setControlVisible("credits", this.ui_.config_.controlCredits_);
-    this.ui_.setControlVisible("loading", false);
+    this.ui.setControlVisible("compass", this.ui.config.controlCompass);
+    this.ui.setControlVisible("zoom", this.ui.config.controlZoom);
+    this.ui.setControlVisible("space", this.ui.config.controlSpace);
+    this.ui.setControlVisible("search", search);
+    this.ui.setControlVisible("link", this.ui.config.controlLink);
+    this.ui.setControlVisible("fullscreen", this.ui.config.controlFullscreen);
+    this.ui.setControlVisible("credits", this.ui.config.controlCredits);
+    this.ui.setControlVisible("loading", false);
 };
 
-Melown.UIControlLoading.prototype.update = function() {
-    var timer_ = Date.now();
 
-    if (this.hiding_) { 
-        var timeDelta_ = (timer_ - this.hiding_) * 0.001;
-        this.loading_.setStyle("opacity", (1-Math.min(1.0, timeDelta_*2)) + "" );
+UIControlLoading.prototype.update = function() {
+    var timer = Date.now();
+
+    if (this.hiding) { 
+        var timeDelta = (timer - this.hiding) * 0.001;
+        this.loading.setStyle("opacity", (1-Math.min(1.0, timeDelta*2)) + "" );
         
-        if (timeDelta_ > 0.5) {
-            this.control_.setVisible(false);
+        if (timeDelta > 0.5) {
+            this.control.setVisible(false);
         }
     }
 
 
-    var timeDelta_ = (timer_ - this.time_) * 0.001;
+    var timeDelta = (timer - this.time) * 0.001;
 
     //sine wave
     /*
     for (var i = 0; i < 5; i++) {
-        this.dots_[i].setStyle("top", (Math.sin(((Math.PI*1.5)/5)*i+timeDelta_*Math.PI*2)*10)+"%");
+        this.dots[i].setStyle("top", (Math.sin(((Math.PI*1.5)/5)*i+timeDelta*Math.PI*2)*10)+"%");
     }*/
 
     //opacity    
     for (var i = 0; i < 5; i++) {
-        //this.dots_[i].setStyle("opacity", (Math.sin(((Math.PI*1.5)/5)*i+timeDelta_*Math.PI*2)*60+20)+"%");
-        this.dots_[i].setStyle("opacity", (Math.sin(((Math.PI*1.5)/5)*i-timeDelta_*Math.PI*2)*0.6+0.2));
+        //this.dots[i].setStyle("opacity", (Math.sin(((Math.PI*1.5)/5)*i+timeDelta*Math.PI*2)*60+20)+"%");
+        this.dots[i].setStyle("opacity", (Math.sin(((Math.PI*1.5)/5)*i-timeDelta*Math.PI*2)*0.6+0.2));
     }
 
-    var map_ = this.ui_.browser_.getMap();
-    if (map_ == null) {
+    var map = this.ui.browser.getMap();
+    if (map == null) {
         return;
     }
 
-    var stats_ = map_.getStats();
+    var stats = map.getStats();
     
-    //"bestMeshTexelSize" : this.map_.bestMeshTexelSize_,
-    //"bestGeodataTexelSize" : this.map_.bestGeodataTexelSize_, 
-    //console.log("drawnTiles: " + stats_["drawnTiles"] + "  geodata: " + stats_["drawnGeodataTiles"]);
+    //"bestMeshTexelSize" : this.map.bestMeshTexelSize,
+    //"bestGeodataTexelSize" : this.map.bestGeodataTexelSize, 
+    //console.log("drawnTiles: " + stats["drawnTiles"] + "  geodata: " + stats["drawnGeodataTiles"]);
 
-    if ((stats_["surfaces"] == 0 && stats_["freeLayers"] == 0) ||  //nothing to load 
-        (stats_["downloading"] == 0 && stats_["lastDownload"] > 0 && (timer_ - stats_["lastDownload"]) > 1000) || //or everything loaded
-        (stats_["bestMeshTexelSize"] != 0 && stats_["bestMeshTexelSize"] <= (stats_["texelSizeFit"] * 3) || //or resolution is good enough
-        (stats_["loadMode"] == "fit" || stats_["loadMode"] == "fitonly") && (stats_["drawnTiles"] - stats_["drawnGeodataTiles"]) > 1) ) { //or at leas some tiles are loaded
+    if ((stats["surfaces"] == 0 && stats["freeLayers"] == 0) ||  //nothing to load 
+        (stats["downloading"] == 0 && stats["lastDownload"] > 0 && (timer - stats["lastDownload"]) > 1000) || //or everything loaded
+        (stats["bestMeshTexelSize"] != 0 && stats["bestMeshTexelSize"] <= (stats["texelSizeFit"] * 3) || //or resolution is good enough
+        (stats["loadMode"] == "fit" || stats["loadMode"] == "fitonly") && (stats["drawnTiles"] - stats["drawnGeodataTiles"]) > 1) ) { //or at leas some tiles are loaded
         this.hide();
     }
-
 };
+
+
+export default UIControlLoading;

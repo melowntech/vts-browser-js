@@ -1,14 +1,32 @@
-require('./srs');
-require('./refframe');
-require('./credit');
-require('./surface');
-require('./bound-layer');
 
-Melown.Map.prototype.parseConfig = function() {
-    //if (this.mapConfig_["version"] < 4) {
-      //  return;
-    //}
+import MapBoundLayer_ from './bound-layer';
+import MapCredit_ from './credit';
+import MapPosition_ from './position';
+import MapRefFrame_ from './refframe';
+import MapSrs_ from './srs';
+import MapSurface_ from './surface';
+import MapVirtualSurface_ from './virtual-surface';
+import MapStylesheet_ from './stylesheet';
 
+//get rid of compiler mess
+var MapPosition = MapPosition_;
+var MapCredit = MapCredit_;
+var MapBoundLayer = MapBoundLayer_;
+var MapRefFrame = MapRefFrame_;
+var MapSrs = MapSrs_;
+var MapSurface = MapSurface_;
+var MapVirtualSurface = MapVirtualSurface_;
+var MapStylesheet = MapStylesheet_;
+
+
+var MapConfig = function(map, config) {
+    this.map = map;
+    this.mapConfig = config;
+    this.parseConfig();
+};
+
+
+MapConfig.prototype.parseConfig = function() {
     if (!(this.parseSrses() && this.parseReferenceFrame() &&
           this.parseCredits() && this.parseStylesheets() && 
           this.parseSurfaces() && this.parseGlues() && 
@@ -18,203 +36,220 @@ Melown.Map.prototype.parseConfig = function() {
         //wrong config file
     }
 
-    this.stats_.loadedCount_ = 0;
-    this.stats_.loadErrorCount_ = 0;
-    this.stats_.loadFirst_ = performance.now();
-    this.stats_.loadLast_ = this.loadFirst_;
+    var stats = this.map.stats;
+    stats.loadedCount = 0;
+    stats.loadErrorCount = 0;
+    stats.loadFirst = performance.now();
+    stats.loadLast = this.map.loadFirst;
 };
 
-Melown.Map.prototype.afterConfigParsed = function() {
-    if (this.mapConfig_["position"] != null) {
-        this.setPosition(this.mapConfig_["position"], false);
+
+MapConfig.prototype.afterConfigParsed = function() {
+    if (this.mapConfig["position"] != null) {
+        this.map.setPosition(this.mapConfig["position"], false);
     }
 
-    this.setView(this.initialView_);
+    this.map.setView(this.map.initialView);
 };
 
-Melown.Map.prototype.parseSrses = function() {
-    var srses_ = this.mapConfig_["srses"];
-    this.srses_ = {};
 
-    if (srses_ == null) {
+MapConfig.prototype.parseSrses = function() {
+    var srses = this.mapConfig["srses"];
+    this.map.srses = {};
+
+    if (srses == null) {
         return false;
     }
 
-    for (var key_ in srses_) {
-        this.addSrs(key_, new Melown.MapSrs(this, key_, srses_[key_]));
-    }
-
-    return true;
-};
-
-Melown.Map.prototype.parseReferenceFrame = function() {
-    var rf_ = this.mapConfig_["referenceFrame"];
-
-    if (rf_ == null) {
-        return false;
-    }
-
-    this.referenceFrame_ = new Melown.MapRefFrame(this, rf_);
-
-    if (this.referenceFrame_.valid_ == false) {
-        return false;
+    for (var key in srses) {
+        this.map.addSrs(key, new MapSrs(this.map, key, srses[key]));
     }
 
     return true;
 };
 
 
-Melown.Map.prototype.parseCredits = function() {
-    var credits_ = this.mapConfig_["credits"];
-    this.credits_ = {};
+MapConfig.prototype.parseReferenceFrame = function() {
+    var rf = this.mapConfig["referenceFrame"];
 
-    if (credits_ == null) {
+    if (rf == null) {
         return false;
     }
 
-    for (var key_ in credits_) {
-        this.addCredit(key_, new Melown.MapCredit(this, credits_[key_]));
+    this.map.referenceFrame = new MapRefFrame(this.map, rf);
+
+    if (this.map.referenceFrame.valid == false) {
+        return false;
     }
 
     return true;
 };
 
-Melown.Map.prototype.parseSurfaces = function() {
-    var surfaces_ = this.mapConfig_["surfaces"];
-    this.surfaces_ = [];
 
-    if (surfaces_ == null) {
+MapConfig.prototype.parseCredits = function() {
+    var credits = this.mapConfig["credits"];
+    this.map.credits = {};
+
+    if (credits == null) {
         return false;
     }
 
-    for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = new Melown.MapSurface(this, surfaces_[i]);
-        this.addSurface(surface_.id_, surface_);
+    for (var key in credits) {
+        this.map.addCredit(key, new MapCredit(this.map, credits[key]));
     }
 
     return true;
 };
 
-Melown.Map.prototype.parseVirtualSurfaces = function() {
-    var surfaces_ = this.mapConfig_["virtualSurfaces"];
-    this.virtualSurfaces_ = [];
 
-    if (!this.config_.mapVirtualSurfaces_) {
+MapConfig.prototype.parseSurfaces = function() {
+    var surfaces = this.mapConfig["surfaces"];
+    this.map.surfaces = [];
+
+    if (surfaces == null) {
+        return false;
+    }
+
+    for (var i = 0, li = surfaces.length; i < li; i++) {
+        var surface = new MapSurface(this.map, surfaces[i]);
+        this.map.addSurface(surface.id, surface);
+    }
+
+    return true;
+};
+
+
+MapConfig.prototype.parseVirtualSurfaces = function() {
+    var surfaces = this.mapConfig["virtualSurfaces"];
+    this.map.virtualSurfaces = [];
+
+    if (!this.map.config.mapVirtualSurfaces) {
         return true;
     }
 
-    if (surfaces_ == null) {
+    if (surfaces == null) {
         return true;
     }
 
-    for (var i = 0, li = surfaces_.length; i < li; i++) {
-        var surface_ = new Melown.MapVirtualSurface(this, surfaces_[i]);
-        this.virtualSurfaces_[surface_.strId_] = surface_;
+    for (var i = 0, li = surfaces.length; i < li; i++) {
+        var surface = new MapVirtualSurface(this.map, surfaces[i]);
+        this.map.virtualSurfaces[surface.strId] = surface;
     }
 
     return true;
 };
 
-Melown.Map.prototype.parseViews = function() {
-    var views_ = this.mapConfig_["namedViews"];
-    this.namedViews_ = [];
 
-    if (views_ != null) {
-        for (var key_ in views_) {
-            this.addNamedView(key_, new Melown.MapView(this, views_[key_]));
+MapConfig.prototype.parseViews = function() {
+    var views = this.mapConfig["namedViews"];
+    this.map.namedViews = [];
+
+    if (views != null) {
+        for (var key in views) {
+            this.map.addNamedView(key, new MapView(this.map, views[key]));
         }
     }
 
-    var view_ = this.mapConfig_["view"];
-    if (view_ == null) {
+    var view = this.mapConfig["view"];
+    if (view == null) {
         return true;
     }
 
-    this.initialView_ = JSON.parse(JSON.stringify(view_));
+    this.map.initialView = JSON.parse(JSON.stringify(view));
     return true;
 };
 
-Melown.Map.prototype.parseGlues = function() {
-    var glues_ = this.mapConfig_["glue"];
-    this.glues_ = [];
 
-    if (glues_ == null) {
+MapConfig.prototype.parseGlues = function() {
+    var glues = this.mapConfig["glue"];
+    this.map.glues = [];
+
+    if (glues == null) {
         return true;
     }
 
-    for (var i = 0, li = glues_.length; i < li; i++) {
-        var surface_ = new Melown.MapSurface(this, glues_[i], "glue");
-        this.addGlue(surface_.id_.join(";"), surface_);
+    for (var i = 0, li = glues.length; i < li; i++) {
+        var surface = new MapSurface(this.map, glues[i], "glue");
+        this.map.addGlue(surface.id.join(";"), surface);
     }
 
     return true;
 };
 
-Melown.Map.prototype.parseBoundLayers = function() {
-    var layers_ = this.mapConfig_["boundLayers"];
-    this.boundLayers_ = [];
 
-    if (layers_ == null) {
+MapConfig.prototype.parseBoundLayers = function() {
+    var layers = this.mapConfig["boundLayers"];
+    this.map.boundLayers = [];
+
+    if (layers == null) {
         return true;
     }
 
-    for (var key_ in layers_) {
-        var layer_ = new Melown.MapBoundLayer(this, layers_[key_], key_);
-        this.addBoundLayer(key_, layer_);
+    for (var key in layers) {
+        var layer = new MapBoundLayer(this.map, layers[key], key);
+        this.map.addBoundLayer(key, layer);
     }
 
     return true;
 };
 
-Melown.Map.prototype.parseFreeLayers = function() {
-    var layers_ = this.mapConfig_["freeLayers"];
-    this.freeLayers_ = [];
 
-    if (layers_ == null) {
+MapConfig.prototype.parseFreeLayers = function() {
+    var layers = this.mapConfig["freeLayers"];
+    this.map.freeLayers = [];
+
+    if (layers == null) {
         return true;
     }
 
-    for (var key_ in layers_) {
-        var layer_ = new Melown.MapSurface(this, layers_[key_], "free");
-        this.addFreeLayer(key_, layer_);
+    for (var key in layers) {
+        var layer = new MapSurface(this.map, layers[key], "free");
+        this.map.addFreeLayer(key, layer);
     }
 
     return true;
 };
 
-Melown.Map.prototype.parseStylesheets = function() {
-    var styles_ = this.mapConfig_["stylesheets"];
-    this.stylesheets_ = [];
 
-    if (styles_ == null) {
+MapConfig.prototype.parseStylesheets = function() {
+    var styles = this.mapConfig["stylesheets"];
+    this.map.stylesheets = [];
+
+    if (styles == null) {
         return true;
     }
 
-    for (var key_ in styles_) {
-        var style_ = new Melown.MapStylesheet(this, key_, styles_[key_]);
-        this.addStylesheet(key_, style_);
+    for (var key in styles) {
+        var style = new MapStylesheet(this.map, key, styles[key]);
+        this.map.addStylesheet(key, style);
     }
 
     return true;
 };
 
-Melown.Map.prototype.parseParams = function() {
+
+MapConfig.prototype.parseParams = function() {
     return true;
 };
 
-Melown.Map.prototype.parseBrowserOptions = function() {
-    var options_ = this.mapConfig_["browserOptions"];
-    this.browserOptions_ = {};
+
+MapConfig.prototype.parseBrowserOptions = function() {
+    var options = this.mapConfig["browserOptions"];
+    this.map.browserOptions = {};
     
-    if (options_ == null) {
+    if (options == null) {
         return true;
     }
     
-    this.browserOptions_ = JSON.parse(JSON.stringify(options_));
+    this.map.browserOptions = JSON.parse(JSON.stringify(options));
     return true;
 };
 
-Melown.Map.prototype.cloneConfig = function() {
-    var json_ = JSON.parse(JSON.stringify(this.mapConfig_));
-    return json_;
+
+MapConfig.prototype.cloneConfig = function() {
+    var json = JSON.parse(JSON.stringify(this.mapConfig));
+    return json;
 };
+
+
+export default MapConfig;

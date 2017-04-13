@@ -1,177 +1,199 @@
-require('./metatile');
-require('./mesh');
 
-/**
- * @constructor
- */
-Melown.MapResourceNode = function(map_, parent_, id_) {
-    this.map_ = map_;
-    this.id_ = id_;
-    this.parent_ = parent_;
+import MapTexture_ from './texture';
+import MapSubtexture_ from './subtexture';
+import MapMetatile_ from './metatile';
+import MapMesh_ from './mesh';
+import MapGeodata_ from './geodata';
 
-    this.metatiles_ = {};
-    this.meshes_ = {};
-    this.textures_ = {};
-    this.subtextures_ = {};
-    this.geodata_ = {};
-    this.credits_ = {};
+//get rid of compiler mess
+var MapTexture = MapTexture_;
+var MapSubtexture = MapSubtexture_;
+var MapMetatile = MapMetatile_;
+var MapMesh = MapMesh_;
+var MapGeodata = MapGeodata_;
 
-    this.children_ = [null, null, null, null];
+
+var MapResourceNode = function(map, parent, id) {
+    this.map = map;
+    this.id = id;
+    this.parent = parent;
+
+    this.metatiles = {};
+    this.meshes = {};
+    this.textures = {};
+    this.subtextures = {};
+    this.geodata = {};
+    this.credits = {};
+
+    this.children = [null, null, null, null];
 };
 
-Melown.MapResourceNode.prototype.kill = function() {
+
+MapResourceNode.prototype.kill = function() {
     //kill children
     for (var i = 0; i < 4; i++) {
-        if (this.children_[i] != null) {
-            this.children_[i].kill();
+        if (this.children[i] != null) {
+            this.children[i].kill();
         }
     }
 
-    this.children_ = [null, null, null, null];
+    this.children = [null, null, null, null];
 
-    var parent_ = this.parent_;
-    this.parent_ = null;
+    var parent = this.parent;
+    this.parent = null;
 
-    if (parent_ != null) {
-        parent_.removeChild(this);
+    if (parent != null) {
+        parent.removeChild(this);
     }
     
     //kill resources?
 };
 
-Melown.MapResourceNode.prototype.addChild = function(index_) {
-    if (this.children_[index_]) {
+
+MapResourceNode.prototype.addChild = function(index) {
+    if (this.children[index]) {
         return;
     }
     
-    var id_ = this.id_;
-    var childId_ = [id_[0] + 1, id_[1] << 1, id_[2] << 1];
+    var id = this.id;
+    var childId = [id[0] + 1, id[1] << 1, id[2] << 1];
 
-    switch (index_) {
-        case 1: childId_[1]++; break;
-        case 2: childId_[2]++; break;
-        case 3: childId_[1]++; childId_[2]++; break;
+    switch (index) {
+        case 1: childId[1]++; break;
+        case 2: childId[2]++; break;
+        case 3: childId[1]++; childId[2]++; break;
     }
 
-    this.children_[index_] = new Melown.MapResourceNode(this.map_, this, childId_);
+    this.children[index] = new MapResourceNode(this.map, this, childId);
 };
 
-Melown.MapResourceNode.prototype.removeChildByIndex = function(index_) {
-    if (this.children_[index_] != null) {
-        this.children_[index_].kill();
-        this.children_[index_] = null;
+
+MapResourceNode.prototype.removeChildByIndex = function(index) {
+    if (this.children[index] != null) {
+        this.children[index].kill();
+        this.children[index] = null;
     }
 };
 
-Melown.MapResourceNode.prototype.removeChild = function(tile_) {
+
+MapResourceNode.prototype.removeChild = function(tile) {
     for (var i = 0; i < 4; i++) {
-        if (this.children_[i] == tile_) {
-            this.children_[i].kill();
-            this.children_[i] = null;
+        if (this.children[i] == tile) {
+            this.children[i].kill();
+            this.children[i] = null;
         }
     }
 };
+
 
 // Meshes ---------------------------------
 
-Melown.MapResourceNode.prototype.getMesh = function(path_, tile_) {
-    var mesh_ = this.meshes_[path_];
+MapResourceNode.prototype.getMesh = function(path, tile) {
+    var mesh = this.meshes[path];
     
-    if (!mesh_) {
-        mesh_ = new Melown.MapMesh(this.map_, path_, tile_);
-        this.meshes_[path_] = mesh_;
+    if (!mesh) {
+        mesh = new MapMesh(this.map, path, tile);
+        this.meshes[path] = mesh;
     }
     
-    return mesh_;
+    return mesh;
 };
 
-// GEodata ---------------------------------
 
-Melown.MapResourceNode.prototype.getGeodata = function(path_, extraInfo_) {
-    var geodata_ = this.geodata_[path_];
+// Geodata ---------------------------------
+
+MapResourceNode.prototype.getGeodata = function(path, extraInfo) {
+    var geodata = this.geodata[path];
     
-    if (!geodata_) {
-        geodata_ = new Melown.MapGeodata(this.map_, path_, extraInfo_);
-        this.geodata_[path_] = geodata_;
+    if (!geodata) {
+        geodata = new MapGeodata(this.map, path, extraInfo);
+        this.geodata[path] = geodata;
     }
     
-    return geodata_;
+    return geodata;
 };
+
 
 // Textures ---------------------------------
 
-Melown.MapResourceNode.prototype.getTexture = function(path_, heightMap_, extraBound_, extraInfo_, tile_, internal_) {
-    if (extraInfo_ && extraInfo_.layer_) {
-        var id_ = path_ + extraInfo_.layer_.id_;
-        var texture_ = this.textures_[id_];
+MapResourceNode.prototype.getTexture = function(path, heightMap, extraBound, extraInfo, tile, internal) {
+    if (extraInfo && extraInfo.layer) {
+        var id = path + extraInfo.layer.id;
+        var texture = this.textures[id];
         
-        if (!texture_) {
-            texture_ = new Melown.MapTexture(this.map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_);
-            this.textures_[id_] = texture_;
+        if (!texture) {
+            texture = new MapTexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
+            this.textures[id] = texture;
         }
     } else {
-        var texture_ = this.textures_[path_];
+        var texture = this.textures[path];
         
-        if (!texture_) {
-            texture_ = new Melown.MapTexture(this.map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_);
-            this.textures_[path_] = texture_;
+        if (!texture) {
+            texture = new MapTexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
+            this.textures[path] = texture;
         }
     }
     
-    return texture_;
+    return texture;
 };
+
 
 // SubTextures ---------------------------------
 
-Melown.MapResourceNode.prototype.getSubtexture = function(texture_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_) {
-    var texture_ = this.subtextures_[path_];
+MapResourceNode.prototype.getSubtexture = function(texture, path, heightMap, extraBound, extraInfo, tile, internal) {
+    var texture = this.subtextures[path];
     
-    if (!texture_) {
-        texture_ = new Melown.MapSubtexture(this.map_, path_, heightMap_, extraBound_, extraInfo_, tile_, internal_);
-        this.subtextures_[path_] = texture_;
+    if (!texture) {
+        texture = new MapSubtexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
+        this.subtextures[path] = texture;
     }
     
-    return texture_;
+    return texture;
 };
+
 
 // Metatiles ---------------------------------
 
-Melown.MapResourceNode.prototype.addMetatile = function(path_, metatile_) {
-    this.metatiles_[path_] = metatile_;
+MapResourceNode.prototype.addMetatile = function(path, metatile) {
+    this.metatiles[path] = metatile;
 };
 
-Melown.MapResourceNode.prototype.removeMetatile = function(metatile_) {
-    for (var key_ in this.metatiles_) {
-        if (this.metatiles_[key_] == metatile_) {
-            delete this.metatiles_[key_];
+
+MapResourceNode.prototype.removeMetatile = function(metatile) {
+    for (var key in this.metatiles) {
+        if (this.metatiles[key] == metatile) {
+            delete this.metatiles[key];
         }
     }
 };
 
-Melown.MapResourceNode.prototype.getMetatile = function(surface_, allowCreation_, tile_) {
-    var metatiles_ = this.metatiles_; 
-    for (var key_ in metatiles_) {
-        if (metatiles_[key_].surface_ == surface_) {
-            return metatiles_[key_];
+
+MapResourceNode.prototype.getMetatile = function(surface, allowCreation, tile) {
+    var metatiles = this.metatiles; 
+    for (var key in metatiles) {
+        if (metatiles[key].surface == surface) {
+            return metatiles[key];
         } 
     }
     
-    var path_ = surface_.getMetaUrl(this.id_);
+    var path = surface.getMetaUrl(this.id);
 
-    if (metatiles_[path_]) {
-        var metatile_ = metatiles_[path_].clone(surface_);
-        this.addMetatile(path_, metatile_);
-        return metatile_;
+    if (metatiles[path]) {
+        var metatile = metatiles[path].clone(surface);
+        this.addMetatile(path, metatile);
+        return metatile;
     }
 
-    if (allowCreation_) {
-        var metatile_ = new Melown.MapMetatile(this, surface_, tile_);
-        this.addMetatile(path_, metatile_);
-        return metatile_; 
+    if (allowCreation) {
+        var metatile = new MapMetatile(this, surface, tile);
+        this.addMetatile(path, metatile);
+        return metatile; 
     } else {
         return null;
     }
 };
 
+
+export default MapResourceNode;
 
 

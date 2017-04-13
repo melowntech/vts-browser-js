@@ -1,9 +1,10 @@
-/**
- * @constructor
- */
-Melown.UIControlLayers = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.control_ = this.ui_.addControl("layers",
-      '<div class="melown-layers"'
-      + '</div>', visible_);
+
+var UIControlLayers = function(ui, visible) {
+    this.ui = ui;
+    this.control = this.ui.addControl("layers",
+      '<div class="vts-layers"'
+      + '</div>', visible);
 };
+
+
+export default UIControlLayers;

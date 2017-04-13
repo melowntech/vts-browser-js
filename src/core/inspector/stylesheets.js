@@ -1,8 +1,14 @@
 
-Melown.Inspector.prototype.initStylesheetsPanel = function() {
+var InspectorStylesheets = function(inspector) {
+    this.inspector = inspector;
+    this.core = inspector.core;
+};
 
-    this.addStyle(
-        "#melown-stylesheets-panel {"
+
+InspectorStylesheets.prototype.init = function() {
+    var inspector = this.inspector;
+    inspector.addStyle(
+        "#vts-stylesheets-panel {"
             + "font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;"
             + "display: none;"
             + "padding:15px;"
@@ -21,178 +27,187 @@ Melown.Inspector.prototype.initStylesheetsPanel = function() {
             + "padding: 10px;"
         + "}"
 
-        + "#melown-stylesheets-panel-header {"
+        + "#vts-stylesheets-panel-header {"
             + "width: 100%;"
-            + "height: 30px;"
+            + "height: 28px;"
         + "}"
 
-        + "#melown-stylesheets-panel-combo {"
-            + "width: 1130px;"
+        + "#vts-stylesheets-panel-combo {"
+            + "width: 1115px;"
             + "height: 21px;"
         + "}"
 
-        + "#melown-stylesheets-panel-button {"
+        + "#vts-stylesheets-panel-button {"
             + "float: right;"
         + "}"
 
-        + "#melown-stylesheets-panel-text {"
+        + "#vts-stylesheets-panel-text {"
             + "width: 100%;"
-            + "height: 320px;"
+            + "height: 300px;"
             + "resize: none;"
             + "white-space: nowrap;"
         + "}"
     );
 
-    this.stylesheetsElement_ = document.createElement("div");
-    this.stylesheetsElement_.id = "melown-stylesheets-panel";
-    this.stylesheetsElement_.innerHTML =
-            '<div id="melown-stylesheets-panel-header">'
-            + '<select id="melown-stylesheets-panel-combo"></select>'
-            + '<button id="melown-stylesheets-panel-button" type="button" title="Update">Update</button>'
+    this.element = document.createElement("div");
+    this.element.id = "vts-stylesheets-panel";
+    this.element.innerHTML =
+            '<div id="vts-stylesheets-panel-header">'
+            + '<select id="vts-stylesheets-panel-combo"></select>'
+            + '<button id="vts-stylesheets-panel-button" type="button" title="Update">Update</button>'
           + '</div>'
-          + '<textarea id="melown-stylesheets-panel-text" cols="50"></textarea>';
+          + '<textarea id="vts-stylesheets-panel-text" cols="50"></textarea>';
 
-    this.core_.element_.appendChild(this.stylesheetsElement_);
+    //this.inspectorElement.appendChild(this.element);
+    this.core.element.appendChild(this.element);
 
-    this.stylesheetsOptionsElement_ = document.getElementById("melown-stylesheets-panel-combo");
-    this.stylesheetsOptionsElement_.onchange = this.onStylesheetsComboSwitched.bind(this);
+    this.optionsElement = document.getElementById("vts-stylesheets-panel-combo");
+    this.optionsElement.onchange = this.onComboSwitched.bind(this);
 
-    this.stylesheetsTextElement_ = document.getElementById("melown-stylesheets-panel-text");
+    this.textElement = document.getElementById("vts-stylesheets-panel-text");
     
-    document.getElementById("melown-stylesheets-panel-button").onclick = this.onStylesheetsUpdate.bind(this);
+    document.getElementById("vts-stylesheets-panel-button").onclick = this.onUpdate.bind(this);
 
-    this.stylesheetsElement_.addEventListener("mouseup", this.doNothing.bind(this), true);
-    this.stylesheetsElement_.addEventListener("mousedown", this.doNothing.bind(this), true);
-    this.stylesheetsElement_.addEventListener("mousewheel", this.doNothing.bind(this), false);
-    this.stylesheetsElement_.addEventListener("dblclick", this.doNothing.bind(this), false);
+    this.element.addEventListener("mouseup", inspector.doNothing.bind(this), true);
+    this.element.addEventListener("mousedown", inspector.doNothing.bind(this), true);
+    this.element.addEventListener("mousewheel", inspector.doNothing.bind(this), false);
+    this.element.addEventListener("dblclick", inspector.doNothing.bind(this), false);
 
-    this.stylesheetsPanelVisible_ = false;
+    this.panelVisible = false;
 };
 
-Melown.Inspector.prototype.showStylesheetsPanel = function() {
+
+InspectorStylesheets.prototype.showPanel = function() {
     this.buildStylesheetsCombo();
-    this.stylesheetsElement_.style.display = "block";
-    this.stylesheetsPanelVisible_ = true;
+    this.element.style.display = "block";
+    this.panelVisible = true;
 };
 
-Melown.Inspector.prototype.hideStylesheetsPanel = function() {
-    this.stylesheetsElement_.style.display = "none";
-    this.stylesheetsPanelVisible_ = false;
+
+InspectorStylesheets.prototype.hidePanel = function() {
+    this.element.style.display = "none";
+    this.panelVisible = false;
 };
 
-Melown.Inspector.prototype.switchStylesheetsPanel = function() {
-    if (this.stylesheetsPanelVisible_) {
-        this.hideStylesheetsPanel();
+
+InspectorStylesheets.prototype.switchPanel = function() {
+    if (this.panelVisible) {
+        this.hidePanel();
     } else {
-        this.showStylesheetsPanel();
+        this.showPanel();
     }
 };
 
-Melown.Inspector.prototype.onStylesheetsComboSwitched = function() {
-    var map_ = this.core_.getMap();
-    if (!map_) {
+
+InspectorStylesheets.prototype.onComboSwitched = function() {
+    var map = this.core.getMap();
+    if (!map) {
         return;
     }
 
-    var stylesheet_ = map_.getStylesheet(this.stylesheetsOptionsElement_.value);
-    this.stylesheetsTextElement_.value = this.niceStyleFormat(stylesheet_);
+    var stylesheet = map.getStylesheet(this.optionsElement.value);
+    this.textElement.value = this.niceStyleFormat(stylesheet);
 };
 
-Melown.Inspector.prototype.onStylesheetsUpdate = function() {
-    var map_ = this.core_.getMap();
-    if (!map_) {
+
+InspectorStylesheets.prototype.onUpdate = function() {
+    var map = this.core.getMap();
+    if (!map) {
         return;
     }
 
-    map_.setStylesheetData(this.stylesheetsOptionsElement_.value, JSON.parse(this.stylesheetsTextElement_.value));
+    map.setStylesheetData(this.optionsElement.value, JSON.parse(this.textElement.value));
 };
 
-Melown.Inspector.prototype.niceStyleFormat = function(data_) {
-    if (!data_) {
+
+InspectorStylesheets.prototype.niceStyleFormat = function(data) {
+    if (!data) {
         return "";
     }
     
-    data_ = data_.data_;
+    data = data.data;
 
-    //return JSON.stringify(data_, null, "  ");
+    //return JSON.stringify(data, null, "  ");
     
-    var tmp_ = "";
-    tmp_ += "{\n";
+    var tmp = "";
+    tmp += "{\n";
 
-    var elements_ = [];
+    var elements = [];
 
-    if (data_["constants"]) {
-        elements_.push("constants");
+    if (data["constants"]) {
+        elements.push("constants");
     } 
 
-    if (data_["bitmaps"]) {
-        elements_.push("bitmaps");
+    if (data["bitmaps"]) {
+        elements.push("bitmaps");
     } 
 
-    if (data_["layers"]) {
-        elements_.push("layers");
+    if (data["layers"]) {
+        elements.push("layers");
     } 
     
-    for (var j = 0, lj = elements_.length; j < lj; j++) {
-        var type_ = elements_[j];
-        tmp_ += '  "' + type_ + '": {\n';
+    for (var j = 0, lj = elements.length; j < lj; j++) {
+        var type = elements[j];
+        tmp += '  "' + type + '": {\n';
 
-        var element_ = data_[type_];
+        var element = data[type];
 
-        var buff_ = [];
-        for (var key_ in element_) {
-            buff_.push(key_);
+        var buff = [];
+        for (var key in element) {
+            buff.push(key);
         }
 
-        for (var i = 0, li = buff_.length; i < li; i++) {
-            if (type_ == "layers") {
+        for (var i = 0, li = buff.length; i < li; i++) {
+            if (type == "layers") {
                 
-                var element2_ = element_[buff_[i]];
+                var element2 = element[buff[i]];
                 
-                var buff2_ = [];
-                for (var key2_ in element2_) {
-                    buff2_.push(key2_);
+                var buff2 = [];
+                for (var key2 in element2) {
+                    buff2.push(key2);
                 }
 
-                tmp_ += '    "' + buff_[i] + '": {\n';
+                tmp += '    "' + buff[i] + '": {\n';
 
-                for (var k = 0, lk = buff2_.length; k < lk; k++) {
-                    tmp_ += '      "' + buff2_[k] + '": ' + JSON.stringify(element2_[buff2_[k]]) + (k == (lk - 1) ? "" : ",") + "\n";
+                for (var k = 0, lk = buff2.length; k < lk; k++) {
+                    tmp += '      "' + buff2[k] + '": ' + JSON.stringify(element2[buff2[k]]) + (k == (lk - 1) ? "" : ",") + "\n";
                 }
                 
-                tmp_ += "    }"  + (i == (li - 1) ? "" : ",\n");
+                tmp += "    }"  + (i == (li - 1) ? "" : ",\n");
             } else {
-                tmp_ += '    "' + buff_[i] + '": ' + JSON.stringify(element_[buff_[i]]) + (i == (li - 1) ? "" : ",") + "\n";
+                tmp += '    "' + buff[i] + '": ' + JSON.stringify(element[buff[i]]) + (i == (li - 1) ? "" : ",") + "\n";
             }
         }
         
-        tmp_ += "\n  }" + (j == (lj - 1) ? "" : ",\n");
+        tmp += "\n  }" + (j == (lj - 1) ? "" : ",\n");
     }
     
-    tmp_ += "\n}";
+    tmp += "\n}";
     
-    return tmp_;
+    return tmp;
 };
 
-Melown.Inspector.prototype.buildStylesheetsCombo = function() {
-    var map_ = this.core_.getMap();
-    if (!map_) {
+
+InspectorStylesheets.prototype.buildStylesheetsCombo = function() {
+    var map = this.core.getMap();
+    if (!map) {
         return;
     }
 
-    var html_ = "";
+    var html = "";
 
-    var styles_ = map_.getStylesheets();
+    var styles = map.getStylesheets();
     
-    for (var i = 0, li = styles_.length; i < li; i++) {
-        html_ += '<option value="' + styles_[i] + '">' + styles_[i] + '</option>';
+    for (var i = 0, li = styles.length; i < li; i++) {
+        html += '<option value="' + styles[i] + '">' + styles[i] + '</option>';
     }    
     
-    this.stylesheetsOptionsElement_.innerHTML = html_;
+    this.optionsElement.innerHTML = html;
     
-    var stylesheet_ = map_.getStylesheet(styles_[0]);
-    this.stylesheetsTextElement_.value = this.niceStyleFormat(stylesheet_);
+    var stylesheet = map.getStylesheet(styles[0]);
+    this.textElement.value = this.niceStyleFormat(stylesheet);
 };
 
 
+export default InspectorStylesheets;
 

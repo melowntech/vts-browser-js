@@ -1,18 +1,20 @@
-/**
- * @constructor
- */
-Melown.UIControlMap = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.browser_ = ui_.browser_;
-    this.control_ = this.ui_.addControl("map",
-      '<div id="melown-map"'
-      + ' class="melown-map">'
+
+var UIControlMap = function(ui, visible) {
+    this.ui = ui;
+    this.browser = ui.browser;
+    this.control = this.ui.addControl("map",
+      '<div id="vts-map"'
+      + ' class="vts-map">'
       + ' </div>');
 
-    var map_ = this.getMapElement();
-    map_.setDraggableState(true);
+    var map = this.getMapElement();
+    map.setDraggableState(true);
 };
 
-Melown.UIControlMap.prototype.getMapElement = function() {
-    return this.control_.getElement("melown-map");
+
+UIControlMap.prototype.getMapElement = function() {
+    return this.control.getElement("vts-map");
 };
+
+
+export default UIControlMap;

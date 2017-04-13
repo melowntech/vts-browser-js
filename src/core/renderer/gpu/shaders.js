@@ -1,30 +1,46 @@
 
-Melown.bboxVertexShader =
+var GpuShaders = {};
+
+GpuShaders.bboxVertexShader =
     "attribute vec3 aPosition;\n"+
     "uniform mat4 uMVP;\n"+
     "void main(){ \n"+
         "gl_Position = uMVP * vec4(aPosition, 1.0);\n"+
     "}";
 
-Melown.bboxFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.bbox2VertexShader =
+    "attribute vec3 aPosition;\n"+
+    "uniform mat4 uMVP;\n"+
+    "uniform float uPoints[8*3];\n"+
+    "void main(){ \n"+
+        "int index = int(aPosition.z) * 3; \n"+
+        "gl_Position = uMVP * vec4(uPoints[index], uPoints[index+1], uPoints[index+2], 1.0);\n"+
+    "}";
+
+
+GpuShaders.bboxFragmentShader = "precision mediump float;\n"+
     "void main() {\n"+
         "gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n"+
     "}";
 
-Melown.lineVertexShader =
+
+GpuShaders.lineVertexShader =
     "attribute vec3 aPosition;\n"+
     "uniform mat4 uMVP;\n"+
     "void main(){ \n"+
         "gl_Position = uMVP * vec4(aPosition, 1.0);\n"+
     "}";
 
-Melown.lineFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.lineFragmentShader = "precision mediump float;\n"+
     "uniform vec4 uColor;\n"+
     "void main() {\n"+
         "gl_FragColor = uColor;\n"+
     "}";
 
-Melown.line3VertexShader =
+
+GpuShaders.line3VertexShader =
     "attribute vec4 aPosition;\n"+
     "attribute vec4 aNormal;\n"+
     "uniform mat4 uMVP;\n"+
@@ -42,13 +58,15 @@ Melown.line3VertexShader =
         "}\n"+
     "}";
 
-Melown.line3FragmentShader = "precision mediump float;\n"+
+
+GpuShaders.line3FragmentShader = "precision mediump float;\n"+
     "uniform vec4 uColor;\n"+
     "void main() {\n"+
         "gl_FragColor = uColor;\n"+
     "}";
 
-Melown.line4VertexShader =
+
+GpuShaders.line4VertexShader =
     "attribute vec3 aPosition;\n"+
     "uniform mat4 uMVP;\n"+
     "uniform vec3 uScale;\n"+
@@ -70,13 +88,15 @@ Melown.line4VertexShader =
         "}\n"+
     "}";
 
-Melown.line4FragmentShader = "precision mediump float;\n"+
+
+GpuShaders.line4FragmentShader = "precision mediump float;\n"+
     "uniform vec4 uColor;\n"+
     "void main() {\n"+
         "gl_FragColor = uColor;\n"+
     "}";
 
-Melown.tlineVertexShader =
+
+GpuShaders.tlineVertexShader =
     "attribute vec4 aPosition;\n"+
     "attribute vec4 aNormal;\n"+
     "uniform mat4 uMVP;\n"+
@@ -99,7 +119,8 @@ Melown.tlineVertexShader =
         "gl_Position = uMVP * p;\n"+
     "}";
 
-Melown.tplineVertexShader =
+
+GpuShaders.tplineVertexShader =
     "attribute vec4 aPosition;\n"+
     "attribute vec4 aNormal;\n"+
     "uniform mat4 uMVP;\n"+
@@ -121,7 +142,8 @@ Melown.tplineVertexShader =
         "}\n"+
     "}";
 
-Melown.tlineFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tlineFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform vec4 uColor;\n"+
     "uniform vec4 uColor2;\n"+
@@ -132,7 +154,8 @@ Melown.tlineFragmentShader = "precision mediump float;\n"+
         "gl_FragColor = c;\n"+
     "}";
 
-Melown.tblineFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tblineFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform vec4 uColor;\n"+
     "uniform vec4 uColor2;\n"+
@@ -146,7 +169,8 @@ Melown.tblineFragmentShader = "precision mediump float;\n"+
         "gl_FragColor = c;\n"+
     "}";
 
-Melown.polygonVertexShader =
+
+GpuShaders.polygonVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec3 aNormal;\n"+
     "uniform mat4 uMVP;\n"+
@@ -161,13 +185,15 @@ Melown.polygonVertexShader =
         "gl_Position = uMVP * vec4(aPosition, 1.0);\n"+
     "}";
 
-Melown.polygonFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.polygonFragmentShader = "precision mediump float;\n"+
     "varying vec4 vColor;\n"+
     "void main() {\n"+
         "gl_FragColor = vColor;\n"+
     "}";
 
-Melown.textVertexShader =
+
+GpuShaders.textVertexShader =
     "attribute vec4 aPosition;\n"+
     "attribute vec4 aTexCoord;\n"+
     "uniform mat4 uMVP;\n"+
@@ -182,7 +208,8 @@ Melown.textVertexShader =
         "}\n"+
     "}";
 
-Melown.textVertexShader2 =
+
+GpuShaders.textVertexShader2 =
     "attribute vec3 aPosition;\n"+
     "attribute vec4 aTexCoord;\n"+
     "uniform mat4 uMVP;\n"+
@@ -195,7 +222,8 @@ Melown.textVertexShader2 =
         "gl_Position = uMVP*vec4(aPosition[0]+uPosition[0],-aPosition[1]+uPosition[1],uPosition[2],1.0);\n"+
     "}";
 
-Melown.iconVertexShader =
+
+GpuShaders.iconVertexShader =
     "attribute vec4 aPosition;\n"+
     "attribute vec4 aTexCoord;\n"+
     "attribute vec3 aOrigin;\n"+
@@ -209,7 +237,8 @@ Melown.iconVertexShader =
         "gl_Position = pos + vec4(aPosition.x*uScale.x*pos.w, (aPosition.y+uScale.w)*uScale.y*pos.w, 0.0, 0.0);\n"+
     "}";
 
-Melown.textFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.textFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform vec4 uColor;\n"+
     "varying vec2 vTexCoord;\n"+
@@ -219,7 +248,8 @@ Melown.textFragmentShader = "precision mediump float;\n"+
         "gl_FragColor = c*uColor;\n"+
     "}";
 
-Melown.skydomeVertexShader =
+
+GpuShaders.skydomeVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMVP;\n"+
@@ -229,7 +259,8 @@ Melown.skydomeVertexShader =
         "vTexCoord = aTexCoord;\n"+
     "}";
 
-Melown.skydomeFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.skydomeFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "varying vec2 vTexCoord;\n"+
     "const vec4 gray = vec4(0.125, 0.125, 0.125, 1.0);\n"+
@@ -242,14 +273,16 @@ Melown.skydomeFragmentShader = "precision mediump float;\n"+
         //"gl_FragColor = vec4(vTexCoord.x, vTexCoord.y, 0.9, 1.0);\n"+
     "}";
 
-Melown.stardomeFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.stardomeFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "varying vec2 vTexCoord;\n"+
     "void main() {\n"+
         "gl_FragColor = texture2D(uSampler, vTexCoord);\n"+
     "}";
 
-Melown.atmoVertexShader =
+
+GpuShaders.atmoVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -267,7 +300,8 @@ Melown.atmoVertexShader =
         "vPosition = camSpacePos;\n"+
     "}";
 
-Melown.atmoFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.atmoFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
 //    "uniform float uNFactor;\n"+
     "uniform vec4 uParams;\n"+       //[radius, atmoSize, 0 ,0]
@@ -302,7 +336,8 @@ Melown.atmoFragmentShader = "precision mediump float;\n"+
         "gl_FragColor = c;\n"+
     "}";
 
-Melown.atmoFragmentShader2 = "precision mediump float;\n"+
+
+GpuShaders.atmoFragmentShader2 = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform float uNFactor;\n"+
     "uniform vec2 uRadius;\n"+
@@ -329,7 +364,7 @@ Melown.atmoFragmentShader2 = "precision mediump float;\n"+
     "}";
 
 
-Melown.atmoVertexShader3 =
+GpuShaders.atmoVertexShader3 =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -398,7 +433,8 @@ Melown.atmoVertexShader3 =
         "vTexcoords.x = height;\n"+
     "}";
 
-Melown.atmoFragmentShader3 = "precision mediump float;\n"+
+
+GpuShaders.atmoFragmentShader3 = "precision mediump float;\n"+
     "varying vec2 vTexcoords;\n"+
     "uniform vec4 uParams3;\n"+       //[treshold, mutiplier, 0,0]
     "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
@@ -428,7 +464,7 @@ Melown.atmoFragmentShader3 = "precision mediump float;\n"+
 
 
 //heightmap tile
-Melown.heightmapVertexShader =
+GpuShaders.heightmapVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -455,7 +491,8 @@ Melown.heightmapVertexShader =
         "vTexCoord2 = gridCoord.xy * vec2(uGridStep2);\n"+
     "}";
 
-Melown.heightmapFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.heightmapFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform float uGridBlend;\n"+
     "varying vec2 vTexCoord1;\n"+
@@ -470,7 +507,7 @@ Melown.heightmapFragmentShader = "precision mediump float;\n"+
 
 
 //depth encoded heightmap tile
-Melown.heightmapDepthVertexShader =
+GpuShaders.heightmapDepthVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -497,7 +534,8 @@ Melown.heightmapDepthVertexShader =
         "vTexCoord2 = gridCoord.xy * vec2(uGridStep2);\n"+
     "}";
 
-Melown.heightmapDepthFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.heightmapDepthFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform float uGridBlend;\n"+
     "varying vec2 vTexCoord1;\n"+
@@ -511,8 +549,9 @@ Melown.heightmapDepthFragmentShader = "precision mediump float;\n"+
 
         //"gl_FragColor = mix(fogColor, gridColor, vFogFactor);\n"+
     "}";
+
     
-Melown.planeVertexShader =
+GpuShaders.planeVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -554,7 +593,8 @@ Melown.planeVertexShader =
         "vTexCoord = uv;\n"+
     "}";
 
-Melown.planeFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.planeFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform vec4 uParams2;\n"+    //[uGridStep1, uGridStep2, uGridBlend, 0]
     "varying vec2 vTexCoord;\n"+
@@ -567,7 +607,7 @@ Melown.planeFragmentShader = "precision mediump float;\n"+
     "}";
 
 
-Melown.planeVertex2Shader =
+GpuShaders.planeVertex2Shader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -610,7 +650,8 @@ Melown.planeVertex2Shader =
         "vTexCoord2 = p.xy;\n"+
     "}";
 
-Melown.planeFragment2Shader = "precision mediump float;\n"+
+
+GpuShaders.planeFragment2Shader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform vec4 uParams2;\n"+    //[uGridStep1, uGridStep2, uGridBlend, 0]
     "uniform vec4 uParams4;\n"+    //[pole-x, pole-y, pole-radius, 0]
@@ -627,11 +668,9 @@ Melown.planeFragment2Shader = "precision mediump float;\n"+
         //"gl_FragColor = mix(texture2D(uSampler, vTexCoord), texture2D(uSampler, vTexCoord*8.0), uParams2[2]);\n"+
     "}";
 
-
-
     
 //textured tile mesh
-Melown.tileVertexShader =
+GpuShaders.tileVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -648,7 +687,7 @@ Melown.tileVertexShader =
         "vTexCoord = aTexCoord;\n"+
     "}";
 
-Melown.tileFragmentShader = "precision mediump float;\n"+
+GpuShaders.tileFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "varying vec2 vTexCoord;\n"+
     "varying float vFogFactor;\n"+
@@ -658,8 +697,9 @@ Melown.tileFragmentShader = "precision mediump float;\n"+
         "gl_FragColor = mix(fogColor, texture2D(uSampler, vTexCoord), vFogFactor);\n"+
     "}";
 
+
 //textured tile mesh
-Melown.tile2VertexShader =
+GpuShaders.tile2VertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord2;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -677,7 +717,8 @@ Melown.tile2VertexShader =
         "vTexCoord = vec2(uTransform[0] * aTexCoord2[0] + uTransform[2], uTransform[1] * aTexCoord2[1] + uTransform[3]);\n"+
     "}";
 
-Melown.tile2FragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tile2FragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform float uAlpha;\n"+
     "varying vec2 vTexCoord;\n"+
@@ -690,7 +731,8 @@ Melown.tile2FragmentShader = "precision mediump float;\n"+
         "gl_FragColor[3] = c.w * uAlpha;\n"+
     "}";
 
-Melown.tile3FragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tile3FragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "uniform sampler2D uSampler2;\n"+
     "uniform float uAlpha;\n"+
@@ -706,7 +748,7 @@ Melown.tile3FragmentShader = "precision mediump float;\n"+
     "}";
 
 //fog only tile mesh
-Melown.fogTileVertexShader =
+GpuShaders.fogTileVertexShader =
     "attribute vec3 aPosition;\n"+
     "uniform mat4 uMV, uProj;\n"+
     "uniform float uFogDensity;\n"+
@@ -718,7 +760,8 @@ Melown.fogTileVertexShader =
         "vFogFactor = exp(uFogDensity * camDist);\n"+
     "}";
 
-Melown.fogTileFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.fogTileFragmentShader = "precision mediump float;\n"+
     "varying float vFogFactor;\n"+
     "const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n"+
     "void main() {\n"+
@@ -727,7 +770,7 @@ Melown.fogTileFragmentShader = "precision mediump float;\n"+
 
 
 //textured shaded tile mesh
-Melown.tileTShadedVertexShader =
+GpuShaders.tileTShadedVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "attribute vec3 aNormal;\n"+
@@ -748,7 +791,8 @@ Melown.tileTShadedVertexShader =
         "vNormal = aNormal * uNorm;\n"+
     "}";
 
-Melown.tileTShadedFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tileTShadedFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "varying vec2 vTexCoord;\n"+
     "varying vec4 vPosition;\n"+
@@ -768,7 +812,8 @@ Melown.tileTShadedFragmentShader = "precision mediump float;\n"+
         "gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor);\n"+
     "}";
 
-Melown.tileShadedFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tileShadedFragmentShader = "precision mediump float;\n"+
     "varying vec2 vTexCoord;\n"+
     "varying vec4 vPosition;\n"+
     "varying vec3 vNormal;\n"+
@@ -790,7 +835,7 @@ Melown.tileShadedFragmentShader = "precision mediump float;\n"+
     "}";
 
 //flat shade tile mesh
-Melown.tileFlatShadeVertexShader =
+GpuShaders.tileFlatShadeVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "attribute vec3 aBarycentric;\n"+
@@ -808,7 +853,8 @@ Melown.tileFlatShadeVertexShader =
         "vBarycentric = camSpacePos.xyz;\n"+
     "}";
 
-Melown.tileFlatShadeFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tileFlatShadeFragmentShader = "precision mediump float;\n"+
     "#extension GL_OES_standard_derivatives : enable\n"+
     "uniform sampler2D uSampler;\n"+
     "varying vec2 vTexCoord;\n"+
@@ -826,7 +872,7 @@ Melown.tileFlatShadeFragmentShader = "precision mediump float;\n"+
     "}";
 
 //textured wire frame tile mesh
-Melown.tileWireframeVertexShader =
+GpuShaders.tileWireframeVertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord;\n"+
     "attribute vec3 aBarycentric;\n"+
@@ -844,7 +890,8 @@ Melown.tileWireframeVertexShader =
         "vBarycentric = aBarycentric;\n"+
     "}";
 
-Melown.tileWireframeFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tileWireframeFragmentShader = "precision mediump float;\n"+
     "#extension GL_OES_standard_derivatives : enable\n"+
     "uniform sampler2D uSampler;\n"+
     "varying vec2 vTexCoord;\n"+
@@ -868,7 +915,8 @@ Melown.tileWireframeFragmentShader = "precision mediump float;\n"+
         //"gl_FragColor = mix(fogColor, texture2D(uSampler, vTexCoord), vFogFactor);\n"+
     "}";
 
-Melown.tileWireframe2FragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tileWireframe2FragmentShader = "precision mediump float;\n"+
     "#extension GL_OES_standard_derivatives : enable\n"+
     "uniform sampler2D uSampler;\n"+
     "varying vec2 vTexCoord;\n"+
@@ -893,7 +941,7 @@ Melown.tileWireframe2FragmentShader = "precision mediump float;\n"+
     "}";
 
 //textured wire frame tile mesh
-Melown.tileWireframe3VertexShader =
+GpuShaders.tileWireframe3VertexShader =
     "attribute vec3 aPosition;\n"+
     "attribute vec2 aTexCoord2;\n"+
     "attribute vec3 aBarycentric;\n"+
@@ -912,7 +960,7 @@ Melown.tileWireframe3VertexShader =
     "}";
 
 //depth encoded tile mesh
-Melown.tileDepthVertexShader =
+GpuShaders.tileDepthVertexShader =
     "attribute vec3 aPosition;\n"+
     //"attribute vec2 aTexCoord;\n"+
     "uniform mat4 uMV, uProj;\n"+
@@ -927,7 +975,8 @@ Melown.tileDepthVertexShader =
         //"vTexCoord = aTexCoord;\n"+
     "}";
 
-Melown.tileDepthFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.tileDepthFragmentShader = "precision mediump float;\n"+
     "uniform sampler2D uSampler;\n"+
     "varying float vDepth;\n"+
     "void main() {\n"+
@@ -940,7 +989,7 @@ Melown.tileDepthFragmentShader = "precision mediump float;\n"+
     "}";
 
 //used for 2d iamges
-Melown.imageVertexShader = "\n"+
+GpuShaders.imageVertexShader = "\n"+
     "attribute vec4 aPosition;\n"+
     "uniform mat4 uProjectionMatrix;\n"+
     "uniform mat4 uData;\n"+
@@ -963,7 +1012,8 @@ Melown.imageVertexShader = "\n"+
         "vColor=c;\n"+
     "}";
 
-Melown.imageFragmentShader = "precision mediump float;\n"+
+
+GpuShaders.imageFragmentShader = "precision mediump float;\n"+
     "varying vec4 vColor;\n"+
     "varying vec2 vTexcoords;\n"+
     "uniform sampler2D uSampler;\n"+
@@ -975,8 +1025,9 @@ Melown.imageFragmentShader = "precision mediump float;\n"+
         "gl_FragColor = c;\n"+
 //        "gl_FragColor = vec4(vTexcoords.x, vTexcoords.y, 0.0, 1.0);\n"+
     "}";
+    
 
-
+export default GpuShaders;
 
 
 

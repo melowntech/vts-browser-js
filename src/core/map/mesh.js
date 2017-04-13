@@ -1,151 +1,163 @@
-require('./submesh');
 
-/**
- * @constructor
- */
-Melown.MapMesh = function(map_, url_, tile_) {
-    this.generateLines_ = true;
-    this.map_ = map_;
-    this.stats_ = map_.stats_;
-    this.mapLoaderUrl_  = url_;
-    this.tile_ = tile_; // used only for stats
+import {mat4 as mat4_} from '../utils/matrix';
+import {utils as utils_} from '../utils/utils';
+import MapSubmesh_ from './submesh';
+import BBox_ from '../renderer/bbox';
 
-    this.bbox_ = new Melown.BBox();
-    this.size_ = 0;
-    this.fileSize_ = 0;
-    this.faces_ = 0;
+//get rid of compiler mess
+var mat4 = mat4_;
+var BBox = BBox_;
+var MapSubmesh = MapSubmesh_;
+var utils = utils_;
 
-    this.cacheItem_ = null;  //store killSubmeshes
-    this.gpuCacheItem_ = null; //store killGpuSubmeshes
 
-    this.loadState_ = 0;
-    this.loadErrorTime_ = null;
-    this.loadErrorCounter_ = 0;
+var MapMesh = function(map, url, tile) {
+    this.generateLines = true;
+    this.map = map;
+    this.stats = map.stats;
+    this.mapLoaderUrl  = url;
+    this.tile = tile; // used only for stats
 
-    this.mBuffer_ = Melown.mat4.create();
-    this.mBuffer2_ = Melown.mat4.create();
+    this.bbox = new BBox();
+    this.size = 0;
+    this.fileSize = 0;
+    this.faces = 0;
 
-    this.submeshes_ = [];
-    this.gpuSubmeshes_ = [];
-    this.submeshesKilled_ = false;
+    this.cacheItem = null;  //store killSubmeshes
+    this.gpuCacheItem = null; //store killGpuSubmeshes
+
+    this.loadState = 0;
+    this.loadErrorTime = null;
+    this.loadErrorCounter = 0;
+
+    this.mBuffer = mat4.create();
+    this.mBuffer2 = mat4.create();
+
+    this.submeshes = [];
+    this.gpuSubmeshes = [];
+    this.submeshesKilled = false;
 };
 
-Melown.MapMesh.prototype.kill = function() {
-    this.bbox_ = null;
+
+MapMesh.prototype.kill = function() {
+    this.bbox = null;
     this.killSubmeshes();
     this.killGpuSubmeshes();
 };
 
-Melown.MapMesh.prototype.killSubmeshes = function(killedByCache_) {
-    for (var i = 0, li = this.submeshes_.length; i < li; i++) {
-        this.submeshes_[i].kill();
-    }
-    //this.submeshes_ = [];
-    this.submeshesKilled_ = true;
 
-    if (killedByCache_ != true && this.cacheItem_) {
-        this.map_.resourcesCache_.remove(this.cacheItem_);
-        //this.tile_.validate();
+MapMesh.prototype.killSubmeshes = function(killedByCache) {
+    for (var i = 0, li = this.submeshes.length; i < li; i++) {
+        this.submeshes[i].kill();
     }
+    //this.submeshes = [];
+    this.submeshesKilled = true;
 
-    if (this.gpuSubmeshes_.length == 0) {
-        this.loadState_ = 0;
+    if (killedByCache != true && this.cacheItem) {
+        this.map.resourcesCache.remove(this.cacheItem);
+        //this.tile.validate();
     }
 
-    this.cacheItem_ = null;
+    if (this.gpuSubmeshes.length == 0) {
+        this.loadState = 0;
+    }
+
+    this.cacheItem = null;
 };
 
-Melown.MapMesh.prototype.killGpuSubmeshes = function(killedByCache_) {
-    var size_ = 0;
-    for (var i = 0, li = this.gpuSubmeshes_.length; i < li; i++) {
-        this.gpuSubmeshes_[i].kill();
-        size_ += this.gpuSubmeshes_[i].size_;
+
+MapMesh.prototype.killGpuSubmeshes = function(killedByCache) {
+    var size = 0;
+    for (var i = 0, li = this.gpuSubmeshes.length; i < li; i++) {
+        this.gpuSubmeshes[i].kill();
+        size += this.gpuSubmeshes[i].size;
     }
 
     if (li > 0) {
-        this.stats_.gpuMeshes_ -= size_;
-        this.stats_.graphsFluxMesh_[1][0]++;
-        this.stats_.graphsFluxMesh_[1][1] += size_;
+        this.stats.gpuMeshes -= size;
+        this.stats.graphsFluxMesh[1][0]++;
+        this.stats.graphsFluxMesh[1][1] += size;
     }
 
-    this.gpuSubmeshes_ = [];
+    this.gpuSubmeshes = [];
 
-    if (killedByCache_ != true && this.gpuCacheItem_) {
-        this.map_.gpuCache_.remove(this.gpuCacheItem_);
-        //this.tile_.validate();
+    if (killedByCache != true && this.gpuCacheItem) {
+        this.map.gpuCache.remove(this.gpuCacheItem);
+        //this.tile.validate();
     }
 
-    //console.log("kill: " + this.stats_.counter_ + "   " + this.mapLoaderUrl_);
+    //console.log("kill: " + this.stats.counter + "   " + this.mapLoaderUrl);
 
-//    if (this.submeshes_.length == 0) {
-    if (this.submeshesKilled_) {
-        this.loadState_ = 0;
+//    if (this.submeshes.length == 0) {
+    if (this.submeshesKilled) {
+        this.loadState = 0;
     }
 
-    this.gpuCacheItem_ = null;
+    this.gpuCacheItem = null;
 };
 
-Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_) {
-    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
-    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
+
+MapMesh.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
+    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
+    doNotLoad = doNotLoad || doNotUseGpu;
     
-    //if (doNotUseGpu_) {
-      //  doNotUseGpu_ = doNotUseGpu_;
+    //if (doNotUseGpu) {
+      //  doNotUseGpu = doNotUseGpu;
     //}
     
-    if (this.mapLoaderUrl_ == "https://cdn.melown.com/mario/proxy/melown2015/surface/melown/cz10/12-1107-688.bin?0") {
-        this.mapLoaderUrl_ = this.mapLoaderUrl_;
-    }    
+    //if (this.mapLoaderUrl == "https://cdn.vts.com/mario/proxy/melown2015/surface/vts/cz10/12-1107-688.bin?0") {
+      //  this.mapLoaderUrl = this.mapLoaderUrl;
+    //}    
 
-    if (this.loadState_ == 2) { //loaded
-        if (this.cacheItem_) {
-            this.map_.resourcesCache_.updateItem(this.cacheItem_);
+    if (this.loadState == 2) { //loaded
+        if (this.cacheItem) {
+            this.map.resourcesCache.updateItem(this.cacheItem);
         }
         
-        if (doNotCheckGpu_) {
+        if (doNotCheckGpu) {
             return true;
         }
 
-        if (this.gpuSubmeshes_.length == 0) {
-            if (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_) {
+        if (this.gpuSubmeshes.length == 0) {
+            if (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed) {
                 return false;
             }
 
-            if (this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
-                this.map_.markDirty();
+            if (this.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
+                this.map.markDirty();
                 return false;
             }
 
-            if (doNotUseGpu_) {
+            if (doNotUseGpu) {
                 return false;
             }
 
             var t = performance.now();
             this.buildGpuSubmeshes();
-            this.stats_.renderBuild_ += performance.now() - t; 
+            this.stats.renderBuild += performance.now() - t; 
         }
 
-        if (!doNotLoad_ && this.gpuCacheItem_) {
-            this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+        if (!doNotLoad && this.gpuCacheItem) {
+            this.map.gpuCache.updateItem(this.gpuCacheItem);
         }
         return true;
     } else {
-        if (this.loadState_ == 0) { 
-            if (doNotLoad_) {
+        if (this.loadState == 0) { 
+            if (doNotLoad) {
                 //remove from queue
-                //if (this.mapLoaderUrl_) {
-                  //  this.map_.loader_.remove(this.mapLoaderUrl_);
+                //if (this.mapLoaderUrl) {
+                  //  this.map.loader.remove(this.mapLoaderUrl);
                 //}
             } else {
                 //not loaded
                 //add to loading queue or top position in queue
-                this.scheduleLoad(priority_);
+                this.scheduleLoad(priority);
             }
-        } else if (this.loadState_ == 3) { //loadError
-            if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_ &&
-                performance.now() > this.loadErrorTime_ + this.map_.config_.mapLoadErrorRetryTime_) {
+        } else if (this.loadState == 3) { //loadError
+            if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
+                performance.now() > this.loadErrorTime + this.map.config.mapLoadErrorRetryTime) {
     
-                this.scheduleLoad(priority_);                    
+                this.scheduleLoad(priority);                    
             }
         } //else load in progress
     }
@@ -153,84 +165,89 @@ Melown.MapMesh.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu
     return false;
 };
 
-Melown.MapMesh.prototype.scheduleLoad = function(priority_) {
-    if (!this.mapLoaderUrl_) {
-        this.mapLoaderUrl_ = this.map_.makeUrl(this.tile_.resourceSurface_.meshUrl_, {lod_:this.tile_.id_[0], ix_:this.tile_.id_[1], iy_:this.tile_.id_[2] });
+
+MapMesh.prototype.scheduleLoad = function(priority) {
+    if (!this.mapLoaderUrl) {
+        this.mapLoaderUrl = this.map.url.makeUrl(this.tile.resourceSurface.meshUrl, {lod:this.tile.id[0], ix:this.tile.id[1], iy:this.tile.id[2] });
     }
 
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this), priority_, this.tile_, "mesh");
+    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this), priority, this.tile, "mesh");
 };
 
-Melown.MapMesh.prototype.onLoad = function(url_, onLoaded_, onError_) {
-    this.mapLoaderCallLoaded_ = onLoaded_;
-    this.mapLoaderCallError_ = onError_;
 
-    Melown.loadBinary(url_, this.onLoaded.bind(this), this.onLoadError.bind(this), (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_);
-    this.loadState_ = 1;
+MapMesh.prototype.onLoad = function(url, onLoaded, onError) {
+    this.mapLoaderCallLoaded = onLoaded;
+    this.mapLoaderCallError = onError;
+
+    utils.loadBinary(url, this.onLoaded.bind(this), this.onLoadError.bind(this), (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);
+    this.loadState = 1;
 };
 
-Melown.MapMesh.prototype.onLoadError = function() {
-    if (this.map_.killed_ == true){
+
+MapMesh.prototype.onLoadError = function() {
+    if (this.map.killed == true){
         return;
     }
 
-    this.loadState_ = 3;
-    this.loadErrorTime_ = performance.now();
-    this.loadErrorCounter_ ++;
+    this.loadState = 3;
+    this.loadErrorTime = performance.now();
+    this.loadErrorCounter ++;
     
     //make sure we try to load it again
-    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_) { 
-        setTimeout((function(){ if (!this.map_.killed_) { this.map_.markDirty(); } }).bind(this), this.map_.config_.mapLoadErrorRetryTime_);
+    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount) { 
+        setTimeout((function(){ if (!this.map.killed) { this.map.markDirty(); } }).bind(this), this.map.config.mapLoadErrorRetryTime);
     }    
     
-    this.mapLoaderCallError_();
+    this.mapLoaderCallError();
 };
 
-Melown.MapMesh.prototype.onLoaded = function(data_, task_) {
-    if (this.map_.killed_ == true){
+
+MapMesh.prototype.onLoaded = function(data, task) {
+    if (this.map.killed == true){
         return;
     }
 
-    if (!task_) {
-        //this.map_.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
-        this.map_.markDirty();
-        this.map_.addProcessingTask(this.onLoaded.bind(this, data_, true));
+    if (!task) {
+        //this.map.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
+        this.map.markDirty();
+        this.map.addProcessingTask(this.onLoaded.bind(this, data, true));
         return;
     }
 
-    this.fileSize_= data_.byteLength;
+    this.fileSize= data.byteLength;
 
-    var stream_ = {data_: new DataView(data_), buffer_:data_, index_:0};
+    var stream = {data: new DataView(data), buffer:data, index:0};
 
     var t = performance.now();
-    this.parseMapMesh(stream_);
-    this.map_.stats_.renderBuild_ += performance.now() - t; 
+    this.parseMapMesh(stream);
+    this.map.stats.renderBuild += performance.now() - t; 
     
-    this.submeshesKilled_ = false;
+    this.submeshesKilled = false;
 
-    this.cacheItem_ = this.map_.resourcesCache_.insert(this.killSubmeshes.bind(this, true), this.size_);
+    this.cacheItem = this.map.resourcesCache.insert(this.killSubmeshes.bind(this, true), this.size);
 
-    this.map_.markDirty();
-    this.loadState_ = 2;
-    this.loadErrorTime_ = null;
-    this.loadErrorCounter_ = 0;
-    this.mapLoaderCallLoaded_();
+    this.map.markDirty();
+    this.loadState = 2;
+    this.loadErrorTime = null;
+    this.loadErrorCounter = 0;
+    this.mapLoaderCallLoaded();
 };
 
-//! Returns RAM usage in bytes.
-Melown.MapMesh.prototype.size = function () {
-    return this.size_;
-};
 
-Melown.MapMesh.prototype.fileSize = function () {
-    return this.fileSize_;
-};
+// Returns RAM usage in bytes.
+//MapMesh.prototype.size = function () {
+  //  return this.size;
+//};
 
-//! Returns RAM usage in bytes.
-Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
+//MapMesh.prototype.fileSize = function () {
+    //return this.fileSize;
+//};
+
+// Returns RAM usage in bytes.
+MapMesh.prototype.parseMapMesh = function (stream) {
 /*
     struct MapMesh {
-        struct MapMeshHeader_ {
+        struct MapMeshHeader {
             char magic[2];                // letters "ME"
             ushort version;               // currently 1
             double meanUndulation;        // read more about undulation below
@@ -242,113 +259,116 @@ Melown.MapMesh.prototype.parseMapMesh = function (stream_) {
     this.killSubmeshes(); //just in case
 
     //parase header
-    var streamData_ = stream_.data_;
-    var magic_ = "";
+    var streamData = stream.data;
+    var magic = "";
 
-    magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
-    magic_ += String.fromCharCode(streamData_.getUint8(stream_.index_, true)); stream_.index_ += 1;
+    magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
+    magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
 
-    if (magic_ != "ME") {
+    if (magic != "ME") {
         return false;
     }
 
-    this.version_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    this.version = streamData.getUint16(stream.index, true); stream.index += 2;
 
-    if (this.version_ > 3) {
+    if (this.version > 3) {
         return false;
     }
     
-    //if (this.version_ >= 3) {
-        stream_.uint8Data_ = new Uint8Array(stream_.buffer_);
+    //if (this.version >= 3) {
+        stream.uint8Data = new Uint8Array(stream.buffer);
     //}
 
-    this.meanUndulation_ = streamData_.getFloat64(stream_.index_, true); stream_.index_ += 8;
-    this.numSubmeshes_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
+    this.meanUndulation = streamData.getFloat64(stream.index, true); stream.index += 8;
+    this.numSubmeshes = streamData.getUint16(stream.index, true); stream.index += 2;
 
-    this.submeshes_ = [];
+    this.submeshes = [];
 
-    for (var i = 0, li = this.numSubmeshes_; i < li; i++) {
-        var submesh_ = new Melown.MapSubmesh(this, stream_);
-        if (submesh_.valid_) {
-            this.submeshes_.push(submesh_); 
-            this.size_ += this.submeshes_[i].size_;
-            this.faces_ += this.submeshes_[i].faces_;
+    for (var i = 0, li = this.numSubmeshes; i < li; i++) {
+        var submesh = new MapSubmesh(this, stream);
+        if (submesh.valid) {
+            this.submeshes.push(submesh); 
+            this.size += this.submeshes[i].size;
+            this.faces += this.submeshes[i].faces;
         }
     }
     
-    this.numSubmeshes_ = this.submeshes_.length;
+    this.numSubmeshes = this.submeshes.length;
 };
 
-Melown.MapMesh.prototype.addSubmesh = function(submesh_) {
-    this.submeshes_.push(submesh_);
-    this.size_ += submesh_.size_;
-    this.faces_ += submesh_.faces_;
+
+MapMesh.prototype.addSubmesh = function(submesh) {
+    this.submeshes.push(submesh);
+    this.size += submesh.size;
+    this.faces += submesh.faces;
 };
 
-Melown.MapMesh.prototype.buildGpuSubmeshes = function() {
-    var size_ = 0;
-    this.gpuSubmeshes_ = new Array(this.submeshes_.length);
 
-    for (var i = 0, li = this.submeshes_.length; i < li; i++) {
-        this.gpuSubmeshes_[i] = this.submeshes_[i].buildGpuMesh();
-        size_ += this.gpuSubmeshes_[i].size_;
+MapMesh.prototype.buildGpuSubmeshes = function() {
+    var size = 0;
+    this.gpuSubmeshes = new Array(this.submeshes.length);
+
+    for (var i = 0, li = this.submeshes.length; i < li; i++) {
+        this.gpuSubmeshes[i] = this.submeshes[i].buildGpuMesh();
+        size += this.gpuSubmeshes[i].size;
     }
 
-    this.stats_.gpuMeshes_ += size_;
-    this.stats_.graphsFluxMesh_[0][0]++;
-    this.stats_.graphsFluxMesh_[0][1] += size_;
+    this.stats.gpuMeshes += size;
+    this.stats.graphsFluxMesh[0][0]++;
+    this.stats.graphsFluxMesh[0][1] += size;
 
-    this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuSubmeshes.bind(this, true), size_);
+    this.gpuCacheItem = this.map.gpuCache.insert(this.killGpuSubmeshes.bind(this, true), size);
 
-    //console.log("build: " + this.stats_.counter_ + "   " + this.mapLoaderUrl_);
+    //console.log("build: " + this.stats.counter + "   " + this.mapLoaderUrl);
 };
 
-Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, type_, alpha_) {
-    if (this.gpuSubmeshes_[index_] == null && this.submeshes_[index_] != null && !this.submeshes_[index_].killed_) {
-        this.gpuSubmeshes_[index_] = this.submeshes_[index_].buildGpuMesh();
+
+MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha) {
+    if (this.gpuSubmeshes[index] == null && this.submeshes[index] != null && !this.submeshes[index].killed) {
+        this.gpuSubmeshes[index] = this.submeshes[index].buildGpuMesh();
     }
 
-    var submesh_ = this.submeshes_[index_];
-    var gpuSubmesh_ = this.gpuSubmeshes_[index_];
+    var submesh = this.submeshes[index];
+    var gpuSubmesh = this.gpuSubmeshes[index];
 
-    if (!gpuSubmesh_) {
+    if (!gpuSubmesh) {
         return;
     }
 
-    var renderer_ = this.map_.renderer_;
-    var program_ = null;
-    var gpuMask_ = null; 
+    var renderer = this.map.renderer;
+    var program = null;
+    var gpuMask = null; 
 
-    var texcoordsAttr_ = null;
-    var texcoords2Attr_ = null;
-    var drawWireframe_ = this.map_.drawWireframe_;
-    var attributes_ = (drawWireframe_ != 0) ?  ["aPosition", "aBarycentric"] : ["aPosition"];
+    var texcoordsAttr = null;
+    var texcoords2Attr = null;
+    var drawWireframe = this.map.draw.debug.drawWireframe;
+    var attributes = (drawWireframe != 0) ?  ["aPosition", "aBarycentric"] : ["aPosition"];
 
-    if (type_ == "depth") {
-        program_ = renderer_.progDepthTile_;
-        //texcoordsAttr_ = "aTexCoord";
-    } else if (type_ == "flat") {
-        program_ = renderer_.progFlatShadeTile_;
+    if (type == "depth") {
+        program = renderer.progDepthTile;
+        //texcoordsAttr = "aTexCoord";
+    } else if (type == "flat") {
+        program = renderer.progFlatShadeTile;
     } else {
-        if (drawWireframe_ > 0) {
-            switch (drawWireframe_) {
-                case 2: program_ = renderer_.progWireframeTile2_;  break;
-                case 3: program_ = renderer_.progFlatShadeTile_;  break;
+        if (drawWireframe > 0) {
+            switch (drawWireframe) {
+                case 2: program = renderer.progWireframeTile2;  break;
+                case 3: program = renderer.progFlatShadeTile;  break;
                 case 1:
     
-                    switch(type_) {
+                    switch(type) {
                         case "internal":
                         case "internal-nofog":
-                            program_ = renderer_.progWireframeTile_;
-                            texcoordsAttr_ = "aTexCoord";
-                            attributes_.push("aTexCoord");
+                            program = renderer.progWireframeTile;
+                            texcoordsAttr = "aTexCoord";
+                            attributes.push("aTexCoord");
                             break;
     
                         case "external":
                         case "external-nofog":
-                            program_ = renderer_.progWireframeTile3_;
-                            texcoords2Attr_ = "aTexCoord2";
-                            attributes_.push("aTexCoord2");
+                            program = renderer.progWireframeTile3;
+                            texcoords2Attr = "aTexCoord2";
+                            attributes.push("aTexCoord2");
                             break;
     
                         case "fog":
@@ -358,112 +378,114 @@ Melown.MapMesh.prototype.drawSubmesh = function (cameraPos_, index_, texture_, t
                 break;
             }
         } else {
-            switch(type_) {
+            switch(type) {
                 case "internal":
                 case "internal-nofog":
-                    program_ = renderer_.progTile_;
-                    texcoordsAttr_ = "aTexCoord";
-                    attributes_.push("aTexCoord");
+                    program = renderer.progTile;
+                    texcoordsAttr = "aTexCoord";
+                    attributes.push("aTexCoord");
                     break;
     
                 case "external":
                 case "external-nofog":
-                    program_ = renderer_.progTile2_;
+                    program = renderer.progTile2;
                     
-                    if (texture_) {
-                        gpuMask_ = texture_.getGpuMaskTexture();
-                        if (gpuMask_) {
-                            program_ = renderer_.progTile3_;
+                    if (texture) {
+                        gpuMask = texture.getGpuMaskTexture();
+                        if (gpuMask) {
+                            program = renderer.progTile3;
                         }
                     } 
                     
-                    texcoords2Attr_ = "aTexCoord2";
-                    attributes_.push("aTexCoord2");
+                    texcoords2Attr = "aTexCoord2";
+                    attributes.push("aTexCoord2");
                     break;
     
                 case "fog":
-                    program_ = renderer_.progFogTile_;
+                    program = renderer.progFogTile;
                     break;
             }
         }
     }
 
-    renderer_.gpu_.useProgram(program_, attributes_, gpuMask_);
+    renderer.gpu.useProgram(program, attributes, gpuMask);
 
-    if (texture_) {
-        var gpuTexture_ = texture_.getGpuTexture();
+    if (texture) {
+        var gpuTexture = texture.getGpuTexture();
         
-        if (gpuTexture_) {
-            if (texture_.statsCoutner_ != this.stats_.counter_) {
-                texture_.statsCoutner_ = this.stats_.counter_;
-                this.stats_.gpuRenderUsed_ += gpuTexture_.size_;
+        if (gpuTexture) {
+            if (texture.statsCoutner != this.stats.counter) {
+                texture.statsCoutner = this.stats.counter;
+                this.stats.gpuRenderUsed += gpuTexture.size;
             }
             
-            renderer_.gpu_.bindTexture(gpuTexture_);
+            renderer.gpu.bindTexture(gpuTexture);
 
-            if (gpuMask_) {
-                renderer_.gpu_.bindTexture(gpuMask_, 1);
+            if (gpuMask) {
+                renderer.gpu.bindTexture(gpuMask, 1);
             }
             
         } else {
             return;
         }
-    } else if (type_ != "fog" && type_ != "depth" && type_ != "flat") {
+    } else if (type != "fog" && type != "depth" && type != "flat") {
         return;
     }
 
-    var mv_ = this.mBuffer_;
-    Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), submesh_.getWorldMatrix(cameraPos_, this.mBuffer2_), mv_);
-    var proj_ = renderer_.camera_.getProjectionMatrix();
+    var mv = this.mBuffer;
+    mat4.multiply(renderer.camera.getModelviewMatrix(), submesh.getWorldMatrix(cameraPos, this.mBuffer2), mv);
+    var proj = renderer.camera.getProjectionMatrix();
 
-    program_.setMat4("uMV", mv_);
-    program_.setMat4("uProj", proj_);
+    program.setMat4("uMV", mv);
+    program.setMat4("uProj", proj);
 
-    if (drawWireframe_ == 0) {
-        switch(type_) {
+    if (drawWireframe == 0) {
+        switch(type) {
             case "internal":
             case "fog":
-                //program_.setFloat("uFogDensity", this.map_.fogDensity_);
-                program_.setVec4("uParams", [this.map_.zFactor_, this.map_.fogDensity_, 0, 0]);
+                //program.setFloat("uFogDensity", this.map.fogDensity);
+                program.setVec4("uParams", [this.map.zFactor, this.map.fogDensity, 0, 0]);
                 break;
 
             case "internal-nofog":
-                //program_.setFloat("uFogDensity", 0);
-                program_.setVec4("uParams", [this.map_.zFactor_, 0, 0, 0]);
+                //program.setFloat("uFogDensity", 0);
+                program.setVec4("uParams", [this.map.zFactor, 0, 0, 0]);
                 break;
 
             case "external":
-                program_.setFloat("uAlpha", 1);
-                //program_.setFloat("uFogDensity", this.map_.fogDensity_);
-                program_.setVec4("uParams", [this.map_.zFactor_, this.map_.fogDensity_, 0, 0]);
-                program_.setVec4("uTransform", texture_.getTransform());
+                program.setFloat("uAlpha", 1);
+                //program.setFloat("uFogDensity", this.map.fogDensity);
+                program.setVec4("uParams", [this.map.zFactor, this.map.fogDensity, 0, 0]);
+                program.setVec4("uTransform", texture.getTransform());
                 break;
 
             case "external-nofog":
-                program_.setFloat("uAlpha", alpha_);
-                //program_.setFloat("uFogDensity", 0);
-                program_.setVec4("uParams", [this.map_.zFactor_, 0, 0, 0]);
-                program_.setVec4("uTransform", texture_.getTransform());
+                program.setFloat("uAlpha", alpha);
+                //program.setFloat("uFogDensity", 0);
+                program.setVec4("uParams", [this.map.zFactor, 0, 0, 0]);
+                program.setVec4("uTransform", texture.getTransform());
                 break;
         }
     }
 
-    if (submesh_.statsCoutner_ != this.stats_.counter_) {
-        submesh_.statsCoutner_ = this.stats_.counter_;
-        this.stats_.gpuRenderUsed_ += gpuSubmesh_.size_;
+    if (submesh.statsCoutner != this.stats.counter) {
+        submesh.statsCoutner = this.stats.counter;
+        this.stats.gpuRenderUsed += gpuSubmesh.size;
     } //else {
-        //this.stats_.gpuRenderUsed_ ++;
+        //this.stats.gpuRenderUsed ++;
     //}
 
-    //this.map_.renderer_.gpu_.gl_.polygonOffset(-1.0, this.map_.zShift_);
-    //this.map_.renderer_.gpu_.gl_.enable(this.map_.renderer_.gpu_.gl_.POLYGON_OFFSET_FILL);
+    //this.map.renderer.gpu.gl.polygonOffset(-1.0, this.map.zShift);
+    //this.map.renderer.gpu.gl.enable(this.map.renderer.gpu.gl.POLYGON_OFFSET_FILL);
 
-    gpuSubmesh_.draw(program_, "aPosition", texcoordsAttr_, texcoords2Attr_, drawWireframe_ != 0 ? "aBarycentric" : null);
+    gpuSubmesh.draw(program, "aPosition", texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? "aBarycentric" : null);
 
-    //this.map_.renderer_.gpu_.gl_.disable(this.map_.renderer_.gpu_.gl_.POLYGON_OFFSET_FILL);
+    //this.map.renderer.gpu.gl.disable(this.map.renderer.gpu.gl.POLYGON_OFFSET_FILL);
 
-    this.stats_.drawnFaces_ += this.faces_;
-    this.stats_.drawCalls_ ++;
+    this.stats.drawnFaces += this.faces;
+    this.stats.drawCalls ++;
 };
 
+
+export default MapMesh;
 

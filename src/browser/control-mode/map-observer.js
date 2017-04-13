@@ -1,13 +1,19 @@
-/**
- * @constructor
- */
-Melown.ControlMode.MapObserver = function(browser_) {
-    this.browser_ = browser_;
-    this.config_ = browser_.config_;
+
+import Dom_ from '../utility/dom';
+import {math as math_} from '../../core/utils/math';
+
+//get rid of compiler mess
+var dom = Dom_;
+var math = math_;
+
+
+var ControlModeMapObserver = function(browser) {
+    this.browser = browser;
+    this.config = browser.config;
     
-    this.coordsDeltas_ = [];
-    this.orientationDeltas_ = [];
-    this.viewExtentDeltas_ = [];
+    this.coordsDeltas = [];
+    this.orientationDeltas = [];
+    this.viewExtentDeltas = [];
 
     this["drag"] = this.drag;
     this["wheel"] = this.wheel;
@@ -18,474 +24,476 @@ Melown.ControlMode.MapObserver = function(browser_) {
     this["keypress"] = this.keypress;
     this["doubleclick"] = this.doubleclick;
     
-    this.retinaFactor_ = 1.0 / Math.max(1.0,(window.devicePixelRatio || 1) - 1);
+    this.retinaFactor = 1.0 / Math.max(1.0,(window.devicePixelRatio || 1) - 1);
 };
 
-Melown.ControlMode.MapObserver.prototype.drag = function(event_) {
-    var map_ = this.browser_.getMap();
-    if (!map_) {
+
+ControlModeMapObserver.prototype.drag = function(event) {
+    var map = this.browser.getMap();
+    if (!map) {
         return;
     }
 
-    var pos_ = map_.getPosition();
-    var coords_ = map_.getPositionCoords(pos_);
-    var delta_ = event_.getDragDelta();
-    var zoom_ = event_.getDragZoom(); 
-    var touches_ = event_.getDragTouches(); 
-    var azimuthDistance_ = this.getAzimuthAndDistance(delta_[0], delta_[1]);
+    var pos = map.getPosition();
+    var coords = pos.getCoords();
+    var delta = event.getDragDelta();
+    var zoom = event.getDragZoom(); 
+    var touches = event.getDragTouches(); 
+    var azimuthDistance = this.getAzimuthAndDistance(delta[0], delta[1]);
     
-    var modifierKey_ = (this.browser_.controlMode_.altKey_
-               || this.browser_.controlMode_.shiftKey_
-               || this.browser_.controlMode_.ctrlKey_);
+    var modifierKey = (this.browser.controlMode.altKey
+               || this.browser.controlMode.shiftKey
+               || this.browser.controlMode.ctrlKey);
 
-    //event_.getTouchParameter("touchMode");
+    //event.getTouchParameter("touchMode");
 
 
-    if (touches_ == 2) {//} && /*event_.getDragButton("middle")*/ zoom_ != 0 && this.config_.zoomAllowed_) {
-        if (map_.getPositionViewMode(pos_) != "obj") {
+    if (touches == 2) {//} && /*event.getDragButton("middle")*/ zoom != 0 && this.config.zoomAllowed) {
+        if (pos.getViewMode() != "obj") {
             return;
         }
         
-        if (event_.getTouchParameter("touchMode") == "pan" && this.config_.rotationAllowed_) {
-            var pan_ = event_.getTouchParameter("touchPanDelta");
-            var sensitivity_ = this.config_.sensitivity_[1] * this.retinaFactor_;
-            this.orientationDeltas_.push([-delta_[0] * sensitivity_, 
-                                          -delta_[1] * sensitivity_, 0]);
-            this.browser_.callListener("map-position-rotated", {});
-        } else if (this.config_.zoomAllowed_) {
-            var factor_ = 1.0 + (event_.getTouchParameter("touchDistanceDelta") > 1.0 ? -1 : 1)*0.01;
-            this.viewExtentDeltas_.push(factor_);
+        if (event.getTouchParameter("touchMode") == "pan" && this.config.rotationAllowed) {
+            var pan = event.getTouchParameter("touchPanDelta");
+            var sensitivity = this.config.sensitivity[1] * this.retinaFactor;
+            this.orientationDeltas.push([-delta[0] * sensitivity, 
+                                          -delta[1] * sensitivity, 0]);
+            this.browser.callListener("map-position-rotated", {});
+        } else if (this.config.zoomAllowed) {
+            var factor = 1.0 + (event.getTouchParameter("touchDistanceDelta") > 1.0 ? -1 : 1)*0.01;
+            this.viewExtentDeltas.push(factor);
             this.reduceFloatingHeight(0.8);
-            this.browser_.callListener("map-position-zoomed", {});
+            this.browser.callListener("map-position-zoomed", {});
         }
         
-    } else if ((event_.getDragButton("left") && !modifierKey_)
-        && this.config_.panAllowed_) { //pan
+    } else if ((event.getDragButton("left") && !modifierKey)
+        && this.config.panAllowed) { //pan
             
-        if (map_.getPositionHeightMode(pos_) == "fix") {
-            var pos2_ = map_.convertPositionHeightMode(pos_, "float", true);
-            if (pos2_ != null) {
-                pos_ = pos2_;
-                this.setPosition(pos_);
+        if (pos.getHeightMode() == "fix") {
+            var pos2 = map.convertPositionHeightMode(pos, "float", true);
+            if (pos2 != null) {
+                pos = pos2;
+                this.setPosition(pos);
             }
         } else {
-            var sensitivity_ = this.config_.sensitivity_[0] * this.retinaFactor_;
-            var fov_ = map_.getPositionFov(pos_);
-            var fovCorrection_ = (fov_ > 0.01 && fov_ < 179) ? (1.0 / Math.tan(Melown.radians(fov_*0.5))) : 1.0;
-            var azimuth_ = Melown.radians(azimuthDistance_[0]);
-            var forward_ = [-Math.sin(azimuth_), //direction vector x
-                            Math.cos(azimuth_), //direction vector y
-                            azimuthDistance_[1] * fovCorrection_ * sensitivity_, azimuthDistance_[0], //distance and azimut
-                            coords_[0], coords_[1]]; //coords
+            var sensitivity = this.config.sensitivity[0] * this.retinaFactor;
+            var fov = pos.getFov();
+            var fovCorrection = (fov > 0.01 && fov < 179) ? (1.0 / Math.tan(math.radians(fov*0.5))) : 1.0;
+            var azimuth = math.radians(azimuthDistance[0]);
+            var forward = [-Math.sin(azimuth), //direction vector x
+                            Math.cos(azimuth), //direction vector y
+                            azimuthDistance[1] * fovCorrection * sensitivity, azimuthDistance[0], //distance and azimut
+                            coords[0], coords[1]]; //coords
             
-            this.coordsDeltas_.push(forward_);
+            this.coordsDeltas.push(forward);
             this.reduceFloatingHeight(0.9);
-            this.browser_.callListener("map-position-panned", {});
+            this.browser.callListener("map-position-panned", {});
         }
-    } else if (((touches_ <= 1 && event_.getDragButton("right")) || event_.getDragButton("middle") || modifierKey_) 
-               && this.config_.rotationAllowed_) { //rotate
+    } else if (((touches <= 1 && event.getDragButton("right")) || event.getDragButton("middle") || modifierKey) 
+               && this.config.rotationAllowed) { //rotate
                    
-        var sensitivity_ = this.config_.sensitivity_[1] * this.retinaFactor_;
-        this.orientationDeltas_.push([-delta_[0] * sensitivity_,
-                                      -delta_[1] * sensitivity_, 0]);
-        this.browser_.callListener("map-position-rotated", {});
+        var sensitivity = this.config.sensitivity[1] * this.retinaFactor;
+        this.orientationDeltas.push([-delta[0] * sensitivity,
+                                      -delta[1] * sensitivity, 0]);
+        this.browser.callListener("map-position-rotated", {});
     }
 };
 
-Melown.ControlMode.MapObserver.prototype.wheel = function(event_) {
-    Melown.Utils.preventDefault(event_);    
 
-    var map_ = this.browser_.getMap();
-    if (!map_ || !this.config_.zoomAllowed_) { 
+ControlModeMapObserver.prototype.wheel = function(event) {
+    dom.preventDefault(event);    
+
+    var map = this.browser.getMap();
+    if (!map || !this.config.zoomAllowed) { 
         return;
     }
 
-    var pos_ = map_.getPosition();
-    var delta_ = event_.getWheelDelta();
-    var sensitivity_ = this.config_.sensitivity_[2];
-    var factor_ = 1.0 + (delta_ > 0 ? -1 : 1)*sensitivity_;
+    var pos = map.getPosition();
+    var delta = event.getWheelDelta();
+    var sensitivity = this.config.sensitivity[2];
+    var factor = 1.0 + (delta > 0 ? -1 : 1)*sensitivity;
 
-    if (this.browser_.controlMode_.altKey_ &&
-        this.browser_.controlMode_.shiftKey_ &&
-        this.browser_.controlMode_.ctrlKey_) {
-        var fov_ = Melown.clamp(map_.getPositionFov(pos_) * factor_, 1, 179);
-        pos_ = map_.setPositionFov(pos_, fov_);
-        map_.setPosition(pos_);
+    if (this.browser.controlMode.altKey &&
+        this.browser.controlMode.shiftKey &&
+        this.browser.controlMode.ctrlKey) {
+        var fov = math.clamp(pos.getFov() * factor, 1, 179);
+        pos.setFov(fov);
+        map.setPosition(pos);
     } else {
-        if (map_.getPositionViewMode(pos_) != "obj") {
+        if (pos.getViewMode() != "obj") {
             return;
         }
         
-        this.viewExtentDeltas_.push(factor_);
+        this.viewExtentDeltas.push(factor);
         this.reduceFloatingHeight(0.8);
-        this.browser_.callListener("map-position-zoomed", {});
+        this.browser.callListener("map-position-zoomed", {});
     }
 };
 
-Melown.ControlMode.MapObserver.prototype.doubleclick = function(event_) {
-    Melown.Utils.preventDefault(event_);    
 
-    var map_ = this.browser_.getMap();
-    if (!map_ || !this.config_.jumpAllowed_) {
+ControlModeMapObserver.prototype.doubleclick = function(event) {
+    dom.preventDefault(event);    
+
+    var map = this.browser.getMap();
+    if (!map || !this.config.jumpAllowed) {
         return;
     }
 
-    if (this.browser_.controlMode_.altKey_ &&
-        this.browser_.controlMode_.shiftKey_ &&
-        this.browser_.controlMode_.ctrlKey_) {
-        this.browser_.config_.minViewExtent_ = 0.5;        
+    if (this.browser.controlMode.altKey &&
+        this.browser.controlMode.shiftKey &&
+        this.browser.controlMode.ctrlKey) {
+        this.browser.config.minViewExtent = 0.5;        
         return;            
     }
 
-    var coords_ = event_.getMouseCoords();
+    var coords = event.getMouseCoords();
 
     //get hit coords with fixed height
-    var mapCoords_ = map_.getHitCoords(coords_[0], coords_[1], "fix");
+    var mapCoords = map.getHitCoords(coords[0], coords[1], "fix");
     
-    if (mapCoords_) {
-        var pos_ = map_.getPosition();
-        pos_ = map_.setPositionCoords(pos_, mapCoords_);
-        pos_ = map_.convertPositionHeightMode(pos_, "fix");
-        pos_ = map_.setPositionHeight(pos_, mapCoords_[2]);
-        //pos_ = map_.convertPositionHeightMode(pos_, "fix");
-        //pos_ = map_.setPositionHeight(pos_, 0);
+    if (mapCoords) {
+        var pos = map.getPosition();
+        pos.setCoords(mapCoords);
+        pos = map.convertPositionHeightMode(pos, "fix");
+        pos.setHeight(mapCoords[2]);
+        //pos = map.convertPositionHeightMode(pos, "fix");
+        //pos.setPositionHeight(0);
         
-        this.browser_.autopilot_.flyTo(pos_, {"mode" : "direct", "maxDuration" : 2000 });
+        this.browser.autopilot.flyTo(pos, {"mode" : "direct", "maxDuration" : 2000 });
     }
 };
 
-Melown.ControlMode.MapObserver.prototype.keyup = function(event_) {
+
+ControlModeMapObserver.prototype.keyup = function(event) {
 };
 
-Melown.ControlMode.MapObserver.prototype.keydown = function(event_) {
+
+ControlModeMapObserver.prototype.keydown = function(event) {
 };
 
-Melown.ControlMode.MapObserver.prototype.keypress = function(event_) {
+
+ControlModeMapObserver.prototype.keypress = function(event) {
 };
 
-Melown.ControlMode.MapObserver.prototype.setPosition = function(pos_) {
-    pos_ = Melown.constrainMapPosition(this.browser_, pos_);
-    var map_ = this.browser_.getMap();
-    map_.setPosition(pos_);
-    //console.log(JSON.stringify(pos_));
+
+ControlModeMapObserver.prototype.setPosition = function(pos) {
+    pos = constrainMapPosition(this.browser, pos);
+    var map = this.browser.getMap();
+    map.setPosition(pos);
+    //console.log(JSON.stringify(pos));
 };
 
-Melown.ControlMode.MapObserver.prototype.reduceFloatingHeight = function(factor_) {
-    var map_ = this.browser_.getMap();
-    var pos_ = map_.getPosition();
-    var coords_ = map_.getPositionCoords(pos_);
+
+ControlModeMapObserver.prototype.reduceFloatingHeight = function(factor) {
+    var map = this.browser.getMap();
+    var pos = map.getPosition();
+    var coords = pos.getCoords();
     
-    if (map_.getPositionHeightMode(pos_) == "float" &&
-        map_.getPositionViewMode(pos_) == "obj") {
-        if (coords_[2] != 0) {
-            coords_[2] *= factor_;
+    if (pos.getHeightMode() == "float" &&
+        pos.getViewMode() == "obj") {
+        if (coords[2] != 0) {
+            coords[2] *= factor;
 
-            if (Math.abs(coords_[2]) < 0.1) {
-                coords_[2] = 0;
+            if (Math.abs(coords[2]) < 0.1) {
+                coords[2] = 0;
             }
 
-            pos_ = map_.setPositionCoords(pos_, coords_);
-            this.setPosition(pos_);
+            pos.setCoords(coords);
+            this.setPosition(pos);
         }
     }
 };
 
-Melown.ControlMode.MapObserver.prototype.isNavigationSRSProjected = function() {
-    var map_ = this.browser_.getMap();
-    var rf_ = map_.getReferenceFrame();
-    var srs_ = map_.getSrsInfo(rf_["navigationSrs"]);
-    return (srs_) ? (srs_["type"] == "projected") : false; 
+
+ControlModeMapObserver.prototype.isNavigationSRSProjected = function() {
+    var map = this.browser.getMap();
+    var rf = map.getReferenceFrame();
+    var srs = map.getSrsInfo(rf["navigationSrs"]);
+    return (srs) ? (srs["type"] == "projected") : false; 
 };
 
-Melown.ControlMode.MapObserver.prototype.getAzimuthAndDistance = function(dx_, dy_) {
-    var map_ = this.browser_.getMap();
-    var pos_ = map_.getPosition();
-    var viewExtent_ = map_.getPositionViewExtent(pos_);
-    var fov_ = map_.getPositionFov(pos_)*0.5;
 
-    //var sensitivity_ = 0.5;
-    var zoomFactor_ = (((viewExtent_*0.5) * Math.tan(Melown.radians(fov_))) / 800);
-    dx_ *= zoomFactor_;
-    dy_ *= zoomFactor_;
+ControlModeMapObserver.prototype.getAzimuthAndDistance = function(dx, dy) {
+    var map = this.browser.getMap();
+    var pos = map.getPosition();
+    var viewExtent = pos.getViewExtent();
+    var fov = pos.getFov()*0.5;
 
-    var distance_ = Math.sqrt(dx_*dx_ + dy_*dy_);    
-    var azimuth_ = Melown.degrees(Math.atan2(dx_, dy_)) + map_.getPositionOrientation(pos_)[0]; 
+    //var sensitivity = 0.5;
+    var zoomFactor = (((viewExtent*0.5) * Math.tan(math.radians(fov))) / 800);
+    dx *= zoomFactor;
+    dy *= zoomFactor;
+
+    var distance = Math.sqrt(dx*dx + dy*dy);    
+    var azimuth = math.degrees(Math.atan2(dx, dy)) + pos.getOrientation()[0]; 
     
-    return [azimuth_, distance_];
+    return [azimuth, distance];
 };
 
-Melown.ControlMode.MapObserver.prototype.tick = function(event_) {
-    var map_ = this.browser_.getMap();
-    if (map_ == null) {
+
+ControlModeMapObserver.prototype.tick = function(event) {
+    var map = this.browser.getMap();
+    if (map == null) {
         return;
     }
 
-    var pos_ = map_.getPosition();
-    var update_ = false;
-    var inertia_ = this.config_.inertia_; //[0.83, 0.9, 0.7]; 
-    //var inertia_ = [0.95, 0.8, 0.8]; 
-    //var inertia_ = [0, 0, 0]; 
+    var pos = map.getPosition();
+    var update = false;
+    var inertia = this.config.inertia; //[0.83, 0.9, 0.7]; 
+    //var inertia = [0.95, 0.8, 0.8]; 
+    //var inertia = [0, 0, 0]; 
 
     //process coords deltas
-    if (this.coordsDeltas_.length > 0) {
-        var deltas_ = this.coordsDeltas_;
-        var forward_ = [0,0];
-        var coords_ = map_.getPositionCoords(pos_);
+    if (this.coordsDeltas.length > 0) {
+        var deltas = this.coordsDeltas;
+        var forward = [0,0];
+        var coords = pos.getCoords();
         
         //get foward vector form coord deltas    
-        for (var i = 0; i < deltas_.length; i++) {
-            var delta_ = deltas_[i];
+        for (var i = 0; i < deltas.length; i++) {
+            var delta = deltas[i];
 
-            var coords2_ = [delta_[4], delta_[5]];
+            var coords2 = [delta[4], delta[5]];
             
-            var azimuth_ = delta_[3];
-            azimuth_ += 0;//map_.getAzimuthCorrection(coords2_, coords_);
-            azimuth_ = Melown.radians(azimuth_);
+            var azimuth = delta[3];
+            azimuth += 0;//map.getAzimuthCorrection(coords2, coords);
+            azimuth = math.radians(azimuth);
 
-            //console.log("correction: " + map_.getAzimuthCorrection(coords2_, coords_) + " coords2: " + JSON.stringify(coords2_) + " coords: " + JSON.stringify(coords_));
-
-
-            forward_[0] += -Math.sin(azimuth_) * delta_[2];  
-            forward_[1] += Math.cos(azimuth_) * delta_[2];
-
+            //console.log("correction: " + map.getAzimuthCorrection(coords2, coords) + " coords2: " + JSON.stringify(coords2) + " coords: " + JSON.stringify(coords));
+            forward[0] += -Math.sin(azimuth) * delta[2];  
+            forward[1] += Math.cos(azimuth) * delta[2];
 
             /*
-            forward_[0] += delta_[0] * delta_[2];  
-            forward_[1] += delta_[1] * delta_[2];
+            forward[0] += delta[0] * delta[2];  
+            forward[1] += delta[1] * delta[2];
             */
-            delta_[2] *= inertia_[0];
+            delta[2] *= inertia[0];
 
-            
             //remove zero deltas
-            if (delta_[2] < 0.01) {
-                deltas_.splice(i, 1);
+            if (delta[2] < 0.01) {
+                deltas.splice(i, 1);
                 i--;
             }
         }
         
-        var distance_ = Math.sqrt(forward_[0]*forward_[0] + forward_[1]*forward_[1]);
-        var azimuth_ = Melown.degrees(Math.atan2(forward_[0], forward_[1]));
+        var distance = Math.sqrt(forward[0]*forward[0] + forward[1]*forward[1]);
+        var azimuth = math.degrees(Math.atan2(forward[0], forward[1]));
     
-        //console.log("tick: " + azimuth_ + " " + distance_);
+        //console.log("tick: " + azimuth + " " + distance);
 
         //apply final azimuth and distance
-        if (this.config_.navigationMode_ == "free") { 
-            var correction_ = map_.getPositionOrientation(pos_)[0];
-            pos_ = map_.movePositionCoordsTo(pos_, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth_, distance_);
-            correction_ = map_.getPositionOrientation(pos_)[0] - correction_;
-            
+        if (this.config.navigationMode == "free") { 
+            var correction = pos.getOrientation()[0];
+            pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance);
+            correction = pos.getOrientation()[0] - correction;
         } else { // "azimuthal" 
 
-            var correction_ = map_.getPositionOrientation(pos_)[0];
-            //pos_ = map_.movePositionCoordsTo(pos_, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth_, distance_, true);
+            var correction = pos.getOrientation()[0];
+            //pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, true);
             
             
-            //var correctionFactor_ = Math.min(5, Math.max(0, Math.abs(coords_[1]) - 75)) / 5;
+            //var correctionFactor = Math.min(5, Math.max(0, Math.abs(coords[1]) - 75)) / 5;
             
-            //pos_ = map_.movePositionCoordsTo(pos_, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth_, distance_, (Math.abs(coords_[1]) < 70));
-            pos_ = map_.movePositionCoordsTo(pos_, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth_, distance_, (Math.abs(coords_[1]) < 75) ? 0 : 1);
-            //pos_ = map_.movePositionCoordsTo(pos_, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth_, distance_, correctionFactor_);
+            //pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, (Math.abs(coords[1]) < 70));
+            pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, (Math.abs(coords[1]) < 75) ? 0 : 1);
+            //pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, correctionFactor);
 
-            correction_ = map_.getPositionOrientation(pos_)[0] - correction_;
+            correction = pos.getOrientation()[0] - correction;
 
-            //if (Math.abs(coords_[1]) < 70) {
+            //if (Math.abs(coords[1]) < 70) {
 
 /*
-            var orientation_ = map_.getPositionOrientation(pos_);
-            //orientation_[0] *= 0.5  + 0.5 * (Math.max(0, orientation_[1] - 70) / 30);
-            //pos_ = map_.setPositionOrientation(pos_, orientation_);
+            var orientation = pos.getOrientation();
+            //orientation[0] *= 0.5  + 0.5 * (Math.max(0, orientation[1] - 70) / 30);
+            //pos.setOrientation(orientation);
             
-            if (Math.abs(coords_[1]) < 70) {
-                if (!event_.draggingState_["dragging"]) {
-                    orientation_[0] *= 0.5;
-                    pos_ = map_.setPositionOrientation(pos_, orientation_);
+            if (Math.abs(coords[1]) < 70) {
+                if (!event.draggingState["dragging"]) {
+                    orientation[0] *= 0.5;
+                    pos.setOrientation(orientation);
                 }
             }
             
 */
 
             /*
-            var correction_ = 0; //HACK
+            var correction = 0; //HACK
 
-            var coords_ = map_.getPositionCoords(pos_);
+            var coords = pos.getCoords();
             
-            var rf_ = map_.getReferenceFrame();
-            var srs_ = map_.getSrsInfo(rf_["navigationSrs"]);
+            var rf = map.getReferenceFrame();
+            var srs = map.getSrsInfo(rf["navigationSrs"]);
             
-            fx_ = Melown.degrees((forward_[0] / (srs_["a"] * 2) * Math.PI) * Math.PI * 2) * 0.25;             
-            fy_ = Melown.degrees((forward_[1] / (srs_["b"] * 2) * Math.PI) * Math.PI * 2) * 0.25;
+            fx = math.degrees((forward[0] / (srs["a"] * 2) * Math.PI) * Math.PI * 2) * 0.25;             
+            fy = math.degrees((forward[1] / (srs["b"] * 2) * Math.PI) * Math.PI * 2) * 0.25;
             
-            coords_[0] += fx_;    
-            coords_[1] += fy_;
+            coords[0] += fx;    
+            coords[1] += fy;
             
-            if (Math.abs(coords_[1]) < 80) { || Math.abs(map_.getPositionOrientation(pos_)[0]) < 1) {
-                //coords_[0] %= 180;
-                //coords_[1] %= 90;
-                pos_ = map_.setPositionCoords(pos_, coords_);
+            if (Math.abs(coords[1]) < 80) { || Math.abs(pos.getOrientation()[0]) < 1) {
+                //coords[0] %= 180;
+                //coords[1] %= 90;
+                pos.setCoords(coords);
             } else {
-                pos_ = map_.movePositionCoordsTo(pos_, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth_, distance_, true);
+                pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, true);
             }*/
         }
         
-        
+        //console.log("correction2: " + correction);
 
-        //console.log("correction2: " + correction_);
-
-        for (var i = 0; i < deltas_.length; i++) {
-            var delta_ = deltas_[i];
-            delta_[3] += correction_; 
+        for (var i = 0; i < deltas.length; i++) {
+            var delta = deltas[i];
+            delta[3] += correction; 
         }
 
-        update_ = true;
+        update = true;
     }
 
     //process coords deltas
-    if (this.orientationDeltas_.length > 0) {
-        var deltas_ = this.orientationDeltas_;
-        var orientation_ = map_.getPositionOrientation(pos_);
+    if (this.orientationDeltas.length > 0) {
+        var deltas = this.orientationDeltas;
+        var orientation = pos.getOrientation();
         
         //apply detals to current orientation    
-        for (var i = 0; i < deltas_.length; i++) {
-            var delta_ = deltas_[i];
-            orientation_[0] += delta_[0];  
-            orientation_[1] += delta_[1];
-            orientation_[2] += delta_[2];
-            delta_[0] *= inertia_[1];
-            delta_[1] *= inertia_[1];
-            delta_[2] *= inertia_[1];
+        for (var i = 0; i < deltas.length; i++) {
+            var delta = deltas[i];
+            orientation[0] += delta[0];  
+            orientation[1] += delta[1];
+            orientation[2] += delta[2];
+            delta[0] *= inertia[1];
+            delta[1] *= inertia[1];
+            delta[2] *= inertia[1];
             
             //remove zero deltas
-            if (delta_[0]*delta_[0] + delta_[1]*delta_[1] + delta_[2]*delta_[2] < 0.1) {
-                deltas_.splice(i, 1);
+            if (delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2] < 0.1) {
+                deltas.splice(i, 1);
                 i--;
             }
         }
 
         //apply final orintation
         // HACK
-        pos_ = map_.setPositionOrientation(pos_, orientation_);
-        update_ = true;
+        pos.setOrientation(orientation);
+        update = true;
     }
 
     //process view extents deltas
-    if (this.viewExtentDeltas_.length > 0) {
-        var deltas_ = this.viewExtentDeltas_;
-        var viewExtent_ = map_.getPositionViewExtent(pos_);
+    if (this.viewExtentDeltas.length > 0) {
+        var deltas = this.viewExtentDeltas;
+        var viewExtent = pos.getViewExtent();
         
         //apply detals to current view extent    
-        for (var i = 0; i < deltas_.length; i++) {
-            viewExtent_ *= deltas_[i];
-            deltas_[i] += (1 - deltas_[i]) * (1.0 - inertia_[2]);
+        for (var i = 0; i < deltas.length; i++) {
+            viewExtent *= deltas[i];
+            deltas[i] += (1 - deltas[i]) * (1.0 - inertia[2]);
             
             //remove zero deltas
-            if (Math.abs(1 - deltas_[i]) < 0.001) {
-                deltas_.splice(i, 1);
+            if (Math.abs(1 - deltas[i]) < 0.001) {
+                deltas.splice(i, 1);
                 i--;
             }
         }
         
-        viewExtent_ = Math.max(1, viewExtent_);
+        viewExtent = Math.max(1, viewExtent);
 
         //apply final view extrent
-        pos_ = map_.setPositionViewExtent(pos_, viewExtent_);
-        update_ = true;
+        pos.setViewExtent(viewExtent);
+        update = true;
     }
-
 
     //set new position
-    if (update_) {
-        this.setPosition(pos_);    
-        
-            
+    if (update) {
+        this.setPosition(pos);    
     }
-    
-};
-
-Melown.ControlMode.MapObserver.prototype.reset = function(config_) {
-    this.coordsDeltas_ = [];
-    this.orientationDeltas_ = [];
-    this.viewExtentDeltas_ = [];
 };
 
 
-Melown.constrainMapPosition = function(browser_, pos_) {
-    if (!browser_.config_.constrainCamera_) {
-        return pos_;
+ControlModeMapObserver.prototype.reset = function(config) {
+    this.coordsDeltas = [];
+    this.orientationDeltas = [];
+    this.viewExtentDeltas = [];
+};
+
+
+function constrainMapPosition(browser, pos) {
+    if (!browser.config.constrainCamera) {
+        return pos;
     }
 
-    var minVE_ = browser_.config_.minViewExtent_;
-    var maxVE_ = browser_.config_.maxViewExtent_;
+    var minVE = browser.config.minViewExtent;
+    var maxVE = browser.config.maxViewExtent;
 
-    var map_ = browser_.getMap();
+    var map = browser.getMap();
 
     //clamp view extets
-    var viewExtent_ = Melown.clamp(map_.getPositionViewExtent(pos_), minVE_, maxVE_); 
-    pos_ = map_.setPositionViewExtent(pos_, viewExtent_);
+    var viewExtent = math.clamp(pos.getViewExtent(), minVE, maxVE); 
+    pos.setViewExtent(viewExtent);
 
-    var distance_ = (map_.getPositionViewExtent(pos_)*0.5) / Math.tan(Melown.radians(map_.getPositionFov(pos_)*0.5));
+    var distance = (pos.getViewExtent()*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
 
     //reduce tilt whe you are far off the planet
-    if (map_.getPositionViewMode(pos_) == "obj") {
-        var rf_ = map_.getReferenceFrame();
-        var srs_ = map_.getSrsInfo(rf_["navigationSrs"]);
+    if (pos.getViewMode() == "obj") {
+        var rf = map.getReferenceFrame();
+        var srs = map.getSrsInfo(rf["navigationSrs"]);
         
         
-        if (srs_["a"]) {
-            var factor_ = Math.min(distance_ / (srs_["a"]*0.5), 1.0);
-            var maxTilt_ = 20 + ((-90) - 20) * factor_; 
-            var minTilt_ = -90; 
+        if (srs["a"]) {
+            var factor = Math.min(distance / (srs["a"]*0.5), 1.0);
+            var maxTilt = 20 + ((-90) - 20) * factor; 
+            var minTilt = -90; 
             
-            var o = map_.getPositionOrientation(pos_);
+            var o = pos.getOrientation();
             
-            if (o[1] > maxTilt_) {
-                o[1] = maxTilt_;
+            if (o[1] > maxTilt) {
+                o[1] = maxTilt;
             }
     
-            if (o[1] < minTilt_) {
-                o[1] = minTilt_;
+            if (o[1] < minTilt) {
+                o[1] = minTilt;
             }
     
-            pos_ = map_.setPositionOrientation(pos_, o);
+            pos = pos.setOrientation(o);
         }
     }
 
     //do not allow camera under terrain
-    var camPos_ = map_.getPositionCameraCoords(pos_, "float");
-    //var cameraConstrainDistance_ = 1;
-    var cameraConstrainDistance_ = (minVE_*0.5) / Math.tan(Melown.radians(map_.getPositionFov(pos_)*0.5));
-    cameraConstrainDistance_ *= 0.5; //divice by 2 to alow 45deg tilt in maximum zoom
+    var camPos = map.getPositionCameraCoords(pos, "float");
+    //var cameraConstrainDistance = 1;
+    var cameraConstrainDistance = (minVE*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
+    cameraConstrainDistance *= 0.5; //divice by 2 to alow 45deg tilt in maximum zoom
     
-    //var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (distance_ * Math.tan(Melown.radians(3.0))));
-    //var hmax_ = Math.max(Math.min(4000,cameraConstrainDistance_), (distance_ * Math.tan(Melown.radians(3.0))));
-    var hmax_ = Math.max(cameraConstrainDistance_, (distance_ * Math.tan(Melown.radians(3.0))));
-    var cameraHeight_ = camPos_[2]; //this.cameraHeight() - this.cameraHeightOffset_ - this.cameraHeightOffset2_;
+    //var hmax = Math.max(Math.min(4000,cameraConstrainDistance), (distance * Math.tan(math.radians(3.0))));
+    //var hmax = Math.max(Math.min(4000,cameraConstrainDistance), (distance * Math.tan(math.radians(3.0))));
+    var hmax = Math.max(cameraConstrainDistance, (distance * Math.tan(math.radians(3.0))));
+    var cameraHeight = camPos[2]; //this.cameraHeight() - this.cameraHeightOffset - this.cameraHeightOffset2;
 
-    if (cameraHeight_ < hmax_) {
-        var o = map_.getPositionOrientation(pos_);
+    if (cameraHeight < hmax) {
+        var o = pos.getOrientation();
 
-        var getFinalOrientation = (function(start_, end_, level_) {
-            var value_ = (start_ + end_) * 0.5;
+        var getFinalOrientation = (function(start, end, level) {
+            var value = (start + end) * 0.5;
 
-            if (level_ > 20) {
-                return value_;
+            if (level > 20) {
+                return value;
             } else {
-                o[1] = value_;
-                pos_ = map_.setPositionOrientation(pos_, o);
+                o[1] = value;
+                pos.setOrientation(o);
 
-                if (map_.getPositionCameraCoords(pos_, "float")[2] < hmax_) {
-                    return getFinalOrientation(start_, value_, level_+1);
+                if (map.getPositionCameraCoords(pos, "float")[2] < hmax) {
+                    return getFinalOrientation(start, value, level+1);
                 } else {
-                    return getFinalOrientation(value_, end_, level_+1);
+                    return getFinalOrientation(value, end, level+1);
                 }
             }
 
         });//.bind(this);
 
         o[1] = getFinalOrientation(-90, Math.min(-1, o[1]), 0);
-        pos_ = map_.setPositionOrientation(pos_, o);
+        pos.setOrientation(o);
     }
 
-    return pos_;
+    return pos;
 };
 
 
+export {ControlModeMapObserver, constrainMapPosition};

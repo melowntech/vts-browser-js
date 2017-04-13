@@ -1,150 +1,153 @@
-/**
- * @constructor
- */
-Melown.MapSubtexture = function(map_, path_, heightMap_, tile_, internal_) {
-    this.map_ = map_;
-    this.stats_ = map_.stats_;
-    this.tile_ = tile_; // used only for stats
-    this.internal_ = internal_; // used only for stats
-    this.image_ = null;
-    this.imageData_ = null;
-    this.imageExtents_ = null;
-    this.gpuTexture_ = null;
-    this.loadState_ = 0;
-    this.loadErrorTime_ = null;
-    this.loadErrorCounter_ = 0;
-    this.neverReady_ = false;
-    this.mapLoaderUrl_ = path_;
-    this.heightMap_ = heightMap_ || false;
-    this.statsCounter_ = 0;
-    this.checkStatus_ = 0;
-    this.checkType_ = null;
-    this.checkValue_ = null;
-    this.fastHeaderCheck_ = false;
-    this.fileSize_ = 0;
-    this.cacheItem_ = null; //store killImage
-    this.gpuCacheItem_ = null; //store killGpuTexture
+
+import {utils as utils_} from '../utils/utils';
+import GpuTexture_ from '../renderer/gpu/texture';
+
+//get rid of compiler mess
+var utils = utils_;
+var GpuTexture = GpuTexture_;
+
+
+var MapSubtexture = function(map, path, heightMap, tile, internal) {
+    this.map = map;
+    this.stats = map.stats;
+    this.tile = tile; // used only for stats
+    this.internal = internal; // used only for stats
+    this.image = null;
+    this.imageData = null;
+    this.imageExtents = null;
+    this.gpuTexture = null;
+    this.loadState = 0;
+    this.loadErrorTime = null;
+    this.loadErrorCounter = 0;
+    this.neverReady = false;
+    this.mapLoaderUrl = path;
+    this.heightMap = heightMap || false;
+    this.statsCounter = 0;
+    this.checkStatus = 0;
+    this.checkType = null;
+    this.checkValue = null;
+    this.fastHeaderCheck = false;
+    this.fileSize = 0;
+    this.cacheItem = null; //store killImage
+    this.gpuCacheItem = null; //store killGpuTexture
 };
 
-Melown.MapSubtexture.prototype.kill = function() {
+
+MapSubtexture.prototype.kill = function() {
     this.killImage();
     this.killGpuTexture();
     
-    if (this.mask_) {
-        this.mask_.killImage(); 
-        this.mask_.killGpuTexture(); 
+    if (this.mask) {
+        this.mask.killImage(); 
+        this.mask.killGpuTexture(); 
     }
     
-    //this.tile_.validate();
+    //this.tile.validate();
 };
 
-Melown.MapSubtexture.prototype.killImage = function(killedByCache_) {
-    this.image_ = null;
-    this.imageData_ = null;
 
-    if (killedByCache_ != true && this.cacheItem_) {
-        this.map_.resourcesCache_.remove(this.cacheItem_);
-        //this.tile_.validate();
+MapSubtexture.prototype.killImage = function(killedByCache) {
+    this.image = null;
+    this.imageData = null;
+
+    if (killedByCache != true && this.cacheItem) {
+        this.map.resourcesCache.remove(this.cacheItem);
+        //this.tile.validate();
     }
 
-    if (this.mask_) {
-        this.mask_.killImage(); 
+    if (this.mask) {
+        this.mask.killImage(); 
     }
 
-    if (!this.gpuTexture_) {
-        this.loadState_ = 0;
+    if (!this.gpuTexture) {
+        this.loadState = 0;
     } //else {
-        //this.loadState_ = this.loadState_;
+        //this.loadState = this.loadState;
     //}
 
-    this.cacheItem_ = null;
+    this.cacheItem = null;
 };
 
-Melown.MapSubtexture.prototype.killGpuTexture = function(killedByCache_) {
+
+MapSubtexture.prototype.killGpuTexture = function(killedByCache) {
 /*
     //debug only    
-    if (!this.map_.lastRemoved_) {
-        this.map_.lastRemoved_ = [];
+    if (!this.map.lastRemoved) {
+        this.map.lastRemoved = [];
     }
 
     //debug only    
-    if (this.map_.lastRemoved_.indexOf(this.mapLoaderUrl_) != -1) {
-        console.log("tex: " + this.mapLoaderUrl_);
+    if (this.map.lastRemoved.indexOf(this.mapLoaderUrl) != -1) {
+        console.log("tex: " + this.mapLoaderUrl);
     }
 
     //debug only    
-    this.map_.lastRemoved_.unshift(this.mapLoaderUrl_);
-    this.map_.lastRemoved_ = this.map_.lastRemoved_.slice(0,20);
+    this.map.lastRemoved.unshift(this.mapLoaderUrl);
+    this.map.lastRemoved = this.map.lastRemoved.slice(0,20);
 */
 
-    if (this.gpuTexture_ != null) {
-        this.stats_.gpuTextures_ -= this.gpuTexture_.size_;
-        this.gpuTexture_.kill();
+    if (this.gpuTexture != null) {
+        this.stats.gpuTextures -= this.gpuTexture.size;
+        this.gpuTexture.kill();
 
-        this.stats_.graphsFluxTexture_[1][0]++;
-        this.stats_.graphsFluxTexture_[1][1] += this.gpuTexture_.size_;
+        this.stats.graphsFluxTexture[1][0]++;
+        this.stats.graphsFluxTexture[1][1] += this.gpuTexture.size;
 
-        if (this.mask_) {
-            this.mask_.killGpuTexture(); 
+        if (this.mask) {
+            this.mask.killGpuTexture(); 
         }
     }
 
-    this.gpuTexture_ = null;
+    this.gpuTexture = null;
 
-    if (killedByCache_ != true && this.gpuCacheItem_) {
-        this.map_.gpuCache_.remove(this.gpuCacheItem_);
-        //this.tile_.validate();
+    if (killedByCache != true && this.gpuCacheItem) {
+        this.map.gpuCache.remove(this.gpuCacheItem);
+        //this.tile.validate();
     }
 
-    if (!this.image_ && !this.imageData_) {
-        this.loadState_ = 0;
+    if (!this.image && !this.imageData) {
+        this.loadState = 0;
     }
 
-    this.gpuCacheItem_ = null;
+    this.gpuCacheItem = null;
 };
 
-Melown.MapSubtexture.prototype.isReady = function(doNotLoad_, priority_, doNotCheckGpu_, texture_) {
-    var doNotUseGpu_ = (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_);
-    doNotLoad_ = doNotLoad_ || doNotUseGpu_;
+
+MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, texture) {
+    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
+    doNotLoad = doNotLoad || doNotUseGpu;
     
-    if (this.neverReady_) {
+    if (this.neverReady) {
        return false;
     }
 
-    switch (texture_.checkType_) {
+    switch (texture.checkType) {
         case "negative-type":
         case "negative-code":
         case "negative-size":
         
-            if (this.checkStatus_ != 2) {
-                this.checkType_ = texture_.checkType_;
-                this.checkValue_ = texture_.checkValue_;
+            if (this.checkStatus != 2) {
+                this.checkType = texture.checkType;
+                this.checkValue = texture.checkValue;
 
-                if (this.checkStatus_ == 0) {
-                    this.scheduleHeadRequest(priority_, (this.checkType_ == "negative-size"));
-                } else if (this.checkStatus_ == 3) { //loadError
-                    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_ &&
-                        performance.now() > this.loadErrorTime_ + this.map_.config_.mapLoadErrorRetryTime_) {
-                        this.scheduleHeadRequest(priority_, (this.checkType_ == "negative-size"));
+                if (this.checkStatus == 0) {
+                    this.scheduleHeadRequest(priority, (this.checkType == "negative-size"));
+                } else if (this.checkStatus == 3) { //loadError
+                    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
+                        performance.now() > this.loadErrorTime + this.map.config.mapLoadErrorRetryTime) {
+                        this.scheduleHeadRequest(priority, (this.checkType == "negative-size"));
                     }
-                } else if (this.checkStatus_ == -1) {
+                } else if (this.checkStatus == -1) {
             
-                    if (texture_.extraInfo_) { //find at least texture with lower resolution
-                        /*
-                        if (this.extraInfo_.tile_.id_[0] == Melown.debugId_[0] &&
-                            this.extraInfo_.tile_.id_[1] == Melown.debugId_[1] &&
-                            this.extraInfo_.tile_.id_[2] == Melown.debugId_[2]) {
-                                this.extraInfo_ = this.extraInfo_;
-                        }*/
-    
-                        if (!texture_.extraBound_) {
-                            texture_.extraBound_ = { tile_: texture_.extraInfo_.tile_, layer_: texture_.extraInfo_.layer_};
-                            texture_.setBoundTexture(texture_.extraBound_.tile_.parent_, texture_.extraBound_.layer_);        
+                    if (texture.extraInfo) { //find at least texture with lower resolution
+                        if (!texture.extraBound) {
+                            texture.extraBound = { tile: texture.extraInfo.tile, layer: texture.extraInfo.layer};
+                            texture.setBoundTexture(texture.extraBound.tile.parent, texture.extraBound.layer);        
                         }
         
-                        while (texture_.extraBound_.texture_.extraBound_ || texture_.extraBound_.texture_.checkStatus_ == -1) {
-                        //while (texture_.extraBound_.texture_.checkStatus_ == -1) {
-                            texture_.setBoundTexture(texture_.extraBound_.sourceTile_.parent_, texture_.extraBound_.layer_);        
+                        while (texture.extraBound.texture.extraBound || texture.extraBound.texture.checkStatus == -1) {
+                        //while (texture.extraBound.texture.checkStatus == -1) {
+                            texture.setBoundTexture(texture.extraBound.sourceTile.parent, texture.extraBound.layer);        
                         }
                     }
                 }
@@ -155,79 +158,79 @@ Melown.MapSubtexture.prototype.isReady = function(doNotLoad_, priority_, doNotCh
             break;
     }
 
-    if (this.loadState_ == 2) { //loaded
-        if (!doNotLoad_ && this.cacheItem_) {
-            this.map_.resourcesCache_.updateItem(this.cacheItem_);
+    if (this.loadState == 2) { //loaded
+        if (!doNotLoad && this.cacheItem) {
+            this.map.resourcesCache.updateItem(this.cacheItem);
         }
 
-        if (((this.heightMap_ && !this.imageData_) || (!this.heightMap_ && !this.gpuTexture_)) &&
-              this.stats_.renderBuild_ > this.map_.config_.mapMaxProcessingTime_) {
+        if (((this.heightMap && !this.imageData) || (!this.heightMap && !this.gpuTexture)) &&
+              this.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
             //console.log("testure resource build overflow");
-            this.map_.markDirty();
+            this.map.markDirty();
             return false;
         }
 
-        if (doNotCheckGpu_) {
-            if (this.heightMap_) {
-                if (!this.imageData_) {
+        if (doNotCheckGpu) {
+            if (this.heightMap) {
+                if (!this.imageData) {
                     var t = performance.now();
                     this.buildHeightMap();
-                    this.stats_.renderBuild_ += performance.now() - t; 
+                    this.stats.renderBuild += performance.now() - t; 
                 }
             }
 
             return true;
         }
 
-        if (this.heightMap_) {
-            if (!this.imageData_) {
+        if (this.heightMap) {
+            if (!this.imageData) {
                 var t = performance.now();
                 this.buildHeightMap();
-                this.stats_.renderBuild_ += performance.now() - t; 
+                this.stats.renderBuild += performance.now() - t; 
             }
         } else {
-            if (!this.gpuTexture_) {
-                if (this.map_.stats_.gpuRenderUsed_ >= this.map_.maxGpuUsed_) {
+            if (!this.gpuTexture) {
+                if (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed) {
                     return false;
                 }
                 
-                if (doNotUseGpu_) {
+                if (doNotUseGpu) {
                     return false;
                 }
 
-                //if (this.stats_.graphsFluxTexture_ [0][0] > 2) {
+                //if (this.stats.graphsFluxTexture [0][0] > 2) {
                    // return false;
                 //}
 
                 var t = performance.now();
                 this.buildGpuTexture();
-                this.stats_.renderBuild_ += performance.now() - t; 
+                this.stats.renderBuild += performance.now() - t; 
             }
 
-            if (!doNotLoad_ && this.gpuCacheItem_) {
-                this.map_.gpuCache_.updateItem(this.gpuCacheItem_);
+            if (!doNotLoad && this.gpuCacheItem) {
+                this.map.gpuCache.updateItem(this.gpuCacheItem);
             }
         }
         
         
         return true;
     } else {
-        if (this.loadState_ == 0) { 
-            if (doNotLoad_) {
+        if (this.loadState == 0) { 
+            if (doNotLoad) {
                 //remove from queue
-                //if (this.mapLoaderUrl_) {
-                    //this.map_.loader_.remove(this.mapLoaderUrl_);
+                //if (this.mapLoaderUrl) {
+                    //this.map.loader.remove(this.mapLoaderUrl);
                 //}
             } else {
                 //not loaded
                 //add to loading queue or top position in queue
-                this.scheduleLoad(priority_);
+                this.scheduleLoad(priority);
             }
-        } else if (this.loadState_ == 3) { //loadError
-            if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_ &&
-                performance.now() > this.loadErrorTime_ + this.map_.config_.mapLoadErrorRetryTime_) {
+        } else if (this.loadState == 3) { //loadError
+            if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
+                performance.now() > this.loadErrorTime + this.map.config.mapLoadErrorRetryTime) {
 
-                this.scheduleLoad(priority_);                    
+                this.scheduleLoad(priority);                    
             }
         } //else load in progress
     }
@@ -235,172 +238,178 @@ Melown.MapSubtexture.prototype.isReady = function(doNotLoad_, priority_, doNotCh
     return false;
 };
 
-Melown.MapSubtexture.prototype.scheduleLoad = function(priority_, header_) {
-    this.map_.loader_.load(this.mapLoaderUrl_, this.onLoad.bind(this, header_), priority_, this.tile_, this.internal_ ? "texture-in" : "texture-ex");
+
+MapSubtexture.prototype.scheduleLoad = function(priority, header) {
+    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this, header), priority, this.tile, this.internal ? "texture-in" : "texture-ex");
 };
 
-Melown.MapSubtexture.prototype.onLoad = function(header_, url_, onLoaded_, onError_) {
-    this.mapLoaderCallLoaded_ = onLoaded_;
-    this.mapLoaderCallError_ = onError_;
 
-    var onerror_ = this.onLoadError.bind(this);
-    var onload_ = this.onLoaded.bind(this);
+MapSubtexture.prototype.onLoad = function(header, url, onLoaded, onError) {
+    this.mapLoaderCallLoaded = onLoaded;
+    this.mapLoaderCallError = onError;
 
-    if (header_) {
-        this.checkStatus_ = 1;
+    var onerror = this.onLoadError.bind(this);
+    var onload = this.onLoaded.bind(this);
+
+    if (header) {
+        this.checkStatus = 1;
     } else {
-        this.loadState_ = 1;
+        this.loadState = 1;
     }
 
-    if (this.map_.config_.mapXhrImageLoad_) {
-        Melown.loadBinary(url_, this.onBinaryLoaded.bind(this), onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_, "blob");
+    if (this.map.config.mapXhrImageLoad) {
+        utils.loadBinary(url, this.onBinaryLoaded.bind(this), onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, "blob");
     } else {
-        this.image_ = Melown.Http.imageFactory(url_, onload_, onerror_, (this.map_.core_.tokenCookieHost_ ? (url_.indexOf(this.map_.core_.tokenCookieHost_) != -1) : false));
+        this.image = utils.loadImage(url, onload, onerror, (this.map.core.tokenCookieHost ? (url.indexOf(this.map.core.tokenCookieHost) != -1) : false));
     }
-    //mapXhrImageLoad_
+    //mapXhrImageLoad
 };
 
-Melown.MapSubtexture.prototype.onLoadError = function(killBlob_) {
-    if (this.map_.killed_ == true){
+
+MapSubtexture.prototype.onLoadError = function(killBlob) {
+    if (this.map.killed == true){
         return;
     }
 
-    if (killBlob_) {
-        window.URL.revokeObjectURL(this.image_.src);
+    if (killBlob) {
+        window.URL.revokeObjectURL(this.image.src);
     }
 
-    this.loadState_ = 3;
-    this.loadErrorTime_ = performance.now();
-    this.loadErrorCounter_ ++;
+    this.loadState = 3;
+    this.loadErrorTime = performance.now();
+    this.loadErrorCounter ++;
     
     //make sure we try to load it again
-    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_) { 
-        setTimeout((function(){ if (!this.map_.killed_) { this.map_.markDirty(); } }).bind(this), this.map_.config_.mapLoadErrorRetryTime_);
+    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount) { 
+        setTimeout((function(){ if (!this.map.killed) { this.map.markDirty(); } }).bind(this), this.map.config.mapLoadErrorRetryTime);
     }    
     
-    this.mapLoaderCallError_();
+    this.mapLoaderCallError();
 };
 
-Melown.MapSubtexture.prototype.onBinaryLoaded = function(data_) {
-    if (this.fastHeaderCheck_ && this.checkType_ && this.checkType_ != "metatile") {
-        this.onHeadLoaded(null, data_, null /*status_*/);
+
+MapSubtexture.prototype.onBinaryLoaded = function(data) {
+    if (this.fastHeaderCheck && this.checkType && this.checkType != "metatile") {
+        this.onHeadLoaded(null, data, null /*status*/);
         
-        if (this.checkStatus_ == -1) {
-            this.mapLoaderCallLoaded_();
+        if (this.checkStatus == -1) {
+            this.mapLoaderCallLoaded();
             return;
         }
     }
 
-    var image_ = new Image();
-    image_.onerror = this.onLoadError.bind(this, true);
-    image_.onload = this.onLoaded.bind(this, true);
-    this.image_ = image_;
-    image_.src = window.URL.createObjectURL(data_);
-    this.fileSize_ = data_.size;
+    var image = new Image();
+    image.onerror = this.onLoadError.bind(this, true);
+    image.onload = this.onLoaded.bind(this, true);
+    this.image = image;
+    image.src = window.URL.createObjectURL(data);
+    this.fileSize = data.size;
 };
 
-Melown.MapSubtexture.prototype.onLoaded = function(killBlob_) {
-    if (this.map_.killed_){
+
+MapSubtexture.prototype.onLoaded = function(killBlob) {
+    if (this.map.killed){
         return;
     }
 
-    if (killBlob_) {
-        window.URL.revokeObjectURL(this.image_.src);
+    if (killBlob) {
+        window.URL.revokeObjectURL(this.image.src);
     }
 
-    var size_ = this.image_.naturalWidth * this.image_.naturalHeight * (this.heightMap_ ? 3 : 3);
+    var size = this.image.naturalWidth * this.image.naturalHeight * (this.heightMap ? 3 : 3);
     
-    if (!this.image_.complete_) {
-        size_ = size_;
+    if (!this.image.complete) {
+        size = size;
     }
     
-    //console.log(size_);
+    //console.log(size);
 
-    this.cacheItem_ = this.map_.resourcesCache_.insert(this.killImage.bind(this, true), size_);
+    this.cacheItem = this.map.resourcesCache.insert(this.killImage.bind(this, true), size);
 
-    this.map_.markDirty();
-    this.loadState_ = 2;
-    this.loadErrorTime_ = null;
-    this.loadErrorCounter_ = 0;
-    this.mapLoaderCallLoaded_();
+    this.map.markDirty();
+    this.loadState = 2;
+    this.loadErrorTime = null;
+    this.loadErrorCounter = 0;
+    this.mapLoaderCallLoaded();
 };
 
-Melown.MapSubtexture.prototype.scheduleHeadRequest = function(priority_, downloadAll_) {
-    if (this.map_.config_.mapXhrImageLoad_ && this.fastHeaderCheck_) {
-        this.scheduleLoad(priority_, true);
+
+MapSubtexture.prototype.scheduleHeadRequest = function(priority, downloadAll) {
+    if (this.map.config.mapXhrImageLoad && this.fastHeaderCheck) {
+        this.scheduleLoad(priority, true);
     } else {
-        this.map_.loader_.load(this.mapLoaderUrl_, this.onLoadHead.bind(this, downloadAll_), priority_, this.tile_, this.internal_, this.internal_ ? "texture-in" : "texture-ex");
+        this.map.loader.load(this.mapLoaderUrl, this.onLoadHead.bind(this, downloadAll), priority, this.tile, this.internal, this.internal ? "texture-in" : "texture-ex");
     }
 };
 
-//Melown.onlyOneHead_ = false;
 
-Melown.MapSubtexture.prototype.onLoadHead = function(downloadAll_, url_, onLoaded_, onError_) {
-    this.mapLoaderCallLoaded_ = onLoaded_;
-    this.mapLoaderCallError_ = onError_;
+MapSubtexture.prototype.onLoadHead = function(downloadAll, url, onLoaded, onError) {
+    this.mapLoaderCallLoaded = onLoaded;
+    this.mapLoaderCallError = onError;
 
-    var onerror_ = this.onLoadHeadError.bind(this, downloadAll_);
-    var onload_ = this.onHeadLoaded.bind(this, downloadAll_);
+    var onerror = this.onLoadHeadError.bind(this, downloadAll);
+    var onload = this.onHeadLoaded.bind(this, downloadAll);
 
-    this.checkStatus_ = 1;
+    this.checkStatus = 1;
 
-    if (downloadAll_) {
-        Melown.loadBinary(url_, onload_, onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_, "blob");
+    if (downloadAll) {
+        utils.loadBinary(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, "blob");
     } else {
-        Melown.Http.headRequest(url_, onload_, onerror_, (Melown["useCredentials"] ? (this.mapLoaderUrl_.indexOf(this.map_.baseUrl_) != -1) : false), this.map_.core_.xhrParams_, "blob");
+        utils.headRequest(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, "blob");
     }
-
 };
 
-Melown.MapSubtexture.prototype.onLoadHeadError = function(downloadAll_) {
-    if (this.map_.killed_){
+
+MapSubtexture.prototype.onLoadHeadError = function(downloadAll) {
+    if (this.map.killed){
         return;
     }
 
-    this.checkStatus_ = 3;
-    this.loadErrorTime_ = performance.now();
-    this.loadErrorCounter_ ++;
+    this.checkStatus = 3;
+    this.loadErrorTime = performance.now();
+    this.loadErrorCounter ++;
     
     //make sure we try to load it again
-    if (this.loadErrorCounter_ <= this.map_.config_.mapLoadErrorMaxRetryCount_) { 
-        setTimeout((function(){ if (!this.map_.killed_) { this.map_.markDirty(); } }).bind(this), this.map_.config_.mapLoadErrorRetryTime_);
+    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount) { 
+        setTimeout((function(){ if (!this.map.killed) { this.map.markDirty(); } }).bind(this), this.map.config.mapLoadErrorRetryTime);
     }    
     
-    this.mapLoaderCallError_();
+    this.mapLoaderCallError();
 };
 
-Melown.MapSubtexture.prototype.onHeadLoaded = function(downloadAll_, data_, status_) {
-    if (this.map_.killed_){
+
+MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
+    if (this.map.killed){
         return;
     }
 
-    this.checkStatus_ = 2;
-    this.loadErrorTime_ = null;
-    this.loadErrorCounter_ = 0;
+    this.checkStatus = 2;
+    this.loadErrorTime = null;
+    this.loadErrorCounter = 0;
 
-    if (this.map_.config_.mapXhrImageLoad_ && this.fastHeaderCheck_) {
+    if (this.map.config.mapXhrImageLoad && this.fastHeaderCheck) {
 
-        switch (this.checkType_) {
+        switch (this.checkType) {
             case "negative-size":
-                if (data_) {
-                    if (data_.size == this.checkValue_) {
-                        this.checkStatus_ = -1;
+                if (data) {
+                    if (data.size == this.checkValue) {
+                        this.checkStatus = -1;
                     }
                 }
                 break;
                 
             case "negative-type":
-                if (data_) {
-                    if (data_.type == this.checkValue_) {
-                        this.checkStatus_ = -1;
+                if (data) {
+                    if (data.type == this.checkValue) {
+                        this.checkStatus = -1;
                     }
                 }
                 break;
                 
             case "negative-code":
-                if (status_) {
-                    if (this.checkValue_.indexOf(status_) != -1) {
-                        this.checkStatus_ = -1;
+                if (status) {
+                    if (this.checkValue.indexOf(status) != -1) {
+                        this.checkStatus = -1;
                     }
                 }
                 break;
@@ -408,72 +417,77 @@ Melown.MapSubtexture.prototype.onHeadLoaded = function(downloadAll_, data_, stat
 
     } else {
 
-        switch (this.checkType_) {
+        switch (this.checkType) {
             case "negative-size":
-                if (data_) {
-                    if (data_.byteLength == this.checkValue_) {
-                        this.checkStatus_ = -1;
+                if (data) {
+                    if (data.byteLength == this.checkValue) {
+                        this.checkStatus = -1;
                     }
                 }
                 break;
                 
             case "negative-type":
-                if (data_) {
-                    if (!data_.indexOf) {
-                        data_ = data_;
+                if (data) {
+                    if (!data.indexOf) {
+                        data = data;
                     }
                     
-                    if (data_.indexOf(this.checkValue_) != -1) {
-                        this.checkStatus_ = -1;
+                    if (data.indexOf(this.checkValue) != -1) {
+                        this.checkStatus = -1;
                     }
                 }
                 break;
                 
             case "negative-code":
-                if (status_) {
-                    if (this.checkValue_.indexOf(status_) != -1) {
-                        this.checkStatus_ = -1;
+                if (status) {
+                    if (this.checkValue.indexOf(status) != -1) {
+                        this.checkStatus = -1;
                     }
                 }
                 break;
         }
         
-        this.mapLoaderCallLoaded_();
+        this.mapLoaderCallLoaded();
     }
 };
 
 
-Melown.MapSubtexture.prototype.buildGpuTexture = function () {
-    this.gpuTexture_ = new Melown.GpuTexture(this.map_.renderer_.gpu_, null, this.map_.core_);
-    this.gpuTexture_.createFromImage(this.image_, "linear", false);
-    this.stats_.gpuTextures_ += this.gpuTexture_.size_;
+MapSubtexture.prototype.buildGpuTexture = function () {
+    this.gpuTexture = new GpuTexture(this.map.renderer.gpu, null, this.map.core);
+    this.gpuTexture.createFromImage(this.image, "linear", false);
+    this.stats.gpuTextures += this.gpuTexture.size;
 
-    this.stats_.graphsFluxTexture_[0][0]++;
-    this.stats_.graphsFluxTexture_[0][1] += this.gpuTexture_.size_;
+    this.stats.graphsFluxTexture[0][0]++;
+    this.stats.graphsFluxTexture[0][1] += this.gpuTexture.size;
 
-    this.gpuCacheItem_ = this.map_.gpuCache_.insert(this.killGpuTexture.bind(this, true), this.gpuTexture_.size_);
+    this.gpuCacheItem = this.map.gpuCache.insert(this.killGpuTexture.bind(this, true), this.gpuTexture.size);
 };
 
-Melown.MapSubtexture.prototype.buildHeightMap = function () {
-    var canvas_ = document.createElement("canvas");
-    canvas_.width = this.image_.naturalWidth;
-    canvas_.height = this.image_.naturalHeight;
-    var ctx_ = canvas_.getContext("2d");
-    ctx_.drawImage(this.image_, 0, 0);
-    this.imageData_ = ctx_.getImageData(0, 0, this.image_.naturalWidth, this.image_.naturalHeight).data;
-    this.imageExtents_ = [this.image_.naturalWidth, this.image_.naturalHeight];
-    this.image_ = null;
+
+MapSubtexture.prototype.buildHeightMap = function () {
+    var canvas = document.createElement("canvas");
+    canvas.width = this.image.naturalWidth;
+    canvas.height = this.image.naturalHeight;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(this.image, 0, 0);
+    this.imageData = ctx.getImageData(0, 0, this.image.naturalWidth, this.image.naturalHeight).data;
+    this.imageExtents = [this.image.naturalWidth, this.image.naturalHeight];
+    this.image = null;
 };
 
-Melown.MapSubtexture.prototype.getGpuTexture = function() {
-    return this.gpuTexture_;
+
+MapSubtexture.prototype.getGpuTexture = function() {
+    return this.gpuTexture;
 };
 
-Melown.MapSubtexture.prototype.getHeightMapValue = function(x, y) {
-    if (this.imageData_) {
-        return this.imageData_[(y * this.imageExtents_[0] + x)*4];
+
+MapSubtexture.prototype.getHeightMapValue = function(x, y) {
+    if (this.imageData) {
+        return this.imageData[(y * this.imageExtents[0] + x)*4];
     }
     
     return 0;
 };
+
+export default MapSubtexture;
 

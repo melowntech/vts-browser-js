@@ -1,440 +1,458 @@
-//---------------------------------------------------
-// this file loaded from geoWorkerDebug or merged
-// into one function in case of minification process
-//---------------------------------------------------
 
-var processPointArrayPass = function(pointArray_, lod_, style_, zIndex_, eventInfo_) {
-    var pointsGroups_ = []; 
+import {globals as globals_, clamp as clamp_} from "./worker-globals.js";
+var globals = globals_, clamp = clamp_;
 
-    if (pointArray_["lines"]) {  //use lines as points
-        pointsGroups_ = pointArray_["lines"] || [];
+import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from "./worker-style.js";
+var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
+
+import {addText as addText_, addTextOnPath as addTextOnPath_, setFont as setFont_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_, getTextLength as getTextLength_,
+        areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from "./worker-text.js";
+var addText = addText_, addTextOnPath = addTextOnPath_, setFont = setFont_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_, getTextLength = getTextLength_,
+    areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
+
+import {postGroupMessage as postGroupMessage_} from "./worker-message.js";
+var postGroupMessage = postGroupMessage_;
+
+//get rid of compiler mess
+
+
+var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) {
+    var pointsGroups = []; 
+
+    if (pointArray["lines"]) {  //use lines as points
+        pointsGroups = pointArray["lines"] || [];
     } else {
-        if (pointArray_["points"]) {
-            pointsGroups_ = [pointArray_["points"]];
+        if (pointArray["points"]) {
+            pointsGroups = [pointArray["points"]];
         }
     }
     
-    if (pointsGroups_.length == 0) {
+    if (pointsGroups.length == 0) {
         return;
     }
 
     //debugger
-    var visibility_ = getLayerPropertyValue(style_, "visibility", pointArray_, lod_);
-    var culling_ = getLayerPropertyValue(style_, "culling", pointArray_, lod_);
-    var hoverEvent_ = getLayerPropertyValue(style_, "hover-event", pointArray_, lod_);
-    var clickEvent_ = getLayerPropertyValue(style_, "click-event", pointArray_, lod_);
-    var drawEvent_ = getLayerPropertyValue(style_, "draw-event", pointArray_, lod_);
-    var enterEvent_ = getLayerPropertyValue(style_, "enter-event", pointArray_, lod_);
-    var leaveEvent_ = getLayerPropertyValue(style_, "leave-event", pointArray_, lod_);
+    var visibility = getLayerPropertyValue(style, "visibility", pointArray, lod);
+    var culling = getLayerPropertyValue(style, "culling", pointArray, lod);
+    var hoverEvent = getLayerPropertyValue(style, "hover-event", pointArray, lod);
+    var clickEvent = getLayerPropertyValue(style, "click-event", pointArray, lod);
+    var drawEvent = getLayerPropertyValue(style, "draw-event", pointArray, lod);
+    var enterEvent = getLayerPropertyValue(style, "enter-event", pointArray, lod);
+    var leaveEvent = getLayerPropertyValue(style, "leave-event", pointArray, lod);
 
-    var zbufferOffset_ = getLayerPropertyValue(style_, "zbuffer-offset", pointArray_, lod_);
+    var zbufferOffset = getLayerPropertyValue(style, "zbuffer-offset", pointArray, lod);
 
-    var point_ = getLayerPropertyValue(style_, "point", pointArray_, lod_);
-    var pointFlat_ = getLayerPropertyValue(style_, "point-flat", pointArray_, lod_);
-    var pointColor_ = getLayerPropertyValue(style_, "point-color", pointArray_, lod_);
-    var pointRadius_ = 0.5 * getLayerPropertyValue(style_, "point-radius", pointArray_, lod_);
-    //zIndex_ = (zIndex_ !== null) ? zIndex_ : getLayerPropertyValue(style_, "z-index", pointArray_, lod_);
+    var point = getLayerPropertyValue(style, "point", pointArray, lod);
+    var pointFlat = getLayerPropertyValue(style, "point-flat", pointArray, lod);
+    var pointColor = getLayerPropertyValue(style, "point-color", pointArray, lod);
+    var pointRadius = 0.5 * getLayerPropertyValue(style, "point-radius", pointArray, lod);
+    //zIndex = (zIndex !== null) ? zIndex : getLayerPropertyValue(style, "z-index", pointArray, lod);
 
-    var icon_ = getLayerPropertyValue(style_, "icon", pointArray_, lod_);
-    if (icon_ == true) {
-        var source_ = getLayerPropertyValue(style_, "icon-source", pointArray_, lod_);
+    var icon = getLayerPropertyValue(style, "icon", pointArray, lod);
+    if (icon == true) {
+        var source = getLayerPropertyValue(style, "icon-source", pointArray, lod);
         
-        if (source_) {
-            var bufferSize_ = getCharVerticesCount() * pointsGroups_.length;
-            var bufferSize2_ = getCharVerticesCount(true) * pointsGroups_.length;
+        if (source) {
+            var bufferSize = getCharVerticesCount() * pointsGroups.length;
+            var bufferSize2 = getCharVerticesCount(true) * pointsGroups.length;
     
-            var iconData_ = {
-                color_ : getLayerPropertyValue(style_, "icon-color", pointArray_, lod_),
-                scale_ : getLayerPropertyValue(style_, "icon-scale", pointArray_, lod_),
-                offset_ : getLayerPropertyValue(style_, "icon-offset", pointArray_, lod_),
-                stick_ : getLayerPropertyValue(style_, "icon-stick", pointArray_, lod_),
-                origin_ : getLayerPropertyValue(style_, "icon-origin", pointArray_, lod_),
-                source_ : getLayerPropertyValue(style_, "icon-source", pointArray_, lod_),
-                vertexBuffer_ : new Float32Array(bufferSize_),
-                originBuffer_ : new Float32Array(bufferSize2_),
-                texcoordsBuffer_ : new Float32Array(bufferSize_),
-                index_ : 0,
-                index2_ : 0
+            var iconData = {
+                color : getLayerPropertyValue(style, "icon-color", pointArray, lod),
+                scale : getLayerPropertyValue(style, "icon-scale", pointArray, lod),
+                offset : getLayerPropertyValue(style, "icon-offset", pointArray, lod),
+                stick : getLayerPropertyValue(style, "icon-stick", pointArray, lod),
+                origin : getLayerPropertyValue(style, "icon-origin", pointArray, lod),
+                source : getLayerPropertyValue(style, "icon-source", pointArray, lod),
+                vertexBuffer : new Float32Array(bufferSize),
+                originBuffer : new Float32Array(bufferSize2),
+                texcoordsBuffer : new Float32Array(bufferSize),
+                index : 0,
+                index2 : 0
             };
         } else {
-            icon_ = false;
+            icon = false;
         }
     }
 
-    var label_ = getLayerPropertyValue(style_, "label", pointArray_, lod_);
-    if (label_ == true) {
-        var source_ = getLayerPropertyValue(style_, "label-source", pointArray_, lod_);
-        var text_ = getLayerExpresionValue(style_, source_, pointArray_, lod_);
-        var size_ = getLayerPropertyValue(style_, "label-size", pointArray_, lod_);
+    var label = getLayerPropertyValue(style, "label", pointArray, lod);
+    if (label == true) {
+        var source = getLayerPropertyValue(style, "label-source", pointArray, lod);
+        var text = getLayerExpresionValue(style, source, pointArray, lod);
+        var size = getLayerPropertyValue(style, "label-size", pointArray, lod);
         
-        if (source_ == "$name") {
-            if (!areTextCharactersAvailable(text_, fonts_["default"])) {
-                var text2_ = getLayerExpresionValue(style_, "$name:en", pointArray_, lod_);
+        if (source == "$name") {
+            if (!areTextCharactersAvailable(text, globals.fonts["default"])) {
+                var text2 = getLayerExpresionValue(style, "$name:en", pointArray, lod);
                 
-                if (areTextCharactersAvailable(text2_, fonts_["default"])) {
-                    text_ = text2_;                     
+                if (areTextCharactersAvailable(text2, globals.fonts["default"])) {
+                    text = text2;                     
                 }
             }
         }
-        if (text_ && text_ != "" && Math.abs(size_) > 0.0001) {
-            var bufferSize_ = getCharVerticesCount() * text_.length * pointsGroups_.length;
-            var bufferSize2_ = getCharVerticesCount(true) * text_.length * pointsGroups_.length;
+        if (text && text != "" && Math.abs(size) > 0.0001) {
+            var bufferSize = getCharVerticesCount() * text.length * pointsGroups.length;
+            var bufferSize2 = getCharVerticesCount(true) * text.length * pointsGroups.length;
 
-            var labelData_ = {
-                color_ : getLayerPropertyValue(style_, "label-color", pointArray_, lod_),
-                size_ : size_,
-                offset_ : getLayerPropertyValue(style_, "label-offset", pointArray_, lod_),
-                stick_ : getLayerPropertyValue(style_, "label-stick", pointArray_, lod_),
-                origin_ : getLayerPropertyValue(style_, "label-origin", pointArray_, lod_),
-                align_ : getLayerPropertyValue(style_, "label-align", pointArray_, lod_),
-                text_ : text_,
-                width_ : getLayerPropertyValue(style_, "label-width", pointArray_, lod_),
-                vertexBuffer_ : new Float32Array(bufferSize_),
-                originBuffer_ : new Float32Array(bufferSize2_),
-                texcoordsBuffer_ : new Float32Array(bufferSize_),
-                index_ : 0,
-                index2_ : 0
+            var labelData = {
+                color : getLayerPropertyValue(style, "label-color", pointArray, lod),
+                size : size,
+                offset : getLayerPropertyValue(style, "label-offset", pointArray, lod),
+                stick : getLayerPropertyValue(style, "label-stick", pointArray, lod),
+                origin : getLayerPropertyValue(style, "label-origin", pointArray, lod),
+                align : getLayerPropertyValue(style, "label-align", pointArray, lod),
+                text : text,
+                width : getLayerPropertyValue(style, "label-width", pointArray, lod),
+                vertexBuffer : new Float32Array(bufferSize),
+                originBuffer : new Float32Array(bufferSize2),
+                texcoordsBuffer : new Float32Array(bufferSize),
+                index : 0,
+                index2 : 0
             };
         } else {
-            label_ = false;
+            label = false;
         }
     }
 
-    var index_ = 0;
-    var index2_ = 0;
+    var index = 0;
+    var index2 = 0;
 
-    var circleBuffer_ = [];
-    var circleSides_ = clamp(pointRadius_ * 8 * 0.5, 8, 32);
+    var circleBuffer = [];
+    var circleSides = clamp(pointRadius * 8 * 0.5, 8, 32);
 
-    var angle_ = 0, step_ = (2.0*Math.PI) / circleSides_;
+    var angle = 0, step = (2.0*Math.PI) / circleSides;
 
-    for (var i = 0; i < circleSides_; i++) {
-        circleBuffer_[i] = [-Math.sin(angle_), Math.cos(angle_)];
-        angle_ += step_;
+    for (var i = 0; i < circleSides; i++) {
+        circleBuffer[i] = [-Math.sin(angle), Math.cos(angle)];
+        angle += step;
     }
 
-    circleBuffer_[circleSides_] = [0, 1.0];
+    circleBuffer[circleSides] = [0, 1.0];
     
-    var totalPoints_ = 0;
-    var center_ = [0,0,0];
-    
-    for (var g = 0, gl = pointsGroups_.length; g < gl; g++) {
-        var points_ = pointsGroups_[g];
+    var totalPoints = 0;
+    var center = [0,0,0];
+    var forceOrigin = globals.forceOrigin;
+    var bboxMin = globals.bboxMin;
+    var tileX = globals.tileX;
+    var tileY = globals.tileY;
+    var forceScale = globals.forceScale;
+
+    for (var g = 0, gl = pointsGroups.length; g < gl; g++) {
+        var points = pointsGroups[g];
         
-        if (Array.isArray(points_) && points_.length > 0) {
-            var p = points_[0];
+        if (Array.isArray(points) && points.length > 0) {
+            var p = points[0];
             var p1 = [p[0], p[1], p[2]];
             
-            totalPoints_ += points_.length;
+            totalPoints += points.length;
         
             //allocate buffers
         
-            if (pointFlat_ == false) {
-                var pointsVertices_ = circleSides_ * 3 * 4;
-                var vertexBuffer_ = new Array(points_.length * pointsVertices_);
-                var pointsNormals_ = circleSides_ * 3 * 4;
-                var normalBuffer_ = new Array(points_.length * pointsNormals_);
+            if (pointFlat == false) {
+                var pointsVertices = circleSides * 3 * 4;
+                var vertexBuffer = new Array(points.length * pointsVertices);
+                var pointsNormals = circleSides * 3 * 4;
+                var normalBuffer = new Array(points.length * pointsNormals);
             } else {
-                var pointsVertices_ = circleSides_ * 3 * 3;
-                var vertexBuffer_ = new Array(points_.length * pointsVertices_);
+                var pointsVertices = circleSides * 3 * 3;
+                var vertexBuffer = new Array(points.length * pointsVertices);
             }
         
-            var dpoints_ = false;
+            var dpoints = false;
         
             //add ponints
-            for (var i = 0, li = points_.length; i < li; i++) {
+            for (var i = 0, li = points.length; i < li; i++) {
         
-                if (forceOrigin_ == true) {
-                    p1 = [p1[0] - tileX_, p1[1] - tileY_, p1[2]];
+                if (forceOrigin == true) {
+                    p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
                 }
         
-                if (forceScale_ != null) {
-                    p1 = [p1[0] * forceScale_[0], p1[1] * forceScale_[1], p1[2] * forceScale_[2]];
+                if (forceScale != null) {
+                    p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
                 }
         
-                center_[0] += p1[0];
-                center_[1] += p1[1];
-                center_[2] += p1[2];
+                center[0] += p1[0];
+                center[1] += p1[1];
+                center[2] += p1[2];
 
-                if (icon_ == true) {
-                    processIcon(p1, iconData_) ;//, pointArray_, lod_, style_, zIndex_);
+                if (icon == true) {
+                    processIcon(p1, iconData) ;//, pointArray, lod, style, zIndex);
                 }
     
-                if (label_ == true) {
-                    processLabel(p1, labelData_); //, pointArray_, lod_, style_, zIndex_);
+                if (label == true) {
+                    processLabel(p1, labelData); //, pointArray, lod, style, zIndex);
                 }
         
-                for (var j = 0; j < circleSides_; j++) {
+                for (var j = 0; j < circleSides; j++) {
 
-                    if (point_ == true) {
+                    if (point == true) {
         
-                        if (pointFlat_ == true) {
+                        if (pointFlat == true) {
         
                             //add polygon
-                            vertexBuffer_[index_] = p1[0];
-                            vertexBuffer_[index_+1] = p1[1];
-                            vertexBuffer_[index_+2] = p1[2];
+                            vertexBuffer[index] = p1[0];
+                            vertexBuffer[index+1] = p1[1];
+                            vertexBuffer[index+2] = p1[2];
         
-                            vertexBuffer_[index_+3] = p1[0] + circleBuffer_[j][0] * pointRadius_;
-                            vertexBuffer_[index_+4] = p1[1] + circleBuffer_[j][1] * pointRadius_;
-                            vertexBuffer_[index_+5] = p1[2];
+                            vertexBuffer[index+3] = p1[0] + circleBuffer[j][0] * pointRadius;
+                            vertexBuffer[index+4] = p1[1] + circleBuffer[j][1] * pointRadius;
+                            vertexBuffer[index+5] = p1[2];
         
-                            vertexBuffer_[index_+6] = p1[0] + circleBuffer_[j+1][0] * pointRadius_;
-                            vertexBuffer_[index_+7] = p1[1] + circleBuffer_[j+1][1] * pointRadius_;
-                            vertexBuffer_[index_+8] = p1[2];
+                            vertexBuffer[index+6] = p1[0] + circleBuffer[j+1][0] * pointRadius;
+                            vertexBuffer[index+7] = p1[1] + circleBuffer[j+1][1] * pointRadius;
+                            vertexBuffer[index+8] = p1[2];
 
-                            index_ += 9;
+                            index += 9;
         
                         } else {
         
                             //add polygon
-                            vertexBuffer_[index_] = p1[0];
-                            vertexBuffer_[index_+1] = p1[1];
-                            vertexBuffer_[index_+2] = p1[2];
-                            vertexBuffer_[index_+3] = 0;
-                            normalBuffer_[index2_] = 0;
-                            normalBuffer_[index2_+1] = 0;
-                            normalBuffer_[index2_+2] = 0;
-                            normalBuffer_[index2_+3] = 0;
+                            vertexBuffer[index] = p1[0];
+                            vertexBuffer[index+1] = p1[1];
+                            vertexBuffer[index+2] = p1[2];
+                            vertexBuffer[index+3] = 0;
+                            normalBuffer[index2] = 0;
+                            normalBuffer[index2+1] = 0;
+                            normalBuffer[index2+2] = 0;
+                            normalBuffer[index2+3] = 0;
         
-                            vertexBuffer_[index_+4] = p1[0];
-                            vertexBuffer_[index_+5] = p1[1];
-                            vertexBuffer_[index_+6] = p1[2];
-                            vertexBuffer_[index_+7] = 0;
-                            normalBuffer_[index2_+4] = circleBuffer_[j][0] * pointRadius_;
-                            normalBuffer_[index2_+5] = circleBuffer_[j][1] * pointRadius_;
-                            normalBuffer_[index2_+6] = 0;
-                            normalBuffer_[index2_+7] = 0;
+                            vertexBuffer[index+4] = p1[0];
+                            vertexBuffer[index+5] = p1[1];
+                            vertexBuffer[index+6] = p1[2];
+                            vertexBuffer[index+7] = 0;
+                            normalBuffer[index2+4] = circleBuffer[j][0] * pointRadius;
+                            normalBuffer[index2+5] = circleBuffer[j][1] * pointRadius;
+                            normalBuffer[index2+6] = 0;
+                            normalBuffer[index2+7] = 0;
         
-                            vertexBuffer_[index_+8] = p1[0];
-                            vertexBuffer_[index_+9] = p1[1];
-                            vertexBuffer_[index_+10] = p1[2];
-                            vertexBuffer_[index_+11] = 0;
-                            normalBuffer_[index2_+8] = circleBuffer_[j+1][0] * pointRadius_;
-                            normalBuffer_[index2_+9] = circleBuffer_[j+1][1] * pointRadius_;
-                            normalBuffer_[index2_+10] = 0;
-                            normalBuffer_[index2_+11] = 0;
+                            vertexBuffer[index+8] = p1[0];
+                            vertexBuffer[index+9] = p1[1];
+                            vertexBuffer[index+10] = p1[2];
+                            vertexBuffer[index+11] = 0;
+                            normalBuffer[index2+8] = circleBuffer[j+1][0] * pointRadius;
+                            normalBuffer[index2+9] = circleBuffer[j+1][1] * pointRadius;
+                            normalBuffer[index2+10] = 0;
+                            normalBuffer[index2+11] = 0;
         
-                            index_ += 12;
-                            index2_ += 12;
+                            index += 12;
+                            index2 += 12;
                         }
                     }
                 }
         
-                if (dpoints_ == true) {
-                    var p2 = points_[i+1];
+                if (dpoints == true) {
+                    var p2 = points[i+1];
                     p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
                 } else {
-                    p1 = points_[i+1];
+                    p1 = points[i+1];
                 }
             }
         }
     }
    
 
-    if (totalPoints_ > 0) {
-        center_[0] /= totalPoints_;
-        center_[1] /= totalPoints_;
-        center_[2] /= totalPoints_;
+    if (totalPoints > 0) {
+        center[0] /= totalPoints;
+        center[1] /= totalPoints;
+        center[2] /= totalPoints;
     }
 
-    center_[0] += bboxMin_[0];//groupOrigin_[0];
-    center_[1] += bboxMin_[1];//groupOrigin_[1];
-    center_[2] += bboxMin_[2];//groupOrigin_[2];
+    center[0] += bboxMin[0];//groupOrigin[0];
+    center[1] += bboxMin[1];//groupOrigin[1];
+    center[2] += bboxMin[2];//groupOrigin[2];
 
-    var hitable_ = hoverEvent_ || clickEvent_ || enterEvent_ || leaveEvent_;
+    var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
-    if (point_ == true) {
-        if (pointFlat_ == true) {
-            postGroupMessage({"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer_,
-                              "color":pointColor_, "z-index":zIndex_, "visibility": visibility_, "center": center_,
-                              "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                              "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                              "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                              "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer]);
+    if (point == true) {
+        if (pointFlat == true) {
+            postGroupMessage({"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer,
+                              "color":pointColor, "z-index":zIndex, "visibility": visibility, "center": center,
+                              "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
+                              "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
+                              "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
+                              "lod":(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer]);
         } else {
-            postGroupMessage({"command":"addRenderJob", "type": "pixel-line", "vertexBuffer": vertexBuffer_,
-                              "normalBuffer": normalBuffer_, "color":pointColor_, "z-index":zIndex_,
-                              "visibility": visibility_, "center": center_,
-                              "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                              "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                              "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                              "lod":(autoLod_ ? null : tileLod_) }, [vertexBuffer_.buffer, normalBuffer_.buffer]);
+            postGroupMessage({"command":"addRenderJob", "type": "pixel-line", "vertexBuffer": vertexBuffer,
+                              "normalBuffer": normalBuffer, "color":pointColor, "z-index":zIndex,
+                              "visibility": visibility, "center": center,
+                              "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
+                              "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
+                              "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
+                              "lod":(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, normalBuffer.buffer]);
         }
     }
 
-    if (icon_ == true && iconData_.vertexBuffer_.length > 0) {
-        postGroupMessage({"command":"addRenderJob", "type": "icon", "vertexBuffer": iconData_.vertexBuffer_,
-                          "originBuffer": iconData_.originBuffer_, "texcoordsBuffer": iconData_.texcoordsBuffer_,
-                          "icon":stylesheetBitmaps_[iconData_.source_[0]], "color":iconData_.color_, "z-index":zIndex_,
-                          "visibility": visibility_, "culling": culling_, "center": center_, "stick": iconData_.stick_,
-                          "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                          "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                          "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                          "lod":(autoLod_ ? null : tileLod_) }, [iconData_.vertexBuffer_.buffer, iconData_.originBuffer_.buffer, iconData_.texcoordsBuffer_.buffer]);
+    if (icon == true && iconData.vertexBuffer.length > 0) {
+        postGroupMessage({"command":"addRenderJob", "type": "icon", "vertexBuffer": iconData.vertexBuffer,
+                          "originBuffer": iconData.originBuffer, "texcoordsBuffer": iconData.texcoordsBuffer,
+                          "icon":globals.stylesheetBitmaps[iconData.source[0]], "color":iconData.color, "z-index":zIndex,
+                          "visibility": visibility, "culling": culling, "center": center, "stick": iconData.stick,
+                          "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
+                          "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
+                          "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
+                          "lod":(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer]);
     }
 
-    if (label_ == true && labelData_.vertexBuffer_.length > 0) {
-        postGroupMessage({"command":"addRenderJob", "type": "label", "vertexBuffer": labelData_.vertexBuffer_,
-                          "originBuffer": labelData_.originBuffer_, "texcoordsBuffer": labelData_.texcoordsBuffer_,
-                          "color":labelData_.color_, "z-index":zIndex_, "visibility": visibility_, "culling": culling_, 
-                          "center": center_, "stick": labelData_.stick_,
-                          "hover-event":hoverEvent_, "click-event":clickEvent_, "draw-event":drawEvent_,
-                          "enter-event":enterEvent_, "leave-event":leaveEvent_, "zbuffer-offset":zbufferOffset_,
-                          "hitable":hitable_, "state":hitState_, "eventInfo":eventInfo_,
-                          "lod":(autoLod_ ? null : tileLod_) }, [labelData_.vertexBuffer_.buffer, labelData_.originBuffer_.buffer, labelData_.texcoordsBuffer_.buffer]);
+    if (label == true && labelData.vertexBuffer.length > 0) {
+        postGroupMessage({"command":"addRenderJob", "type": "label", "vertexBuffer": labelData.vertexBuffer,
+                          "originBuffer": labelData.originBuffer, "texcoordsBuffer": labelData.texcoordsBuffer,
+                          "color":labelData.color, "z-index":zIndex, "visibility": visibility, "culling": culling, 
+                          "center": center, "stick": labelData.stick,
+                          "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
+                          "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
+                          "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
+                          "lod":(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer]);
     }
 
 };
 
-var getOriginOffset = function(origin_, width_, height_) {
-    switch(origin_) {
+var getOriginOffset = function(origin, width, height) {
+    switch(origin) {
         case "top-left":        return [0, 0];
-        case "top-right":       return [-width_, 0];
-        case "top-center":      return [-width_*0.5, 0];
-        case "center-left":     return [0, -height_*0.5];
-        case "center-right":    return [-width_, -height_*0.5];
-        case "center-center":   return [-width_*0.5, -height_*0.5];
-        case "bottom-left":     return [0, -height_];
-        case "bottom-right":    return [-width_, -height_];
-        case "bottom-center":   return [-width_*0.5, -height_];
+        case "top-right":       return [-width, 0];
+        case "top-center":      return [-width*0.5, 0];
+        case "center-left":     return [0, -height*0.5];
+        case "center-right":    return [-width, -height*0.5];
+        case "center-center":   return [-width*0.5, -height*0.5];
+        case "bottom-left":     return [0, -height];
+        case "bottom-right":    return [-width, -height];
+        case "bottom-center":   return [-width*0.5, -height];
     }
 };
 
-var processIcon = function(point_, iconData_) {
-    var icon_ = iconData_.source_;
-    var index_ = iconData_.index_;
-    var index2_ = iconData_.index2_;
-    var lastIndex_ = index_;
+var processIcon = function(point, iconData) {
+    var icon = iconData.source;
+    var index = iconData.index;
+    var index2 = iconData.index2;
+    var lastIndex = index;
 
-    var width_ = Math.abs(icon_[3] * iconData_.scale_);
-    var height_ = Math.abs(icon_[4] * iconData_.scale_);
+    var width = Math.abs(icon[3] * iconData.scale);
+    var height = Math.abs(icon[4] * iconData.scale);
 
-    var vertexBuffer_ = iconData_.vertexBuffer_;
-    var texcoordsBuffer_ = iconData_.texcoordsBuffer_;
-    var originBuffer_ = iconData_.originBuffer_;
-
-    //add polygon
-    vertexBuffer_[index_] = 0;
-    vertexBuffer_[index_+1] = 0;
-    vertexBuffer_[index_+2] = 0;
-    vertexBuffer_[index_+3] = 0;
-
-    vertexBuffer_[index_+4] = width_;
-    vertexBuffer_[index_+5] = 0;
-    vertexBuffer_[index_+6] = 0;
-    vertexBuffer_[index_+7] = 0;
-
-    vertexBuffer_[index_+8] = width_;
-    vertexBuffer_[index_+9] = -height_;
-    vertexBuffer_[index_+10] = 0;
-    vertexBuffer_[index_+11] = 0;
-
-    texcoordsBuffer_[index_] = icon_[1];
-    texcoordsBuffer_[index_+1] = icon_[2];
-    texcoordsBuffer_[index_+2] = 0;
-    texcoordsBuffer_[index_+3] = 0;
-
-    texcoordsBuffer_[index_+4] = icon_[1]+icon_[3];
-    texcoordsBuffer_[index_+5] = icon_[2];
-    texcoordsBuffer_[index_+6] = 0;
-    texcoordsBuffer_[index_+7] = 0;
-
-    texcoordsBuffer_[index_+8] = icon_[1]+icon_[3];
-    texcoordsBuffer_[index_+9] = icon_[2]+icon_[4];
-    texcoordsBuffer_[index_+10] = 0;
-    texcoordsBuffer_[index_+11] = 0;
-
-    index_ += 12;
+    var vertexBuffer = iconData.vertexBuffer;
+    var texcoordsBuffer = iconData.texcoordsBuffer;
+    var originBuffer = iconData.originBuffer;
 
     //add polygon
-    vertexBuffer_[index_] = 0;
-    vertexBuffer_[index_+1] = 0;
-    vertexBuffer_[index_+2] = 0;
-    vertexBuffer_[index_+3] = 0;
+    vertexBuffer[index] = 0;
+    vertexBuffer[index+1] = 0;
+    vertexBuffer[index+2] = 0;
+    vertexBuffer[index+3] = 0;
 
-    vertexBuffer_[index_+4] = 0;
-    vertexBuffer_[index_+5] = -height_;
-    vertexBuffer_[index_+6] = 0;
-    vertexBuffer_[index_+7] = 0;
+    vertexBuffer[index+4] = width;
+    vertexBuffer[index+5] = 0;
+    vertexBuffer[index+6] = 0;
+    vertexBuffer[index+7] = 0;
 
-    vertexBuffer_[index_+8] = width_;
-    vertexBuffer_[index_+9] = -height_;
-    vertexBuffer_[index_+10] = 0;
-    vertexBuffer_[index_+11] = 0;
+    vertexBuffer[index+8] = width;
+    vertexBuffer[index+9] = -height;
+    vertexBuffer[index+10] = 0;
+    vertexBuffer[index+11] = 0;
 
-    texcoordsBuffer_[index_] = icon_[1];
-    texcoordsBuffer_[index_+1] = icon_[2];
-    texcoordsBuffer_[index_+2] = 0;
-    texcoordsBuffer_[index_+3] = 0;
+    texcoordsBuffer[index] = icon[1];
+    texcoordsBuffer[index+1] = icon[2];
+    texcoordsBuffer[index+2] = 0;
+    texcoordsBuffer[index+3] = 0;
 
-    texcoordsBuffer_[index_+4] = icon_[1];
-    texcoordsBuffer_[index_+5] = icon_[2]+icon_[4];
-    texcoordsBuffer_[index_+6] = 0;
-    texcoordsBuffer_[index_+7] = 0;
+    texcoordsBuffer[index+4] = icon[1]+icon[3];
+    texcoordsBuffer[index+5] = icon[2];
+    texcoordsBuffer[index+6] = 0;
+    texcoordsBuffer[index+7] = 0;
 
-    texcoordsBuffer_[index_+8] = icon_[1]+icon_[3];
-    texcoordsBuffer_[index_+9] = icon_[2]+icon_[4];
-    texcoordsBuffer_[index_+10] = 0;
-    texcoordsBuffer_[index_+11] = 0;
+    texcoordsBuffer[index+8] = icon[1]+icon[3];
+    texcoordsBuffer[index+9] = icon[2]+icon[4];
+    texcoordsBuffer[index+10] = 0;
+    texcoordsBuffer[index+11] = 0;
+
+    index += 12;
+
+    //add polygon
+    vertexBuffer[index] = 0;
+    vertexBuffer[index+1] = 0;
+    vertexBuffer[index+2] = 0;
+    vertexBuffer[index+3] = 0;
+
+    vertexBuffer[index+4] = 0;
+    vertexBuffer[index+5] = -height;
+    vertexBuffer[index+6] = 0;
+    vertexBuffer[index+7] = 0;
+
+    vertexBuffer[index+8] = width;
+    vertexBuffer[index+9] = -height;
+    vertexBuffer[index+10] = 0;
+    vertexBuffer[index+11] = 0;
+
+    texcoordsBuffer[index] = icon[1];
+    texcoordsBuffer[index+1] = icon[2];
+    texcoordsBuffer[index+2] = 0;
+    texcoordsBuffer[index+3] = 0;
+
+    texcoordsBuffer[index+4] = icon[1];
+    texcoordsBuffer[index+5] = icon[2]+icon[4];
+    texcoordsBuffer[index+6] = 0;
+    texcoordsBuffer[index+7] = 0;
+
+    texcoordsBuffer[index+8] = icon[1]+icon[3];
+    texcoordsBuffer[index+9] = icon[2]+icon[4];
+    texcoordsBuffer[index+10] = 0;
+    texcoordsBuffer[index+11] = 0;
     
-    index_ += 12;
+    index += 12;
 
     //get offset
-    var originOffset_ = getOriginOffset(iconData_.origin_, width_, height_);
-    var offsetX_ = originOffset_[0] + iconData_.offset_[0];
-    var offsetY_ = originOffset_[1] + iconData_.offset_[1];
+    var originOffset = getOriginOffset(iconData.origin, width, height);
+    var offsetX = originOffset[0] + iconData.offset[0];
+    var offsetY = originOffset[1] + iconData.offset[1];
 
-    var p1_ = point_[0];
-    var p2_ = point_[1];
-    var p3_ = point_[2];
+    var p1 = point[0];
+    var p2 = point[1];
+    var p3 = point[2];
 
     //set origin buffer and apply offset
-    for (var i = lastIndex_; i < index_; i+=4) {
-        vertexBuffer_[i] += offsetX_;
-        vertexBuffer_[i+1] -= offsetY_;
+    for (var i = lastIndex; i < index; i+=4) {
+        vertexBuffer[i] += offsetX;
+        vertexBuffer[i+1] -= offsetY;
 
-        originBuffer_[index2_] = p1_;
-        originBuffer_[index2_ + 1] = p2_;
-        originBuffer_[index2_ + 2] = p3_;
-        index2_ += 3;
+        originBuffer[index2] = p1;
+        originBuffer[index2 + 1] = p2;
+        originBuffer[index2 + 2] = p3;
+        index2 += 3;
     }
 
-    iconData_.index_ = index_;
-    iconData_.index2_ = index2_;
+    iconData.index = index;
+    iconData.index2 = index2;
 };
 
 
-var processLabel = function(point_, labelData_) {
-    var vertexBuffer_ = labelData_.vertexBuffer_;
-    var texcoordsBuffer_ = labelData_.texcoordsBuffer_;
-    var originBuffer_ = labelData_.originBuffer_;
-    var index_ = labelData_.index_;
-    var index2_ = labelData_.index2_;
-    var lastIndex_ = index_;
-    var text_ = "" + labelData_.text_;
+var processLabel = function(point, labelData) {
+    var vertexBuffer = labelData.vertexBuffer;
+    var texcoordsBuffer = labelData.texcoordsBuffer;
+    var originBuffer = labelData.originBuffer;
+    var index = labelData.index;
+    var index2 = labelData.index2;
+    var lastIndex = index;
+    var text = "" + labelData.text;
 
     //split by new line
-    var lines_ = text_.match(/[^\r\n]+/g);
-    var lines2_ = [];
-    var align_ = false;
+    var lines = text.match(/[^\r\n]+/g);
+    var lines2 = [];
+    var align = false;
 
     //split lines by width
-    for (var i = 0, li = lines_.length; i < li; i++) {
+    for (var i = 0, li = lines.length; i < li; i++) {
 
-        var line_= lines_[i];
+        var line= lines[i];
 
         do {
-            var splitIndex_ = getSplitIndex(line_, labelData_.width_, getFontFactor(labelData_.size_, fonts_["default"]), fonts_["default"]);
+            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, globals.fonts["default"]), globals.fonts["default"]);
 
-            if (line_.length == splitIndex_) {
-                lines2_.push(line_);
+            if (line.length == splitIndex) {
+                lines2.push(line);
                 break;
             }
 
-            lines2_.push(line_.substring(0,splitIndex_));
-            line_ = line_.substring(splitIndex_+1);
-            align_ = true;
+            lines2.push(line.substring(0,splitIndex));
+            line = line.substring(splitIndex+1);
+            align = true;
 
         } while(true);
 
@@ -442,60 +460,56 @@ var processLabel = function(point_, labelData_) {
 
     var x = 0;
     var y = 0;
-    var textLength_ = 0;
-    var lineHeight_ = getLineHeight(labelData_.size_, fonts_["default"]);
-    var maxWidth_ = 0;
-    var lineWidths_ = [];
+    var textLength = 0;
+    var lineHeight = getLineHeight(labelData.size, globals.fonts["default"]);
+    var maxWidth = 0;
+    var lineWidths = [];
 
     //get max width
-    for (var i = 0, li = lines2_.length; i < li; i++) {
-        lineWidths_[i] = getTextLength(lines2_[i], getFontFactor(labelData_.size_, fonts_["default"]), fonts_["default"]);
-        maxWidth_ = Math.max(lineWidths_[i], maxWidth_);
+    for (var i = 0, li = lines2.length; i < li; i++) {
+        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, globals.fonts["default"]), globals.fonts["default"]);
+        maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
     //generate text
-    for (var i = 0, li = lines2_.length; i < li; i++) {
-        var textWidth_ = lineWidths_[i];//getTextLength(lines2_[i], getFontFactor(labelData_.size_, fonts_["default"]), fonts_["default"]);
-        //maxWidth_ = Math.max(textWidth_, maxWidth_);
+    for (var i = 0, li = lines2.length; i < li; i++) {
+        var textWidth = lineWidths[i];//getTextLength(lines2[i], getFontFactor(labelData.size, fonts["default"]), fonts["default"]);
+        //maxWidth = Math.max(textWidth, maxWidth);
 
-        switch(labelData_.align_) {
+        switch(labelData.align) {
             case "left": x = 0; break;
-            case "right": x = maxWidth_ - textWidth_; break;
-            case "center": x = (maxWidth_ - textWidth_)*0.5; break;
+            case "right": x = maxWidth - textWidth; break;
+            case "center": x = (maxWidth - textWidth)*0.5; break;
         }
 
-        index_ = addText([x,y,0], [1,0,0], lines2_[i], labelData_.size_, fonts_["default"], vertexBuffer_, texcoordsBuffer_, true, index_);
-        y -= lineHeight_;
+        index = addText([x,y,0], [1,0,0], lines2[i], labelData.size, globals.fonts["default"], vertexBuffer, texcoordsBuffer, true, index);
+        y -= lineHeight;
     }
 
     //get offset
-    var originOffset_ = getOriginOffset(labelData_.origin_, maxWidth_, -y);
-    offsetX_ = originOffset_[0] + labelData_.offset_[0];
-    offsetY_ = originOffset_[1] + labelData_.offset_[1];
+    var originOffset = getOriginOffset(labelData.origin, maxWidth, -y);
+    var offsetX = originOffset[0] + labelData.offset[0];
+    var offsetY = originOffset[1] + labelData.offset[1];
     
-    var p1_ = point_[0];
-    var p2_ = point_[1];
-    var p3_ = point_[2];
+    var p1 = point[0];
+    var p2 = point[1];
+    var p3 = point[2];
 
     //set origin buffer and apply offset
-    for (var i = lastIndex_; i < index_; i+=4) {
-        vertexBuffer_[i] += offsetX_;
-        vertexBuffer_[i+1] -= offsetY_;
+    for (var i = lastIndex; i < index; i+=4) {
+        vertexBuffer[i] += offsetX;
+        vertexBuffer[i+1] -= offsetY;
 
-        originBuffer_[index2_] = p1_;
-        originBuffer_[index2_ + 1] = p2_;
-        originBuffer_[index2_ + 2] = p3_;
-        index2_ += 3;
+        originBuffer[index2] = p1;
+        originBuffer[index2 + 1] = p2;
+        originBuffer[index2 + 2] = p3;
+        index2 += 3;
     }
 
-    labelData_.index_ = index_;
-    labelData_.index2_ = index2_;
+    labelData.index = index;
+    labelData.index2 = index2;
 };
 
-
-
-
-
-
+export {processPointArrayPass};
 
 

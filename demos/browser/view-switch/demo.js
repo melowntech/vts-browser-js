@@ -1,14 +1,19 @@
 var browser = null;
-var ui = null;
 var button = null;
+var map = null;
+
 
 (function startDemo() {
-    browser = Melown.MapBrowser("map-div", {
+    browser = vts.browser("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json"
     });
+
+    if (!browser) {
+        console.log("Your web browser does not support WebGL");
+        return;
+    }
     
-    ui = browser.getUI();
-    var panel = ui.addControl("view-panel",
+    var panel = browser.ui.addControl("view-panel",
         '<div id="switch-panel">' +
            '<input id="switch" type="checkbox"> Base Map' +
         '</div>');
@@ -17,22 +22,25 @@ var button = null;
     button.on("change", onSwitchView);
 })();
 
+
 function onSwitchView() {
-    if (button.getElement().checked) {
-        browser.setView({
-            "surfaces": {
-                "grand": [],
-                "ev": [ "mapycz-base" ]
-            },
-            "freelayers": []
-        });    
-    } else {
-        browser.setView({
-            "surfaces": {
-                "grand": [],
-                "ev": []
-            },
-            "freelayers": []
-        });    
+    if (browser.map) { //check whether map is loaded
+        if (button.getElement().checked) {
+            browser.map.setView({
+                "surfaces": {
+                    "grand": [],
+                    "ev": [ "mapycz-base" ]
+                },
+                "freelayers": []
+            });    
+        } else {
+            browser.map.setView({
+                "surfaces": {
+                    "grand": [],
+                    "ev": []
+                },
+                "freelayers": []
+            });    
+        }
     }
 }

@@ -1,12 +1,22 @@
 var browser = null;
+var map = null;
+var renderer = null;
 var woodTexture = null;
 var cubeMesh = null;
 
+
 (function startDemo() {
-    browser = Melown.MapBrowser("map-div", {
+    browser = vts.browser("map-div", {
         map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
         position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 964, 90 ]
     });
+
+    if (!browser) {
+        console.log("Your web browser does not support WebGL");
+        return;
+    }
+
+    renderer = browser.renderer;
 
     //callback once is map config loaded
     browser.on("map-loaded", onMapLoaded);
@@ -18,14 +28,16 @@ var cubeMesh = null;
     createCube();    
 })();
 
+
 function loadTexture() {
     //load texture used for cubes    
-    var woodImage = Melown.Http.imageFactory("/demos/images/wood.png",
+    var woodImage = vts.utils.loadImage("/demos/images/wood.png",
         (function(){
-            woodTexture = browser.getRenderer().createTexture({ "source": woodImage });
+            woodTexture = renderer.createTexture({ "source": woodImage });
         }).bind(this)
         );
 }
+
 
 function createCube() {
     var vertices = [ 1,1,1, -1,1,1, -1,-1,1, //top 
@@ -82,12 +94,12 @@ function createCube() {
                     1,0,0, 1,0,0, 1,0,0, //right
                     1,0,0, 1,0,0, 1,0,0 ];
 
-    cubeMesh = browser.getRenderer().createMesh({ "vertices": vertices, "uvs": uvs, "normals": normals });
+    cubeMesh = renderer.createMesh({ "vertices": vertices, "uvs": uvs, "normals": normals });
 }
 
+
 function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shininess, textured) {
-    var renderer = browser.getRenderer();
-    var cameInfo = browser.getCameraInfo();
+    var cameInfo = map.getCameraInfo();
 
     //matrix which tranforms mesh position and scale
     var mv = [
@@ -106,7 +118,7 @@ function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shin
     ];
 
     //multiply cube matrix with camera view matrix
-    Melown.Math.mat4Multiply(cameInfo["view-matrix"], mv, mv);
+    vts.mat4.multiply(cameInfo["view-matrix"], mv, mv);
 
     var norm = [
         0,0,0,
@@ -115,7 +127,7 @@ function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shin
     ];
 
     //extract normal transformation matrix from model view matrix
-    Melown.Math.mat4ToInverseMat3(mv, norm);
+    vts.mat4.toInverseMat3(mv, norm);
 
     //draw cube
     renderer.drawMesh({
@@ -134,9 +146,12 @@ function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shin
 function onMapLoaded() {
     //add render slots
     //render slots are called during map render
-    browser.addRenderSlot("custom-meshes", onDrawMeshes, true);
-    browser.moveRenderSlotAfter("after-map-render", "custom-meshes");
+    map = browser.map;    
+    map.addRenderSlot("custom-meshes", onDrawMeshes, true);
+    map.moveRende
+    rSlotAfter("after-map-render", "custom-meshes");
 };
+
 
 function onDrawMeshes(renderChannel) {
     if (renderChannel != "base") {
@@ -147,23 +162,23 @@ function onDrawMeshes(renderChannel) {
         var coords;
 
         //draw textured cubes        
-        coords = browser.convertCoordsFromNavToCameraSpace([1683559, 6604129, 0], "float");
+        coords = map.convertCoordsFromNavToCameraSpace([1683559, 6604129, 0], "float");
         drawCube(coords, 50, [255,128,128], [0,0,0], [0,0,0], 0, true);
 
-        coords = browser.convertCoordsFromNavToCameraSpace([1683559+150, 6604129, 0], "float");
+        coords = map.convertCoordsFromNavToCameraSpace([1683559+150, 6604129, 0], "float");
         drawCube(coords, 50, [0,0,0], [255,128,128], [0,0,0], 0, true);
 
-        coords = browser.convertCoordsFromNavToCameraSpace([1683559+300, 6604129, 0], "float");
+        coords = map.convertCoordsFromNavToCameraSpace([1683559+300, 6604129, 0], "float");
         drawCube(coords, 50, [0,0,0], [255,128,128], [255,255,255], 90, true);
 
         //draw cubes without textures
-        coords = browser.convertCoordsFromNavToCameraSpace([1683559, 6604129+200, 0], "float");
+        coords = map.convertCoordsFromNavToCameraSpace([1683559, 6604129+200, 0], "float");
         drawCube(coords, 50, [255,128,128], [0,0,0], [0,0,0], 0, false);
 
-        coords = browser.convertCoordsFromNavToCameraSpace([1683559+150, 6604129+200, 0], "float");
+        coords = map.convertCoordsFromNavToCameraSpace([1683559+150, 6604129+200, 0], "float");
         drawCube(coords, 50, [0,0,0], [255,128,128], [0,0,0], 0, false);
 
-        coords = browser.convertCoordsFromNavToCameraSpace([1683559+300, 6604129+200, 0], "float");
+        coords = map.convertCoordsFromNavToCameraSpace([1683559+300, 6604129+200, 0], "float");
         drawCube(coords, 50, [0,0,0], [255,128,128], [255,255,255], 90, false);
     }    
 } 

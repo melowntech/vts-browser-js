@@ -1,49 +1,60 @@
-require('browser/utility/utility');
 
-//Melown.Utils.dragging_ = false;
+import UIEvent_ from '../ui/element/event';
 
-Melown.Utils.hasClass = function(element_, name_) {
-    if (element_.classList !== undefined) {
-        return element_.classList.contains(name_);
+//get rid of compiler mess
+var UIEvent = UIEvent_;
+
+
+//Dom.dragging = false;
+var Dom = {};
+
+Dom.hasClass = function(element, name) {
+    if (element.classList !== undefined) {
+        return element.classList.contains(name);
     }
-    var className_ = Melown.Utils.getClass(element_);
-    return className_.length > 0 && new RegExp('(^|\\s)' + name_ + '(\\s|$)').test(className_);
+    var className = Dom.getClass(element);
+    return className.length > 0 && new RegExp('(^|\\s)' + name + '(\\s|$)').test(className);
 };
 
-Melown.Utils.addClass = function(element_, name_) {
-    if (element_.classList !== undefined) {
-        var classes_ = Melown.Utils.splitWords(name_);
-        for (var i = 0, li = classes_.length; i < li; i++) {
-            element_.classList.add(classes_[i]);
+
+Dom.addClass = function(element, name) {
+    if (element.classList !== undefined) {
+        var classes = Dom.splitWords(name);
+        for (var i = 0, li = classes.length; i < li; i++) {
+            element.classList.add(classes[i]);
         }
-    } else if (!Melown.Utils.hasClass(element_, name_)) {
-        var className_ = Melown.Utils.getClass(element_);
-        Melown.Utils.setClass(element_, (className_ ? className_ + ' ' : '') + name_);
+    } else if (!Dom.hasClass(element, name)) {
+        var className = Dom.getClass(element);
+        Dom.setClass(element, (className ? className + ' ' : '') + name);
     }
 };
 
-Melown.Utils.removeClass = function(element_, name_) {
-    if (element_.classList !== undefined) {
-        element_.classList.remove(name_);
+
+Dom.removeClass = function(element, name) {
+    if (element.classList !== undefined) {
+        element.classList.remove(name);
     } else {
-        Melown.Utils.setClass(element_, ((' ' + Melown.Utils.getClass(element_) + ' ').replace(' ' + name_ + ' ', ' ')).trim() );
+        Dom.setClass(element, ((' ' + Dom.getClass(element) + ' ').replace(' ' + name + ' ', ' ')).trim() );
     }
 };
 
-Melown.Utils.setClass = function(element_, name_) {
-    if (element_.className.baseVal === undefined) {
-        element_.className = name_;
+
+Dom.setClass = function(element, name) {
+    if (element.className.baseVal === undefined) {
+        element.className = name;
     } else {
-        element_.className.baseVal = name_;
+        element.className.baseVal = name;
     }
 };
 
-Melown.Utils.getClass = function(element_) {
-    return element_.className.baseVal === undefined ? element_.className : element_.className.baseVal;
+
+Dom.getClass = function(element) {
+    return element.className.baseVal === undefined ? element.className : element.className.baseVal;
 };
 
-Melown.Utils.preventDefault = function(e) {
-    e = e instanceof Melown.UIEvent ? e.event_ : e;
+
+Dom.preventDefault = function(e) {
+    e = e instanceof UIEvent ? e.event : e;
     if (e.preventDefault) {
         e.preventDefault();
     } else {
@@ -51,48 +62,67 @@ Melown.Utils.preventDefault = function(e) {
     }
 };
 
-Melown.Utils.stopPropagation = function(e) {
-    e = e instanceof Melown.UIEvent ? e.event_ : e;
+
+Dom.stopPropagation = function(e) {
+    e = e instanceof UIEvent ? e.event : e;
     e.stopPropagation();
 };
 
-Melown.Utils.disableTextSelection = function() {
-    window.addEventListener("selectstart", Melown.Utils.preventDefault);
+
+Dom.disableTextSelection = function() {
+    window.addEventListener("selectstart", Dom.preventDefault);
 };
 
-Melown.Utils.enableTextSelection = function() {
-    window.removeEventListener("selectstart", Melown.Utils.preventDefault);
+
+Dom.enableTextSelection = function() {
+    window.removeEventListener("selectstart", Dom.preventDefault);
 };
 
-Melown.Utils.disableImageDrag = function() {
-    window.addEventListener("dragstart", Melown.Utils.preventDefault);
+
+Dom.disableImageDrag = function() {
+    window.addEventListener("dragstart", Dom.preventDefault);
 };
 
-Melown.Utils.enableImageDrag = function() {
-    window.removeEventListener("dragstart", Melown.Utils.preventDefault);
+
+Dom.enableImageDrag = function() {
+    window.removeEventListener("dragstart", Dom.preventDefault);
 };
 
-Melown.Utils.disableContexMenu = function(element_) {
-    element_.addEventListener("contextmenu", Melown.Utils.preventDefault);
+
+Dom.disableContexMenu = function(element) {
+    element.addEventListener("contextmenu", Dom.preventDefault);
 };
 
-Melown.Utils.enableContexMenu = function(element_) {
-    element_.removeEventListener("contextmenu", Melown.Utils.preventDefault);
+
+Dom.enableContexMenu = function(element) {
+    element.removeEventListener("contextmenu", Dom.preventDefault);
 };
 
-Melown.Utils.getSupportedProperty = function(properties_) {
-    var style_ = document.documentElement.style;
 
-    for (var i = 0, li = properties_.length; i < li; i++) {
-        if (properties_[i] in style_) {
-            return properties_[i];
+Dom.getSupportedProperty = function(properties) {
+    var style = document.documentElement.style;
+
+    for (var i = 0, li = properties.length; i < li; i++) {
+        if (properties[i] in style) {
+            return properties[i];
         }
     }
 
     return false;
 };
 
-Melown.Utils.TRANSFORM = Melown.Utils.getSupportedProperty(
+
+Dom.stampCounter = 0;
+
+
+Dom.stamp = function(obj) {
+    obj.vtsStamp = obj.vtsStamp || ++Dom.stampCounter;
+    return obj.vtsStamp;
+};
+
+
+Dom.TRANSFORM = Dom.getSupportedProperty(
             ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
 
 
+export default Dom;

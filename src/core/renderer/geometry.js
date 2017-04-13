@@ -1,115 +1,121 @@
-require('./bbox');
 
-Melown.RendererGeometry = {};
+import BBox_ from './bbox';
 
-Melown.RendererGeometry.setFaceVertices = function(vertices_, a, b, c, index_) {
-    vertices_[index_] = a[0];
-    vertices_[index_+1] = a[1];
-    vertices_[index_+2] = a[2];
+//get rid of compiler mess
+var BBox = BBox_;
 
-    vertices_[index_+3] = b[0];
-    vertices_[index_+4] = b[1];
-    vertices_[index_+5] = b[2];
 
-    vertices_[index_+6] = c[0];
-    vertices_[index_+7] = c[1];
-    vertices_[index_+8] = c[2];
+var RendererGeometry = {};
+
+
+RendererGeometry.setFaceVertices = function(vertices, a, b, c, index) {
+    vertices[index] = a[0];
+    vertices[index+1] = a[1];
+    vertices[index+2] = a[2];
+
+    vertices[index+3] = b[0];
+    vertices[index+4] = b[1];
+    vertices[index+5] = b[2];
+
+    vertices[index+6] = c[0];
+    vertices[index+7] = c[1];
+    vertices[index+8] = c[2];
 };
 
 
-Melown.RendererGeometry.setFaceUVs = function(uvs_, a, b, c, index_) {
-    uvs_[index_] = a[0];
-    uvs_[index_+1] = a[1];
+RendererGeometry.setFaceUVs = function(uvs, a, b, c, index) {
+    uvs[index] = a[0];
+    uvs[index+1] = a[1];
 
-    uvs_[index_+2] = b[0];
-    uvs_[index_+3] = b[1];
+    uvs[index+2] = b[0];
+    uvs[index+3] = b[1];
 
-    uvs_[index_+4] = c[0];
-    uvs_[index_+5] = c[1];
+    uvs[index+4] = c[0];
+    uvs[index+5] = c[1];
 };
 
 
-//! Procedural mesh representing a heightmap block
-//! Creates a grid of size x size vertices, all coords are [0..1].
-Melown.RendererGeometry.buildHeightmap = function(size_) {
-    size_--;
+// Procedural mesh representing a heightmap block
+// Creates a grid of size x size vertices, all coords are [0..1].
+RendererGeometry.buildHeightmap = function(size) {
+    size--;
 
-    var g = Melown.RendererGeometry;
-    var numFaces_ = (size_* size_) * 2;
-    var vertices_ = new Float32Array(numFaces_ * 3 * 3);//[];
-    var uvs_ = new Float32Array(numFaces_ * 3 * 2);//[];
+    var g = RendererGeometry;
+    var numFaces = (size* size) * 2;
+    var vertices = new Float32Array(numFaces * 3 * 3);//[];
+    var uvs = new Float32Array(numFaces * 3 * 2);//[];
 
-    var USHRT_MAX = 65535;
-    var factor_ = 1.0 * size_;
-    var index_ = 0;
-    var index2_ = 0;
+    var USHRTMAX = 65535;
+    var factor = 1.0 * size;
+    var index = 0;
+    var index2 = 0;
 
-    for (var i = 0; i < size_; i++) {
-        for (var j = 0; j < size_; j++) {
-            var x1 = (j) * factor_;
-            var x2 = (j+1) * factor_;
+    for (var i = 0; i < size; i++) {
+        for (var j = 0; j < size; j++) {
+            var x1 = (j) * factor;
+            var x2 = (j+1) * factor;
 
-            var y1 = (i) * factor_;
-            var y2 = (i+1) * factor_;
+            var y1 = (i) * factor;
+            var y2 = (i+1) * factor;
 
-            g.setFaceVertices(vertices_, [x1, y1, 0], [x2, y1, 0], [x2, y2, 0], index_);
-            g.setFaceUVs(uvs_, [x1, y1], [x2, y1], [x2, y2], index2_);
-            index_ += 9;
-            index2_ += 6;
+            g.setFaceVertices(vertices, [x1, y1, 0], [x2, y1, 0], [x2, y2, 0], index);
+            g.setFaceUVs(uvs, [x1, y1], [x2, y1], [x2, y2], index2);
+            index += 9;
+            index2 += 6;
 
-            g.setFaceVertices(vertices_, [x2, y2, 0], [x1, y2, 0], [x1, y1, 0], index_);
-            g.setFaceUVs(uvs_, [x2, y2], [x1, y2], [x1, y1], index2_);
-            index_ += 9;
-            index2_ += 6;
+            g.setFaceVertices(vertices, [x2, y2, 0], [x1, y2, 0], [x1, y1, 0], index);
+            g.setFaceUVs(uvs, [x2, y2], [x1, y2], [x1, y1], index2);
+            index += 9;
+            index2 += 6;
         }
     }
 
-    var bbox_ = new Melown.BBox(0,0,0,1,1,1);
+    var bbox = new BBox(0,0,0,1,1,1);
 
-    return { bbox_:bbox_, vertices_:vertices_, uvs_: uvs_};
+    return { bbox:bbox, vertices:vertices, uvs: uvs};
 };
 
 
-Melown.RendererGeometry.buildPlane = function(size_) {
-    size_--;
+RendererGeometry.buildPlane = function(size) {
+    size--;
 
-    var g = Melown.RendererGeometry;
-    var numFaces_ = (size_* size_) * 2;
-    var vertices_ = new Float32Array(numFaces_ * 3 * 3);//[];
-    var uvs_ = new Float32Array(numFaces_ * 3 * 2);//[];
+    var g = RendererGeometry;
+    var numFaces = (size* size) * 2;
+    var vertices = new Float32Array(numFaces * 3 * 3);//[];
+    var uvs = new Float32Array(numFaces * 3 * 2);//[];
 
-    var USHRT_MAX = 65535;
-    var factor_ = 1.0 / (size_);
-    var index_ = 0;
-    var index2_ = 0;
+    var USHRTMAX = 65535;
+    var factor = 1.0 / (size);
+    var index = 0;
+    var index2 = 0;
 
-    for (var i = 0; i < size_; i++) {
-        for (var j = 0; j < size_; j++) {
+    for (var i = 0; i < size; i++) {
+        for (var j = 0; j < size; j++) {
             var x1 = j;
             var x2 = j+1;
             var y1 = i;
             var y2 = i+1;
 
-            var xx1 = j * factor_;
-            var xx2 = (j+1) * factor_;
-            var yy1 = (i) * factor_;
-            var yy2 = (i+1) * factor_;
+            var xx1 = j * factor;
+            var xx2 = (j+1) * factor;
+            var yy1 = (i) * factor;
+            var yy2 = (i+1) * factor;
 
-            g.setFaceVertices(vertices_, [x1, y1, 0], [x1, y2, 0], [x2, y2, 0], index_);
-            g.setFaceUVs(uvs_, [xx1, yy1], [xx1, yy2], [xx2, yy2], index2_);
-            index_ += 9;
-            index2_ += 6;
+            g.setFaceVertices(vertices, [x1, y1, 0], [x1, y2, 0], [x2, y2, 0], index);
+            g.setFaceUVs(uvs, [xx1, yy1], [xx1, yy2], [xx2, yy2], index2);
+            index += 9;
+            index2 += 6;
 
-            g.setFaceVertices(vertices_, [x2, y2, 0], [x2, y1, 0], [x1, y1, 0], index_);
-            g.setFaceUVs(uvs_, [xx2, yy2], [xx2, yy1], [xx1, yy1], index2_);
-            index_ += 9;
-            index2_ += 6;
+            g.setFaceVertices(vertices, [x2, y2, 0], [x2, y1, 0], [x1, y1, 0], index);
+            g.setFaceUVs(uvs, [xx2, yy2], [xx2, yy1], [xx1, yy1], index2);
+            index += 9;
+            index2 += 6;
         }
     }
 
-    var bbox_ = new Melown.BBox(0,0,0,1,1,1);
+    var bbox = new BBox(0,0,0,1,1,1);
 
-    return { bbox_:bbox_, vertices_:vertices_, uvs_: uvs_};
+    return { bbox:bbox, vertices:vertices, uvs: uvs};
 };
 
 /*
@@ -125,80 +131,83 @@ function getQuadPoint(p1,p2,p3,t) {
           t2*t2*p1[1]+2*t2*t*py+t*t*p3[1]];
 }
 
-var plane_ = [
+var plane = [
   [[50,50], [100,10], [150,50]],
   [[10,100], [100,100], [190,100]],
   [[50,150], [100,190], [150,150]]
 ];
 
-var size_ = 16;
+var size = 16;
 
 c.fillStyle = "rgb(200,0,0)";
-for (var i = 0; i < size_; i++) {
-    for (var j = 0; j < size_; j++) {
-     var t = j / (size_-1);
-     var p1 = getQuadPoint(plane_[0][0],plane_[0][1],plane_[0][2],t);
-     var p2 = getQuadPoint(plane_[1][0],plane_[1][1],plane_[1][2],t);
-     var p3 = getQuadPoint(plane_[2][0],plane_[2][1],plane_[2][2],t);
-     var t2 = i / (size_-1);
+for (var i = 0; i < size; i++) {
+    for (var j = 0; j < size; j++) {
+     var t = j / (size-1);
+     var p1 = getQuadPoint(plane[0][0],plane[0][1],plane[0][2],t);
+     var p2 = getQuadPoint(plane[1][0],plane[1][1],plane[1][2],t);
+     var p3 = getQuadPoint(plane[2][0],plane[2][1],plane[2][2],t);
+     var t2 = i / (size-1);
      var p = getQuadPoint(p1,p2,p3,t2);
          c.fillRect(p[0], p[1], 5, 5);
    }
 }
  */
 
-Melown.RendererGeometry.spherePos = function(lon_, lat_) {
-    lat_ *= Math.PI;
-    lon_ *= 2*Math.PI;
+RendererGeometry.spherePos = function(lon, lat) {
+    lat *= Math.PI;
+    lon *= 2*Math.PI;
 
-    return [Math.cos(lon_)*Math.sin(lat_)*0.5 + 0.5,
-                Math.sin(lon_)*Math.sin(lat_)*0.5 + 0.5,
-                Math.cos(lat_) * 0.5 + 0.5];
+    return [Math.cos(lon)*Math.sin(lat)*0.5 + 0.5,
+                Math.sin(lon)*Math.sin(lat)*0.5 + 0.5,
+                Math.cos(lat) * 0.5 + 0.5];
 };
 
 
-//! Creates an approximation of a unit sphere, note that all coords are
-//! in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
-//! are oriented inwards.
-Melown.RendererGeometry.buildSkydome = function(latitudeBands_, longitudeBands_) {
-    var g = Melown.RendererGeometry;
-    var numFaces_ = (latitudeBands_ * longitudeBands_) * 2;
-    var vertices_ = new Float32Array(numFaces_ * 3 * 3);
-    var uvs_ = new Float32Array(numFaces_ * 3 * 2);
-    var index_ = 0;
-    var index2_ = 0;
+// Creates an approximation of a unit sphere, note that all coords are
+// in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
+// are oriented inwards.
+RendererGeometry.buildSkydome = function(latitudeBands, longitudeBands) {
+    var g = RendererGeometry;
+    var numFaces = (latitudeBands * longitudeBands) * 2;
+    var vertices = new Float32Array(numFaces * 3 * 3);
+    var uvs = new Float32Array(numFaces * 3 * 2);
+    var index = 0;
+    var index2 = 0;
 
-    for (var lat_ = 0; lat_ < latitudeBands_; lat_++) {
-        for (var lon_ = 0; lon_ < longitudeBands_; lon_++)
+    for (var lat = 0; lat < latitudeBands; lat++) {
+        for (var lon = 0; lon < longitudeBands; lon++)
         {
-            var lon1_ = ((lon_) / longitudeBands_);
-            var lon2_ = ((lon_+1) / longitudeBands_);
+            var lon1 = ((lon) / longitudeBands);
+            var lon2 = ((lon+1) / longitudeBands);
 
-            var lat1_ = ((lat_) / latitudeBands_);
-            var lat2_ = ((lat_+1) / latitudeBands_);
+            var lat1 = ((lat) / latitudeBands);
+            var lat2 = ((lat+1) / latitudeBands);
 
-            g.makeQuad(lon1_, lat1_, lon2_, lat2_, vertices_, index_, uvs_, index2_);
-            index_ += 9*2;
-            index2_ += 6*2;
+            g.makeQuad(lon1, lat1, lon2, lat2, vertices, index, uvs, index2);
+            index += 9*2;
+            index2 += 6*2;
         }
     }
 
-    var bbox_ = new Melown.BBox(0,0,0,1,1,1);
+    var bbox = new BBox(0,0,0,1,1,1);
 
-    return { bbox_:bbox_, vertices_:vertices_, uvs_: uvs_};
+    return { bbox:bbox, vertices:vertices, uvs: uvs};
 };
 
-Melown.RendererGeometry.makeQuad = function(lon1_, lat1_, lon2_, lat2_, vertices_, index_, uvs_, index2_) {
-    var g = Melown.RendererGeometry;
-    var a = g.spherePos(lon1_, lat1_), ta = [lon1_, lat1_];
-    var b = g.spherePos(lon1_, lat2_), tb = [lon1_, lat2_];
-    var c = g.spherePos(lon2_, lat1_), tc = [lon2_, lat1_];
-    var d = g.spherePos(lon2_, lat2_), td = [lon2_, lat2_];
-    g.setFaceVertices(vertices_, b, a, c, index_);
-    g.setFaceUVs(uvs_, tb, ta, tc, index2_);
-    g.setFaceVertices(vertices_, c, d, b, index_+9);
-    g.setFaceUVs(uvs_, tc, td, tb, index2_+6);
+
+RendererGeometry.makeQuad = function(lon1, lat1, lon2, lat2, vertices, index, uvs, index2) {
+    var g = RendererGeometry;
+    var a = g.spherePos(lon1, lat1), ta = [lon1, lat1];
+    var b = g.spherePos(lon1, lat2), tb = [lon1, lat2];
+    var c = g.spherePos(lon2, lat1), tc = [lon2, lat1];
+    var d = g.spherePos(lon2, lat2), td = [lon2, lat2];
+    g.setFaceVertices(vertices, b, a, c, index);
+    g.setFaceUVs(uvs, tb, ta, tc, index2);
+    g.setFaceVertices(vertices, c, d, b, index+9);
+    g.setFaceUVs(uvs, tc, td, tb, index2+6);
 };
 
+
+export default RendererGeometry;
 
 

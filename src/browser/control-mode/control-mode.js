@@ -1,194 +1,180 @@
-/**
- * @constructor
- */
-Melown.ControlMode = function(browser_) {
-    this.browser_ = browser_;
-    this.ui_ = browser_.ui_;
-    this.mapControl_ = this.ui_.getMapControl();
-    this.mapElement_ = this.mapControl_.getMapElement();
-    this.altKey_ = false;
-    this.shiftKey_ = false;
-    this.ctrlKey_ = false;
 
-    this.mapElement_.on('drag', this.onDrag.bind(this));
-    //this.mapElement_.on('dragstart', this.onDragStart.bind(this));
-    //this.mapElement_.on('dragend', this.onDragEnd.bind(this));
-    this.mapElement_.on('mousedown', this.onDown.bind(this));
-    this.mapElement_.on('mouseup', this.onUp.bind(this));
-    this.mapElement_.on('mousewheel', this.onWheel.bind(this));
-    this.mapElement_.on('keyup', this.onKeyUp.bind(this), window);
-    this.mapElement_.on('keydown', this.onKeyDown.bind(this), window);
-    this.mapElement_.on('keypress', this.onKeyPress.bind(this), window);
-    this.mapElement_.on('dblclick', this.onDoubleClick.bind(this), window);
-    this.browser_.on('tick', this.onTick.bind(this));
+import ControlModeDisabled_ from './disabled';
+import {ControlModeMapObserver as ControlModeMapObserver_} from './map-observer';
+import ControlModePano_ from './pano';
 
-    this.controlModes_ = {};
-    this.currentCotnrolMode_ = 'map-observer';
+//get rid of compiler mess
+var ControlModeDisabled = ControlModeDisabled_;
+var ControlModeMapObserver = ControlModeMapObserver_;
+var ControlModePano = ControlModePano_;
+
+
+var ControlMode = function(browser) {
+    this.browser = browser;
+    this.ui = browser.ui;
+    this.mapControl = this.ui.getMapControl();
+    this.mapElement = this.mapControl.getMapElement();
+    this.altKey = false;
+    this.shiftKey = false;
+    this.ctrlKey = false;
+
+    this.mapElement.on('drag', this.onDrag.bind(this));
+    //this.mapElement.on('dragstart', this.onDragStart.bind(this));
+    //this.mapElement.on('dragend', this.onDragEnd.bind(this));
+    this.mapElement.on('mousedown', this.onDown.bind(this));
+    this.mapElement.on('mouseup', this.onUp.bind(this));
+    this.mapElement.on('mousewheel', this.onWheel.bind(this));
+    this.mapElement.on('keyup', this.onKeyUp.bind(this), window);
+    this.mapElement.on('keydown', this.onKeyDown.bind(this), window);
+    this.mapElement.on('keypress', this.onKeyPress.bind(this), window);
+    this.mapElement.on('dblclick', this.onDoubleClick.bind(this), window);
+    this.browser.on('tick', this.onTick.bind(this));
+
+    this.controlModes = {};
+    this.currentCotnrolModeId = 'map-observer';
+    this.currentControleMode = this.controlModes['map-observer'];
 
     // default control modes
-    this.addControlMode('map-observer', new Melown.ControlMode.MapObserver(browser_));
-    this.addControlMode('disabled', new Melown.ControlMode.Disabled());
-    this.addControlMode('pano', new Melown.ControlMode.Pano(browser_));
+    this.addControlMode('map-observer', new ControlModeMapObserver(browser));
+    this.addControlMode('disabled', new ControlModeDisabled());
+    this.addControlMode('pano', new ControlModePano(browser));
 
     // use map observer mode as default
     this.setDefaultControlMode();
 };
 
-// Control Mode object interface keys
-/** @const */ Melown_ControlMode_Drag = 'drag';
-/** @const */ Melown_ControlMode_Down = 'down';
-/** @const */ Melown_ControlMode_Up = 'up';
-/** @const */ Melown_ControlMode_KeyUp = 'keyup';
-/** @const */ Melown_ControlMode_KeyDown = 'keydown';
-/** @const */ Melown_ControlMode_KeyPress = 'keypress';
-/** @const */ Melown_ControlMode_Wheel = 'wheel';
-/** @const */ Melown_ControlMode_Tick = 'tick';
-/** @const */ Melown_ControlMode_Reset = 'reset';
-/** @const */ Melown_ControlMode_DoubleClick = 'doubleclick';
 
-// Public methods
-
-Melown.ControlMode.prototype.addControlMode = function(id_, controller_) {
-    if (typeof id_ !== 'string'
-        || controller_ === null
-        || typeof controller_ !== 'object') {
-        throw new Error('Melown.ControlMode.addControlMode function has (String, Object) prototype.');
-    }
-
-    this.controlModes_[id_] = controller_;
+ControlMode.prototype.addControlMode = function(id, controller) {
+    this.controlModes[id] = controller;
 };
 
-Melown.ControlMode.prototype.removeControlMode = function(id_) {
-    if (typeof id_ !== 'string') {
-        throw new Error('Melown.ControlMode.removeControlMode function takes string as argument.');
-    }
-    if (id_ === this.currentCotnrolMode_) {
-        throw new Error(id_ + ' control mode is in use. Can\'t be removed.');
+
+ControlMode.prototype.removeControlMode = function(id) {
+    if (id === this.currentCotnrolModeId) {
+        return;
     }
 
-    delete this.controlModes_[id_];
-    this.controlModes_[id_];
+    delete this.controlModes[id];
 };
 
-Melown.ControlMode.prototype.setCurrentControlMode = function(id_, options_) {
-    var newMode_ = this.controlModes_[id_];
-    if (newMode_ === null || typeof newMode_ !== 'object') {
-        throw new Error ('Melown.ControlMode.setCurrentControlMode: Try tu use unregistered control mode ' + id_  + '.');
+
+ControlMode.prototype.setCurrentControlMode = function(id, options) {
+    var newMode = this.controlModes[id];
+    if (!newMode) {
+        return;
     }
 
     // set new mode
-    this.currentControlMode_ = id_;
+    this.currentControlModeId = id;
+    this.currentControleMode = newMode;
 
     // call reset
-    if (typeof newMode_[Melown_ControlMode_Reset] === 'function') {
-        newMode_[Melown_ControlMode_Reset](options_);
+    if (newMode["reset"]) {
+        newMode["reset"](options);
     }
 };
 
-Melown.ControlMode.prototype.setDefaultControlMode = function() {
+
+ControlMode.prototype.setDefaultControlMode = function() {
     this.setCurrentControlMode('map-observer');
 };
 
-Melown.ControlMode.prototype.getCurrentControlMode = function() {
-    return this.currentControlMode_;
+
+ControlMode.prototype.getCurrentControlMode = function() {
+    return this.currentControlModeId;
 };
+
 
 // Event callbacks
 
-Melown.ControlMode.prototype.onDrag = function(event_) {
-    this._checkAutopilot();
-    if (typeof this._currentController()[Melown_ControlMode_Drag]
-        === 'function') {
-        this._currentController()[Melown_ControlMode_Drag](event_);
+ControlMode.prototype.onDrag = function(event) {
+    this.checkAutopilot();
+    if (this.currentControleMode['drag']) {
+        this.currentControleMode['drag'](event);
     }
 };
 
-Melown.ControlMode.prototype.onDown = function(event_) {
-    this._checkAutopilot();
-    this._updateModifierKeys(event_);
-    if (typeof this._currentController()[Melown_ControlMode_Down]
-        === 'function') {
-        this._currentController()[Melown_ControlMode_Down](event_);
+
+ControlMode.prototype.onDown = function(event) {
+    this.checkAutopilot();
+    this.updateModifierKeys(event);
+    if (this.currentControleMode['down']) {
+        this.currentControleMode['down'](event);
     }
 };
 
-Melown.ControlMode.prototype.onUp = function(event_) {
-    this._updateModifierKeys(event_);
-    if (typeof this._currentController()[Melown_ControlMode_Up]
-        === 'function') {
-        this._currentController()[Melown_ControlMode_Up](event_);
+
+ControlMode.prototype.onUp = function(event) {
+    this.updateModifierKeys(event);
+    if (this.currentControleMode['up']) {
+        this.currentControleMode['up'](event);
     }
 };
 
-Melown.ControlMode.prototype.onWheel = function(event_) {
-    this._checkAutopilot();
-    if (typeof this._currentController()[Melown_ControlMode_Wheel]
-        === 'function') {
-        this._currentController()[Melown_ControlMode_Wheel](event_);
+
+ControlMode.prototype.onWheel = function(event) {
+    this.checkAutopilot();
+    if (this.currentControleMode['wheel']) {
+        this.currentControleMode['wheel'](event);
     }
 };
 
-Melown.ControlMode.prototype.onKeyUp = function(event_) {
-    this._updateModifierKeys(event_);
-    if (typeof this._currentController()[Melown_ControlMode_KeyUp]
-        === 'function') {
-        this._currentController()[Melown_ControlMode_KeyUp](event_);
+
+ControlMode.prototype.onKeyUp = function(event) {
+    this.updateModifierKeys(event);
+    if (this.currentControleMode['keyup']) {
+        this.currentControleMode['keyup'](event);
     }
 };
 
-Melown.ControlMode.prototype.onKeyDown = function(event_) {
-    this._updateModifierKeys(event_);
-    if (typeof this._currentController()[Melown_ControlMode_KeyDown]
-        === 'function') {
-        this._currentController()[Melown_ControlMode_KeyDown](event_);
+
+ControlMode.prototype.onKeyDown = function(event) {
+    this.updateModifierKeys(event);
+    if (this.currentControleMode['keydown']) {
+        this.currentControleMode['keydown'](event);
     }
 };
 
-Melown.ControlMode.prototype.onKeyPress = function(event_) {
-    this._updateModifierKeys(event_);
-    if (typeof this._currentController()[Melown_ControlMode_KeyPress]
-        === 'function') {
-        this._currentController()[Melown_ControlMode_KeyPress](event_);
+
+ControlMode.prototype.onKeyPress = function(event) {
+    this.updateModifierKeys(event);
+    if (this.currentControleMode['keypress']) {
+        this.currentControleMode['keypress'](event);
     }
 };
 
-Melown.ControlMode.prototype.onDoubleClick = function(event_) {
-    this._updateModifierKeys(event_);
-    if (typeof this._currentController()[Melown_ControlMode_DoubleClick]
-        === 'function') {
-        this._currentController()[Melown_ControlMode_DoubleClick](event_);
+
+ControlMode.prototype.onDoubleClick = function(event) {
+    this.updateModifierKeys(event);
+    if (this.currentControleMode['doubleclick']) {
+        this.currentControleMode['doubleclick'](event);
     }
 };
 
-Melown.ControlMode.prototype.onTick = function(event_) {
-    if (typeof this._currentController()[Melown_ControlMode_Tick]
-        === 'function') {
-        event_.draggingState_ = this.mapElement_.getDraggingState();    
-        this._currentController()[Melown_ControlMode_Tick](event_);
+
+ControlMode.prototype.onTick = function(event) {
+    if (this.currentControleMode['tick']) {
+        event.draggingState = this.mapElement.getDraggingState();    
+        this.currentControleMode['tick'](event);
     }
 };
 
-Melown.ControlMode.prototype.getCurrentController = function() {
-    return this.controlModes_[this.currentControlMode_];
-};
 
 // Private metod
-Melown.ControlMode.prototype._updateModifierKeys = function(event_) {
-    this.altKey_ = event_.getModifierKey("alt");
-    this.shiftKey_ = event_.getModifierKey("shift");
-    this.ctrlKey_ = event_.getModifierKey("ctrl");
-    
-    //console.log("alt:" + this.altKey_ + "  ctrl:" + this.ctrlKey_ + "  shift:" + this.shiftKey_);
+ControlMode.prototype.updateModifierKeys = function(event) {
+    this.altKey = event.getModifierKey("alt");
+    this.shiftKey = event.getModifierKey("shift");
+    this.ctrlKey = event.getModifierKey("ctrl");
+    //console.log("alt:" + this.altKey + "  ctrl:" + this.ctrlKey + "  shift:" + this.shiftKey);
 };
 
-Melown.ControlMode.prototype._currentController = function() {
-    return this.controlModes_[this.currentControlMode_];
-};
 
-Melown.ControlMode.prototype._checkAutopilot = function() {
-    if (this.browser_.autopilot_) {
-        this.browser_.autopilot_.setAutorotate(0);
-        this.browser_.autopilot_.setAutopan(0,0);
+ControlMode.prototype.checkAutopilot = function() {
+    if (this.browser.autopilot) {
+        this.browser.autopilot.setAutorotate(0);
+        this.browser.autopilot.setAutopan(0,0);
     }
 };
 
+
+export default ControlMode;

@@ -1,94 +1,112 @@
-/** @const */ MelownMetanodeFlags_GeometryPresent =  1;
-/** @const */ MelownMetanodeFlags_NavtilePresent =  3;
-/** @const */ MelownMetanodeFlags_InternalTexturePresent =  7;
-/** @const */ MelownMetanodeFlags_CoarsenessControl =  15;
-/** @const */ MelownMetanodeFlags_ChildShift =  3;
 
-Melown.MapMetanodeBuffer_ = new Uint8Array(1024);
+import {vec3 as vec3_, mat4 as mat4_} from '../utils/matrix';
+import {utils as utils_} from '../utils/utils';
+import {math as math_} from '../utils/math';
+import BBox_ from '../renderer/bbox';
 
-/**
- * @constructor
- */
-Melown.MapMetanode = function(metatile_, id_, stream_, divisionNode_) {
-    this.metatile_ = metatile_;
-    this.map_ = metatile_.map_;
-    this.id_ = id_;
-    this.credits_ = [];
-    this.alien_ = false;
-    this.ready_ = false;
-    this.heightReady_ = false;
-    this.divisionNode_ = divisionNode_;
+//get rid of compiler mess
+var vec3 = vec3_, mat4 = mat4_;
+var BBox = BBox_;
+var math = math_;
+var utils = utils_;
 
-    this.diskPos_ = new Array(3);
-    this.diskDistance_ = 1; 
-    this.diskNormal_ = new Array(3); 
-    this.diskAngle_ = 1;
-    this.diskAngle2_ = 1;
-    //this.bboxHeight_ = 1;
-    this.bbox2_ = new Array(24);
 
-    if (stream_) {
-        this.parseMetanode(stream_);
+var MapMetanode = function(metatile, id, stream, divisionNode) {
+    this.metatile = metatile;
+    this.map = metatile.map;
+    this.id = id;
+    this.credits = [];
+    this.alien = false;
+    this.ready = false;
+    this.heightReady = false;
+    this.divisionNode = divisionNode;
+
+    this.diskPos = new Array(3);
+    this.diskDistance = 1; 
+    this.diskNormal = new Array(3); 
+    this.diskAngle = 1;
+    this.diskAngle2 = 1;
+    this.diskAngle2A = 1;
+    //this.bboxHeight = 1;
+    this.bbox2 = new Array(24);
+
+    //this.flagsGeometryPresent =  1;
+    //this.flagsNavtilePresent =  3;
+    //this.flagsInternalTexturePresent =  7;
+    //this.flagsCoarsenessControl =  15;
+    //this.flagsChildShift =  3;
+
+    if (stream) {
+        this.parseMetanode(stream);
     }
 };
 
-Melown.MapMetanode.prototype.kill = function() {
+
+MapMetanode.prototype.kill = function() {
 };
 
-Melown.MapMetanode.prototype.hasChild = function(index_) {
-    return ((this.flags_ & (1<<(index_+4))) != 0);
+
+MapMetanode.prototype.hasChild = function(index) {
+    return ((this.flags & (1<<(index+4))) != 0);
 };
 
-Melown.MapMetanode.prototype.hasChildById = function(id_) {
-    var ix_ = id_[1] - (this.id_[1]<<1); 
-    var iy_ = id_[2] - (this.id_[2]<<1);
+
+MapMetanode.prototype.hasChildById = function(id) {
+    var ix = id[1] - (this.id[1]<<1); 
+    var iy = id[2] - (this.id[2]<<1);
     
     //ul,ur,ll,lr
-    return this.hasChild((iy_<<1) + ix_); 
+    return this.hasChild((iy<<1) + ix); 
 };
 
-Melown.MapMetanode.prototype.hasChildren = function() {
-    return ((this.flags_ & ((15)<<4)) != 0);
+
+MapMetanode.prototype.hasChildren = function() {
+    return ((this.flags & ((15)<<4)) != 0);
 };
 
-Melown.MapMetanode.prototype.parseExtentBits = function(extentBytes_, extentBits_, index_, maxExtent_) {
-    var value_ = 0;
 
-    for (var i = 0, li = extentBits_; i < li; i++) {
-        var byteIndex_ = index_ >> 3;
-        var bitIndex_ = index_ & 0x7;
+MapMetanode.prototype.parseExtentBits = function(extentBytes, extentBits, index, maxExtent) {
+    var value = 0;
 
-        if (extentBytes_[byteIndex_] & (1 << (7-bitIndex_))) {
-            value_ = value_ | (1 << (li - i - 1));
+    for (var i = 0, li = extentBits; i < li; i++) {
+        var byteIndex = index >> 3;
+        var bitIndex = index & 0x7;
+
+        if (extentBytes[byteIndex] & (1 << (7-bitIndex))) {
+            value = value | (1 << (li - i - 1));
         }
 
-        index_ ++;
+        index ++;
     }
 
-    value_ /= (1 << li) - 1;
-//    value_ *= maxExtent_;
+    value /= (1 << li) - 1;
+//    value *= maxExtent;
 
-    return value_;
-};
-
-Melown.MapMetanode.prototype.hasGeometry = function() {
-    return ((this.flags_ & 1) != 0);
-};
-
-Melown.MapMetanode.prototype.hasNavtile = function() {
-    return ((this.flags_ & (1 << 1)) != 0);
-};
-
-Melown.MapMetanode.prototype.usedTexelSize = function() {
-    return ((this.flags_ & (1 << 2)) != 0);
-};
-
-Melown.MapMetanode.prototype.usedDisplaySize = function() {
-    return ((this.flags_ & (1 << 3)) != 0);
+    return value;
 };
 
 
-Melown.MapMetanode.prototype.parseMetanode = function(stream_) {
+MapMetanode.prototype.hasGeometry = function() {
+    return ((this.flags & 1) != 0);
+};
+
+
+MapMetanode.prototype.hasNavtile = function() {
+    return ((this.flags & (1 << 1)) != 0);
+};
+
+
+MapMetanode.prototype.usedTexelSize = function() {
+    return ((this.flags & (1 << 2)) != 0);
+};
+
+
+MapMetanode.prototype.usedDisplaySize = function() {
+    return ((this.flags & (1 << 3)) != 0);
+};
+
+
+MapMetanode.prototype.parseMetanode = function(stream) {
 
 /*
 struct Metanode {
@@ -103,544 +121,606 @@ struct Metanode {
 }
 */
 
-    var streamData_ = stream_.data_;
-    var lastIndex_ = stream_.index_;
-    var version_ = this.metatile_.version_;
+    var streamData = stream.data;
+    var lastIndex = stream.index;
+    var version = this.metatile.version;
 
-    this.flags_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+    this.flags = streamData.getUint8(stream.index, true); stream.index += 1;
 
-    if (version_ < 5) {
-        var extentsSize_ = (((this.id_[0] + 2) * 6 + 7) >> 3);
-        var extentsBytes_ = Melown.MapMetanodeBuffer_;//new Uint8Array(extentsSize_);
+    if (version < 5) {
+        var extentsSize = (((this.id[0] + 2) * 6 + 7) >> 3);
+        var extentsBytes = this.map.metanodeBuffer;//new Uint8Array(extentsSize);
     
-        for (var i = 0, li = extentsSize_; i < li; i++) {
-            extentsBytes_[i] = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+        for (var i = 0, li = extentsSize; i < li; i++) {
+            extentsBytes[i] = streamData.getUint8(stream.index, true); stream.index += 1;
         }
     
-        var extentBits_ = this.id_[0] + 2;
+        var extentBits = this.id[0] + 2;
     
-        var minExtents_ = [0,0,0];
-        var maxExtents_ = [0,0,0];
+        var minExtents = [0,0,0];
+        var maxExtents = [0,0,0];
     
-        var index_ = 0;
-        var spaceExtentSize_ = this.map_.spaceExtentSize_;
-        var spaceExtentOffset_ = this.map_.spaceExtentOffset_;
+        var index = 0;
+        var spaceExtentSize = this.map.spaceExtentSize;
+        var spaceExtentOffset = this.map.spaceExtentOffset;
     
         for (var i = 0; i < 3; i++) {
-            minExtents_[i] = this.parseExtentBits(extentsBytes_, extentBits_, index_) * spaceExtentSize_[i] + spaceExtentOffset_[i];
-            //minExtents_[i] = this.parseExtentBits(extentsBytes_, extentBits_, index_, 1.0);
-            index_ += extentBits_;
-            maxExtents_[i] = this.parseExtentBits(extentsBytes_, extentBits_, index_) * spaceExtentSize_[i] + spaceExtentOffset_[i];
-            //maxExtents_[i] = this.parseExtentBits(extentsBytes_, extentBits_, index_, 1.0);
-            index_ += extentBits_;
+            minExtents[i] = this.parseExtentBits(extentsBytes, extentBits, index) * spaceExtentSize[i] + spaceExtentOffset[i];
+            //minExtents[i] = this.parseExtentBits(extentsBytes, extentBits, index, 1.0);
+            index += extentBits;
+            maxExtents[i] = this.parseExtentBits(extentsBytes, extentBits, index) * spaceExtentSize[i] + spaceExtentOffset[i];
+            //maxExtents[i] = this.parseExtentBits(extentsBytes, extentBits, index, 1.0);
+            index += extentBits;
         }
     
         //check zero bbox
-        var extentsBytesSum_ = 0;
-        for (var i = 0, li = extentsBytes_.length; i < li; i++) {
-            extentsBytesSum_ += extentsBytes_[i];
+        var extentsBytesSum = 0;
+        for (var i = 0, li = extentsBytes.length; i < li; i++) {
+            extentsBytesSum += extentsBytes[i];
         }
         
         //extent bytes are empty and therefore bbox is empty also
-        if (extentsBytesSum_ == 0 ) {
-            //console.log("empty-node: id: " + JSON.stringify(this.id_));
-            //console.log("empty-node: surafce: " + this.metatile_.surface_.id_);
+        if (extentsBytesSum == 0 ) {
+            //console.log("empty-node: id: " + JSON.stringify(this.id));
+            //console.log("empty-node: surafce: " + this.metatile.surface.id);
     
-            minExtents_[0] = Number.POSITIVE_INFINITY;
-            minExtents_[1] = Number.POSITIVE_INFINITY;
-            minExtents_[2] = Number.POSITIVE_INFINITY;
-            maxExtents_[0] = Number.NEGATIVE_INFINITY;
-            maxExtents_[1] = Number.NEGATIVE_INFINITY;
-            maxExtents_[2] = Number.NEGATIVE_INFINITY;
+            minExtents[0] = Number.POSITIVEINFINITY;
+            minExtents[1] = Number.POSITIVEINFINITY;
+            minExtents[2] = Number.POSITIVEINFINITY;
+            maxExtents[0] = Number.NEGATIVEINFINITY;
+            maxExtents[1] = Number.NEGATIVEINFINITY;
+            maxExtents[2] = Number.NEGATIVEINFINITY;
         }
     
-        this.bbox_ = new Melown.BBox(minExtents_[0], minExtents_[1], minExtents_[2], maxExtents_[0], maxExtents_[1], maxExtents_[2]);
+        this.bbox = new BBox(minExtents[0], minExtents[1], minExtents[2], maxExtents[0], maxExtents[1], maxExtents[2]);
     }    
 
-    if (version_ >= 4) {
-        this.minZ_ = streamData_.getFloat32(stream_.index_, true); stream_.index_ += 4;
-        this.maxZ_ = streamData_.getFloat32(stream_.index_, true); stream_.index_ += 4;
-        this.surrogatez_ = streamData_.getFloat32(stream_.index_, true); stream_.index_ += 4;
+    if (version >= 4) {
+        this.minZ = streamData.getFloat32(stream.index, true); stream.index += 4;
+        this.maxZ = streamData.getFloat32(stream.index, true); stream.index += 4;
+        this.surrogatez = streamData.getFloat32(stream.index, true); stream.index += 4;
     }
 
-    this.internalTextureCount_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+    this.internalTextureCount = streamData.getUint8(stream.index, true); stream.index += 1;
 
-    this.pixelSize_ = Melown.decodeFloat16( streamData_.getUint16(stream_.index_, true) ); stream_.index_ += 2;
-    this.displaySize_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-    this.displaySize_ = 1024;
-    if ((this.flags_ & (1 << 2)) == 0) {
-        this.pixelSize_ = Number.POSITIVE_INFINITY;
+    this.pixelSize = utils.decodeFloat16( streamData.getUint16(stream.index, true) ); stream.index += 2;
+    this.displaySize = streamData.getUint16(stream.index, true); stream.index += 2;
+    this.displaySize = 1024;
+    if ((this.flags & (1 << 2)) == 0) {
+        this.pixelSize = Number.POSITIVEINFINITY;
     }
 
-    if ((this.flags_ & (1 << 3)) == 0) {
-        this.displaySize_ = 256;
+    if ((this.flags & (1 << 3)) == 0) {
+        this.displaySize = 256;
     }
 
-    this.minHeight_ = streamData_.getInt16(stream_.index_, true); stream_.index_ += 2;
-    this.maxHeight_ = streamData_.getInt16(stream_.index_, true); stream_.index_ += 2;
+    this.minHeight = streamData.getInt16(stream.index, true); stream.index += 2;
+    this.maxHeight = streamData.getInt16(stream.index, true); stream.index += 2;
 
-    if (version_ < 4) {
-        this.minZ_ = this.minHeight_;
-        this.maxZ_ = this.maxHeight_;
-        this.surrogatez_ =this.minHeight_;
+    if (version < 4) {
+        this.minZ = this.minHeight;
+        this.maxZ = this.maxHeight;
+        this.surrogatez =this.minHeight;
     }
     
-    if (this.metatile_.version_ >= 3) {
-        if (this.metatile_.flags_ & (1<<7)) {
-            this.sourceReference_ = streamData_.getUint16(stream_.index_, true); stream_.index_ += 2;
-        } else if (this.metatile_.flags_ & (1<<6)) {
-            this.sourceReference_ = streamData_.getUint8(stream_.index_, true); stream_.index_ += 1;
+    if (this.metatile.version >= 3) {
+        if (this.metatile.flags & (1<<7)) {
+            this.sourceReference = streamData.getUint16(stream.index, true); stream.index += 2;
+        } else if (this.metatile.flags & (1<<6)) {
+            this.sourceReference = streamData.getUint8(stream.index, true); stream.index += 1;
         }
     }
 
-    this.heightReady_ = this.hasNavtile();
+    this.heightReady = this.hasNavtile();
     
-    this.alien_ = false;
+    this.alien = false;
 
-    var nodeSize2_ = stream_.index_ - lastIndex_;
+    var nodeSize2 = stream.index - lastIndex;
 
-    //if (!this.map_.config_.mapSmartNodeParsing_) {
+    //if (!this.map.config.mapSmartNodeParsing) {
         this.generateCullingHelpers();
     //}    
 };
 
-Melown.MapMetanode.prototype.clone = function() {
-    var node_ = new  Melown.MapMetanode(this.metatile_, this.id_);
-    node_.flags_ = this.flags_;
-    node_.minHeight_ = this.minHeight_;
-    node_.maxHeight_ = this.maxHeight_;
-    node_.minZ_ = this.minZ_;
-    node_.maxZ_ = this.maxZ_;
-    node_.internalTextureCount_ = this.internalTextureCount_;
-    node_.pixelSize_ = this.pixelSize_;
-    node_.displaySize_ = this.displaySize_;
-    node_.ready_ = this.ready_;
-    node_.stream_ = this.stream_;
-    node_.heightReady_ = this.heightReady_;
+
+MapMetanode.prototype.clone = function() {
+    var node = new  MapMetanode(this.metatile, this.id);
+    node.flags = this.flags;
+    node.minHeight = this.minHeight;
+    node.maxHeight = this.maxHeight;
+    node.minZ = this.minZ;
+    node.maxZ = this.maxZ;
+    node.surrogatez = this.surrogatez;
+    node.internalTextureCount = this.internalTextureCount;
+    node.pixelSize = this.pixelSize;
+    node.displaySize = this.displaySize;
+    node.ready = this.ready;
+    node.stream = this.stream;
+    node.heightReady = this.heightReady;
     
     //copy credits
-    node_.credits_ = new Array(this.credits_.length);
+    node.credits = new Array(this.credits.length);
     
-    for (var i = 0, li = this.credits_.length; i < li; i++) {
-        node_.credits_[i] = this.credits_[i];
+    for (var i = 0, li = this.credits.length; i < li; i++) {
+        node.credits[i] = this.credits[i];
     }
 
-    if (this.bbox_) {
-        node_.bbox_ = this.bbox_.clone();
+    if (this.bbox) {
+        node.bbox = this.bbox.clone();
     }
 
 
-//    if (this.map_.config_.mapGeocentCulling_) {
-        node_.diskPos_ = this.diskPos_;
-        node_.diskNormal_ = this.diskNormal_; 
-        node_.diskAngle_ = this.diskAngle_;
-        node_.diskAngle2_ = this.diskAngle2_;
-        node_.diskDistance_ = this.diskDistance_; 
-        node_.bbox2_ = this.bbox2_;  
+//    if (this.map.config.mapGeocentCulling) {
+        node.diskPos = this.diskPos;
+        node.diskNormal = this.diskNormal; 
+        node.diskAngle = this.diskAngle;
+        node.diskAngle2 = this.diskAngle2;
+        node.diskAngle2A = this.diskAngle2A;
+        node.diskDistance = this.diskDistance; 
+        node.bbox2 = this.bbox2;  
 
-        node_.divisionNode_ = this.divisionNode_;
+        node.divisionNode = this.divisionNode;
 
  //   }
 
-    if (this.plane_) {
-        node_.plane_ = this.plane_.slice();
+    if (this.plane) {
+        node.plane = this.plane.slice();
     }
 
-    return node_;
+    return node;
 };
 
-Melown.MapMetanode.prototype.generateCullingHelpers = function(virtual_) {
-    this.ready_ = true;
-    
-    var map_ = this.map_;
-    var geocent_ = map_.geocent_;
-    var version_ = this.metatile_.useVersion_;
 
-    if (this.id_[0] < map_.minDivisionNodeDepth_ || (!geocent_ && version_ < 4)) {
+MapMetanode.prototype.generateCullingHelpers = function(virtual) {
+    this.ready = true;
+    
+    var map = this.map;
+    var draw = map.draw;
+    var geocent = map.isGeocent;
+    var version = this.metatile.useVersion;
+
+    if (this.id[0] < map.measure.minDivisionNodeDepth || (!geocent && version < 4)) {
         return;
     }
 
-    if (map_.config_.mapPreciseCulling_ || version_ >= 4) { //use division node srs
-        if (virtual_) {
+    if (map.config.mapPreciseCulling || version >= 4) { //use division node srs
+        if (virtual) {
             return; //result is same for each tile id
         }
 
-        var pos_ = map_.tmpVec3_;
+        var pos = draw.tmpVec3;
         
-        if (this.id_[0] > map_.maxDivisionNodeDepth_) {
-            var pos2_ = map_.tmpVec5_;
+        if (this.id[0] > map.measure.maxDivisionNodeDepth) {
+            var pos2 = draw.tmpVec5;
             
-            var divisionNode_ = this.map_.getSpatialDivisionNodeFromId(this.id_);
+            var divisionNode = map.measure.getSpatialDivisionNodeFromId(this.id);
 
-            this.map_.getSpatialDivisionNodeAndExtents2(this.id_, pos2_, divisionNode_);
-            var node_ = pos2_[0]; 
-            var llx_ = pos2_[1];
-            var lly_ = pos2_[2];
-            var urx_ = pos2_[3];
-            var ury_ = pos2_[4];
+            if (!divisionNode) {
+                return;
+            }
 
-            this.divisionNode_ = divisionNode_;
+            map.measure.getSpatialDivisionNodeAndExtents2(this.id, pos2, divisionNode);
+            var node = pos2[0]; 
+            var llx = pos2[1];
+            var lly = pos2[2];
+            var urx = pos2[3];
+            var ury = pos2[4];
 
-            /*if (this.id_[0] == 2 && this.id_[1] == 0 && this.id_[2] == 2) {
-                var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
-                res_ = res_;
+            this.divisionNode = divisionNode;
+
+            /*if (this.id[0] == 2 && this.id[1] == 0 && this.id[2] == 2) {
+                var res = this.map.measure.getSpatialDivisionNodeAndExtents(this.id);
+                res = res;
             }*/
             
         } else {
-            var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
-            var divisionNode_ = res_[0]; 
-            var llx_ = res_[1][0][0];
-            var lly_ = res_[1][0][1];
-            var urx_ = res_[1][1][0];
-            var ury_ = res_[1][1][1];
-            this.divisionNode_ = divisionNode_;
+            var res = map.measure.getSpatialDivisionNodeAndExtents(this.id);
+            var divisionNode = res[0]; 
+
+            if (!divisionNode) {
+                return;
+            }
+                        
+            var llx = res[1][0][0];
+            var lly = res[1][0][1];
+            var urx = res[1][1][0];
+            var ury = res[1][1][1];
+            this.divisionNode = divisionNode;
         }
         
-        var h = this.minZ_;
-        //var middle_ = [(ur_[0] + ll_[0])* 0.5, (ur_[1] + ll_[1])* 0.5, h];
-        //var normal_ = [0,0,0];
+        var h = this.minZ;
+        //var middle = [(ur[0] + ll[0])* 0.5, (ur[1] + ll[1])* 0.5, h];
+        //var normal = [0,0,0];
         
-        pos_[0] = (urx_ + llx_)* 0.5; 
-        pos_[1] = (ury_ + lly_)* 0.5; 
-        pos_[2] = h; 
+        pos[0] = (urx + llx)* 0.5; 
+        pos[1] = (ury + lly)* 0.5; 
+        pos[2] = h; 
         
-        divisionNode_.getPhysicalCoordsFast(pos_, true, this.diskPos_, 0, 0);
+        divisionNode.getPhysicalCoordsFast(pos, true, this.diskPos, 0, 0);
         
-        if (geocent_) {
-            this.diskDistance_ = Melown.vec3.length(this.diskPos_); 
-            Melown.vec3.normalize(this.diskPos_, this.diskNormal_);
+        if (geocent) {
+            this.diskDistance = vec3.length(this.diskPos); 
+            vec3.normalize(this.diskPos, this.diskNormal);
         } else {
-            this.diskNormal_[0] = 0;
-            this.diskNormal_[1] = 0;
-            this.diskNormal_[2] = 1;
+            this.diskNormal[0] = 0;
+            this.diskNormal[1] = 0;
+            this.diskNormal[2] = 1;
         }
-        //this.diskNormal_ = normal_;   
-        var normal_ = this.diskNormal_;
+        //this.diskNormal = normal;   
+        var normal = this.diskNormal;
         
         
-        //if (divisionNode_.id_[0] == 1 && divisionNode_.id_[1] ==  1 && divisionNode_.id_[2] == 0) {   //???? debug?????
-          //  var res_ = this.map_.getSpatialDivisionNodeAndExtents(this.id_);
-          //  node_ = node_;
+        //if (divisionNode.id[0] == 1 && divisionNode.id[1] ==  1 && divisionNode.id[2] == 0) {   //???? debug?????
+          //  var res = this.map.getSpatialDivisionNodeAndExtents(this.id);
+          //  node = node;
         //}
         
-        pos_[0] = urx_; 
-        pos_[1] = ury_; 
-        pos_[2] = h; 
+        pos[0] = urx; 
+        pos[1] = ury; 
+        pos[2] = h; 
 
-        /*if (this.id_[0] == 17 && this.id_[1] == 53306 && this.id_[2] == 30754) {
-            normal_ = normal_;
+        /*if (this.id[0] == 17 && this.id[1] == 53306 && this.id[2] == 30754) {
+            normal = normal;
         }*/
         
-        var bbox_ = this.bbox2_;
+        var bbox = this.bbox2;
 
-        divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 0);
+        divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 0);
 
-        pos_[1] = lly_; 
-        divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 3);
+        pos[1] = lly; 
+        divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 3);
         
-        pos_[0] = llx_; 
-        divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 6);
+        pos[0] = llx; 
+        divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 6);
         
-        pos_[1] = ury_; 
-        divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 9);
+        pos[1] = ury; 
+        divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 9);
 
-        if (!geocent_) {
-            var height_ = this.maxZ_ - h;
+        if (!geocent) {
+            var height = this.maxZ - h;
             
-            bbox_[12] = bbox_[0];
-            bbox_[13] = bbox_[1];
-            bbox_[14] = bbox_[2] + height_;
+            bbox[12] = bbox[0];
+            bbox[13] = bbox[1];
+            bbox[14] = bbox[2] + height;
             
-            bbox_[15] = bbox_[3];
-            bbox_[16] = bbox_[4];
-            bbox_[17] = bbox_[5] + height_;
+            bbox[15] = bbox[3];
+            bbox[16] = bbox[4];
+            bbox[17] = bbox[5] + height;
         
-            bbox_[18] = bbox_[6];
-            bbox_[19] = bbox_[7];
-            bbox_[20] = bbox_[8] + height_;
+            bbox[18] = bbox[6];
+            bbox[19] = bbox[7];
+            bbox[20] = bbox[8] + height;
         
-            bbox_[21] = bbox_[9];
-            bbox_[22] = bbox_[10];
-            bbox_[23] = bbox_[11] + height_;
+            bbox[21] = bbox[9];
+            bbox[22] = bbox[10];
+            bbox[23] = bbox[11] + height;
             return;        
         }
 
-        var dot_ = Melown.vec3.dot; 
+        var dot = vec3.dot; 
 
-        if (map_.config_.mapPreciseBBoxTest_ || version_ >= 4) { 
+        if (map.config.mapPreciseBBoxTest || version >= 4) { 
         //if (true) { 
-            var height_ = this.maxZ_ - h;
+            var height = this.maxZ - h;
 
-            if (this.id_[0] <= 3) { //get aabbox for low lods
-                var normalize_ = Melown.vec3.normalize2; 
+            if (this.id[0] <= 3) { //get aabbox for low lods
+                var normalize = vec3.normalize2; 
 
-                normalize_(bbox_, 0, pos_);
-                var d1_ = dot_(normal_, pos_);
+                normalize(bbox, 0, pos);
+                var d1 = dot(normal, pos);
                 
-                normalize_(bbox_, 3, pos_);
-                var d2_ = dot_(normal_, pos_);
+                normalize(bbox, 3, pos);
+                var d2 = dot(normal, pos);
         
-                normalize_(bbox_, 6, pos_);
-                var d3_ = dot_(normal_, pos_);
+                normalize(bbox, 6, pos);
+                var d3 = dot(normal, pos);
         
-                normalize_(bbox_, 9, pos_);
-                var d4_ = dot_(normal_, pos_);
+                normalize(bbox, 9, pos);
+                var d4 = dot(normal, pos);
 
-                var maxDelta_ = Math.min(d1_, d2_, d3_, d4_);
+                var maxDelta = Math.min(d1, d2, d3, d4);
 
-                pos_[0] = (urx_ + llx_)* 0.5; 
-                pos_[1] = ury_; 
-                pos_[2] = h; 
+                pos[0] = (urx + llx)* 0.5; 
+                pos[1] = ury; 
+                pos[2] = h; 
                 
-                divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 12);
+                divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 12);
 
-                pos_[1] = lly_; 
-                divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 15);
+                pos[1] = lly; 
+                divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 15);
 
-                pos_[0] = urx_; 
-                pos_[1] = (ury_ + lly_)* 0.5; 
-                divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 18);
+                pos[0] = urx; 
+                pos[1] = (ury + lly)* 0.5; 
+                divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 18);
 
-                pos_[0] = llx_; 
-                divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 21);
+                pos[0] = llx; 
+                divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 21);
 
-                var mpos_ = this.diskPos_;
-                var maxX_ =  Math.max(bbox_[0], bbox_[3], bbox_[6], bbox_[9], bbox_[12], bbox_[15], bbox_[18], bbox_[21], mpos_[0]);
-                var minX_ =  Math.min(bbox_[0], bbox_[3], bbox_[6], bbox_[9], bbox_[12], bbox_[15], bbox_[18], bbox_[21], mpos_[0]);
+                var mpos = this.diskPos;
+                var maxX = Math.max(bbox[0], bbox[3], bbox[6], bbox[9], bbox[12], bbox[15], bbox[18], bbox[21], mpos[0]);
+                var minX = Math.min(bbox[0], bbox[3], bbox[6], bbox[9], bbox[12], bbox[15], bbox[18], bbox[21], mpos[0]);
                 
-                var maxY_ =  Math.max(bbox_[1], bbox_[4], bbox_[7], bbox_[10], bbox_[13], bbox_[16], bbox_[19], bbox_[22], mpos_[1]);
-                var minY_ =  Math.min(bbox_[1], bbox_[4], bbox_[7], bbox_[10], bbox_[13], bbox_[16], bbox_[19], bbox_[22], mpos_[1]);
+                var maxY = Math.max(bbox[1], bbox[4], bbox[7], bbox[10], bbox[13], bbox[16], bbox[19], bbox[22], mpos[1]);
+                var minY = Math.min(bbox[1], bbox[4], bbox[7], bbox[10], bbox[13], bbox[16], bbox[19], bbox[22], mpos[1]);
                 
-                var maxZ_ =  Math.max(bbox_[2], bbox_[5], bbox_[8], bbox_[11], bbox_[14], bbox_[17], bbox_[20], bbox_[23], mpos_[2]);
-                var minZ_ =  Math.min(bbox_[2], bbox_[5], bbox_[8], bbox_[11], bbox_[14], bbox_[17], bbox_[20], bbox_[23], mpos_[2]);
+                var maxZ = Math.max(bbox[2], bbox[5], bbox[8], bbox[11], bbox[14], bbox[17], bbox[20], bbox[23], mpos[2]);
+                var minZ = Math.min(bbox[2], bbox[5], bbox[8], bbox[11], bbox[14], bbox[17], bbox[20], bbox[23], mpos[2]);
                 
-                if (this.id_[0] <= 1) {
-                    pos_[0] = urx_ + (llx_-urx_ )* 0.25; 
-                    pos_[1] = (ury_ + lly_)* 0.5; 
+                if (this.id[0] <= 1) {
+                    pos[0] = urx + (llx-urx )* 0.25; 
+                    pos[1] = (ury + lly)* 0.5; 
                     
-                    divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 12);
+                    divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 12);
     
-                    pos_[0] = urx_ + (llx_-urx_ )* 0.75; 
-                    divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 15);
+                    pos[0] = urx + (llx-urx )* 0.75; 
+                    divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 15);
     
-                    pos_[0] = (urx_ + llx_)* 0.5; 
-                    pos_[1] = ury_ + (lly_-ury_ )* 0.25; 
-                    divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 18);
+                    pos[0] = (urx + llx)* 0.5; 
+                    pos[1] = ury + (lly-ury )* 0.25; 
+                    divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 18);
     
-                    pos_[1] = ury_ + (lly_-ury_ )* 0.75; 
-                    divisionNode_.getPhysicalCoordsFast(pos_, true, bbox_, 0, 21);
+                    pos[1] = ury + (lly-ury )* 0.75; 
+                    divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 21);
 
-                    maxX_ =  Math.max(maxX_, bbox_[12], bbox_[15], bbox_[18], bbox_[21]);
-                    minX_ =  Math.min(minX_, bbox_[12], bbox_[15], bbox_[18], bbox_[21]);
+                    maxX =  Math.max(maxX, bbox[12], bbox[15], bbox[18], bbox[21]);
+                    minX =  Math.min(minX, bbox[12], bbox[15], bbox[18], bbox[21]);
                     
-                    maxY_ =  Math.max(maxY_, bbox_[13], bbox_[16], bbox_[19], bbox_[22]);
-                    minY_ =  Math.min(minY_, bbox_[13], bbox_[16], bbox_[19], bbox_[22]);
+                    maxY =  Math.max(maxY, bbox[13], bbox[16], bbox[19], bbox[22]);
+                    minY =  Math.min(minY, bbox[13], bbox[16], bbox[19], bbox[22]);
                     
-                    maxZ_ =  Math.max(maxZ_, bbox_[14], bbox_[17], bbox_[20], bbox_[23]);
-                    minZ_ =  Math.min(minZ_, bbox_[14], bbox_[17], bbox_[20], bbox_[23]);
+                    maxZ =  Math.max(maxZ, bbox[14], bbox[17], bbox[20], bbox[23]);
+                    minZ =  Math.min(minZ, bbox[14], bbox[17], bbox[20], bbox[23]);
                 }
 
-                bbox_[0] = minX_; bbox_[1] = minY_; bbox_[2] = minZ_;
-                bbox_[3] = maxX_; bbox_[4] = minY_; bbox_[5] = minZ_;
-                bbox_[6] = maxX_; bbox_[7] = maxY_; bbox_[8] = minZ_;
-                bbox_[9] = minX_; bbox_[10] = maxY_; bbox_[11] = minZ_;
+                bbox[0] = minX; bbox[1] = minY; bbox[2] = minZ;
+                bbox[3] = maxX; bbox[4] = minY; bbox[5] = minZ;
+                bbox[6] = maxX; bbox[7] = maxY; bbox[8] = minZ;
+                bbox[9] = minX; bbox[10] = maxY; bbox[11] = minZ;
 
-                bbox_[12] = minX_; bbox_[13] = minY_; bbox_[14] = maxZ_;
-                bbox_[15] = maxX_; bbox_[16] = minY_; bbox_[17] = maxZ_;
-                bbox_[18] = maxX_; bbox_[19] = maxY_; bbox_[20] = maxZ_;
-                bbox_[21] = minX_; bbox_[22] = maxY_; bbox_[23] = maxZ_;
+                bbox[12] = minX; bbox[13] = minY; bbox[14] = maxZ;
+                bbox[15] = maxX; bbox[16] = minY; bbox[17] = maxZ;
+                bbox[18] = maxX; bbox[19] = maxY; bbox[20] = maxZ;
+                bbox[21] = minX; bbox[22] = maxY; bbox[23] = maxZ;
             } else {
-                var normalize_ = Melown.vec3.normalize3; 
-                var dot_ = Melown.vec3.dot2;
+                var normalize = vec3.normalize3; 
+                var dot = vec3.dot2;
 
-                normalize_(bbox_, 0, bbox_, 12);
-                var d1_ = dot_(normal_, bbox_, 12);
+                normalize(bbox, 0, bbox, 12);
+                var d1 = dot(normal, bbox, 12);
                 
-                normalize_(bbox_, 3, bbox_, 15);
-                var d2_ = dot_(normal_, bbox_, 15);
+                normalize(bbox, 3, bbox, 15);
+                var d2 = dot(normal, bbox, 15);
         
-                normalize_(bbox_, 6, bbox_, 18);
-                var d3_ = dot_(normal_, bbox_, 18);
+                normalize(bbox, 6, bbox, 18);
+                var d3 = dot(normal, bbox, 18);
         
-                normalize_(bbox_, 9, bbox_, 21);
-                var d4_ = dot_(normal_, bbox_, 21);
+                normalize(bbox, 9, bbox, 21);
+                var d4 = dot(normal, bbox, 21);
     
-                var maxDelta_ = Math.min(d1_, d2_, d3_, d4_);
+                var maxDelta = Math.min(d1, d2, d3, d4);
 
                 //extend bbox height by tile curvature 
-                height_ += map_.planetRadius_ - (map_.planetRadius_ * maxDelta_);  
+                height += draw.planetRadius - (draw.planetRadius * maxDelta);  
                 
-                bbox_[12] = bbox_[0] + bbox_[12] * height_;
-                bbox_[13] = bbox_[1] + bbox_[13] * height_;
-                bbox_[14] = bbox_[2] + bbox_[14] * height_;
+                bbox[12] = bbox[0] + bbox[12] * height;
+                bbox[13] = bbox[1] + bbox[13] * height;
+                bbox[14] = bbox[2] + bbox[14] * height;
                 
-                bbox_[15] = bbox_[3] + bbox_[15] * height_;
-                bbox_[16] = bbox_[4] + bbox_[16] * height_;
-                bbox_[17] = bbox_[5] + bbox_[17] * height_;
+                bbox[15] = bbox[3] + bbox[15] * height;
+                bbox[16] = bbox[4] + bbox[16] * height;
+                bbox[17] = bbox[5] + bbox[17] * height;
             
-                bbox_[18] = bbox_[6] + bbox_[18] * height_;
-                bbox_[19] = bbox_[7] + bbox_[19] * height_;
-                bbox_[20] = bbox_[8] + bbox_[20] * height_;
+                bbox[18] = bbox[6] + bbox[18] * height;
+                bbox[19] = bbox[7] + bbox[19] * height;
+                bbox[20] = bbox[8] + bbox[20] * height;
             
-                bbox_[21] = bbox_[9] + bbox_[21] * height_;
-                bbox_[22] = bbox_[10] + bbox_[22] * height_;
-                bbox_[23] = bbox_[11] + bbox_[23] * height_;
+                bbox[21] = bbox[9] + bbox[21] * height;
+                bbox[22] = bbox[10] + bbox[22] * height;
+                bbox[23] = bbox[11] + bbox[23] * height;
             }
         
         } else {
-            var normalize_ = Melown.vec3.normalize2; 
+            var normalize = vec3.normalize2; 
 
-            normalize_(bbox_, 0, pos_);
-            var d1_ = dot_(normal_, pos_);
+            normalize(bbox, 0, pos);
+            var d1 = dot(normal, pos);
             
-            normalize_(bbox_, 3, pos_);
-            var d2_ = dot_(normal_, pos_);
+            normalize(bbox, 3, pos);
+            var d2 = dot(normal, pos);
     
-            normalize_(bbox_, 6, pos_);
-            var d3_ = dot_(normal_, pos_);
+            normalize(bbox, 6, pos);
+            var d3 = dot(normal, pos);
     
-            normalize_(bbox_, 9, pos_);
-            var d4_ = dot_(normal_, pos_);
+            normalize(bbox, 9, pos);
+            var d4 = dot(normal, pos);
 
-            var maxDelta_ = Math.min(d1_, d2_, d3_, d4_);
+            var maxDelta = Math.min(d1, d2, d3, d4);
         }
 
         //get cos angle based at 90deg
-        this.diskAngle_ = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta_)));
-        this.diskAngle2_ = maxDelta_;
+        this.diskAngle = Math.cos(Math.max(0,(Math.PI * 0.5) - Math.acos(maxDelta)));
+        this.diskAngle2 = maxDelta;
+        this.diskAngle2A = Math.acos(maxDelta); //optimalization
 
         //shift center closer to earth
-        //var factor_ = this.bbox_.maxSize_ * 0.2; 
-        //this.diskPos_ = [this.diskPos_[0] - normal_[0] * factor_, this.diskPos_[1]  - normal_[1] * factor_, this.diskPos_[2] - normal_[2] * factor_];   
+        //var factor = this.bbox.maxSize * 0.2; 
+        //this.diskPos = [this.diskPos[0] - normal[0] * factor, this.diskPos[1]  - normal[1] * factor, this.diskPos[2] - normal[2] * factor];   
     } 
 };
 
-Melown.MapMetanode.prototype.getWorldMatrix = function(geoPos_, matrix_) {
+
+MapMetanode.prototype.getWorldMatrix = function(geoPos, matrix) {
     // Note: the current camera geographic position (geoPos) is not necessary
     // here, in theory, but for numerical stability (OpenGL ES is float only)
     // we get rid of the large UTM numbers in the following subtractions. The
     // camera effectively stays in the position [0,0] and the tiles travel
     // around it. (The Z coordinate is fine and is not handled in this way.)
 
-    var m = matrix_;
+    var m = matrix;
 
     if (m != null) {
-        m[0] = this.bbox_.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
-        m[4] = 0; m[5] = this.bbox_.side(1); m[6] = 0; m[7] = 0;
-        m[8] = 0; m[9] = 0; m[10] = this.bbox_.side(2); m[11] = 0;
-        m[12] = this.bbox_.min_[0] - geoPos_[0]; m[13] = this.bbox_.min_[1] - geoPos_[1]; m[14] = this.bbox_.min_[2] - geoPos_[2]; m[15] = 1;
+        m[0] = this.bbox.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
+        m[4] = 0; m[5] = this.bbox.side(1); m[6] = 0; m[7] = 0;
+        m[8] = 0; m[9] = 0; m[10] = this.bbox.side(2); m[11] = 0;
+        m[12] = this.bbox.min[0] - geoPos[0]; m[13] = this.bbox.min[1] - geoPos[1]; m[14] = this.bbox.min[2] - geoPos[2]; m[15] = 1;
     } else {
-        var m = Melown.mat4.create();
+        var m = mat4.create();
 
-        Melown.mat4.multiply( Melown.translationMatrix(this.bbox_.min_[0] - geoPos_[0], this.bbox_.min_[1] - geoPos_[1], this.bbox_.min_[2] - geoPos_[2]),
-                       Melown.scaleMatrix(this.bbox_.side(0), this.bbox_.side(1), this.bbox_.side(2)), m);
+        mat4.multiply( math.translationMatrix(this.bbox.min[0] - geoPos[0], this.bbox.min[1] - geoPos[1], this.bbox.min[2] - geoPos[2]),
+                       math.scaleMatrix(this.bbox.side(0), this.bbox.side(1), this.bbox.side(2)), m);
     }
 
     return m;
 };
 
-Melown.MapMetanode.prototype.drawBBox = function(cameraPos_) {
-    if (this.metatile_.useVersion_ >= 4) {
-        return this.drawBBox2(cameraPos_);
+
+MapMetanode.prototype.drawBBox = function(cameraPos) {
+    if (this.metatile.useVersion >= 4) {
+        return this.drawBBox2(cameraPos);
     }
 
-    var renderer_ = this.map_.renderer_;
+    var renderer = this.map.renderer;
 
-    renderer_.gpu_.useProgram(renderer_.progBBox_, ["aPosition"]);
+    renderer.gpu.useProgram(renderer.progBBox, ["aPosition"]);
 
-    var mvp_ = Melown.mat4.create();
-    var mv_ = Melown.mat4.create();
+    var mvp = mat4.create();
+    var mv = mat4.create();
 
-    Melown.mat4.multiply(renderer_.camera_.getModelviewMatrix(), this.getWorldMatrix(cameraPos_), mv_);
+    mat4.multiply(renderer.camera.getModelviewMatrix(), this.getWorldMatrix(cameraPos), mv);
 
-    var proj_ = renderer_.camera_.getProjectionMatrix();
-    Melown.mat4.multiply(proj_, mv_, mvp_);
+    var proj = renderer.camera.getProjectionMatrix();
+    mat4.multiply(proj, mv, mvp);
 
-    renderer_.progBBox_.setMat4("uMVP", mvp_);
+    renderer.progBBox.setMat4("uMVP", mvp);
 
     //draw bbox
-    renderer_.bboxMesh_.draw(renderer_.progBBox_, "aPosition");
-
+    renderer.bboxMesh.draw(renderer.progBBox, "aPosition");
 };
 
-Melown.MapMetanode.prototype.drawBBox2 = function(cameraPos_) {
-    var spoints_ = []; 
-    //for (var i = 0, li = this.bbox2_.length; i < li; i++) {
-        //var pos_ = this.bbox2_[i];
-        //pos_ = ["obj", pos_[0], pos_[1], "fix", pos_[2], 0, 0, 0, 10, 90 ];
+
+MapMetanode.prototype.drawBBox2 = function(cameraPos) {
+    var spoints = []; 
+    //for (var i = 0, li = this.bbox2.length; i < li; i++) {
+        //var pos = this.bbox2[i];
+        //pos = ["obj", pos[0], pos[1], "fix", pos[2], 0, 0, 0, 10, 90 ];
         
-    var bbox_ = this.bbox2_;
+    var bbox = this.bbox2;
+    var buffer = this.map.draw.bboxBuffer;
+    var camPos = this.map.camera.position;
+    var renderer = this.map.renderer;
+    var prog = renderer.progBBox2;
 
     for (var i = 0, li = 8*3; i < li; i+=3) {
-        var pos_ = ["obj", bbox_[i], bbox_[i+1], "fix", bbox_[i+2], 0, 0, 0, 10, 90 ];
+        //var pos = ["obj", bbox[i], bbox[i+1], "fix", bbox[i+2], 0, 0, 0, 10, 90 ];
+        //var coords = this.map.convert.getPositionCameraCoords((new MapPosition(pos)), null, true);
 
-        spoints_.push((new Melown.MapPosition(this.map_, pos_)).getCanvasCoords(null, true));
+        buffer[i] = bbox[i] - camPos[0];
+        buffer[i+1] = bbox[i+1] - camPos[1];
+        buffer[i+2] = bbox[i+2] - camPos[2];
     }
     
-    var renderer_ = this.map_.renderer_;
-    renderer_.drawLineString([spoints_[0], spoints_[1], spoints_[2], spoints_[3], spoints_[0] ], 2, [0,1,0.5,255], false, false, true);
-    renderer_.drawLineString([spoints_[4], spoints_[5], spoints_[6], spoints_[7], spoints_[4] ], 2, [0,1,0.5,255], false, false, true);
 
-    renderer_.drawLineString([spoints_[0], spoints_[4]], 2, [0,1,0.5,255], false, false, true);
-    renderer_.drawLineString([spoints_[1], spoints_[5]], 2, [0,1,0.5,255], false, false, true);
-    renderer_.drawLineString([spoints_[2], spoints_[6]], 2, [0,1,0.5,255], false, false, true);
-    renderer_.drawLineString([spoints_[3], spoints_[7]], 2, [0,1,0.5,255], false, false, true);
+    renderer.gpu.useProgram(prog, ["aPosition"]);
 
+    prog.setFloatArray("uPoints", buffer);
+
+    //var mvp = mat4.create();
+    //var mv = mat4.create();
+
+    //mat4.multiply(renderer.camera.getModelviewMatrix(), this.getWorldMatrix(cameraPos), mv);
+
+    //var proj = renderer.camera.getProjectionMatrix();
+    //mat4.multiply(proj, mv, mvp);
+
+    var mvp = renderer.camera.getMvpMatrix();
+
+    prog.setMat4("uMVP", mvp);
+
+    //draw bbox
+    renderer.bboxMesh2.draw(prog, "aPosition");
 };
 
-Melown.MapMetanode.prototype.drawPlane = function(cameraPos_, tile_) {
-    var renderer_ = this.map_.renderer_;
-    var buffer_ = this.map_.planeBuffer_;
-    var points_ = this.plane_;
+/*
+MapMetanode.prototype.drawBBox3 = function(cameraPos) {
+    var spoints = []; 
+    //for (var i = 0, li = this.bbox2.length; i < li; i++) {
+        //var pos = this.bbox2[i];
+        //pos = ["obj", pos[0], pos[1], "fix", pos[2], 0, 0, 0, 10, 90 ];
+        
+    var bbox = this.bbox2;
+
+    for (var i = 0, li = 8*3; i < li; i+=3) {
+        var pos = ["obj", bbox[i], bbox[i+1], "fix", bbox[i+2], 0, 0, 0, 10, 90 ];
+
+        spoints.push(this.map.convert.getPositionCanvasCoords((new MapPosition(pos)), null, true));
+    }
     
-    if (!points_) {
+    var renderer = this.map.renderer;
+    renderer.drawLineString([spoints[0], spoints[1], spoints[2], spoints[3], spoints[0] ], 2, [0,1,0.5,255], false, false, true);
+    renderer.drawLineString([spoints[4], spoints[5], spoints[6], spoints[7], spoints[4] ], 2, [0,1,0.5,255], false, false, true);
+
+    renderer.drawLineString([spoints[0], spoints[4]], 2, [0,1,0.5,255], false, false, true);
+    renderer.drawLineString([spoints[1], spoints[5]], 2, [0,1,0.5,255], false, false, true);
+    renderer.drawLineString([spoints[2], spoints[6]], 2, [0,1,0.5,255], false, false, true);
+    renderer.drawLineString([spoints[3], spoints[7]], 2, [0,1,0.5,255], false, false, true);
+};*/
+
+
+MapMetanode.prototype.drawPlane = function(cameraPos, tile) {
+    var renderer = this.map.renderer;
+    var buffer = this.map.draw.planeBuffer;
+    var points = this.plane;
+    
+    if (!points) {
         return;
     }
 
-    renderer_.gpu_.useProgram(renderer_.progPlane_, ["aPosition", "aTexCoord"]);
+    renderer.gpu.useProgram(renderer.progPlane, ["aPosition", "aTexCoord"]);
 
-    var mvp_ = Melown.mat4.create();
-    var mv_ = renderer_.camera_.getModelviewMatrix();
-    var proj_ = renderer_.camera_.getProjectionMatrix();
-    Melown.mat4.multiply(proj_, mv_, mvp_);
+    var mvp = mat4.create();
+    var mv = renderer.camera.getModelviewMatrix();
+    var proj = renderer.camera.getProjectionMatrix();
+    mat4.multiply(proj, mv, mvp);
     
-    var sx_ = cameraPos_[0];
-    var sy_ = cameraPos_[1];
-    var sz_ = cameraPos_[2];
+    var sx = cameraPos[0];
+    var sy = cameraPos[1];
+    var sz = cameraPos[2];
 
     for (var i = 0; i < 9; i++) {
-        var index_ = i*3;
-        buffer_[index_] = points_[index_] - sx_; 
-        buffer_[index_+1] = points_[index_+1] - sy_; 
-        buffer_[index_+2] = points_[index_+2] - sz_; 
+        var index = i*3;
+        buffer[index] = points[index] - sx; 
+        buffer[index+1] = points[index+1] - sy; 
+        buffer[index+2] = points[index+2] - sz; 
     }
     
-    var prog_ = renderer_.progPlane_; 
+    var prog = renderer.progPlane; 
 
-    prog_.setMat4("uMV", mv_);
-    prog_.setMat4("uProj", proj_);
-    prog_.setFloatArray("uPoints", buffer_);
+    prog.setMat4("uMV", mv);
+    prog.setMat4("uProj", proj);
+    prog.setFloatArray("uPoints", buffer);
 
-    var minTile_ = 32;
-    var embed_ = 8;
-    var altitude_ = Math.max(10, tile_.distance_ + 20);
-    var gridSelect_ = (Math.log(altitude_) / Math.log(embed_));
-    var step1_ = 4;//(Math.pow(embed_, Math.floor(gridSelect_)));
-    var step2_ = 8;//(Math.pow(embed_, Math.ceil(gridSelect_)));
-    var blend_ = (gridSelect_ - Math.floor(gridSelect_));
-    //var blend_ = 0;
+    var minTile = 32;
+    var embed = 8;
+    var altitude = Math.max(10, tile.distance + 20);
+    var gridSelect = (Math.log(altitude) / Math.log(embed));
+    var step1 = 4;//(Math.pow(embed, Math.floor(gridSelect)));
+    var step2 = 8;//(Math.pow(embed, Math.ceil(gridSelect)));
+    var blend = (gridSelect - Math.floor(gridSelect));
+    //var blend = 0;
 
-    //prog_.setVec4("uParams", [0,0,1/15,0]);
-    //prog_.setVec4("uParams", [(minTile_ / step1_),0,1/15,(minTile_ / step2_)]);
-    prog_.setVec4("uParams", [step1_, 0, 1/15, step2_]);
+    //prog.setVec4("uParams", [0,0,1/15,0]);
+    //prog.setVec4("uParams", [(minTile / step1),0,1/15,(minTile / step2)]);
+    prog.setVec4("uParams", [step1, 0, 1/15, step2]);
 
-    //prog_.setVec4("uParams2", [(minTile_ / step1_), (minTile_ / step2_), blend_, 0]);
-    prog_.setVec4("uParams2", [0, 0, blend_, 0]);
+    //prog.setVec4("uParams2", [(minTile / step1), (minTile / step2), blend, 0]);
+    prog.setVec4("uParams2", [0, 0, blend, 0]);
 
-    renderer_.gpu_.bindTexture(renderer_.heightmapTexture_);
+    renderer.gpu.bindTexture(renderer.heightmapTexture);
     
     //draw bbox
-    renderer_.planeMesh_.draw(renderer_.progPlane_, "aPosition", "aTexCoord");
+    renderer.planeMesh.draw(renderer.progPlane, "aPosition", "aTexCoord");
 };
 
+
+export default MapMetanode;
 

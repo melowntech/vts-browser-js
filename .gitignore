@@ -1,4 +1,4 @@
-build/*
+debug/*
 node_modules
 build/*
 build/*.js

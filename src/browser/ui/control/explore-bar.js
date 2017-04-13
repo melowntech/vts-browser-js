@@ -1,34 +1,40 @@
-Melown.ExploreBar = function(browser_) {
-    this.browser_ = browser_;
+
+var ExploreBar = function(browser) {
+    this.browser = browser;
 
     // state properties
-    this._position = null;
+    this.position = null;
 
-    this._init();
+    this.init();
 };
 
 // Accessor methods
 
-Melown.ExploreBar.prototype.position = function(position) {
+ExploreBar.prototype.position = function(position) {
     if (position === undefined) {
-        return this.position_;
+        return this.position;
     }
 };
 
-Melown.ExploreBar.prototype.rois = function() {
+
+ExploreBar.prototype.rois = function() {
 
 };
 
 // Private methods
 
-Melown.ExploreBar.prototype._init = function() {
+ExploreBar.prototype.init = function() {
     // check browser
     // read config
     // prepare UI
     // hook on
-    this.browser_.on('positionchanged', this._positionChanged.bind(this));
+    this.browser.on('positionchanged', this.positionChanged.bind(this));
 };
 
-Melown.ExploreBar.prototype._positionChanged = function(event) {
+
+ExploreBar.prototype.positionChanged = function(event) {
 
 };
+
+
+export default ExploreBar;

@@ -1,4 +1,4 @@
-.melown-presenter.panelContainer {
+.vts-presenter.panelContainer {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -13,7 +13,7 @@
     transition: opacity 1s ease;   
 }
 
-.melown-presenter.toolboxContainer {
+.vts-presenter.toolboxContainer {
     position: absolute;
     min-height: 50px;
     overflow: hidden;
@@ -25,7 +25,7 @@
     transition: all 0.6s ease;
 }
 
-.melown-presenter.toolboxContainer article {
+.vts-presenter.toolboxContainer article {
     position: relative;
     padding: 0;
     margin-top: 20px;
@@ -35,11 +35,11 @@
     transition: all 0.6s ease;
 }
 
-.melown-presenter.toolboxContainer article.nonFirst {
+.vts-presenter.toolboxContainer article.nonFirst {
     margin-top: -60px;
 }
 
-.melown-presenter.toolboxContainer section {
+.vts-presenter.toolboxContainer section {
     font-family: 'Open Sans',Verdana,Arial,Tahoma,Calibri,Geneva,sans-serif;
     font-weight: 300;
     font-size: 13px;
@@ -51,7 +51,7 @@
     vertical-align: top;
 }
 
-.melown-presenter.panelContainer div.swipeControl {
+.vts-presenter.panelContainer div.swipeControl {
     position: absolute;
     top: 70px;
     height: 60px;
@@ -64,24 +64,24 @@
     transition: all 0.6s ease;
 }
 
-.melown-presenter.panelContainer div.swipeControl.top {
+.vts-presenter.panelContainer div.swipeControl.top {
     top : 0;
 }
 
-.melown-presenter.toolboxContainer img {
+.vts-presenter.toolboxContainer img {
     max-width: 295px;
     border-radius: 3px;
     border: double 5px rgb(216, 216, 216);
 }
 
-.melown-presenter .melown-presenter-btnUp {
+.vts-presenter .vts-presenter-btnUp {
     position: absolute;
     bottom: 15px;
     left: 50%;
     margin-left: -70px;
 }
 
-.melown-presenter .melown-presenter-btnUp div, .melown-presenter .melown-presenter-btnDw div {
+.vts-presenter .vts-presenter-btnUp div, .vts-presenter .vts-presenter-btnDw div {
     position: absolute;
     top: 0;
     width: 100%;
@@ -92,7 +92,7 @@
     transition: all 0.3s ease;
 }
 
-.melown-presenter .melown-presenter-btnUp div div, .melown-presenter .melown-presenter-btnDw div div {
+.vts-presenter .vts-presenter-btnUp div div, .vts-presenter .vts-presenter-btnDw div div {
     background-color: #000;
     width: 20px;
     height: 20px;
@@ -105,59 +105,59 @@
     box-shadow: 0 0 2px #000;
 }
 
-.melown-presenter .melown-presenter-btnUp div div {
+.vts-presenter .vts-presenter-btnUp div div {
     top: 6px;
 }
 
-.melown-presenter .melown-presenter-btnUp div:hover {
+.vts-presenter .vts-presenter-btnUp div:hover {
     top: -2px;
 }
 
-.melown-presenter .melown-presenter-btnDw div:hover {
+.vts-presenter .vts-presenter-btnDw div:hover {
     top: 2px;
 }
 
-.melown-presenter .melown-presenter-btnUp div div:hover {
+.vts-presenter .vts-presenter-btnUp div div:hover {
     top: 6px;
 }
 
-.melown-presenter .melown-presenter-btnDw div div:hover {
+.vts-presenter .vts-presenter-btnDw div div:hover {
     top: -8px;
 }
 
-.melown-presenter .melown-presenter-btnDw {
+.vts-presenter .vts-presenter-btnDw {
     position: absolute;
     top: 23px;
     left: 50%;
     margin-left: -70px;
 }
 
-.melown-presenter.toolboxContainer section.hidden {
+.vts-presenter.toolboxContainer section.hidden {
     max-height: 0px;
     margin-bottom: 0;
     margin-top: 0;
 }
 
-.melown-presenter.toolboxContainer section h3 {
+.vts-presenter.toolboxContainer section h3 {
     font-weight: 300;
     font-size: 18px;
     margin: 0;
     padding: 15px 0 15px;
 }
 
-.melown-presenter.toolboxContainer section h4 {
+.vts-presenter.toolboxContainer section h4 {
     margin: 0;
     padding: 10px 0 10px 0;
     font-size: 15px;
 }
 
-.melown-presenter.toolboxContainer section a, .melown-presenter.toolboxContainer section p a {
+.vts-presenter.toolboxContainer section a, .vts-presenter.toolboxContainer section p a {
     color: #0066ff;
     text-decoration: none;
     cursor: pointer;
 }
 
-.melown-presenter.toolboxContainer section a:hover, .melown-presenter.toolboxContainer section p a:hover {
+.vts-presenter.toolboxContainer section a:hover, .vts-presenter.toolboxContainer section p a:hover {
     text-decoration: underline;
     cursor: pointer;
 }

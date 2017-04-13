@@ -1,13 +1,13 @@
-/**
- * @constructor
- */
-Melown.UIControlLogo = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.control_ = this.ui_.addControl("logo",
-      '<a class="melown-logo"'
+
+var UIControlLogo = function(ui, visible) {
+    this.ui = ui;
+    this.control = this.ui.addControl("logo",
+      '<a class="vts-logo"'
       + ' href="https://melown.com">'
       + 'Powered by MELOWN'
-      + '</a>', visible_);
+      + '</a>', visible);
 };
 
+
+export default UIControlLogo;
 

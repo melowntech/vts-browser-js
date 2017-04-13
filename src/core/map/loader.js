@@ -1,188 +1,194 @@
-/**
- * @constructor
- */
-Melown.MapLoader = function(map_, maxThreads_) {
-    this.map_ = map_;
 
-    this.maxThreads_ = maxThreads_ || 1;
-    this.usedThreads_ = 0;
-    this.maxPending_ = this.maxThreads_ * 2;
-    this.fadeout_ = 19 / 20;
+var MapLoader = function(map, maxThreads) {
+    this.map = map;
 
-    this.pending_ = [[],[]];
-    this.channel_ = 0;
+    this.maxThreads = maxThreads || 1;
+    this.usedThreads = 0;
+    this.maxPending = this.maxThreads * 2;
+    this.fadeout = 19 / 20;
 
-    this.downloading_ = [];
-    this.downloadingTime_ = [];
-    this.lastDownloadTime_ = 0;
-    this.downloaded_ = 0;
+    this.pending = [[],[]];
+    this.channel = 0;
+
+    this.downloading = [];
+    this.downloadingTime = [];
+    this.lastDownloadTime = 0;
+    this.downloaded = 0;
     this.updateThreadCount();
 };
 
-Melown.MapLoader.prototype.updateThreadCount = function(channel_) {
-    this.maxThreads_ = this.map_.config_.mapDownloadThreads_;
-    this.maxPending_ = Math.max(20, this.maxThreads_ * 2);
-    this.fadeout_ = (this.maxPending_-1) / this.maxPending_;
+
+MapLoader.prototype.updateThreadCount = function(channel) {
+    this.maxThreads = this.map.config.mapDownloadThreads;
+    this.maxPending = Math.max(20, this.maxThreads * 2);
+    this.fadeout = (this.maxPending-1) / this.maxPending;
 };
 
-Melown.MapLoader.prototype.setChannel = function(channel_) {
-    this.channel_ = channel_;
+
+MapLoader.prototype.setChannel = function(channel) {
+    this.channel = channel;
 };
 
-Melown.MapLoader.prototype.load = function(path_, downloadFunction_, priority_, id_, kind_) {
-    var index_ = this.downloading_.indexOf(path_);
 
-    if (index_ != -1) {
+MapLoader.prototype.load = function(path, downloadFunction, priority, id, kind) {
+    var index = this.downloading.indexOf(path);
+
+    if (index != -1) {
         return;
     }
 
     // update the pending list
-    var pending_ = this.pending_[this.channel_];
+    var pending = this.pending[this.channel];
 
    // put the request to the beginning of the pending list
-    var index_ = this.map_.searchArrayIndexById(pending_, path_);
-    if (index_ != -1) {
-        pending_[index_].priority_ = priority_; 
+    var index = this.map.searchArrayIndexById(pending, path);
+    if (index != -1) {
+        pending[index].priority = priority; 
     } else {
-        pending_.unshift({id_:path_, call_: downloadFunction_, priority_ : (priority_ || 0), tile_:id_, kind_:kind_ });
+        pending.unshift({id:path, call: downloadFunction, priority : (priority || 0), tile:id, kind:kind });
     }
 
     //sort pending list by priority
     do {
-        var sorted_ = true;
+        var sorted = true;
         
-        for (var i = 0, li = pending_.length - 1; i < li; i++) {
-            if (pending_[i].priority_ > pending_[i+1].priority_) {
-                var t = pending_[i];
-                pending_[i] = pending_[i+1];
-                pending_[i+1] = t;
+        for (var i = 0, li = pending.length - 1; i < li; i++) {
+            if (pending[i].priority > pending[i+1].priority) {
+                var t = pending[i];
+                pending[i] = pending[i+1];
+                pending[i+1] = t;
     
-                sorted_ = false;
+                sorted = false;
             } 
         }
         
-    } while(!sorted_);
+    } while(!sorted);
 
     // keep the pending list at reasonable length
-    if (pending_.length > this.maxPending_) {
-        pending_.pop();
+    if (pending.length > this.maxPending) {
+        pending.pop();
     }
 };
 
 
-
-Melown.MapLoader.prototype.remove = function(path_) {
-    var index_ = this.map_.searchArrayIndexById(this.pending_[this.channel_], path_);
-    if (index_ != -1) {
-        this.pending_[this.channel_].splice(index_, 1);
+MapLoader.prototype.remove = function(path) {
+    var index = this.map.searchArrayIndexById(this.pending[this.channel], path);
+    if (index != -1) {
+        this.pending[this.channel].splice(index, 1);
     }
 };
 
-Melown.MapLoader.prototype.onLoaded = function(item_) {
-    var index_ = this.downloading_.indexOf(item_.id_);
-    var timer_ = performance.now();
-    var stats_ = this.map_.stats_;
-    var recordStats_ = this.map_.replay_.storeLoaded_;
 
-    if (recordStats_) {
-        this.map_.replay_.loaded_.push({
-            url_ : item_.id_,
-            kind_ : item_.kind_,
-            tile_: item_.tile_,
-            priority_ : item_.priority_,
-            time_ : timer_,
-            duration_ : timer_ - this.downloadingTime_[index_],
-            interval_ : timer_ - this.lastDownloadTime_,
-            threads_ : this.downloading_.length
+MapLoader.prototype.onLoaded = function(item) {
+    var index = this.downloading.indexOf(item.id);
+    var timer = performance.now();
+    var stats = this.map.stats;
+    var recordStats = this.map.draw.replay.storeLoaded;
+
+    if (recordStats) {
+        this.map.draw.replay.loaded.push({
+            url : item.id,
+            kind : item.kind,
+            tile: item.tile,
+            priority : item.priority,
+            time : timer,
+            duration : timer - this.downloadingTime[index],
+            interval : timer - this.lastDownloadTime,
+            threads : this.downloading.length
         });
 
-        var a = (timer_ - this.downloadingTime_[index_]);
+        var a = (timer - this.downloadingTime[index]);
         if (Number.isNaN(a)) {
             a = a; 
         }
 
     }
 
-    this.downloading_.splice(index_, 1);
-    this.downloadingTime_.splice(index_, 1);
-    //this.lastDownloadTime_ = Date.now();
-    this.lastDownloadTime_ = timer_;
-    this.usedThreads_--;
-    this.map_.markDirty();
+    this.downloading.splice(index, 1);
+    this.downloadingTime.splice(index, 1);
+    //this.lastDownloadTime = Date.now();
+    this.lastDownloadTime = timer;
+    this.usedThreads--;
+    this.map.markDirty();
     this.update();
-    stats_.loadedCount_++;
-    stats_.loadLast_ = timer_;
+    stats.loadedCount++;
+    stats.loadLast = timer;
 };
 
-Melown.MapLoader.prototype.onLoadError = function(item_) {
-    var index_ = this.downloading_.indexOf(item_.id_);
-    var timer_ = performance.now();
-    var stats_ = this.map_.stats_;
-    var recordStats_ = this.map_.replay_.storeLoaded_;
 
-    if (recordStats_) {
-        this.map_.replay_.loaded_.push({
-            url_ : item_.id_,
-            kind_ : item_.kind_,
-            tile_: item_.tile_,
-            priority_ : item_.priority_,
-            time_ : timer_,
-            duration_ : timer_ - this.downloadingTime_[index_],
-            interval_ : timer_ - this.lastDownloadTime_,
-            threads_ : this.downloading_.length
+MapLoader.prototype.onLoadError = function(item) {
+    var index = this.downloading.indexOf(item.id);
+    var timer = performance.now();
+    var stats = this.map.stats;
+    var recordStats = this.map.draw.replay.storeLoaded;
+
+    if (recordStats) {
+        this.map.draw.replay.loaded.push({
+            url : item.id,
+            kind : item.kind,
+            tile: item.tile,
+            priority : item.priority,
+            time : timer,
+            duration : timer - this.downloadingTime[index],
+            interval : timer - this.lastDownloadTime,
+            threads : this.downloading.length
         });
     }
 
-    this.downloading_.splice(index_, 1);
-    this.downloadingTime_.splice(index_, 1);
-    //this.lastDownloadTime_ = Date.now();
-    this.lastDownloadTime_ = timer_;
-    this.usedThreads_--;
-    this.map_.markDirty();
+    this.downloading.splice(index, 1);
+    this.downloadingTime.splice(index, 1);
+    //this.lastDownloadTime = Date.now();
+    this.lastDownloadTime = timer;
+    this.usedThreads--;
+    this.map.markDirty();
     this.update();
-    stats_.loadErrorCount_++;
-    stats_.loadLast_ = timer_;
+    stats.loadErrorCount++;
+    stats.loadLast = timer;
 };
 
 
-Melown.MapLoader.prototype.updateChannel = function(channel_) {
-    var pending_ = this.pending_[channel_];
+MapLoader.prototype.updateChannel = function(channel) {
+    var pending = this.pending[channel];
     this.updateThreadCount();
 
     //reduce priority for pending stuff
-    for (var i = 0, li = pending_.length; i < li; i++) {
-        pending_[i].priority_ *= this.fadeout_;
+    for (var i = 0, li = pending.length; i < li; i++) {
+        pending[i].priority *= this.fadeout;
     }
 
-    var timer_ = performance.now();
-    var stats_ = this.map_.stats_;
+    var timer = performance.now();
+    var stats = this.map.stats;
 
-    var recordStats_ = this.map_.replay_.storeLoaded_;
+    var recordStats = this.map.draw.replay.storeLoaded;
 
-    while (pending_.length > 0 && this.usedThreads_ < this.maxThreads_) {
-        var item_ = pending_.shift();
+    while (pending.length > 0 && this.usedThreads < this.maxThreads) {
+        var item = pending.shift();
 
-        if (this.downloading_.indexOf(item_.id_) == -1 && item_.call_ != null) {
-            this.downloading_.push(item_.id_);
-            this.downloadingTime_.push(timer_);
-            this.usedThreads_++;
-            this.downloaded_++;
+        if (this.downloading.indexOf(item.id) == -1 && item.call != null) {
+            this.downloading.push(item.id);
+            this.downloadingTime.push(timer);
+            this.usedThreads++;
+            this.downloaded++;
 
-            item_.call_(item_.id_, this.onLoaded.bind(this, item_), this.onLoadError.bind(this, item_));
+            item.call(item.id, this.onLoaded.bind(this, item), this.onLoadError.bind(this, item));
         }
     }
 };
 
-Melown.MapLoader.prototype.update = function() {
-    if (this.map_.loaderSuspended_) {
+
+MapLoader.prototype.update = function() {
+    if (this.map.loaderSuspended) {
         return;
     }
 
-    for (var i = this.pending_.length - 1; i >= 0; i--) {
-        if (this.pending_[i].length > 0) {
+    for (var i = this.pending.length - 1; i >= 0; i--) {
+        if (this.pending[i].length > 0) {
             this.updateChannel(i);
             break;
         }
     }
 };
+
+
+export default MapLoader;
 

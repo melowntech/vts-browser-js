@@ -1,128 +1,135 @@
 
-/**
- * @constructor
- */
-Melown.GpuFont = function(gpu_, core_, font_, size_) {
-    this.bbox_ = null;
-    this.gpu_ = gpu_;
-    this.gl_ = gpu_.gl_;
-    this.core_ = core_;
+import GpuTexture_ from './texture';
 
-    this.chars_ = [];
-    this.space_ = 0;
-    this.font_ = font_;
-    this.size_ = size_;
-    this.image_ = null;
-    this.texture_ = null;
+//get rid of compiler mess
+var GpuTexture = GpuTexture_;
 
-    this.generate(font_, size_);
+
+var GpuFont = function(gpu, core, font, size) {
+    this.bbox = null;
+    this.gpu = gpu;
+    this.gl = gpu.gl;
+    this.core = core;
+
+    this.chars = [];
+    this.space = 0;
+    this.font = font;
+    this.size = size;
+    this.image = null;
+    this.texture = null;
+
+    this.generate(font, size);
 };
+
 
 //destructor
-Melown.GpuFont.prototype.kill = function() {
-
+GpuFont.prototype.kill = function() {
 };
 
-Melown.GpuFont.prototype.generate = function(font_, size_) {
-    if (font_ == null) {
-        font_ = "Arial, 'Helvetica Neue', Helvetica, sans-serif"; //"Calibri";
+
+GpuFont.prototype.generate = function(font, size) {
+    if (font == null) {
+        font = "Arial, 'Helvetica Neue', Helvetica, sans-serif"; //"Calibri";
     }
 
-    if (size_ == null) {
-        size_ = 10;
+    if (size == null) {
+        size = 10;
     }
 
-    var textureLX_ = 512;
-    var textureLY_ = 512;
-    var fx = 1.0 / textureLX_;
-    var fy = 1.0 / textureLY_;
+    var textureLX = 512;
+    var textureLY = 512;
+    var fx = 1.0 / textureLX;
+    var fy = 1.0 / textureLY;
 
-    var canvas_ = document.createElement('canvas');
-    canvas_.width = textureLX_;
-    canvas_.height = textureLY_;
+    var canvas = document.createElement('canvas');
+    canvas.width = textureLX;
+    canvas.height = textureLY;
 
-    var ctx_ = canvas_.getContext('2d');
+    var ctx = canvas.getContext('2d');
 
-    //utDrawFilledRect(0, 0, _textureLX, _textureLY, [0,0,0,255]);
+    //utDrawFilledRect(0, 0, textureLX, textureLY, [0,0,0,255]);
 
-    var _fontSize = 10;
-    ctx_.beginPath();
-    ctx_.font = size_ + "pt " + font_;
-    ctx_.textAlign = "left";
-    ctx_.textBaseline = "top";
-//  ctx_.fillStyle = "@white";
-//    ctx_.fillStyle = [0,0,0,255];
-    ctx_.fillStyle = "#ffffff";
-    ctx_.strokeStyle = "#000000";
-    ctx_.lineWidth = 5;
-    ctx_.lineCap = "round";
-    ctx_.lineJoin = "round";
+    var fontSize = 10;
+    ctx.beginPath();
+    ctx.font = size + "pt " + font;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+//  ctx.fillStyle = "@white";
+//    ctx.fillStyle = [0,0,0,255];
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
-    var lineSpace_ = Math.round(ctx_.lineWidth*0.5);
+    var lineSpace = Math.round(ctx.lineWidth*0.5);
 
-    var space_ = ctx_.lineWidth+2;
-    var x = space_;
-    var y = space_;
+    var space = ctx.lineWidth+2;
+    var x = space;
+    var y = space;
 
 
-    var cly = Math.floor(ctx_.measureText("e").width * 2.5);
-    var clxe = Math.floor(ctx_.measureText("e").width);
-    //var clxe = Math.floor(ctx_.measureText("ee").width);
+    var cly = Math.floor(ctx.measureText("e").width * 2.5);
+    var clxe = Math.floor(ctx.measureText("e").width);
+    //var clxe = Math.floor(ctx.measureText("ee").width);
 
-    this.chars_ = [];
-    this.space_ = cly;
-    this.size_ = size_;
-    this.font_ = font_;
+    this.chars = [];
+    this.space = cly;
+    this.size = size;
+    this.font = font;
 
-    var codes_ = [];
+    var codes = [];
 
     for (var i = 33; i < 191; i++) {
-        codes_.push(i);
+        codes.push(i);
     }
 
     for (var i = 192; i < 688; i++) {
-        codes_.push(i);
+        codes.push(i);
     }
 
-    codes_ = codes_.concat(0x20, 0x2026, 0x2018, 0x2019, 0x201a, 0x201b, 0x201c, 0x201d, 0x201e, 0x2032, 0x2033, 0x203c);
+    codes = codes.concat(0x20, 0x2026, 0x2018, 0x2019, 0x201a, 0x201b, 0x201c, 0x201d, 0x201e, 0x2032, 0x2033, 0x203c);
 
-    for (var i = 0, li = codes_.length; i < li; i++) {
-        var c = String.fromCharCode(codes_[i]);
-        var clx2 = Math.round(ctx_.measureText(c).width);
-        var clx = clx2 + ctx_.lineWidth;
+    for (var i = 0, li = codes.length; i < li; i++) {
+        var c = String.fromCharCode(codes[i]);
+        var clx2 = Math.round(ctx.measureText(c).width);
+        var clx = clx2 + ctx.lineWidth;
 
-        if (x + clx2 + space_ >= textureLX_) {
-            x = space_;
-            y += cly + space_;
+        if (x + clx2 + space >= textureLX) {
+            x = space;
+            y += cly + space;
         }
 
-        ctx_.strokeText(c, x+lineSpace_, y);
-        ctx_.fillText(c, x+lineSpace_, y);
+        ctx.strokeText(c, x+lineSpace, y);
+        ctx.fillText(c, x+lineSpace, y);
 
-        this.chars_[codes_[i]] = {
+        this.chars[codes[i]] = {
                 u1 : x * fx,
                 v1 : y * fy,
                 u2 : (x + clx) * fx,
                 v2 : (y + cly) * fy,
                 lx : clx,
                 ly : cly,
-                step_ : (clx-2)
+                step : (clx-2)
             };
 
-        x += clx + space_;
+        x += clx + space;
     }
 
-    this.image_ = ctx_.getImageData(0, 0, textureLX_, textureLY_);
+    this.image = ctx.getImageData(0, 0, textureLX, textureLY);
 
-    this.texture_ = new Melown.GpuTexture(this.gpu_, null);
-    //this.texture_.createFromData(textureLX_, textureLY_, this.image_);
-    this.texture_.createFromImage(this.image_, "linear");
-    this.texture_.width_ = textureLX_;
-    this.texture_.height_ = textureLY_;
-    this.texture_.size_ = textureLX_ * textureLY_ * 4;
+    this.texture = new GpuTexture(this.gpu, null);
+    //this.texture.createFromData(textureLX, textureLY, this.image);
+    this.texture.createFromImage(this.image, "linear");
+    this.texture.width = textureLX;
+    this.texture.height = textureLY;
+    this.texture.size = textureLX * textureLY * 4;
 };
 
-//! Returns GPU RAM used, in bytes.
-Melown.GpuFont.prototype.size = function(){ return this.size_; };
+// Returns GPU RAM used, in bytes.
+GpuFont.prototype.size = function(){ return this.size; };
+
+
+export default GpuFont;
 
 

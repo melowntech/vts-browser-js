@@ -1,141 +1,142 @@
-/**
- * @constructor
- */
-Melown.UIControlCredits = function(ui_, visible_) {
-    this.ui_ = ui_;
-    this.browser_ = ui_.browser_;
-    this.control_ = this.ui_.addControl("credits",
-      '<div id="melown-credits"'
-      + ' class="melown-credits">'
-      + ' </div>', visible_);
 
-    this.lastHTML_ = "";
-    this.lastHTML2_ = "";
-    this.lastHTML3_ = "";
-    this.credits_ = this.control_.getElement("melown-credits");
+var UIControlCredits = function(ui, visible) {
+    this.ui = ui;
+    this.browser = ui.browser;
+    this.control = this.ui.addControl("credits",
+      '<div id="vts-credits"'
+      + ' class="vts-credits">'
+      + ' </div>', visible);
+
+    this.lastHTML = "";
+    this.lastHTML2 = "";
+    this.lastHTML3 = "";
+    this.credits = this.control.getElement("vts-credits");
 };
 
-Melown.UIControlCredits.prototype.getCreditsString = function(array_, separator_, full_) {
-    var map_ = this.browser_.getMap();
-    var html_ = "";
-    var copyright_ = "&copy;" + (new Date().getFullYear());
+
+UIControlCredits.prototype.getCreditsString = function(array, separator, full) {
+    var map = this.browser.getMap();
+    var html = "";
+    var copyright = "&copy;" + (new Date().getFullYear());
     
-    var li = array_.length;
-    var plain_ = ""; 
-    var more_ = false;
+    var li = array.length;
+    var plain = ""; 
+    var more = false;
 
     for (var i = 0; i < li; i++) {
-        var creditInfo_ = map_.getCreditInfo(array_[i]);
-        if (creditInfo_["plain"]) {
-            plain_ += creditInfo_["plain"];
+        var creditInfo = map.getCreditInfo(array[i]);
+        if (creditInfo["plain"]) {
+            plain += creditInfo["plain"];
         }
     }        
     
-    if (plain_ && plain_.length > 30 && li > 1 && !full_) {
+    if (plain && plain.length > 30 && li > 1 && !full) {
         li = 1;
-        more_ = true; 
+        more = true; 
     }
 
     for (var i = 0; i < li; i++) {
-        var creditInfo_ = map_.getCreditInfo(array_[i]);
+        var creditInfo = map.getCreditInfo(array[i]);
        
-        if (creditInfo_["html"]) {
-            html_ += creditInfo_["html"];
+        if (creditInfo["html"]) {
+            html += creditInfo["html"];
         }
 
         if (i + 1 < li) {
-            html_ += separator_;        
+            html += separator;        
         }
     }
     
-    return [html_, more_];
+    return [html, more];
 };
 
-Melown.UIControlCredits.prototype.update = function() {
-    var map_ = this.browser_.getMap();
-    if (map_ == null) {
+
+UIControlCredits.prototype.update = function() {
+    var map = this.browser.getMap();
+    if (map == null) {
         return;
     }
 
-    var html_ = "";
-    var html2_ = "";
-    var html3_ = "";
-    var credits_ = map_.getCurrentCredits();
+    var html = "";
+    var html2 = "";
+    var html3 = "";
+    var credits = map.getCurrentCredits();
     
-    if (credits_["imagery"].length > 0) {
-        var res_ = this.getCreditsString(credits_["imagery"], ", ");
-        html_ += "<div class='melown-credits-supercell'>";
-            html_ += "<div class='melown-credits-cell'>Imagery: " + res_[0] + "</div>";
-            html_ += res_[1] ? "<div class='melown-credits-cell-button' id='melown-credits-imagery-more'>and others</div>" : "";
-            html_ += "<div class='melown-credits-separator'></div>";
-        html_ += "</div>";
-        var html2_ = "<div class='melown-credits-list'>";
-        html2_ += this.getCreditsString(credits_["imagery"], "<br/>", true)[0] + "</div>";
+    if (credits["imagery"].length > 0) {
+        var res = this.getCreditsString(credits["imagery"], ", ");
+        html += "<div class='vts-credits-supercell'>";
+            html += "<div class='vts-credits-cell'>Imagery: " + res[0] + "</div>";
+            html += res[1] ? "<div class='vts-credits-cell-button' id='vts-credits-imagery-more'>and others</div>" : "";
+            html += "<div class='vts-credits-separator'></div>";
+        html += "</div>";
+        var html2 = "<div class='vts-credits-list'>";
+        html2 += this.getCreditsString(credits["imagery"], "<br/>", true)[0] + "</div>";
     }
     
-    if (credits_["mapdata"].length > 0) {
-        var res_ = this.getCreditsString(credits_["mapdata"], ", ");
-        html_ += "<div class='melown-credits-supercell'>";
-            html_ += "<div class='melown-credits-cell'>Map Data: " + res_[0] + "</div>";
-            html_ += res_[1] ? "<div class='melown-credits-cell-button' id='melown-credits-mapdata-more'>and others</div>" : "";
-            html_ += "<div class='melown-credits-separator'></div>";
-        html_ += "</div>";
-        var html3_ = "<div class='melown-credits-list'>";
-        html3_ += this.getCreditsString(credits_["mapdata"], "<br/>", true)[0] + "</div>";
+    if (credits["mapdata"].length > 0) {
+        var res = this.getCreditsString(credits["mapdata"], ", ");
+        html += "<div class='vts-credits-supercell'>";
+            html += "<div class='vts-credits-cell'>Map Data: " + res[0] + "</div>";
+            html += res[1] ? "<div class='vts-credits-cell-button' id='vts-credits-mapdata-more'>and others</div>" : "";
+            html += "<div class='vts-credits-separator'></div>";
+        html += "</div>";
+        var html3 = "<div class='vts-credits-list'>";
+        html3 += this.getCreditsString(credits["mapdata"], "<br/>", true)[0] + "</div>";
     }
 
-    html_ += "<div class='melown-credits-supercell'>";
-        html_ += "<div class='melown-credits-cell'>Powered by <a class='melown-logo' href='https://melown.com' target='_blank'>MELOWN</a></div>";
-        html_ += "<div class='melown-credits-separator'></div>";
-    html_ += "</div>";
+    html += "<div class='vts-credits-supercell'>";
+        html += "<div class='vts-credits-cell'>Powered by <a class='vts-logo' href='https://melown.com' target='blank'>MELOWN</a></div>";
+        html += "<div class='vts-credits-separator'></div>";
+    html += "</div>";
 
-    if (this.lastHTML_ != html_) {
-        this.lastHTML_ = html_;
-        this.credits_.setHtml(html_);
+    if (this.lastHTML != html) {
+        this.lastHTML = html;
+        this.credits.setHtml(html);
 
-        var butt_ = this.control_.getElement("melown-credits-imagery-more");
-        if (butt_) {
-            butt_.on("click", this.onMoreButton.bind(this, butt_, "2"));
+        var butt = this.control.getElement("vts-credits-imagery-more");
+        if (butt) {
+            butt.on("click", this.onMoreButton.bind(this, butt, "2"));
         }
         
-        butt_ = this.control_.getElement("melown-credits-mapdata-more");
-        if (butt_) {
-            butt_.on("click", this.onMoreButton.bind(this, butt_, "3"));
+        butt = this.control.getElement("vts-credits-mapdata-more");
+        if (butt) {
+            butt.on("click", this.onMoreButton.bind(this, butt, "3"));
         }
     }
 
-    this.lastHTML2_ = html2_;
-    this.lastHTML3_ = html3_;
+    this.lastHTML2 = html2;
+    this.lastHTML3 = html3;
 
     /*
-    if (this.lastHTML2_ != html2_) {
-        var butt_ = this.control_.getElement("melown-credits-imagery-more");
-        if (butt_) {
-            butt_.on("click", this.onMoreButton.bind(this, butt_, "2"));
+    if (this.lastHTML2 != html2) {
+        var butt = this.control.getElement("vts-credits-imagery-more");
+        if (butt) {
+            butt.on("click", this.onMoreButton.bind(this, butt, "2"));
         }
     }
         
-    if (this.lastHTML3_ != html3_) {
-        var butt_ = this.control_.getElement("melown-credits-mapdata-more");
-        if (butt_) {
-            butt_.on("click", this.onMoreButton.bind(this, butt_, "3"));
+    if (this.lastHTML3 != html3) {
+        var butt = this.control.getElement("vts-credits-mapdata-more");
+        if (butt) {
+            butt.on("click", this.onMoreButton.bind(this, butt, "3"));
         }
     }*/
 };
 
-Melown.UIControlCredits.prototype.onMoreButton = function(butt_, html_) {
-    var rect_ = butt_.getRect();
+
+UIControlCredits.prototype.onMoreButton = function(butt, html) {
+    var rect = butt.getRect();
     
-    if (html_ == "2") {
-        html_ = this.lastHTML2_;
+    if (html == "2") {
+        html = this.lastHTML2;
     } else {
-        html_ = this.lastHTML3_;
+        html = this.lastHTML3;
     }
     
-    this.ui_.popup_.show({"right" : Math.max(0,(rect_["fromRight"]-rect_["width"])) + "px",
-                          "bottom" : (rect_["fromBottom"]+7) + "px"}, html_);
+    this.ui.popup.show({"right" : Math.max(0,(rect["fromRight"]-rect["width"])) + "px",
+                          "bottom" : (rect["fromBottom"]+7) + "px"}, html);
 };
 
 
-
+export default UIControlCredits;
 

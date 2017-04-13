@@ -1,150 +1,154 @@
-//---------------------------------------------------
-// this file loaded from geoWorkerDebug or merged
-// into one function in case of minification process
-//---------------------------------------------------
 
-var getLayer = function(layerId_, featureType_, index_) {
-    var layer_ = stylesheetData_.layers_[layerId_];
-    if (layer_ == null) {
-        logError("wrong-Layer", layerId_, null, null, index_, featureType_);
+import {globals as globals_} from "./worker-globals.js";
+
+//get rid of compiler mess
+var globals = globals_;
+
+
+var getLayer = function(layerId, featureType, index) {
+    var layer = globals.stylesheetData.layers[layerId];
+    if (layer == null) {
+        logError("wrong-Layer", layerId, null, null, index, featureType);
         return {};
     } else {
-        return layer_;
+        return layer;
     }
 };
 
-var getLayerExpresionValue = function(layer_, value_, feature_, lod_) {
 
-    switch(typeof value_) {
+var getLayerExpresionValue = function(layer, value, feature, lod) {
+
+    switch(typeof value) {
         case "string":
 
-            if (value_.length > 0) {
+            if (value.length > 0) {
                 //is it feature property?
-                switch (value_.charAt(0)) {
+                switch (value.charAt(0)) {
 
                     case "$":
-                        var finalValue_ = feature_.properties_[value_.substr(1)];
-                        if (typeof finalValue_ == "undefined") {
-                            logError("wrong-expresion", layer_["$$layer-id"], value_, value_, null, "feature-property");
+                        var finalValue = feature.properties[value.substr(1)];
+                        if (typeof finalValue == "undefined") {
+                            logError("wrong-expresion", layer["$$layer-id"], value, value, null, "feature-property");
                         }
                         
-                        return finalValue_;
+                        return finalValue;
                 }
             }
 
             break;
     }
     
-    return value_;
+    return value;
 };
 
-var getLayerPropertyValue = function(layer_, key_, feature_, lod_) {
-    var value_ = layer_[key_];
 
-    switch(typeof value_) {
+var getLayerPropertyValue = function(layer, key, feature, lod) {
+    var value = layer[key];
+
+    switch(typeof value) {
         case "string":
 
-            if (value_.length > 0) {
+            if (value.length > 0) {
                 //is it feature property?
-                if (value_.charAt(0) == "$") {
-                    var finalValue_ = feature_.properties_[value_.substr(1)];
-                    if (finalValue_ != null) {
-                        return finalValue_;
+                if (value.charAt(0) == "$") {
+                    var finalValue = feature.properties[value.substr(1)];
+                    if (finalValue != null) {
+                        return finalValue;
                     } else {
-                        logError("wrong-object", layer_["$$layer-id"], key_, value_, null, "feature-property");
-                        getDefaultLayerPropertyValue(key_);
+                        logError("wrong-object", layer["$$layer-id"], key, value, null, "feature-property");
+                        getDefaultLayerPropertyValue(key);
                     }
                 }
             }
 
-            return value_;
+            return value;
 
             break;
 
         case "object":
 
             //is it null?
-            if (value_ == null) {
-                return getDefaultLayerPropertyValue(key_);
+            if (value == null) {
+                return getDefaultLayerPropertyValue(key);
             }
 
             //is it array (rgb, rgba, vec2)?
-            if (Array.isArray(value_) == true) {
+            if (Array.isArray(value) == true) {
 
-                if (key_ == "icon-source" && stylesheetBitmaps_[value_[0]] == null) {
-                    logError("wrong-object", layer_["$$layer-id"], key_, value_, null, "bitmap");
-                    return getDefaultLayerPropertyValue(key_);
+                if (key == "icon-source" && globals.stylesheetBitmaps[value[0]] == null) {
+                    logError("wrong-object", layer["$$layer-id"], key, value, null, "bitmap");
+                    return getDefaultLayerPropertyValue(key);
                 }
 
-                return value_;
+                return value;
             }
 
             //debugger
 
-            var stops_ = null;
-            var lodScaledArray_ = null;
+            var stops = null;
+            var lodScaledArray = null;
 
-            if (value_["lod-scaled"] != null) {
-                var array_ = value_["lod-scaled"];
+            if (value["lod-scaled"] != null) {
+                var array = value["lod-scaled"];
 
-                if ((typeof array_[1]) == "number") {
-                    return array_[1] * Math.pow(2*array_[2], array_[0] - lod_);
+                if ((typeof array[1]) == "number") {
+                    return array[1] * Math.pow(2*array[2], array[0] - lod);
                 }
 
-                stops_ = array_[1];
-                lodScaledArray_ = array_;
+                stops = array[1];
+                lodScaledArray = array;
 
             } else {
-                stops_ = value_["discrete"] || value_["linear"];
+                stops = value["discrete"] || value["linear"];
             }
 
-            var lastLod_ = stops_[0][0];
-            var lastValue_ = stops_[0][1];
-            var valueType_ = (typeof lastValue_);
-            var newValue_ = lastValue_;
+            var lastLod = stops[0][0];
+            var lastValue = stops[0][1];
+            var valueType = (typeof lastValue);
+            var newValue = lastValue;
 
-            for (var i = 0, li = stops_.length; i <= li; i++) {
+            for (var i = 0, li = stops.length; i <= li; i++) {
 
                 if (i == li) {
-                    newValue_ = lastValue_;
+                    newValue = lastValue;
                     break;
                 }
 
-                if (stops_[i][0] > lod_) {
+                if (stops[i][0] > lod) {
 
-                    if (value_["discrete"] != null || lodScaledArray_ != null) { //no interpolation
-                        newValue_ = lastValue_;
+                    if (value["discrete"] != null || lodScaledArray != null) { //no interpolation
+                        newValue = lastValue;
                         break;
                     } else { //interpolate
 
-                        currentLod_ = stops_[i][0];
-                        currentValue_ = stops_[i][1];
+                        currentLod = stops[i][0];
+                        currentValue = stops[i][1];
 
-                        if (currentLod_ == lastLod_) { //end of array no interpolation needed
+                        if (currentLod == lastLod) { //end of array no interpolation needed
                             break;
                         }
 
-                        switch(valueType_) {
+                        switch(valueType) {
 
                             case "boolean":
-                                lastValue_ = lastValue_ ? 1 : 0;
-                                currentValue_ = lastValue_ ? 1 : 0;
-                                var newValue_ = lastValue_ + (currentValue_ - lastValue_) * ((lod_ - lastLod_) / (currentLod_ - lastLod_));
+                                lastValue = lastValue ? 1 : 0;
+                                currentValue = lastValue ? 1 : 0;
+                                var newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
 
-                                newValue_ = newValue_ > 0.5 ? true : false;
+                                newValue = newValue > 0.5 ? true : false;
                                 break;
 
                             case "number":
 
                                 //debugger
-                                var newValue_ = lastValue_ + (currentValue_ - lastValue_) * ((lod_ - lastLod_) / (currentLod_ - lastLod_));
+                                var newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
                                 break;
 
                             case "object":
-                                var newValue_ = [];
+                                var newValue = [];
 
-                                for (var j = 0, lj= lastValue_.length; j < lj; j++) {
-                                    newValue_[j] = lastValue_[j] + (currentValue_[j] - lastValue_[j]) * ((lod_ - lastLod_) / (currentLod_ - lastLod_));
+                                for (var j = 0, lj= lastValue.length; j < lj; j++) {
+                                    newValue[j] = lastValue[j] + (currentValue[j] - lastValue[j]) * ((lod - lastLod) / (currentLod - lastLod));
                                 }
 
                                 break;
@@ -154,187 +158,190 @@ var getLayerPropertyValue = function(layer_, key_, feature_, lod_) {
                     }
                 }
 
-                lastLod_ = stops_[i][0];
-                lastValue_ = stops_[i][1];
+                lastLod = stops[i][0];
+                lastValue = stops[i][1];
             }
 
-            if (lodScaledArray_ != null) {
-                newValue_ *= Math.pow(2*lodScaledArray_[2], lodScaledArray_[0] - lod_);
+            if (lodScaledArray != null) {
+                newValue *= Math.pow(2*lodScaledArray[2], lodScaledArray[0] - lod);
             }
 
-            return newValue_;
+            return newValue;
 
             break;
 
         case "number":
         case "boolean":
-            return value_;
+            return value;
     }
 
-    return getDefaultLayerPropertyValue(key_);
+    return getDefaultLayerPropertyValue(key);
 };
 
-var inheritLayer = function(layerId_, layer_, layerData_, stylesheetLayersData_, depth_) {
-    if (depth_ > 100) {
-        logError("custom", "infinite inherit loop in Layer: " + layerId_);
+
+var inheritLayer = function(layerId, layer, layerData, stylesheetLayersData, depth) {
+    if (depth > 100) {
+        logError("custom", "infinite inherit loop in Layer: " + layerId);
         return;
     }
 
     //do we need inherite Layer?
-    if (layerData_["inherit"] != null) {
+    if (layerData["inherit"] != null) {
         //get inherited Layer
-        var LayerToInherit_ = stylesheetLayersData_["layers"][layerData_["inherit"]];
+        var LayerToInherit = stylesheetLayersData["layers"][layerData["inherit"]];
 
-        if (LayerToInherit_ != null) {
+        if (LayerToInherit != null) {
 
-            if (LayerToInherit_["inherit"] != null) {
-                inheritLayer(layerData_["inherit"], layer_, LayerToInherit_, stylesheetLayersData_, depth_++);
+            if (LayerToInherit["inherit"] != null) {
+                inheritLayer(layerData["inherit"], layer, LayerToInherit, stylesheetLayersData, depth++);
             }
 
             //copy inherited Layer properties
-            for (var key_ in LayerToInherit_) {
-                layer_[key_] = LayerToInherit_[key_];
+            for (var key in LayerToInherit) {
+                layer[key] = LayerToInherit[key];
             }
         } else {
-            logError("wrong-object", layerId_, "inherit", LayerToInherit_, "Layer");
-            return getDefaultLayerPropertyValue(key_);
+            logError("wrong-object", layerId, "inherit", LayerToInherit, "Layer");
+            return getDefaultLayerPropertyValue(key);
         }
     }
-
 };
 
-var copyLayer = function(layerId_, layer_, layerData_, stylesheetLayersData_) {
+
+var copyLayer = function(layerId, layer, layerData, stylesheetLayersData) {
     //do we need inherite Layer?
-    if (layerData_["inherit"] != null) {
-        inheritLayer(layerId_, layer_, layerData_, stylesheetLayersData_, 0);
+    if (layerData["inherit"] != null) {
+        inheritLayer(layerId, layer, layerData, stylesheetLayersData, 0);
     }
 
     //copy Layer properties
     //if inherited properties are present then they will be overwriten
-    for (var key_ in layerData_) {
-        layer_[key_] = layerData_[key_];
+    for (var key in layerData) {
+        layer[key] = layerData[key];
     }
 
     //store layer id
-    layer_["$$layer-id"] = layerId_;
+    layer["$$layer-id"] = layerId;
 };
 
-var logError = function(errorType_, layerId_, key_, value_, index_, subkey_) {
-    if ((typeof value_) == "object") {
-        value_ = JSON.stringify(value_);
+
+var logError = function(errorType, layerId, key, value, index, subkey) {
+    if ((typeof value) == "object") {
+        value = JSON.stringify(value);
     }
     
-    var str_ = null;
+    var str = null;
 
-    switch(errorType_) {
+    switch(errorType) {
         case "wrong-property-value":
-            str_ = "Error: wrong layer property " + (subkey_ ? ("'" + subkey_ + "'") : "") + ": " + layerId_ + "." + key_ + " = " + value_;
+            str = "Error: wrong layer property " + (subkey ? ("'" + subkey + "'") : "") + ": " + layerId + "." + key + " = " + value;
             break;
 
         case "wrong-property-value[]":
-            str_ = "Error: wrong layer property " + (subkey_ ? ("'" + subkey_ + "'") : "") + "["+index_+"]: " + layerId_ + "." + key_ + " = " + value_;
+            str = "Error: wrong layer property " + (subkey ? ("'" + subkey + "'") : "") + "["+index+"]: " + layerId + "." + key + " = " + value;
             break;
 
         case "wrong-object":
-            str_ = "Error: reffered "+ subkey_ + " does not exist: " + layerId_ + "." + key_ + " = " + value_;
+            str = "Error: reffered "+ subkey + " does not exist: " + layerId + "." + key + " = " + value;
             break;
 
         case "wrong-object[]":
-            str_ = "Error: reffered "+ subkey_ + " does not exist: " + layerId_ + "." + key_ + "["+index_+"] = " + value_;
+            str = "Error: reffered "+ subkey + " does not exist: " + layerId + "." + key + "["+index+"] = " + value;
             break;
 
         case "wrong-Layer":
-            str_ = "Error: reffered "+ subkey_ + " Layer does not exist: " + subkey_ + "["+index_+"].Layer = " + layerId_;
+            str = "Error: reffered "+ subkey + " Layer does not exist: " + subkey + "["+index+"].Layer = " + layerId;
             break;
 
         case "wrong-bitmap":
-            str_ = "Error: wrong definition of bitmap: " + layerId_;
+            str = "Error: wrong definition of bitmap: " + layerId;
             break;
 
         case "custom":
-            str_ = "Error: " + layerId_;
+            str = "Error: " + layerId;
             break;
     }
     
-    if (str_) {
-        console.log(str_);
+    if (str) {
+        console.log(str);
     }
 };
 
-var validateValue = function(layerId_, key_, value_, type_, arrayLength_, min_, max_) {
+
+var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
     //check interpolator
-    if (value_ != null && (typeof value_) == "object" && (value_["discrete"] != null || value_["linear"] != null || value_["lod-scaled"] != null)) {
+    if (value != null && (typeof value) == "object" && (value["discrete"] != null || value["linear"] != null || value["lod-scaled"] != null)) {
 
-        var stops_ = null;
-        var lodScaled_ = false;
+        var stops = null;
+        var lodScaled = false;
 
-        if (value_["lod-scaled"] != null) {
+        if (value["lod-scaled"] != null) {
 
-            var array_ = value_["lod-scaled"];
+            var array = value["lod-scaled"];
 
-            if (!((typeof array_) == "object" && Array.isArray(array_) && array_.length >= 2)) {
-                logError("wrong-property-value", layerId_, key_, value_, null, "[]");
-                return getDefaultLayerPropertyValue(key_);
+            if (!((typeof array) == "object" && Array.isArray(array) && array.length >= 2)) {
+                logError("wrong-property-value", layerId, key, value, null, "[]");
+                return getDefaultLayerPropertyValue(key);
             }
 
-            if (array_[2] == null) {
-                array_[2] = 1;
+            if (array[2] == null) {
+                array[2] = 1;
             }
 
-            if (!((typeof array_[0]) == "number" && (typeof array_[2]) == "number")) {
-                logError("wrong-property-value", layerId_, key_, value_, null, "[]");
-                return getDefaultLayerPropertyValue(key_);
+            if (!((typeof array[0]) == "number" && (typeof array[2]) == "number")) {
+                logError("wrong-property-value", layerId, key, value, null, "[]");
+                return getDefaultLayerPropertyValue(key);
             }
 
-            if ((typeof array_[1]) == "number") {
-                return value_;
+            if ((typeof array[1]) == "number") {
+                return value;
             }
 
-            stops_ = array_[1];
-            lodScaled_ = true;
+            stops = array[1];
+            lodScaled = true;
 
         } else {
-            stops_ = value_["discrete"] || value_["linear"];
+            stops = value["discrete"] || value["linear"];
         }
 
         //if stops exist then check if they are array
-        if (stops_ == null || !((typeof stops_) == "object" && Array.isArray(stops_) && stops_.length > 0)) {
-            logError("wrong-property-value", layerId_, key_, value_, null, "[]");
-            return getDefaultLayerPropertyValue(key_);
+        if (stops == null || !((typeof stops) == "object" && Array.isArray(stops) && stops.length > 0)) {
+            logError("wrong-property-value", layerId, key, value, null, "[]");
+            return getDefaultLayerPropertyValue(key);
         }
 
 
         //validate stops values
-        if (stops_ != null) {
-            var stopsValueType_ = null;
+        if (stops != null) {
+            var stopsValueType = null;
 
-            for (var i = 0, li = stops_.length; i < li; i++) {
-                var stopItem_ = stops_[i];
+            for (var i = 0, li = stops.length; i < li; i++) {
+                var stopItem = stops[i];
 
                 //is stop array[2]?
-                if(!(stopItem_ != null && (typeof stopItem_) == "object" && Array.isArray(stopItem_) && stopItem_.length != 2)) {
+                if(!(stopItem != null && (typeof stopItem) == "object" && Array.isArray(stopItem) && stopItem.length != 2)) {
 
                     //store fist stop type
-                    if (stopsValueType_ == null) {
-                        stopsValueType_ = typeof stopItem_[1];
+                    if (stopsValueType == null) {
+                        stopsValueType = typeof stopItem[1];
 
-                        if (lodScaled_ == true && stopsValueType_ != "number") {
-                            logError("wrong-property-value[]", layerId_, key_, value_, i, "[]");
-                            return getDefaultLayerPropertyValue(key_);
+                        if (lodScaled == true && stopsValueType != "number") {
+                            logError("wrong-property-value[]", layerId, key, value, i, "[]");
+                            return getDefaultLayerPropertyValue(key);
                         }
                     }
 
                     //check lod value and type of value
-                    if(!((typeof stopItem_[0]) == "number" && (typeof stopItem_[1]) == stopsValueType_)) {
-                        logError("wrong-property-value[]", layerId_, key_, value_, i, "[]");
-                        return getDefaultLayerPropertyValue(key_);
+                    if(!((typeof stopItem[0]) == "number" && (typeof stopItem[1]) == stopsValueType)) {
+                        logError("wrong-property-value[]", layerId, key, value, i, "[]");
+                        return getDefaultLayerPropertyValue(key);
                     }
 
                     //check number value
-                    if (stopsValueType_ == "number") {
-                        if (stopItem_[1] > max_ || stopItem_[1] < min_) {
-                            logError("wrong-property-value[]", layerId_, key_, value_, i, "[]");
-                            return getDefaultLayerPropertyValue(key_);
+                    if (stopsValueType == "number") {
+                        if (stopItem[1] > max || stopItem[1] < min) {
+                            logError("wrong-property-value[]", layerId, key, value, i, "[]");
+                            return getDefaultLayerPropertyValue(key);
                         }
                     }
                 }
@@ -342,112 +349,112 @@ var validateValue = function(layerId_, key_, value_, type_, arrayLength_, min_, 
         }
 
 
-        return value_;
+        return value;
     }
 
-    //console.log("validate."+layerId_+"."+key_+"."+value_);
+    //console.log("validate."+layerId+"."+key+"."+value);
 
     //check value type
-    if ((typeof value_) != type_) {
+    if ((typeof value) != type) {
         //check for exceptions
-        if (!(value_ === null && (key_ == "icon-source" || key_ == "visibility"))) {
-            logError("wrong-property-value", layerId_, key_, value_);
-            return getDefaultLayerPropertyValue(key_);
+        if (!(value === null && (key == "icon-source" || key == "visibility"))) {
+            logError("wrong-property-value", layerId, key, value);
+            return getDefaultLayerPropertyValue(key);
         }
     }
 
     //check value
-    switch(typeof value_) {
+    switch(typeof value) {
 
         case "object":
 
             //accepted cases for null value
-            if (value_ === null && (key_ == "line-style-texture" || key_ == "icon-source" || key_ == "visibility" || key_ == "next-pass")) {
-                return value_;
+            if (value === null && (key == "line-style-texture" || key == "icon-source" || key == "visibility" || key == "next-pass")) {
+                return value;
             }
 
             //check multipasss
-            if (key_ == "next-pass") {
-                if (Array.isArray(value_) == true && value_.length > 0) {
+            if (key == "next-pass") {
+                if (Array.isArray(value) == true && value.length > 0) {
 
                     for (var i = 0; i < li; i++) {
-                        var valueItem_ = value_[i];
+                        var valueItem = value[i];
 
-                        if (typeof valueItem_ == "object" &&
-                            Array.isArray(valueItem_) == true &&
-                            valueItem_.length == 2 &&
-                            typeof valueItem_[0] == "number" &&
-                            typeof valueItem_[1] == "string") {
+                        if (typeof valueItem == "object" &&
+                            Array.isArray(valueItem) == true &&
+                            valueItem.length == 2 &&
+                            typeof valueItem[0] == "number" &&
+                            typeof valueItem[1] == "string") {
 
-                            if (stylesheetLayersData_["layers"][valueItem_[1]] == null) {
+                            if (stylesheetLayersData["layers"][valueItem[1]] == null) {
 
                             }
 
                         } else {
-                            logError("wrong-property-value[]", layerId_, key_, value_, i);
-                            return getDefaultLayerPropertyValue(key_);
+                            logError("wrong-property-value[]", layerId, key, value, i);
+                            return getDefaultLayerPropertyValue(key);
                         }
                     }
 
                 } else {
-                    logError("wrong-property-value", layerId_, key_, value_);
-                    return getDefaultLayerPropertyValue(key_);
+                    logError("wrong-property-value", layerId, key, value);
+                    return getDefaultLayerPropertyValue(key);
                 }
             }
 
             //check array
-            if (arrayLength_ != null) {
-                if (Array.isArray(value_) == true && value_.length == arrayLength_) {
+            if (arrayLength != null) {
+                if (Array.isArray(value) == true && value.length == arrayLength) {
 
                     //validate array values
                     var i = 0;
 
-                    if (key_ == "icon-source" || key_ == "line-style-texture") {
-                        if (typeof value_[0] != "string") {
-                            logError("wrong-property-value[]", layerId_, key_, value_, 0);
-                            return getDefaultLayerPropertyValue(key_);
+                    if (key == "icon-source" || key == "line-style-texture") {
+                        if (typeof value[0] != "string") {
+                            logError("wrong-property-value[]", layerId, key, value, 0);
+                            return getDefaultLayerPropertyValue(key);
                         }
 
-                        if (stylesheetBitmaps_[value_[0]] == null) {
-                            logError("wrong-object", layerId_, key_, value_, null, "bitmap");
-                            return getDefaultLayerPropertyValue(key_);
+                        if (globals.stylesheetBitmaps[value[0]] == null) {
+                            logError("wrong-object", layerId, key, value, null, "bitmap");
+                            return getDefaultLayerPropertyValue(key);
                         }
 
                         i = 1;
                     }
 
-                    for (li = value_.length; i < li; i++) {
-                        if (typeof value_[i] != "number") {
-                            logError("wrong-property-value[]", layerId_, key_, value_, i);
-                            return getDefaultLayerPropertyValue(key_);
+                    for (li = value.length; i < li; i++) {
+                        if (typeof value[i] != "number") {
+                            logError("wrong-property-value[]", layerId, key, value, i);
+                            return getDefaultLayerPropertyValue(key);
                         }
                     }
 
-                    return value_;
+                    return value;
                 } else {
-                    logError("wrong-property-value", layerId_, key_, value_);
-                    return getDefaultLayerPropertyValue(key_);
+                    logError("wrong-property-value", layerId, key, value);
+                    return getDefaultLayerPropertyValue(key);
                 }
             }
 
-            return value_;
+            return value;
 
         case "string":
 
             //validate line Layer enum
-            if (key_ == "line-style") {
-                switch(value_) {
+            if (key == "line-style") {
+                switch(value) {
                     case "solid":
-                    case "texture": return value_;
+                    case "texture": return value;
                     default:
-                        logError("wrong-property-value", layerId_, key_, value_);
-                        return getDefaultLayerPropertyValue(key_);
+                        logError("wrong-property-value", layerId, key, value);
+                        return getDefaultLayerPropertyValue(key);
                 }
             }
 
             //validate origin enum
-            if (key_ == "label-origin" || key_ == "icon-origin") {
-                switch(value_) {
+            if (key == "label-origin" || key == "icon-origin") {
+                switch(value) {
                     case "top-left":
                     case "top-right":
                     case "top-center":
@@ -456,118 +463,119 @@ var validateValue = function(layerId_, key_, value_, type_, arrayLength_, min_, 
                     case "center-center":
                     case "bottom-left":
                     case "bottom-right":
-                    case "bottom-center":   return value_;
+                    case "bottom-center":   return value;
                     default:
-                        logError("wrong-property-value", layerId_, key_, value_);
-                        return getDefaultLayerPropertyValue(key_);
+                        logError("wrong-property-value", layerId, key, value);
+                        return getDefaultLayerPropertyValue(key);
                 }
             }
 
             //validate align enum
-            if (key_ == "label-align") {
-                switch(value_) {
+            if (key == "label-align") {
+                switch(value) {
                     case "left":
                     case "right":
-                    case "center":  return value_;
+                    case "center":  return value;
                     default:
-                        logError("wrong-property-value", layerId_, key_, value_);
-                        return getDefaultLayerPropertyValue(key_);
+                        logError("wrong-property-value", layerId, key, value);
+                        return getDefaultLayerPropertyValue(key);
                 }
             }
 
-            return value_;
+            return value;
 
         case "number":
 
             //console.log("num2");
 
-            if (value_ > max_ || value_ < min_) {
-                logError("wrong-property-value", layerId_, key_, value_);
-                return getDefaultLayerPropertyValue(key_);
+            if (value > max || value < min) {
+                logError("wrong-property-value", layerId, key, value);
+                return getDefaultLayerPropertyValue(key);
             }
 
             //console.log("num3");
 
-            return value_;
+            return value;
 
         case "boolean":
-            return value_;
+            return value;
     }
-
 };
 
-var validateLayerPropertyValue = function(layerId_, key_, value_) {
-    //console.log("vall:"+layerId_+"."+key_+"."+value_);
+
+var validateLayerPropertyValue = function(layerId, key, value) {
+    //console.log("vall:"+layerId+"."+key+"."+value);
     //debugger;
 
-    switch(key_) {
-       //case "filter" :    return validateValue(layerId_, key_, value_, "string"); break;
+    switch(key) {
+       //case "filter" :    return validateValue(layerId, key, value, "string"); break;
 
-       case "inherit" :    return validateValue(layerId_, key_, value_, "string"); break;
+       case "inherit" :    return validateValue(layerId, key, value, "string"); break;
 
-       case "line":        return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "line-flat":   return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "line-width":  return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "line-color":  return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
-       case "line-style":  return validateValue(layerId_, key_, value_, "string"); break;
-       case "line-style-texture":    return validateValue(layerId_, key_, value_, "object", 3, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "line-style-background": return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
+       case "line":        return validateValue(layerId, key, value, "boolean"); break;
+       case "line-flat":   return validateValue(layerId, key, value, "boolean"); break;
+       case "line-width":  return validateValue(layerId, key, value, "number", null, 0.0001, Number.MAXVALUE); break;
+       case "line-color":  return validateValue(layerId, key, value, "object", 4, 0, 255); break;
+       case "line-style":  return validateValue(layerId, key, value, "string"); break;
+       case "line-style-texture":    return validateValue(layerId, key, value, "object", 3, -Number.MAXVALUE, Number.MAXVALUE); break;
+       case "line-style-background": return validateValue(layerId, key, value, "object", 4, 0, 255); break;
 
-       case "line-label":         return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "line-label-source":  return validateValue(layerId_, key_, value_, "string"); break;
-       case "line-label-color":   return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
-       case "line-label-size":    return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "line-label-offset":  return validateValue(layerId_, key_, value_, "number", null, -Number.MAX_VALUE, Number.MAX_VALUE); break;
+       case "line-label":         return validateValue(layerId, key, value, "boolean"); break;
+       case "line-label-source":  return validateValue(layerId, key, value, "string"); break;
+       case "line-label-color":   return validateValue(layerId, key, value, "object", 4, 0, 255); break;
+       case "line-label-size":    return validateValue(layerId, key, value, "number", null, 0.0001, Number.MAXVALUE); break;
+       case "line-label-offset":  return validateValue(layerId, key, value, "number", null, -Number.MAXVALUE, Number.MAXVALUE); break;
 
-       case "point":        return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "point-flat":   return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "point-radius": return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "point-Layer":  return validateValue(layerId_, key_, value_, "string"); break;
+       case "point":        return validateValue(layerId, key, value, "boolean"); break;
+       case "point-flat":   return validateValue(layerId, key, value, "boolean"); break;
+       case "point-radius": return validateValue(layerId, key, value, "number", null, 0.0001, Number.MAXVALUE); break;
+       case "point-Layer":  return validateValue(layerId, key, value, "string"); break;
 
-       case "point-color":  return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
+       case "point-color":  return validateValue(layerId, key, value, "object", 4, 0, 255); break;
 
-       case "icon":         return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "icon-source":  return validateValue(layerId_, key_, value_, "object", 5, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "icon-scale":   return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "icon-offset":  return validateValue(layerId_, key_, value_, "object", 2, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "icon-origin":  return validateValue(layerId_, key_, value_, "string"); break;
-       case "icon-stick":   return validateValue(layerId_, key_, value_, "object", 7, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "icon-color":   return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
+       case "icon":         return validateValue(layerId, key, value, "boolean"); break;
+       case "icon-source":  return validateValue(layerId, key, value, "object", 5, -Number.MAXVALUE, Number.MAXVALUE); break;
+       case "icon-scale":   return validateValue(layerId, key, value, "number", null, 0.0001, Number.MAXVALUE); break;
+       case "icon-offset":  return validateValue(layerId, key, value, "object", 2, -Number.MAXVALUE, Number.MAXVALUE); break;
+       case "icon-origin":  return validateValue(layerId, key, value, "string"); break;
+       case "icon-stick":   return validateValue(layerId, key, value, "object", 7, -Number.MAXVALUE, Number.MAXVALUE); break;
+       case "icon-color":   return validateValue(layerId, key, value, "object", 4, 0, 255); break;
 
-       case "label":         return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "label-color":   return validateValue(layerId_, key_, value_, "object", 4, 0, 255); break;
-       case "label-source":  return validateValue(layerId_, key_, value_, "string"); break;
-       case "label-size":    return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "label-offset":  return validateValue(layerId_, key_, value_, "object", 2, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "label-origin":  return validateValue(layerId_, key_, value_, "string"); break;
-       case "label-align":   return validateValue(layerId_, key_, value_, "string"); break;
-       case "label-stick":   return validateValue(layerId_, key_, value_, "object", 7, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "label-width":   return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
+       case "label":         return validateValue(layerId, key, value, "boolean"); break;
+       case "label-color":   return validateValue(layerId, key, value, "object", 4, 0, 255); break;
+       case "label-source":  return validateValue(layerId, key, value, "string"); break;
+       case "label-size":    return validateValue(layerId, key, value, "number", null, 0.0001, Number.MAXVALUE); break;
+       case "label-offset":  return validateValue(layerId, key, value, "object", 2, -Number.MAXVALUE, Number.MAXVALUE); break;
+       case "label-origin":  return validateValue(layerId, key, value, "string"); break;
+       case "label-align":   return validateValue(layerId, key, value, "string"); break;
+       case "label-stick":   return validateValue(layerId, key, value, "object", 7, -Number.MAXVALUE, Number.MAXVALUE); break;
+       case "label-width":   return validateValue(layerId, key, value, "number", null, 0.0001, Number.MAXVALUE); break;
 
-       case "polygon":         return validateValue(styleId_, key_, value_, "boolean"); break;
-       case "polygon-color":   return validateValue(styleId_, key_, value_, "object", 4, 0, 255); break;
+       case "polygon":         return validateValue(styleId, key, value, "boolean"); break;
+       case "polygon-color":   return validateValue(styleId, key, value, "object", 4, 0, 255); break;
 
-       case "z-index":        return validateValue(layerId_, key_, value_, "number", null, -Number.MAX_VALUE, Number.MAX_VALUE); break;
-       case "zbuffer-offset": return validateValue(layerId_, key_, value_, "object", 3, 0, Number.MAX_VALUE); break;
+       case "z-index":        return validateValue(layerId, key, value, "number", null, -Number.MAXVALUE, Number.MAXVALUE); break;
+       case "zbuffer-offset": return validateValue(layerId, key, value, "object", 3, 0, Number.MAXVALUE); break;
 
-       case "hover-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "hover-layer":  return validateValue(layerId_, key_, value_, "string"); break;
-       case "enter-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "leave-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "click-event":  return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "draw-event":   return validateValue(layerId_, key_, value_, "boolean"); break;
+       case "hover-event":  return validateValue(layerId, key, value, "boolean"); break;
+       case "hover-layer":  return validateValue(layerId, key, value, "string"); break;
+       case "enter-event":  return validateValue(layerId, key, value, "boolean"); break;
+       case "leave-event":  return validateValue(layerId, key, value, "boolean"); break;
+       case "click-event":  return validateValue(layerId, key, value, "boolean"); break;
+       case "draw-event":   return validateValue(layerId, key, value, "boolean"); break;
 
-       case "visible":     return validateValue(layerId_, key_, value_, "boolean"); break;
-       case "visibility":  return validateValue(layerId_, key_, value_, "number", null, 0.0001, Number.MAX_VALUE); break;
-       case "culling":     return validateValue(layerId_, key_, value_, "number", 180, 0.0001, 180); break;
-       case "next-pass":   return validateValue(layerId_, key_, value_, "object"); break;
+       case "visible":     return validateValue(layerId, key, value, "boolean"); break;
+       case "visibility":  return validateValue(layerId, key, value, "number", null, 0.0001, Number.MAXVALUE); break;
+       case "culling":     return validateValue(layerId, key, value, "number", 180, 0.0001, 180); break;
+       case "next-pass":   return validateValue(layerId, key, value, "object"); break;
     }
 
-    return value_; //custom property
+    return value; //custom property
 };
 
-var getDefaultLayerPropertyValue = function(key_) {
-    switch(key_) {
+
+var getDefaultLayerPropertyValue = function(key) {
+    switch(key) {
        case "filter": return null;
 
        case "inherit": return "";
@@ -630,80 +638,81 @@ var getDefaultLayerPropertyValue = function(key_) {
     }
 };
 
-function getFilterResult(filter_, feature_, featureType_, group_) {
-    if (!filter_ || !Array.isArray(filter_)) {
+
+function getFilterResult(filter, feature, featureType, group) {
+    if (!filter || !Array.isArray(filter)) {
         return false;
     }
 
-    switch(filter_[0]) {
+    switch(filter[0]) {
         case "all": 
-            var result_ = true;
-            for (var i = 1, li = filter_.length; i < li; i++) {
-                result_ = result_ && getFilterResult(filter_[i], feature_, featureType_, group_);
+            var result = true;
+            for (var i = 1, li = filter.length; i < li; i++) {
+                result = result && getFilterResult(filter[i], feature, featureType, group);
             }
            
-            return result_;                         
+            return result;                         
 
         case "any":
-            var result_ = false;
-            for (var i = 1, li = filter_.length; i < li; i++) {
-                result_ = result_ || getFilterResult(filter_[i], feature_, featureType_, group_);
+            var result = false;
+            for (var i = 1, li = filter.length; i < li; i++) {
+                result = result || getFilterResult(filter[i], feature, featureType, group);
             }
            
-            return result_;                         
+            return result;                         
 
         case "none":
-            var result_ = true;
-            for (var i = 1, li = filter_.length; i < li; i++) {
-                result_ = result_ && getFilterResult(filter_[i], feature_, featureType_, group_);
+            var result = true;
+            for (var i = 1, li = filter.length; i < li; i++) {
+                result = result && getFilterResult(filter[i], feature, featureType, group);
             }
            
-            return (!result_);                         
+            return (!result);                         
                               
         case "skip": return false; 
     }
 
-    var value_;
+    var value;
 
-    switch(filter_[1]) {
-        case "#type":  value_ = featureType_; break;   
-        case "#group": value_ = group_;       break;
+    switch(filter[1]) {
+        case "#type":  value = featureType; break;   
+        case "#group": value = group;       break;
         default:   
-            var filterValue_ = filter_[1];  
+            var filterValue = filter[1];  
 
-            if (filterValue_ && filterValue_.length > 0) {
+            if (filterValue && filterValue.length > 0) {
                 //is it feature property?
-                switch (filterValue_.charAt(0)) {
-                    case "$": value_ = feature_.properties_[filterValue_.substr(1)]; break;
-                    case "@": value_ = stylesheetConstants_[filterValue_]; break;
+                switch (filterValue.charAt(0)) {
+                    case "$": value = feature.properties[filterValue.substr(1)]; break;
+                    case "@": value = globals.stylesheetConstants[filterValue]; break;
                     default:
-                        value_ = feature_.properties_[filterValue_]; //fallback for old format
+                        value = feature.properties[filterValue]; //fallback for old format
                 }
             }
     }
 
-    switch(filter_[0]) {
-        case "==": return (value_ == filter_[2]);
-        case "!=": return (value_ != filter_[2]);
-        case ">=": return (value_ >= filter_[2]);
-        case "<=": return (value_ <= filter_[2]);
-        case ">": return (value_ > filter_[2]);
-        case "<": return (value_ < filter_[2]);
+    switch(filter[0]) {
+        case "==": return (value == filter[2]);
+        case "!=": return (value != filter[2]);
+        case ">=": return (value >= filter[2]);
+        case "<=": return (value <= filter[2]);
+        case ">": return (value > filter[2]);
+        case "<": return (value < filter[2]);
         
-        case "has": return (typeof value_ != "undefined");
-        case "!has": return (typeof value_ == "undefined");
+        case "has": return (typeof value != "undefined");
+        case "!has": return (typeof value == "undefined");
         
         case "in":
-            for (var i = 2, li = filter_.length; i < li; i++) {
-                if (filter_[i] == value_) {
+            for (var i = 2, li = filter.length; i < li; i++) {
+                if (filter[i] == value) {
                     return true;
                 }
             } 
             return false;
         
         case "!in":
-            for (var i = 2, li = filter_.length; i < li; i++) {
-                if (filter_[i] == value_) {
+            for (var i = 2, li = filter.length; i < li; i++) {
+                if (filter[i] == value) {
                     return false;
                 }
             } 
@@ -713,95 +722,98 @@ function getFilterResult(filter_, feature_, featureType_, group_) {
     return false;    
 };
 
-var processLayer = function(layerId_, layerData_, stylesheetLayersData_) {
-    var layer_ = {};
+
+var processLayer = function(layerId, layerData, stylesheetLayersData) {
+    var layer = {};
 
     //copy Layer and inherit Layer if needed
-    copyLayer(layerId_, layer_, layerData_, stylesheetLayersData_);
+    copyLayer(layerId, layer, layerData, stylesheetLayersData);
 
-    //console.log(JSON.stringify(layer_));
+    //console.log(JSON.stringify(layer));
 
     //replace constants and validate properties
-    for (var key_ in layer_) {
+    for (var key in layer) {
 
-        var value_ = layer_[key_];
+        var value = layer[key];
 
         //replace constant with value
-        if ((typeof value_) == "string") {
-            if (value_.length > 0) {
+        if ((typeof value) == "string") {
+            if (value.length > 0) {
                 //is it constant?
-                if (value_.charAt(0) == "@") {
-                    if (stylesheetConstants_[value_] != null) {
+                if (value.charAt(0) == "@") {
+                    if (globals.stylesheetConstants[value] != null) {
                         //replace constant with value
-                        layer_[key_] = stylesheetConstants_[value_];
+                        layer[key] = globals.stylesheetConstants[value];
                     } else {
-                        logError("wrong-object", layerId_, key_, value_, null, "constant");
+                        logError("wrong-object", layerId, key, value, null, "constant");
 
                         //replace constant with deafault value
-                        layer_[key_] = getDefaultLayerPropertyValue(key_);
+                        layer[key] = getDefaultLayerPropertyValue(key);
                     }
                 }
             }
         }
 
-        //console.log("process."+layerId_+"."+key_+"."+value_);
-        //console.log("out1: "+JSON.stringify(layer_[key_]));
+        //console.log("process."+layerId+"."+key+"."+value);
+        //console.log("out1: "+JSON.stringify(layer[key]));
 
-        layer_[key_] = validateLayerPropertyValue(layerId_, key_, layer_[key_]);
+        layer[key] = validateLayerPropertyValue(layerId, key, layer[key]);
 
-        //console.log("out2: "+JSON.stringify(layer_[key_]));
+        //console.log("out2: "+JSON.stringify(layer[key]));
     }
 
-    return layer_;
+    return layer;
 };
 
-var processStylesheet = function(stylesheetLayersData_) {
-    stylesheetBitmaps_ = {};
-    stylesheetConstants_ = stylesheetLayersData_["constants"] || {};
+
+var processStylesheet = function(stylesheetLayersData) {
+    globals.stylesheetBitmaps = {};
+    globals.stylesheetConstants = stylesheetLayersData["constants"] || {};
 
     //get bitmaps
-    var bitmaps_ = stylesheetLayersData_["bitmaps"] || {};
+    var bitmaps = stylesheetLayersData["bitmaps"] || {};
 
     //build map
-    for (var key_ in bitmaps_) {
-        var bitmap_ = bitmaps_[key_];
-        var skip_ = false;
+    for (var key in bitmaps) {
+        var bitmap = bitmaps[key];
+        var skip = false;
 
-        if ((typeof bitmap_) == "string") {
-            bitmap_ = {"url":bitmap_};
-        } else if((typeof bitmap_) == "object"){
-            if (bitmap_["url"] == null) {
-                logError("wrong-bitmap", key_);
+        if ((typeof bitmap) == "string") {
+            bitmap = {"url":bitmap};
+        } else if((typeof bitmap) == "object"){
+            if (bitmap["url"] == null) {
+                logError("wrong-bitmap", key);
             }
         } else {
-            logError("wrong-bitmap", key_);
+            logError("wrong-bitmap", key);
         }
 
-        if (skip_ != true) {
-            stylesheetBitmaps_[key_] = bitmap_;
+        if (skip != true) {
+            globals.stylesheetBitmaps[key] = bitmap;
         }
     }
 
     //load bitmaps
-    postMessage({"command":"loadBitmaps", "bitmaps": stylesheetBitmaps_});
+    postMessage({"command":"loadBitmaps", "bitmaps": globals.stylesheetBitmaps});
 
     //get layers
-    stylesheetData_ = {
-        layers_ : {}
+    globals.stylesheetData = {
+        layers : {}
     };
 
-    var layers_ = stylesheetLayersData_["layers"] || {};
+    var layers = stylesheetLayersData["layers"] || {};
 
-    //console.log(JSON.stringify(Layers_));
+    //console.log(JSON.stringify(Layers));
 
-    stylesheetLayers_ = stylesheetData_.layers_;
+    globals.stylesheetLayers = globals.stylesheetData.layers;
 
     //process layers
-    for (var key_ in layers_) {
-        stylesheetData_.layers_[key_] = processLayer(key_, layers_[key_], stylesheetLayersData_);
+    for (var key in layers) {
+        globals.stylesheetData.layers[key] = processLayer(key, layers[key], stylesheetLayersData);
 
-        //console.log(JSON.stringify(stylesheetData_.layers_[key_]));
+        //console.log(JSON.stringify(stylesheetData.layers[key]));
     }
 };
 
 
+export {getFilterResult, processStylesheet, getLayer, getLayerPropertyValue, getLayerExpresionValue};

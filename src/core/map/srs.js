@@ -1,347 +1,364 @@
-require('./texture');
-var GeographicLib = require("geographiclib");
 
-/**
- * @constructor
- */
-Melown.MapSrs = function(map_, id_, json_) {
-    this.map_ = map_;
-    this.id_ = id_;
-    this.proj4_ = map_.proj4_;
-    this.comment_ = json_["comment"] || null;
-    this.srsDef_ = json_["srsDef"] || null;
-    this.srsModifiers_ = json_["srsModifiers"] || [];
-    this.type_ = json_["type"] || "projected";
-    this.vdatum_ = json_["vdatum"] || "orthometric";
-    //this.srsDefEllps_ = json_["srsDefEllps"] || "";
-    this.srsDef_ = json_["srsDefEllps"] || this.srsDef_;
-    this.periodicity_ = this.parsePeriodicity(json_["periodicity"]);
-    this.srsInfo_ = this.proj4_(this.srsDef_).info();
-    this.geoidGrid_ = null;
-    this.geoidGridMap_ = null;
-    this.srsProj4_ = this.proj4_(this.srsDef_, null, null, true); 
-    this.latlonProj4_ = null; 
-    this.proj4Cache_ = {};
+import MapTexture_ from './texture';
+import {math as math_} from '../utils/math';
+import GeographicLib_ from 'geographiclib';
 
-    if (json_["geoidGrid"]) {
-        var geoidGridData_ = json_["geoidGrid"];
+//get rid of compiler mess
+var MapTexture = MapTexture_;
+var math = math_;
+var GeographicLib = GeographicLib_;
 
-        this.geoidGrid_ = {
-            definition_ : geoidGridData_["definition"] || null,
-            srsDefEllps_ : geoidGridData_["srsDefEllps"] || null,
-            valueRange : geoidGridData_["valueRange"] || [0,1]
+
+var MapSrs = function(map, id, json) {
+    this.map = map;
+    this.id = id;
+    this.proj4 = map.proj4;
+    this.comment = json["comment"] || null;
+    this.srsDef = json["srsDef"] || null;
+    this.srsModifiers = json["srsModifiers"] || [];
+    this.type = json["type"] || "projected";
+    this.vdatum = json["vdatum"] || "orthometric";
+    //this.srsDefEllps = json["srsDefEllps"] || "";
+    this.srsDef = json["srsDefEllps"] || this.srsDef;
+    this.periodicity = this.parsePeriodicity(json["periodicity"]);
+    this.srsInfo = this.proj4(this.srsDef).info();
+    this.geoidGrid = null;
+    this.geoidGridMap = null;
+    this.srsProj4 = this.proj4(this.srsDef, null, null, true); 
+    this.latlonProj4 = null; 
+    this.proj4Cache = {};
+
+    if (json["geoidGrid"]) {
+        var geoidGridData = json["geoidGrid"];
+
+        this.geoidGrid = {
+            definition : geoidGridData["definition"] || null,
+            srsDefEllps : geoidGridData["srsDefEllps"] || null,
+            valueRange : geoidGridData["valueRange"] || [0,1]
         };
 
-        if (geoidGridData_["extents"]) {
-            this.geoidGrid_.extents_ = {
-                ll_ : geoidGridData_["extents"]["ll"],
-                ur_ : geoidGridData_["extents"]["ur"]
+        if (geoidGridData["extents"]) {
+            this.geoidGrid.extents = {
+                ll : geoidGridData["extents"]["ll"],
+                ur : geoidGridData["extents"]["ur"]
             };
         } else {
-            this.geoidGrid_.extents_ = {
-                ll_ : [0,0],
-                ur_ : [1,1]
+            this.geoidGrid.extents = {
+                ll : [0,0],
+                ur : [1,1]
             };
         }
 
-        if (this.geoidGrid_.definition_) {
-            var url_ = this.map_.makeUrl(this.geoidGrid_.definition_, {}, null);
-            this.geoidGridMap_ = new Melown.MapTexture(this.map_, url_, true);
+        if (this.geoidGrid.definition) {
+            var url = this.map.url.makeUrl(this.geoidGrid.definition, {}, null);
+            this.geoidGridMap = new MapTexture(this.map, url, true);
         }
         
-        if (this.geoidGrid_.srsDefEllps_) {
-            this.geoidGrid_.srsProj4_ = this.proj4_(this.geoidGrid_.srsDefEllps_, null, null, true);        
+        if (this.geoidGrid.srsDefEllps) {
+            this.geoidGrid.srsProj4 = this.proj4(this.geoidGrid.srsDefEllps, null, null, true);        
         }
     }
 
-    if (this.type_ == "geographic") {
-        this.spheroid_ = json_["spheroid"] || null;
+    if (this.type == "geographic") {
+        this.spheroid = json["spheroid"] || null;
 
-        if (this.spheroid_ == null) {
+        if (this.spheroid == null) {
             //TODO: return error
         }
     }
-
 };
 
-Melown.MapSrs.prototype.parsePeriodicity = function(periodicityData_) {
-    if (periodicityData_ == null) {
+
+MapSrs.prototype.parsePeriodicity = function(periodicityData) {
+    if (periodicityData == null) {
         return null;
     }
 
-    var periodicity_ = {
-        "type" : periodicityData_["type"] || "",
-        "period" : periodicityData_["period"] || 0
+    var periodicity = {
+        "type" : periodicityData["type"] || "",
+        "period" : periodicityData["period"] || 0
     };
 
-    return periodicity_;
+    return periodicity;
 };
 
-Melown.MapSrs.prototype.getInfo = function() {
+
+MapSrs.prototype.getInfo = function() {
     return {
-        "comment" : this.comment_,
-        "srsDef" : this.srsDef_,
-        "srsModifiers" : this.srsModifiers_,
-        "type" : this.type_,
-        "vdatum" : this.vdatum_,
-        "srsDefEllps" : this.srsDef_,
-        "a" : this.srsInfo_["a"],
-        "b" : this.srsInfo_["b"]
+        "comment" : this.comment,
+        "srsDef" : this.srsDef,
+        "srsModifiers" : this.srsModifiers,
+        "type" : this.type,
+        "vdatum" : this.vdatum,
+        "srsDefEllps" : this.srsDef,
+        "a" : this.srsInfo["a"],
+        "b" : this.srsInfo["b"]
     };
 };
 
-Melown.MapSrs.prototype.getSrsInfo = function() {
-    return this.srsInfo_;
+
+MapSrs.prototype.getSrsInfo = function() {
+    return this.srsInfo;
 };
 
-Melown.MapSrs.prototype.isReady = function() {
+
+MapSrs.prototype.isReady = function() {
     return this.isGeoidGridReady();
 };
 
-Melown.MapSrs.prototype.isGeoidGridReady = function() {
-    return (this.geoidGrid_ == null ||
-           (this.geoidGridMap_ != null && this.geoidGridMap_.isReady()));
+
+MapSrs.prototype.isGeoidGridReady = function() {
+    return (this.geoidGrid == null ||
+           (this.geoidGridMap != null && this.geoidGridMap.isReady()));
 };
 
-Melown.MapSrs.prototype.isProjected = function() {
-    return (this.type_ == "projected");
+
+MapSrs.prototype.isProjected = function() {
+    return (this.type == "projected");
 };
 
-Melown.MapSrs.prototype.getOriginalHeight = function(coords_, direction_) {
-    var height_ = coords_[2] || 0;
-    height_ /= this.getVerticalAdjustmentFactor(coords_);
-    height_ -= this.getGeoidGridDelta(coords_);
-    return height_;
+
+MapSrs.prototype.getOriginalHeight = function(coords, direction) {
+    var height = coords[2] || 0;
+    height /= this.getVerticalAdjustmentFactor(coords);
+    height -= this.getGeoidGridDelta(coords);
+    return height;
 };
 
-Melown.MapSrs.prototype.getFinalHeight = function(coords_) {
-    var height_ = coords_[2] || 0;
-    height_ += this.getGeoidGridDelta(coords_);
-    height_ *= this.getVerticalAdjustmentFactor(coords_);
-    return height_;
+
+MapSrs.prototype.getFinalHeight = function(coords) {
+    var height = coords[2] || 0;
+    height += this.getGeoidGridDelta(coords);
+    height *= this.getVerticalAdjustmentFactor(coords);
+    return height;
 };
 
-Melown.MapSrs.prototype.getGeoidGridDelta = function(coords_, original_) {
-    if (this.geoidGridMap_ != null && this.isGeoidGridReady()) {
+
+MapSrs.prototype.getGeoidGridDelta = function(coords, original) {
+    if (this.geoidGridMap != null && this.isGeoidGridReady()) {
         //get cooords in geoidGrid space
-        mapCoords_ = this.proj4_(this.srsProj4_, this.geoidGrid_.srsProj4_, [coords_[0], coords_[1]]);
+        mapCoords = this.proj4(this.srsProj4, this.geoidGrid.srsProj4, [coords[0], coords[1]]);
 
         //get image coords
-        var px_ = mapCoords_[0] - this.geoidGrid_.extents_.ll_[0];
-        var py_ = this.geoidGrid_.extents_.ur_[1] - mapCoords_[1];
+        var px = mapCoords[0] - this.geoidGrid.extents.ll[0];
+        var py = this.geoidGrid.extents.ur[1] - mapCoords[1];
 
-        var imageExtens_ = this.geoidGridMap_.imageExtents_;
+        var imageExtens = this.geoidGridMap.getImageExtents();
 
-        px_ *= imageExtens_[0] / (this.geoidGrid_.extents_.ur_[0] - this.geoidGrid_.extents_.ll_[0]);
-        py_ *= imageExtens_[1] / (this.geoidGrid_.extents_.ur_[1] - this.geoidGrid_.extents_.ll_[1]);
+        px *= imageExtens[0] / (this.geoidGrid.extents.ur[0] - this.geoidGrid.extents.ll[0]);
+        py *= imageExtens[1] / (this.geoidGrid.extents.ur[1] - this.geoidGrid.extents.ll[1]);
 
-        px_ = Melown.clamp(px_, 0, imageExtens_[0] - 2);
-        py_ = Melown.clamp(py_, 0, imageExtens_[1] - 2);
+        px = math.clamp(px, 0, imageExtens[0] - 2);
+        py = math.clamp(py, 0, imageExtens[1] - 2);
 
         //get bilineary interpolated value from image
-        var ix_ = Math.floor(px_);
-        var iy_ = Math.floor(py_);
-        var fx_ = px_ - ix_;
-        var fy_ = py_ - iy_;
+        var ix = Math.floor(px);
+        var iy = Math.floor(py);
+        var fx = px - ix;
+        var fy = py - iy;
 
-        var data_ = this.geoidGridMap_.imageData_;
-        var index_ = iy_ * imageExtens_[0];
-        var index2_ = index_ + imageExtens_[0];
-        var h00_ = data_[(index_ + ix_)*4];
-        var h01_ = data_[(index_ + ix_ + 1)*4];
-        var h10_ = data_[(index2_ + ix_)*4];
-        var h11_ = data_[(index2_ + ix_ + 1)*4];
-        var w0_ = (h00_ + (h01_ - h00_)*fx_);
-        var w1_ = (h10_ + (h11_ - h10_)*fx_);
-        var delta_ = (w0_ + (w1_ - w0_)*fy_);
+        var data = this.geoidGridMap.getImageData();
+        var index = iy * imageExtens[0];
+        var index2 = index + imageExtens[0];
+        var h00 = data[(index + ix)*4];
+        var h01 = data[(index + ix + 1)*4];
+        var h10 = data[(index2 + ix)*4];
+        var h11 = data[(index2 + ix + 1)*4];
+        var w0 = (h00 + (h01 - h00)*fx);
+        var w1 = (h10 + (h11 - h10)*fx);
+        var delta = (w0 + (w1 - w0)*fy);
 
         //strech deta into value range
-        delta_ = this.geoidGrid_.valueRange[0] + (delta_ * ((this.geoidGrid_.valueRange[1] - this.geoidGrid_.valueRange[0]) / 255));
+        delta = this.geoidGrid.valueRange[0] + (delta * ((this.geoidGrid.valueRange[1] - this.geoidGrid.valueRange[0]) / 255));
 
-        return delta_;
+        return delta;
     }
 
     return 0;
 };
 
-Melown.MapSrs.prototype.getVerticalAdjustmentFactor = function(coords_) {
-    if (this.srsModifiers_.indexOf("adjustVertical") != -1) {
-        var info_ = this.getSrsInfo();
+
+MapSrs.prototype.getVerticalAdjustmentFactor = function(coords) {
+    if (this.srsModifiers.indexOf("adjustVertical") != -1) {
+        var info = this.getSrsInfo();
 
         //convert coords to latlon
-        var latlonProj_ = "+proj=longlat " +
+        var latlonProj = "+proj=longlat " +
                           " +alpha=0" +
-                          " +gamma=0 +a=" + info_["a"] +
-                          " +b=" + info_["b"] +
-                          " +x_0=0 +y_0=0";
+                          " +gamma=0 +a=" + info["a"] +
+                          " +b=" + info["b"] +
+                          " +x0=0 +y0=0";
 
-        if (!this.latlonProj4_) {
-            this.latlonProj4_ = this.proj4_(latlonProj_, null, null, true); 
+        if (!this.latlonProj4) {
+            this.latlonProj4 = this.proj4(latlonProj, null, null, true); 
         }
 
-        var coords2_ = this.proj4_(this.srsProj4_, this.latlonProj4_, [coords_[0], coords_[1]]);
+        var coords2 = this.proj4(this.srsProj4, this.latlonProj4, [coords[0], coords[1]]);
 
         //move coors 1000m
-        var geod = new GeographicLib["Geodesic"]["Geodesic"](info_["a"],
-                                                       (info_["a"] / info_["b"]) - 1.0);
+        var geod = new GeographicLib.Geodesic.Geodesic(info["a"],
+                                                       (info["a"] / info["b"]) - 1.0);
 
 
-        var r = geod["Direct"](coords2_[1], coords2_[0], 90, 1000);
-        coords2_ = [r.lon2, r.lat2];
+        var r = geod.Direct(coords2[1], coords2[0], 90, 1000);
+        coords2 = [r.lon2, r.lat2];
 
         //convet coords from latlon back to projected
-        coords2_ = this.proj4_(this.latlonProj4_, this.srsProj4_, coords2_);
+        coords2 = this.proj4(this.latlonProj4, this.srsProj4, coords2);
 
         //get distance between coords
-        var dx_ = coords2_[0] - coords_[0];
-        var dy_ = coords2_[1] - coords_[1];
+        var dx = coords2[0] - coords[0];
+        var dy = coords2[1] - coords[1];
 
-        var distance_ = Math.sqrt(dx_ * dx_ + dy_* dy_);
+        var distance = Math.sqrt(dx * dx + dy* dy);
 
         //get factor
-        var factor_ = distance_ / 1000;
+        var factor = distance / 1000;
 
-        return factor_;
+        return factor;
     }
 
     return 1.0;
 };
 
-Melown.MapSrs.prototype.convertCoordsTo = function(coords_, srs_, skipVerticalAdjust_) {
+
+MapSrs.prototype.convertCoordsTo = function(coords, srs, skipVerticalAdjust) {
     this.isReady();
-    if (typeof srs_ !== "string") {
-        if (srs_.id_ == this.id_) {
-            return coords_.slice();
+    if (typeof srs !== "string") {
+        if (srs.id == this.id) {
+            return coords.slice();
         }
 
-        srs_.isReady();
+        srs.isReady();
     }
 
-    coords_ = coords_.slice();
+    coords = coords.slice();
 
-    var stringSrs_ = (typeof srs_ === "string");
+    var stringSrs = (typeof srs === "string");
 
-    //if (!skipVerticalAdjust_ && stringSrs_) {
-        coords_[2] = this.getOriginalHeight(coords_);
+    //if (!skipVerticalAdjust && stringSrs) {
+        coords[2] = this.getOriginalHeight(coords);
     //}
 
-    var srsDef_ = (stringSrs_) ? srs_ : srs_.srsProj4_;
+    var srsDef = (stringSrs) ? srs : srs.srsProj4;
 
     /*
-    if (srsDef_.isGeocent && this.srsProj4_.projName == "merc") {
-        var coords3_ = coords_.slice();
-        this.convertMercToWGS(coords3_);
-        this.convertWGSToGeocent(coords3_, srsDef_);
-        return coords3_;
+    if (srsDef.isGeocent && this.srsProj4.projName == "merc") {
+        var coords3 = coords.slice();
+        this.convertMercToWGS(coords3);
+        this.convertWGSToGeocent(coords3, srsDef);
+        return coords3;
     }*/
 
 
-    var srsDef2_ = (stringSrs_) ? srs_ : srs_.srsDef_;
-    //var coords2_ = this.proj4_(this.srsProj4_, srsDef_, coords_);
+    var srsDef2 = (stringSrs) ? srs : srs.srsDef;
+    //var coords2 = this.proj4(this.srsProj4, srsDef, coords);
 
-    var proj_ = this.proj4Cache_[srsDef2_];
+    var proj = this.proj4Cache[srsDef2];
     
-    if (!proj_) {
-        proj_ = this.proj4_(this.srsProj4_, srsDef_);
-        this.proj4Cache_[srsDef2_] = proj_;
+    if (!proj) {
+        proj = this.proj4(this.srsProj4, srsDef);
+        this.proj4Cache[srsDef2] = proj;
     }
 
-    var coords2_ = proj_.forward(coords_);
+    var coords2 = proj.forward(coords);
 
-    if (!skipVerticalAdjust_ && stringSrs_) {
-        coords2_[2] = srs_.getFinalHeight(coords2_);
+    if (!skipVerticalAdjust && stringSrs) {
+        coords2[2] = srs.getFinalHeight(coords2);
     }
 
-    return coords2_;
+    return coords2;
 };
 
-Melown.MapSrs.prototype.convertCoordsToFast = function(coords_, srs_, skipVerticalAdjust_, coords2_, index_, index2_) {
 
-    //if (!skipVerticalAdjust_ && stringSrs_) {
-        //coords_[2] = this.getOriginalHeight(coords_);
+MapSrs.prototype.convertCoordsToFast = function(coords, srs, skipVerticalAdjust, coords2, index, index2) {
+
+    //if (!skipVerticalAdjust && stringSrs) {
+        //coords[2] = this.getOriginalHeight(coords);
     //}
 
-    var srsDef_ = srs_.srsProj4_;
+    var srsDef = srs.srsProj4;
     
     /*
-    if (srsDef_.isGeocent && this.srsProj4_.projName == "merc") {
-        this.convertMercToWGS(coords_, coords2_, index_, index2_);
-        this.convertWGSToGeocent(coords2_, srsDef_, coords2_, index2_, index2_);
+    if (srsDef.isGeocent && this.srsProj4.projName == "merc") {
+        this.convertMercToWGS(coords, coords2, index, index2);
+        this.convertWGSToGeocent(coords2, srsDef, coords2, index2, index2);
         return;
     }*/
 
-    var srsDef2_ = srs_.srsDef_;
+    var srsDef2 = srs.srsDef;
 
-    var proj_ = this.proj4Cache_[srsDef2_];
+    var proj = this.proj4Cache[srsDef2];
     
-    if (!proj_) {
-        proj_ = this.proj4_(this.srsProj4_, srsDef_);
-        this.proj4Cache_[srsDef2_] = proj_;
+    if (!proj) {
+        proj = this.proj4(this.srsProj4, srsDef);
+        this.proj4Cache[srsDef2] = proj;
     }
 
-    var coords3_ = proj_.forward(coords_);
+    var coords3 = proj.forward(coords);
     
-    coords2_[index2_] = coords3_[0];
-    coords2_[index2_+1] = coords3_[1];
-    coords2_[index2_+2] = coords3_[2];
+    coords2[index2] = coords3[0];
+    coords2[index2+1] = coords3[1];
+    coords2[index2+2] = coords3[2];
     
 
-    //if (!skipVerticalAdjust_ && stringSrs_) {
-        //coords2_[2] = srs_.getFinalHeight(coords2_);
+    //if (!skipVerticalAdjust && stringSrs) {
+        //coords2[2] = srs.getFinalHeight(coords2);
     //}
     
-    if (srs_.geoidGrid_) {
-        coords2_[index2_+2] -= srs_.getGeoidGridDelta(coords_);
+    if (srs.geoidGrid) {
+        coords2[index2+2] -= srs.getGeoidGridDelta(coords);
     }
 };
 
-Melown.MapSrs.prototype.convertCoordsFrom = function(coords_, srs_) {
+
+MapSrs.prototype.convertCoordsFrom = function(coords, srs) {
     this.isReady();
-    if (typeof srs_ !== "string") {
-        if (srs_.id_ == this.id_) {
-            return coords_.slice();
+    if (typeof srs !== "string") {
+        if (srs.id == this.id) {
+            return coords.slice();
         }
 
-        srs_.isReady();
+        srs.isReady();
     }
 
-    coords_ = coords_.slice();
+    coords = coords.slice();
 
-    if (typeof srs_ !== "string") {
-        coords_[2] = srs_.getOriginalHeight(coords_);
+    if (typeof srs !== "string") {
+        coords[2] = srs.getOriginalHeight(coords);
     }
 
-    var srsDef_ = (typeof srs_ === "string") ? srs_ : srs_.srsProj4_;
-    var srsDef2_ = (typeof srs_ === "string") ? srs_ : srs_.srsDef_;
+    var srsDef = (typeof srs === "string") ? srs : srs.srsProj4;
+    var srsDef2 = (typeof srs === "string") ? srs : srs.srsDef;
 
-    //var coords2_ = this.proj4_(srsDef_, this.srsProj4_, coords_);
+    //var coords2 = this.proj4(srsDef, this.srsProj4, coords);
 
-    var proj_ = this.proj4Cache_[srsDef2_];
+    var proj = this.proj4Cache[srsDef2];
     
-    if (!proj_) {
-        proj_ = this.proj4_(this.srsProj4_, srsDef_);
-        this.proj4Cache_[srsDef2_] = proj_;
+    if (!proj) {
+        proj = this.proj4(this.srsProj4, srsDef);
+        this.proj4Cache[srsDef2] = proj;
     }
 
-    var coords2_ = proj_.inverse(coords_);
+    var coords2 = proj.inverse(coords);
 
-    coords2_[2] = this.getFinalHeight(coords2_);
+    coords2[2] = this.getFinalHeight(coords2);
 
-    return coords2_;
+    return coords2;
 };
 
 
-Melown.MapSrs.prototype.phi2z = function(eccent_, ts_) {
-  var HALF_PI = Math.PI*0.5;
-  var eccnth_ = 0.5 * eccent_;
-  var con_, dphi_;
-  var phi_ = HALF_PI - 2 * Math.atan(ts_);
+MapSrs.prototype.phi2z = function(eccent, ts) {
+  var HALFPI = Math.PI*0.5;
+  var eccnth = 0.5 * eccent;
+  var con, dphi;
+  var phi = HALFPI - 2 * Math.atan(ts);
   for (var i = 0; i <= 15; i++) {
-    con_ = eccent_ * Math.sin(phi_);
-    dphi_ = HALF_PI - 2 * Math.atan(ts_ * (Math.pow(((1 - con_) / (1 + con_)), eccnth_))) - phi_;
-    phi_ += dphi_;
-    if (Math.abs(dphi_) <= 0.0000000001) {
-      return phi_;
+    con = eccent * Math.sin(phi);
+    dphi = HALFPI - 2 * Math.atan(ts * (Math.pow(((1 - con) / (1 + con)), eccnth))) - phi;
+    phi += dphi;
+    if (Math.abs(dphi) <= 0.0000000001) {
+      return phi;
     }
   }
   //console.log("phi2z has NoConvergence");
@@ -349,56 +366,57 @@ Melown.MapSrs.prototype.phi2z = function(eccent_, ts_) {
 };
 
 
-Melown.MapSrs.prototype.convertMercToWGS = function(coords_, coords2_, index_, index2_) {
-    var TWO_PI = Math.PI * 2;
-    var HALF_PI = Math.PI*0.5;
-    var proj_ = this.srsProj4_;
-    var x = coords_[index_] - proj_.x0;
-    var y = coords_[index_+1] - proj_.y0;
+MapSrs.prototype.convertMercToWGS = function(coords, coords2, index, index2) {
+    var TWOPI = Math.PI * 2;
+    var HALFPI = Math.PI*0.5;
+    var proj = this.srsProj4;
+    var x = coords[index] - proj.x0;
+    var y = coords[index+1] - proj.y0;
 
-    if (proj_.sphere) {
-        coords2_[index2_+1] = HALF_PI - 2 * Math.atan(Math.exp(-y / (proj_.a * proj_.k0)));
+    if (proj.sphere) {
+        coords2[index2+1] = HALFPI - 2 * Math.atan(Math.exp(-y / (proj.a * proj.k0)));
     } else {
-        var ts_ = Math.exp(-y / (proj_.a * proj_.k0));
-        var yy = this.phi2z(proj_.e, ts_);
-        coords2_[index2_+1] = yy;
+        var ts = Math.exp(-y / (proj.a * proj.k0));
+        var yy = this.phi2z(proj.e, ts);
+        coords2[index2+1] = yy;
         if (yy === -9999) {
             return;
         }
     }
     
-    //coords_[0] = adjust_lon(proj_.long0 + x / (proj_.a * proj_.k0));
-    x = proj_.long0 + x / (proj_.a * proj_.k0);
+    //coords[0] = adjustlon(proj.long0 + x / (proj.a * proj.k0));
+    x = proj.long0 + x / (proj.a * proj.k0);
     var SPI = 3.14159265359;
-    coords2_[index2_] = (Math.abs(x) <= SPI) ? x : (x - ((x < 0) ? -1 : 1) * TWO_PI);
-    coords2_[index2_+2] = coords_[index_+2];
+    coords2[index2] = (Math.abs(x) <= SPI) ? x : (x - ((x < 0) ? -1 : 1) * TWOPI);
+    coords2[index2+2] = coords[index+2];
 };
 
-Melown.MapSrs.prototype.convertWGSToGeocent = function(coords_, srs_, coords2_, index_, index2_) {
-    var datum_ = srs_.datum;
 
-    var HALF_PI = Math.PI*0.5;
-    var Longitude = coords_[index_];
-    var Latitude = coords_[index_+1];
-    var Height = coords_[index_+2]; //Z value not always supplied
+MapSrs.prototype.convertWGSToGeocent = function(coords, srs, coords2, index, index2) {
+    var datum = srs.datum;
+
+    var HALFPI = Math.PI*0.5;
+    var Longitude = coords[index];
+    var Latitude = coords[index+1];
+    var Height = coords[index+2]; //Z value not always supplied
 
     var Rn; /*  Earth radius at location  */
-    var Sin_Lat; /*  Math.sin(Latitude)  */
-    var Sin2_Lat; /*  Square of Math.sin(Latitude)  */
-    var Cos_Lat; /*  Math.cos(Latitude)  */
+    var SinLat; /*  Math.sin(Latitude)  */
+    var Sin2Lat; /*  Square of Math.sin(Latitude)  */
+    var CosLat; /*  Math.cos(Latitude)  */
 
     /*
      ** Don't blow up if Latitude is just a little out of the value
      ** range as it may just be a rounding issue.  Also removed longitude
      ** test, it should be wrapped by Math.cos() and Math.sin().  NFW for PROJ.4, Sep/2001.
      */
-    if (Latitude < -HALF_PI && Latitude > -1.001 * HALF_PI) {
-      Latitude = -HALF_PI;
+    if (Latitude < -HALFPI && Latitude > -1.001 * HALFPI) {
+      Latitude = -HALFPI;
     }
-    else if (Latitude > HALF_PI && Latitude < 1.001 * HALF_PI) {
-      Latitude = HALF_PI;
+    else if (Latitude > HALFPI && Latitude < 1.001 * HALFPI) {
+      Latitude = HALFPI;
     }
-    else if ((Latitude < -HALF_PI) || (Latitude > HALF_PI)) {
+    else if ((Latitude < -HALFPI) || (Latitude > HALFPI)) {
       /* Latitude out of range */
       //..reportError('geocent:lat out of range:' + Latitude);
       return null;
@@ -408,12 +426,15 @@ Melown.MapSrs.prototype.convertWGSToGeocent = function(coords_, srs_, coords2_, 
       Longitude -= (2 * Math.PI);
     }
 
-    Sin_Lat = Math.sin(Latitude);
-    Cos_Lat = Math.cos(Latitude);
-    Sin2_Lat = Sin_Lat * Sin_Lat;
-    Rn = datum_.a / (Math.sqrt(1.0e0 - datum_.es * Sin2_Lat));
-    coords2_[index2_] = (Rn + Height) * Cos_Lat * Math.cos(Longitude);
-    coords2_[index2_+1] = (Rn + Height) * Cos_Lat * Math.sin(Longitude);
-    coords2_[index2_+2] = ((Rn * (1 - datum_.es)) + Height) * Sin_Lat;
+    SinLat = Math.sin(Latitude);
+    CosLat = Math.cos(Latitude);
+    Sin2Lat = SinLat * SinLat;
+    Rn = datum.a / (Math.sqrt(1.0e0 - datum.es * Sin2Lat));
+    coords2[index2] = (Rn + Height) * CosLat * Math.cos(Longitude);
+    coords2[index2+1] = (Rn + Height) * CosLat * Math.sin(Longitude);
+    coords2[index2+2] = ((Rn * (1 - datum.es)) + Height) * SinLat;
 };
+
+
+export default MapSrs;
 
