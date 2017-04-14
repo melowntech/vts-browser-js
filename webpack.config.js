@@ -4,17 +4,23 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var CommonChunks = require('copy-webpack-plugin');
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var LicenseWebpackPlugin = require('license-webpack-plugin');
+var fs = require("fs");
+
 
 var PROD = (process.env.NODE_ENV === 'production')
+var TARGET_DIR = PROD ? __dirname + "/dist/" : __dirname + "/build/";
 
 var plugins = [
     new ExtractTextPlugin({
       filename: "vts-browser.css"
-    })
+    }),
+    new LicenseWebpackPlugin({pattern: /^(MIT|ISC|BSD.*)$/}),
+    new webpack.BannerPlugin(fs.readFileSync('./LICENSE', 'utf8'))
 ];
 
 if (PROD) {
-    plugins.push(new UglifyJsPlugin({
+    plugins.unshift(new UglifyJsPlugin({
       compress: true,
       mangle: true,
       extractComments: {},
@@ -34,7 +40,7 @@ var config = {
   },
   devtool: 'source-map',
   output: {
-    path: __dirname + '/build/',
+    path: TARGET_DIR,
     filename: '[name].js',
     libraryTarget: "var",
     library: "vts"
@@ -42,29 +48,7 @@ var config = {
   module: {
     loaders: [
     {
-        include: [path.resolve(__dirname, "src/")],
-
-//        test: /\.(js|jsx)$/,
-        //loader: "babel-loader",
-
-//        query: {
-//  "presents": ["es2015"],
-//  "plugins": ["babel-plugin-add-module-exports"]
-  //      }
-
-        //loaders: [
-        //{
-         // loader: 'babel-loader',
-
-      //query: {
-//        presets: [
-    //      'es2015'
-  //      ],
-        //plugins: []
-    //}          
-         // options: { presets: ['es2015'] }
-        //}
-       // ]
+        include: [path.resolve(__dirname, "src/")]
     },
     {
       test: /\.css$/, loader: ExtractTextPlugin.extract({fallback: "style-loader", use: "css-loader"})
