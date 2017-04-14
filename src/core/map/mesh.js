@@ -53,7 +53,7 @@ MapMesh.prototype.killSubmeshes = function(killedByCache) {
     //this.submeshes = [];
     this.submeshesKilled = true;
 
-    if (killedByCache != true && this.cacheItem) {
+    if (killedByCache !== true && this.cacheItem) {
         this.map.resourcesCache.remove(this.cacheItem);
         //this.tile.validate();
     }
@@ -81,7 +81,7 @@ MapMesh.prototype.killGpuSubmeshes = function(killedByCache) {
 
     this.gpuSubmeshes = [];
 
-    if (killedByCache != true && this.gpuCacheItem) {
+    if (killedByCache !== true && this.gpuCacheItem) {
         this.map.gpuCache.remove(this.gpuCacheItem);
         //this.tile.validate();
     }
@@ -185,7 +185,7 @@ MapMesh.prototype.onLoad = function(url, onLoaded, onError) {
 
 
 MapMesh.prototype.onLoadError = function() {
-    if (this.map.killed == true){
+    if (this.map.killed){
         return;
     }
 

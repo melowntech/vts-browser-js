@@ -74,7 +74,7 @@ GpuDevice.prototype.kill = function() {
 GpuDevice.prototype.resize = function(size, skipCanvas) {
     this.curSize = size;
 
-    if (this.canvas != null && skipCanvas != true) {
+    if (this.canvas != null && skipCanvas !== true) {
         this.canvas.width = this.curSize[0];
         this.canvas.height = this.curSize[1];
     }
@@ -156,7 +156,7 @@ GpuDevice.prototype.useProgram = function(program, attributes, nextSampler) {
 
 
 GpuDevice.prototype.bindTexture = function(texture, id) {
-    if (texture.loaded == false) {
+    if (!texture.loaded) {
         return;
     }
 
@@ -219,7 +219,7 @@ GpuDevice.prototype.setState = function(state, directOffset) {
     //directOffset = directOffset || state.zoffset;
 
     if (currentState.blend != state.blend) {
-        if (state.blend == true) {
+        if (state.blend) {
             gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
             gl.enable(gl.BLEND);
@@ -229,7 +229,7 @@ GpuDevice.prototype.setState = function(state, directOffset) {
     }
 
     if (currentState.stencil != state.stencil) {
-        if (state.stencil == true) {
+        if (state.stencil) {
             gl.enable(gl.STENCIL_TEST);
         } else {
             gl.disable(gl.STENCIL_TEST);
@@ -247,7 +247,7 @@ GpuDevice.prototype.setState = function(state, directOffset) {
     }
 */
     if (currentState.zwrite != state.zwrite) {
-        if (state.zwrite == true) {
+        if (state.zwrite) {
             gl.depthMask(true);
         } else {
             gl.depthMask(false);
@@ -271,7 +271,7 @@ GpuDevice.prototype.setState = function(state, directOffset) {
     }
 
     if (currentState.culling != state.culling) {
-        if (state.culling == true) {
+        if (state.culling) {
             gl.enable(gl.CULL_FACE);
         } else {
             gl.disable(gl.CULL_FACE);

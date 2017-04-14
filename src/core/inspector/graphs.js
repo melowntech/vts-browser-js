@@ -109,7 +109,7 @@ InspectorGraphs.prototype.hidePanel = function() {
 
 
 InspectorGraphs.prototype.switchPanel = function() {
-    if (this.panelVisible == true) {
+    if (this.panelVisible) {
         this.hidePanel();
     } else {
         this.showPanel();
@@ -178,7 +178,7 @@ InspectorGraphs.prototype.graphPressed = function() {
 InspectorGraphs.prototype.magnifyPressed = function() {
     this.magnify = !this.magnify;
 
-    if (this.magnify == true) {
+    if (this.magnify) {
         this.canvasRender.style.width = "1400px";
         this.canvasRender.style.height = "200px";
         this.canvasCache.style.width = "1400px";
@@ -204,13 +204,13 @@ InspectorGraphs.prototype.updateGraphsPanel = function() {
         return;
     }
 
-    if (map.stats.recordGraphs == true) {
+    if (map.stats.recordGraphs) {
         document.getElementById("vts-graphs-rec").innerHTML = "Recording On";
     } else {
         document.getElementById("vts-graphs-rec").innerHTML = "Recording Off";
     }
 
-    if (this.refresh == true) {
+    if (this.refresh) {
         document.getElementById("vts-graphs-ref").innerHTML = "Refresh On";
     } else {
         document.getElementById("vts-graphs-ref").innerHTML = "Refresh Off";
@@ -238,19 +238,18 @@ InspectorGraphs.prototype.onMouseMove = function(event) {
     var x = event.clientX - this.canvasRender.getBoundingClientRect().left;
     this.showCursor = true;
 
-    if (this.magnify == true) {
+    if (this.magnify) {
         x = Math.floor(x * 900/1400);
     }
 
     this.cursorIndex = x;
 
     var map = this.core.getMap();
-
     if (map == null) {
         return;
     }
 
-    if (map.stats.recordGraphs != true) {
+    if (!map.stats.recordGraphs) {
         this.updateGraphs(null);
     }
 };
@@ -265,7 +264,7 @@ InspectorGraphs.prototype.onMouseOut = function() {
 InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
     var map = this.core.getMap();
 
-    if (map == null || (this.refresh == false && !ignoreRefresh) || this.panelVisible == false) {
+    if (map == null || (!this.refresh && !ignoreRefresh) || !this.panelVisible) {
         return;
     }
 
@@ -348,7 +347,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
     }
 
-    if (this.showCursor == true) {
+    if (this.showCursor) {
         ctx.fillStyle="#aa00aa";
         var index = (this.cursorIndex) % samples;
         ctx.fillRect(Math.floor(index*factorX)-1, 0, 1, height);
@@ -489,7 +488,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 ctx.fillRect(i*factorX, height, 1, -(values[index])*factorY);
             }
 
-            if (this.showCursor == true) {
+            if (this.showCursor) {
                 var index = (this.cursorIndex + samplesIndex) % samples;
                 var str = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graph + ' Max: ' + Math.round(values[index]) +'</div>';
             } else {
@@ -537,7 +536,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
             }
 
-            if (this.showCursor == true) {
+            if (this.showCursor) {
                 var index = (this.cursorIndex + samplesIndex) % samples;
 
                 var str = "LODs:" + values[index][0];
@@ -662,7 +661,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
             }
 
 
-            if (this.showCursor == true) {
+            if (this.showCursor) {
                 var index = (this.cursorIndex + samplesIndex) % samples;
                 var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + valuesTextures[index][0][0] + "/" + valuesTextures[index][1][0];
                 str += ' &nbsp Size +/-: ' + (valuesTextures[index][0][1]/1024/1024).toFixed(2) + "/" + (valuesTextures[index][1][1]/1024/1024).toFixed(2);
@@ -686,7 +685,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
     }
 
-    if (this.showCursor == true) {
+    if (this.showCursor) {
         ctx.fillStyle="#aa00aa";
         var index = (this.cursorIndex) % samples;
         ctx.fillRect(Math.floor(index*factorX)-1, 0, 1, height);

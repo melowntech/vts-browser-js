@@ -51,7 +51,7 @@ GpuTexture.prototype.createFromData = function(lx, ly, data, filter, repeat) {
     this.texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    if (repeat == true){
+    if (repeat){
         repeat = gl.REPEAT;
         this.repeat = true;
     } else {
@@ -83,7 +83,7 @@ GpuTexture.prototype.createFromData = function(lx, ly, data, filter, repeat) {
 
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, lx, ly, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
-    if (mipmaps == true) {
+    if (mipmaps) {
         gl.generateMipmap(gl.TEXTURE_2D);
     }
 
@@ -103,7 +103,7 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
     this.texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    if (repeat == true) {
+    if (repeat) {
         repeat = gl.REPEAT;
         this.repeat = true;
     } else {
@@ -134,14 +134,14 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
     //gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-    if (this.gpu.noTextures != true) {
+    if (this.gpu.noTextures !== true) {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         //if (gl.getError() == 1281) {
           //  gl = gl;
         //}
         //console.log(gl.getError());
 
-        if (mipmaps == true) {
+        if (mipmaps) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
@@ -164,7 +164,7 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
 
 GpuTexture.prototype.load = function(path, onLoaded, onError, direct) {
     this.image = utils.loadImage(path, (function () {
-        if (this.core != null && this.core.killed == true) {
+        if (this.core != null && this.core.killed) {
             return;
         }
 
@@ -177,7 +177,7 @@ GpuTexture.prototype.load = function(path, onLoaded, onError, direct) {
 
     }).bind(this), (function () {
 
-        if (this.core != null && this.core.killed == true) {
+        if (this.core != null && this.core.killed) {
             return;
         }
 

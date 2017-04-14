@@ -124,7 +124,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         return true;
     } else if (tile.lastRenderState){
 
-        if (tile.surfaceMesh.isReady(true, priority) == true) {
+        if (tile.surfaceMesh.isReady(true, priority)) {
             if (tile.drawCommands[channel].length > 0) {
                 if (!preventRedener) {
                     draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);

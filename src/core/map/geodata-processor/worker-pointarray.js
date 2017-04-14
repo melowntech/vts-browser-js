@@ -49,7 +49,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     //zIndex = (zIndex !== null) ? zIndex : getLayerPropertyValue(style, "z-index", pointArray, lod);
 
     var icon = getLayerPropertyValue(style, "icon", pointArray, lod);
-    if (icon == true) {
+    if (icon) {
         var source = getLayerPropertyValue(style, "icon-source", pointArray, lod);
         
         if (source) {
@@ -75,7 +75,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     }
 
     var label = getLayerPropertyValue(style, "label", pointArray, lod);
-    if (label == true) {
+    if (label) {
         var source = getLayerPropertyValue(style, "label-source", pointArray, lod);
         var text = getLayerExpresionValue(style, source, pointArray, lod);
         var size = getLayerPropertyValue(style, "label-size", pointArray, lod);
@@ -147,7 +147,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
         
             //allocate buffers
         
-            if (pointFlat == false) {
+            if (!pointFlat) {
                 var pointsVertices = circleSides * 3 * 4;
                 var vertexBuffer = new Array(points.length * pointsVertices);
                 var pointsNormals = circleSides * 3 * 4;
@@ -162,7 +162,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             //add ponints
             for (var i = 0, li = points.length; i < li; i++) {
         
-                if (forceOrigin == true) {
+                if (forceOrigin) {
                     p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
                 }
         
@@ -174,19 +174,19 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                 center[1] += p1[1];
                 center[2] += p1[2];
 
-                if (icon == true) {
+                if (icon) {
                     processIcon(p1, iconData) ;//, pointArray, lod, style, zIndex);
                 }
     
-                if (label == true) {
+                if (label) {
                     processLabel(p1, labelData); //, pointArray, lod, style, zIndex);
                 }
         
                 for (var j = 0; j < circleSides; j++) {
 
-                    if (point == true) {
+                    if (point) {
         
-                        if (pointFlat == true) {
+                        if (pointFlat) {
         
                             //add polygon
                             vertexBuffer[index] = p1[0];
@@ -239,7 +239,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                     }
                 }
         
-                if (dpoints == true) {
+                if (dpoints) {
                     var p2 = points[i+1];
                     p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
                 } else {
@@ -262,8 +262,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
-    if (point == true) {
-        if (pointFlat == true) {
+    if (point) {
+        if (pointFlat) {
             postGroupMessage({"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer,
                               "color":pointColor, "z-index":zIndex, "visibility": visibility, "center": center,
                               "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
@@ -281,7 +281,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
         }
     }
 
-    if (icon == true && iconData.vertexBuffer.length > 0) {
+    if (icon && iconData.vertexBuffer.length > 0) {
         postGroupMessage({"command":"addRenderJob", "type": "icon", "vertexBuffer": iconData.vertexBuffer,
                           "originBuffer": iconData.originBuffer, "texcoordsBuffer": iconData.texcoordsBuffer,
                           "icon":globals.stylesheetBitmaps[iconData.source[0]], "color":iconData.color, "z-index":zIndex,
@@ -292,7 +292,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                           "lod":(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer]);
     }
 
-    if (label == true && labelData.vertexBuffer.length > 0) {
+    if (label && labelData.vertexBuffer.length > 0) {
         postGroupMessage({"command":"addRenderJob", "type": "label", "vertexBuffer": labelData.vertexBuffer,
                           "originBuffer": labelData.originBuffer, "texcoordsBuffer": labelData.texcoordsBuffer,
                           "color":labelData.color, "z-index":zIndex, "visibility": visibility, "culling": culling, 

@@ -6,8 +6,8 @@ var MapGeodataProcessor = function(surface, listener) {
     this.listener = listener;
     this.ready = true;
 
-    //var worker = require("worker-loader?inline&fallback=false!./worker-main");
     var worker = require("worker-loader?inline&fallback=false!./worker-main");
+//    var worker = require("worker-loader?inline!./worker-main");
 
     //debug worker
     this.processWorker = new worker;
@@ -39,7 +39,7 @@ MapGeodataProcessor.prototype.isReady = function(listener) {
 
 
 MapGeodataProcessor.prototype.onMessage = function(message) {
-    if (this.killed == true) {
+    if (this.killed) {
         return;
     }
 

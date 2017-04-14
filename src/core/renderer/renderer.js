@@ -124,7 +124,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     var init = new RenderInit(this);
     this.draw = new RenderDraw(this);
 
-    //if (window["MelMobile"] == true && this.gpu.canvas != null) {
+    //if (window["MelMobile"] && this.gpu.canvas != null) {
       //  this.gpu.canvas.style.width = "100%";
       //  this.gpu.canvas.style.height = "100%";
     //}
@@ -135,7 +135,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
 
 Renderer.prototype.onResize = function() {
-    if (this.killed == true){
+    if (this.killed){
         return;
     }
 
@@ -150,7 +150,7 @@ Renderer.prototype.onResize = function() {
 
 
 Renderer.prototype.kill = function() {
-    if (this.killed == true){
+    if (this.killed){
         return;
     }
 
@@ -195,7 +195,7 @@ Renderer.prototype.resizeGL = function(width, height, skipCanvas, skipPaint) {
     this.oldSize = [width, height];
     this.gpu.resize(this.curSize, skipCanvas);
 
-    if (skipPaint != true) {
+    if (skipPaint !== true) {
         this.draw.paintGL();
     }
 

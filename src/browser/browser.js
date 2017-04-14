@@ -370,7 +370,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
             break;
     }
 
-    if (ignoreCore == true) {
+    if (ignoreCore) {
         if ((key.indexOf("map") == 0 || key.indexOf("mario") == 0 || key.indexOf("authorization") == 0) && this.core.getMap()) {
             this.core.getMap().setConfigParam(key, value);
         }
@@ -433,7 +433,7 @@ Browser.prototype.getConfigParam = function(key) {
         case "pan":                  return this.config.autoPan;
     }
 
-    if (ignoreCore == true) {
+    if (ignoreCore) {
         if (key.indexOf("map") == 0 && this.core.getMap()) {
             return this.core.getMap().getConfigParam(key, value);
         }

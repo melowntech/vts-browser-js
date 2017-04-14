@@ -111,7 +111,6 @@ var MapDraw = function(map) {
         singleLod : false,
         loadedIndex : 0,
         singleLodedIndex : 0,
-        loadedIndex : 0,
         loaded : [],
         loadFirst : 0,
         loadLast : 0

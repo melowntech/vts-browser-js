@@ -17,7 +17,7 @@ var MapSurfaceTree = function(map, freeLayer, freeLayerSurface) {
 
     this.surfaceTree = new MapSurfaceTile(this.map, null, this.rootId);
 
-    if (freeLayer != true) {
+    if (freeLayer !== true) {
         //this.heightTracer = new MapMetanodeTracer(this, null, this.traceTileHeight.bind(this), this.traceHeightChild.bind(this));
         //this.heightTracerNodeOnly = new MapMetanodeTracer(this, null, this.traceTileHeightNodeOnly.bind(this), this.traceHeightChild.bind(this));
     }
@@ -1052,7 +1052,7 @@ MapSurfaceTree.prototype.traceHeightTile = function(tile, priority, nodeReadyOnl
     //process tile e.g. draw or get height
     var res = heightFunction(tile, this.params, priority); 
     
-    if (res == true) { //we need to go deeper
+    if (res) { //we need to go deeper
         var childIndex = this.traceHeightChild(tile, this.params);
         this.traceHeightTile(tile.children[childIndex], 0, false, heightFunction);
     }
