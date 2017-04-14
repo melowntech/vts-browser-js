@@ -316,10 +316,11 @@ RendererInit.prototype.initBBox = function() {
 
     renderer.font = new GpuFont(gpu, this.core);
 
-    if (renderer.displayDrawTest != true) {
+/*
+    if (!renderer.displayDrawTest) {
         return;
     }
-/*
+
     var x = 464823, y = 5582535, z = 259;
 
     var d = 400;

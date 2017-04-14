@@ -73,7 +73,7 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
             }
 
             //is it array (rgb, rgba, vec2)?
-            if (Array.isArray(value) == true) {
+            if (Array.isArray(value)) {
 
                 if (key == "icon-source" && globals.stylesheetBitmaps[value[0]] == null) {
                     logError("wrong-object", layer["$$layer-id"], key, value, null, "bitmap");
@@ -325,7 +325,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
                     if (stopsValueType == null) {
                         stopsValueType = typeof stopItem[1];
 
-                        if (lodScaled == true && stopsValueType != "number") {
+                        if (lodScaled && stopsValueType != "number") {
                             logError("wrong-property-value[]", layerId, key, value, i, "[]");
                             return getDefaultLayerPropertyValue(key);
                         }
@@ -375,13 +375,13 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
             //check multipasss
             if (key == "next-pass") {
-                if (Array.isArray(value) == true && value.length > 0) {
+                if (Array.isArray(value) && value.length > 0) {
 
                     for (var i = 0; i < li; i++) {
                         var valueItem = value[i];
 
                         if (typeof valueItem == "object" &&
-                            Array.isArray(valueItem) == true &&
+                            Array.isArray(valueItem) &&
                             valueItem.length == 2 &&
                             typeof valueItem[0] == "number" &&
                             typeof valueItem[1] == "string") {
@@ -404,7 +404,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
             //check array
             if (arrayLength != null) {
-                if (Array.isArray(value) == true && value.length == arrayLength) {
+                if (Array.isArray(value) && value.length == arrayLength) {
 
                     //validate array values
                     var i = 0;
@@ -788,7 +788,7 @@ var processStylesheet = function(stylesheetLayersData) {
             logError("wrong-bitmap", key);
         }
 
-        if (skip != true) {
+        if (!skip) {
             globals.stylesheetBitmaps[key] = bitmap;
         }
     }

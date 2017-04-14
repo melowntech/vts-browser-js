@@ -50,7 +50,7 @@ MapSubtexture.prototype.killImage = function(killedByCache) {
     this.image = null;
     this.imageData = null;
 
-    if (killedByCache != true && this.cacheItem) {
+    if (killedByCache !== true && this.cacheItem) {
         this.map.resourcesCache.remove(this.cacheItem);
         //this.tile.validate();
     }
@@ -100,7 +100,7 @@ MapSubtexture.prototype.killGpuTexture = function(killedByCache) {
 
     this.gpuTexture = null;
 
-    if (killedByCache != true && this.gpuCacheItem) {
+    if (killedByCache !== true && this.gpuCacheItem) {
         this.map.gpuCache.remove(this.gpuCacheItem);
         //this.tile.validate();
     }
@@ -267,7 +267,7 @@ MapSubtexture.prototype.onLoad = function(header, url, onLoaded, onError) {
 
 
 MapSubtexture.prototype.onLoadError = function(killBlob) {
-    if (this.map.killed == true){
+    if (this.map.killed){
         return;
     }
 

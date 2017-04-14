@@ -261,7 +261,7 @@ UIElement.prototype.onDragBegin = function(event) {
     this.lastDragDistance = 0;
     this.zoomDrag = false;
 
-    if (this.dragging != true) {
+    if (!this.dragging) {
         this.dragging = true;
         var pos = event.getMouseCoords(true);
         this.dragStartPos = [pos[0], pos[1]];
@@ -480,7 +480,7 @@ UIElement.prototype.onDragEnd = function(event) {
     this.zoomDrag = false;
 
 
-    if (this.dragging == true) {
+    if (this.dragging) {
         var pos = event.getMouseCoords();
         this.dragLastPos = pos;
 

@@ -61,7 +61,7 @@ MapGeodataView.prototype.killGeodataView = function(killedByCache) {
 
     this.gpuGroups = [];
 
-    if (killedByCache != true && this.gpuCacheItem != null) {
+    if (killedByCache !== true && this.gpuCacheItem != null) {
         this.map.gpuCache.remove(this.gpuCacheItem);
     }
 

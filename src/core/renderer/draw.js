@@ -246,12 +246,12 @@ RendererDraw.prototype.drawLineString = function(points, size, color, depthTest,
         index += 3;
     }
 
-    if (useState != true) {
-        if (depthTest != true) {
+    if (useState !== true) {
+        if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
     
-        if (transparent == true) {
+        if (transparent) {
             //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -275,12 +275,12 @@ RendererDraw.prototype.drawLineString = function(points, size, color, depthTest,
 
     renderer.plines.draw(prog, "aPosition", totalPoints);
 
-    if (useState != true) {
-        if (depthTest != true) {
+    if (useState !== true) {
+        if (depthTest !== true) {
             gl.enable(gl.DEPTH_TEST);
         }
     
-        if (transparent == true) {
+        if (transparent) {
             gl.disable(gl.BLEND);
         }
     
@@ -303,12 +303,12 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
         return;
     }
 
-    if (useState != true) {
+    if (useState !== true) {
         if (depthTest != true) {
             gl.disable(gl.DEPTH_TEST);
         }
     
-        if (transparent == true) {
+        if (transparent) {
             //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -347,16 +347,16 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
 
     gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
-    if (useState != true) {
+    if (useState !== true) {
         if (writeDepth === false) {
             gl.depthMask(true); 
         }
     
-        if (depthTest != true) {
+        if (depthTest !== true) {
             gl.enable(gl.DEPTH_TEST);
         }
     
-        if (transparent == true) {
+        if (transparent) {
             gl.disable(gl.BLEND);
         }
     
@@ -370,12 +370,12 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthTest, 
     var gl = this.gl;
     var renderer = this.renderer;
 
-    if (useState != true) {
-        if (depthTest != true) {
+    if (useState !== true) {
+        if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
     
-        if (transparent == true) {
+        if (transparent) {
             //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -417,16 +417,16 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthTest, 
 
     gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
-    if (useState != true) {
+    if (useState !== true) {
         if (writeDepth === false) {
             gl.depthMask(true); 
         }
     
-        if (depthTest != true) {
+        if (depthTest !== true) {
             gl.enable(gl.DEPTH_TEST);
         }
     
-        if (transparent == true) {
+        if (transparent) {
             gl.disable(gl.BLEND);
         }
     
@@ -482,7 +482,7 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
         return;
     }
 
-    if (useState != true) {
+    if (useState !== true) {
         gl.disable(gl.CULL_FACE);
     
     
@@ -578,7 +578,7 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
 
     }
 
-    if (useState != true) {
+    if (useState !== true) {
         gl.enable(gl.CULL_FACE);
     
         if (depth == null) {
@@ -764,7 +764,7 @@ RendererDraw.prototype.fogSetup = function(program, fogDensity) {
     var density = Math.log(0.05) / (cameraVisibility * 10*(Math.max(5,-renderer.camera.getOrientation()[1])/90));
     density *= (5.0) / (Math.min(50000, Math.max(renderer.cameraDistance, 1000)) /5000);
 
-    if (renderer.drawFog == false) {
+    if (!renderer.drawFog) {
         density = 0;
     }
 
@@ -782,8 +782,8 @@ RendererDraw.prototype.paintGL = function() {
 
     this.gpu.clear(true, false);
 
-    if (renderer.onlyLayers != true) {
-        if (renderer.onlyDepth != true && renderer.onlyHitLayers != true) {
+    if (!renderer.onlyLayers) {
+        if (!renderer.onlyDepth && !renderer.onlyHitLayers) {
             this.drawSkydome();
         }
     }
@@ -901,7 +901,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                     }
                 }
 
-                if (texture.loaded == false) {
+                if (!texture.loaded) {
                     return;
                 }
 
@@ -986,7 +986,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             var texture = hitmapRender ? renderer.whiteTexture : job.texture;
 
-            if (texture.loaded == false) {
+            if (!texture.loaded) {
                 return;
             }
 

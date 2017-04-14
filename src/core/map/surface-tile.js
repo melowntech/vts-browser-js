@@ -379,7 +379,7 @@ MapSurfaceTile.prototype.checkSurface = function(tree, priority) {
         var alien = sequence[i][1];
 
         var res = surface.hasTile2(this.id);
-        if (res[0] == true) {
+        if (res[0]) {
             
             //check if tile exist
             if (this.id[0] > 0) { //surface.lodRange[0]) {
@@ -454,7 +454,7 @@ MapSurfaceTile.prototype.checkMetanode = function(tree, priority) {
 
     var metatile = this.metaresources.getMetatile(surface, true, this);
 
-    if (metatile.isReady(priority) == true) {
+    if (metatile.isReady(priority)) {
 
         if (!this.virtual) {
             this.metanode = metatile.getNode(this.id);
@@ -468,7 +468,7 @@ MapSurfaceTile.prototype.checkMetanode = function(tree, priority) {
             this.map.markDirty(); 
 
             for (var i = 0; i < 4; i++) {
-                if (this.metanode.hasChild(i) == true) {
+                if (this.metanode.hasChild(i)) {
                     this.addChild(i);
                 } else {
                     this.removeChildByIndex(i);
@@ -492,7 +492,7 @@ MapSurfaceTile.prototype.isVirtualMetanodeReady = function(tree, priority) {
         var surface = surfaces[i][0];
         var metatile = this.metaresources.getMetatile(surface, true, this);
 
-        if (metatile.isReady(priority) == true) {
+        if (metatile.isReady(priority)) {
             readyCount++;
         }
     }
@@ -561,7 +561,7 @@ MapSurfaceTile.prototype.createVirtualMetanode = function(tree, priority) {
         var surface = surfaces[i][0];
         var metatile = this.metaresources.getMetatile(surface, null, this);
 
-        if (metatile.isReady(priority) == true) {
+        if (metatile.isReady(priority)) {
             var metanode = metatile.getNode(this.id);
 
             if (metanode != null) {
@@ -669,7 +669,7 @@ MapSurfaceTile.prototype.getPixelSize = function(bbox, screenPixelSize, cameraPo
             cameraPos[1] > min[1] && cameraPos[1] < max[1] &&
             cameraPos[2] > min[2] && cameraPos[2] < max[2]) {
     
-            if (returnDistance == true) {
+            if (returnDistance) {
                 return [Number.POSITIVEINFINITY, 0.1];
             }
         
@@ -856,7 +856,7 @@ MapSurfaceTile.prototype.getPixelSize22 = function(bbox, screenPixelSize, camera
 
     var factor = this.camera.scaleFactor2(d2);
 
-    if (returnDistance == true) {
+    if (returnDistance) {
         return [(factor[0] * screenPixelSize), factor[1]];
     }
 
@@ -884,7 +884,7 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
             screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / node.displaySize);
         }
 
-        if (camera.camera.ortho == true) {
+        if (camera.camera.ortho) {
             var height = camera.camera.getViewHeight();
             pixelSize = [(screenPixelSize*2.0) / height, height];
         } else {

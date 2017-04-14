@@ -127,7 +127,7 @@ MapConvert.prototype.convertPositionHeightMode = function(position, mode, noPrec
     var lod =  this.measure.getOptimalHeightLod(position.getCoords(), position.getViewExtent(), this.config.mapNavSamplesPerViewExtent);
     var height = this.measure.getSurfaceHeight(position.getCoords(), lod);
 
-    if (height[1] == false && !noPrecisionCheck) {
+    if (!height[1] && !noPrecisionCheck) {
         //return null;
     }
 

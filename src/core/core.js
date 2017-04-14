@@ -319,7 +319,7 @@ Core.prototype.setOption = function(key, value) {
 
 
 Core.prototype.on = function(name, listener) {
-    if (this.killed == true) { // || this.renderer == null) {
+    if (this.killed) { // || this.renderer == null) {
         return;
     }
 

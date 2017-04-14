@@ -264,7 +264,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     job.reduced = false;
     job.ready = true;
 
-    if (label != true) {
+    if (label !== true) {
         var icon = data["icon"];
         job.texture = this.renderer.getBitmap(icon["url"], icon["filter"] || "linear", icon["tiled"] || false);
     } else {
@@ -328,7 +328,7 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin) {
         }
     }
 
-    if (applyOrigin == true) {
+    if (applyOrigin) {
         var mvp2 = mat4.create();
         var mv2 = mat4.create();
 

@@ -24,7 +24,7 @@ var MapMetatile = function(metaresources, surface, tile) {
 
 
 MapMetatile.prototype.kill = function(killedByCache) {
-    if (killedByCache != true && this.cacheItem != null) {
+    if (killedByCache !== true && this.cacheItem != null) {
         this.map.metatileCache.remove(this.cacheItem);
     }
 
@@ -165,7 +165,7 @@ MapMetatile.prototype.onLoad = function(url, onLoaded, onError) {
 
 
 MapMetatile.prototype.onLoadError = function() {
-    if (this.map.killed == true){
+    if (this.map.killed){
         return;
     }
 
@@ -183,7 +183,7 @@ MapMetatile.prototype.onLoadError = function() {
 
 
 MapMetatile.prototype.onLoaded = function(data, task) {
-    if (this.map.killed == true){
+    if (this.map.killed){
         return;
     }
 

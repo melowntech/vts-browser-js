@@ -75,7 +75,7 @@ MapStylesheet.prototype.onLoad = function(url, onLoaded, onError) {
 
 
 MapStylesheet.prototype.onLoadError = function() {
-    if (this.map.killed == true){
+    if (this.map.killed){
         return;
     }
 

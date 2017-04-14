@@ -73,10 +73,8 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             keyCode = event.charCode;
         }
 
-        if (this.shiftDown == true) {
-
-            if (this.ctrlDown == true) {
-
+        if (this.shiftDown) {
+            if (this.ctrlDown) {
                 switch(keyCode) {
                     case 68:
                     case 100:
@@ -85,7 +83,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             }
         }
 
-        if (this.shiftDown == true && press != true) {
+        if (this.shiftDown && press !== true) {
 
             switch(keyCode) {
                 case 76:
@@ -101,7 +99,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                     /*this.engine.setAutorotate(1);*/ break;  //key A pressed
             }
 
-            if (this.ctrlDown == true) {
+            if (this.ctrlDown) {
 
                 switch(keyCode) {
                     case 68:
@@ -124,7 +122,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 }
             }
 
-            if (this.diagnosticMode == true) {
+            if (this.diagnosticMode) {
                 var blockHit = true;
 
                 switch(keyCode) {

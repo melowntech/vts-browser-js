@@ -546,9 +546,9 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                             "line-width":lineWidth*2, "lod":(globals.autoLod ? null : globals.tileLod) };
     
         if (lineFlat) {
-            messageData["type"] = (texturedLine == true) ? "flat-tline" : "flat-line";
+            messageData["type"] = texturedLine ? "flat-tline" : "flat-line";
         } else {
-            messageData["type"] = (texturedLine == true) ? "pixel-tline" : "pixel-line";
+            messageData["type"] = texturedLine ? "pixel-tline" : "pixel-line";
         }
     
         if (texturedLine) {

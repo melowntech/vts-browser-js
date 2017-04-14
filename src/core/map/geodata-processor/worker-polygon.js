@@ -30,7 +30,7 @@ var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
     
     var spolygon = getLayerPropertyValue(style, "polygon", polygon, lod);
     
-    if (spolygon == false) {
+    if (!spolygon) {
         return;
     }
     
@@ -71,7 +71,7 @@ var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
         offs = 3 * surface[surfaceI++];
         p1 = [vertices[offs++], vertices[offs++], vertices[offs]];
         
-        if (forceOrigin == true) {
+        if (forceOrigin) {
             p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
         }
 

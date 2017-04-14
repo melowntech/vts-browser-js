@@ -81,7 +81,7 @@ function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, e
 
             visible = getLayerPropertyValue(layer, "visible", feature, lod);
 
-            if (visible == false) {
+            if (!visible) {
                 continue;
             }
 
@@ -109,7 +109,7 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
     var visible = getLayerPropertyValue(layer, "visible", feature, lod);
     var zIndex = getLayerPropertyValue(layer, "z-index", feature, lod);
 
-    if (visible == false) {
+    if (!visible) {
         return;
     }
 
@@ -218,7 +218,7 @@ function optimizeGroupMessages() {
     //loop messages
     var index2 = 0;
     var messages = globals.messageBuffer;
-    var messages2 = globals.messageBuffer2;
+    //var messages2 = globals.messageBuffer2;
 
     for (var i = 0, li = globals.messageBufferIndex; i < li; i++) {
         var message = messages[i];
