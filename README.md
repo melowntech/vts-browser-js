@@ -1,6 +1,6 @@
-# VTS-Browser-JS
+# VTS Browser JS
 
-The VTS-Browser-JS is a *JavaScript WebGL 3D maps rendering engine* used and
+The VTS Browser JS is a *JavaScript WebGL 3D maps rendering engine* used and
 developed by Melown SE (http://melown.com) in their products.
 
 The build system uses [webpack module bundler](http://webpack.github.io/).
@@ -10,7 +10,7 @@ dependenices. Then you usually run `webpack-dev-server` and build with `webpack
 
 ## User documentation
 
-The Melown API (VTS-Browser-JS) user documentation (how to use generated
+The Melown API (VTS Browser JS) user documentation (how to use generated
 JavaScrip API in your web page) is available at:
 
 * [Melown API](https://github.com/Melown/melown-js/wiki/Melown-API)
