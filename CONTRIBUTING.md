@@ -19,12 +19,12 @@ accordance with the [Melown Code of Conduct MISSING](MISSING LINK)
 # Communication
 
 Main communication happens via [GitHub
-project](https://github.com/melown/melown-js) issues and pull requests. 
+project](https://github.com/melown/vts-browser-js) issues and pull requests. 
 
 # Contributions and Licensing
 
 Contributors are asked to confirm that they comply with the project
-[license](https://github.com/Melown/melown-js/blob/master/LICENSE)
+[license](https://github.com/Melown/vts-browser-js/blob/master/LICENSE)
 guidelines.
 
 We are using [CLAHub](https://www.clahub.com) service for managing of the
@@ -46,7 +46,7 @@ contribution agreements.
   [CLAHub](https://clahub.com).  **This is only required for a contributor's
   first pull request.  Subsequent pull requests do not require this step**
 - unclaimed copyright, by default, is assigned to the main copyright holders as
-  specified in [LICENSE](https://github.com/Melown/melown-js/blob/master/LICENSE)
+  specified in [LICENSE](https://github.com/Melown/vts-browser-js/blob/master/LICENSE)
 
 ## GitHub
 
@@ -72,7 +72,7 @@ are aware of this issue and will try to improve the documentation in the future.
 
 ## Bugs
 
-The VTS-Browser-JS [issue tracker](https://github.com/melown/melown-js/issues) is the
+The VTS-Browser-JS [issue tracker](https://github.com/melown/vts-browser-js/issues) is the
 place to report bugs or request enhancements. To submit a bug be sure to specify
 the VTS-Browser-JS version you are using, the appropriate component, a description of how
 to reproduce the bug. Please note, that we are going to reproduce the bug on the
@@ -81,7 +81,7 @@ development server (see `README.md` for how to start dev server).
 ## Forking Melown
 
 Contributions are most easily managed via GitHub pull requests.
-[Fork](https://github.com/melown/melown-js/fork) VTS-Browser-JS into your own
+[Fork](https://github.com/melown/vts-browser-js/fork) VTS-Browser-JS into your own
 GitHub repository to be able to commit your work and submit pull requests.
 
 ## Development
@@ -117,12 +117,12 @@ section assumes you have forked VTS-Browser-JS into your own GitHub repository.
 Note that `master` is the main development branch in VTS-Browser-JS; 
 ```
   # clone the repository locally
-  git clone https://github.com/melown/melown-js.git
-  cd melown-js
+  git clone https://github.com/melown/vts-browser-js.git
+  cd vts-browser-js
   
   # add the main VTS-Browser-JS development branch to keep up to date with
   # upstream changes
-  git remote add upstream https://github.com/melown/melown-js.git
+  git remote add upstream https://github.com/melown/vts-browser-js.git
   git pull upstream master
 
   # create a local branch off master
