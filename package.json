@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/melown/melown-js.git"
+    "url": "git+https://github.com/melown/vts-browser-js.git"
   },
   "keywords": [
     "Web",
@@ -25,9 +25,9 @@
   "author": "David Levinsky http://melown.com",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/melown/melown-js/issues"
+    "url": "https://github.com/melown/vts-browser-js/issues"
   },
-  "homepage": "https://github.com/melown/melown-js#readme",
+  "homepage": "https://github.com/melown/vts-browser-js#readme",
   "devDependencies": {
     "babel-core": "^6.24.0",
     "babel-loader": "^6.4.1",

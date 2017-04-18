@@ -14,16 +14,16 @@ clean:
 very-clean: clean
 	rm -rf $(NODE_MODULES)
 
-dist/melown-core.js: install
+dist/vts-core.js: install
 	npm run dist
 
-dist: install dist/melown-core.js
+dist: install dist/vts-core.js
 	echo "Compressed version $(MODULE_NAME) saved to ./dist/ directory"
 
-build/melown-core.js: install
+build/vts-core.js: install
 	npm run build
 
-build: install build/melown-core.js
+build: install build/vts-core.js
 	echo "$(MODULE_NAME) saved to $(BUILD_TARGET) directory"
 
 dev:
