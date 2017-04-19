@@ -336,12 +336,13 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     }
 
     var renderer = this.map.renderer;
+    var draw = this.map.draw;
     var program = null;
     var gpuMask = null; 
 
     var texcoordsAttr = null;
     var texcoords2Attr = null;
-    var drawWireframe = this.map.draw.debug.drawWireframe;
+    var drawWireframe = draw.debug.drawWireframe;
     var attributes = (drawWireframe != 0) ?  ["aPosition", "aBarycentric"] : ["aPosition"];
 
     if (type == "depth") {
@@ -444,25 +445,25 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             case "internal":
             case "fog":
                 //program.setFloat("uFogDensity", this.map.fogDensity);
-                program.setVec4("uParams", [this.map.zFactor, this.map.fogDensity, 0, 0]);
+                program.setVec4("uParams", [draw.zFactor, draw.fogDensity, 0, 0]);
                 break;
 
             case "internal-nofog":
                 //program.setFloat("uFogDensity", 0);
-                program.setVec4("uParams", [this.map.zFactor, 0, 0, 0]);
+                program.setVec4("uParams", [draw.zFactor, 0, 0, 0]);
                 break;
 
             case "external":
                 program.setFloat("uAlpha", 1);
                 //program.setFloat("uFogDensity", this.map.fogDensity);
-                program.setVec4("uParams", [this.map.zFactor, this.map.fogDensity, 0, 0]);
+                program.setVec4("uParams", [draw.zFactor, draw.fogDensity, 0, 0]);
                 program.setVec4("uTransform", texture.getTransform());
                 break;
 
             case "external-nofog":
                 program.setFloat("uAlpha", alpha);
                 //program.setFloat("uFogDensity", 0);
-                program.setVec4("uParams", [this.map.zFactor, 0, 0, 0]);
+                program.setVec4("uParams", [draw.zFactor, 0, 0, 0]);
                 program.setVec4("uTransform", texture.getTransform());
                 break;
         }

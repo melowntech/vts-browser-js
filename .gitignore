@@ -1,4 +1,5 @@
 dist
+debug
 build/*
 node_modules
 build/*
