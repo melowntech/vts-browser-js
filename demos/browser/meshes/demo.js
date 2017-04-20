@@ -31,7 +31,7 @@ var cubeMesh = null;
 
 function loadTexture() {
     //load texture used for cubes    
-    var woodImage = vts.utils.loadImage("/demos/images/wood.png",
+    var woodImage = vts.utils.loadImage("./wood.png",
         (function(){
             woodTexture = renderer.createTexture({ "source": woodImage });
         }).bind(this)

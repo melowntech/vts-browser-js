@@ -294,9 +294,9 @@ MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad)
                 }
             }
             
-            if (this.lastMetanode) {
+            /*if (this.lastMetanode) {
                 processFlag2 = true;
-            }
+            }*/
         }
         
     }

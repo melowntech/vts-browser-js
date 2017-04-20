@@ -78,15 +78,14 @@ function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, e
         for (var i = 0, li = multiPass.length; i < li; i++) {
             var zIndex = multiPass[i][0];
             var layer = getLayer(multiPass[i][1], type, featureIndex);
-
-            visible = getLayerPropertyValue(layer, "visible", feature, lod);
+            var visible = getLayerPropertyValue(layer, "visible", feature, lod);
 
             if (!visible) {
                 continue;
             }
 
-            hoverLayerId = getLayerPropertyValue(layer, "hover-layer", feature, lod);
-            hoverlayer = (hoverLayerId != "") ? getLayer(hoverLayerId, type, featureIndex) : null;
+            var hoverLayerId = getLayerPropertyValue(layer, "hover-layer", feature, lod);
+            var hoverlayer = (hoverLayerId != "") ? getLayer(hoverLayerId, type, featureIndex) : null;
 
             if (hoverlayer != null) {
                 var lastHitState = globals.hitState;

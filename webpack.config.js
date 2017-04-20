@@ -29,8 +29,8 @@ if (PROD) {
 
 
 var libraryName = 'bundle';
-var outputFile = libraryName + '.js';
-var outFile = libraryName + '.js';
+var outputFile = libraryName + (PROD ? '.min' : '') + '.js';
+var outFile = libraryName + (PROD ? '.min' : '') + '.js';
 
 
 var config = {
