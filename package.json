@@ -1,6 +1,6 @@
 {
   "name": "vts-browser-js",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "JavaScript WebGL 3D maps rendering engine",
   "main": "src/browser/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "map",
     "WebGL"
   ],
-  "author": "David Levinsky http://melown.com",
+  "author": "http://melown.com",
   "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/melown/vts-browser-js/issues"

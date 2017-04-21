@@ -1,7 +1,7 @@
 
 import {vec3 as vec3_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
-import MapGeodata_ from './geodata-view';
+import MapGeodata_ from './geodata';
 import MapGeodataView_ from './geodata-view';
 import MapDrawTiles_ from './draw-tiles';
 
@@ -641,7 +641,7 @@ MapDraw.prototype.drawMonoliticGeodata = function(surface) {
         return;
     }
 
-    if (!this.camera.bboxVisible(surface.extents, this.camera.position)) {
+    if (!this.camera.camera.bboxVisible(surface.extents, this.camera.position)) {
         return;
     }
 
@@ -652,7 +652,7 @@ MapDraw.prototype.drawMonoliticGeodata = function(surface) {
             var path = surface.getMonoGeodataUrl(surface.id);
         }
 
-        surface.monoGeodata = new MapGeodata(this, path, {tile:null, surface:surface});
+        surface.monoGeodata = new MapGeodata(this.map, path, {tile:null, surface:surface});
     }
 
     var channel = this.drawChannel;

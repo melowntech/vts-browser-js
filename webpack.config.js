@@ -13,7 +13,7 @@ var TARGET_DIR = PROD ? __dirname + "/dist/" : __dirname + "/build/";
 
 var plugins = [
     new ExtractTextPlugin({
-      filename: "vts-browser.css"
+      filename: 'vts-browser' + (PROD ? '.min' : '') + '.css'
     }),
     new LicenseWebpackPlugin({pattern: /^(MIT|ISC|BSD.*)$/}),
     new webpack.BannerPlugin(fs.readFileSync('./LICENSE', 'utf8'))
@@ -28,11 +28,6 @@ if (PROD) {
 }
 
 
-var libraryName = 'bundle';
-var outputFile = libraryName + '.js';
-var outFile = libraryName + '.js';
-
-
 var config = {
   entry: {
     'vts-core': __dirname + '/src/core/index.js',
@@ -41,7 +36,7 @@ var config = {
   devtool: 'source-map',
   output: {
     path: TARGET_DIR,
-    filename: '[name].js',
+    filename: '[name]' + (PROD ? '.min' : '') + '.js',
     libraryTarget: "var",
     library: "vts"
   },

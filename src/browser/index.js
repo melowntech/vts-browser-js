@@ -20,7 +20,8 @@ function browser (element, config) {
 };
 
 function getBrowserVersion() {
-    return "Browser: 2.0.0, Core: " + getCoreVersion();
+//    return "Browser: 2.0.0, Core: " + getCoreVersion();
+    return "" + getCoreVersion();
 };
 
 export {vec2,vec3,vec4,mat3,mat4,math,utils,getCoreVersion,checkSupport,browser,getBrowserVersion,proj4};
