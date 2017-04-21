@@ -5,15 +5,14 @@ developed by Melown SE (http://melown.com) in their products.
 
 The build system uses [webpack module bundler](http://webpack.github.io/).
 Typical development cycle starts with `npm install` for installation of
-dependenices. Then you usually run `webpack-dev-server` and build with `webpack
---watch`.
+dependenices. Then you usually run `webpack-dev-server` and build with `webpack`.
 
 ## User documentation
 
 The Melown API (VTS Browser JS) user documentation (how to use generated
 JavaScrip API in your web page) is available at:
 
-* [Melown API](https://github.com/Melown/vts-browser-js/wiki/Melown-API)
+* [VTS Browser API](https://github.com/Melown/vts-browser-js/wiki)
 
 ## Install
 
@@ -31,19 +30,16 @@ or more advanced (if you are using new versions of NodeJS and Yarn)
 yarn install
 ```
 
-## Build (constantly)
+## Build
 
-If you are developing some web page, you might be wanting to rebuild & refresh
-every time, some file is saved. You can run `webpack`
-
+```
+node_modules/.bin/webpack
+```
 The unzipped file (along with source map and CSS) is stored in `build/`
 directory. You may now start the dev server (see lower) and open browser at
 [http://localhost:8080](http://localhost:8080) to see some demos in the `demos/`
 directory.
 
-```
-node_modules/.bin/webpack --watch
-```
 
 ## Build compressed version
 
@@ -59,14 +55,13 @@ NODE_ENV=production node_modules/.bin/webpack
 ## Run dev server
 
 The development server is serving local files at
-[http://localhost:8080](http://localhost:8080). It also live-reloads the web
-application, when any source file has changed. 
+[http://localhost:8080](http://localhost:8080).
 
 ```
-node_modules/.bin/webpack-dev-server  --inline
+node_modules/.bin/webpack-dev-server
 ```
 
-And go to [http://localhost:8080/demos/core/basic/](http://localhost:8080/demos/core/basic/)
+And go to [http://localhost:8080/demos/browser/basic/](http://localhost:8080/demos/browser/basic/)
 
 ## Makefile
 
@@ -76,7 +71,7 @@ to specific make targets. The Makefile is just wrapper around `npm run` commands
 
 ## License
 
-See the `LICENSE` file for VTS-Browser-JS license, run `webpack` and check the
+See the `LICENSE` file for VTS Browser JS license, run `webpack` and check the
 `build/3rdpartylicenses.txt` file for 3rd party licenses.
 
 ## How to contribute
