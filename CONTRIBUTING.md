@@ -13,8 +13,9 @@ VTS-Browser-JS has the following modes of contribution:
 
 # Code of Conduct
 
-Contributors to this project are expected to act respectfully towards others in
-accordance with the [Melown Code of Conduct MISSING](MISSING LINK)
+Please note that this project is released with a Contributor Code of Conduct
+(see [CODE_OF_CONDUCTUCT.md](CODE_OF_CONDUCTUCT.md)). By
+participating in this project you agree to abide by its terms.
 
 # Communication
 
