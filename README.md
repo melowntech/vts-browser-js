@@ -10,7 +10,7 @@ dependenices. Then you usually run `webpack-dev-server` and build with `webpack`
 ## User documentation
 
 The Melown API (VTS Browser JS) user documentation (how to use generated
-JavaScrip API in your web page) is available at:
+JavaScrip API in your web page) is available in our wiki:
 
 * [VTS Browser API](https://github.com/Melown/vts-browser-js/wiki)
 

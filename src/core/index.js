@@ -1,4 +1,3 @@
-
 import Proj4 from 'proj4';
 import {getCoreVersion as getCoreVersion_, checkSupport as checkSupport_} from './core';
 import {CoreInterface as CoreInterface_} from './interface';
