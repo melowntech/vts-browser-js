@@ -11,21 +11,32 @@ var fs = require("fs");
 var PROD = (process.env.NODE_ENV === 'production')
 var TARGET_DIR = PROD ? __dirname + "/dist/" : __dirname + "/build/";
 
+
 var plugins = [
-    new ExtractTextPlugin({
-      filename: 'vts-browser' + (PROD ? '.min' : '') + '.css'
-    }),
-    new LicenseWebpackPlugin({pattern: /^(MIT|ISC|BSD.*)$/}),
-    new webpack.BannerPlugin(fs.readFileSync('./LICENSE', 'utf8'))
+    new webpack.BannerPlugin(fs.readFileSync('./LICENSE', 'utf8')),
+    new LicenseWebpackPlugin({pattern: /^(MIT|ISC|BSD.*)$/})
 ];
 
 if (PROD) {
-    plugins.unshift(new UglifyJsPlugin({
+    plugins.push(new UglifyJsPlugin({
+      //comments: true,
       compress: true,
       mangle: true,
-      extractComments: {},
+      extractComments: {
+        "banner": function(filename) {
+          return "Copyright (c) 2017 Melown Technologies SE\n" +
+                 " *  For terms of use, see accompanying " + filename +" file.\n" +
+                 " *  For 3rd party libraries licenses, see dist/3rdpartylicenses.txt.\n"
+        }
+      },
     }));
 }
+
+plugins.push(
+    new ExtractTextPlugin({
+      filename: 'vts-browser' + '.css'
+    })
+);
 
 
 var config = {
@@ -33,7 +44,7 @@ var config = {
     'vts-core': __dirname + '/src/core/index.js',
     'vts-browser': __dirname + '/src/browser/index.js'
   },
-  devtool: 'source-map',
+  devtool: PROD ? undefined : 'source-map',
   output: {
     path: TARGET_DIR,
     filename: '[name]' + (PROD ? '.min' : '') + '.js',
