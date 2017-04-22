@@ -26,7 +26,7 @@ if (PROD) {
         "banner": function(filename) {
           return "Copyright (c) 2017 Melown Technologies SE\n" +
                  " *  For terms of use, see accompanying " + filename +" file.\n" +
-                 " *  For 3rd party libraries licenses, see dist/3rdpartylicenses.txt.\n"
+                 " *  For 3rd party libraries licenses, see 3rdpartylicenses.txt.\n"
         }
       },
     }));
