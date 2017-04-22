@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Melown SE - VTS Browser JS examples">
+    <meta name="author" content="jachym">
+
+    <title>VTS Browser Examples</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+  </head>
+
+  <body>
+
+    <div class="container">
+    <div class="jumbotron">
+
+      <div>
+        <h1>VTS Browser Demos</h1>
+        <p class="lead">List of example applications using
+        <a href="https://github.com/melown/vts-browser-js">VTS Browser-JS</a> 
+        3D web rendering engine.</p>
+      </div>
+    </div><!-- /.jumbotron -->
+
+     <div class="container">
+     <div class="row">
+       <h3>Core examples</h3>
+       <p>This examples do not contain advanced map browser
+       capabilites, such as zoom/pan controls or searching</p>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Basic example</h4>
+            </div>
+            <div class="panel-body">
+              <p>Basic example with 3D rendered map composition.</p>
+              <p><a class="btn btn-default" href="core/basic/" role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Hit surface</h4>
+            </div>
+            <div class="panel-body">
+              <p>In this example, user can mark point on surface using mouse
+              click.</p>
+              <p><a class="btn btn-default" href="core/hit-surface/" role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+       </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Lines and images</h4>
+            </div>
+            <div class="panel-body">
+              <p>Example showing how to add line and point features on the
+              surface. It also contains possibility to overlay another
+              layer. </p>
+              <p><a class="btn btn-default" href="core/lines-and-images/"
+                role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Meshes</h4>
+            </div>
+            <div class="panel-body">
+              <p>In this demo we demonstrate, how to place custom polygon meshes
+              (with texture) on the terain surface.</p>
+              <p><a class="btn btn-default" href="core/meshes/"
+                role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Meshes - hit</h4>
+            </div>
+            <div class="panel-body">
+              <p>In this demo we demonstrate, how to place custom polygon meshes
+              (with texture) on the terain surface. User can then click either on
+              the terain or on the object and new point will be created, sitting on
+              given surface.</p>
+              <p><a class="btn btn-default" href="core/meshes-hit-test/"
+                role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+     </div><!-- /row -->
+     </div>
+
+     <div class="container">
+     <div class="row">
+       <h3>Browser examples</h3>
+       <p>This demos are containing standard map browser controls, like zooming,
+       panning, address search, layer switcher and so on.</p>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Basic example</h4>
+            </div>
+            <div class="panel-body">
+              <p>Basic map browser implementation with pan and zoom controlls.</p>
+              <p><a class="btn btn-default" href="browser/basic/" role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Hit surface</h4>
+            </div>
+            <div class="panel-body">
+              <p>In this example, user can mark point on surface using mouse click.
+              User can also use panning and zoom controls.</p>
+              <p><a class="btn btn-default" href="browser/hit-surface/" role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+       </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Lines and images</h4>
+            </div>
+            <div class="panel-body">
+              <p>Example showing how to add line and point features on the surface
+              with map browser capabilities.</p>
+              <p><a class="btn btn-default" href="browser/lines-and-images/"
+                role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Meshes</h4>
+            </div>
+            <div class="panel-body">
+              <p>In this demo we demonstrate, how to place custom polygon meshes
+              (with texture) on the terain surface.</p>
+              <p><a class="btn btn-default" href="browser/meshes/"
+                role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Meshes - hit</h4>
+            </div>
+            <div class="panel-body">
+              <p>In this demo we demonstrate, how to place custom polygon meshes
+              (with texture) on the terain surface. User can then click either on
+              the terain or on the object and new point will be created, sitting on
+              given surface.</p>
+              <p><a class="btn btn-default" href="core/meshes-hit-test/"
+                role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Flights</h4>
+            </div>
+            <div class="panel-body">
+              <p>Example showing how to define fly-over location using browser's
+              autopilot capabilities.</p>
+              <p><a class="btn btn-default" href="core/flights/"
+                role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">View switch</h4>
+            </div>
+            <div class="panel-body">
+              <p>Layer switcher example, showing other map layers on the
+              surface.</p>
+              <p><a class="btn btn-default" href="core/view-switch/"
+                role="button">View demo &raquo;</a></p>
+            </div>
+          </div>
+        </div>
+
+     </div><!-- /row -->
+    </div>
+
+     <footer class="footer">
+      <div class="container">
+        <p class="text-muted">Copyright (c) 2017 <a href="http://melown.com">Melown Technologies SE</a></p>
+      </div>
+    </footer>
+    </div>
+  <body>
+</html>
+
