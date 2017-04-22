@@ -76,4 +76,4 @@ See the `LICENSE` file for VTS Browser JS license, run `webpack` and check the
 
 ## How to contribute
 
-Check the `CONTRIBUTING` file.
+Check the [CONTRIBUTING.md](CONTRIBUTING.md) file.
