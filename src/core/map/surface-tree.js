@@ -165,8 +165,8 @@ MapSurfaceTree.prototype.draw = function() {
 
         switch(mode) {
             case "topdown": this.drawSurface([0,0,0]); break;
-            case "fit":     this.drawGeodataSurface([0,0,0]); break;
-            case "fitonly": this.drawGeodataSurface2([0,0,0]); break;
+            case "fit":     this.drawSurfaceFit([0,0,0]); break;
+            case "fitonly": this.drawSurfaceFitOnly([0,0,0]); break;
         }
     }
 };
@@ -463,7 +463,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift) {
 
 
 //loadmode = fitonly
-MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift) {
+MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
     this.counter++;
 //    this.surfaceTracer.trace(this.surfaceTree);//this.rootId);
 
@@ -661,7 +661,7 @@ MapSurfaceTree.prototype.drawGeodataSurface2 = function(shift) {
 
 
 //loadmode = fit
-MapSurfaceTree.prototype.drawGeodataSurface = function(shift) {
+MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
     this.counter++;
 //    this.surfaceTracer.trace(this.surfaceTree);//this.rootId);
 
