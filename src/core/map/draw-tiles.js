@@ -92,8 +92,8 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
     } else {
         if (!preventRedener && tile.lastRenderState) {
             var channel = this.draw.drawChannel;
-            this.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
-            this.applyCredits(tile);
+            this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+            this.map.applyCredits(tile);
             return true;
         }
     }
@@ -509,14 +509,14 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
         if (tile.surfaceGeodata.isReady(true, priority) == true) {
             if (tile.drawCommands[channel].length > 0) {
                 if (!preventRedener) {
-                    this.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+                    this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
                     this.applyCredits(tile);
                 }
                 return;
             }
         } else {
             if (!preventRedener) {
-                this.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+                this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
                 this.applyCredits(tile);
             }
         }

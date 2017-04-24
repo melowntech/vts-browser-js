@@ -79,7 +79,7 @@ GpuProgram.prototype.setMat4 = function(name, m, zoffset) {
     var key = this.getUniform(name);
     if (key != null) {
         if (zoffset) {
-            zoffset =1+zoffset;
+            zoffset = ((1+zoffset)*2)-1;
            
             var m3 = this.m;
             
@@ -93,10 +93,10 @@ GpuProgram.prototype.setMat4 = function(name, m, zoffset) {
             m3[6] = m[6] * zoffset;  
             m3[7] = m[7];  
 
-            m3[8] = m[8] * zoffset;  
-            m3[9] = m[9] * zoffset;  
+            m3[8] = m[8];
+            m3[9] = m[9];
             m3[10] = m[10] * zoffset;  
-            m3[11] = m[11] * zoffset;  
+            m3[11] = m[11];
 
             m3[12] = m[12];  
             m3[13] = m[13];  

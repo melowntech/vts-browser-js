@@ -63,7 +63,7 @@ UIControlCompass.prototype.onDrag = function(event) {
     }
 
     var delta = event.getDragDelta();
-    var sensitivity = 0.8;
+    var sensitivity = 0.4;
     
     var controller = this.browser.controlMode.getCurrentController();
     

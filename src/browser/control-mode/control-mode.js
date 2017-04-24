@@ -32,7 +32,7 @@ var ControlMode = function(browser) {
 
     this.controlModes = {};
     this.currentCotnrolModeId = 'map-observer';
-    this.currentControleMode = this.controlModes['map-observer'];
+    this.currentControlMode = this.controlModes['map-observer'];
 
     // default control modes
     this.addControlMode('map-observer', new ControlModeMapObserver(browser));
@@ -66,7 +66,7 @@ ControlMode.prototype.setCurrentControlMode = function(id, options) {
 
     // set new mode
     this.currentControlModeId = id;
-    this.currentControleMode = newMode;
+    this.currentControlMode = newMode;
 
     // call reset
     if (newMode["reset"]) {
@@ -84,13 +84,16 @@ ControlMode.prototype.getCurrentControlMode = function() {
     return this.currentControlModeId;
 };
 
+ControlMode.prototype.getCurrentController = function() {
+    return this.currentControlMode;
+};
 
 // Event callbacks
 
 ControlMode.prototype.onDrag = function(event) {
     this.checkAutopilot();
-    if (this.currentControleMode['drag']) {
-        this.currentControleMode['drag'](event);
+    if (this.currentControlMode['drag']) {
+        this.currentControlMode['drag'](event);
     }
 };
 
@@ -98,64 +101,64 @@ ControlMode.prototype.onDrag = function(event) {
 ControlMode.prototype.onDown = function(event) {
     this.checkAutopilot();
     this.updateModifierKeys(event);
-    if (this.currentControleMode['down']) {
-        this.currentControleMode['down'](event);
+    if (this.currentControlMode['down']) {
+        this.currentControlMode['down'](event);
     }
 };
 
 
 ControlMode.prototype.onUp = function(event) {
     this.updateModifierKeys(event);
-    if (this.currentControleMode['up']) {
-        this.currentControleMode['up'](event);
+    if (this.currentControlMode['up']) {
+        this.currentControlMode['up'](event);
     }
 };
 
 
 ControlMode.prototype.onWheel = function(event) {
     this.checkAutopilot();
-    if (this.currentControleMode['wheel']) {
-        this.currentControleMode['wheel'](event);
+    if (this.currentControlMode['wheel']) {
+        this.currentControlMode['wheel'](event);
     }
 };
 
 
 ControlMode.prototype.onKeyUp = function(event) {
     this.updateModifierKeys(event);
-    if (this.currentControleMode['keyup']) {
-        this.currentControleMode['keyup'](event);
+    if (this.currentControlMode['keyup']) {
+        this.currentControlMode['keyup'](event);
     }
 };
 
 
 ControlMode.prototype.onKeyDown = function(event) {
     this.updateModifierKeys(event);
-    if (this.currentControleMode['keydown']) {
-        this.currentControleMode['keydown'](event);
+    if (this.currentControlMode['keydown']) {
+        this.currentControlMode['keydown'](event);
     }
 };
 
 
 ControlMode.prototype.onKeyPress = function(event) {
     this.updateModifierKeys(event);
-    if (this.currentControleMode['keypress']) {
-        this.currentControleMode['keypress'](event);
+    if (this.currentControlMode['keypress']) {
+        this.currentControlMode['keypress'](event);
     }
 };
 
 
 ControlMode.prototype.onDoubleClick = function(event) {
     this.updateModifierKeys(event);
-    if (this.currentControleMode['doubleclick']) {
-        this.currentControleMode['doubleclick'](event);
+    if (this.currentControlMode['doubleclick']) {
+        this.currentControlMode['doubleclick'](event);
     }
 };
 
 
 ControlMode.prototype.onTick = function(event) {
-    if (this.currentControleMode['tick']) {
+    if (this.currentControlMode['tick']) {
         event.draggingState = this.mapElement.getDraggingState();    
-        this.currentControleMode['tick'](event);
+        this.currentControlMode['tick'](event);
     }
 };
 
