@@ -13,8 +13,9 @@ VTS-Browser-JS has the following modes of contribution:
 
 # Code of Conduct
 
-Contributors to this project are expected to act respectfully towards others in
-accordance with the [Melown Code of Conduct MISSING](MISSING LINK)
+Please note that this project is released with a Contributor Code of Conduct
+(see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)). By
+participating in this project you agree to abide by its terms.
 
 # Communication
 
@@ -27,7 +28,7 @@ Contributors are asked to confirm that they comply with the project
 [license](https://github.com/Melown/vts-browser-js/blob/master/LICENSE)
 guidelines.
 
-We are using [CLAHub](https://www.clahub.com) service for managing of the
+We are using [CLA Assistant](https://cla-assistant.io) service for managing of the
 contribution agreements.
 
 ## GitHub Commit Access
@@ -37,13 +38,14 @@ contribution agreements.
   VTS-Browser-JS development team.  Committers shall be added by the project
   admin.
 - removal of commit access shall be handled in the same manner
-- each committer must confirm Contributor Agreement at our
-  [CLAHub](https://clahub.com).  **This is only required once**
+- each committer must confirm Contributor Agreement using the
+  [CLA Assistant service](https://cla-assistant.io/Melown/vts-browser-js).
+  **This is only required once**
 
 ## GitHub Pull Requests
 
 - pull requests can provide agreement to license guidelines as text at our
-  [CLAHub](https://clahub.com).  **This is only required for a contributor's
+  [CLA Assistant service](https://cla-assistant.io/Melown/vts-browser-js).  **This is only required for a contributor's
   first pull request.  Subsequent pull requests do not require this step**
 - unclaimed copyright, by default, is assigned to the main copyright holders as
   specified in [LICENSE](https://github.com/Melown/vts-browser-js/blob/master/LICENSE)
