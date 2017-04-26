@@ -264,7 +264,7 @@ MapTrajectory.prototype.generate = function() {
             }
             
             if (coords[3] != null) { //used for correction in planet mode
-                this.azimuth = coords[3];
+                this.azimuth = -coords[3];
             }
 
             p.setOrientation(this.getFlightOrienation(time));
