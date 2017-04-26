@@ -1,15 +1,13 @@
 # Contributing to VTS-Browser-JS
 
-The [Melown](http://melown.com) VTS-Browser-JS project openly welcomes
+[Melown](http://melown.com) VTS-Browser-JS project openly welcomes
 contributions (bug reports, bug fixes, code enhancements/features, etc.).  This
-document will outline some guidelines on contributing to VTS-Browser-JS.  As
-well, the Melown is a great place to get an idea of how to connect and
-participate in the Melown community and development.
+document will outline some guidelines on contributing to VTS-Browser-JS. 
 
 VTS-Browser-JS has the following modes of contribution:
 
-- GitHub Commit Access (granted to long-term core developers)
 - GitHub Pull Requests (accepted and moderated by contributors with git write access)
+- GitHub Commit Access (granted to long-term core developers)
 
 # Code of Conduct
 
@@ -17,82 +15,32 @@ Please note that this project is released with a Contributor Code of Conduct
 (see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)). By
 participating in this project you agree to abide by its terms.
 
-# Communication
 
-Main communication happens via [GitHub
-project](https://github.com/melown/vts-browser-js) issues and pull requests. 
+# Contributor License Agreement
 
-# Contributions and Licensing
+Contributors are asked to expressly agree with Melown Contributor License Agreement (CLA).
 
-Contributors are asked to confirm that they comply with the project
-[license](https://github.com/Melown/vts-browser-js/blob/master/LICENSE)
-guidelines.
+The purpose of the Melown CLA is to ensure that
 
-We are using [CLA Assistant](https://cla-assistant.io) service for managing of the
-contribution agreements.
+- Melown secures copyright and any patent rights necessary to make your code part of the project
+- your contribution does not infringe on other people's rights
 
-## GitHub Commit Access
+You agree with the CLA by
 
-- proposals to provide developers with GitHub commit access shall be emailed to
-  the one of VTS-Browser-JS core developers.  Proposals shall be approved by the
-  VTS-Browser-JS development team.  Committers shall be added by the project
-  admin.
-- removal of commit access shall be handled in the same manner
-- each committer must confirm Contributor Agreement using the
-  [CLA Assistant service](https://cla-assistant.io/Melown/vts-browser-js).
-  **This is only required once**
+- downloading a prefilled CLA copy and printing it
+- entering your name, your legal adress and current date
+- signing the document
+- scanning the signed document and emailing it to *community at melown.com*
 
-## GitHub Pull Requests
+This is only required once for your contributions to [all Melown repositories](https://github.com/Melown).
 
-- pull requests can provide agreement to license guidelines as text at our
-  [CLA Assistant service](https://cla-assistant.io/Melown/vts-browser-js).  **This is only required for a contributor's
-  first pull request.  Subsequent pull requests do not require this step**
-- unclaimed copyright, by default, is assigned to the main copyright holders as
-  specified in [LICENSE](https://github.com/Melown/vts-browser-js/blob/master/LICENSE)
+# Development
 
-## GitHub
-
-Code, tests, documentation, wiki and issue tracking are all managed on GitHub.
-Make sure you have a [GitHub account](https://github.com/signup/free).
-
-## Code Overview
-
-**NOTE:** More detailed description of code structure is missing right now. We
-are aware of this issue and will try to improve the documentation in the future. 
-
-VTS-Browser-JS consists of 2 main parts: the `core` and the `browser`. The
-source code is stored in `src/` directory. `Core` provides the core 3D data
-rendering functionality. `Browser` adds standard map browser GUI functions, such as
-zooming, panning, search and other.
-
-## Documentation
-
-**NOTE:** More detailed description of code structure is missing right now. We
-are aware of this issue and will try to improve the documentation in the future. 
-
-* Check the [Library user documentation](https://www.melown.com/documentation.html)
-
-## Bugs
-
-The VTS-Browser-JS [issue tracker](https://github.com/melown/vts-browser-js/issues) is the
-place to report bugs or request enhancements. To submit a bug be sure to specify
-the VTS-Browser-JS version you are using, the appropriate component, a description of how
-to reproduce the bug. Please note, that we are going to reproduce the bug on the
-development server (see `README.md` for how to start dev server).
-
-## Forking Melown
-
-Contributions are most easily managed via GitHub pull requests.
-[Fork](https://github.com/melown/vts-browser-js/fork) VTS-Browser-JS into your own
-GitHub repository to be able to commit your work and submit pull requests.
-
-## Development
-
-### GitHub Commit Guidelines
+## GitHub Commit Guidelines
 
 - enhancements and bug fixes should be identified with a GitHub issue
 - commits should be granular enough for other developers to understand the
-  nature / implications of the change(s). You might be asked to merge commints,
+  nature / implications of the change(s). You might be asked to merge commits,
   so that other developers are able to understand commit content.
 - non-trivial Git commits shall be associated with a GitHub issue.  As
   documentation can always be improved, tickets need not be opened for improving
@@ -107,7 +55,7 @@ GitHub repository to be able to commit your work and submit pull requests.
   before they are committed
 
 
-### Coding Guidelines
+## Coding Guidelines
 
 **NOTE:** There are no specific coding guidelines yet. ESLinter will be set
 soon.
@@ -154,3 +102,19 @@ master:
   git checkout master
   git pull upstream master
 ```
+
+## Documentation
+
+**NOTE:** More detailed description of code structure is missing right now. We
+are aware of this issue and will try to improve the documentation in the future. 
+
+* Check the [Library user documentation](https://github.com/Melown/vts-browser-js/wiki)
+
+## Bugs
+
+The VTS-Browser-JS [issue tracker](https://github.com/melown/vts-browser-js/issues) is the
+place to report bugs or request enhancements. To submit a bug be sure to specify
+the VTS-Browser-JS version you are using, the appropriate component, a description of how
+to reproduce the bug. Please note, that we are going to reproduce the bug on the
+development server (see `README.md` for how to start dev server).
+
