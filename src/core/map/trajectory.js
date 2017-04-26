@@ -80,7 +80,7 @@ var MapTrajectory = function(map, p1, p2, options) {
         //get distance and azimut
         var res = this.map.measure.getDistance(this.pp1.getCoords(), this.pp2.getCoords());
         this.distance = res[0];
-        this.azimuth = (res[1] - 90) % 360;
+        this.azimuth = (res[1] + 90) % 360;
         this.azimuth = (this.azimuth < 0) ? (360 + this.azimuth) : this.azimuth;
 
         if (!this.map.getNavigationSrs().isProjected()) {

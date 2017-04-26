@@ -520,16 +520,16 @@ MapMeasure.prototype.getDistance = function(coords, coords2, includingHeight) {
 
         if (d > (navigationSrsInfo["a"] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
             if (includingHeight) {
-                return [Math.sqrt(r.s12*r.s12 + dz*dz), r.az1];
+                return [Math.sqrt(r.s12*r.s12 + dz*dz), -r.az1];
             } else {
-                return [r.s12, r.azi1];
+                return [r.s12, -r.azi1];
             }
         } else {
-            return [d, r.azi1];
+            return [d, -r.azi1];
         }
 
     } else {
-        return [d, math.degrees(Math.atan2(dy, dx))];
+        return [d, math.degrees(Math.atan2(dx, dy))];
     }
 };
 
@@ -622,7 +622,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
     }
     
     var tmpMatrix = mat4.create();
-    mat4.multiply(math.rotationMatrix(2, math.radians(orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), tmpMatrix);
+    mat4.multiply(math.rotationMatrix(2, math.radians(-orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), tmpMatrix);
 
     if (position.getViewMode() == "obj") {
         var orbitPos = [0, -distance, 0];
@@ -645,7 +645,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
     if (projected) {
         
         tmpMatrix = mat4.create();
-        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(-orientation[0])), tmpMatrix);
+        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), tmpMatrix);
 
         /*
         //get NED for latlon coordinates
@@ -782,7 +782,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         //spaceMatrix = mat4.inverse(spaceMatrix);
         
         var localRotMatrix = mat4.create();
-        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(-orientation[0])), localRotMatrix);
+        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), localRotMatrix);
 
         var east2  = [1,0,0];
         var direction2 = [0,1,0];

@@ -3,8 +3,8 @@ var list = null;
 
 (function startDemo() {
     browser = vts.browser("map-div", {
-        map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
-        position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 3764, 90 ]
+        map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json',
+        position : [ 'obj', 84.93164,28.351981, 'fix', 2728.74, -109.06, -27.28, 0.00, 38255.68, 55.00 ]
     });
 
     if (!browser) {
@@ -28,15 +28,15 @@ function onFlyToNewDestination() {
     if (browser.map) { //check whether map is loaded
         switch (list.getElement().elements["destination"].value) {
             case "a":
-                browser.autopilot.flyTo([ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 1764, 90 ]);
+                browser.autopilot.flyTo([ 'obj', 84.931640, 28.351981, 'fix', 2728.74, -109.06, -27.28, 0.00, 10605.11, 55.00 ]);
                 break;
 
             case "b":
-                browser.autopilot.flyTo([ "obj", 1679084, 6607401, "float", 0, -17, -57, 0, 1158, 90 ]);
+                browser.autopilot.flyTo([ 'obj', 19.285509, -33.876371, 'fix', 711.90, 339.28, -31.75, 0.00, 68309.37, 55.00 ]);
                 break;
 
             case "c":
-                browser.autopilot.flyTo([ "obj", 1694920, 6608430, "float", 0, -24, -76, 0, 2049, 90 ]);
+                browser.autopilot.flyTo([ 'obj', -122.188130, 46.202126, 'fix', 882.39, 176.89, -15.98, 0.00, 10766.96, 55.00 ]);
                 break;
         }
     }

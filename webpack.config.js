@@ -54,12 +54,7 @@ var config = {
   module: {
     loaders: [
     {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: "eslint-loader",
-        options: {
-          fix: true
-        }
+        include: [path.resolve(__dirname, "src/")]
     },
     {
       test: /\.css$/, loader: ExtractTextPlugin.extract({fallback: "style-loader", use: "css-loader"})

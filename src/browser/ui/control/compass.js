@@ -45,7 +45,7 @@ UIControlCompass.prototype.update = function() {
 
     var pos = map.getPosition();
     var orientation = pos.getOrientation();
-    var value = "rotateX("+(Math.round(orientation[1]+90)*0.7)+"deg) " + "rotateZ("+Math.round(orientation[0]-45)+"deg)";
+    var value = "rotateX("+(Math.round(orientation[1]+90)*0.7)+"deg) " + "rotateZ("+Math.round(-orientation[0]-45)+"deg)";
 
     if (value != this.lastStyle) {
         this.lastStyle = value;
@@ -68,8 +68,8 @@ UIControlCompass.prototype.onDrag = function(event) {
     var controller = this.browser.controlMode.getCurrentController();
     
     if (controller.orientationDeltas) {
-        controller.orientationDeltas.push([-delta[0] * sensitivity,
-                                             -delta[1] * sensitivity, 0]);
+        controller.orientationDeltas.push([delta[0] * sensitivity,
+                                           -delta[1] * sensitivity, 0]);
     }
 };
 

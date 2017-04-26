@@ -48,7 +48,7 @@ MapConvert.prototype.movePositionCoordsTo = function(position, azimuth, distance
 
         //console.log("corerction: " + (r.azi1 - r.azi2));
 
-        orientation[0] += (r.azi1 - r.azi2) * azimuthCorrectionFactor;
+        orientation[0] -= (r.azi1 - r.azi2) * azimuthCorrectionFactor;
         //orientation[0] -= (r.azi1 - r.azi2); 
 
         //if (!skipOrientation) {
@@ -147,7 +147,7 @@ MapConvert.prototype.convertPositionHeightMode = function(position, mode, noPrec
 MapConvert.prototype.getPositionCameraCoords = function(position, heightMode) {
     var orientation = position.getOrientation();
     var rotMatrix = mat4.create();
-    mat4.multiply(math.rotationMatrix(2, math.radians(orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), rotMatrix);
+    mat4.multiply(math.rotationMatrix(2, math.radians(-orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), rotMatrix);
 
     if (position.getViewMode() == "obj") {
         var coords = position.getCoords();
