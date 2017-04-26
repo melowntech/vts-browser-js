@@ -9,14 +9,14 @@ VTS-Browser-JS has the following modes of contribution:
 - GitHub Pull Requests (accepted and moderated by contributors with git write access)
 - GitHub Commit Access (granted to long-term core developers)
 
-# Code of Conduct
+## Code of Conduct
 
 Please note that this project is released with a Contributor Code of Conduct
 (see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)). By
 participating in this project you agree to abide by its terms.
 
 
-# Contributor License Agreement
+## Contributor License Agreement
 
 Contributors are asked to expressly agree with Melown Contributor License Agreement (CLA).
 
@@ -34,9 +34,9 @@ You agree with the CLA by
 
 This is only required once for your contributions to [all Melown repositories](https://github.com/Melown).
 
-# Development
+## Development
 
-## GitHub Commit Guidelines
+### GitHub Commit Guidelines
 
 - enhancements and bug fixes should be identified with a GitHub issue
 - commits should be granular enough for other developers to understand the
@@ -55,12 +55,12 @@ This is only required once for your contributions to [all Melown repositories](h
   before they are committed
 
 
-## Coding Guidelines
+### Coding Guidelines
 
 **NOTE:** There are no specific coding guidelines yet. ESLinter will be set
 soon.
 
-## Submitting a Pull Request
+### Submitting a Pull Request
 
 This section will guide you through steps of working on VTS-Browser-JS.  This
 section assumes you have forked VTS-Browser-JS into your own GitHub repository.
