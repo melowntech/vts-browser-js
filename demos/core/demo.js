@@ -4,13 +4,15 @@ var isMapProjected = false;
 
 
 (function startDemo() {
-    //check vadstena support (webgl)
+    //check vts-core support (webgl)
     if (!vts.checkSupport()) {
         alert('VTS browser needs web browser with WebGL support.');
         return;
     }
 
-    //init melown core
+    // create map in the html div with id 'map-div'
+    // parameter 'map' sets path to the map which will be displayed
+    // you can create your own map on melown.com
     core = vts.core('map-div', {
         map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json'
     });
@@ -18,7 +20,7 @@ var isMapProjected = false;
     //callback once is map config loaded
     core.on('map-loaded', onMapLoaded);	
 	
-    //mouse events
+    //set mouse events callbacks
     document.onmousedown = onMouseDown;
     document.oncontextmenu = (function(){ return false;});
     document.onmouseup = onMouseUp;
@@ -98,8 +100,12 @@ function onMouseMove(event) {
         
         if (mouseLeftDown) { //pan
 
+            //pan sensitivity
             var sensitivity = 2;
             
+            //sensitivity have to be also
+            //affected by zoom (view extent) and fov
+
             //get zoom factor
             var viewExtent = pos.getViewExtent();
             var fov = pos.getFov();
@@ -109,10 +115,12 @@ function onMouseMove(event) {
             var fovCorrection = (fov > 0.01 && fov < 179) ? (1.0 / Math.tan(vts.math.radians(fov*0.5))) : 1.0;
        
             //get azimuth and distance
+            //apply zoon a fov factors to distance
+            //distance means how far we move in direction of azimut
             var distance = Math.sqrt(dx*dx + dy*dy) * zoomFactor * fovCorrection;    
             var azimuth = vts.math.degrees(Math.atan2(dx, dy)) - pos.getOrientation()[0]; 
             
-            //move position
+            //move to new position
             pos = map.movePositionCoordsTo(pos, (isMapProjected ? 1 : -1) * azimuth, distance);
             pos = reduceFloatingHeight(pos, 0.8);
             map.setPosition(pos);
