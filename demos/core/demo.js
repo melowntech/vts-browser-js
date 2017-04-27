@@ -6,26 +6,25 @@ var isMapProjected = false;
 (function startDemo() {
     //check vadstena support (webgl)
     if (!vts.checkSupport()) {
-        alert("VTS browser needs web browser with WebGL support.");
+        alert('VTS browser needs web browser with WebGL support.');
         return;
     }
 
     //init melown core
-    core = vts.core("map-div", {
-        map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json"
-
+    core = vts.core('map-div', {
+        map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json'
     });
 
     //callback once is map config loaded
-    core.on("map-loaded", onMapLoaded);	
+    core.on('map-loaded', onMapLoaded);	
 	
     //mouse events
     document.onmousedown = onMouseDown;
     document.oncontextmenu = (function(){ return false;});
     document.onmouseup = onMouseUp;
     document.onmousemove = onMouseMove;
-    window.addEventListener("DOMMouseScroll", onMouseWheel, true);
-    window.addEventListener("mousewheel", onMouseWheel, true);
+    window.addEventListener('DOMMouseScroll', onMouseWheel, true);
+    window.addEventListener('mousewheel', onMouseWheel, true);
     document.onselectstart = function(){ return false; }; //removes text cusor during draging
 })();
 
@@ -34,8 +33,8 @@ function onMapLoaded() {
     map = core.map;
     //check whether is map projected (used for navigation)
     var rf = map.getReferenceFrame();
-    var srs = map.getSrsInfo(rf["navigationSrs"]);
-    isMapProjected = (srs) ? (srs["type"] == "projected") : false; 
+    var srs = map.getSrsInfo(rf.navigationSrs);
+    isMapProjected = (srs) ? (srs.type == 'projected') : false; 
 }
 
 
@@ -98,20 +97,20 @@ function onMouseMove(event) {
         var pos = map.getPosition();
         
         if (mouseLeftDown) { //pan
+
+            var sensitivity = 2;
             
             //get zoom factor
-            var sensitivity = 0.5;
             var viewExtent = pos.getViewExtent();
-            var fov = pos.getFov()*0.5;
-            var zoomFactor = ((viewExtent * Math.tan(vts.math.radians(fov))) / 800) * sensitivity;
-            
-            //apply factor to deltas
-            dx *= zoomFactor;
-            dy *= zoomFactor;
-        
+            var fov = pos.getFov();
+            var zoomFactor = ((viewExtent * Math.tan(vts.math.radians(fov*0.5))) / 800) * sensitivity;
+
+            //get fov factor
+            var fovCorrection = (fov > 0.01 && fov < 179) ? (1.0 / Math.tan(vts.math.radians(fov*0.5))) : 1.0;
+       
             //get azimuth and distance
-            var distance = Math.sqrt(dx*dx + dy*dy);    
-            var azimuth = vts.math.degrees(Math.atan2(dx, dy)) + pos.getOrientation()[0]; 
+            var distance = Math.sqrt(dx*dx + dy*dy) * zoomFactor * fovCorrection;    
+            var azimuth = vts.math.degrees(Math.atan2(dx, dy)) - pos.getOrientation()[0]; 
             
             //move position
             pos = map.movePositionCoordsTo(pos, (isMapProjected ? 1 : -1) * azimuth, distance);
@@ -123,7 +122,7 @@ function onMouseMove(event) {
             var orientation = pos.getOrientation();  
 
             var sensitivity_ = 0.4;
-            orientation[0] -= dx * sensitivity_;
+            orientation[0] += dx * sensitivity_;
             orientation[1] -= dy * sensitivity_;
 
             pos = pos.setOrientation(orientation);  

@@ -236,13 +236,18 @@ MapInterface.prototype.getAzimuthCorrection = function(coords, coords2) {
 };
 
 
+MapInterface.prototype.getNED = function(coords) {
+    return this.map.measure.getNewNED(coords, true);
+};
+
+
 MapInterface.prototype.getCameraInfo = function() {
     var camera = this.map.camera;
     return {
-        "projection-matrix" : camera.camera.projection.slice(),
-        "view-matrix" : camera.camera.modelview.slice(),
-        "view-projection-matrix" : camera.camera.mvp.slice(),
-        "rotation-matrix" : camera.camera.rotationview.slice(),
+        "projectionMatrix" : camera.camera.projection.slice(),
+        "viewMatrix" : camera.camera.modelview.slice(),
+        "view-projectionMatrix" : camera.camera.mvp.slice(),
+        "rotationMatrix" : camera.camera.rotationview.slice(),
         "position" : this.map.camera.position.slice(),
         "vector" : this.map.camera.vector.slice(),
         "distance" : this.map.camera.distance
@@ -397,67 +402,3 @@ MapInterface.prototype.hover = function(screenX, screenY, persistent, state) {
 
 
 export default MapInterface;
-
-
-/*
-MapInterface.prototype["setPosition"] = MapInterface.prototype.setPosition;
-MapInterface.prototype["getPosition"] = MapInterface.prototype.getPosition;
-MapInterface.prototype["setView"] = MapInterface.prototype.setView;
-MapInterface.prototype["getView"] = MapInterface.prototype.getView;
-MapInterface.prototype["getCredits"] = MapInterface.prototype.getCredits;
-MapInterface.prototype["getCurrentCredits"] = MapInterface.prototype.getCurrentCredits;
-MapInterface.prototype["getCreditInfo"] = MapInterface.prototype.getCreditInfo;
-MapInterface.prototype["getViews"] = MapInterface.prototype.getViews;
-MapInterface.prototype["getViewInfo"] = MapInterface.prototype.getViewInfo;
-MapInterface.prototype["getBoundLayers"] = MapInterface.prototype.getBoundLayers; 
-MapInterface.prototype["getBoundLayerInfo"] = MapInterface.prototype.getBoundLayerInfo; 
-MapInterface.prototype["getFreeLayers"] = MapInterface.prototype.getFreeLayers;
-MapInterface.prototype["getFreeLayerInfo"] = MapInterface.prototype.getFreeLayerInfo; 
-MapInterface.prototype["getSurfaces"] = MapInterface.prototype.getSurfaces;
-MapInterface.prototype["getSurfaceInfo"] = MapInterface.prototype.getSurfaceInfo; 
-MapInterface.prototype["getSrses"] = MapInterface.prototype.getSrses; 
-MapInterface.prototype["getSrsInfo"] = MapInterface.prototype.getSrsInfo; 
-MapInterface.prototype["getReferenceFrame"] = MapInterface.prototype.getReferenceFrame; 
-MapInterface.prototype["addFreeLayer"] = MapInterface.prototype.addFreeLayer;
-MapInterface.prototype["removeFreeLayer"] = MapInterface.prototype.removeFreeLayer;
-//MapInterface.prototype["setFreeLayerOptions"] = MapInterface.prototype.setFreeLayerOptions;
-//MapInterface.prototype["getFreeLayerOptions"] = MapInterface.prototype.getFreeLayerOptions;
-MapInterface.prototype["addBoundLayer"] = MapInterface.prototype.addBoundLayer;
-MapInterface.prototype["removeBoundLayer"] = MapInterface.prototype.removeBoundLayer;
-//MapInterface.prototype["setBoundLayerOptions"] = MapInterface.prototype.setBoundLayerOptions;
-//MapInterface.prototype["getBoundLayerOptions"] = MapInterface.prototype.getBoundLayerOptions;
-MapInterface.prototype["convertPositionViewMode"] = MapInterface.prototype.convertPositionViewMode; 
-MapInterface.prototype["convertPositionHeightMode"] = MapInterface.prototype.convertPositionHeightMode; 
-MapInterface.prototype["convertCoords"] = MapInterface.prototype.convertCoords;
-MapInterface.prototype["convertCoordsFromNavToCanvas"] = MapInterface.prototype.convertCoordsFromNavToCanvas;
-MapInterface.prototype["convertCoordsFromPhysToCanvas"] = MapInterface.prototype.convertCoordsFromPhysToCanvas;
-MapInterface.prototype["convertCoordsFromNavToCameraSpace"] = MapInterface.prototype.convertCoordsFromNavToCameraSpace; //remove?
-MapInterface.prototype["convertCoordsFromPhysToCameraSpace"] = MapInterface.prototype.convertCoordsFromPhysToCameraSpace;
-MapInterface.prototype["getPositionCanvasCoords"] = MapInterface.prototype.getPositionCanvasCoords; 
-MapInterface.prototype["getPositionCameraCoords"] = MapInterface.prototype.getPositionCameraCoords; 
-MapInterface.prototype["movePositionCoordsTo"] = MapInterface.prototype.movePositionCoordsTo;
-MapInterface.prototype["getSurfaceHeight"] = MapInterface.prototype.getSurfaceHeight;
-MapInterface.prototype["getDistance"] = MapInterface.prototype.getDistance;
-MapInterface.prototype["getAzimuthCorrection"] = MapInterface.prototype.getAzimuthCorrection; 
-MapInterface.prototype["getCameraInfo"] = MapInterface.prototype.getCameraInfo;
-MapInterface.prototype["isPointInsideCameraFrustum"] = MapInterface.prototype.isPointInsideCameraFrustum;
-MapInterface.prototype["isBBoxInsideCameraFrustum"] = MapInterface.prototype.isBBoxInsideCameraFrustum;
-MapInterface.prototype["generateTrajectory"] = MapInterface.prototype.generateTrajectory; 
-MapInterface.prototype["setConfigParam"] = MapInterface.prototype.setConfigParam;
-MapInterface.prototype["getConfigParam"] = MapInterface.prototype.getConfigParam; 
-MapInterface.prototype["redraw"] = MapInterface.prototype.redraw;
-MapInterface.prototype["addRenderSlot"] = MapInterface.prototype.addRenderSlot; 
-MapInterface.prototype["moveRenderSlotBefore"] = MapInterface.prototype.moveRenderSlotBefore; 
-MapInterface.prototype["moveRenderSlotAfter"] = MapInterface.prototype.moveRenderSlotAfter;
-MapInterface.prototype["removeRenderSlot"] = MapInterface.prototype.removeRenderSlot;
-MapInterface.prototype["setRenderSlotEnabled"] = MapInterface.prototype.setRenderSlotEnabled; 
-MapInterface.prototype["getRenderSlotEnabled"] = MapInterface.prototype.getRenderSlotEnabled; 
-MapInterface.prototype["setLoaderSuspended"] = MapInterface.prototype.setLoaderSuspended;
-MapInterface.prototype["getLoaderSuspended"] = MapInterface.prototype.getLoaderSuspended; 
-MapInterface.prototype["getGpuCache"] = MapInterface.prototype.getGpuCache;
-MapInterface.prototype["getHitCoords"] = MapInterface.prototype.getHitCoords;
-MapInterface.prototype["getScreenRay"] = MapInterface.prototype.getScreenRay;
-MapInterface.prototype["getStats"] = MapInterface.prototype.getStats;
-MapInterface.prototype["click"] = MapInterface.prototype.click;
-MapInterface.prototype["hover"] = MapInterface.prototype.hover;
-*/

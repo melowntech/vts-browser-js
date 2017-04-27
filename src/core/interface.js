@@ -83,17 +83,3 @@ CoreInterface.prototype.callListener = function(name, event) {
 
 
 export {CoreInterface};
-
-/*
-Mel["MapCore"] = Mel.MapCore;
-Mel["mapCore"] = Mel.MapCore;
-CoreInterface.prototype["destroy"] = CoreInterface.prototype.destroy;
-CoreInterface.prototype["loadMap"] = CoreInterface.prototype.loadMap;
-CoreInterface.prototype["destroyMap"] = CoreInterface.prototype.destroyMap;
-CoreInterface.prototype["getMap"] = CoreInterface.prototype.getMap;
-CoreInterface.prototype["getRenderer"] = CoreInterface.prototype.getRenderer;
-CoreInterface.prototype["on"] = CoreInterface.prototype.on;
-CoreInterface.prototype["callListener"] = CoreInterface.prototype.callListener;
-Mel["getCoreVersion"] = Mel.getCoreVersion;
-Mel["checkSupport"] = Mel.checkSupport;
-*/

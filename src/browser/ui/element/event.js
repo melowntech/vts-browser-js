@@ -281,19 +281,4 @@ UIEvent.prototype.getType = function() {
 
 export default UIEvent;
 
-//prevent minification
-/*
-UIEvent.prototype["getMouseButton"] = UIEvent.prototype.getMouseButton;
-UIEvent.prototype["getMouseCoords"] = UIEvent.prototype.getMouseCoords;
-UIEvent.prototype["getDragDelta"] = UIEvent.prototype.getDragDelta;
-UIEvent.prototype["getModifierKey"] = UIEvent.prototype.getModifierKey;
-UIEvent.prototype["getKeyCode"] = UIEvent.prototype.getKeyCode;
-UIEvent.prototype["getDragButton"] = UIEvent.prototype.getDragButton;
-UIEvent.prototype["getWheelDelta"] = UIEvent.prototype.getWheelDelta;
-UIEvent.prototype["getDragZoom"] = UIEvent.prototype.getDragZoom;
-UIEvent.prototype["getDragTuches"] = UIEvent.prototype.getDragTuches;
-UIEvent.prototype["getTouchesCount"] = UIEvent.prototype.getTouchesCount;
-UIEvent.prototype["getTouchCoords"] = UIEvent.prototype.getTouchCoords;
-UIEvent.prototype["getType"] = UIEvent.prototype.getType;
-*/
 

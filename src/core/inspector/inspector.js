@@ -116,7 +116,7 @@ Inspector.prototype.onMapUpdate = function(string) {
             "points" : slines,
             "size" : 2.0,
             "color" : [0,128,255,255],
-            "depth-test" : false,
+            "depthTest" : false,
             "blend" : false
             });            
 
@@ -131,7 +131,7 @@ Inspector.prototype.onMapUpdate = function(string) {
                 "points" : slines,
                 "size" : 2.0,
                 "color" : [0,255,128,255],
-                "depth-test" : false,
+                "depthTest" : false,
                 "blend" : false
                 });   
         }
@@ -147,7 +147,7 @@ Inspector.prototype.onMapUpdate = function(string) {
                 "points" : slines,
                 "size" : 2.0,
                 "color" : [0,255,255,255],
-                "depth-test" : false,
+                "depthTest" : false,
                 "blend" : false
                 });   
         }
@@ -259,7 +259,7 @@ Inspector.prototype.onMapUpdate = function(string) {
                 "points" : lbuffer,
                 "size" : 2.0,
                 "color" : [0,255,255,255],
-                "depth-test" : false,
+                "depthTest" : false,
                 "blend" : false
                 });            
         }
@@ -274,7 +274,7 @@ Inspector.prototype.onMapUpdate = function(string) {
                 "points" : lbuffer,
                 "size" : 2.0,
                 "color" : [0,255,255,255],
-                "depth-test" : false,
+                "depthTest" : false,
                 "blend" : false
                 });            
         }
@@ -286,7 +286,7 @@ Inspector.prototype.onMapUpdate = function(string) {
                 "texture" : this.circleTexture,
                 "color" : [255,0,255,255],
                 "depth" : p[2],
-                "depth-test" : false,
+                "depthTest" : false,
                 "blend" : true
                 });
         }

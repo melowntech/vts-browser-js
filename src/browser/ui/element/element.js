@@ -553,33 +553,3 @@ UIElement.prototype.setDraggableState = function(state) {
 
 export default UIElement;
 
-
-//prevent minification
-/*
-UIElement.prototype["setHtml"] = UIElement.prototype.setHtml; 
-UIElement.prototype["getHtml"] = UIElement.prototype.getHtml; 
-UIElement.prototype["getElement"] = UIElement.prototype.getElement; 
-UIElement.prototype["setClass"] = UIElement.prototype.setClass; 
-UIElement.prototype["getClass"] = UIElement.prototype.getClass; 
-UIElement.prototype["setStyle"] = UIElement.prototype.setStyle; 
-UIElement.prototype["getStyle"] = UIElement.prototype.getStyle; 
-UIElement.prototype["addClass"] = UIElement.prototype.addClass; 
-UIElement.prototype["hasClass"] = UIElement.prototype.hasClass; 
-UIElement.prototype["getRect"] = UIElement.prototype.getRect; 
-UIElement.prototype["removeClass"] = UIElement.prototype.removeClass; 
-*/
-
-//prevent minification
-/*
-UIElement.prototype["on"] = UIElement.prototype.on;
-UIElement.prototype["once"] = UIElement.prototype.once;
-UIElement.prototype["off"] = UIElement.prototype.off;
-UIElement.prototype["fire"] = UIElement.prototype.fire;
-*/
-
-//prevent minification
-/*
-UIElement.prototype["setDraggableState"] = UIElement.prototype.setDraggableState; 
-UIElement.prototype["getDraggableState"] = UIElement.prototype.getDraggableState; 
-UIElement.prototype["getDraggingState"] = UIElement.prototype.getDraggingState; 
-*/

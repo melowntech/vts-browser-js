@@ -1,7 +1,7 @@
 # VTS Browser JS
 
 The VTS Browser JS is a *JavaScript WebGL 3D maps rendering engine* used and
-developed by Melown SE (http://melown.com) in their products.
+developed by Melown Technologies SE (http://melown.com) in their products.
 
 The build system uses [webpack module bundler](http://webpack.github.io/).
 Typical development cycle starts with `npm install` for installation of
@@ -61,7 +61,7 @@ The development server is serving local files at
 node_modules/.bin/webpack-dev-server
 ```
 
-And go to [http://localhost:8080/demos/browser/basic/](http://localhost:8080/demos/browser/basic/)
+And go to [http://localhost:8080/demos/](http://localhost:8080/demos/)
 
 ## Makefile
 
@@ -76,4 +76,4 @@ See the `LICENSE` file for VTS Browser JS license, run `webpack` and check the
 
 ## How to contribute
 
-Check the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+Check out the [CONTRIBUTING.md](CONTRIBUTING.md) file.

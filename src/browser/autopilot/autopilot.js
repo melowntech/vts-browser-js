@@ -178,12 +178,3 @@ Autopilot.prototype.generatePIHTrajectory = function(position, azimuth, distance
 
 export default Autopilot;
 
-/*
-Autopilot.prototype["flyTo"] = Autopilot.prototype.flyTo; 
-Autopilot.prototype["flyTrajectory"] = Autopilot.prototype.flyTrajectory; 
-Autopilot.prototype["setAutorotate"] = Autopilot.prototype.setAutorotate; 
-Autopilot.prototype["getAutorotate"] = Autopilot.prototype.getAutorotate; 
-Autopilot.prototype["setAutopan"] = Autopilot.prototype.setAutopan; 
-Autopilot.prototype["getAutopan"] = Autopilot.prototype.getAutopan; 
-Autopilot.prototype["cancelFlight"] = Autopilot.prototype.cancelFlight; 
-*/

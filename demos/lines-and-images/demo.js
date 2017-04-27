@@ -2,78 +2,107 @@ var browser = null;
 var renderer = null;
 var map = null;
 
+var linePoints = [
+    [13.4836691, 49.6285568, 0],
+    [13.8559398, 49.2926023, 0],
+    [14.3590684, 49.1136598, 0],
+    [15.2561336, 49.0637509, 0],
+    [15.8564221, 49.2444548, 0],
+    [16.2429312, 49.5161402, 0]
+];
+
 (function startDemo() {
-    browser = vts.browser("map-div", {
-        map : "https://demo.test.mlwn.se/public-maps/grand-ev/mapConfig.json",
-        position : [ "obj", 1683559, 6604129, "float", 0, -13, -58, 0, 1764, 90 ]
+    // create map in the html div with id 'map-div'
+    // parameter 'map' sets path to the map which will be displayed
+    // you can create your own map on melown.com
+    // position parameter is described in documentation 
+    // https://github.com/Melown/vts-browser-js/wiki/VTS-Browser-Map-API#position
+    // view parameter is described in documentation 
+    // https://github.com/Melown/vts-browser-js/wiki/VTS-Browser-Map-API#definition-of-view
+    browser = vts.browser('map-div', {
+        map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json',
+        position : [ 'obj', 15.096869389048662, 49.38435909591623, 'float', 0.00, 0.00, -90.00, 0.00, 1587848.47, 55.00 ],
     });
 
+    //check whether browser is supported
     if (!browser) {
-        console.log("Your web browser does not support WebGL");
+        console.log('Your web browser does not support WebGL');
         return;
     }
 
     renderer = browser.renderer;
 
-    browser.on("map-loaded", onMapLoaded);
-    loadImage();
+    //callback once is map config loaded
+    browser.on('map-loaded', onMapLoaded);
+
+    loadTexture();
 })();
 
 
 var demoTexture = null;
 
 
-function loadImage() {
+function loadTexture() {
+    //load icon used for displaying
     var demoImage = vts.utils.loadImage(
-                   "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png",
-                    (function(){
-                       demoTexture = renderer.createTexture({ "source": demoImage });
-                    }));
+        'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png',
+        (function(){
+            demoTexture = renderer.createTexture({ 'source': demoImage });
+        }));
 }
 
 
 function onMapLoaded() {
+    //add render slots
+    //render slots are called during map render
     map = browser.map;
-    map.addRenderSlot("custom-render", onCustomRender, true);
-    map.moveRenderSlotAfter("after-map-render", "custom-render");
+    map.addRenderSlot('custom-render', onCustomRender, true);
+    map.moveRenderSlotAfter('after-map-render', 'custom-render');
 };
 
 
 function onCustomRender() {
-    if (demoTexture) {
-        var coords = map.convertCoordsFromNavToCanvas([1683559, 6604129, 0], "float");
+    if (demoTexture) { //check whether texture is loaded
 
-        var totalPoints = 32;
-        var points = new Array(totalPoints);
-        var p = [1683559, 6604129, 0];
-        var scale = [400, 100];
+        //we have line points in navigation coordinates
+        //so we need to convert them to canvas coordinates
+        //because funtions drawImage and drawLineString
+        //work in canvas space
+        var points = new Array(linePoints.length);
         
-        for (var i = 0; i < totalPoints; i++) {
-            points[i] = map.convertCoordsFromNavToCanvas(
-                         [p[0] + (i / totalPoints) * scale[0],
-                         p[1] + Math.sin(2 * Math.PI * (i / totalPoints)) * scale[1],
-                         p[2]], "float");
+        for (var i = 0; i < linePoints.length; i++) {
+            points[i] = map.convertCoordsFromNavToCanvas(linePoints[i], 'float');
         }
 
+        //draw line
         renderer.drawLineString({
-            "points" : points,
-            "size" : 2.0,
-            "color" : [255,0,255,255],
-            "depth-test" : false,
-            "blend" : false
+            'points' : points,
+            'size' : 2.0,
+            'color' : [255,0,255,255],
+            'depth-test' : false,
+            'blend' : false
             });
-        
-            
+
+        //draw point image at the first line point
+        var coords = points[0];
         renderer.drawImage({
-            "rect" : [coords[0]-12, coords[1]-12, 24, 24],
-            "texture" : demoTexture,
-            "color" : [255,0,255,255],
-            "depth" : coords[2],
-            "depth-test" : false,
-            "blend" : true
+            'rect' : [coords[0]-12, coords[1]-12, 24, 24],
+            'texture' : demoTexture,
+            'color' : [255,0,255,255],
+            'depth' : coords[2],
+            'depth-test' : false,
+            'blend' : true
+            });
+
+        //draw point image at the last line point
+        coords = points[points.length-1];
+        renderer.drawImage({
+            'rect' : [coords[0]-12, coords[1]-12, 24, 24],
+            'texture' : demoTexture,
+            'color' : [255,0,255,255],
+            'depth' : coords[2],
+            'depth-test' : false,
+            'blend' : true
             });
     }    
 }
-
-
- 

@@ -217,12 +217,3 @@ var platform = {
 
 export {platform};
 
-//export default platform;
-
-/*
-Mel["getBrowser"] = platform.getBrowser;
-Mel["getBrowserVersion"] = platform.getBrowserVersion;
-Mel["getOS"] = platform.getOS;
-Mel["isplatformMobileDevice"] = platform.isMobile;
-Mel["isplatformAndroid"] = platform.isAndroid;
-*/

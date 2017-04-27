@@ -161,25 +161,3 @@ BrowserInterface.prototype.getParam = function(key) {
 
 
 export default BrowserInterface;
-
-//prevent minification
-/*
-Mel["MapBrowser"] = Mel.MapBrowser;
-Mel["mapBrowser"] = Mel.MapBrowser;
-BrowserInterface.prototype["getMap"] = BrowserInterface.prototype.getMap; 
-BrowserInterface.prototype["getRenderer"] = BrowserInterface.prototype.getRenderer; 
-BrowserInterface.prototype["getPresenter"] = BrowserInterface.prototype.getPresenter; 
-BrowserInterface.prototype["getAutopilot"] = BrowserInterface.prototype.getAutopilot; 
-BrowserInterface.prototype["getProj4"] = BrowserInterface.prototype.getProj4; 
-BrowserInterface.prototype["getUI"] = BrowserInterface.prototype.getUI; 
-BrowserInterface.prototype["destroy"] = BrowserInterface.prototype.destroy; 
-BrowserInterface.prototype["setControlMode"] = BrowserInterface.prototype.setControlMode;
-BrowserInterface.prototype["getControlMode"] = BrowserInterface.prototype.getControlMode;
-BrowserInterface.prototype["loadMap"] = BrowserInterface.prototype.loadMap;
-BrowserInterface.prototype["destroyMap"] = BrowserInterface.prototype.destroyMap;
-BrowserInterface.prototype["on"] = BrowserInterface.prototype.on; 
-BrowserInterface.prototype["setParams"] = BrowserInterface.prototype.setParams; 
-BrowserInterface.prototype["setParam"] = BrowserInterface.prototype.setParam; 
-BrowserInterface.prototype["getParam"] = BrowserInterface.prototype.getParam; 
-Mel["getBrowserVersion"] = Mel.getBrowserVersion; 
-*/
