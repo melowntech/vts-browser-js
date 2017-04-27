@@ -176,12 +176,4 @@ UI.prototype.tick = function(dirty) {
 
 export default UI;
 
-/*
-UI.prototype["addControl"] = UI.prototype.addControl;
-UI.prototype["removeControl"] = UI.prototype.removeControl;
-UI.prototype["setControlHtml"] = UI.prototype.setControlHtml;
-UI.prototype["setControlVisible"] = UI.prototype.setControlVisible;
-UI.prototype["getControlVisible"] = UI.prototype.getControlVisible;
-UI.prototype["getMapElement"] = UI.prototype.getMapElement; 
-UI.prototype["getControl"] = UI.prototype.getControl; 
-*/
+

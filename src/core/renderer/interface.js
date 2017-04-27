@@ -104,12 +104,12 @@ RendererInterface.prototype.createMesh = function(options) {
         vertices : options["vertices"],
         uvs : options["uvs"],
         uvs2 : options["normals"],
-        vertexSize : options["vertex-size"],
-        uvSize : options["uv-size"],
-        uv2Size : options["normal-size"] || 3,
-        vertexAttr : options["vertex-attr"],
-        uvAttr : options["uv-attr"],
-        uv2Attr : options["normal-attr"],
+        vertexSize : options["vertexSize"],
+        uvSize : options["uvSize"],
+        uv2Size : options["normalSize"] || 3,
+        vertexAttr : options["vertexAttr"],
+        uvAttr : options["uvAttr"],
+        uv2Attr : options["normalAttr"],
         bbox : options["bbox"]
     };
 
@@ -130,8 +130,8 @@ RendererInterface.prototype.createShader = function(options) {
         return null;
     }
 
-    var vertexShader = options["vertex-shader"];
-    var fragmentShader = options["fragment-shader"];
+    var vertexShader = options["vertexShader"];
+    var fragmentShader = options["fragmentShader"];
 
     if (vertexShader != null && fragmentShader) {
         return new GpuProgram(this.gpu, vertexShader, fragmentShader);
@@ -162,16 +162,16 @@ RendererInterface.prototype.drawMesh = function(options) {
         return this;    
     }
 
-    if (!options["mesh"] == null || !options["shader-variables"]) {
+    if (!options["mesh"] == null || !options["shaderVariables"]) {
         return this;    
     }
 
-    var shaderAttributes = options["shader-attributes"];
+    var shaderAttributes = options["shaderAttributes"];
     var vertexAttr = options["vertex"] || "aPosition";
     var uvAttr = options["uv"] || "aTexCoord";
     var uv2Attr = options["normal"] || "aNormal";
 
-    var shaderVariables = options["shader-variables"];
+    var shaderVariables = options["shaderVariables"];
     var shader = options["shader"] || "textured";
 
    
@@ -289,10 +289,10 @@ RendererInterface.prototype.drawImage = function(options) {
     var rect = options["rect"];
     var color = options["color"] || [255,255,255,255];
     var depth = (options["depth"] != null) ? options["depth"] : 0;
-    var depthTest = (options["depth-test"] != null) ? options["depth-test"] : false;
+    var depthTest = (options["depthTest"] != null) ? options["depthTest"] : false;
     var blend = (options["blend"] != null) ? options["blend"] : false;
-    var writeDepth = (options["write-depth"] != null) ? options["write-depth"] : false;
-    var useState = (options["use-state"] != null) ? options["use-state"] : false;
+    var writeDepth = (options["writeDepth"] != null) ? options["writeDepth"] : false;
+    var useState = (options["useState"] != null) ? options["useState"] : false;
     color[0] *= 1.0/255;
     color[1] *= 1.0/255;
     color[2] *= 1.0/255;
@@ -314,10 +314,10 @@ RendererInterface.prototype.drawBillboard = function(options) {
 
     var mvp = options["mvp"];
     var color = options["color"] || [255,255,255,255];
-    var depthTest = (options["depth-test"] != null) ? options["depth-test"] : false;
+    var depthTest = (options["depthTest"] != null) ? options["depthTest"] : false;
     var blend = (options["blend"] != null) ? options["blend"] : false;
-    var writeDepth = (options["write-depth"] != null) ? options["write-depth"] : false;
-    var useState = (options["use-state"] != null) ? options["use-state"] : false;
+    var writeDepth = (options["writeDepth"] != null) ? options["writeDepth"] : false;
+    var useState = (options["useState"] != null) ? options["useState"] : false;
     color[0] *= 1.0/255;
     color[1] *= 1.0/255;
     color[2] *= 1.0/255;
@@ -340,10 +340,10 @@ RendererInterface.prototype.drawLineString = function(options) {
     var points = options["points"];
     var color = options["color"] || [255,255,255,255];
     var size = options["size"] || 2;
-    var depthTest = (options["depth-test"] != null) ? options["depth-test"] : false;
+    var depthTest = (options["depthTest"] != null) ? options["depthTest"] : false;
     var blend = (options["blend"] != null) ? options["blend"] : false;
-    var writeDepth = (options["write-depth"] != null) ? options["write-depth"] : false;
-    var useState = (options["use-state"] != null) ? options["use-state"] : false;
+    var writeDepth = (options["writeDepth"] != null) ? options["writeDepth"] : false;
+    var useState = (options["useState"] != null) ? options["useState"] : false;
     color[0] *= 1.0/255;
     color[1] *= 1.0/255;
     color[2] *= 1.0/255;
@@ -379,7 +379,7 @@ RendererInterface.prototype.drawDebugText = function(options) {
     var color = options["color"] || [255,255,255,255];
     var size = options["size"] || 16;
     var depth = options["depth"];
-    var useState = options["use-state"] || false;
+    var useState = options["useState"] || false;
     color[0] *= 1.0/255;
     color[1] *= 1.0/255;
     color[2] *= 1.0/255;
@@ -390,9 +390,9 @@ RendererInterface.prototype.drawDebugText = function(options) {
     this.renderer.draw.drawText(coords[0] - (lx * 0.5), coords[1], size, text, color, depth, useState);
 
     /*
-    var depthTest = options["depth-test"] || false;
+    var depthTest = options["depthTest"] || false;
     var blend = options["blend"] || false;
-    var writeDepth = options["write-depth"] || false;
+    var writeDepth = options["writeDepth"] || false;
     */
 
     return this;    
@@ -432,30 +432,3 @@ RendererInterface.prototype.getConfigParam = function(key) {
 
 
 export default RendererInterface;
-
-/*
-RendererInterface.prototype["clear"] = RendererInterface.prototype.clear;
-RendererInterface.prototype["createState"] = RendererInterface.prototype.createState; 
-RendererInterface.prototype["setState"] = RendererInterface.prototype.setState;
-RendererInterface.prototype["createTexture"] = RendererInterface.prototype.createTexture; 
-RendererInterface.prototype["removeTexture"] = RendererInterface.prototype.removeTexture; 
-RendererInterface.prototype["createMesh"] = RendererInterface.prototype.createMesh;
-RendererInterface.prototype["removeMesh"] = RendererInterface.prototype.removeMesh; 
-RendererInterface.prototype["createshader"] = RendererInterface.prototype.createshader; 
-RendererInterface.prototype["removeResource"] = RendererInterface.prototype.removeResource; 
-RendererInterface.prototype["addJob"] = RendererInterface.prototype.addJob;
-RendererInterface.prototype["clearJobs"] = RendererInterface.prototype.clearJobs; 
-RendererInterface.prototype["drawMesh"] = RendererInterface.prototype.drawMesh;
-RendererInterface.prototype["drawImage"] = RendererInterface.prototype.drawImage; 
-RendererInterface.prototype["drawBillboard"] = RendererInterface.prototype.drawBillboard; 
-RendererInterface.prototype["drawLineString"] = RendererInterface.prototype.drawLineString; 
-RendererInterface.prototype["drawJobs"] = RendererInterface.prototype.drawJobs;
-RendererInterface.prototype["drawBBox"] = RendererInterface.prototype.drawBBox; 
-RendererInterface.prototype["drawDebugText"] = RendererInterface.prototype.drawDebugText; 
-RendererInterface.prototype["getCanvasCoords"] = RendererInterface.prototype.getCanvasCoords; 
-RendererInterface.prototype["getCanvasSize"] = RendererInterface.prototype.getCanvasSize;
-RendererInterface.prototype["setConfigParams"] = RendererInterface.prototype.setConfigParams; 
-RendererInterface.prototype["setConfigParam"] = RendererInterface.prototype.setConfigParam;
-RendererInterface.prototype["getConfigParam"] = RendererInterface.prototype.getConfigParam; 
-RendererInterface.prototype["saveScreenshot"] = RendererInterface.prototype.saveScreenshot;
-*/

@@ -80,17 +80,16 @@ var MapTrajectory = function(map, p1, p2, options) {
         //get distance and azimut
         var res = this.map.measure.getDistance(this.pp1.getCoords(), this.pp2.getCoords());
         this.distance = res[0];
-        this.azimuth = (res[1] - 90) % 360;
+        this.azimuth = (res[1] + 90) % 360;
         this.azimuth = (this.azimuth < 0) ? (360 + this.azimuth) : this.azimuth;
 
         if (!this.map.getNavigationSrs().isProjected()) {
-            var res = this.geodesic["Inverse"](this.pp1.pos[2], this.pp1.pos[1], this.pp2.pos[2], this.pp2.pos[1]);
-            this.geoAzimuth = res["azi1"]; 
-            this.geoDistance = res["s12"];
+            var res = this.geodesic.Inverse(this.pp1.pos[2], this.pp1.pos[1], this.pp2.pos[2], this.pp2.pos[1]);
+            this.geoAzimuth = res.azi1; 
+            this.geoDistance = res.s12;
             this.azimuth = this.geoAzimuth % 360;
             this.azimuth = (this.azimuth < 0) ? (360 + this.azimuth) : this.azimuth;
         }
-
     }
     
     //console.log("azim: " + Math.round(this.azimuth) + " p1: " + this.p1.pos[5]  + " p2: " + this.p2.pos[5]);
@@ -264,7 +263,7 @@ MapTrajectory.prototype.generate = function() {
             }
             
             if (coords[3] != null) { //used for correction in planet mode
-                this.azimuth = coords[3];
+                this.azimuth = -coords[3];
             }
 
             p.setOrientation(this.getFlightOrienation(time));
@@ -295,9 +294,9 @@ MapTrajectory.prototype.getInterpolatedCoords = function(factor) {
     var c2 = this.pp2.getCoords(); 
 
     if (!this.map.getNavigationSrs().isProjected()) {
-        var res = this.geodesic["Direct"](c1[1], c1[0], this.geoAzimuth, this.geoDistance * factor);
+        var res = this.geodesic.Direct(c1[1], c1[0], this.geoAzimuth, this.geoDistance * factor);
 
-        var azimut = res["azi1"] - res["azi2"];
+        var azimut = res.azi1 - res.azi2;
 
         //var azimut = (azimut - 90) % 360;
         azimut = (this.azimuth < 0) ? (360 + azimut) : azimut;
@@ -305,7 +304,7 @@ MapTrajectory.prototype.getInterpolatedCoords = function(factor) {
         //azimut = this.azimuth;
 
 
-        return [ res["lon2"], res["lat2"],
+        return [ res.lon2, res.lat2,
                  c1[2] + (c2[2] - c1[2]) * factor, azimut];
 
     } else {

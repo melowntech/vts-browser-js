@@ -520,16 +520,16 @@ MapMeasure.prototype.getDistance = function(coords, coords2, includingHeight) {
 
         if (d > (navigationSrsInfo["a"] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
             if (includingHeight) {
-                return [Math.sqrt(r.s12*r.s12 + dz*dz), r.az1];
+                return [Math.sqrt(r.s12*r.s12 + dz*dz), -r.az1];
             } else {
-                return [r.s12, r.azi1];
+                return [r.s12, -r.azi1];
             }
         } else {
-            return [d, r.azi1];
+            return [d, -r.azi1];
         }
 
     } else {
-        return [d, math.degrees(Math.atan2(dy, dx))];
+        return [d, math.degrees(Math.atan2(dx, dy))];
     }
 };
 
@@ -558,15 +558,12 @@ MapMeasure.prototype.getAzimuthCorrection = function(coords, coords2) {
 };
 
 
-MapMeasure.prototype.getPositionNED = function(position) {
-    var pos = position.clone();
-    var coords = pos.getCoords();
-    coords[2] = 0;
-    var centerCoords = this.convert.convertCoords(coords, "navigation", "physical");
+MapMeasure.prototype.getNED = function(coords, returnMatrix) {
+    var centerCoords = this.convert.convertCoords([coords[0], coords[1], 0], "navigation", "physical");
 
     if (this.isProjected) {
-        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, coords[2]], "navigation", "physical");
-        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], coords[2]], "navigation", "physical");
+        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], "navigation", "physical");
+        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], "navigation", "physical");
     } else {
         var cy = (coords[1] + 90) - 0.0001;
         var cx = (coords[0] + 180) + 0.0001;
@@ -574,19 +571,17 @@ MapMeasure.prototype.getPositionNED = function(position) {
         if (cy < 0 || cx > 180) { //if we are out of bounds things start to be complicated
             var geodesic = this.getGeodesic();
         
+            //up coords
             var r = geodesic.Direct(coords[1], coords[0], 0, -100);
-            var upPos = position.clone();
-            upPos.setCoords2([r.lon2, r.lat2]);        
-            var upCoords = this.convert.convertCoords(upPos.getCoords(), "navigation", "physical");
+            var upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], "navigation", "physical");
     
-            r = geodesic["Direct"](coords[1], coords[0], 90, 100);
-            var rightPos = position.clone();
-            rightPos.setCoords2([r.lon2, r.lat2]);        
-            var rightCoords = this.convert.convertCoords(rightPos.getCoords(), "navigation", "physical");
+            //right coords
+            r = geodesic.Direct(coords[1], coords[0], 90, 100);
+            var rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], "navigation", "physical");
         } else {
             // substraction instead of addition is probably case of complicated view matrix calculation
-            var upCoords = this.convert.convertCoords([coords[0], coords[1] - 0.0001, coords[2]], "navigation", "physical");
-            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], coords[2]], "navigation", "physical");
+            var upCoords = this.convert.convertCoords([coords[0], coords[1] - 0.0001, 0], "navigation", "physical");
+            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], "navigation", "physical");
         }
     }
 
@@ -603,7 +598,7 @@ MapMeasure.prototype.getPositionNED = function(position) {
     vec3.normalize(right);
     vec3.cross(up, right, dir);
     vec3.normalize(dir);
-    
+
     return {
         east  : right, 
         direction : up,
@@ -611,7 +606,98 @@ MapMeasure.prototype.getPositionNED = function(position) {
     };
 };
 
+MapMeasure.prototype.getNewNED = function(coords, returnMatrix) {
+    var centerCoords = this.convert.convertCoords([coords[0], coords[1], 0], "navigation", "physical");
 
+    if (this.isProjected) {
+        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], "navigation", "physical");
+        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], "navigation", "physical");
+    } else {
+        //get NED for latlon coordinates
+        //http://www.mathworks.com/help/aeroblks/directioncosinematrixeceftoned.html
+        /*        
+        var coords = this.position.getCoords();
+        var lon = math.radians(coords[0]);
+        var lat = math.radians(coords[1]);
+
+        //NED vectors for sphere
+        var east = [-Math.sin(lat)*Math.cos(lon), -Math.sin(lat)*Math.sin(lon), Math.cos(lat)];
+        var direction = [-Math.sin(lon), Math.cos(lon), 0];
+        var north = [-Math.cos(lat)*Math.cos(lon), -Math.cos(lat)*Math.sin(lon), -Math.sin(lat)];
+
+        north = vec3.negate(north);
+        east  = vec3.negate(east);
+        
+        //get elipsoid factor
+        var navigationSrsInfo = this.getNavigationSrs().getSrsInfo();
+        var factor = navigationSrsInfo["b"] / navigationSrsInfo["a"];
+
+        //flaten vectors
+        north[2] *= factor;
+        east[2] *= factor;
+        direction[2] *= factor;
+
+        //normalize vectors
+        north = vec3.normalize(north);
+        east  = vec3.normalize(east);
+        direction = vec3.normalize(direction);
+        */
+
+        var cy = (coords[1] + 90) + 0.0001;
+        var cx = (coords[0] + 180) + 0.0001;
+
+        if (cy < 0 || cx > 180) { //if we are out of bounds things start to be complicated
+            var geodesic = this.getGeodesic();
+        
+            //up coords
+            var r = geodesic.Direct(coords[1], coords[0], 0, -100);
+            var upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], "navigation", "physical");
+    
+            //right coords
+            r = geodesic.Direct(coords[1], coords[0], 90, -100);
+            var rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], "navigation", "physical");
+        } else {
+            // substraction instead of addition is probably case of complicated view matrix calculation
+            var upCoords = this.convert.convertCoords([coords[0], coords[1] + 0.0001, 0], "navigation", "physical");
+            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], "navigation", "physical");
+        }
+    }
+
+    var up = [upCoords[0] - centerCoords[0],
+               upCoords[1] - centerCoords[1],
+               upCoords[2] - centerCoords[2]]; 
+
+    var right = [rightCoords[0] - centerCoords[0],
+                  rightCoords[1] - centerCoords[1],
+                  rightCoords[2] - centerCoords[2]]; 
+
+    var dir = [0,0,0];
+    vec3.normalize(up);
+    vec3.normalize(right);
+    vec3.cross(up, right, dir);
+    vec3.normalize(dir);
+
+    if (returnMatrix) {
+        var east = right;
+        var direction = up;
+        var north = dir;
+
+        return [
+            east[0], east[1], east[2], 0,
+            north[0], north[1], north[2], 0,
+            up[0], up[1], up[2], 0,
+            0, 0, 0, 1
+        ];        
+    }
+
+    return {
+        east  : right, 
+        direction : up,
+        north : dir        
+    };
+};
+
+//TODO: use getNewNED 
 MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clampTilt) {
     //var position = [0,0,0];
     var orientation = position.getOrientation();
@@ -622,7 +708,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
     }
     
     var tmpMatrix = mat4.create();
-    mat4.multiply(math.rotationMatrix(2, math.radians(orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), tmpMatrix);
+    mat4.multiply(math.rotationMatrix(2, math.radians(-orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), tmpMatrix);
 
     if (position.getViewMode() == "obj") {
         var orbitPos = [0, -distance, 0];
@@ -642,30 +728,14 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         orbitHeight : orbitPos[2]  
     };
 
+    var coords = position.getCoords();
+
     if (projected) {
         
         tmpMatrix = mat4.create();
-        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(-orientation[0])), tmpMatrix);
+        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), tmpMatrix);
 
-        /*
-        //get NED for latlon coordinates
-        //http://www.mathworks.com/help/aeroblks/directioncosinematrixeceftoned.html
-        var coords = this.position.getCoords();
-        var lon = math.radians(0);
-        var lat = math.radians(89);
-
-        //NED vectors for sphere
-        var east = [-Math.sin(lat)*Math.cos(lon), -Math.sin(lat)*Math.sin(lon), Math.cos(lat)];
-        var direction = [-Math.sin(lon), Math.cos(lon), 0];
-        var north = [-Math.cos(lat)*Math.cos(lon), -Math.cos(lat)*Math.sin(lon), -Math.sin(lat)];
-        //direction = [-direction[0], -direction[1], -direction[2]];
-
-        north = vec3.negate(north);
-        east  = vec3.negate(east);
-        //direction = vec3.negate(direction);
-        */
-
-        var ned = this.getPositionNED(position);
+        var ned = this.getNED(coords);
         var north = ned.north;
         var east  = ned.east;
         var direction = ned.direction;
@@ -736,37 +806,8 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
 
     } else { //geographics
 
-        //get NED for latlon coordinates
-        //http://www.mathworks.com/help/aeroblks/directioncosinematrixeceftoned.html
-/*        
-        var coords = this.position.getCoords();
-        var lon = math.radians(coords[0]);
-        var lat = math.radians(coords[1]);
-
-        //NED vectors for sphere
-        var east = [-Math.sin(lat)*Math.cos(lon), -Math.sin(lat)*Math.sin(lon), Math.cos(lat)];
-        var direction = [-Math.sin(lon), Math.cos(lon), 0];
-        var north = [-Math.cos(lat)*Math.cos(lon), -Math.cos(lat)*Math.sin(lon), -Math.sin(lat)];
-
-        north = vec3.negate(north);
-        east  = vec3.negate(east);
-        
-        //get elipsoid factor
-        var navigationSrsInfo = this.getNavigationSrs().getSrsInfo();
-        var factor = navigationSrsInfo["b"] / navigationSrsInfo["a"];
-
-        //flaten vectors
-        north[2] *= factor;
-        east[2] *= factor;
-        direction[2] *= factor;
-
-        //normalize vectors
-        north = vec3.normalize(north);
-        east  = vec3.normalize(east);
-        direction = vec3.normalize(direction);
-*/
-        
-        var ned = this.getPositionNED(position);
+      
+        var ned = this.getNED(coords);
         north = ned.north;
         east  = ned.east;
         direction = ned.direction;
@@ -782,7 +823,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         //spaceMatrix = mat4.inverse(spaceMatrix);
         
         var localRotMatrix = mat4.create();
-        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(-orientation[0])), localRotMatrix);
+        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), localRotMatrix);
 
         var east2  = [1,0,0];
         var direction2 = [0,1,0];

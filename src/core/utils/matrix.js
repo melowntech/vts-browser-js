@@ -1314,23 +1314,3 @@ quat4.str = function (a) {
 
 export {vec2, vec3, vec4, mat3, mat4};
 
-/*
-Mel["Math"] = {};
-Mel["Math"]["mat4Multiply"] = mat4.multiply;
-Mel["Math"]["mat4Inverse"] = mat4.inverse;
-Mel["Math"]["mat4ToMat3"] = mat4.toMat3;
-Mel["Math"]["mat4ToInverseMat3"] = mat4.toInverseMat3;
-Mel["Math"]["mat4Transpose"] = mat4.transpose;
-Mel["Math"]["mat3Transpose"] = mat3.transpose;
-Mel["Math"]["vec3Normalize"] = vec3.normalize;
-Mel["Math"]["vec3Dot"] = vec3.dot;
-Mel["Math"]["vec3Cross"] = vec3.cross;
-Mel["Math"]["vec3Length"] = vec3.length;
-*/
-/*
-Mel["Math"]["vec3Scale"] = vec3.normalize;
-Mel["Math"]["vec3Mul"] = vec3.normalize;
-Mel["Math"]["vec3Add"] = vec3.normalize;
-Mel["Math"]["vec3Sub"] = vec3.normalize;
-*/
-

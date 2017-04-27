@@ -56,8 +56,8 @@ ControlModeMapObserver.prototype.drag = function(event) {
         if (event.getTouchParameter("touchMode") == "pan" && this.config.rotationAllowed) {
             var pan = event.getTouchParameter("touchPanDelta");
             var sensitivity = this.config.sensitivity[1] * this.retinaFactor;
-            this.orientationDeltas.push([-delta[0] * sensitivity, 
-                                          -delta[1] * sensitivity, 0]);
+            this.orientationDeltas.push([delta[0] * sensitivity, 
+                                         -delta[1] * sensitivity, 0]);
             this.browser.callListener("map-position-rotated", {});
         } else if (this.config.zoomAllowed) {
             var factor = 1.0 + (event.getTouchParameter("touchDistanceDelta") > 1.0 ? -1 : 1)*0.01;
@@ -80,10 +80,10 @@ ControlModeMapObserver.prototype.drag = function(event) {
             var fov = pos.getFov();
             var fovCorrection = (fov > 0.01 && fov < 179) ? (1.0 / Math.tan(math.radians(fov*0.5))) : 1.0;
             var azimuth = math.radians(azimuthDistance[0]);
-            var forward = [-Math.sin(azimuth), //direction vector x
-                            Math.cos(azimuth), //direction vector y
-                            azimuthDistance[1] * fovCorrection * sensitivity, azimuthDistance[0], //distance and azimut
-                            coords[0], coords[1]]; //coords
+            var forward = [Math.sin(azimuth), //direction vector x
+                           Math.cos(azimuth), //direction vector y
+                           azimuthDistance[1] * fovCorrection * sensitivity, azimuthDistance[0], //distance and azimut
+                           coords[0], coords[1]]; //coords
             
             this.coordsDeltas.push(forward);
             this.reduceFloatingHeight(0.9);
@@ -93,8 +93,8 @@ ControlModeMapObserver.prototype.drag = function(event) {
                && this.config.rotationAllowed) { //rotate
                    
         var sensitivity = this.config.sensitivity[1] * this.retinaFactor;
-        this.orientationDeltas.push([-delta[0] * sensitivity,
-                                      -delta[1] * sensitivity, 0]);
+        this.orientationDeltas.push([delta[0] * sensitivity,
+                                     -delta[1] * sensitivity, 0]);
         this.browser.callListener("map-position-rotated", {});
     }
 };
@@ -225,7 +225,7 @@ ControlModeMapObserver.prototype.getAzimuthAndDistance = function(dx, dy) {
     dy *= zoomFactor;
 
     var distance = Math.sqrt(dx*dx + dy*dy);    
-    var azimuth = math.degrees(Math.atan2(dx, dy)) + pos.getOrientation()[0]; 
+    var azimuth = -math.degrees(Math.atan2(dx, dy)) + pos.getOrientation()[0]; 
     
     return [azimuth, distance];
 };
@@ -260,7 +260,7 @@ ControlModeMapObserver.prototype.tick = function(event) {
             azimuth = math.radians(azimuth);
 
             //console.log("correction: " + map.getAzimuthCorrection(coords2, coords) + " coords2: " + JSON.stringify(coords2) + " coords: " + JSON.stringify(coords));
-            forward[0] += -Math.sin(azimuth) * delta[2];  
+            forward[0] += Math.sin(azimuth) * delta[2];  
             forward[1] += Math.cos(azimuth) * delta[2];
 
             /*

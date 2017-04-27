@@ -102,11 +102,3 @@ utilsUrl.getProcessUrl = function(url, originUrl) {
 
 
 export {utilsUrl};
-
-//Mel["Url"] = utilsUrl;
-
-/*
-Mel["Url"] = utilsUrl;
-utilsUrl["getParamsFromUrl"] = utilsUrl.getParamsFromUrl;
-*/
-

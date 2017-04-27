@@ -593,14 +593,3 @@ Presenter.prototype.showSections = function(elem) {
 
 export default Presenter;
 
-
-//prevent minification
-/*
-Presenter.prototype["addPresentation"] = Presenter.prototype.addPresentation;
-Presenter.prototype["removePresentation"] = Presenter.prototype.removePresentation;
-Presenter.prototype["getCurrentPresentation"] = Presenter.prototype.getCurrentPresentation;
-Presenter.prototype["getCurrentPresentationType"] = Presenter.prototype.getCurrentPresentationType;
-Presenter.prototype["playPresentation"] = Presenter.prototype.playPresentation;
-Presenter.prototype["stopPresentation"] = Presenter.prototype.stopPresentation;
-Presenter.prototype["listPresentations"] = Presenter.prototype.listPresentations;
-*/

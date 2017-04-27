@@ -44,7 +44,7 @@ var UIControlSearch = function(ui, visible) {
 
     this.ignoreDrag = false; 
 
-    this.urlTemplate = "https://www.windytv.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l";
+    this.urlTemplate = "https://www.windy.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l";
     this.data = [];
     this.lastSearch = "";
     this.itemIndex = -1;

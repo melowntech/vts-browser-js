@@ -367,13 +367,3 @@ if (typeof Array.isArray === 'undefined') {
     return Object.prototype.toString.call(obj) === '[object Array]';
   });
 }*/
-
-/*
-Mel["isEqual"] = utils.isEqual;
-Mel["clamp"] = utils.clamp;
-Mel["mix"] = utils.mix;
-Mel["radians"] = utils.radians;
-Mel["degrees"] = utils.degrees;
-Mel["loadJSON"] = utils.loadJSON;
-Mel["loadBinary"] = utils.loadBinary;
-*/
