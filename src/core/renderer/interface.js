@@ -427,7 +427,7 @@ RendererInterface.prototype.setConfigParam = function(key, value) {
 
 
 RendererInterface.prototype.getConfigParam = function(key) {
-    return this.renderer.getConfigParam(key, value);
+    return this.renderer.getConfigParam(key);
 };
 
 

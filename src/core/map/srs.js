@@ -137,7 +137,7 @@ MapSrs.prototype.getFinalHeight = function(coords) {
 MapSrs.prototype.getGeoidGridDelta = function(coords, original) {
     if (this.geoidGridMap != null && this.isGeoidGridReady()) {
         //get cooords in geoidGrid space
-        mapCoords = this.proj4(this.srsProj4, this.geoidGrid.srsProj4, [coords[0], coords[1]]);
+        var mapCoords = this.proj4(this.srsProj4, this.geoidGrid.srsProj4, [coords[0], coords[1]]);
 
         //get image coords
         var px = mapCoords[0] - this.geoidGrid.extents.ll[0];

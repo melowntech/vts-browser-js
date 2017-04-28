@@ -557,11 +557,11 @@ MapDrawTiles.prototype.updateTileRenderCommands = function(tile, submeshes) {
 };
 
 
-MapDrawTiles.prototype.updateTileBoundsDirectly = function(preventLoad, priority) {
+/*MapDrawTiles.prototype.updateTileBoundsDirectly = function(preventLoad, priority) {
     if (tile.surfaceMesh.isReady(preventLoad, priority) && !preventLoad) {
         this.updateTileBounds(tile, tile.surfaceMesh.submeshes);
     }
-};
+};*/
 
 
 MapDrawTiles.prototype.updateTileBounds = function(tile, submeshes) {
