@@ -44,24 +44,24 @@ function onSwitchView() {
         if (button.getElement().checked) { //check switch state
             //set map view without geodata
             browser.map.setView({
-                'surfaces': {
+                surfaces: {
                     'melown-viewfinder-world': [
                         'bing-world',
                         'bmng08-world'
                     ]
                 },
-                'freeLayers': {}
+                freeLayers: {}
             }); 
         } else {
             //set map view with geodata
             browser.map.setView({
-                'surfaces': {
+                surfaces: {
                     'melown-viewfinder-world': [
                         'bing-world',
                         'bmng08-world'
                     ]
                 },
-                'freeLayers': {
+                freeLayers: {
                     'mapzen-all-v1': {}
                 }
             });    

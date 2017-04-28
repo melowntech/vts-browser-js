@@ -47,7 +47,7 @@ function loadTexture() {
     var demoImage = vts.utils.loadImage(
         'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png',
         (function(){
-            demoTexture = renderer.createTexture({ 'source': demoImage });
+            demoTexture = renderer.createTexture({ source: demoImage });
         }));
 }
 
@@ -76,33 +76,33 @@ function onCustomRender() {
 
         //draw line
         renderer.drawLineString({
-            'points' : points,
-            'size' : 2.0,
-            'color' : [255,0,255,255],
-            'depth-test' : false,
-            'blend' : false
+            points : points,
+            size : 2.0,
+            color : [255,0,255,255],
+            depthTest : false,
+            blend : false
             });
 
         //draw point image at the first line point
         var coords = points[0];
         renderer.drawImage({
-            'rect' : [coords[0]-12, coords[1]-12, 24, 24],
-            'texture' : demoTexture,
-            'color' : [255,0,255,255],
-            'depth' : coords[2],
-            'depth-test' : false,
-            'blend' : true
+            rect : [coords[0]-12, coords[1]-12, 24, 24],
+            texture : demoTexture,
+            color : [255,0,255,255],
+            depth : coords[2],
+            depthTest : false,
+            blend : true
             });
 
         //draw point image at the last line point
         coords = points[points.length-1];
         renderer.drawImage({
-            'rect' : [coords[0]-12, coords[1]-12, 24, 24],
-            'texture' : demoTexture,
-            'color' : [255,0,255,255],
-            'depth' : coords[2],
-            'depth-test' : false,
-            'blend' : true
+            rect : [coords[0]-12, coords[1]-12, 24, 24],
+            texture : demoTexture,
+            color : [255,0,255,255],
+            depth : coords[2],
+            depthTest : false,
+            blend : true
             });
     }    
 }

@@ -41,7 +41,7 @@ function loadTexture() {
     var pointImage = vts.utils.loadImage(
         'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png',
         (function(){
-            pointTexture = renderer.createTexture({ "source": pointImage });
+            pointTexture = renderer.createTexture({ source: pointImage });
         }).bind(this)
         );
 }
@@ -81,12 +81,12 @@ function onDrawPoints(renderChannel) {
         coords = map.convertCoordsFromNavToCanvas(clickCoords, "fixed");
 
         renderer.drawImage({
-            'rect' : [coords[0]-12, coords[1]-12, 24, 24],
-            'texture' : pointTexture,
-            'color' : [255,0,0,255],  //white point is multiplied by red color so resulting point will be red
-            'depth' : coords[2],
-            'depth-test' : false,
-            'blend' : true   //point texture has alpha channel so blend is needed
+            rect : [coords[0]-12, coords[1]-12, 24, 24],
+            texture : pointTexture,
+            color : [255,0,0,255],  //white point is multiplied by red color so resulting point will be red
+            depth : coords[2],
+            depthTest : false,
+            blend : true   //point texture has alpha channel so blend is needed
             });
     }
 };

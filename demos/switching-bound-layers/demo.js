@@ -15,12 +15,12 @@ var map = null;
         map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json',
         position : [ 'obj', 15.096869389048662, 49.38435909591623, 'float', 0.00, 0.00, -90.00, 0.00, 1587848.47, 55.00 ],
         view : {
-                    'surfaces': {
+                    surfaces: {
                         'melown-viewfinder-world': [
                             'bmng08-world'
                         ]
                     },
-                   'freeLayers': {}
+                   freeLayers: {}
                }
     });
 
@@ -56,22 +56,22 @@ function onSwitchView() {
         if (button.getElement().checked) { //check switch state
             //set map view with bing
             browser.map.setView({
-                'surfaces': {
+                surfaces: {
                     'melown-viewfinder-world': [
                         'bing-world'
                     ]
                 },
-                'freeLayers': {}
+                freeLayers: {}
             }); 
         } else {
             //set map view without bing
             browser.map.setView({
-                'surfaces': {
+                surfaces: {
                     'melown-viewfinder-world': [
                         'bmng08-world'
                     ]
                 },
-                'freeLayers': {}
+                freeLayers: {}
             });    
         }
     }
