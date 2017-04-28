@@ -1,53 +1,55 @@
-import {globals as globals_} from "./worker-globals.js";
-var globals = globals_;
 
-import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from "./worker-style.js";
-var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
-
-import {postGroupMessage as postGroupMessage_} from "./worker-message.js";
-var postGroupMessage = postGroupMessage_;
+import {globals as globals_} from './worker-globals.js';
+import {getLayerPropertyValue as getLayerPropertyValue_} from './worker-style.js';
+import {postGroupMessage as postGroupMessage_} from './worker-message.js';
+import {processLineStringPass as processLineStringPass_} from './worker-linestring.js';
+import {processPointArrayPass as processPointArrayPass_} from './worker-pointarray.js';
 
 //get rid of compiler mess
-
+var globals = globals_;
+var getLayerPropertyValue = getLayerPropertyValue_;
+var postGroupMessage = postGroupMessage_;
+var processLineStringPass = processLineStringPass_;
+var processPointArrayPass = processPointArrayPass_;
 
 var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
-    var vertices = polygon["vertices"] || [];
+    var vertices = polygon['vertices'] || [];
     if (vertices.length == 0) {
         return;
     }
     
     // borders as points
-    if (getLayerPropertyValue(style, "point", polygon, lod) ||
-        getLayerPropertyValue(style, "label", polygon, lod)) {
-            processPolygonLines(polygon, vertices, lod, style, zIndex, eventInfo, false);
+    if (getLayerPropertyValue(style, 'point', polygon, lod) ||
+        getLayerPropertyValue(style, 'label', polygon, lod)) {
+        processPolygonLines(polygon, vertices, lod, style, zIndex, eventInfo, false);
     }
     
     // borders as lines
-    if (getLayerPropertyValue(style, "line", polygon, lod) ||
-        getLayerPropertyValue(style, "line-label", polygon, lod)) {
-            processPolygonLines(polygon, vertices, lod, style, zIndex, eventInfo, true);
+    if (getLayerPropertyValue(style, 'line', polygon, lod) ||
+        getLayerPropertyValue(style, 'line-label', polygon, lod)) {
+        processPolygonLines(polygon, vertices, lod, style, zIndex, eventInfo, true);
     }
     
-    var spolygon = getLayerPropertyValue(style, "polygon", polygon, lod);
+    var spolygon = getLayerPropertyValue(style, 'polygon', polygon, lod);
     
     if (!spolygon) {
         return;
     }
     
-    var surface = polygon["surface"] || [];
+    var surface = polygon['surface'] || [];
     if (surface.length == 0) {
         return;
     }
     
-    var hoverEvent = getLayerPropertyValue(style, "hover-event", polygon, lod);
-    var clickEvent = getLayerPropertyValue(style, "click-event", polygon, lod);
-    var drawEvent = getLayerPropertyValue(style, "draw-event", polygon, lod);
-    var enterEvent = getLayerPropertyValue(style, "enter-event", polygon, lod);
-    var leaveEvent = getLayerPropertyValue(style, "leave-event", polygon, lod);
+    var hoverEvent = getLayerPropertyValue(style, 'hover-event', polygon, lod);
+    var clickEvent = getLayerPropertyValue(style, 'click-event', polygon, lod);
+    var drawEvent = getLayerPropertyValue(style, 'draw-event', polygon, lod);
+    var enterEvent = getLayerPropertyValue(style, 'enter-event', polygon, lod);
+    var leaveEvent = getLayerPropertyValue(style, 'leave-event', polygon, lod);
 
-    var zbufferOffset = getLayerPropertyValue(style, "zbuffer-offset", polygon, lod);
+    var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', polygon, lod);
     
-    var polygonColor = getLayerPropertyValue(style, "polygon-color", polygon, lod);
+    var polygonColor = getLayerPropertyValue(style, 'polygon-color', polygon, lod);
     
     var center = [0,0,0];
    
@@ -56,12 +58,13 @@ var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
     var vertexCount = trisCount * 3;
     var vertexBuffer = new Array (vertexCount * 3);
     
-    var dpoints = false;
     var surfaceI = 0;
     var index = 0;
     var p1;
     var offs;
 
+    var tileX = globals.tileX;
+    var tileY = globals.tileY;
     var forceOrigin = globals.forceOrigin;
     var forceScale = globals.forceScale;    
     
@@ -104,12 +107,12 @@ var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
     
-    var messageData = {"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer,
-                        "color":polygonColor, "z-index":zIndex, "center": center,
-                        "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
-                        "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
-                        "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
-                        "lod":(globals.autoLod ? null : globals.tileLod) };
+    var messageData = {'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
+        'color':polygonColor, 'z-index':zIndex, 'center': center,
+        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+        'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+        'lod':(globals.autoLod ? null : globals.tileLod) };
 
     postGroupMessage(messageData);
 };
@@ -117,7 +120,7 @@ var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
 var createEmptyFeatureFromPolygon = function(polygon) {
     var feature = {};
     for(var key in polygon) {
-        if(key != "surface" && key != "vertices" && key != "borders") {
+        if(key != 'surface' && key != 'vertices' && key != 'borders') {
             feature[key] = polygon[key];
         }
     }
@@ -125,7 +128,7 @@ var createEmptyFeatureFromPolygon = function(polygon) {
 };
 
 var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventInfo, processLines) {
-    var borders = polygon["borders"] || [];
+    var borders = polygon['borders'] || [];
     if (borders.length == 0) {
         return;
     }
@@ -138,8 +141,7 @@ var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventI
             var points;
             if (processLines) {
                 points = new Array(pointsCount + 1);
-            }
-            else {
+            } else {
                 points = new Array(pointsCount);
             }
             for (var i = 0; i < pointsCount; i++) {
@@ -149,11 +151,10 @@ var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventI
                     points[pointsCount] = points[0];
                 }
             }
-            feature["points"] = points;
+            feature['points'] = points;
             if(processLines) {
                 processLineStringPass(feature, lod, style, zIndex, eventInfo);
-            }
-            else {
+            } else {
                 processPointArrayPass(feature, lod, style, zIndex, eventInfo);
             }
         }

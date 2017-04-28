@@ -149,7 +149,7 @@ MapSurfaceTree.prototype.draw = function() {
     if (periodicity != null) {
         this.drawSurface([0,0,0]);
 
-        if (periodicity.type == "X") {
+        if (periodicity.type == 'X') {
             this.drawSurface([periodicity.period,0,0]);
             this.drawSurface([-periodicity.period,0,0]);
         }
@@ -164,9 +164,9 @@ MapSurfaceTree.prototype.draw = function() {
         }
 
         switch(mode) {
-            case "topdown": this.drawSurface([0,0,0]); break;
-            case "fit":     this.drawSurfaceFit([0,0,0]); break;
-            case "fitonly": this.drawSurfaceFitOnly([0,0,0]); break;
+        case 'topdown': this.drawSurface([0,0,0]); break;
+        case 'fit':     this.drawSurfaceFit([0,0,0]); break;
+        case 'fitonly': this.drawSurfaceFitOnly([0,0,0]); break;
         }
     }
 };
@@ -215,7 +215,7 @@ MapSurfaceTree.prototype.logTileInfo = function(tile, node, cameraPos) {
     tile.updateTexelSize();
     
 //    console.log("tile: " + JSON.stringify(tile.id) + " visible: " + visible + " texelsize: " +  tile.texelSize);
-    console.log("tile: " + JSON.stringify(tile.id) + " visible: " + visible + " texelsize: " +  tile.texelSize + " center: "  + JSON.stringify(node.diskPos) + " vec: " + node.diskNormal + "ang: " + node.diskAngle + " dist: " + node.diskDistance);
+    console.log('tile: ' + JSON.stringify(tile.id) + ' visible: ' + visible + ' texelsize: ' +  tile.texelSize + ' center: '  + JSON.stringify(node.diskPos) + ' vec: ' + node.diskNormal + 'ang: ' + node.diskAngle + ' dist: ' + node.diskDistance);
 };
 
 
@@ -402,8 +402,8 @@ MapSurfaceTree.prototype.drawSurface = function(shift) {
                             
                             /*var n = childrenBuffer[j].metanode.divisionNode;
                             if ((n.id[0] == 1 && n.id[1] == 1 && n.id[2] == 0)) {*/
-                                newProcessBuffer[newProcessBufferIndex] = childrenBuffer[j];
-                                newProcessBufferIndex++;
+                            newProcessBuffer[newProcessBufferIndex] = childrenBuffer[j];
+                            newProcessBufferIndex++;
                             /*}*/
                             
                         }
@@ -569,7 +569,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
                                 //if (this.map.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false)) {
                                     //readyCount++;
                                     //child.updateTexelSize();
-                                    childrenBuffer.push(child);
+                                childrenBuffer.push(child);
                                 //} else {
                                     
                                     //check children
@@ -613,8 +613,8 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
 
                             //var n = childrenBuffer[j].metanode.divisionNode;
                             //if ((n.id[0] == 1 && n.id[1] == 1 && n.id[2] == 0)) {
-                                newProcessBuffer[newProcessBufferIndex] = childrenBuffer[j];
-                                newProcessBufferIndex++;
+                            newProcessBuffer[newProcessBufferIndex] = childrenBuffer[j];
+                            newProcessBufferIndex++;
                             //}
                         }
                     } else {
@@ -1063,7 +1063,7 @@ MapSurfaceTree.prototype.traceHeightChild = function(tile, params, res) {
     var coords = params.coords;
     var extents = params.extents;
     var center = [(extents.ll[0] + extents.ur[0]) *0.5,
-                   (extents.ll[1] + extents.ur[1]) *0.5];
+        (extents.ll[1] + extents.ur[1]) *0.5];
 
     //ul,ur,ll,lr
     //deside in which quadrant are provided coodinates
@@ -1119,16 +1119,16 @@ MapSurfaceTree.prototype.traceHeightTileByMap = function(tile, params, priority)
         if (!tile.heightMap) {
             //if (!preventLoad) {
                 //if (!tile.surface || tile.surface.virtual) {
-                if (!tile.surface || !tile.resourceSurface) { //surface.virtual) {
-                    return false; //is it best way how to do it?
-                }
+            if (!tile.surface || !tile.resourceSurface) { //surface.virtual) {
+                return false; //is it best way how to do it?
+            }
                 
-                if (!tile.resourceSurface.getNavUrl) { //virtual surface is as resource surface. Is it bug??!!
-                    return false; //is it best way how to do it?
-                }
+            if (!tile.resourceSurface.getNavUrl) { //virtual surface is as resource surface. Is it bug??!!
+                return false; //is it best way how to do it?
+            }
                 
-                var path = tile.resourceSurface.getNavUrl(tile.id);
-                tile.heightMap = tile.resources.getTexture(path, true);
+            var path = tile.resourceSurface.getNavUrl(tile.id);
+            tile.heightMap = tile.resources.getTexture(path, true);
             //}
         } else {
             if (tile.heightMap.isReady() == true) {
@@ -1181,7 +1181,7 @@ MapSurfaceTree.prototype.traceHeightTileByNodeOnly = function(tile, params, prio
 
 MapSurfaceTree.prototype.getNodeById = function(id) {
     var tile = this.surfaceTree;
-	var createNonexisted = true;
+    var createNonexisted = true;
 
     if (tile == null) {
         return;
@@ -1215,15 +1215,15 @@ MapSurfaceTree.prototype.getNodeById = function(id) {
         tile = tile.children[index];
     }
 
-	if (!tile) {
-		return;
-	}
+    if (!tile) {
+        return;
+    }
 
     if (!tile.isMetanodeReady(this, 0)) {
         return;
     }
 	
-	var node = tile.metanode;
+    var node = tile.metanode;
     tile.metanode.metatile.used();
 
     return node;

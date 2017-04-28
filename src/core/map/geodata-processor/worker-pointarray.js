@@ -1,29 +1,27 @@
 
-import {globals as globals_, clamp as clamp_} from "./worker-globals.js";
-var globals = globals_, clamp = clamp_;
-
-import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from "./worker-style.js";
-var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
-
-import {addText as addText_, addTextOnPath as addTextOnPath_, setFont as setFont_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_, getTextLength as getTextLength_,
-        areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from "./worker-text.js";
-var addText = addText_, addTextOnPath = addTextOnPath_, setFont = setFont_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_, getTextLength = getTextLength_,
-    areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
-
-import {postGroupMessage as postGroupMessage_} from "./worker-message.js";
-var postGroupMessage = postGroupMessage_;
+import {globals as globals_, clamp as clamp_} from './worker-globals.js';
+import {getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
+import {addText as addText_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_, getTextLength as getTextLength_,
+        areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from './worker-text.js';
+import {postGroupMessage as postGroupMessage_} from './worker-message.js';
 
 //get rid of compiler mess
+var globals = globals_, clamp = clamp_;
+var getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
+var addText = addText_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_, getTextLength = getTextLength_,
+    areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
+var postGroupMessage = postGroupMessage_;
 
 
 var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) {
     var pointsGroups = []; 
+    var i, li;
 
-    if (pointArray["lines"]) {  //use lines as points
-        pointsGroups = pointArray["lines"] || [];
+    if (pointArray['lines']) {  //use lines as points
+        pointsGroups = pointArray['lines'] || [];
     } else {
-        if (pointArray["points"]) {
-            pointsGroups = [pointArray["points"]];
+        if (pointArray['points']) {
+            pointsGroups = [pointArray['points']];
         }
     }
     
@@ -32,37 +30,39 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     }
 
     //debugger
-    var visibility = getLayerPropertyValue(style, "visibility", pointArray, lod);
-    var culling = getLayerPropertyValue(style, "culling", pointArray, lod);
-    var hoverEvent = getLayerPropertyValue(style, "hover-event", pointArray, lod);
-    var clickEvent = getLayerPropertyValue(style, "click-event", pointArray, lod);
-    var drawEvent = getLayerPropertyValue(style, "draw-event", pointArray, lod);
-    var enterEvent = getLayerPropertyValue(style, "enter-event", pointArray, lod);
-    var leaveEvent = getLayerPropertyValue(style, "leave-event", pointArray, lod);
+    var visibility = getLayerPropertyValue(style, 'visibility', pointArray, lod);
+    var culling = getLayerPropertyValue(style, 'culling', pointArray, lod);
+    var hoverEvent = getLayerPropertyValue(style, 'hover-event', pointArray, lod);
+    var clickEvent = getLayerPropertyValue(style, 'click-event', pointArray, lod);
+    var drawEvent = getLayerPropertyValue(style, 'draw-event', pointArray, lod);
+    var enterEvent = getLayerPropertyValue(style, 'enter-event', pointArray, lod);
+    var leaveEvent = getLayerPropertyValue(style, 'leave-event', pointArray, lod);
 
-    var zbufferOffset = getLayerPropertyValue(style, "zbuffer-offset", pointArray, lod);
+    var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', pointArray, lod);
 
-    var point = getLayerPropertyValue(style, "point", pointArray, lod);
-    var pointFlat = getLayerPropertyValue(style, "point-flat", pointArray, lod);
-    var pointColor = getLayerPropertyValue(style, "point-color", pointArray, lod);
-    var pointRadius = 0.5 * getLayerPropertyValue(style, "point-radius", pointArray, lod);
+    var point = getLayerPropertyValue(style, 'point', pointArray, lod);
+    var pointFlat = getLayerPropertyValue(style, 'point-flat', pointArray, lod);
+    var pointColor = getLayerPropertyValue(style, 'point-color', pointArray, lod);
+    var pointRadius = 0.5 * getLayerPropertyValue(style, 'point-radius', pointArray, lod);
+
+    var source, bufferSize, bufferSize2;
     //zIndex = (zIndex !== null) ? zIndex : getLayerPropertyValue(style, "z-index", pointArray, lod);
 
-    var icon = getLayerPropertyValue(style, "icon", pointArray, lod);
+    var icon = getLayerPropertyValue(style, 'icon', pointArray, lod);
     if (icon) {
-        var source = getLayerPropertyValue(style, "icon-source", pointArray, lod);
+        source = getLayerPropertyValue(style, 'icon-source', pointArray, lod);
         
         if (source) {
-            var bufferSize = getCharVerticesCount() * pointsGroups.length;
-            var bufferSize2 = getCharVerticesCount(true) * pointsGroups.length;
+            bufferSize = getCharVerticesCount() * pointsGroups.length;
+            bufferSize2 = getCharVerticesCount(true) * pointsGroups.length;
     
             var iconData = {
-                color : getLayerPropertyValue(style, "icon-color", pointArray, lod),
-                scale : getLayerPropertyValue(style, "icon-scale", pointArray, lod),
-                offset : getLayerPropertyValue(style, "icon-offset", pointArray, lod),
-                stick : getLayerPropertyValue(style, "icon-stick", pointArray, lod),
-                origin : getLayerPropertyValue(style, "icon-origin", pointArray, lod),
-                source : getLayerPropertyValue(style, "icon-source", pointArray, lod),
+                color : getLayerPropertyValue(style, 'icon-color', pointArray, lod),
+                scale : getLayerPropertyValue(style, 'icon-scale', pointArray, lod),
+                offset : getLayerPropertyValue(style, 'icon-offset', pointArray, lod),
+                stick : getLayerPropertyValue(style, 'icon-stick', pointArray, lod),
+                origin : getLayerPropertyValue(style, 'icon-origin', pointArray, lod),
+                source : getLayerPropertyValue(style, 'icon-source', pointArray, lod),
                 vertexBuffer : new Float32Array(bufferSize),
                 originBuffer : new Float32Array(bufferSize2),
                 texcoordsBuffer : new Float32Array(bufferSize),
@@ -74,34 +74,34 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
         }
     }
 
-    var label = getLayerPropertyValue(style, "label", pointArray, lod);
+    var label = getLayerPropertyValue(style, 'label', pointArray, lod);
     if (label) {
-        var source = getLayerPropertyValue(style, "label-source", pointArray, lod);
-        var text = getLayerExpresionValue(style, source, pointArray, lod);
-        var size = getLayerPropertyValue(style, "label-size", pointArray, lod);
+        source = getLayerPropertyValue(style, 'label-source', pointArray, lod);
+        var text = getLayerExpresionValue(style, source, pointArray);
+        var size = getLayerPropertyValue(style, 'label-size', pointArray, lod);
         
-        if (source == "$name") {
-            if (!areTextCharactersAvailable(text, globals.fonts["default"])) {
-                var text2 = getLayerExpresionValue(style, "$name:en", pointArray, lod);
+        if (source == '$name') {
+            if (!areTextCharactersAvailable(text, globals.fonts['default'])) {
+                var text2 = getLayerExpresionValue(style, '$name:en', pointArray);
                 
-                if (areTextCharactersAvailable(text2, globals.fonts["default"])) {
+                if (areTextCharactersAvailable(text2, globals.fonts['default'])) {
                     text = text2;                     
                 }
             }
         }
-        if (text && text != "" && Math.abs(size) > 0.0001) {
-            var bufferSize = getCharVerticesCount() * text.length * pointsGroups.length;
-            var bufferSize2 = getCharVerticesCount(true) * text.length * pointsGroups.length;
+        if (text && text != '' && Math.abs(size) > 0.0001) {
+            bufferSize = getCharVerticesCount() * text.length * pointsGroups.length;
+            bufferSize2 = getCharVerticesCount(true) * text.length * pointsGroups.length;
 
             var labelData = {
-                color : getLayerPropertyValue(style, "label-color", pointArray, lod),
+                color : getLayerPropertyValue(style, 'label-color', pointArray, lod),
                 size : size,
-                offset : getLayerPropertyValue(style, "label-offset", pointArray, lod),
-                stick : getLayerPropertyValue(style, "label-stick", pointArray, lod),
-                origin : getLayerPropertyValue(style, "label-origin", pointArray, lod),
-                align : getLayerPropertyValue(style, "label-align", pointArray, lod),
+                offset : getLayerPropertyValue(style, 'label-offset', pointArray, lod),
+                stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
+                origin : getLayerPropertyValue(style, 'label-origin', pointArray, lod),
+                align : getLayerPropertyValue(style, 'label-align', pointArray, lod),
                 text : text,
-                width : getLayerPropertyValue(style, "label-width", pointArray, lod),
+                width : getLayerPropertyValue(style, 'label-width', pointArray, lod),
                 vertexBuffer : new Float32Array(bufferSize),
                 originBuffer : new Float32Array(bufferSize2),
                 texcoordsBuffer : new Float32Array(bufferSize),
@@ -121,7 +121,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
     var angle = 0, step = (2.0*Math.PI) / circleSides;
 
-    for (var i = 0; i < circleSides; i++) {
+    for (i = 0; i < circleSides; i++) {
         circleBuffer[i] = [-Math.sin(angle), Math.cos(angle)];
         angle += step;
     }
@@ -136,6 +136,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
 
+    var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
+
     for (var g = 0, gl = pointsGroups.length; g < gl; g++) {
         var points = pointsGroups[g];
         
@@ -148,19 +150,19 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             //allocate buffers
         
             if (!pointFlat) {
-                var pointsVertices = circleSides * 3 * 4;
-                var vertexBuffer = new Array(points.length * pointsVertices);
-                var pointsNormals = circleSides * 3 * 4;
-                var normalBuffer = new Array(points.length * pointsNormals);
+                pointsVertices = circleSides * 3 * 4;
+                vertexBuffer = new Array(points.length * pointsVertices);
+                pointsNormals = circleSides * 3 * 4;
+                normalBuffer = new Array(points.length * pointsNormals);
             } else {
-                var pointsVertices = circleSides * 3 * 3;
-                var vertexBuffer = new Array(points.length * pointsVertices);
+                pointsVertices = circleSides * 3 * 3;
+                vertexBuffer = new Array(points.length * pointsVertices);
             }
         
             var dpoints = false;
         
             //add ponints
-            for (var i = 0, li = points.length; i < li; i++) {
+            for (i = 0, li = points.length; i < li; i++) {
         
                 if (forceOrigin) {
                     p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
@@ -264,58 +266,58 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
     if (point) {
         if (pointFlat) {
-            postGroupMessage({"command":"addRenderJob", "type": "flat-line", "vertexBuffer": vertexBuffer,
-                              "color":pointColor, "z-index":zIndex, "visibility": visibility, "center": center,
-                              "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
-                              "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
-                              "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
-                              "lod":(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer]);
+            postGroupMessage({'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
+                'color':pointColor, 'z-index':zIndex, 'visibility': visibility, 'center': center,
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer]);
         } else {
-            postGroupMessage({"command":"addRenderJob", "type": "pixel-line", "vertexBuffer": vertexBuffer,
-                              "normalBuffer": normalBuffer, "color":pointColor, "z-index":zIndex,
-                              "visibility": visibility, "center": center,
-                              "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
-                              "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
-                              "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
-                              "lod":(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, normalBuffer.buffer]);
+            postGroupMessage({'command':'addRenderJob', 'type': 'pixel-line', 'vertexBuffer': vertexBuffer,
+                'normalBuffer': normalBuffer, 'color':pointColor, 'z-index':zIndex,
+                'visibility': visibility, 'center': center,
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, normalBuffer.buffer]);
         }
     }
 
     if (icon && iconData.vertexBuffer.length > 0) {
-        postGroupMessage({"command":"addRenderJob", "type": "icon", "vertexBuffer": iconData.vertexBuffer,
-                          "originBuffer": iconData.originBuffer, "texcoordsBuffer": iconData.texcoordsBuffer,
-                          "icon":globals.stylesheetBitmaps[iconData.source[0]], "color":iconData.color, "z-index":zIndex,
-                          "visibility": visibility, "culling": culling, "center": center, "stick": iconData.stick,
-                          "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
-                          "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
-                          "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
-                          "lod":(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer]);
+        postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
+            'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
+            'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
+            'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
+            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+            'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer]);
     }
 
     if (label && labelData.vertexBuffer.length > 0) {
-        postGroupMessage({"command":"addRenderJob", "type": "label", "vertexBuffer": labelData.vertexBuffer,
-                          "originBuffer": labelData.originBuffer, "texcoordsBuffer": labelData.texcoordsBuffer,
-                          "color":labelData.color, "z-index":zIndex, "visibility": visibility, "culling": culling, 
-                          "center": center, "stick": labelData.stick,
-                          "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
-                          "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
-                          "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
-                          "lod":(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer]);
+        postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,
+            'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer,
+            'color':labelData.color, 'z-index':zIndex, 'visibility': visibility, 'culling': culling, 
+            'center': center, 'stick': labelData.stick,
+            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+            'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer]);
     }
 
 };
 
 var getOriginOffset = function(origin, width, height) {
     switch(origin) {
-        case "top-left":        return [0, 0];
-        case "top-right":       return [-width, 0];
-        case "top-center":      return [-width*0.5, 0];
-        case "center-left":     return [0, -height*0.5];
-        case "center-right":    return [-width, -height*0.5];
-        case "center-center":   return [-width*0.5, -height*0.5];
-        case "bottom-left":     return [0, -height];
-        case "bottom-right":    return [-width, -height];
-        case "bottom-center":   return [-width*0.5, -height];
+    case 'top-left':        return [0, 0];
+    case 'top-right':       return [-width, 0];
+    case 'top-center':      return [-width*0.5, 0];
+    case 'center-left':     return [0, -height*0.5];
+    case 'center-right':    return [-width, -height*0.5];
+    case 'center-center':   return [-width*0.5, -height*0.5];
+    case 'bottom-left':     return [0, -height];
+    case 'bottom-right':    return [-width, -height];
+    case 'bottom-center':   return [-width*0.5, -height];
     }
 };
 
@@ -430,20 +432,20 @@ var processLabel = function(point, labelData) {
     var index = labelData.index;
     var index2 = labelData.index2;
     var lastIndex = index;
-    var text = "" + labelData.text;
+    var text = '' + labelData.text;
 
     //split by new line
     var lines = text.match(/[^\r\n]+/g);
     var lines2 = [];
-    var align = false;
 
     //split lines by width
     for (var i = 0, li = lines.length; i < li; i++) {
 
-        var line= lines[i];
+        var line = lines[i];
 
+        // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, globals.fonts["default"]), globals.fonts["default"]);
+            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, globals.fonts['default']), globals.fonts['default']);
 
             if (line.length == splitIndex) {
                 lines2.push(line);
@@ -452,7 +454,6 @@ var processLabel = function(point, labelData) {
 
             lines2.push(line.substring(0,splitIndex));
             line = line.substring(splitIndex+1);
-            align = true;
 
         } while(true);
 
@@ -460,29 +461,28 @@ var processLabel = function(point, labelData) {
 
     var x = 0;
     var y = 0;
-    var textLength = 0;
-    var lineHeight = getLineHeight(labelData.size, globals.fonts["default"]);
+    var lineHeight = getLineHeight(labelData.size, globals.fonts['default']);
     var maxWidth = 0;
     var lineWidths = [];
 
     //get max width
-    for (var i = 0, li = lines2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, globals.fonts["default"]), globals.fonts["default"]);
+    for (i = 0, li = lines2.length; i < li; i++) {
+        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, globals.fonts['default']), globals.fonts['default']);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
     //generate text
-    for (var i = 0, li = lines2.length; i < li; i++) {
+    for (i = 0, li = lines2.length; i < li; i++) {
         var textWidth = lineWidths[i];//getTextLength(lines2[i], getFontFactor(labelData.size, fonts["default"]), fonts["default"]);
         //maxWidth = Math.max(textWidth, maxWidth);
 
         switch(labelData.align) {
-            case "left": x = 0; break;
-            case "right": x = maxWidth - textWidth; break;
-            case "center": x = (maxWidth - textWidth)*0.5; break;
+        case 'left': x = 0; break;
+        case 'right': x = maxWidth - textWidth; break;
+        case 'center': x = (maxWidth - textWidth)*0.5; break;
         }
 
-        index = addText([x,y,0], [1,0,0], lines2[i], labelData.size, globals.fonts["default"], vertexBuffer, texcoordsBuffer, true, index);
+        index = addText([x,y,0], [1,0,0], lines2[i], labelData.size, globals.fonts['default'], vertexBuffer, texcoordsBuffer, true, index);
         y -= lineHeight;
     }
 
@@ -496,7 +496,7 @@ var processLabel = function(point, labelData) {
     var p3 = point[2];
 
     //set origin buffer and apply offset
-    for (var i = lastIndex; i < index; i+=4) {
+    for (i = lastIndex; i < index; i+=4) {
         vertexBuffer[i] += offsetX;
         vertexBuffer[i+1] -= offsetY;
 

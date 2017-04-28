@@ -115,7 +115,7 @@ MapInterface.prototype.getReferenceFrame = function() {
 
 
 MapInterface.prototype.addFreeLayer = function(id, options) {
-    var layer = new MapSurface(this.map, options, "free");
+    var layer = new MapSurface(this.map, options, 'free');
     this.map.addFreeLayer(id, layer);
 };
 
@@ -177,25 +177,25 @@ MapInterface.prototype.convertCoords = function(sourceSrs, destinationSrs, coord
 
 
 MapInterface.prototype.convertCoordsFromNavToPhys = function(pos, mode, lod) {
-    var p = ["obj", pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
     return this.map.convert.getPositionPhysCoords((new MapPosition(p)), lod);
 };
 
 
 MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos, mode, lod) {
-    var p = ["obj", pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
     return this.map.convert.getPositionCanvasCoords((new MapPosition(p)), lod);
 };
 
 
 MapInterface.prototype.convertCoordsFromPhysToCanvas = function(pos) {
-    var p = ["obj", pos[0], pos[1], "fix", pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], 'fix', pos[2], 0, 0, 0, 10, 55 ];
     return this.map.convert.getPositionCanvasCoords((new MapPosition(p)), null, true);
 };
 
 
 MapInterface.prototype.convertCoordsFromNavToCameraSpace = function(pos, mode, lod) {
-    var p = ["obj", pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
     return this.map.convert.getPositionCameraSpaceCoords((new MapPosition(p)), lod);
 };
 
@@ -244,13 +244,13 @@ MapInterface.prototype.getNED = function(coords) {
 MapInterface.prototype.getCameraInfo = function() {
     var camera = this.map.camera;
     return {
-        "projectionMatrix" : camera.camera.projection.slice(),
-        "viewMatrix" : camera.camera.modelview.slice(),
-        "view-projectionMatrix" : camera.camera.mvp.slice(),
-        "rotationMatrix" : camera.camera.rotationview.slice(),
-        "position" : this.map.camera.position.slice(),
-        "vector" : this.map.camera.vector.slice(),
-        "distance" : this.map.camera.distance
+        'projectionMatrix' : camera.camera.projection.slice(),
+        'viewMatrix' : camera.camera.modelview.slice(),
+        'view-projectionMatrix' : camera.camera.mvp.slice(),
+        'rotationMatrix' : camera.camera.rotationview.slice(),
+        'position' : this.map.camera.position.slice(),
+        'vector' : this.map.camera.vector.slice(),
+        'distance' : this.map.camera.distance
     };
 };
 
@@ -274,9 +274,9 @@ MapInterface.prototype.generateTrajectory = function(p1, p2, options) {
 
 MapInterface.prototype.generatePIHTrajectory = function(position, azimuth, distance, options) {
     var p = new MapPosition(position);
-    options["distance"] = distance;
-    options["azimuth"] = azimuth;
-    options["distanceAzimuth"] = true;
+    options['distance'] = distance;
+    options['azimuth'] = azimuth;
+    options['distanceAzimuth'] = true;
     return (new MapTrajectory(this.map, p, p, options)).generate();
 };
 
@@ -374,19 +374,19 @@ MapInterface.prototype.getStats = function() {
     }
 
     return {
-        "bestMeshTexelSize" : this.map.bestMeshTexelSize,
-        "bestGeodataTexelSize" : this.map.bestGeodataTexelSize, 
-        "downloading" : this.map.loader.downloading.length,
-        "lastDownload" : this.map.loader.lastDownloadTime, 
-        "surfaces" : this.map.tree.surfaceSequence.length,
-        "freeLayers" : this.map.freeLayerSequence.length,
-        "texelSizeFit" : this.map.texelSizeFit,
-        "loadMode" : this.map.config.mapLoadMode,
-        "processingTasks" : this.map.processingTasks.length,
-        "busyWorkers" : busyWorkers,
-        "dirty" : this.map.dirty,
-        "drawnTiles" : this.map.stats.drawnTiles,
-        "drawnGeodataTiles" : this.map.stats.drawnGeodataTiles
+        'bestMeshTexelSize' : this.map.bestMeshTexelSize,
+        'bestGeodataTexelSize' : this.map.bestGeodataTexelSize, 
+        'downloading' : this.map.loader.downloading.length,
+        'lastDownload' : this.map.loader.lastDownloadTime, 
+        'surfaces' : this.map.tree.surfaceSequence.length,
+        'freeLayers' : this.map.freeLayerSequence.length,
+        'texelSizeFit' : this.map.texelSizeFit,
+        'loadMode' : this.map.config.mapLoadMode,
+        'processingTasks' : this.map.processingTasks.length,
+        'busyWorkers' : busyWorkers,
+        'dirty' : this.map.dirty,
+        'drawnTiles' : this.map.stats.drawnTiles,
+        'drawnGeodataTiles' : this.map.stats.drawnGeodataTiles
     };
 };
 

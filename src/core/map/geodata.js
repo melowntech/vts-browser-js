@@ -44,7 +44,7 @@ MapGeodata.prototype.killGeodata = function(killedByCache) {
     }
 
     //if (this.gpuSubmeshes.length == 0) {
-        this.loadState = 0;
+    this.loadState = 0;
     //}
 
     this.size = 0;
@@ -72,7 +72,7 @@ MapGeodata.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
                 //add to loading queue or top position in queue
 
 
-                if (typeof this.mapLoaderUrl === "object") { //use geodata directly
+                if (typeof this.mapLoaderUrl === 'object') { //use geodata directly
                     this.geodata = JSON.stringify(this.mapLoaderUrl);
                     this.loadState = 2;
                     this.cacheItem = this.map.resourcesCache.insert(this.killGeodata.bind(this, true), this.geodata.length);
@@ -100,7 +100,7 @@ MapGeodata.prototype.scheduleLoad = function(priority) {
         //this.mapLoaderUrl = this.map.url.makeUrl(this.tile.surface.meshUrl, {lod:this.tile.id[0], ix:this.tile.id[1], iy:this.tile.id[2] });
     //}
 
-    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this), priority, this.extraInfo.tile, "geodata");
+    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this), priority, this.extraInfo.tile, 'geodata');
 };
 
 

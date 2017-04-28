@@ -53,7 +53,7 @@ var Map = function(core, mapConfig, path, config) {
 
     this.url = new MapUrl(this, path);
 
-    this.position = new MapPosition(["obj", 0, 0, "fix", 0,  0, 0, 0,  0, 0]);
+    this.position = new MapPosition(['obj', 0, 0, 'fix', 0,  0, 0, 0,  0, 0]);
     this.lastPosition = this.position.clone();
 
     this.srses = {};
@@ -74,7 +74,7 @@ var Map = function(core, mapConfig, path, config) {
 
     this.initialView = null;
     this.currentView = new MapView(this, {});
-    this.currentViewString = "";
+    this.currentViewString = '';
     this.namedViews = [];
     this.viewCounter = 0;
 
@@ -134,7 +134,7 @@ var Map = function(core, mapConfig, path, config) {
     this.draw.setupDetailDegradation();
 
     this.renderSlots = new MapRenderSlots(this);
-    this.renderSlots.addRenderSlot("map", this.drawMap.bind(this), true);
+    this.renderSlots.addRenderSlot('map', this.drawMap.bind(this), true);
 };
 
 
@@ -184,12 +184,12 @@ Map.prototype.setupCache = function() {
 
 
 Map.prototype.getCoreInterface = function() {
-	return this.core.interface;
+    return this.core.interface;
 };
 
 
 Map.prototype.getRendererInterface = function() {
-	return this.core.interface.getRendererInterface();
+    return this.core.interface.getRendererInterface();
 };
 
 
@@ -308,9 +308,9 @@ Map.prototype.getVisibleCredits = function() {
     } while(!sorted);
 
     return {
-        "3D" : [], 
-        "imagery" : imageryArray, 
-        "mapdata" : mapdataArray 
+        '3D' : [], 
+        'imagery' : imageryArray, 
+        'mapdata' : mapdataArray 
     };
 };
 
@@ -450,8 +450,8 @@ Map.prototype.getMapsSrs = function(srs) {
     }
 
     //is it proj4 string?
-    if (srs.indexOf("+proj") != -1) {
-        return new MapSrs(this, {"srsDef":srs});
+    if (srs.indexOf('+proj') != -1) {
+        return new MapSrs(this, {'srsDef':srs});
     }
 
     //search existing srs
@@ -479,10 +479,10 @@ Map.prototype.setView = function(view, forceRefresh) {
         return;
     }
     
-    if (typeof view === "string") {
+    if (typeof view === 'string') {
         view = view.trim();
         
-        if (view.charAt(0) == "{") {
+        if (view.charAt(0) == '{') {
             try {
                 view = JSON.parse(view);
             } catch(e){
@@ -518,12 +518,12 @@ Map.prototype.setView = function(view, forceRefresh) {
         
         if (freeLayer) {
             
-            freeLayer.zFactor = freeLayers[key]["depthShift"] || 0;
+            freeLayer.zFactor = freeLayers[key]['depthShift'] || 0;
             
             this.freeLayerSequence.push(freeLayer);
             
-            if (freeLayers[key]["style"]) {
-                freeLayer.setStyle(freeLayers[key]["style"]);
+            if (freeLayers[key]['style']) {
+                freeLayer.setStyle(freeLayers[key]['style']);
             } else {
                 freeLayer.setStyle(freeLayer.originalStyle);
             }
@@ -561,10 +561,10 @@ Map.prototype.getStylesheetData = function(id, data) {
     var stylesheet = this.getStylesheet(id);
 
     if (stylesheet) {
-        return {"url":stylesheet.url, "data": stylesheet.data};
+        return {'url':stylesheet.url, 'data': stylesheet.data};
     }
     
-    return {"url":null, "data":{}};
+    return {'url':null, 'data':{}};
 };
 
 
@@ -583,7 +583,7 @@ Map.prototype.setStylesheetData = function(id, data) {
             if (freeLayer && freeLayer.geodata && freeLayer.stylesheet == stylesheet) {
                 
                 if (freeLayer.geodataProcessor) {
-                    freeLayer.geodataProcessor.sendCommand("setStylesheet", { "data" : freeLayer.stylesheet.data, "geocent" : (!this.getNavigationSrs().isProjected()) });
+                    freeLayer.geodataProcessor.sendCommand('setStylesheet', { 'data' : freeLayer.stylesheet.data, 'geocent' : (!this.getNavigationSrs().isProjected()) });
                 }
 
                 freeLayer.geodataCounter++;
@@ -690,7 +690,7 @@ Map.prototype.getPosition = function() {
 
 
 Map.prototype.setConfigParams = function(params) {
-    if (typeof params === "object" && params !== null) {
+    if (typeof params === 'object' && params !== null) {
         for (var key in params) {
             this.setConfigParam(key, params[key]);
         }
@@ -700,82 +700,82 @@ Map.prototype.setConfigParams = function(params) {
 
 Map.prototype.setConfigParam = function(key, value) {
     switch (key) {
-        case "map":                           this.config.map = utils.validateString(value, null); break;
-        case "mapCache":                      this.config.mapCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 900); this.setupCache(); break;
-        case "mapGPUCache":                   this.config.mapGPUCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 360); this.setupCache(); break;
-        case "mapMetatileCache":              this.config.mapMetatileCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 60); this.setupCache(); break;
-        case "mapTexelSizeFit":               this.config.mapTexelSizeFit = utils.validateNumber(value, 0.0001, Number.MAXINTEGER, 1.1); break;
-        case "mapLowresBackground":           this.config.mapLowresBackground = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
-        case "mapDownloadThreads":            this.config.mapDownloadThreads = utils.validateNumber(value, 1, Number.MAXINTEGER, 6); break;
-        case "mapMaxProcessingTime":          this.config.mapMaxProcessingTime = utils.validateNumber(value, 1, Number.MAXINTEGER, 1000/20); break;
-        case "mapMobileMode":                 this.config.mapMobileMode = utils.validateBool(value, false); this.setupMobileMode(); break;
-        case "mapMobileModeAutodect":         this.config.mapMobileModeAutodect = utils.validateBool(value, false); break;
-        case "mapMobileDetailDegradation":    this.config.mapMobileDetailDegradation = utils.validateNumber(value, 1, Number.MAXINTEGER, 2); break;
-        case "mapNavSamplesPerViewExtent":    this.config.mapNavSamplesPerViewExtent = utils.validateNumber(value, 0.00000000001, Number.MAXINTEGER, 4); break;
-        case "mapFog":                        this.config.mapFog = utils.validateBool(value, false); break;
-        case "mapIgnoreNavtiles":             this.config.mapIgnoreNavtiles = utils.validateBool(value, false); break;
-        case "mapAllowHires":                 this.config.mapAllowHires = utils.validateBool(value, true); break;
-        case "mapAllowLowres":                this.config.mapAllowLowres = utils.validateBool(value, true); break;
-        case "mapAllowSmartSwitching":        this.config.mapAllowSmartSwitching = utils.validateBool(value, true); break;
-        case "mapDisableCulling":             this.config.mapDisableCulling = utils.validateBool(value, false); break;
-        case "mapPreciseCulling":             this.config.mapPreciseCulling = utils.validateBool(value, false); break;
-        case "mapHeightLodBlend":             this.config.mapHeightLodBlend = utils.validateBool(value, true); break;
-        case "mapHeightNodeBlend":            this.config.mapHeightNodeBlend = utils.validateBool(value, true); break;
-        case "mapBasicTileSequence":          this.config.mapBasicTileSequence = utils.validateBool(value, true); break;
-        case "mapSmartNodeParsing":           this.config.mapSmartNodeParsing = utils.validateBool(value, true); break;
-        case "mapStoreLoadStats":             this.config.mapStoreLoadStats = utils.validateBool(value, true);  if (this.draw && this.draw.replay) this.draw.replay.storeLoaded = this.config.mapStoreLoadStats; break;
-        case "mapXhrImageLoad":               this.config.mapXhrImageLoad = utils.validateBool(value, false); break;
-        case "mapLoadMode":                   this.config.mapLoadMode = utils.validateString(value, "topdown"); break;
-        case "mapGeodataLoadMode":            this.config.mapGeodataLoadMode = utils.validateString(value, "fit"); break;
-        case "mapPreciseBBoxTest":            this.config.mapPreciseBBoxTest = utils.validateBool(value, true); break;
-        case "mapPreciseDistanceTest":        this.config.mapPreciseDistanceTest = utils.validateBool(value, false); break;
-        case "mapHeightfiledWhenUnloaded":    this.config.mapHeightfiledWhenUnloaded= utils.validateBool(value, false); break;
-        case "mapForceMetatileV3":            this.config.mapForceMetatileV3= utils.validateBool(value, false); break;
-        case "mapVirtualSurfaces":            this.config.mapVirtualSurfaces = utils.validateBool(value, true); break;
-        case "mapDegradeHorizon":             this.config.mapDegradeHorizon = utils.validateBool(value, true); break;
-        case "mapDegradeHorizonParams":       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAXVALUE, Number.MAXVALUE, Number.MAXVALUE], [1, 3000, 15000, 7000]); break;
-        case "mario":                         this.config.mario = utils.validateBool(value, true); break;
+    case 'map':                           this.config.map = utils.validateString(value, null); break;
+    case 'mapCache':                      this.config.mapCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 900); this.setupCache(); break;
+    case 'mapGPUCache':                   this.config.mapGPUCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 360); this.setupCache(); break;
+    case 'mapMetatileCache':              this.config.mapMetatileCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 60); this.setupCache(); break;
+    case 'mapTexelSizeFit':               this.config.mapTexelSizeFit = utils.validateNumber(value, 0.0001, Number.MAXINTEGER, 1.1); break;
+    case 'mapLowresBackground':           this.config.mapLowresBackground = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
+    case 'mapDownloadThreads':            this.config.mapDownloadThreads = utils.validateNumber(value, 1, Number.MAXINTEGER, 6); break;
+    case 'mapMaxProcessingTime':          this.config.mapMaxProcessingTime = utils.validateNumber(value, 1, Number.MAXINTEGER, 1000/20); break;
+    case 'mapMobileMode':                 this.config.mapMobileMode = utils.validateBool(value, false); this.setupMobileMode(); break;
+    case 'mapMobileModeAutodect':         this.config.mapMobileModeAutodect = utils.validateBool(value, false); break;
+    case 'mapMobileDetailDegradation':    this.config.mapMobileDetailDegradation = utils.validateNumber(value, 1, Number.MAXINTEGER, 2); break;
+    case 'mapNavSamplesPerViewExtent':    this.config.mapNavSamplesPerViewExtent = utils.validateNumber(value, 0.00000000001, Number.MAXINTEGER, 4); break;
+    case 'mapFog':                        this.config.mapFog = utils.validateBool(value, false); break;
+    case 'mapIgnoreNavtiles':             this.config.mapIgnoreNavtiles = utils.validateBool(value, false); break;
+    case 'mapAllowHires':                 this.config.mapAllowHires = utils.validateBool(value, true); break;
+    case 'mapAllowLowres':                this.config.mapAllowLowres = utils.validateBool(value, true); break;
+    case 'mapAllowSmartSwitching':        this.config.mapAllowSmartSwitching = utils.validateBool(value, true); break;
+    case 'mapDisableCulling':             this.config.mapDisableCulling = utils.validateBool(value, false); break;
+    case 'mapPreciseCulling':             this.config.mapPreciseCulling = utils.validateBool(value, false); break;
+    case 'mapHeightLodBlend':             this.config.mapHeightLodBlend = utils.validateBool(value, true); break;
+    case 'mapHeightNodeBlend':            this.config.mapHeightNodeBlend = utils.validateBool(value, true); break;
+    case 'mapBasicTileSequence':          this.config.mapBasicTileSequence = utils.validateBool(value, true); break;
+    case 'mapSmartNodeParsing':           this.config.mapSmartNodeParsing = utils.validateBool(value, true); break;
+    case 'mapStoreLoadStats':             this.config.mapStoreLoadStats = utils.validateBool(value, true);  if (this.draw && this.draw.replay) this.draw.replay.storeLoaded = this.config.mapStoreLoadStats; break;
+    case 'mapXhrImageLoad':               this.config.mapXhrImageLoad = utils.validateBool(value, false); break;
+    case 'mapLoadMode':                   this.config.mapLoadMode = utils.validateString(value, 'topdown'); break;
+    case 'mapGeodataLoadMode':            this.config.mapGeodataLoadMode = utils.validateString(value, 'fit'); break;
+    case 'mapPreciseBBoxTest':            this.config.mapPreciseBBoxTest = utils.validateBool(value, true); break;
+    case 'mapPreciseDistanceTest':        this.config.mapPreciseDistanceTest = utils.validateBool(value, false); break;
+    case 'mapHeightfiledWhenUnloaded':    this.config.mapHeightfiledWhenUnloaded= utils.validateBool(value, false); break;
+    case 'mapForceMetatileV3':            this.config.mapForceMetatileV3= utils.validateBool(value, false); break;
+    case 'mapVirtualSurfaces':            this.config.mapVirtualSurfaces = utils.validateBool(value, true); break;
+    case 'mapDegradeHorizon':             this.config.mapDegradeHorizon = utils.validateBool(value, true); break;
+    case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAXVALUE, Number.MAXVALUE, Number.MAXVALUE], [1, 3000, 15000, 7000]); break;
+    case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
 
 
 Map.prototype.getConfigParam = function(key) {
     switch (key) {
-        case "map":                           return this.config.map;
-        case "mapCache":                      return this.config.mapCache;
-        case "mapGPUCache":                   return this.config.mapGPUCache;
-        case "mapMetatileCache":              return this.config.mapMetatileCache;
-        case "mapTexelSizeFit":               return this.config.mapTexelSizeFit;
-        case "mapLowresBackground":           return this.config.mapLowresBackground;
-        case "mapDownloadThreads":            return this.config.mapDownloadThreads;
-        case "mapMaxProcessingTime":          return this.config.mapMaxProcessingTime;
-        case "mapMobileMode":                 return this.config.mapMobileMode;
-        case "mapMobileModeAutodect":         return this.config.mapMobileModeAutodect;
-        case "mapMobileDetailDegradation":    return this.config.mapMobileDetailDegradation;
-        case "mapNavSamplesPerViewExtent":    return this.config.mapNavSamplesPerViewExtent;
-        case "mapFog":                        return this.config.mapFog;
-        case "mapIgnoreNavtiles":             return this.config.mapIgnoreNavtiles;
-        case "mapAllowHires":                 return this.config.mapAllowHires;
-        case "mapAllowLowres":                return this.config.mapAllowLowres;
-        case "mapAllowSmartSwitching":        return this.config.mapAllowSmartSwitching;
-        case "mapDisableCulling":             return this.config.mapDisableCulling;
-        case "mapPreciseCulling":             return this.config.mapPreciseCulling;
-        case "mapHeightLodBlend":             return this.config.mapHeightLodBlend;
-        case "mapHeightNodeBlend":            return this.config.mapHeightNodeBlend;
-        case "mapBasicTileSequence":          return this.config.mapBasicTileSequence;
-        case "mapSmartNodeParsing":           return this.config.mapSmartNodeParsing;
-        case "mapStoreLoadStats":             return this.config.mapStoreLoadStats;
-        case "mapXhrImageLoad":               return this.config.mapXhrImageLoad;
-        case "mapLoadMode":                   return this.config.mapLoadMode;
-        case "mapGeodataLoadMode":            return this.config.mapGeodataLoadMode;
-        case "mapPreciseBBoxTest":            return this.config.mapPreciseBBoxTest;
-        case "mapPreciseDistanceTest":        return this.config.mapPreciseDistanceTest;
-        case "mapHeightfiledWhenUnloaded":    return this.config.mapHeightfiledWhenUnloaded;
-        case "mapForceMetatileV3":            return this.config.mapForceMetatileV3;
-        case "mapVirtualSurfaces":            return this.config.mapVirtualSurfaces;
-        case "mapDegradeHorizon":             return this.config.mapDegradeHorizon;
-        case "mapDegradeHorizonParams":       return this.config.mapDegradeHorizonParams;
-        case "mario":                         return this.config.mario;
+    case 'map':                           return this.config.map;
+    case 'mapCache':                      return this.config.mapCache;
+    case 'mapGPUCache':                   return this.config.mapGPUCache;
+    case 'mapMetatileCache':              return this.config.mapMetatileCache;
+    case 'mapTexelSizeFit':               return this.config.mapTexelSizeFit;
+    case 'mapLowresBackground':           return this.config.mapLowresBackground;
+    case 'mapDownloadThreads':            return this.config.mapDownloadThreads;
+    case 'mapMaxProcessingTime':          return this.config.mapMaxProcessingTime;
+    case 'mapMobileMode':                 return this.config.mapMobileMode;
+    case 'mapMobileModeAutodect':         return this.config.mapMobileModeAutodect;
+    case 'mapMobileDetailDegradation':    return this.config.mapMobileDetailDegradation;
+    case 'mapNavSamplesPerViewExtent':    return this.config.mapNavSamplesPerViewExtent;
+    case 'mapFog':                        return this.config.mapFog;
+    case 'mapIgnoreNavtiles':             return this.config.mapIgnoreNavtiles;
+    case 'mapAllowHires':                 return this.config.mapAllowHires;
+    case 'mapAllowLowres':                return this.config.mapAllowLowres;
+    case 'mapAllowSmartSwitching':        return this.config.mapAllowSmartSwitching;
+    case 'mapDisableCulling':             return this.config.mapDisableCulling;
+    case 'mapPreciseCulling':             return this.config.mapPreciseCulling;
+    case 'mapHeightLodBlend':             return this.config.mapHeightLodBlend;
+    case 'mapHeightNodeBlend':            return this.config.mapHeightNodeBlend;
+    case 'mapBasicTileSequence':          return this.config.mapBasicTileSequence;
+    case 'mapSmartNodeParsing':           return this.config.mapSmartNodeParsing;
+    case 'mapStoreLoadStats':             return this.config.mapStoreLoadStats;
+    case 'mapXhrImageLoad':               return this.config.mapXhrImageLoad;
+    case 'mapLoadMode':                   return this.config.mapLoadMode;
+    case 'mapGeodataLoadMode':            return this.config.mapGeodataLoadMode;
+    case 'mapPreciseBBoxTest':            return this.config.mapPreciseBBoxTest;
+    case 'mapPreciseDistanceTest':        return this.config.mapPreciseDistanceTest;
+    case 'mapHeightfiledWhenUnloaded':    return this.config.mapHeightfiledWhenUnloaded;
+    case 'mapForceMetatileV3':            return this.config.mapForceMetatileV3;
+    case 'mapVirtualSurfaces':            return this.config.mapVirtualSurfaces;
+    case 'mapDegradeHorizon':             return this.config.mapDegradeHorizon;
+    case 'mapDegradeHorizonParams':       return this.config.mapDegradeHorizonParams;
+    case 'mario':                         return this.config.mario;
     }
 };
 
@@ -820,24 +820,24 @@ Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
 
         var d = vec3.dot(planeNormal, ray); //minification is wrong there
         //if (d > 1e-6) {
-            var a = [planePos[0] - cameraPos[0], planePos[1] - cameraPos[1], planePos[2] - cameraPos[2]];
-            t = vec3.dot(a, planeNormal) / d;
+        var a = [planePos[0] - cameraPos[0], planePos[1] - cameraPos[1], planePos[2] - cameraPos[2]];
+        t = vec3.dot(a, planeNormal) / d;
             
             //var t = (vec3.dot(cameraPos, planeNormal) + (-500)) / d;            
-            if (t >= 0) {
-                if (!cameraSpaceCoords[3] || t < cameraSpaceCoords[5]) {
-                    worldPos = [ (ray[0] * t) + cameraPos[0],
-                                  (ray[1] * t) + cameraPos[1],
-                                  (ray[2] * t) + cameraPos[2] ];
+        if (t >= 0) {
+            if (!cameraSpaceCoords[3] || t < cameraSpaceCoords[5]) {
+                worldPos = [ (ray[0] * t) + cameraPos[0],
+                    (ray[1] * t) + cameraPos[1],
+                    (ray[2] * t) + cameraPos[2] ];
     
-                    fallbackUsed = true;
-                }
+                fallbackUsed = true;
             }
+        }
         //}
 
     } else /*if (false)*/ { //elipsoid fallback
         var navigationSrsInfo = this.getNavigationSrs().getSrsInfo();
-        var planetRadius = navigationSrsInfo["b"] + this.referenceFrame.getGlobalHeightRange()[0];
+        var planetRadius = navigationSrsInfo['b'] + this.referenceFrame.getGlobalHeightRange()[0];
     
         var offset = [cameraPos[0], cameraPos[1], cameraPos[2]];
         var a = vec3.dot(ray, ray); //minification is wrong there
@@ -853,8 +853,8 @@ Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
             
             if (!cameraSpaceCoords[3] || t < cameraSpaceCoords[5]) {
                 worldPos = [ (ray[0] * t) + cameraPos[0],
-                              (ray[1] * t) + cameraPos[1],
-                              (ray[2] * t) + cameraPos[2] ];
+                    (ray[1] * t) + cameraPos[1],
+                    (ray[2] * t) + cameraPos[2] ];
 
                 fallbackUsed = true;
             }
@@ -867,13 +867,13 @@ Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
     
     if (!fallbackUsed) {
         worldPos = [ cameraSpaceCoords[0] + cameraPos[0],
-                      cameraSpaceCoords[1] + cameraPos[1],
-                      cameraSpaceCoords[2] + cameraPos[2] ];
+            cameraSpaceCoords[1] + cameraPos[1],
+            cameraSpaceCoords[2] + cameraPos[2] ];
     }
 
-    var navCoords = this.convert.convertCoords(worldPos, "physical", "navigation");
+    var navCoords = this.convert.convertCoords(worldPos, 'physical', 'navigation');
 
-    if (mode == "float") {
+    if (mode == 'float') {
         var lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(navCoords, 100, this.config.mapNavSamplesPerViewExtent);
         var surfaceHeight = this.measure.getSurfaceHeight(navCoords, lod);
         navCoords[2] -= surfaceHeight[0]; 
@@ -907,29 +907,29 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
         var id = (res[1]) + (res[2]<<8);
         var elementId = (res[3]) + (res[4]<<8);
 		
-		var feature = this.hoverFeatureList[id];
+        var feature = this.hoverFeatureList[id];
 
-        if (mode == "hover") {
+        if (mode == 'hover') {
             this.lastHoverFeature = this.hoverFeature;
             this.lastHoverFeatureId = this.hoverFeatureId;
             
-			if (feature && feature[3]) {
-				this.hoverFeature = feature;
-				this.hoverFeatureId = (feature != null) ? feature[0]["#id"] : null;
-			} else {
-				this.hoverFeature = null;
-				this.hoverFeatureId = null;
-			}
+            if (feature && feature[3]) {
+                this.hoverFeature = feature;
+                this.hoverFeatureId = (feature != null) ? feature[0]['#id'] : null;
+            } else {
+                this.hoverFeature = null;
+                this.hoverFeatureId = null;
+            }
 
             var relatedEvents = [];
 
             if (this.hoverFeatureId != this.lastHoverFeatureId) {
                 if (this.lastHoverFeatureId != null) {
-                    relatedEvents.push(["leave", this.lastHoverFeature, this.lastHoverFeatureId]);
+                    relatedEvents.push(['leave', this.lastHoverFeature, this.lastHoverFeatureId]);
                 }
 
                 if (this.hoverFeatureId != null) {
-                    relatedEvents.push(["enter", this.hoverFeature, this.hoverFeatureId]);
+                    relatedEvents.push(['enter', this.hoverFeature, this.hoverFeatureId]);
                 }
 
                 this.dirty = true;
@@ -942,7 +942,7 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
             }
         }
 
-        if (mode == "click") {
+        if (mode == 'click') {
             //this.hoverFeatureId = (this.hoverFeature != null) ? this.hoverFeature["id"] : null;
 
             if (feature != null && feature[2]) {
@@ -954,7 +954,7 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
     } else {
         var relatedEvents = [];
 
-        if (mode == "hover") {
+        if (mode == 'hover') {
             this.lastHoverFeature = this.hoverFeature;
             this.lastHoverFeatureId = this.hoverFeatureId;
             this.hoverFeature = null;
@@ -962,7 +962,7 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
 
             if (this.lastHoverFeatureId != null) {
                 if (this.lastHoverFeatureId != null) {
-                    relatedEvents.push(["leave", this.lastHoverFeature, this.lastHoverFeatureId]);
+                    relatedEvents.push(['leave', this.lastHoverFeature, this.lastHoverFeatureId]);
                 }
 
                 this.dirty = true;
@@ -1046,18 +1046,18 @@ Map.prototype.update = function() {
         }
     }
 
-    if (this.div != null && this.div.style.visibility == "hidden"){
+    if (this.div != null && this.div.style.visibility == 'hidden'){
         //loop heartbeat
         //window.requestAnimFrame(this.update.bind(this));
         return;
     }
 
     if (!this.position.isSame(this.lastPosition)) {
-        this.core.callListener("map-position-changed", {"position":this.position.toArray(), "last-position":this.lastPosition.toArray()});
+        this.core.callListener('map-position-changed', {'position':this.position.toArray(), 'last-position':this.lastPosition.toArray()});
     }
 
     if (this.camera.lastTerrainHeight != this.camera.terrainHeight) {
-        this.core.callListener("map-position-fixed-height-changed", {"height":this.camera.terrainHeight, "last-height":this.camera.lastTerrainHeight});
+        this.core.callListener('map-position-fixed-height-changed', {'height':this.camera.terrainHeight, 'last-height':this.camera.lastTerrainHeight});
     }
 
     this.lastPosition = this.position.clone();
@@ -1087,7 +1087,7 @@ Map.prototype.update = function() {
 
         this.loader.update();
         
-        this.core.callListener("map-update", {});
+        this.core.callListener('map-update', {});
 
         //this.renderer.gpu.setState(this.drawTileState);
         //this.renderer.gpu.gl.disable(this.renderer.gpu.gl.BLEND);
@@ -1102,11 +1102,11 @@ Map.prototype.update = function() {
         //this.updateGeoHitmap = this.dirty;
 
         if (this.hoverEvent != null) {
-            var result = this.hitTestGeoLayers(this.hoverEvent[0], this.hoverEvent[1], "hover");
+            var result = this.hitTestGeoLayers(this.hoverEvent[0], this.hoverEvent[1], 'hover');
 
             if (result[1] && result[0] != null) {
-                this.core.callListener("geo-feature-hover", {"feature": result[0][0], "canvas-coords":this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
-                                                              "camera-coords":result[0][1], "state": this.hoverEvent[3] }, true);
+                this.core.callListener('geo-feature-hover', {'feature': result[0][0], 'canvas-coords':this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
+                    'camera-coords':result[0][1], 'state': this.hoverEvent[3] }, true);
             }
 
             var relatedEvents = result[2];
@@ -1116,15 +1116,15 @@ Map.prototype.update = function() {
                     var event = relatedEvents[i];
 
                     switch(event[0]) {
-                        case "enter":
-                            this.core.callListener("geo-feature-enter", {"feature": event[1][0], "canvas-coords":this.renderer.project2(event[1][1], this.camera.getMvpMatrix()),
-                                                                           "camera-coords":event[1][1], "state": this.hoverEvent[3] }, true);
-                            break;
+                    case 'enter':
+                        this.core.callListener('geo-feature-enter', {'feature': event[1][0], 'canvas-coords':this.renderer.project2(event[1][1], this.camera.getMvpMatrix()),
+                            'camera-coords':event[1][1], 'state': this.hoverEvent[3] }, true);
+                        break;
 
-                        case "leave":
-                            this.core.callListener("geo-feature-leave", {"feature":event[1][0], "canvas-coords":this.renderer.project2(event[1][1], this.camera.getMvpMatrix()),
-                                                                          "camera-coords":event[1][1], "state": this.hoverEvent[3] }, true);
-                            break;
+                    case 'leave':
+                        this.core.callListener('geo-feature-leave', {'feature':event[1][0], 'canvas-coords':this.renderer.project2(event[1][1], this.camera.getMvpMatrix()),
+                            'camera-coords':event[1][1], 'state': this.hoverEvent[3] }, true);
+                        break;
                     }
                 }
             }
@@ -1136,11 +1136,11 @@ Map.prototype.update = function() {
         }
 
         if (this.clickEvent != null) {
-            var result = this.hitTestGeoLayers(this.clickEvent[0], this.clickEvent[1], "click");
+            var result = this.hitTestGeoLayers(this.clickEvent[0], this.clickEvent[1], 'click');
 
             if (result[1] && result[0] != null) {
-                this.core.callListener("geo-feature-click", {"feature": result[0][0], "canvas-coords":this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
-                                                              "camera-coords":result[0][1], "state": this.clickEvent[2] }, true);
+                this.core.callListener('geo-feature-click', {'feature': result[0][0], 'canvas-coords':this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
+                    'camera-coords':result[0][1], 'state': this.clickEvent[2] }, true);
             }
 
             this.clickEvent = null;

@@ -45,8 +45,8 @@ MapConfig.prototype.parseConfig = function() {
 
 
 MapConfig.prototype.afterConfigParsed = function() {
-    if (this.mapConfig["position"] != null) {
-        this.map.setPosition(this.mapConfig["position"], false);
+    if (this.mapConfig['position'] != null) {
+        this.map.setPosition(this.mapConfig['position'], false);
     }
 
     this.map.setView(this.map.initialView);
@@ -54,7 +54,7 @@ MapConfig.prototype.afterConfigParsed = function() {
 
 
 MapConfig.prototype.parseSrses = function() {
-    var srses = this.mapConfig["srses"];
+    var srses = this.mapConfig['srses'];
     this.map.srses = {};
 
     if (srses == null) {
@@ -70,7 +70,7 @@ MapConfig.prototype.parseSrses = function() {
 
 
 MapConfig.prototype.parseReferenceFrame = function() {
-    var rf = this.mapConfig["referenceFrame"];
+    var rf = this.mapConfig['referenceFrame'];
 
     if (rf == null) {
         return false;
@@ -87,7 +87,7 @@ MapConfig.prototype.parseReferenceFrame = function() {
 
 
 MapConfig.prototype.parseCredits = function() {
-    var credits = this.mapConfig["credits"];
+    var credits = this.mapConfig['credits'];
     this.map.credits = {};
 
     if (credits == null) {
@@ -103,7 +103,7 @@ MapConfig.prototype.parseCredits = function() {
 
 
 MapConfig.prototype.parseSurfaces = function() {
-    var surfaces = this.mapConfig["surfaces"];
+    var surfaces = this.mapConfig['surfaces'];
     this.map.surfaces = [];
 
     if (surfaces == null) {
@@ -120,7 +120,7 @@ MapConfig.prototype.parseSurfaces = function() {
 
 
 MapConfig.prototype.parseVirtualSurfaces = function() {
-    var surfaces = this.mapConfig["virtualSurfaces"];
+    var surfaces = this.mapConfig['virtualSurfaces'];
     this.map.virtualSurfaces = [];
 
     if (!this.map.config.mapVirtualSurfaces) {
@@ -141,7 +141,7 @@ MapConfig.prototype.parseVirtualSurfaces = function() {
 
 
 MapConfig.prototype.parseViews = function() {
-    var views = this.mapConfig["namedViews"];
+    var views = this.mapConfig['namedViews'];
     this.map.namedViews = [];
 
     if (views != null) {
@@ -150,7 +150,7 @@ MapConfig.prototype.parseViews = function() {
         }
     }
 
-    var view = this.mapConfig["view"];
+    var view = this.mapConfig['view'];
     if (view == null) {
         return true;
     }
@@ -161,7 +161,7 @@ MapConfig.prototype.parseViews = function() {
 
 
 MapConfig.prototype.parseGlues = function() {
-    var glues = this.mapConfig["glue"];
+    var glues = this.mapConfig['glue'];
     this.map.glues = [];
 
     if (glues == null) {
@@ -169,8 +169,8 @@ MapConfig.prototype.parseGlues = function() {
     }
 
     for (var i = 0, li = glues.length; i < li; i++) {
-        var surface = new MapSurface(this.map, glues[i], "glue");
-        this.map.addGlue(surface.id.join(";"), surface);
+        var surface = new MapSurface(this.map, glues[i], 'glue');
+        this.map.addGlue(surface.id.join(';'), surface);
     }
 
     return true;
@@ -178,7 +178,7 @@ MapConfig.prototype.parseGlues = function() {
 
 
 MapConfig.prototype.parseBoundLayers = function() {
-    var layers = this.mapConfig["boundLayers"];
+    var layers = this.mapConfig['boundLayers'];
     this.map.boundLayers = [];
 
     if (layers == null) {
@@ -195,7 +195,7 @@ MapConfig.prototype.parseBoundLayers = function() {
 
 
 MapConfig.prototype.parseFreeLayers = function() {
-    var layers = this.mapConfig["freeLayers"];
+    var layers = this.mapConfig['freeLayers'];
     this.map.freeLayers = [];
 
     if (layers == null) {
@@ -203,7 +203,7 @@ MapConfig.prototype.parseFreeLayers = function() {
     }
 
     for (var key in layers) {
-        var layer = new MapSurface(this.map, layers[key], "free");
+        var layer = new MapSurface(this.map, layers[key], 'free');
         this.map.addFreeLayer(key, layer);
     }
 
@@ -212,7 +212,7 @@ MapConfig.prototype.parseFreeLayers = function() {
 
 
 MapConfig.prototype.parseStylesheets = function() {
-    var styles = this.mapConfig["stylesheets"];
+    var styles = this.mapConfig['stylesheets'];
     this.map.stylesheets = [];
 
     if (styles == null) {
@@ -234,7 +234,7 @@ MapConfig.prototype.parseParams = function() {
 
 
 MapConfig.prototype.parseBrowserOptions = function() {
-    var options = this.mapConfig["browserOptions"];
+    var options = this.mapConfig['browserOptions'];
     this.map.browserOptions = {};
     
     if (options == null) {

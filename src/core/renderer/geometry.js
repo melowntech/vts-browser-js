@@ -158,8 +158,8 @@ RendererGeometry.spherePos = function(lon, lat) {
     lon *= 2*Math.PI;
 
     return [Math.cos(lon)*Math.sin(lat)*0.5 + 0.5,
-                Math.sin(lon)*Math.sin(lat)*0.5 + 0.5,
-                Math.cos(lat) * 0.5 + 0.5];
+        Math.sin(lon)*Math.sin(lat)*0.5 + 0.5,
+        Math.cos(lat) * 0.5 + 0.5];
 };
 
 

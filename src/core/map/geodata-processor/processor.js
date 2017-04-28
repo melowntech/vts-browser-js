@@ -6,14 +6,14 @@ var MapGeodataProcessor = function(surface, listener) {
     this.listener = listener;
     this.ready = true;
 
-    var worker = require("worker-loader?inline&fallback=false!./worker-main");
+    var worker = require('worker-loader?inline&fallback=false!./worker-main');
 //    var worker = require("worker-loader?inline!./worker-main");
 
     //debug worker
     this.processWorker = new worker;
     
     this.processWorker.onerror = function(event){
-        throw new Error(event.message + " (" + event.filename + ":" + event.lineno + ")");
+        throw new Error(event.message + ' (' + event.filename + ':' + event.lineno + ')');
     };
 
     this.processWorker.onmessage = this.onMessage.bind(this);
@@ -45,12 +45,12 @@ MapGeodataProcessor.prototype.onMessage = function(message) {
 
     message = message.data;
     
-    var command = message["command"];
+    var command = message['command'];
 
     //console.log("onmessage");
 
     //if (typeof message === "string" && message == "ready") {
-    if (command == "ready") {
+    if (command == 'ready') {
         this.ready = true;
         //console.log("ready");
     }
@@ -73,10 +73,10 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile) {
 
     this.ready = false;
     
-    var message = {"command": command, "data":data};
+    var message = {'command': command, 'data':data};
     
     if (tile && tile.id) { 
-        message["lod"] = tile.id[0];
+        message['lod'] = tile.id[0];
     }
 
     this.processWorker.postMessage(message);

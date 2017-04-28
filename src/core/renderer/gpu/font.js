@@ -29,7 +29,7 @@ GpuFont.prototype.kill = function() {
 
 GpuFont.prototype.generate = function(font, size) {
     if (font == null) {
-        font = "Arial, 'Helvetica Neue', Helvetica, sans-serif"; //"Calibri";
+        font = 'Arial, "Helvetica Neue", Helvetica, sans-serif'; //"Calibri";
     }
 
     if (size == null) {
@@ -51,16 +51,16 @@ GpuFont.prototype.generate = function(font, size) {
 
     var fontSize = 10;
     ctx.beginPath();
-    ctx.font = size + "pt " + font;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
+    ctx.font = size + 'pt ' + font;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
 //  ctx.fillStyle = "@white";
 //    ctx.fillStyle = [0,0,0,255];
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#000000';
     ctx.lineWidth = 5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
     var lineSpace = Math.round(ctx.lineWidth*0.5);
 
@@ -69,8 +69,8 @@ GpuFont.prototype.generate = function(font, size) {
     var y = space;
 
 
-    var cly = Math.floor(ctx.measureText("e").width * 2.5);
-    var clxe = Math.floor(ctx.measureText("e").width);
+    var cly = Math.floor(ctx.measureText('e').width * 2.5);
+    var clxe = Math.floor(ctx.measureText('e').width);
     //var clxe = Math.floor(ctx.measureText("ee").width);
 
     this.chars = [];
@@ -104,14 +104,14 @@ GpuFont.prototype.generate = function(font, size) {
         ctx.fillText(c, x+lineSpace, y);
 
         this.chars[codes[i]] = {
-                u1 : x * fx,
-                v1 : y * fy,
-                u2 : (x + clx) * fx,
-                v2 : (y + cly) * fy,
-                lx : clx,
-                ly : cly,
-                step : (clx-2)
-            };
+            u1 : x * fx,
+            v1 : y * fy,
+            u2 : (x + clx) * fx,
+            v2 : (y + cly) * fy,
+            lx : clx,
+            ly : cly,
+            step : (clx-2)
+        };
 
         x += clx + space;
     }
@@ -120,7 +120,7 @@ GpuFont.prototype.generate = function(font, size) {
 
     this.texture = new GpuTexture(this.gpu, null);
     //this.texture.createFromData(textureLX, textureLY, this.image);
-    this.texture.createFromImage(this.image, "linear");
+    this.texture.createFromImage(this.image, 'linear');
     this.texture.width = textureLX;
     this.texture.height = textureLY;
     this.texture.size = textureLX * textureLY * 4;

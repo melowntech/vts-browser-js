@@ -608,11 +608,11 @@ MapSubmesh.prototype.fileSize = function () {
 
 MapSubmesh.prototype.buildGpuMesh = function () {
     return new GpuMesh(this.map.renderer.gpu, {
-            bbox: this.bbox,
-            vertices: this.vertices,
-            uvs: this.internalUVs,
-            uvs2: this.externalUVs
-        }, 1, this.map.core);
+        bbox: this.bbox,
+        vertices: this.vertices,
+        uvs: this.internalUVs,
+        uvs2: this.externalUVs
+    }, 1, this.map.core);
 };
 
 
@@ -644,7 +644,7 @@ MapSubmesh.prototype.getWorldMatrix = function(geoPos, matrix) {
 MapSubmesh.prototype.drawBBox = function(cameraPos) {
     var renderer = this.map.renderer;
 
-    renderer.gpu.useProgram(renderer.progBBox, ["aPosition"]);
+    renderer.gpu.useProgram(renderer.progBBox, ['aPosition']);
 
     var mvp = mat4.create();
     var mv = mat4.create();
@@ -654,10 +654,10 @@ MapSubmesh.prototype.drawBBox = function(cameraPos) {
     var proj = renderer.camera.getProjectionMatrix();
     mat4.multiply(proj, mv, mvp);
 
-    renderer.progBBox.setMat4("uMVP", mvp);
+    renderer.progBBox.setMat4('uMVP', mvp);
 
     //draw bbox
-    renderer.bboxMesh.draw(renderer.progBBox, "aPosition");
+    renderer.bboxMesh.draw(renderer.progBBox, 'aPosition');
 };
 
 

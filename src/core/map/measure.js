@@ -16,7 +16,7 @@ var MapMeasure = function(map) {
     this.getPhysicalSrs = this.map.getPhysicalSrs();
     this.navigationSrs = this.map.getNavigationSrs();
     this.navigationSrsInfo = this.navigationSrs.getSrsInfo();
-    this.isProjected = this.navigationSrs.isProjected()
+    this.isProjected = this.navigationSrs.isProjected();
 
     var res = this.getSpatialDivisionNodeDepths();
 
@@ -226,7 +226,7 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
 
         if (metanode != null) { // && metanode.id[0] == lod){
             var center = metanode.bbox.center();
-            center = this.convert.convertCoords(center, "physical", "navigation");
+            center = this.convert.convertCoords(center, 'physical', 'navigation');
 
             //console.log("lod2: " + lod + " nodelod: " + metanode.id[0] + " h: " + center[2]/1.55);  
 
@@ -239,7 +239,7 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
 
             if (this.config.mapHeightLodBlend && metanode.id[0] > 0 &&
                 params.parent && params.parent.metanode) {
-                var center2 = this.convert.convertCoords(params.parent.metanode.bbox.center(), "physical", "navigation");
+                var center2 = this.convert.convertCoords(params.parent.metanode.bbox.center(), 'physical', 'navigation');
 
                 var factor = lod - Math.floor(lod);
                 var height = center[2] + (center2[2] - center[2]) * factor;
@@ -403,7 +403,7 @@ MapMeasure.prototype.getSpatialDivisionNodeFromId = function(id) {
     var nx = id[1] >> shift;
     var ny = id[2] >> shift;
     
-    return this.map.referenceFrame.nodesMap["" + this.maxDivisionNodeDepth + "."  + nx + "." + ny];
+    return this.map.referenceFrame.nodesMap['' + this.maxDivisionNodeDepth + '.'  + nx + '.' + ny];
 };
 
 
@@ -518,7 +518,7 @@ MapMeasure.prototype.getDistance = function(coords, coords2, includingHeight) {
 
         var r = geod.Inverse(coords[1], coords[0], coords2[1], coords2[0]);
 
-        if (d > (navigationSrsInfo["a"] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
+        if (d > (navigationSrsInfo['a'] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
             if (includingHeight) {
                 return [Math.sqrt(r.s12*r.s12 + dz*dz), -r.az1];
             } else {
@@ -537,8 +537,8 @@ MapMeasure.prototype.getDistance = function(coords, coords2, includingHeight) {
 MapMeasure.prototype.getGeodesic = function() {
     var navigationSrsInfo = this.navigationSrsInfo;
 
-    var geodesic = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo["a"],
-                                                      (navigationSrsInfo["a"] / navigationSrsInfo["b"]) - 1.0);
+    var geodesic = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo['a'],
+                                                      (navigationSrsInfo['a'] / navigationSrsInfo['b']) - 1.0);
 
     return geodesic;
 };
@@ -559,11 +559,11 @@ MapMeasure.prototype.getAzimuthCorrection = function(coords, coords2) {
 
 
 MapMeasure.prototype.getNED = function(coords, returnMatrix) {
-    var centerCoords = this.convert.convertCoords([coords[0], coords[1], 0], "navigation", "physical");
+    var centerCoords = this.convert.convertCoords([coords[0], coords[1], 0], 'navigation', 'physical');
 
     if (this.isProjected) {
-        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], "navigation", "physical");
-        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], "navigation", "physical");
+        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], 'navigation', 'physical');
+        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], 'navigation', 'physical');
     } else {
         var cy = (coords[1] + 90) - 0.0001;
         var cx = (coords[0] + 180) + 0.0001;
@@ -573,25 +573,25 @@ MapMeasure.prototype.getNED = function(coords, returnMatrix) {
         
             //up coords
             var r = geodesic.Direct(coords[1], coords[0], 0, -100);
-            var upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], "navigation", "physical");
+            var upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
     
             //right coords
             r = geodesic.Direct(coords[1], coords[0], 90, 100);
-            var rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], "navigation", "physical");
+            var rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
         } else {
             // substraction instead of addition is probably case of complicated view matrix calculation
-            var upCoords = this.convert.convertCoords([coords[0], coords[1] - 0.0001, 0], "navigation", "physical");
-            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], "navigation", "physical");
+            var upCoords = this.convert.convertCoords([coords[0], coords[1] - 0.0001, 0], 'navigation', 'physical');
+            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], 'navigation', 'physical');
         }
     }
 
     var up = [upCoords[0] - centerCoords[0],
-               upCoords[1] - centerCoords[1],
-               upCoords[2] - centerCoords[2]]; 
+        upCoords[1] - centerCoords[1],
+        upCoords[2] - centerCoords[2]]; 
 
     var right = [rightCoords[0] - centerCoords[0],
-                  rightCoords[1] - centerCoords[1],
-                  rightCoords[2] - centerCoords[2]]; 
+        rightCoords[1] - centerCoords[1],
+        rightCoords[2] - centerCoords[2]]; 
 
     var dir = [0,0,0];
     vec3.normalize(up);
@@ -607,11 +607,11 @@ MapMeasure.prototype.getNED = function(coords, returnMatrix) {
 };
 
 MapMeasure.prototype.getNewNED = function(coords, returnMatrix) {
-    var centerCoords = this.convert.convertCoords([coords[0], coords[1], 0], "navigation", "physical");
+    var centerCoords = this.convert.convertCoords([coords[0], coords[1], 0], 'navigation', 'physical');
 
     if (this.isProjected) {
-        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], "navigation", "physical");
-        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], "navigation", "physical");
+        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], 'navigation', 'physical');
+        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], 'navigation', 'physical');
     } else {
         //get NED for latlon coordinates
         //http://www.mathworks.com/help/aeroblks/directioncosinematrixeceftoned.html
@@ -651,25 +651,25 @@ MapMeasure.prototype.getNewNED = function(coords, returnMatrix) {
         
             //up coords
             var r = geodesic.Direct(coords[1], coords[0], 0, -100);
-            var upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], "navigation", "physical");
+            var upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
     
             //right coords
             r = geodesic.Direct(coords[1], coords[0], 90, -100);
-            var rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], "navigation", "physical");
+            var rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
         } else {
             // substraction instead of addition is probably case of complicated view matrix calculation
-            var upCoords = this.convert.convertCoords([coords[0], coords[1] + 0.0001, 0], "navigation", "physical");
-            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], "navigation", "physical");
+            var upCoords = this.convert.convertCoords([coords[0], coords[1] + 0.0001, 0], 'navigation', 'physical');
+            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], 'navigation', 'physical');
         }
     }
 
     var up = [upCoords[0] - centerCoords[0],
-               upCoords[1] - centerCoords[1],
-               upCoords[2] - centerCoords[2]]; 
+        upCoords[1] - centerCoords[1],
+        upCoords[2] - centerCoords[2]]; 
 
     var right = [rightCoords[0] - centerCoords[0],
-                  rightCoords[1] - centerCoords[1],
-                  rightCoords[2] - centerCoords[2]]; 
+        rightCoords[1] - centerCoords[1],
+        rightCoords[2] - centerCoords[2]]; 
 
     var dir = [0,0,0];
     vec3.normalize(up);
@@ -710,7 +710,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
     var tmpMatrix = mat4.create();
     mat4.multiply(math.rotationMatrix(2, math.radians(-orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), tmpMatrix);
 
-    if (position.getViewMode() == "obj") {
+    if (position.getViewMode() == 'obj') {
         var orbitPos = [0, -distance, 0];
         mat4.multiplyVec3(tmpMatrix, orbitPos);
     } else {

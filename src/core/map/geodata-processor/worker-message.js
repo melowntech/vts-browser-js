@@ -1,5 +1,5 @@
 
-import {globals as globals_} from "./worker-globals.js";
+import {globals as globals_} from './worker-globals.js';
 
 //get rid of compiler mess
 var globals = globals_;
@@ -23,7 +23,7 @@ function postGroupMessage(message, arrays, signature) {
     } else {
         postMessage(message, arrays);
     }
-};
+}
 
 
 export {postGroupMessage};

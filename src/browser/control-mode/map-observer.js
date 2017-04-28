@@ -15,14 +15,14 @@ var ControlModeMapObserver = function(browser) {
     this.orientationDeltas = [];
     this.viewExtentDeltas = [];
 
-    this["drag"] = this.drag;
-    this["wheel"] = this.wheel;
-    this["tick"] = this.tick;
-    this["reset"] = this.reset;
-    this["keyup"] = this.keyup;
-    this["keydown"] = this.keydown;
-    this["keypress"] = this.keypress;
-    this["doubleclick"] = this.doubleclick;
+    this['drag'] = this.drag;
+    this['wheel'] = this.wheel;
+    this['tick'] = this.tick;
+    this['reset'] = this.reset;
+    this['keyup'] = this.keyup;
+    this['keydown'] = this.keydown;
+    this['keypress'] = this.keypress;
+    this['doubleclick'] = this.doubleclick;
     
     this.retinaFactor = 1.0 / Math.max(1.0,(window.devicePixelRatio || 1) - 1);
 };
@@ -49,28 +49,28 @@ ControlModeMapObserver.prototype.drag = function(event) {
 
 
     if (touches == 2) {//} && /*event.getDragButton("middle")*/ zoom != 0 && this.config.zoomAllowed) {
-        if (pos.getViewMode() != "obj") {
+        if (pos.getViewMode() != 'obj') {
             return;
         }
         
-        if (event.getTouchParameter("touchMode") == "pan" && this.config.rotationAllowed) {
-            var pan = event.getTouchParameter("touchPanDelta");
+        if (event.getTouchParameter('touchMode') == 'pan' && this.config.rotationAllowed) {
+            var pan = event.getTouchParameter('touchPanDelta');
             var sensitivity = this.config.sensitivity[1] * this.retinaFactor;
             this.orientationDeltas.push([delta[0] * sensitivity, 
-                                         -delta[1] * sensitivity, 0]);
-            this.browser.callListener("map-position-rotated", {});
+                -delta[1] * sensitivity, 0]);
+            this.browser.callListener('map-position-rotated', {});
         } else if (this.config.zoomAllowed) {
-            var factor = 1.0 + (event.getTouchParameter("touchDistanceDelta") > 1.0 ? -1 : 1)*0.01;
+            var factor = 1.0 + (event.getTouchParameter('touchDistanceDelta') > 1.0 ? -1 : 1)*0.01;
             this.viewExtentDeltas.push(factor);
             this.reduceFloatingHeight(0.8);
-            this.browser.callListener("map-position-zoomed", {});
+            this.browser.callListener('map-position-zoomed', {});
         }
         
-    } else if ((event.getDragButton("left") && !modifierKey)
+    } else if ((event.getDragButton('left') && !modifierKey)
         && this.config.panAllowed) { //pan
             
-        if (pos.getHeightMode() == "fix") {
-            var pos2 = map.convertPositionHeightMode(pos, "float", true);
+        if (pos.getHeightMode() == 'fix') {
+            var pos2 = map.convertPositionHeightMode(pos, 'float', true);
             if (pos2 != null) {
                 pos = pos2;
                 this.setPosition(pos);
@@ -81,21 +81,21 @@ ControlModeMapObserver.prototype.drag = function(event) {
             var fovCorrection = (fov > 0.01 && fov < 179) ? (1.0 / Math.tan(math.radians(fov*0.5))) : 1.0;
             var azimuth = math.radians(azimuthDistance[0]);
             var forward = [Math.sin(azimuth), //direction vector x
-                           Math.cos(azimuth), //direction vector y
-                           azimuthDistance[1] * fovCorrection * sensitivity, azimuthDistance[0], //distance and azimut
-                           coords[0], coords[1]]; //coords
+                Math.cos(azimuth), //direction vector y
+                azimuthDistance[1] * fovCorrection * sensitivity, azimuthDistance[0], //distance and azimut
+                coords[0], coords[1]]; //coords
             
             this.coordsDeltas.push(forward);
             this.reduceFloatingHeight(0.9);
-            this.browser.callListener("map-position-panned", {});
+            this.browser.callListener('map-position-panned', {});
         }
-    } else if (((touches <= 1 && event.getDragButton("right")) || event.getDragButton("middle") || modifierKey) 
+    } else if (((touches <= 1 && event.getDragButton('right')) || event.getDragButton('middle') || modifierKey) 
                && this.config.rotationAllowed) { //rotate
                    
         var sensitivity = this.config.sensitivity[1] * this.retinaFactor;
         this.orientationDeltas.push([delta[0] * sensitivity,
-                                     -delta[1] * sensitivity, 0]);
-        this.browser.callListener("map-position-rotated", {});
+            -delta[1] * sensitivity, 0]);
+        this.browser.callListener('map-position-rotated', {});
     }
 };
 
@@ -120,13 +120,13 @@ ControlModeMapObserver.prototype.wheel = function(event) {
         pos.setFov(fov);
         map.setPosition(pos);
     } else {
-        if (pos.getViewMode() != "obj") {
+        if (pos.getViewMode() != 'obj') {
             return;
         }
         
         this.viewExtentDeltas.push(factor);
         this.reduceFloatingHeight(0.8);
-        this.browser.callListener("map-position-zoomed", {});
+        this.browser.callListener('map-position-zoomed', {});
     }
 };
 
@@ -149,17 +149,17 @@ ControlModeMapObserver.prototype.doubleclick = function(event) {
     var coords = event.getMouseCoords();
 
     //get hit coords with fixed height
-    var mapCoords = map.getHitCoords(coords[0], coords[1], "fix");
+    var mapCoords = map.getHitCoords(coords[0], coords[1], 'fix');
     
     if (mapCoords) {
         var pos = map.getPosition();
         pos.setCoords(mapCoords);
-        pos = map.convertPositionHeightMode(pos, "fix");
+        pos = map.convertPositionHeightMode(pos, 'fix');
         pos.setHeight(mapCoords[2]);
         //pos = map.convertPositionHeightMode(pos, "fix");
         //pos.setPositionHeight(0);
         
-        this.browser.autopilot.flyTo(pos, {"mode" : "direct", "maxDuration" : 2000 });
+        this.browser.autopilot.flyTo(pos, {'mode' : 'direct', 'maxDuration' : 2000 });
     }
 };
 
@@ -189,8 +189,8 @@ ControlModeMapObserver.prototype.reduceFloatingHeight = function(factor) {
     var pos = map.getPosition();
     var coords = pos.getCoords();
     
-    if (pos.getHeightMode() == "float" &&
-        pos.getViewMode() == "obj") {
+    if (pos.getHeightMode() == 'float' &&
+        pos.getViewMode() == 'obj') {
         if (coords[2] != 0) {
             coords[2] *= factor;
 
@@ -208,8 +208,8 @@ ControlModeMapObserver.prototype.reduceFloatingHeight = function(factor) {
 ControlModeMapObserver.prototype.isNavigationSRSProjected = function() {
     var map = this.browser.getMap();
     var rf = map.getReferenceFrame();
-    var srs = map.getSrsInfo(rf["navigationSrs"]);
-    return (srs) ? (srs["type"] == "projected") : false; 
+    var srs = map.getSrsInfo(rf['navigationSrs']);
+    return (srs) ? (srs['type'] == 'projected') : false; 
 };
 
 
@@ -282,7 +282,7 @@ ControlModeMapObserver.prototype.tick = function(event) {
         //console.log("tick: " + azimuth + " " + distance);
 
         //apply final azimuth and distance
-        if (this.config.navigationMode == "free") { 
+        if (this.config.navigationMode == 'free') { 
             var correction = pos.getOrientation()[0];
             pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance);
             correction = pos.getOrientation()[0] - correction;
@@ -432,13 +432,13 @@ function constrainMapPosition(browser, pos) {
     var distance = (pos.getViewExtent()*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
 
     //reduce tilt whe you are far off the planet
-    if (pos.getViewMode() == "obj") {
+    if (pos.getViewMode() == 'obj') {
         var rf = map.getReferenceFrame();
-        var srs = map.getSrsInfo(rf["navigationSrs"]);
+        var srs = map.getSrsInfo(rf['navigationSrs']);
         
         
-        if (srs["a"]) {
-            var factor = Math.min(distance / (srs["a"]*0.5), 1.0);
+        if (srs['a']) {
+            var factor = Math.min(distance / (srs['a']*0.5), 1.0);
             var maxTilt = 20 + ((-90) - 20) * factor; 
             var minTilt = -90; 
             
@@ -457,7 +457,7 @@ function constrainMapPosition(browser, pos) {
     }
 
     //do not allow camera under terrain
-    var camPos = map.getPositionCameraCoords(pos, "float");
+    var camPos = map.getPositionCameraCoords(pos, 'float');
     //var cameraConstrainDistance = 1;
     var cameraConstrainDistance = (minVE*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
     cameraConstrainDistance *= 0.5; //divice by 2 to alow 45deg tilt in maximum zoom
@@ -479,7 +479,7 @@ function constrainMapPosition(browser, pos) {
                 o[1] = value;
                 pos.setOrientation(o);
 
-                if (map.getPositionCameraCoords(pos, "float")[2] < hmax) {
+                if (map.getPositionCameraCoords(pos, 'float')[2] < hmax) {
                     return getFinalOrientation(start, value, level+1);
                 } else {
                     return getFinalOrientation(value, end, level+1);
@@ -493,7 +493,7 @@ function constrainMapPosition(browser, pos) {
     }
 
     return pos;
-};
+}
 
 
 export {ControlModeMapObserver, constrainMapPosition};

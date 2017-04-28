@@ -16,15 +16,15 @@ var ControlModePano = function(browser) {
 
     this.impulse = [0, 0];
 
-    this["drag"] = this.drag;
-    this["down"] = this.drag;
-    this["up"] = this.drag;
-    this["wheel"] = this.wheel;
-    this["tick"] = this.tick;
-    this["reset"] = this.reset;
-    this["keyup"] = this.keyup;
-    this["keydown"] = this.keydown;
-    this["keypress"] = this.keypress;
+    this['drag'] = this.drag;
+    this['down'] = this.drag;
+    this['up'] = this.drag;
+    this['wheel'] = this.wheel;
+    this['tick'] = this.tick;
+    this['reset'] = this.reset;
+    this['keyup'] = this.keyup;
+    this['keydown'] = this.keydown;
+    this['keypress'] = this.keypress;
 };
 
 

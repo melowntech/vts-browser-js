@@ -51,7 +51,7 @@ Inspector.prototype.enableInspector = function() {
         this.replay.init();
         this.stylesheets.init();
 
-        this.core.on("map-update", this.onMapUpdate.bind(this));
+        this.core.on('map-update', this.onMapUpdate.bind(this));
         this.enabled = true;
     }
 };
@@ -113,12 +113,12 @@ Inspector.prototype.onMapUpdate = function(string) {
         }
         
         renderer.drawLineString({
-            "points" : slines,
-            "size" : 2.0,
-            "color" : [0,128,255,255],
-            "depthTest" : false,
-            "blend" : false
-            });            
+            'points' : slines,
+            'size' : 2.0,
+            'color' : [0,128,255,255],
+            'depthTest' : false,
+            'blend' : false
+        });            
 
         var lines = this.replay.cameraLines3;
         for (var i = 0, li = lines.length; i < li; i++) {
@@ -128,12 +128,12 @@ Inspector.prototype.onMapUpdate = function(string) {
             }
 
             renderer.drawLineString({
-                "points" : slines,
-                "size" : 2.0,
-                "color" : [0,255,128,255],
-                "depthTest" : false,
-                "blend" : false
-                });   
+                'points' : slines,
+                'size' : 2.0,
+                'color' : [0,255,128,255],
+                'depthTest' : false,
+                'blend' : false
+            });   
         }
 
         var lines = this.replay.cameraLines2;
@@ -144,12 +144,12 @@ Inspector.prototype.onMapUpdate = function(string) {
             }
 
             renderer.drawLineString({
-                "points" : slines,
-                "size" : 2.0,
-                "color" : [0,255,255,255],
-                "depthTest" : false,
-                "blend" : false
-                });   
+                'points' : slines,
+                'size' : 2.0,
+                'color' : [0,255,255,255],
+                'depthTest' : false,
+                'blend' : false
+            });   
         }
 
 
@@ -183,7 +183,7 @@ Inspector.prototype.onMapUpdate = function(string) {
         ];
     
         //multiply cube matrix with camera view matrix
-        mat4.multiply(cameInfo["view-matrix"], mv, mv);
+        mat4.multiply(cameInfo['view-matrix'], mv, mv);
     
         var norm = [
             0,0,0,
@@ -198,15 +198,15 @@ Inspector.prototype.onMapUpdate = function(string) {
     
         //draw cube
         renderer.drawMesh({
-                "mesh" : this.replay.frustumMesh,
-                "texture" : null,
-                "shader" : "shaded",
-                "shader-variables" : {
-                    "uMV" : ["mat4", mv],
-                    "uNorm" : ["mat3", norm],
-                    "uMaterial" : ["mat4", material]
-                }
-            });
+            'mesh' : this.replay.frustumMesh,
+            'texture' : null,
+            'shader' : 'shaded',
+            'shader-variables' : {
+                'uMV' : ['mat4', mv],
+                'uNorm' : ['mat3', norm],
+                'uMaterial' : ['mat4', material]
+            }
+        });
     }
     
     if (this.drawRadar && this.circleTexture) {
@@ -241,7 +241,7 @@ Inspector.prototype.onMapUpdate = function(string) {
                 var pos2 = map.movePositionCoordsTo(pos, math.degrees(a), l);
                 var coords = pos2.getCoords();
                 
-                var screenCoords = map.convertCoordsFromNavToCanvas([coords[0], coords[1], 0], "float", this.radarLod);
+                var screenCoords = map.convertCoordsFromNavToCanvas([coords[0], coords[1], 0], 'float', this.radarLod);
 
                 cbuffer[j * count + i] = screenCoords;
             }            
@@ -256,12 +256,12 @@ Inspector.prototype.onMapUpdate = function(string) {
             }
             
             renderer.drawLineString({
-                "points" : lbuffer,
-                "size" : 2.0,
-                "color" : [0,255,255,255],
-                "depthTest" : false,
-                "blend" : false
-                });            
+                'points' : lbuffer,
+                'size' : 2.0,
+                'color' : [0,255,255,255],
+                'depthTest' : false,
+                'blend' : false
+            });            
         }
 
 
@@ -271,24 +271,24 @@ Inspector.prototype.onMapUpdate = function(string) {
             }
             
             renderer.drawLineString({
-                "points" : lbuffer,
-                "size" : 2.0,
-                "color" : [0,255,255,255],
-                "depthTest" : false,
-                "blend" : false
-                });            
+                'points' : lbuffer,
+                'size' : 2.0,
+                'color' : [0,255,255,255],
+                'depthTest' : false,
+                'blend' : false
+            });            
         }
 
         for (var i = 0, li = cbuffer.length; i < li; i++) {
             var p = cbuffer[i];
             renderer.drawImage({
-                "rect" : [p[0]-10, p[1]-10, 20, 20],
-                "texture" : this.circleTexture,
-                "color" : [255,0,255,255],
-                "depth" : p[2],
-                "depthTest" : false,
-                "blend" : true
-                });
+                'rect' : [p[0]-10, p[1]-10, 20, 20],
+                'texture' : this.circleTexture,
+                'color' : [255,0,255,255],
+                'depth' : p[2],
+                'depthTest' : false,
+                'blend' : true
+            });
         }
     }
 };

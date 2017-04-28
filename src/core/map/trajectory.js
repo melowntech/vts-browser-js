@@ -14,19 +14,19 @@ var MapTrajectory = function(map, p1, p2, options) {
     var hm1 = this.p1.getHeightMode();
     var hm2 = this.p2.getHeightMode();
     
-    if (hm1 == "fix" && hm2 == "float") {
-        this.p1 = this.map.convert.convertPositionHeightMode(this.p1, "float", true);
-    } else if (hm1 == "float" && hm2 == "fix") {
-        this.p1 = this.map.convert.convertPositionHeightMode(this.p1, "fix", true);
+    if (hm1 == 'fix' && hm2 == 'float') {
+        this.p1 = this.map.convert.convertPositionHeightMode(this.p1, 'float', true);
+    } else if (hm1 == 'float' && hm2 == 'fix') {
+        this.p1 = this.map.convert.convertPositionHeightMode(this.p1, 'fix', true);
     } 
     
     var vm1 = this.p1.getViewMode();
     var vm2 = this.p2.getViewMode();
 
-    if (vm1 == "subj" && vm2 == "obj") {
-        this.p2 = this.map.convert.convertPositionViewMode(this.p2, "subj");
-    } else if (vm1 == "obj" && vm2 == "subj") {
-        this.p1 = this.map.convert.convertPositionViewMode(this.p1, "subj");
+    if (vm1 == 'subj' && vm2 == 'obj') {
+        this.p2 = this.map.convert.convertPositionViewMode(this.p2, 'subj');
+    } else if (vm1 == 'obj' && vm2 == 'subj') {
+        this.p1 = this.map.convert.convertPositionViewMode(this.p1, 'subj');
     } 
     
     this.p1.pos[5] = this.p1.pos[5] < 0 ? (360 + (this.p1.pos[5] % 360)) : (this.p1.pos[5] % 360);  
@@ -34,40 +34,40 @@ var MapTrajectory = function(map, p1, p2, options) {
     
     this.pp1 = this.p1.clone();
 
-    this.mode = options["mode"] || "auto";
-    this.submode = options["submode"] || "none";
-    this.submode = "none";
-    this.maxHeight = options["maxHeight"] || 1000000000;
-    this.minDuration = options["minDuration"] || 0;
-    this.maxDuration = options["maxDuration"] || 10000;
-    this.samplePeriod = options["samplePeriod"] || 10;
-    this.fade = options["fade"] || "none";
-    this.fadePower = options["fadePower"] || 1;
+    this.mode = options['mode'] || 'auto';
+    this.submode = options['submode'] || 'none';
+    this.submode = 'none';
+    this.maxHeight = options['maxHeight'] || 1000000000;
+    this.minDuration = options['minDuration'] || 0;
+    this.maxDuration = options['maxDuration'] || 10000;
+    this.samplePeriod = options['samplePeriod'] || 10;
+    this.fade = options['fade'] || 'none';
+    this.fadePower = options['fadePower'] || 1;
 
-    this.pv = options["pv"] || 0.15;
+    this.pv = options['pv'] || 0.15;
 
     if (!this.map.getNavigationSrs().isProjected()) {
         this.geodesic = this.map.measure.getGeodesic();
     } 
     
-    if (options["distanceAzimuth"]) {
+    if (options['distanceAzimuth']) {
         this.distanceAzimuth = true;
         
         this.pp2 = this.p1.clone();
-        if (options["destHeight"]) {
-            this.pp2.setHeight(options["destHeight"]);
+        if (options['destHeight']) {
+            this.pp2.setHeight(options['destHeight']);
         }
 
-        if (options["destOrientation"]) {
-            this.pp2.setHeight(options["destOrientation"]);
+        if (options['destOrientation']) {
+            this.pp2.setHeight(options['destOrientation']);
         }
         
-        if (options["destFov"]) {
-            this.pp2.setHeight(options["destFov"]);
+        if (options['destFov']) {
+            this.pp2.setHeight(options['destFov']);
         }
 
-        this.geoAzimuth = options["azimuth"] || 0; 
-        this.geoDistance = options["distance"] || 100;
+        this.geoAzimuth = options['azimuth'] || 0; 
+        this.geoDistance = options['distance'] || 100;
         this.distance = this.geoDistance; 
         this.azimuth = this.geoAzimuth % 360;
         this.azimuth = (this.azimuth < 0) ? (360 + this.azimuth) : this.azimuth;
@@ -96,12 +96,12 @@ var MapTrajectory = function(map, p1, p2, options) {
 
     this.detectMode();
     this.detectDuration();
-    this.detectFlightHeight(options["height"]);
+    this.detectFlightHeight(options['height']);
 };
 
 
 MapTrajectory.prototype.detectFlightHeight = function(flightHeight) {
-    if (this.mode == "ballistic") {
+    if (this.mode == 'ballistic') {
         this.flightHeight = Math.max(this.pp1.getHeight(), this.pp2.getHeight());
         this.flightHeight += flightHeight || (this.distance * 0.5);
         this.flightHeight = Math.min(this.flightHeight, this.maxHeight);
@@ -111,8 +111,8 @@ MapTrajectory.prototype.detectFlightHeight = function(flightHeight) {
 
 
 MapTrajectory.prototype.detectMode = function() {
-    if (this.mode == "auto") {
-        this.mode = (this.distance > 2000) ? "ballistic" : "direct";
+    if (this.mode == 'auto') {
+        this.mode = (this.distance > 2000) ? 'ballistic' : 'direct';
     }
 };
 
@@ -142,13 +142,13 @@ MapTrajectory.prototype.detectDuration = function() {
             this.duration = 10000;
         }
 
-        if (this.mode != "direct") {
-           this.duration *= 1.8;
-           this.headingDuration *= 1.8;
+        if (this.mode != 'direct') {
+            this.duration *= 1.8;
+            this.headingDuration *= 1.8;
         }
     }
     
-    if (this.mode != "direct") {
+    if (this.mode != 'direct') {
         var minDuration = 3 * this.headingDuration; 
         this.duration = Math.max(this.duration, minDuration);
         
@@ -172,44 +172,44 @@ MapTrajectory.prototype.generate = function() {
 
         var p = this.pp1.clone();
         
-        if (this.mode == "direct") {
+        if (this.mode == 'direct') {
 
             var x = factor;
             
             switch(this.fade) {
-                case "in":
-                    switch(this.fadePower) {
-                        case 1: factor = x*x; break;
-                        case 2: factor = x*x*x; break;
-                        case 3: factor = x*x*x*x; break;
-                        case 4: factor = x*x*x*x*x; break;
-                        case 5: factor = x*x*x*x*x*x; break;
-                        case 6: factor = x*x*x*x*x*x*x; break;
-                    }
-                    break;
+            case 'in':
+                switch(this.fadePower) {
+                case 1: factor = x*x; break;
+                case 2: factor = x*x*x; break;
+                case 3: factor = x*x*x*x; break;
+                case 4: factor = x*x*x*x*x; break;
+                case 5: factor = x*x*x*x*x*x; break;
+                case 6: factor = x*x*x*x*x*x*x; break;
+                }
+                break;
 
-                case "out":
-                    x = 1 - x;
-                    switch(this.fadePower) {
-                        case 1: factor = 1 - (x*x); break;
-                        case 2: factor = 1 - (x*x*x); break;
-                        case 3: factor = 1 - (x*x*x*x); break;
-                        case 4: factor = 1 - (x*x*x*x*x); break;
-                        case 5: factor = 1 - (x*x*x*x*x*x); break;
-                        case 6: factor = 1 - (x*x*x*x*x*x*x); break;
-                    }
-                    break;
+            case 'out':
+                x = 1 - x;
+                switch(this.fadePower) {
+                case 1: factor = 1 - (x*x); break;
+                case 2: factor = 1 - (x*x*x); break;
+                case 3: factor = 1 - (x*x*x*x); break;
+                case 4: factor = 1 - (x*x*x*x*x); break;
+                case 5: factor = 1 - (x*x*x*x*x*x); break;
+                case 6: factor = 1 - (x*x*x*x*x*x*x); break;
+                }
+                break;
 
-                case "inout":
-                    switch(this.fadePower) {
-                        case 1: factor = x*x*(3 - 2*x); break;
-                        case 2: factor = x*x*x * (x * (6*x - 15) + 10); break;
-                        case 3: factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); break;
-                        case 4: factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); break;
-                        case 5: factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); break;
-                        case 6: factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); break;
-                    }
-                    break;
+            case 'inout':
+                switch(this.fadePower) {
+                case 1: factor = x*x*(3 - 2*x); break;
+                case 2: factor = x*x*x * (x * (6*x - 15) + 10); break;
+                case 3: factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); break;
+                case 4: factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); break;
+                case 5: factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); x = factor; factor = x*x*(3 - 2*x); break;
+                case 6: factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); x = factor; factor = x*x*x * (x * (6*x - 15) + 10); break;
+                }
+                break;
             }
             
             p.setCoords(this.getInterpolatedCoords(factor));
@@ -235,7 +235,7 @@ MapTrajectory.prototype.generate = function() {
             //factor2 includes slow start and end of flight
             var factor2 =  this.getSmoothFactor(time);
             
-            if (this.submode == "piha") {
+            if (this.submode == 'piha') {
                 
                 var distanceFactor = (this.distance / this.duration * (time - this.duration / (2 * Math.PI) * Math.sin(2 * Math.PI / this.duration * time))) / this.distance;
 
@@ -305,12 +305,12 @@ MapTrajectory.prototype.getInterpolatedCoords = function(factor) {
 
 
         return [ res.lon2, res.lat2,
-                 c1[2] + (c2[2] - c1[2]) * factor, azimut];
+            c1[2] + (c2[2] - c1[2]) * factor, azimut];
 
     } else {
         return [ c1[0] + (c2[0] - c1[0]) * factor,
-                 c1[1] + (c2[1] - c1[1]) * factor,
-                 c1[2] + (c2[2] - c1[2]) * factor ];
+            c1[1] + (c2[1] - c1[1]) * factor,
+            c1[2] + (c2[2] - c1[2]) * factor ];
     }
 };
 
@@ -329,8 +329,8 @@ MapTrajectory.prototype.getInterpolatedOrinetation = function(o1, o2, factor) {
     }
 
     return [ o1[0] + od1 * factor,
-             o1[1] + od2 * factor,
-             o1[2] + od3 * factor ];
+        o1[1] + od2 * factor,
+        o1[2] + od3 * factor ];
 };
 
 

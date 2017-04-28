@@ -7,7 +7,7 @@ var dom = Dom_;
 var UIControlCompass = function(ui, visible) {
     this.ui = ui;
     this.browser = ui.browser;
-    this.control = this.ui.addControl("compass",
+    this.control = this.ui.addControl('compass',
       '<div id="vts-compass">'
 
         + '<div id="vts-compass-frame">'
@@ -24,16 +24,16 @@ var UIControlCompass = function(ui, visible) {
 
       + ' </div>', visible);
 
-    var compass = this.control.getElement("vts-compass");
+    var compass = this.control.getElement('vts-compass');
     compass.setDraggableState(true);
-    compass.on("drag", this.onDrag.bind(this));
-    compass.on("dblclick", this.onDoubleClick.bind(this));
+    compass.on('drag', this.onDrag.bind(this));
+    compass.on('dblclick', this.onDoubleClick.bind(this));
 
-    this.image = this.control.getElement("vts-compass-compass");
-    this.image2 = this.control.getElement("vts-compass-compass2");
-    this.image3 = this.control.getElement("vts-compass-compass3");
+    this.image = this.control.getElement('vts-compass-compass');
+    this.image2 = this.control.getElement('vts-compass-compass2');
+    this.image3 = this.control.getElement('vts-compass-compass3');
     
-    this.lastStyle = "";
+    this.lastStyle = '';
 };
 
 
@@ -45,7 +45,7 @@ UIControlCompass.prototype.update = function() {
 
     var pos = map.getPosition();
     var orientation = pos.getOrientation();
-    var value = "rotateX("+(Math.round(orientation[1]+90)*0.7)+"deg) " + "rotateZ("+Math.round(-orientation[0]-45)+"deg)";
+    var value = 'rotateX('+(Math.round(orientation[1]+90)*0.7)+'deg) ' + 'rotateZ('+Math.round(-orientation[0]-45)+'deg)';
 
     if (value != this.lastStyle) {
         this.lastStyle = value;
@@ -69,7 +69,7 @@ UIControlCompass.prototype.onDrag = function(event) {
     
     if (controller.orientationDeltas) {
         controller.orientationDeltas.push([delta[0] * sensitivity,
-                                           -delta[1] * sensitivity, 0]);
+            -delta[1] * sensitivity, 0]);
     }
 };
 

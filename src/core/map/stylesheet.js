@@ -16,7 +16,7 @@ var MapStylesheet = function(map, id, url) {
     this.size = 0;
     this.fileSize = 0;
     
-    if (typeof url === "object") {
+    if (typeof url === 'object') {
         this.data = url;
         this.loadState = 2;
     } else {

@@ -16,7 +16,7 @@ var MapGeodata = MapGeodata_;
 var MapDraw = function(map) {
     this.map = map;
     this.config = map.config;
-    this.isProjected = map.getNavigationSrs().isProjected()
+    this.isProjected = map.getNavigationSrs().isProjected();
     this.isGeocent = map.isGeocent;
 
     this.renderer = map.renderer;
@@ -50,7 +50,7 @@ var MapDraw = function(map) {
         drawFog : this.config.mapFog,
         debugTextSize : 2.0,
         ignoreTexelSize : false
-    }
+    };
 
     this.fogDensity = 0;
     this.zFactor = 0;
@@ -65,9 +65,9 @@ var MapDraw = function(map) {
 
     this.drawCounter = 0;
     this.drawChannel = 0;
-    this.drawChannelNames = ["base", "hit"];
+    this.drawChannelNames = ['base', 'hit'];
 
-    this.planetRadius = this.isGeocent ? map.getNavigationSrs().getSrsInfo()["a"] : 100;
+    this.planetRadius = this.isGeocent ? map.getNavigationSrs().getSrsInfo()['a'] : 100;
     this.tileBuffer = new Array(500);
     this.processBuffer = new Array(60000);
     this.processBuffer2 = new Array(60000);
@@ -132,9 +132,9 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         gpu.setViewport();
 
         map.visibleCredits = {
-          imagery : {},
-          glueImagery : {},
-          mapdata : {}
+            imagery : {},
+            glueImagery : {},
+            mapdata : {}
         };
     }
 
@@ -356,7 +356,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
             if (layer.ready && layer.tree && 
                 (!layer.geodata || (layer.stylesheet && layer.stylesheet.isReady())) && this.drawChannel == 0) {
                 
-                if (layer.type == "geodata") {
+                if (layer.type == 'geodata') {
                     this.drawMonoliticGeodata(layer);
                 } else {
                     layer.tree.draw(camInfo);
@@ -422,18 +422,18 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     }
 
     //draw skydome before geodata
-    if (!projected && debug.drawFog && map.referenceFrame.id == "melown2015") {    
+    if (!projected && debug.drawFog && map.referenceFrame.id == 'melown2015') {    
 
         //var camInfo = this.measure.getPositionCameraInfo(this.position, true);
         var navigationSrsInfo = map.getNavigationSrs().getSrsInfo();
 
-        var earthRadius =  navigationSrsInfo["a"];
+        var earthRadius =  navigationSrsInfo['a'];
         var atmoSize = 50000;
         
         var cameraPosToEarthCenter = [0,0,0,0];
         vec3.normalize(camera.position, cameraPosToEarthCenter);
         
-        var horizAngle = Math.atan(1.0/(vec3.length(camera.position) / navigationSrsInfo["a"]));  //cotan = cameraDistFromCenter / earthRadius
+        var horizAngle = Math.atan(1.0/(vec3.length(camera.position) / navigationSrsInfo['a']));  //cotan = cameraDistFromCenter / earthRadius
         var horizAngle2 = (horizAngle / Math.PI * 180)*0.5;
 
         var pos = map.getPosition();
@@ -515,20 +515,20 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
 MapDraw.prototype.drawHitmap = function() {
     this.drawChannel = 1;
-    this.renderer.switchToFramebuffer("depth");
+    this.renderer.switchToFramebuffer('depth');
     this.map.renderSlots.processRenderSlots();    
-    this.renderer.switchToFramebuffer("base");
+    this.renderer.switchToFramebuffer('base');
     this.drawChannel = 0;
 };
 
 
 MapDraw.prototype.drawGeodataHitmap = function() {
     this.renderer.gpu.setState(this.drawTileState);
-    this.renderer.switchToFramebuffer("geo");
+    this.renderer.switchToFramebuffer('geo');
     //this.renderer.onlyHitLayers = true;
     this.renderer.draw.drawGpuJobs();
     //this.renderer.onlyHitLayers = false;
-    this.renderer.switchToFramebuffer("base");
+    this.renderer.switchToFramebuffer('base');
     this.geoHitMapDirty = false;
 };
 
@@ -541,29 +541,29 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
         var command = commands[i];
         
         switch (command.type) {
-            case "submesh":
+        case 'submesh':
                 
-                var mesh = command.mesh; 
-                var texture = command.texture; 
+            var mesh = command.mesh; 
+            var texture = command.texture; 
                 
-                var meshReady = (mesh && mesh.isReady(doNotLoad, priority, checkGpu));
-                var textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
+            var meshReady = (mesh && mesh.isReady(doNotLoad, priority, checkGpu));
+            var textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
                 
-                if (!(meshReady && textureReady) ) {
-                     ready = false;   
-                }
+            if (!(meshReady && textureReady) ) {
+                ready = false;   
+            }
                 
-                break;
+            break;
 
-            case "geodata":
+        case 'geodata':
                 
-                var geodataView = command.geodataView; 
+            var geodataView = command.geodataView; 
                 
-                if (!(geodataView && geodataView.isReady(doNotLoad, priority, checkGpu))) {
-                     ready = false;   
-                }
+            if (!(geodataView && geodataView.isReady(doNotLoad, priority, checkGpu))) {
+                ready = false;   
+            }
                 
-                break;
+            break;
         }
     }
     
@@ -582,55 +582,55 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
         var command = commands[i];
         
         switch (command.type) {
-            case "state":
-                this.renderer.gpu.setState(command.state);
-                break;
+        case 'state':
+            this.renderer.gpu.setState(command.state);
+            break;
 
-            case "submesh":
+        case 'submesh':
                 //this.renderer.gpu.setState(this.drawBlendedTileState);
                 
-                var mesh = command.mesh; 
-                var texture = command.texture;
+            var mesh = command.mesh; 
+            var texture = command.texture;
 
-                var meshReady = (mesh && mesh.isReady(doNotLoad, priority));
-                var textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority)));
+            var meshReady = (mesh && mesh.isReady(doNotLoad, priority));
+            var textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority)));
                 
-                if (meshReady && textureReady) {
+            if (meshReady && textureReady) {
                     //debug bbox
-                    if (this.debug.drawBBoxes && this.debug.drawMeshBBox) {
-                        mesh.submeshes[command.submesh].drawBBox(cameraPos);
-                    }
+                if (this.debug.drawBBoxes && this.debug.drawMeshBBox) {
+                    mesh.submeshes[command.submesh].drawBBox(cameraPos);
+                }
                     
-                    if (!texture) {
-                        var material = command.material;
-                        switch (material) {
+                if (!texture) {
+                    var material = command.material;
+                    switch (material) {
                             //case "fog":
-                            case "external":
-                            case "internal":
-                                material = "flat";
-                                break; 
-                        }
-                        mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha);
-                    } else {
-                        mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha);
+                    case 'external':
+                    case 'internal':
+                        material = 'flat';
+                        break; 
                     }
-
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha);
                 } else {
-                    i = i;
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha);
+                }
+
+            } else {
+                i = i;
                     //this should not happen
-                }
+            }
                 
-                break;
+            break;
                 
-            case "geodata":
+        case 'geodata':
                 
-                var geodataView = command.geodataView; 
+            var geodataView = command.geodataView; 
                 
-                if (geodataView && geodataView.isReady(doNotLoad, priority, true)) {
-                     geodataView.draw(cameraPos);
-                }
+            if (geodataView && geodataView.isReady(doNotLoad, priority, true)) {
+                geodataView.draw(cameraPos);
+            }
                 
-                break;
+            break;
         }
     }
 };
@@ -646,7 +646,7 @@ MapDraw.prototype.drawMonoliticGeodata = function(surface) {
     }
 
     if (surface.monoGeodata == null) {
-        if (typeof surface.geodataUrl === "object") {
+        if (typeof surface.geodataUrl === 'object') {
             var path = surface.geodataUrl;
         } else {
             var path = surface.getMonoGeodataUrl(surface.id);

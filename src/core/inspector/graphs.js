@@ -8,48 +8,48 @@ var InspectorGraphs = function(inspector) {
 InspectorGraphs.prototype.init = function() {
     var inspector = this.inspector;
 
-    inspector.addStyle( ""
-        + "#vts-graphs-panel {"
-            + "position:absolute;"
-            + "left:10px;"
-            + "top:10px;"
-            + "z-index: 7;"
-            + "background-color: #FFFFFF;"
-            + "padding: 5px;"
-            + "border-radius: 4px;"
-            + "font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;"
-            + "color:#000000;"
-            + "text-align: left;"
-            + "font-size: 12px;"
-            + "display:none;"
-        + "}"
+    inspector.addStyle( ''
+        + '#vts-graphs-panel {'
+            + 'position:absolute;'
+            + 'left:10px;'
+            + 'top:10px;'
+            + 'z-index: 7;'
+            + 'background-color: #FFFFFF;'
+            + 'padding: 5px;'
+            + 'border-radius: 4px;'
+            + 'font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;'
+            + 'color:#000000;'
+            + 'text-align: left;'
+            + 'font-size: 12px;'
+            + 'display:none;'
+        + '}'
 
-        + ".vts-graphs-canvas {"
-            + "border: solid 1px #bbb;"
-            + "image-rendering : pixelated;"
-        + "}"
+        + '.vts-graphs-canvas {'
+            + 'border: solid 1px #bbb;'
+            + 'image-rendering : pixelated;'
+        + '}'
 
-        + ".vts-graphs-info {"
-            + "padding: 5px 2px;"
-            + "font-size: 10px;"
-        + "}"
+        + '.vts-graphs-info {'
+            + 'padding: 5px 2px;'
+            + 'font-size: 10px;'
+        + '}'
 
-        + ".vts-graphs-button {"
-            + "padding: 2px 5px;"
-            + "display:inline-block;"
-            + "margin-right: 4px;"
-            + "border-radius: 4px;"
-            + "cursor:pointer;"
-        + "}"
+        + '.vts-graphs-button {'
+            + 'padding: 2px 5px;'
+            + 'display:inline-block;'
+            + 'margin-right: 4px;'
+            + 'border-radius: 4px;'
+            + 'cursor:pointer;'
+        + '}'
 
-        + ".vts-graphs-button:hover {"
-            + "box-shadow: 0 0 1px #0066ff;"
-        + "}"
+        + '.vts-graphs-button:hover {'
+            + 'box-shadow: 0 0 1px #0066ff;'
+        + '}'
     );
 
-    this.element = document.createElement("div");
-    this.element.id = "vts-graphs-panel";
-    this.element.innerHTML = ""
+    this.element = document.createElement('div');
+    this.element.id = 'vts-graphs-panel';
+    this.element.innerHTML = ''
         + '<canvas id="vts-graphs-render" class="vts-graphs-canvas" width="900" height="100" ></canvas>'
         + '<div id="vts-graphs-info" class="vts-graphs-info" >&FilledSmallSquare; Frame: 1234 &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: 1234 &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: 1234 &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Mesh: 1234 &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMesh: 1234</div>'
         + '<canvas id="vts-graphs-cache" class="vts-graphs-canvas" width="900" height="100" ></canvas>'
@@ -62,32 +62,32 @@ InspectorGraphs.prototype.init = function() {
         + '<div id="vts-graphs-graph" class="vts-graphs-button" >Graph: Cache</div>';
 
     this.core.element.appendChild(this.element);
-    this.canvasRender = document.getElementById("vts-graphs-render");
-    this.canvasCache = document.getElementById("vts-graphs-cache");
-    this.canvasRenderCtx = this.canvasRender.getContext("2d");
-    this.canvasCacheCtx = this.canvasCache.getContext("2d");
+    this.canvasRender = document.getElementById('vts-graphs-render');
+    this.canvasCache = document.getElementById('vts-graphs-cache');
+    this.canvasRenderCtx = this.canvasRender.getContext('2d');
+    this.canvasCacheCtx = this.canvasCache.getContext('2d');
 
-    document.getElementById("vts-graphs-rec").onclick = this.recordingPressed.bind(this);
+    document.getElementById('vts-graphs-rec').onclick = this.recordingPressed.bind(this);
 
-    document.getElementById("vts-graphs-rec").onclick = this.recordingPressed.bind(this);
-    document.getElementById("vts-graphs-ref").onclick = this.refreshPressed.bind(this);
-    document.getElementById("vts-graphs-res").onclick = this.resetPressed.bind(this);
-    document.getElementById("vts-graphs-zoom").onclick = this.zoomPressed.bind(this);
-    document.getElementById("vts-graphs-magnify").onclick = this.magnifyPressed.bind(this);
-    document.getElementById("vts-graphs-graph").onclick = this.graphPressed.bind(this);
+    document.getElementById('vts-graphs-rec').onclick = this.recordingPressed.bind(this);
+    document.getElementById('vts-graphs-ref').onclick = this.refreshPressed.bind(this);
+    document.getElementById('vts-graphs-res').onclick = this.resetPressed.bind(this);
+    document.getElementById('vts-graphs-zoom').onclick = this.zoomPressed.bind(this);
+    document.getElementById('vts-graphs-magnify').onclick = this.magnifyPressed.bind(this);
+    document.getElementById('vts-graphs-graph').onclick = this.graphPressed.bind(this);
 
-    document.getElementById("vts-graphs-render").onmousemove = this.onMouseMove.bind(this);
-    document.getElementById("vts-graphs-render").onmouseout = this.onMouseOut.bind(this);
-    document.getElementById("vts-graphs-cache").onmousemove = this.onMouseMove.bind(this);
-    document.getElementById("vts-graphs-cache").onmouseout = this.onMouseOut.bind(this);
+    document.getElementById('vts-graphs-render').onmousemove = this.onMouseMove.bind(this);
+    document.getElementById('vts-graphs-render').onmouseout = this.onMouseOut.bind(this);
+    document.getElementById('vts-graphs-cache').onmousemove = this.onMouseMove.bind(this);
+    document.getElementById('vts-graphs-cache').onmouseout = this.onMouseOut.bind(this);
 
-    this.element.addEventListener("mouseup", inspector.doNothing.bind(this), true);
-    this.element.addEventListener("mousedown", inspector.doNothing.bind(this), true);
-    this.element.addEventListener("mousewheel", inspector.doNothing.bind(this), false);
-    this.element.addEventListener("dblclick", inspector.doNothing.bind(this), false);
+    this.element.addEventListener('mouseup', inspector.doNothing.bind(this), true);
+    this.element.addEventListener('mousedown', inspector.doNothing.bind(this), true);
+    this.element.addEventListener('mousewheel', inspector.doNothing.bind(this), false);
+    this.element.addEventListener('dblclick', inspector.doNothing.bind(this), false);
 
-    this.zoom = "max";
-    this.graph = "Cache";
+    this.zoom = 'max';
+    this.graph = 'Cache';
     this.refresh = true;
 
     this.panelVisible = false;
@@ -95,14 +95,14 @@ InspectorGraphs.prototype.init = function() {
 
 
 InspectorGraphs.prototype.showPanel = function() {
-    this.element.style.display = "block";
+    this.element.style.display = 'block';
     this.panelVisible = true;
     this.recordingPressed(true);
 };
 
 
 InspectorGraphs.prototype.hidePanel = function() {
-    this.element.style.display = "none";
+    this.element.style.display = 'none';
     this.panelVisible = false;
     this.recordingPressed(true);
 };
@@ -151,9 +151,9 @@ InspectorGraphs.prototype.resetPressed = function() {
 
 InspectorGraphs.prototype.zoomPressed = function() {
     switch (this.zoom) {
-        case "max":     this.zoom = "120avrg"; break;
-        case "120avrg": this.zoom = "180avrg"; break;
-        case "180avrg": this.zoom = "max"; break;
+    case 'max':     this.zoom = '120avrg'; break;
+    case '120avrg': this.zoom = '180avrg'; break;
+    case '180avrg': this.zoom = 'max'; break;
     }
 
     this.updateGraphsPanel();
@@ -163,11 +163,11 @@ InspectorGraphs.prototype.zoomPressed = function() {
 
 InspectorGraphs.prototype.graphPressed = function() {
     switch (this.graph) {
-        case "Cache":      this.graph = "Polygons"; break;
-        case "Polygons":   this.graph = "Processing"; break;
-        case "Processing": this.graph = "LODs"; break;
-        case "LODs":       this.graph = "Flux"; break;
-        case "Flux":       this.graph = "Cache"; break;
+    case 'Cache':      this.graph = 'Polygons'; break;
+    case 'Polygons':   this.graph = 'Processing'; break;
+    case 'Processing': this.graph = 'LODs'; break;
+    case 'LODs':       this.graph = 'Flux'; break;
+    case 'Flux':       this.graph = 'Cache'; break;
     }
 
     this.updateGraphsPanel();
@@ -179,17 +179,17 @@ InspectorGraphs.prototype.magnifyPressed = function() {
     this.magnify = !this.magnify;
 
     if (this.magnify) {
-        this.canvasRender.style.width = "1400px";
-        this.canvasRender.style.height = "200px";
-        this.canvasCache.style.width = "1400px";
-        this.canvasCache.style.height = "200px";
-        document.getElementById("vts-graphs-magnify").innerHTML = "Magnify On";
+        this.canvasRender.style.width = '1400px';
+        this.canvasRender.style.height = '200px';
+        this.canvasCache.style.width = '1400px';
+        this.canvasCache.style.height = '200px';
+        document.getElementById('vts-graphs-magnify').innerHTML = 'Magnify On';
     } else {
-        this.canvasRender.style.width = "900px";
-        this.canvasRender.style.height = "100px";
-        this.canvasCache.style.width = "900px";
-        this.canvasCache.style.height = "100px";
-        document.getElementById("vts-graphs-magnify").innerHTML = "Magnify Off";
+        this.canvasRender.style.width = '900px';
+        this.canvasRender.style.height = '100px';
+        this.canvasCache.style.width = '900px';
+        this.canvasCache.style.height = '100px';
+        document.getElementById('vts-graphs-magnify').innerHTML = 'Magnify Off';
     }
 
     this.updateGraphsPanel();
@@ -205,32 +205,32 @@ InspectorGraphs.prototype.updateGraphsPanel = function() {
     }
 
     if (map.stats.recordGraphs) {
-        document.getElementById("vts-graphs-rec").innerHTML = "Recording On";
+        document.getElementById('vts-graphs-rec').innerHTML = 'Recording On';
     } else {
-        document.getElementById("vts-graphs-rec").innerHTML = "Recording Off";
+        document.getElementById('vts-graphs-rec').innerHTML = 'Recording Off';
     }
 
     if (this.refresh) {
-        document.getElementById("vts-graphs-ref").innerHTML = "Refresh On";
+        document.getElementById('vts-graphs-ref').innerHTML = 'Refresh On';
     } else {
-        document.getElementById("vts-graphs-ref").innerHTML = "Refresh Off";
+        document.getElementById('vts-graphs-ref').innerHTML = 'Refresh Off';
     }
 
     switch (this.zoom) {
-        case "max":
-            document.getElementById("vts-graphs-zoom").innerHTML = "Scale: Max value";
-            break;
+    case 'max':
+        document.getElementById('vts-graphs-zoom').innerHTML = 'Scale: Max value';
+        break;
 
-        case "120avrg":
-            document.getElementById("vts-graphs-zoom").innerHTML = "Scale: 100% Avrg";
-            break;
+    case '120avrg':
+        document.getElementById('vts-graphs-zoom').innerHTML = 'Scale: 100% Avrg';
+        break;
 
-        case "180avrg":
-            document.getElementById("vts-graphs-zoom").innerHTML = "Scale: 50% Avrg";
-            break;
+    case '180avrg':
+        document.getElementById('vts-graphs-zoom').innerHTML = 'Scale: 50% Avrg';
+        break;
     }
 
-    document.getElementById("vts-graphs-graph").innerHTML = "Graph: " + this.graph;
+    document.getElementById('vts-graphs-graph').innerHTML = 'Graph: ' + this.graph;
 };
 
 
@@ -313,11 +313,11 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
         }
     }
 
-    if (this.zoom == "120avrg") {
+    if (this.zoom == '120avrg') {
         maxValue = (totalFrame / realCount) * 1.0;
     }
 
-    if (this.zoom == "180avrg") {
+    if (this.zoom == '180avrg') {
         maxValue = (totalFrame / realCount) * 0.5;
     }
 
@@ -327,28 +327,28 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
         var index = samplesIndex + i;
         index %= samples;
 
-        ctx.fillStyle="#000000";
+        ctx.fillStyle='#000000';
         ctx.fillRect(i*factorX, height, 1, -(valuesFrame[index])*factorY);
-        ctx.fillStyle="#ff0000";
+        ctx.fillStyle='#ff0000';
         ctx.fillRect(i*factorX, height, 1, -(valuesRender[index])*factorY);
 
-        ctx.fillStyle="#0000ff";
+        ctx.fillStyle='#0000ff';
         ctx.fillRect(i*factorX, height, 1, -(valuesTextures[index])*factorY);
 
         var y = height -(valuesTextures[index])*factorY;
 
-        ctx.fillStyle="#007700";
+        ctx.fillStyle='#007700';
         ctx.fillRect(i*factorX, y, 1, -(valuesMeshes[index])*factorY);
 
         y -= (valuesMeshes[index])*factorY;
 
-        ctx.fillStyle="#00ff00";
+        ctx.fillStyle='#00ff00';
         ctx.fillRect(i*factorX, y, 1, -(valuesGpuMeshes[index])*factorY);
 
     }
 
     if (this.showCursor) {
-        ctx.fillStyle="#aa00aa";
+        ctx.fillStyle='#aa00aa';
         var index = (this.cursorIndex) % samples;
         ctx.fillRect(Math.floor(index*factorX)-1, 0, 1, height);
         ctx.fillRect(Math.floor(index*factorX)+1, 0, 1, height);
@@ -367,7 +367,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                    ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + Math.round(totalGpuMeshes) +'</div>';
     }
 
-    document.getElementById("vts-graphs-info").innerHTML = str;
+    document.getElementById('vts-graphs-info').innerHTML = str;
 
     var width = this.canvasCache.width;
     var height = this.canvasCache.height;
@@ -378,7 +378,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
     ctx.clearRect(0, 0, width, height);
 
     switch (this.graph) {
-    case "Cache":
+    case 'Cache':
         {
             var factorY = height / ((map.gpuCache.maxCost+map.resourcesCache.maxCost+map.metatileCache.maxCost));
 
@@ -410,63 +410,63 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 index %= samples;
 
                 var value = valuesMetatiles[index] + valuesMeshes[index] + valuesTextures[index] + valuesGeodata[index] + valuesResources[index];
-                ctx.fillStyle="#000000";
+                ctx.fillStyle='#000000';
                 ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
                 value -= valuesResources[index];
 
-                ctx.fillStyle="#0000ff";
+                ctx.fillStyle='#0000ff';
                 ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
                 value -= valuesTextures[index];
 
-                ctx.fillStyle="#009999";
+                ctx.fillStyle='#009999';
                 ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
                 value -= valuesGeodata[index];
 
-                ctx.fillStyle="#007700";
+                ctx.fillStyle='#007700';
                 ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
                 value -= valuesMeshes[index];
 
-                ctx.fillStyle="#ff0000";
+                ctx.fillStyle='#ff0000';
                 ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
 
                 value = valuesGpu[index];
-                ctx.fillStyle="#ffff00";
+                ctx.fillStyle='#ffff00';
                 ctx.fillRect(i*factorX, height -(value)*factorY, 1, 1);
             }
 
             if (this.showCursor == true) {
                 var index = (this.cursorIndex + samplesIndex) % samples;
-                var str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles[index] + valuesResources[index] + valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources[index]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te: ' + Math.ceil(valuesTextures[index]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(valuesMeshes[index]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(valuesGeodata[index]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(valuesMetatiles[index]/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(valuesGpu[index]/(1024*1024)) + "MB" +'</div>';
+                var str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles[index] + valuesResources[index] + valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources[index]/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te: ' + Math.ceil(valuesTextures[index]/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(valuesMeshes[index]/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(valuesGeodata[index]/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(valuesMetatiles[index]/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(valuesGpu[index]/(1024*1024)) + 'MB' +'</div>';
             } else {
-                var str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles + maxResources + maxTextures + maxMeshes)/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures + maxMeshes)/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te ' + Math.ceil(maxTextures/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(maxMeshes/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(maxGeodata/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(maxMetatiles/(1024*1024)) + "MB" +
-                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(maxGpu/(1024*1024)) + "MB" +'</div>';
+                var str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles + maxResources + maxTextures + maxMeshes)/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures + maxMeshes)/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te ' + Math.ceil(maxTextures/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(maxMeshes/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(maxGeodata/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(maxMetatiles/(1024*1024)) + 'MB' +
+                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(maxGpu/(1024*1024)) + 'MB' +'</div>';
             }
 
         }
         break;
 
 
-    case "Polygons":
-    case "Processing":
+    case 'Polygons':
+    case 'Processing':
         {
             var max = 0;
             var min = 99999999999;
             var total = 0;
             var realCount = 0;
-            var values = (this.graph == "Polygons") ? stats.graphsPolygons : stats.graphsBuild;
+            var values = (this.graph == 'Polygons') ? stats.graphsPolygons : stats.graphsBuild;
 
             for (var i = 0; i < samples; i++) {
                 max = values[i] > max ? values[i] : max;
@@ -484,7 +484,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 var index = samplesIndex + i;
                 index %= samples;
 
-                ctx.fillStyle="#007700";
+                ctx.fillStyle='#007700';
                 ctx.fillRect(i*factorX, height, 1, -(values[index])*factorY);
             }
 
@@ -500,7 +500,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
         break;
 
 
-    case "LODs":
+    case 'LODs':
         {
             var max = 0;
             var values = stats.graphsLODs;
@@ -511,7 +511,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
             var factorY = height / max;
 
-            ctx.fillStyle="#000000";
+            ctx.fillStyle='#000000';
             ctx.fillRect(0, 0, width, height);
 
             for (var i = 0; i < samples; i++) {
@@ -527,7 +527,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
                 for (var j = 0, lj = lods.length; j < lj; j++) {
                     if (lods[j]) {
-                        ctx.fillStyle="hsl("+((j*23)%360)+",100%,50%)";
+                        ctx.fillStyle='hsl('+((j*23)%360)+',100%,50%)';
                         var value = Math.round((lods[j])*factorY);
                         ctx.fillRect(i*factorX, y, 1, -value);
                         y -= value;
@@ -539,7 +539,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
             if (this.showCursor) {
                 var index = (this.cursorIndex + samplesIndex) % samples;
 
-                var str = "LODs:" + values[index][0];
+                var str = 'LODs:' + values[index][0];
                 var lods = values[index][1]; 
 
                 for (var j = 0, lj = lods.length; j < lj; j++) {
@@ -549,14 +549,14 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 }
 
             } else {
-                var str = "LODs:" + values[index][0];
+                var str = 'LODs:' + values[index][0];
             }
 
             str += '</div>';
         }
         break;
 
-    case "Flux":
+    case 'Flux':
         {
             var maxCount = 0;
             var maxSize = 0;
@@ -622,7 +622,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 var y2Up = base2;
                 var y2Down = base2+1;
 
-                ctx.fillStyle="#0000aa";
+                ctx.fillStyle='#0000aa';
                 ctx.fillRect(i*factorX, y1Up, 1, -(valuesTextures[index][0][0])*factorY);
                 ctx.fillRect(i*factorX, y1Down, 1, (valuesTextures[index][1][0])*factorY);
 
@@ -634,7 +634,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 y2Up -= (valuesTextures[index][0][1])*factorY2;
                 y2Down += (valuesTextures[index][1][1])*factorY2;
 
-                ctx.fillStyle="#007700";
+                ctx.fillStyle='#007700';
                 ctx.fillRect(i*factorX, y1Up, 1, -(valuesMeshes[index][0][0])*factorY);
                 ctx.fillRect(i*factorX, y1Down, 1, (valuesMeshes[index][1][0])*factorY);
 
@@ -646,16 +646,16 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 y2Up -= (valuesMeshes[index][0][1])*factorY2;
                 y2Down += (valuesMeshes[index][1][1])*factorY2;
 
-                ctx.fillStyle="#009999";
+                ctx.fillStyle='#009999';
                 ctx.fillRect(i*factorX, y1Up, 1, -(valuesGeodata[index][0][0])*factorY);
                 ctx.fillRect(i*factorX, y1Down, 1, (valuesGeodata[index][1][0])*factorY);
 
                 ctx.fillRect(i*factorX, y2Up, 1, -(valuesGeodata[index][0][1])*factorY2);
                 ctx.fillRect(i*factorX, y2Down, 1, (valuesGeodata[index][1][1])*factorY2);
 
-                ctx.fillStyle="#aaaaaa";
+                ctx.fillStyle='#aaaaaa';
                 ctx.fillRect(0, Math.floor(height*0.5), width, 1);
-                ctx.fillStyle="#dddddd";
+                ctx.fillStyle='#dddddd';
                 ctx.fillRect(0, base, width, 1);
                 ctx.fillRect(0, base2, width, 1);
             }
@@ -663,20 +663,20 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
             if (this.showCursor) {
                 var index = (this.cursorIndex + samplesIndex) % samples;
-                var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + valuesTextures[index][0][0] + "/" + valuesTextures[index][1][0];
-                str += ' &nbsp Size +/-: ' + (valuesTextures[index][0][1]/1024/1024).toFixed(2) + "/" + (valuesTextures[index][1][1]/1024/1024).toFixed(2);
-                str += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + valuesMeshes[index][0][0] + "/" + valuesMeshes[index][1][0];
-                str += ' &nbsp Size +/-: ' + (valuesMeshes[index][0][1]/1024/1024).toFixed(2) + "/" + (valuesMeshes[index][1][1]/1024/1024).toFixed(2);
-                str += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + valuesGeodata[index][0][0] + "/" + valuesGeodata[index][1][0];
-                str += ' &nbsp Size +/-: ' + (valuesGeodata[index][0][1]/1024/1024).toFixed(2) + "/" + (valuesGeodata[index][1][1]/1024/1024).toFixed(2);
+                var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + valuesTextures[index][0][0] + '/' + valuesTextures[index][1][0];
+                str += ' &nbsp Size +/-: ' + (valuesTextures[index][0][1]/1024/1024).toFixed(2) + '/' + (valuesTextures[index][1][1]/1024/1024).toFixed(2);
+                str += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + valuesMeshes[index][0][0] + '/' + valuesMeshes[index][1][0];
+                str += ' &nbsp Size +/-: ' + (valuesMeshes[index][0][1]/1024/1024).toFixed(2) + '/' + (valuesMeshes[index][1][1]/1024/1024).toFixed(2);
+                str += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + valuesGeodata[index][0][0] + '/' + valuesGeodata[index][1][0];
+                str += ' &nbsp Size +/-: ' + (valuesGeodata[index][0][1]/1024/1024).toFixed(2) + '/' + (valuesGeodata[index][1][1]/1024/1024).toFixed(2);
                 str += '</div>';
             } else {
-                var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + maxTexPlusCount + "/" + maxTexMinusCount;
-                str += ' &nbsp Size +/-: ' + (maxTexPlusSize/1024/1024).toFixed(2) + "/" + (maxTexMinusSize/1024/1024).toFixed(2);
-                str += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + maxMeshPlusCount + "/" + maxMeshMinusCount;
-                str += ' &nbsp Size +/-: ' + (maxMeshPlusSize/1024/1024).toFixed(2) + "/" + (maxMeshMinusSize/1024/1024).toFixed(2);
-                str += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + maxGeodataPlusCount + "/" + maxGeodataMinusCount;
-                str += ' &nbsp Size +/-: ' + (maxGeodataPlusSize/1024/1024).toFixed(2) + "/" + (maxGeodataMinusSize/1024/1024).toFixed(2);
+                var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + maxTexPlusCount + '/' + maxTexMinusCount;
+                str += ' &nbsp Size +/-: ' + (maxTexPlusSize/1024/1024).toFixed(2) + '/' + (maxTexMinusSize/1024/1024).toFixed(2);
+                str += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + maxMeshPlusCount + '/' + maxMeshMinusCount;
+                str += ' &nbsp Size +/-: ' + (maxMeshPlusSize/1024/1024).toFixed(2) + '/' + (maxMeshMinusSize/1024/1024).toFixed(2);
+                str += ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Geodata Count +/-: ' + maxGeodataPlusCount + '/' + maxGeodataMinusCount;
+                str += ' &nbsp Size +/-: ' + (maxGeodataPlusSize/1024/1024).toFixed(2) + '/' + (maxGeodataMinusSize/1024/1024).toFixed(2);
                 str += '</div>';
             }
 
@@ -686,13 +686,13 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
     }
 
     if (this.showCursor) {
-        ctx.fillStyle="#aa00aa";
+        ctx.fillStyle='#aa00aa';
         var index = (this.cursorIndex) % samples;
         ctx.fillRect(Math.floor(index*factorX)-1, 0, 1, height);
         ctx.fillRect(Math.floor(index*factorX)+1, 0, 1, height);
     }
 
-    document.getElementById("vts-graphs-info2").innerHTML = str;
+    document.getElementById('vts-graphs-info2').innerHTML = str;
 };
 
 

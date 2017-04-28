@@ -2,7 +2,7 @@
 
 var UIControlFallback = function(ui, visible) {
     this.ui = ui;
-    this.control = this.ui.addControl("fallback",
+    this.control = this.ui.addControl('fallback',
       '<div class="vts-fallback">'
 
         + '<div class="vts-fallback-text">'

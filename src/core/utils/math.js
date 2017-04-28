@@ -85,21 +85,21 @@ math.rotationMatrix = function(axis, angle) {
             0, ca,-sa, 0,
             0, sa, ca, 0,
             0,  0,  0, 1 ];
-            break;
+        break;
     case 1:
         m = [
             ca, 0,-sa, 0,
-             0, 1,  0, 0,
+            0, 1,  0, 0,
             sa, 0, ca, 0,
-             0, 0,  0, 1 ];
-             break;
+            0, 0,  0, 1 ];
+        break;
     default:
         m = [
             ca,-sa, 0, 0,
             sa, ca, 0, 0,
             0,  0,  1, 0,
             0,  0,  0, 1 ];
-            break;
+        break;
     }
 
     mat4.transpose(m);
@@ -110,9 +110,9 @@ math.rotationMatrix = function(axis, angle) {
 math.scaleMatrix = function(sx, sy, sz) {
     var m = [
         sx,  0,  0, 0,
-         0, sy,  0, 0,
-         0,  0, sz, 0,
-         0,  0,  0, 1 ];
+        0, sy,  0, 0,
+        0,  0, sz, 0,
+        0,  0,  0, 1 ];
 
     mat4.transpose(m);
     return m;

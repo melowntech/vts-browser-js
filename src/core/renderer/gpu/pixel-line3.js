@@ -32,15 +32,15 @@ GpuPixelLine3.prototype.kill = function() {
 GpuPixelLine3.prototype.init = function() {
     if (this.lines) {
     	if (this.joins) {
-            this.addCircle(0, this.joinSides);
+        this.addCircle(0, this.joinSides);
     	}
     	
         for (var i = 0; i < this.maxLines; i++) {
             this.addLine(i, i+1);
 
-			if (this.joins) {
+            if (this.joins) {
 		        this.addCircle(i+1, this.joinSides);
-			}
+            }
         }
     } else if (this.joins) {
         for (var i = 0; i <= this.maxLines; i++) {

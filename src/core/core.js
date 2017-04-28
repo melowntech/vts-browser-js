@@ -55,8 +55,8 @@ var Core = function(element, config, coreInterface) {
         mapSmartNodeParsing : true,
         mapLoadErrorRetryTime : 3000,
         mapLoadErrorMaxRetryCount : 3,
-        mapLoadMode : "topdown", // "topdown", "downtop", "fit", "fitonly"
-        mapGeodataLoadMode : "fit", //"fitonly"
+        mapLoadMode : 'topdown', // "topdown", "downtop", "fit", "fitonly"
+        mapGeodataLoadMode : 'fit', //"fitonly"
         mapXhrImageLoad : false,
         mapStoreLoadStats : false,
         mapDegradeHorizon : false,
@@ -150,7 +150,7 @@ Core.prototype.loadMap = function(path) {
         this.mapRunnig = true;
         var data = this.mapConfigData; 
     
-        this.callListener("map-mapconfig-loaded", data);
+        this.callListener('map-mapconfig-loaded', data);
 
         this.map = new Map(this, data, path, this.config);
         this.mapInterface = new MapInterface(this.map);
@@ -167,7 +167,7 @@ Core.prototype.loadMap = function(path) {
             this.config.view = null;
         }
     
-        this.callListener("map-loaded", { "browserOptions":this.map.browserOptions});
+        this.callListener('map-loaded', { 'browserOptions':this.map.browserOptions});
     }).bind(this);
 
     var onMapConfigLoaded = (function(data) {
@@ -182,15 +182,15 @@ Core.prototype.loadMap = function(path) {
 
     var onAutorizationLoaded = (function(data) {
         this.tokenLoaded = true;
-        this.xhrParams["token"] = data["token"];
-        this.xhrParams["tokenHeader"] = data["header"];
-        this.tokenExpiration = data["expires"] * 1000;
+        this.xhrParams['token'] = data['token'];
+        this.xhrParams['tokenHeader'] = data['header'];
+        this.tokenExpiration = data['expires'] * 1000;
         this.tokenExpirationCallback = (function(){
             //this.tokenLoaded = false;
             //this.tokenCookieLoaded = false;
             this.tokenExpiration = null;
             this.tokenExpirationLoop = true;
-            if (typeof this.config.authorization === "string") {
+            if (typeof this.config.authorization === 'string') {
                 utils.loadJSON(this.config.authorization, onAutorizationLoaded, onAutorizationError, null, utils.useCredentials, this.xhrParams);
             } else {
                 this.config.authorization(onAutorizationLoaded);
@@ -201,16 +201,16 @@ Core.prototype.loadMap = function(path) {
             onLoadMapconfig(path);
         }
         
-        if (typeof this.config.authorization === "string") {
-            onLoadImageCookie(data["cookieInjector"], this.config.authorization);
+        if (typeof this.config.authorization === 'string') {
+            onLoadImageCookie(data['cookieInjector'], this.config.authorization);
         } else {
-            onLoadImageCookie(data["cookieInjector"], path);
+            onLoadImageCookie(data['cookieInjector'], path);
         }
 
     }).bind(this);
 
     var onAutorizationError = (function() {
-        console.log("auth token not loaded");
+        console.log('auth token not loaded');
         
         if (this.tokenCanBeSkiped) {
             onLoadMapconfig(path);
@@ -225,7 +225,7 @@ Core.prototype.loadMap = function(path) {
     }).bind(this);
 
     var onImageCookieError = (function() {
-        console.log("auth cookie not loaded");
+        console.log('auth cookie not loaded');
     }).bind(this);
 
     //var baseUrl = path.split('?')[0].split('/').slice(0, -1).join('/')+'/';
@@ -242,7 +242,7 @@ Core.prototype.loadMap = function(path) {
         this.tokenIFrame = iframe;
         iframe.onload = onImageCookieLoaded;
         iframe.src = url;
-        iframe.style.display = "none";
+        iframe.style.display = 'none';
         document.body.appendChild(iframe);   
     }).bind(this);
 
@@ -250,7 +250,7 @@ Core.prototype.loadMap = function(path) {
     if (this.config.authorization) {
         this.tokenCookieLoaded = false;
 
-        if (typeof this.config.authorization === "string") {
+        if (typeof this.config.authorization === 'string') {
             utils.loadJSON(this.config.authorization, onAutorizationLoaded, onAutorizationError, null, utils.useCredentials, this.xhrParams);
         } else {
             this.config.authorization(onAutorizationLoaded);
@@ -280,7 +280,7 @@ Core.prototype.destroyMap = function() {
         this.map.kill();
         this.map = null;
         this.mapInterface = null;
-        this.callListener("map-unloaded", {});
+        this.callListener('map-unloaded', {});
     }
 };
 
@@ -343,7 +343,7 @@ Core.prototype.callListener = function(name, event, log) {
     }
     
     if (log) {
-        console.log("event " + name + ": " + JSON.stringify(event));
+        console.log('event ' + name + ': ' + JSON.stringify(event));
     }
 };
 
@@ -374,14 +374,14 @@ Core.prototype.onUpdate = function() {
 
     //this.callListener("render-update", { "dirty": true, "message": "DOM element does not exist" });
 
-    this.callListener("tick", {});
+    this.callListener('tick', {});
 
     this.requestAnimFrame.call(window, this.onUpdate.bind(this));
 };
 
 
 Core.prototype.setConfigParams = function(params, onlyMapRelated) {
-    if (typeof params === "object" && params !== null) {
+    if (typeof params === 'object' && params !== null) {
         for (var key in params) {
             this.setConfigParam(key, params[key]);
         }
@@ -390,9 +390,9 @@ Core.prototype.setConfigParams = function(params, onlyMapRelated) {
 
 
 Core.prototype.setConfigParam = function(key, value) {
-    if (key == "pos" || key == "position" || key == "view") {
+    if (key == 'pos' || key == 'position' || key == 'view') {
         if (this.getMap()) {
-            if (key == "view") {
+            if (key == 'view') {
                 this.getMap().setView(value);
             } else {
                 this.getMap().setPosition(new MapPosition(value));
@@ -403,23 +403,23 @@ Core.prototype.setConfigParam = function(key, value) {
         } else {
             this.configStorage[key] = value;
         }
-    } else if (key == "map") {
+    } else if (key == 'map') {
         this.config.map = utils.validateString(value, null);
-    } else if (key == "mapVirtualSurfaces") {
+    } else if (key == 'mapVirtualSurfaces') {
         this.config.mapVirtualSurfaces = utils.validateBool(value, true);
-    } else if (key == "inspector") {
+    } else if (key == 'inspector') {
         this.config.inspector = utils.validateBool(value, true);
-    } else if (key == "authorization") {
-        this.config.authorization = ((typeof value === "string") || (typeof value === "function")) ? value : null;   
+    } else if (key == 'authorization') {
+        this.config.authorization = ((typeof value === 'string') || (typeof value === 'function')) ? value : null;   
     } else {
-        if (key.indexOf("map") == 0 || key == "mario") {
+        if (key.indexOf('map') == 0 || key == 'mario') {
             this.configStorage[key] = value;
             if (this.getMap() != null) {
                 this.getMap().setConfigParam(key, value);
             }
         }
 
-        if (key.indexOf("renderer") == 0) {
+        if (key.indexOf('renderer') == 0) {
             this.setRendererConfigParam(key, value);
         }
     }
@@ -427,16 +427,16 @@ Core.prototype.setConfigParam = function(key, value) {
 
 
 Core.prototype.getConfigParam = function(key) {
-    if (key == "map") {
+    if (key == 'map') {
         return this.config.map;
-    } else if (key == "inspector") {
+    } else if (key == 'inspector') {
         return this.config.inspector;
     } else {
-        if (key.indexOf("map") == 0 && this.getMap() != null) {
+        if (key.indexOf('map') == 0 && this.getMap() != null) {
             return this.getMap().getConfigParam(key, value);
         }
 
-        if (key.indexOf("renderer") == 0) {
+        if (key.indexOf('renderer') == 0) {
             return this.getRendererConfigParam(key);
         }
     }
@@ -445,16 +445,16 @@ Core.prototype.getConfigParam = function(key) {
 
 Core.prototype.setRendererConfigParam = function(key, value) {
     switch (key) {
-        case "rendererAntialiasing":       this.config.rendererAntialiasing = utils.validateBool(value, true); break;
-        case "rendererAllowScreenshots":   this.config.rendererAllowScreenshots = utils.validateBool(value, false); break;
+    case 'rendererAntialiasing':       this.config.rendererAntialiasing = utils.validateBool(value, true); break;
+    case 'rendererAllowScreenshots':   this.config.rendererAllowScreenshots = utils.validateBool(value, false); break;
     }
 };
 
 
 Core.prototype.getRendererConfigParam = function(key) {
     switch (key) {
-        case "rendererAntialiasing":       return this.config.rendererAntialiasing;
-        case "rendererAllowScreenshots":   return this.config.rendererAllowScreenshots;
+    case 'rendererAntialiasing':       return this.config.rendererAntialiasing;
+    case 'rendererAllowScreenshots':   return this.config.rendererAllowScreenshots;
     }
 };
 
@@ -465,8 +465,8 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? "Core: " : "") + "2.1.2";
-};
+    return (full ? 'Core: ' : '') + '2.1.3';
+}
 
 
 /*
@@ -479,7 +479,7 @@ function checkSupport() {
     platform.init();
 
     //is webgl supported
-    var canvas = document.createElement("canvas");
+    var canvas = document.createElement('canvas');
 
     if (canvas == null) {
         return false;
@@ -495,7 +495,7 @@ function checkSupport() {
     var gl = null;
 
     try {
-        gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     } catch(e) {
         return false;
     }
@@ -505,7 +505,7 @@ function checkSupport() {
     }
 
     return true;
-};
+}
 
 
 export {Core,getCoreVersion,checkSupport};

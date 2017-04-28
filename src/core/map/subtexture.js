@@ -118,44 +118,44 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
     doNotLoad = doNotLoad || doNotUseGpu;
     
     if (this.neverReady) {
-       return false;
+        return false;
     }
 
     switch (texture.checkType) {
-        case "negative-type":
-        case "negative-code":
-        case "negative-size":
+    case 'negative-type':
+    case 'negative-code':
+    case 'negative-size':
         
-            if (this.checkStatus != 2) {
-                this.checkType = texture.checkType;
-                this.checkValue = texture.checkValue;
+        if (this.checkStatus != 2) {
+            this.checkType = texture.checkType;
+            this.checkValue = texture.checkValue;
 
-                if (this.checkStatus == 0) {
-                    this.scheduleHeadRequest(priority, (this.checkType == "negative-size"));
-                } else if (this.checkStatus == 3) { //loadError
-                    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
+            if (this.checkStatus == 0) {
+                this.scheduleHeadRequest(priority, (this.checkType == 'negative-size'));
+            } else if (this.checkStatus == 3) { //loadError
+                if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
                         performance.now() > this.loadErrorTime + this.map.config.mapLoadErrorRetryTime) {
-                        this.scheduleHeadRequest(priority, (this.checkType == "negative-size"));
-                    }
-                } else if (this.checkStatus == -1) {
+                    this.scheduleHeadRequest(priority, (this.checkType == 'negative-size'));
+                }
+            } else if (this.checkStatus == -1) {
             
-                    if (texture.extraInfo) { //find at least texture with lower resolution
-                        if (!texture.extraBound) {
-                            texture.extraBound = { tile: texture.extraInfo.tile, layer: texture.extraInfo.layer};
-                            texture.setBoundTexture(texture.extraBound.tile.parent, texture.extraBound.layer);        
-                        }
+                if (texture.extraInfo) { //find at least texture with lower resolution
+                    if (!texture.extraBound) {
+                        texture.extraBound = { tile: texture.extraInfo.tile, layer: texture.extraInfo.layer};
+                        texture.setBoundTexture(texture.extraBound.tile.parent, texture.extraBound.layer);        
+                    }
         
-                        while (texture.extraBound.texture.extraBound || texture.extraBound.texture.checkStatus == -1) {
+                    while (texture.extraBound.texture.extraBound || texture.extraBound.texture.checkStatus == -1) {
                         //while (texture.extraBound.texture.checkStatus == -1) {
-                            texture.setBoundTexture(texture.extraBound.sourceTile.parent, texture.extraBound.layer);        
-                        }
+                        texture.setBoundTexture(texture.extraBound.sourceTile.parent, texture.extraBound.layer);        
                     }
                 }
-    
-                return false;
             }
+    
+            return false;
+        }
             
-            break;
+        break;
     }
 
     if (this.loadState == 2) { //loaded
@@ -240,7 +240,7 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
 
 
 MapSubtexture.prototype.scheduleLoad = function(priority, header) {
-    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this, header), priority, this.tile, this.internal ? "texture-in" : "texture-ex");
+    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this, header), priority, this.tile, this.internal ? 'texture-in' : 'texture-ex');
 };
 
 
@@ -258,7 +258,7 @@ MapSubtexture.prototype.onLoad = function(header, url, onLoaded, onError) {
     }
 
     if (this.map.config.mapXhrImageLoad) {
-        utils.loadBinary(url, this.onBinaryLoaded.bind(this), onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, "blob");
+        utils.loadBinary(url, this.onBinaryLoaded.bind(this), onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, 'blob');
     } else {
         this.image = utils.loadImage(url, onload, onerror, (this.map.core.tokenCookieHost ? (url.indexOf(this.map.core.tokenCookieHost) != -1) : false));
     }
@@ -289,7 +289,7 @@ MapSubtexture.prototype.onLoadError = function(killBlob) {
 
 
 MapSubtexture.prototype.onBinaryLoaded = function(data) {
-    if (this.fastHeaderCheck && this.checkType && this.checkType != "metatile") {
+    if (this.fastHeaderCheck && this.checkType && this.checkType != 'metatile') {
         this.onHeadLoaded(null, data, null /*status*/);
         
         if (this.checkStatus == -1) {
@@ -338,7 +338,7 @@ MapSubtexture.prototype.scheduleHeadRequest = function(priority, downloadAll) {
     if (this.map.config.mapXhrImageLoad && this.fastHeaderCheck) {
         this.scheduleLoad(priority, true);
     } else {
-        this.map.loader.load(this.mapLoaderUrl, this.onLoadHead.bind(this, downloadAll), priority, this.tile, this.internal, this.internal ? "texture-in" : "texture-ex");
+        this.map.loader.load(this.mapLoaderUrl, this.onLoadHead.bind(this, downloadAll), priority, this.tile, this.internal, this.internal ? 'texture-in' : 'texture-ex');
     }
 };
 
@@ -353,9 +353,9 @@ MapSubtexture.prototype.onLoadHead = function(downloadAll, url, onLoaded, onErro
     this.checkStatus = 1;
 
     if (downloadAll) {
-        utils.loadBinary(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, "blob");
+        utils.loadBinary(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, 'blob');
     } else {
-        utils.headRequest(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, "blob");
+        utils.headRequest(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, 'blob');
     }
 };
 
@@ -390,61 +390,61 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
     if (this.map.config.mapXhrImageLoad && this.fastHeaderCheck) {
 
         switch (this.checkType) {
-            case "negative-size":
-                if (data) {
-                    if (data.size == this.checkValue) {
-                        this.checkStatus = -1;
-                    }
+        case 'negative-size':
+            if (data) {
+                if (data.size == this.checkValue) {
+                    this.checkStatus = -1;
                 }
-                break;
+            }
+            break;
                 
-            case "negative-type":
-                if (data) {
-                    if (data.type == this.checkValue) {
-                        this.checkStatus = -1;
-                    }
+        case 'negative-type':
+            if (data) {
+                if (data.type == this.checkValue) {
+                    this.checkStatus = -1;
                 }
-                break;
+            }
+            break;
                 
-            case "negative-code":
-                if (status) {
-                    if (this.checkValue.indexOf(status) != -1) {
-                        this.checkStatus = -1;
-                    }
+        case 'negative-code':
+            if (status) {
+                if (this.checkValue.indexOf(status) != -1) {
+                    this.checkStatus = -1;
                 }
-                break;
+            }
+            break;
         }
 
     } else {
 
         switch (this.checkType) {
-            case "negative-size":
-                if (data) {
-                    if (data.byteLength == this.checkValue) {
-                        this.checkStatus = -1;
-                    }
+        case 'negative-size':
+            if (data) {
+                if (data.byteLength == this.checkValue) {
+                    this.checkStatus = -1;
                 }
-                break;
+            }
+            break;
                 
-            case "negative-type":
-                if (data) {
-                    if (!data.indexOf) {
-                        data = data;
-                    }
+        case 'negative-type':
+            if (data) {
+                if (!data.indexOf) {
+                    data = data;
+                }
                     
-                    if (data.indexOf(this.checkValue) != -1) {
-                        this.checkStatus = -1;
-                    }
+                if (data.indexOf(this.checkValue) != -1) {
+                    this.checkStatus = -1;
                 }
-                break;
+            }
+            break;
                 
-            case "negative-code":
-                if (status) {
-                    if (this.checkValue.indexOf(status) != -1) {
-                        this.checkStatus = -1;
-                    }
+        case 'negative-code':
+            if (status) {
+                if (this.checkValue.indexOf(status) != -1) {
+                    this.checkStatus = -1;
                 }
-                break;
+            }
+            break;
         }
         
         this.mapLoaderCallLoaded();
@@ -454,7 +454,7 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
 
 MapSubtexture.prototype.buildGpuTexture = function () {
     this.gpuTexture = new GpuTexture(this.map.renderer.gpu, null, this.map.core);
-    this.gpuTexture.createFromImage(this.image, "linear", false);
+    this.gpuTexture.createFromImage(this.image, 'linear', false);
     this.stats.gpuTextures += this.gpuTexture.size;
 
     this.stats.graphsFluxTexture[0][0]++;
@@ -465,10 +465,10 @@ MapSubtexture.prototype.buildGpuTexture = function () {
 
 
 MapSubtexture.prototype.buildHeightMap = function () {
-    var canvas = document.createElement("canvas");
+    var canvas = document.createElement('canvas');
     canvas.width = this.image.naturalWidth;
     canvas.height = this.image.naturalHeight;
-    var ctx = canvas.getContext("2d");
+    var ctx = canvas.getContext('2d');
     ctx.drawImage(this.image, 0, 0);
     this.imageData = ctx.getImageData(0, 0, this.image.naturalWidth, this.image.naturalHeight).data;
     this.imageExtents = [this.image.naturalWidth, this.image.naturalHeight];

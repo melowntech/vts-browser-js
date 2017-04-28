@@ -8,7 +8,7 @@ var dom = Dom_;
 var UIControlLink = function(ui, visible) {
     this.ui = ui;
     this.browser = ui.browser;
-    this.control = this.ui.addControl("link",
+    this.control = this.ui.addControl('link',
       '<div id="vts-link" class="vts-link">'
 
         + '<div id="vts-link-button" class="vts-link-button">'
@@ -23,14 +23,14 @@ var UIControlLink = function(ui, visible) {
         
      + ' </div>', visible);
      
-    this.div = this.control.getElement("vts-link");
+    this.div = this.control.getElement('vts-link');
 
-    var button = this.control.getElement("vts-link-button");
-    button.on("click", this.onSwitch.bind(this));
-    button.on("dblclick", this.onDoNothing.bind(this));
+    var button = this.control.getElement('vts-link-button');
+    button.on('click', this.onSwitch.bind(this));
+    button.on('dblclick', this.onDoNothing.bind(this));
 
-    this.linkPanel = this.control.getElement("vts-link-text-holder");
-    this.link = this.control.getElement("vts-link-text-input");
+    this.linkPanel = this.control.getElement('vts-link-text-holder');
+    this.link = this.control.getElement('vts-link-text-input');
 
     this.linkVisible = false;
     this.update();
@@ -50,13 +50,13 @@ UIControlLink.prototype.onSwitch = function() {
 
 
 UIControlLink.prototype.update = function() {
-    var button = this.control.getElement("vts-link-button");
+    var button = this.control.getElement('vts-link-button');
     
     var left = 10 + (this.ui.config.controlZoom ? 70 : 0) +
                 (this.ui.config.controlSpace ? 35 : 0);
     
-    this.div.setStyle("left", left + "px");
-    this.linkPanel.setStyle("display", this.linkVisible ? "block" : "none");
+    this.div.setStyle('left', left + 'px');
+    this.linkPanel.setStyle('display', this.linkVisible ? 'block' : 'none');
 };
 
 

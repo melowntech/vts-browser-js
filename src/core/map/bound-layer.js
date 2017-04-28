@@ -25,18 +25,18 @@ var MapBoundLayer = function(map, json, id) {
     this.ready = false;
 
     //hack
-    if (id == "esri-world-imagery") {
-        json["availability"] = {
+    if (id == 'esri-world-imagery') {
+        json['availability'] = {
              // "type" : "negative-type",
              // "mime": "image/png"
              // "type" : "negative-code",
              // "codes": [301, 302, 404]
-              "type" : "negative-size",
-              "size": 2521
-            };  
+            'type' : 'negative-size',
+            'size': 2521
+        };  
     }
     
-    if (typeof json === "string") {
+    if (typeof json === 'string') {
         this.jsonUrl = this.map.url.processUrl(json);
         this.baseUrl = utilsUrl_.getBase(this.jsonUrl);
         this.baseUrlSchema = utilsUrl_.getSchema(this.jsonUrl);
@@ -61,61 +61,61 @@ var MapBoundLayer = function(map, json, id) {
 
 
 MapBoundLayer.prototype.parseJson = function(json) {
-    this.numberId = json["id"] || null;
-    this.type = json["type"] || "raster";
-    this.url = this.processUrl(json["url"], "");
-    this.tileSize = json["tileSize"] || [256,256];
-    this.lodRange = json["lodRange"] || [0,0];
-    this.tileRange = json["tileRange"] || [[0,0],[0,0]];
-    this.metaUrl = this.processUrl(json["metaUrl"]);
-    this.maskUrl = this.processUrl(json["maskUrl"]);
-    this.isTransparent = json["isTransparent"] || false;
-    this.credits = json["credits"] || [];
+    this.numberId = json['id'] || null;
+    this.type = json['type'] || 'raster';
+    this.url = this.processUrl(json['url'], '');
+    this.tileSize = json['tileSize'] || [256,256];
+    this.lodRange = json['lodRange'] || [0,0];
+    this.tileRange = json['tileRange'] || [[0,0],[0,0]];
+    this.metaUrl = this.processUrl(json['metaUrl']);
+    this.maskUrl = this.processUrl(json['maskUrl']);
+    this.isTransparent = json['isTransparent'] || false;
+    this.credits = json['credits'] || [];
     this.creditsUrl = null;
 
     this.specificity = Math.pow(2,this.lodRange[0]) / ((this.tileRange[1][0] - this.tileRange[1][0]+1)*(this.tileRange[1][1] - this.tileRange[1][1]+1));    
 
-    this.availability = json["availability"] ? {} : null;
+    this.availability = json['availability'] ? {} : null;
 
     if (this.availability) {
-        var p = json["availability"];
-        this.availability.type = p["type"];
-        this.availability.mime = p["mime"];
-        this.availability.codes = p["codes"];
-        this.availability.size = p["size"];
+        var p = json['availability'];
+        this.availability.type = p['type'];
+        this.availability.mime = p['mime'];
+        this.availability.codes = p['codes'];
+        this.availability.size = p['size'];
         //this.availability.coverageUrl = p["coverageUrl"];
     }
 
     if (this.metaUrl && this.maskUrl) {
         this.availability = {
-            type : "metatile"
+            type : 'metatile'
         };
     }
 
     switch(typeof this.credits) {
-        case "string":
-            this.creditsUrl = this.credits;
+    case 'string':
+        this.creditsUrl = this.credits;
+        this.credits = [];
+        break;
+
+    case 'object':
+        
+        if (!Array.isArray(this.credits)) {
+            var credits = this.credits;
             this.credits = [];
-            break;
-
-        case "object":
-        
-            if (!Array.isArray(this.credits)) {
-                var credits = this.credits;
-                this.credits = [];
                 
-                for (var key in credits){
-                    this.map.addCredit(key, new MapCredit(this.map, credits[key]));
-                    this.credits.push(key);
-                }
+            for (var key in credits){
+                this.map.addCredit(key, new MapCredit(this.map, credits[key]));
+                this.credits.push(key);
             }
+        }
 
-            for (var i = 0, li = this.credits.length; i < li; i++) {
-                var credit = this.map.getCreditById(this.credits[i]);
+        for (var i = 0, li = this.credits.length; i < li; i++) {
+            var credit = this.map.getCreditById(this.credits[i]);
                 //this.creditsNumbers.push(credit ? credit.id : null); 
-            }
+        }
         
-            break;
+        break;
     }
 };
 
@@ -135,15 +135,15 @@ MapBoundLayer.prototype.getOptions = function() {
 
 MapBoundLayer.prototype.getInfo = function() {
     return {
-        "type" : this.type,
-        "url" : this.url,
-        "tileSize" : this.tileSize,
-        "credits" : this.credits,
-        "lodRange" : this.lodRange,
-        "tileRange" : this.tileRange,
-        "mataUrl" : this.metaUrl,
-        "maskUrl" : this.maskUrl,
-        "isTransparent" : this.isTransparent
+        'type' : this.type,
+        'url' : this.url,
+        'tileSize' : this.tileSize,
+        'credits' : this.credits,
+        'lodRange' : this.lodRange,
+        'tileRange' : this.tileRange,
+        'mataUrl' : this.metaUrl,
+        'maskUrl' : this.maskUrl,
+        'isTransparent' : this.isTransparent
     };
 };
 
@@ -155,11 +155,11 @@ MapBoundLayer.prototype.processUrl = function(url, fallback) {
 
     url = url.trim();
     
-    if (url.indexOf("://") != -1) { //absolute
+    if (url.indexOf('://') != -1) { //absolute
         return url;
-    } else if (url.indexOf("//") == 0) {  //absolute without schema
+    } else if (url.indexOf('//') == 0) {  //absolute without schema
         return this.baseUrlSchema + url;
-    } else if (url.indexOf("/") == 0) {  //absolute without host
+    } else if (url.indexOf('/') == 0) {  //absolute without host
         return this.baseUrlOrigin + url;
     } else {  //relative
         return this.baseUrl + url; 

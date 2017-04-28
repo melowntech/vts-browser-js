@@ -8,7 +8,7 @@ var dom = Dom_;
 var UIControlZoom = function(ui, visible) {
     this.ui = ui;
     this.browser = ui.browser;
-    this.control = this.ui.addControl("zoom",
+    this.control = this.ui.addControl('zoom',
       '<div id="vts-zoom"'
       + ' class="vts-zoom">'
 
@@ -22,13 +22,13 @@ var UIControlZoom = function(ui, visible) {
 
      + ' </div>', visible);
 
-    var plus = this.control.getElement("vts-zoom-plus");
-    plus.on("click", this.onZoomIn.bind(this));
-    plus.on("dblclick", this.onDoNothing.bind(this));
+    var plus = this.control.getElement('vts-zoom-plus');
+    plus.on('click', this.onZoomIn.bind(this));
+    plus.on('dblclick', this.onDoNothing.bind(this));
 
-    var minus = this.control.getElement("vts-zoom-minus");
-    minus.on("click", this.onZoomOut.bind(this));
-    minus.on("dblclick", this.onDoNothing.bind(this));
+    var minus = this.control.getElement('vts-zoom-minus');
+    minus.on('click', this.onZoomOut.bind(this));
+    minus.on('dblclick', this.onDoNothing.bind(this));
 };
 
 

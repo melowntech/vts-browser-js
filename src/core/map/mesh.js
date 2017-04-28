@@ -171,7 +171,7 @@ MapMesh.prototype.scheduleLoad = function(priority) {
         this.mapLoaderUrl = this.map.url.makeUrl(this.tile.resourceSurface.meshUrl, {lod:this.tile.id[0], ix:this.tile.id[1], iy:this.tile.id[2] });
     }
 
-    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this), priority, this.tile, "mesh");
+    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this), priority, this.tile, 'mesh');
 };
 
 
@@ -260,12 +260,12 @@ MapMesh.prototype.parseMapMesh = function (stream) {
 
     //parase header
     var streamData = stream.data;
-    var magic = "";
+    var magic = '';
 
     magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
     magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
 
-    if (magic != "ME") {
+    if (magic != 'ME') {
         return false;
     }
 
@@ -276,7 +276,7 @@ MapMesh.prototype.parseMapMesh = function (stream) {
     }
     
     //if (this.version >= 3) {
-        stream.uint8Data = new Uint8Array(stream.buffer);
+    stream.uint8Data = new Uint8Array(stream.buffer);
     //}
 
     this.meanUndulation = streamData.getFloat64(stream.index, true); stream.index += 8;
@@ -343,68 +343,68 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var texcoordsAttr = null;
     var texcoords2Attr = null;
     var drawWireframe = draw.debug.drawWireframe;
-    var attributes = (drawWireframe != 0) ?  ["aPosition", "aBarycentric"] : ["aPosition"];
+    var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
 
-    if (type == "depth") {
+    if (type == 'depth') {
         program = renderer.progDepthTile;
         //texcoordsAttr = "aTexCoord";
-    } else if (type == "flat") {
+    } else if (type == 'flat') {
         program = renderer.progFlatShadeTile;
     } else {
         if (drawWireframe > 0) {
             switch (drawWireframe) {
-                case 2: program = renderer.progWireframeTile2;  break;
-                case 3: program = renderer.progFlatShadeTile;  break;
-                case 1:
+            case 2: program = renderer.progWireframeTile2;  break;
+            case 3: program = renderer.progFlatShadeTile;  break;
+            case 1:
     
-                    switch(type) {
-                        case "internal":
-                        case "internal-nofog":
-                            program = renderer.progWireframeTile;
-                            texcoordsAttr = "aTexCoord";
-                            attributes.push("aTexCoord");
-                            break;
+                switch(type) {
+                case 'internal':
+                case 'internal-nofog':
+                    program = renderer.progWireframeTile;
+                    texcoordsAttr = 'aTexCoord';
+                    attributes.push('aTexCoord');
+                    break;
     
-                        case "external":
-                        case "external-nofog":
-                            program = renderer.progWireframeTile3;
-                            texcoords2Attr = "aTexCoord2";
-                            attributes.push("aTexCoord2");
-                            break;
+                case 'external':
+                case 'external-nofog':
+                    program = renderer.progWireframeTile3;
+                    texcoords2Attr = 'aTexCoord2';
+                    attributes.push('aTexCoord2');
+                    break;
     
-                        case "fog":
-                            return;
-                    }
+                case 'fog':
+                    return;
+                }
     
                 break;
             }
         } else {
             switch(type) {
-                case "internal":
-                case "internal-nofog":
-                    program = renderer.progTile;
-                    texcoordsAttr = "aTexCoord";
-                    attributes.push("aTexCoord");
-                    break;
+            case 'internal':
+            case 'internal-nofog':
+                program = renderer.progTile;
+                texcoordsAttr = 'aTexCoord';
+                attributes.push('aTexCoord');
+                break;
     
-                case "external":
-                case "external-nofog":
-                    program = renderer.progTile2;
+            case 'external':
+            case 'external-nofog':
+                program = renderer.progTile2;
                     
-                    if (texture) {
-                        gpuMask = texture.getGpuMaskTexture();
-                        if (gpuMask) {
-                            program = renderer.progTile3;
-                        }
-                    } 
+                if (texture) {
+                    gpuMask = texture.getGpuMaskTexture();
+                    if (gpuMask) {
+                        program = renderer.progTile3;
+                    }
+                } 
                     
-                    texcoords2Attr = "aTexCoord2";
-                    attributes.push("aTexCoord2");
-                    break;
+                texcoords2Attr = 'aTexCoord2';
+                attributes.push('aTexCoord2');
+                break;
     
-                case "fog":
-                    program = renderer.progFogTile;
-                    break;
+            case 'fog':
+                program = renderer.progFogTile;
+                break;
             }
         }
     }
@@ -429,7 +429,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         } else {
             return;
         }
-    } else if (type != "fog" && type != "depth" && type != "flat") {
+    } else if (type != 'fog' && type != 'depth' && type != 'flat') {
         return;
     }
 
@@ -437,35 +437,35 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     mat4.multiply(renderer.camera.getModelviewMatrix(), submesh.getWorldMatrix(cameraPos, this.mBuffer2), mv);
     var proj = renderer.camera.getProjectionMatrix();
 
-    program.setMat4("uMV", mv);
-    program.setMat4("uProj", proj);
+    program.setMat4('uMV', mv);
+    program.setMat4('uProj', proj);
 
     if (drawWireframe == 0) {
         switch(type) {
-            case "internal":
-            case "fog":
+        case 'internal':
+        case 'fog':
                 //program.setFloat("uFogDensity", this.map.fogDensity);
-                program.setVec4("uParams", [draw.zFactor, draw.fogDensity, 0, 0]);
-                break;
+            program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
+            break;
 
-            case "internal-nofog":
+        case 'internal-nofog':
                 //program.setFloat("uFogDensity", 0);
-                program.setVec4("uParams", [draw.zFactor, 0, 0, 0]);
-                break;
+            program.setVec4('uParams', [draw.zFactor, 0, 0, 0]);
+            break;
 
-            case "external":
-                program.setFloat("uAlpha", 1);
+        case 'external':
+            program.setFloat('uAlpha', 1);
                 //program.setFloat("uFogDensity", this.map.fogDensity);
-                program.setVec4("uParams", [draw.zFactor, draw.fogDensity, 0, 0]);
-                program.setVec4("uTransform", texture.getTransform());
-                break;
+            program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
+            program.setVec4('uTransform', texture.getTransform());
+            break;
 
-            case "external-nofog":
-                program.setFloat("uAlpha", alpha);
+        case 'external-nofog':
+            program.setFloat('uAlpha', alpha);
                 //program.setFloat("uFogDensity", 0);
-                program.setVec4("uParams", [draw.zFactor, 0, 0, 0]);
-                program.setVec4("uTransform", texture.getTransform());
-                break;
+            program.setVec4('uParams', [draw.zFactor, 0, 0, 0]);
+            program.setVec4('uTransform', texture.getTransform());
+            break;
         }
     }
 
@@ -479,7 +479,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     //this.map.renderer.gpu.gl.polygonOffset(-1.0, this.map.zShift);
     //this.map.renderer.gpu.gl.enable(this.map.renderer.gpu.gl.POLYGON_OFFSET_FILL);
 
-    gpuSubmesh.draw(program, "aPosition", texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? "aBarycentric" : null);
+    gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null);
 
     //this.map.renderer.gpu.gl.disable(this.map.renderer.gpu.gl.POLYGON_OFFSET_FILL);
 

@@ -92,15 +92,15 @@ MapMetatile.prototype.isReady = function (/*doNotLoad,*/ priority) {
             //} else {
                 //not loaded
                 //add to loading queue or top position in queue
-                if (this.loadState == 3) { //loadError
-                    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
+            if (this.loadState == 3) { //loadError
+                if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
                         performance.now() > this.loadErrorTime + this.map.config.mapLoadErrorRetryTime) {
 
-                        this.scheduleLoad(priority);                    
-                    }
-                } else {
-                    this.scheduleLoad(priority);
+                    this.scheduleLoad(priority);                    
                 }
+            } else {
+                this.scheduleLoad(priority);
+            }
             //}
         } //else load in progress
         
@@ -151,7 +151,7 @@ MapMetatile.prototype.scheduleLoad = function() {
         this.mapLoaderUrl = this.surface.getMetaUrl(this.id);
     }
 
-    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this), null, this.tile, "metatile");
+    this.map.loader.load(this.mapLoaderUrl, this.onLoad.bind(this), null, this.tile, 'metatile');
 };
 
 
@@ -232,12 +232,12 @@ MapMetatile.prototype.parseMetatatile = function(stream) {
 */
 
     var streamData = stream.data;
-    var magic = "";
+    var magic = '';
 
     magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
     magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
 
-    if (magic != "MT") {
+    if (magic != 'MT') {
         return;
     }
 
@@ -353,9 +353,9 @@ MapMetatile.prototype.applyMetatatileBitplanes = function() {
                     
                     if (bitplane[byteIndex] & bitMask) {
                         switch(i) {
-                            case 0:
-                                this.nodes[y*this.sizex+x].alien = true;
-                                break;       
+                        case 0:
+                            this.nodes[y*this.sizex+x].alien = true;
+                            break;       
                         }
                     }
                 }
@@ -376,9 +376,9 @@ MapMetatile.prototype.applyMetatanodeBitplanes = function(x, y) {
             
             if (bitplane[byteIndex] & bitMask) {
                 switch(i) {
-                    case 0:
-                        this.nodes[y*this.sizex+x].alien = true;
-                        break;       
+                case 0:
+                    this.nodes[y*this.sizex+x].alien = true;
+                    break;       
                 }
             }
         }

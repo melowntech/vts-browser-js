@@ -1,33 +1,34 @@
 
-import {globals as globals_, clamp as clamp_, vec3Normalize as vec3Normalize_,
-        vec3Length as vec3Length_, vec3Cross as vec3Cross_, vec3AnyPerpendicular as vec3AnyPerpendicular_} from "./worker-globals.js";
+import {globals as globals_, vec3Normalize as vec3Normalize_,
+        vec3Length as vec3Length_, vec3Cross as vec3Cross_} from './worker-globals.js';
 
 //get rid of compiler mess
-var globals = globals_, clamp = clamp_,
+var globals = globals_,
     vec3Normalize = vec3Normalize_, vec3Length = vec3Length_,
-    vec3Cross = vec3Cross_, vec3AnyPerpendicular = vec3AnyPerpendicular_;
+    vec3Cross = vec3Cross_;
 
 
 var setFont = function(fontData) {
-    globals_.fonts["default"] = {
-        chars : fontData["chars"],
-        space : fontData["space"],
-        size : fontData["size"]
+    globals_.fonts['default'] = {
+        chars : fontData['chars'],
+        space : fontData['space'],
+        size : fontData['size']
     };
 };
 
 
 var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, font, vertexBuffer, texcoordsBuffer, flat) {
-    //normal to dir
+    
+    var n;
 
     if (globals.geocent && !flat) {
-        var n = [0,0,0];
+        n = [0,0,0];
         var nn = [0,0,0];
         
         vec3Normalize(globals.bboxMin, nn);
         vec3Cross(nn, dir, n);
     } else {
-        var n = [-dir[1],dir[0],0];
+        n = [-dir[1],dir[0],0];
     }
 
     var p1 = [pos[0], pos[1], pos[2]];
@@ -181,14 +182,13 @@ var addTextOnPath = function(points, distance, text, size, textVector, font, ver
     }
 
     var p1 = points[0];
-    var p2 = points[1];
     
     var chars = font.chars;
     var factor = size / font.size;
     var newLineSpace = font.space * factor;
 
     var s = [p1[0], p1[1], p1[2]];
-    var p1 = [p1[0], p1[1], p1[2]];
+    p1 = [p1[0], p1[1], p1[2]];
     var l = distance;
 
     for (var i = 0, li = text.length; i < li; i++) {
@@ -216,8 +216,8 @@ var addTextOnPath = function(points, distance, text, size, textVector, font, ver
 
         //average dir
         var dir = [(posAndDir2[1][0] + posAndDir[1][0])*0.5,
-                    (posAndDir2[1][1] + posAndDir[1][1])*0.5,
-                    (posAndDir2[1][2] + posAndDir[1][2])*0.5];
+            (posAndDir2[1][1] + posAndDir[1][1])*0.5,
+            (posAndDir2[1][2] + posAndDir[1][2])*0.5];
 
         vec3Normalize(dir);
 
@@ -351,8 +351,8 @@ var getPathPositionAndDirection = function(points, distance) {
 
             var factor = (distance - l) / (ll);
             var p = [p1[0] + dir[0] * factor,
-                     p1[1] + dir[1] * factor,
-                     p1[2] + dir[2] * factor];
+                p1[1] + dir[1] * factor,
+                p1[2] + dir[2] * factor];
 
             vec3Normalize(dir);
 
@@ -409,7 +409,7 @@ var getPathTextVector = function(points, shift, text, factor, font) {
 
 
 var areTextCharactersAvailable = function(text, font) {
-    if (!text || text == "") {
+    if (!text || text == '') {
         return false;
     }
 

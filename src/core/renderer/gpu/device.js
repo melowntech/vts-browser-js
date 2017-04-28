@@ -21,7 +21,7 @@ var GpuDevice = function(div, size, keepFrameBuffer, antialias) {
 
 
 GpuDevice.prototype.init = function() {
-    this.canvas = document.createElement("canvas");
+    this.canvas = document.createElement('canvas');
 
     if (this.canvas == null) {
         //canvas not supported
@@ -30,7 +30,7 @@ GpuDevice.prototype.init = function() {
 
     this.canvas.width = this.curSize[0];
     this.canvas.height = this.curSize[1];
-    this.canvas.style.display = "block";
+    this.canvas.style.display = 'block';
 
     if (this.canvas.getContext == null) {
         //canvas not supported
@@ -38,7 +38,7 @@ GpuDevice.prototype.init = function() {
     }
 
     try {
-        this.gl = this.canvas.getContext("webgl", {preserveDrawingBuffer: this.keepFrameBuffer, antialias: this.antialias, stencil: true}) || this.canvas.getContext("experimental-webgl", {preserveDrawingBuffer: this.keepFrameBuffer});
+        this.gl = this.canvas.getContext('webgl', {preserveDrawingBuffer: this.keepFrameBuffer, antialias: this.antialias, stencil: true}) || this.canvas.getContext('experimental-webgl', {preserveDrawingBuffer: this.keepFrameBuffer});
     } catch(e) {
         //webgl not supported
     }
@@ -104,7 +104,7 @@ GpuDevice.prototype.clear = function(clearDepth, clearColor, color) {
 //    if (this.keepFrameBuffer) {
 //        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT );
 //    } else {
-        this.gl.clear((clearColor ? this.gl.COLOR_BUFFER_BIT : 0) |
+    this.gl.clear((clearColor ? this.gl.COLOR_BUFFER_BIT : 0) |
                        (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0) );
 //    }
 };
@@ -116,10 +116,10 @@ GpuDevice.prototype.useProgram = function(program, attributes, nextSampler) {
         this.gl.useProgram(program.program);
         this.currentProgram = program;
 
-        program.setSampler("uSampler", 0);
+        program.setSampler('uSampler', 0);
         
         if (nextSampler) {
-            program.setSampler("uSampler2", 1);
+            program.setSampler('uSampler2', 1);
         }
 
         var newAttributes = this.newAttributes;
