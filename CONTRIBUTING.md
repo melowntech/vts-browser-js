@@ -18,7 +18,7 @@ participating in this project you agree to abide by its terms.
 
 ## Contributor License Agreement
 
-Contributors are asked to expressly agree with Melown Contributor License Agreement (CLA).
+Contributors are asked to expressly agree with [Melown Contributor License Agreement (CLA)](https://gist.github.com/melown-bookkeeping/400fcb29dae1042c7b36880986d939f8).
 
 The purpose of the Melown CLA is to ensure that
 
