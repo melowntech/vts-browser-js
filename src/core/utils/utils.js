@@ -7,13 +7,13 @@ var math = math_;
 var utilsUrl = utilsUrl_;
 
 
-var utils = {}
+var utils = {};
 utils.useCredentials = false;
 utils.instanceCounter = 0;
 
 
 utils.validateBool = function(value, defaultValue) {
-    if (typeof value === "boolean") {
+    if (typeof value === 'boolean') {
         return value;
     } else {
         return defaultValue;
@@ -22,7 +22,7 @@ utils.validateBool = function(value, defaultValue) {
 
 
 utils.validateNumber = function(value, minValue, maxValue, defaultValue) {
-    if (typeof value === "number") {
+    if (typeof value === 'number') {
         return math.clamp(value, minValue, maxValue);
     } else {
         return defaultValue;
@@ -43,7 +43,7 @@ utils.validateNumberArray = function(array, arraySize, minValues, maxValues, def
 
 
 utils.validateString = function(value, defaultValue) {
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
         return value;
     } else {
         return defaultValue;
@@ -52,16 +52,16 @@ utils.validateString = function(value, defaultValue) {
 
 
 utils.padNumber = function(n, width) {
-  var z = '0';
+    var z = '0';
 
-  if (n < 0) {
-      n = (-n) + '';
-      width--;     //7
-      return n.length >= width ? ("-" + n) : "-" + (new Array(width - n.length + 1).join(z) + n);
-  } else {
-      n = n + '';
-      return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-  }
+    if (n < 0) {
+        n = (-n) + '';
+        width--;     //7
+        return n.length >= width ? ('-' + n) : '-' + (new Array(width - n.length + 1).join(z) + n);
+    } else {
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }
 };
 
 
@@ -81,8 +81,8 @@ utils.decodeFloat16 = function(binary) {
 
 
 utils.simpleFmtObj = (function obj(str, obj) {
-    if (!str || str == "") {
-        return "";
+    if (!str || str == '') {
+        return '';
     }
 
     return str.replace(/\{([$a-zA-Z0-9][$a-zA-Z0-9]*)\}/g, function(s, match) {
@@ -92,28 +92,28 @@ utils.simpleFmtObj = (function obj(str, obj) {
 
 
 utils.simpleWikiLinks = (function obj(str, plain) {
-    if (!str || str == "") {
-        return "";
+    if (!str || str == '') {
+        return '';
     }
 
-    var str2 = utils.simpleFmtObj(str, {"copy":"&copy;", "Y": (new Date().getFullYear())}); 
+    var str2 = utils.simpleFmtObj(str, {'copy':'&copy;', 'Y': (new Date().getFullYear())}); 
     
     return str2.replace(/\[([^\]]*)\]/g, function(s, match) {
         match  = match.trim();
-        var urls = match.split(" ");//, 1);
+        var urls = match.split(' ');//, 1);
         
-        if (urls[0].indexOf("//") != -1) {
+        if (urls[0].indexOf('//') != -1) {
             if (plain) {
                 if (urls.length > 1) {
-                    return "" + match.substring(urls[0].length);
+                    return '' + match.substring(urls[0].length);
                 } else {
-                    return "" + urls[0];
+                    return '' + urls[0];
                 }
             } else {
                 if (urls.length > 1) {
-                    return "<a href=" + urls[0] + " target='blank'>" + match.substring(urls[0].length)+"</a>";
+                    return '<a href=' + urls[0] + ' target="blank">' + match.substring(urls[0].length)+'</a>';
                 } else {
-                    return "<a href=" + urls[0] + " target='blank'>" + urls[0]+"</a>";
+                    return '<a href=' + urls[0] + ' target="blank">' + urls[0]+'</a>';
                 }
             }
         }
@@ -124,8 +124,8 @@ utils.simpleWikiLinks = (function obj(str, plain) {
 
 
 utils.simpleFmtObjOrCall = (function obj(str, obj, call) {
-    if (!str || str == "") {
-        return "";
+    if (!str || str == '') {
+        return '';
     }
 
     return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
@@ -138,10 +138,10 @@ utils.getABGRFromHexaCode = (function(code) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(code);
 
     return result ?
-        [ parseInt(result[4], 16),
-          parseInt(result[3], 16),
-          parseInt(result[2], 16),
-          parseInt(result[1], 16)]
+    [ parseInt(result[4], 16),
+        parseInt(result[3], 16),
+        parseInt(result[2], 16),
+        parseInt(result[1], 16)]
     : [0,0,0,255];
 });
 
@@ -159,43 +159,43 @@ utils.loadJSON = function(path, onLoaded, onError, skipParse, withCredentials, x
     xhr.onreadystatechange = (function (){
 
         switch (xhr.readyState) {
-            case 0 : // UNINITIALIZED
-            case 1 : // LOADING
-            case 2 : // LOADED
-            case 3 : // INTERACTIVE
-                break;
-            case 4 : // COMPLETED
+        case 0 : // UNINITIALIZED
+        case 1 : // LOADING
+        case 2 : // LOADED
+        case 3 : // INTERACTIVE
+            break;
+        case 4 : // COMPLETED
     
-                if (xhr.status >= 400 || xhr.status == 0) {
-                    if (onError) {
+            if (xhr.status >= 400 || xhr.status == 0) {
+                if (onError) {
+                    onError(xhr.status);
+                }
+                break;
+            }
+    
+            var data = xhr.response;
+            var parsedData = data;
+                
+            if (!skipParse) {
+                try {
+                        //var parsedData = skipParse ? data : eval("("+data+")");
+                    parsedData = JSON.parse(data);
+                } catch(e) {
+                    console.log('JSON Parse Error ('+path+'): ' + (e['message'] ? e['message'] : ''));
+                        
+                    if (onError ) {
                         onError(xhr.status);
                     }
-                    break;
+                
+                    return;
                 }
+            }
+                
+            if (onLoaded) {
+                onLoaded(parsedData);
+            }
     
-                var data = xhr.response;
-                var parsedData = data;
-                
-                if (!skipParse) {
-                    try {
-                        //var parsedData = skipParse ? data : eval("("+data+")");
-                        parsedData = JSON.parse(data);
-                    } catch(e) {
-                        console.log("JSON Parse Error ("+path+"): " + (e["message"] ? e["message"] : ""));
-                        
-                        if (onError ) {
-                            onError(xhr.status);
-                        }
-                
-                        return;
-                    }
-                }
-                
-                if (onLoaded) {
-                    onLoaded(parsedData);
-                }
-    
-                break;
+            break;
         }
 
     }).bind(this);
@@ -210,12 +210,12 @@ utils.loadJSON = function(path, onLoaded, onError, skipParse, withCredentials, x
     xhr.open('GET',  path, true);
     xhr.withCredentials = withCredentials;
     
-    if (xhrParams && xhrParams["token"] /*&& xhrParams["tokenHeader"]*/) {
+    if (xhrParams && xhrParams['token'] /*&& xhrParams["tokenHeader"]*/) {
         //xhr.setRequestHeader(xhrParams["tokenHeader"], xhrParams["token"]); //old way
-        xhr.setRequestHeader("Accept", "token/" + xhrParams["token"] + ", */*");
+        xhr.setRequestHeader('Accept', 'token/' + xhrParams['token'] + ', */*');
     }
     
-    xhr.send("");
+    xhr.send('');
 };
 
 
@@ -225,28 +225,28 @@ utils.loadBinary = function(path, onLoaded, onError, withCredentials, xhrParams,
     xhr.onreadystatechange = (function (){
 
         switch (xhr.readyState) {
-            case 0 : // UNINITIALIZED
-            case 1 : // LOADING
-            case 2 : // LOADED
-            case 3 : // INTERACTIVE
+        case 0 : // UNINITIALIZED
+        case 1 : // LOADING
+        case 2 : // LOADED
+        case 3 : // INTERACTIVE
             break;
-            case 4 : // COMPLETED
+        case 4 : // COMPLETED
     
-                    if (xhr.status >= 400 || xhr.status == 0) {
-                        if (onError) {
-                            onError(xhr.status);
-                        }
-                        break;
-                    }
+            if (xhr.status >= 400 || xhr.status == 0) {
+                if (onError) {
+                    onError(xhr.status);
+                }
+                break;
+            }
     
-                    var abuffer = xhr.response;
+            var abuffer = xhr.response;
                     
-                    if (!abuffer) {
-                        if (onError) {
-                            onError();
-                        }
-                        break;
-                    }
+            if (!abuffer) {
+                if (onError) {
+                    onError();
+                }
+                break;
+            }
                     
                     //if (!responseType || responseType == "arraybuffer") {
                         //var data = new DataView(abuffer);
@@ -254,22 +254,22 @@ utils.loadBinary = function(path, onLoaded, onError, withCredentials, xhrParams,
                       //  var data = abuffer;
                     //}
     
-                    if (onLoaded) {
-                        onLoaded(abuffer);
-                    }
+            if (onLoaded) {
+                onLoaded(abuffer);
+            }
     
-              break;
+            break;
     
-              default:
+        default:
     
-                if (onError) {
-                    onError();
-                }
+            if (onError) {
+                onError();
+            }
     
-                break;
-          }
+            break;
+        }
 
-       }).bind(this);
+    }).bind(this);
     
     /*
     xhr.onerror  = (function() {
@@ -279,15 +279,15 @@ utils.loadBinary = function(path, onLoaded, onError, withCredentials, xhrParams,
     }).bind(this);*/
 
     xhr.open('GET', path, true);
-    xhr.responseType = responseType ? responseType : "arraybuffer";
+    xhr.responseType = responseType ? responseType : 'arraybuffer';
     xhr.withCredentials = withCredentials;
 
-    if (xhrParams && xhrParams["token"] /*&& xhrParams["tokenHeader"]*/) {
+    if (xhrParams && xhrParams['token'] /*&& xhrParams["tokenHeader"]*/) {
         //xhr.setRequestHeader(xhrParams["tokenHeader"], xhrParams["token"]); //old way
-        xhr.setRequestHeader("Accept", "token/" + xhrParams["token"] + ", */*");
+        xhr.setRequestHeader('Accept', 'token/' + xhrParams['token'] + ', */*');
     }
 
-    xhr.send("");
+    xhr.send('');
 };
 
 
@@ -296,29 +296,29 @@ utils.headRequest = function(url, onLoaded, onError, withCredentials, xhrParams,
 
     xhr.onreadystatechange = (function (){
 
-            switch (xhr.readyState) {
-            case 0 : // UNINITIALIZED
-            case 1 : // LOADING
-            case 2 : // LOADED
-            case 3 : // INTERACTIVE
-                break;
-            case 4 : // COMPLETED
-                if (onLoaded != null) {
-                    onLoaded(xhr.getAllResponseHeaders(), xhr.status);
+        switch (xhr.readyState) {
+        case 0 : // UNINITIALIZED
+        case 1 : // LOADING
+        case 2 : // LOADED
+        case 3 : // INTERACTIVE
+            break;
+        case 4 : // COMPLETED
+            if (onLoaded != null) {
+                onLoaded(xhr.getAllResponseHeaders(), xhr.status);
                     //onLoaded(xhr.getResponseHeader("X-VE-Tile-Info"), xhr.status);
-                }
-                break;
-    
-            default:
-    
-                if (onError != null) {
-                    onError();
-                }
-    
-                break;
             }
+            break;
+    
+        default:
+    
+            if (onError != null) {
+                onError();
+            }
+    
+            break;
+        }
 
-        }).bind(this);
+    }).bind(this);
 
     xhr.onerror  = (function() {
         if (onError != null) {
@@ -330,12 +330,12 @@ utils.headRequest = function(url, onLoaded, onError, withCredentials, xhrParams,
     //xhr.responseType = responseType ? responseType : "arraybuffer";
     xhr.withCredentials = withCredentials;
 
-    if (xhrParams && xhrParams["token"] /*&& xhrParams["tokenHeader"]*/) {
+    if (xhrParams && xhrParams['token'] /*&& xhrParams["tokenHeader"]*/) {
         //xhr.setRequestHeader(xhrParams["tokenHeader"], xhrParams["token"]); //old way
-        xhr.setRequestHeader("Accept", "token/" + xhrParams["token"] + ", */*");
+        xhr.setRequestHeader('Accept', 'token/' + xhrParams['token'] + ', */*');
     }
 
-    xhr.send("");
+    xhr.send('');
 };
 
 
@@ -345,7 +345,7 @@ utils.loadImage = function(url, onload, onerror, withCredentials, direct) {
     image.onload = onload;
 
     if (!direct){
-        image.crossOrigin = withCredentials ? "use-credentials" : "anonymous";
+        image.crossOrigin = withCredentials ? 'use-credentials' : 'anonymous';
     }
 
     image.src = url;

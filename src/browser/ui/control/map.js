@@ -2,7 +2,7 @@
 var UIControlMap = function(ui, visible) {
     this.ui = ui;
     this.browser = ui.browser;
-    this.control = this.ui.addControl("map",
+    this.control = this.ui.addControl('map',
       '<div id="vts-map"'
       + ' class="vts-map">'
       + ' </div>');
@@ -13,7 +13,7 @@ var UIControlMap = function(ui, visible) {
 
 
 UIControlMap.prototype.getMapElement = function() {
-    return this.control.getElement("vts-map");
+    return this.control.getElement('vts-map');
 };
 
 

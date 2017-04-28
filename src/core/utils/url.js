@@ -27,13 +27,13 @@ utilsUrl.getParamsFromUrl = function(url) {
     var parser = utilsUrl.parse(url);
     var queryString = {};
     var query = parser['search'].substring(1);
-    var vars = query.split("&");
-    if (!(vars.length == 1 && vars[0] == "")) {
+    var vars = query.split('&');
+    if (!(vars.length == 1 && vars[0] == '')) {
         for (var i=0; i < vars.length; i++) {
-            var pair = vars[i].split("=");
-            if (typeof queryString[pair[0]] === "undefined") {
+            var pair = vars[i].split('=');
+            if (typeof queryString[pair[0]] === 'undefined') {
                 queryString[pair[0]] = pair[1];
-            } else if (typeof queryString[pair[0]] === "string") {
+            } else if (typeof queryString[pair[0]] === 'string') {
                 var arr = [ queryString[pair[0]], pair[1] ];
                 queryString[pair[0]] = arr;
             } else {
@@ -46,7 +46,7 @@ utilsUrl.getParamsFromUrl = function(url) {
 
 
 utilsUrl.getHost = function(url) {
-    var location = document.createElement("a");
+    var location = document.createElement('a');
     location.href = url;
     return location.hostname; 
 };
@@ -54,12 +54,12 @@ utilsUrl.getHost = function(url) {
 
 utilsUrl.getSchema = function(url) {
     //if (window.location.href.indexOf("file://") != -1) {
-    if (url.indexOf("http://") != -1) {
-        return "http:";
-    } else if (url.indexOf("https://") != -1) {
-        return "https:";
+    if (url.indexOf('http://') != -1) {
+        return 'http:';
+    } else if (url.indexOf('https://') != -1) {
+        return 'https:';
     } else {
-        var location = document.createElement("a");
+        var location = document.createElement('a');
         location.href = url;
         return location.protocol;
     }
@@ -67,7 +67,7 @@ utilsUrl.getSchema = function(url) {
 
 
 utilsUrl.getOrigin = function(url) {
-    var location = document.createElement("a");
+    var location = document.createElement('a');
     location.href = url;
     return location.origin; 
 };
@@ -89,11 +89,11 @@ utilsUrl.getProcessUrl = function(url, originUrl) {
     var baseUrlSchema = utilsUrl.getSchema(originUrl);
     var baseUrlOrigin = utilsUrl.getOrigin(originUrl); 
    
-    if (url.indexOf("://") != -1) { //absolute
+    if (url.indexOf('://') != -1) { //absolute
         return url;
-    } else if (url.indexOf("//") == 0) {  //absolute without schema
+    } else if (url.indexOf('//') == 0) {  //absolute without schema
         return baseUrlSchema + url;
-    } else if (url.indexOf("/") == 0) {  //absolute without host
+    } else if (url.indexOf('/') == 0) {  //absolute without host
         return baseUrlOrigin + url;
     } else {  //relative
         return baseUrl + url; 

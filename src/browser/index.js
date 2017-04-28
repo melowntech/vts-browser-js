@@ -17,11 +17,11 @@ var proj4 = Proj4;
 function browser (element, config) {
     var browserInterface = new BrowserInterface(element, config);
     return browserInterface.core ? browserInterface : null;
-};
+}
 
 function getBrowserVersion() {
 //    return "Browser: 2.0.0, Core: " + getCoreVersion();
-    return "" + getCoreVersion();
-};
+    return '' + getCoreVersion();
+}
 
 export {vec2,vec3,vec4,mat3,mat4,math,utils,getCoreVersion,checkSupport,browser,getBrowserVersion,proj4};

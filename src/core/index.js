@@ -17,14 +17,14 @@ var proj4 = Proj4;
 
 
 function core(element, config) {
-    element = (typeof element !== "string") ? element : document.getElementById(element);
+    element = (typeof element !== 'string') ? element : document.getElementById(element);
 
     if (checkSupport()) {
         return new CoreInterface(element, config);
     } else {
         return null;
     }
-};
+}
 
 
 export {vec2,vec3,vec4,mat3,mat4,math,utils,getCoreVersion,checkSupport,core,proj4};

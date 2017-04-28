@@ -116,7 +116,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.lastHitPosition = [0,0,100];
     this.logTilePos = null;
 
-    window.addEventListener("resize", (this.onResize).bind(this), false);
+    window.addEventListener('resize', (this.onResize).bind(this), false);
 
     this.gpu.init();
 
@@ -352,81 +352,81 @@ Renderer.prototype.switchToFramebuffer = function(type) {
     var gl = this.gpu.gl;
     
     switch(type) {
-        case "base":
-            var width = this.oldSize[0];
-            var height = this.oldSize[1];
+    case 'base':
+        var width = this.oldSize[0];
+        var height = this.oldSize[1];
     
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
     
-            this.gpu.setFramebuffer(null);
+        this.gpu.setFramebuffer(null);
     
-            this.camera.setAspect(width / height);
-            this.curSize = [width, height];
-            this.gpu.resize(this.curSize, true);
-            this.camera.update();
+        this.camera.setAspect(width / height);
+        this.curSize = [width, height];
+        this.gpu.resize(this.curSize, true);
+        this.camera.update();
             //this.updateCamera();
-            this.onlyDepth = false;
-            this.onlyHitLayers = false;
-            break;
+        this.onlyDepth = false;
+        this.onlyHitLayers = false;
+        break;
 
-        case "depth":
+    case 'depth':
             //set texture framebuffer
-            this.gpu.setFramebuffer(this.hitmapTexture);
+        this.gpu.setFramebuffer(this.hitmapTexture);
 
-            this.oldSize = [ this.curSize[0], this.curSize[1] ];
+        this.oldSize = [ this.curSize[0], this.curSize[1] ];
    
-            gl.clearColor(1.0,1.0, 1.0, 1.0);
-            gl.enable(gl.DEPTH_TEST);
+        gl.clearColor(1.0,1.0, 1.0, 1.0);
+        gl.enable(gl.DEPTH_TEST);
 
-            var size = this.hitmapSize;
+        var size = this.hitmapSize;
     
             //clear screen
-            gl.viewport(0, 0, size, size);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.viewport(0, 0, size, size);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
-            this.curSize = [size, size];
+        this.curSize = [size, size];
             //this.gpu.resize(this.curSize, true);
 
             //var width = this.oldSize[0];
             //var height = this.oldSize[1];
             //this.camera.setAspect(width / height);
 
-            this.gpu.clear();
+        this.gpu.clear();
             //this.camera.setAspect(2.5);
-            this.camera.update();
-            this.onlyDepth = true;
-            this.onlyHitLayers = false;
-            break;
+        this.camera.update();
+        this.onlyDepth = true;
+        this.onlyHitLayers = false;
+        break;
 
-        case "geo":
+    case 'geo':
             
-            this.hoverFeatureCounter = 0;
+        this.hoverFeatureCounter = 0;
             
-            var size = this.hitmapSize;
+        var size = this.hitmapSize;
             
             //set texture framebuffer
-            this.gpu.setFramebuffer(this.geoHitmapTexture);
+        this.gpu.setFramebuffer(this.geoHitmapTexture);
             
-            var oldSize = [ this.curSize[0], this.curSize[1] ];
+        var oldSize = [ this.curSize[0], this.curSize[1] ];
             
-            var width = size;
-            var height = size;
+        var width = size;
+        var height = size;
             
-            gl.clearColor(1.0,1.0, 1.0, 1.0);
-            gl.enable(gl.DEPTH_TEST);
+        gl.clearColor(1.0,1.0, 1.0, 1.0);
+        gl.enable(gl.DEPTH_TEST);
             
             //clear screen
-            gl.viewport(0, 0, size, size);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.viewport(0, 0, size, size);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             
-            this.curSize = [width, height];
+        this.curSize = [width, height];
             
             //render scene
-            this.onlyHitLayers = true;
+        this.onlyHitLayers = true;
             
-            this.gpu.clear();
-            this.camera.update();
-            break;
+        this.gpu.clear();
+        this.camera.update();
+        break;
     }
 };
 
@@ -527,14 +527,14 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
     imageData.data.set(data);
     context.putImageData(imageData, 0, 0);
 
-    filetype = filetype || "jpg"; 
+    filetype = filetype || 'jpg'; 
 
     //open image in new window
     
-    if (output == "file") {
-        var a = document.createElement("a");
+    if (output == 'file') {
+        var a = document.createElement('a');
 
-        var dataURI= canvas.toDataURL("image/" + filetype);
+        var dataURI= canvas.toDataURL('image/' + filetype);
 
         var byteString = atob(dataURI.split(',')[1]);
         // separate out the mime component
@@ -558,8 +558,8 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);  
         }, 0); 
-    } if (output == "tab") {
-        window.open(canvas.toDataURL("image/" + type));
+    } if (output == 'tab') {
+        window.open(canvas.toDataURL('image/' + type));
     }
     
     return imageData;
@@ -567,7 +567,7 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
 
 
 Renderer.prototype.getBitmap = function(url, filter, tiled) {
-    var id = url + "*" + filter + "*" + tiled;
+    var id = url + '*' + filter + '*' + tiled;
 
     var texture = this.bitmaps[id];
     if (texture == null) {

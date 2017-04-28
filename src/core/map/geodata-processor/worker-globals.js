@@ -34,7 +34,7 @@ function clamp(value, min, max) {
     }
 
     return value;
-};
+}
 
 
 function vec3Normalize(a, b) {
@@ -61,7 +61,7 @@ function vec3Normalize(a, b) {
     b[1] = d * g;
     b[2] = e * g;
     return b;
-};
+}
 
 
 function vec3Length(a) {
@@ -69,7 +69,7 @@ function vec3Length(a) {
         c = a[1];
     a = a[2];
     return Math.sqrt(b * b + c * c + a * a);
-};
+}
 
 
 function vec3Cross(a, b, c) {
@@ -84,7 +84,7 @@ function vec3Cross(a, b, c) {
     c[1] = a * g - d * b;
     c[2] = d * f - e * g;
     return c;
-};
+}
 
 
 function vec3AnyPerpendicular(a, b) {
@@ -105,7 +105,7 @@ function vec3AnyPerpendicular(a, b) {
     }
 
     return b;
-};
+}
 
 
 export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, vec3AnyPerpendicular};

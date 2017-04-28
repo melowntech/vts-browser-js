@@ -69,8 +69,8 @@ ControlMode.prototype.setCurrentControlMode = function(id, options) {
     this.currentControlMode = newMode;
 
     // call reset
-    if (newMode["reset"]) {
-        newMode["reset"](options);
+    if (newMode['reset']) {
+        newMode['reset'](options);
     }
 };
 
@@ -165,9 +165,9 @@ ControlMode.prototype.onTick = function(event) {
 
 // Private metod
 ControlMode.prototype.updateModifierKeys = function(event) {
-    this.altKey = event.getModifierKey("alt");
-    this.shiftKey = event.getModifierKey("shift");
-    this.ctrlKey = event.getModifierKey("ctrl");
+    this.altKey = event.getModifierKey('alt');
+    this.shiftKey = event.getModifierKey('shift');
+    this.ctrlKey = event.getModifierKey('ctrl');
     //console.log("alt:" + this.altKey + "  ctrl:" + this.ctrlKey + "  shift:" + this.shiftKey);
 };
 

@@ -19,8 +19,8 @@ var MapUrl = function(map, path) {
 };
 
 
-MapUrl.prototype["quad"] = function(lod, ix, iy) {
-    var quadKey = "";
+MapUrl.prototype['quad'] = function(lod, ix, iy) {
+    var quadKey = '';
     //ty = Math.pow(2,zoom - 1) - ty;
     for (var i = lod; i > 0; i--) {
         var digit = 0;
@@ -40,7 +40,7 @@ MapUrl.prototype["quad"] = function(lod, ix, iy) {
 };
 
 
-MapUrl.prototype["msDigit"] = function(iy, ix) {
+MapUrl.prototype['msDigit'] = function(iy, ix) {
     return (((iy & 3) << 1) + (ix & 1));
 };
 
@@ -48,26 +48,26 @@ MapUrl.prototype["msDigit"] = function(iy, ix) {
 MapUrl.prototype.hex = function(v, n) {
     var s = v.toString(16);
     while (s.length < 8) {
-        s = "0" + s;
+        s = '0' + s;
     }
     return s;
 };
 
 
-MapUrl.prototype["ppx"] = function(lod, ix) {
+MapUrl.prototype['ppx'] = function(lod, ix) {
     return this.hex(ix << (28 - lod), 7);
 };
 
 
-MapUrl.prototype["ppy"] = function(lod, iy) {
+MapUrl.prototype['ppy'] = function(lod, iy) {
     return this.hex((1 << 28) - ((iy + 1) << (28 - lod)), 7);
 };
 
 
 MapUrl.prototype.processUrlFunction = function(id, counter, string) {
-    if (typeof string == "string") {
-        if (string.indexOf("quad") != -1) {
-            var string2 = "(function(lod,x,y,loclod,locx,locy){" + string.replace("quad", "return this.quad") + "})";
+    if (typeof string == 'string') {
+        if (string.indexOf('quad') != -1) {
+            var string2 = '(function(lod,x,y,loclod,locx,locy){' + string.replace('quad', 'return this.quad') + '})';
 
             try {
                 var fc = eval(string2).bind(this);
@@ -75,8 +75,8 @@ MapUrl.prototype.processUrlFunction = function(id, counter, string) {
             } catch(e) {
                 return string;
             }
-        } else if (string.indexOf("msdigit") != -1) {
-            var string2 = "(function(x,y,loclod,locx,locy){" + string.replace("msdigit", "return this.msDigit") + "})";
+        } else if (string.indexOf('msdigit') != -1) {
+            var string2 = '(function(x,y,loclod,locx,locy){' + string.replace('msdigit', 'return this.msDigit') + '})';
 
             try {
                 var fc = eval(string2).bind(this);
@@ -85,7 +85,7 @@ MapUrl.prototype.processUrlFunction = function(id, counter, string) {
                 return string;
             }
 
-        } else if (string.indexOf("alt") != -1) {
+        } else if (string.indexOf('alt') != -1) {
 
             var result = /\(([^)]*)\)/.exec(string);
 
@@ -99,9 +99,9 @@ MapUrl.prototype.processUrlFunction = function(id, counter, string) {
 
             return string;
 
-        } else if (string.indexOf("ppx") != -1) {
+        } else if (string.indexOf('ppx') != -1) {
 
-            var string2 = "(function(lod,x,loclod,locx){" + string.replace("ppx", "return this.ppx") + "})";
+            var string2 = '(function(lod,x,loclod,locx){' + string.replace('ppx', 'return this.ppx') + '})';
 
             try {
                 var fc = eval(string2).bind(this);
@@ -110,9 +110,9 @@ MapUrl.prototype.processUrlFunction = function(id, counter, string) {
                 return string;
             }
 
-        } else if (string.indexOf("ppy") != -1) {
+        } else if (string.indexOf('ppy') != -1) {
 
-            var string2 = "(function(lod,y,loclod,locy){" + string.replace("ppy", "return this.ppy") + "})";
+            var string2 = '(function(lod,y,loclod,locy){' + string.replace('ppy', 'return this.ppy') + '})';
 
             try {
                 var fc = eval(string2).bind(this);
@@ -198,14 +198,14 @@ MapUrl.prototype.makeUrl = function(templ, id, subId, skipBaseUrl) {
     //remove white spaces from template
     templ = templ.replace(/ /g, '');
 
-    var url = utils.simpleFmtObjOrCall(templ, {"lod":id.lod,  "x":id.ix, "y":id.iy, "sub": subId,
-                                               "locx":locx, "locy":locy, "loclod":loclod, "geonavtile": subId,
-                                               "hereappid": "abcde", "hereappcode":"12345"},
+    var url = utils.simpleFmtObjOrCall(templ, {'lod':id.lod,  'x':id.ix, 'y':id.iy, 'sub': subId,
+        'locx':locx, 'locy':locy, 'loclod':loclod, 'geonavtile': subId,
+        'hereappid': 'abcde', 'hereappcode':'12345'},
                                                this.processUrlFunction.bind(this, id2, this.urlCounter));
 
     this.urlCounter++;
 
-    skipBaseUrl = (url.indexOf("//") != -1);
+    skipBaseUrl = (url.indexOf('//') != -1);
 
     /* //useful for debug
     var tmp;
@@ -218,7 +218,7 @@ MapUrl.prototype.makeUrl = function(templ, id, subId, skipBaseUrl) {
     */
 
     if (skipBaseUrl) {
-        if (url.indexOf("//") == 0) {
+        if (url.indexOf('//') == 0) {
             return this.baseUrlSchema + url;
         } else {
             return url;
@@ -236,11 +236,11 @@ MapUrl.prototype.processUrl = function(url, fallback) {
     
     url = url.trim();
 
-    if (url.indexOf("://") != -1) { //absolute
+    if (url.indexOf('://') != -1) { //absolute
         return url;
-    } else if (url.indexOf("//") == 0) {  //absolute without schema
+    } else if (url.indexOf('//') == 0) {  //absolute without schema
         return this.baseUrlSchema + url;
-    } else if (url.indexOf("/") == 0) {  //absolute without host
+    } else if (url.indexOf('/') == 0) {  //absolute without host
         return this.baseUrlOrigin + url;
     } else {  //relative
         return this.baseUrl + url; 

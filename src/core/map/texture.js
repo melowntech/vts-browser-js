@@ -41,9 +41,9 @@ var MapTexture = function(map, path, heightMap, extraBound, extraInfo, tile, int
         if (layer.availability) {
             this.checkType = layer.availability.type;
             switch (this.checkType) {
-                case "negative-type": this.checkValue = layer.availability.mime; break;
-                case "negative-code": this.checkValue = layer.availability.codes; break;
-                case "negative-size": this.checkValue = layer.availability.size; break;
+            case 'negative-type': this.checkValue = layer.availability.mime; break;
+            case 'negative-code': this.checkValue = layer.availability.codes; break;
+            case 'negative-size': this.checkValue = layer.availability.size; break;
             }
         }       
     }
@@ -153,85 +153,85 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
     }*/
 
     switch (this.checkType) {
-        case "metatile":
+    case 'metatile':
 
-            if (this.checkStatus != 2) {
-                if (this.checkStatus == 0) {
-                    if (this.extraInfo && this.extraInfo.tile) {
-                        var metaresources = this.extraInfo.tile.boundmetaresources;
-                        if (!metaresources) {
-							metaresources = this.map.resourcesTree.findAgregatedNode(this.extraInfo.tile.id, 8);
-                            this.extraInfo.tile.boundmetaresources = metaresources;
+        if (this.checkStatus != 2) {
+            if (this.checkStatus == 0) {
+                if (this.extraInfo && this.extraInfo.tile) {
+                    var metaresources = this.extraInfo.tile.boundmetaresources;
+                    if (!metaresources) {
+                        metaresources = this.map.resourcesTree.findAgregatedNode(this.extraInfo.tile.id, 8);
+                        this.extraInfo.tile.boundmetaresources = metaresources;
+                    }
+                        
+                    var layer = this.extraInfo.layer;
+                    var path = this.extraInfo.metaPath;
+						
+                    if(!this.extraInfo.metaPath) {
+                        var path = layer.getMetatileUrl(metaresources.id);	
+                        this.extraInfo.metaPath = path;
+                    }
+						
+                    var texture = metaresources.getTexture(path, true, null, null, this.tile, this.internal);
+                        
+                    if (this.maskTexture) {
+                        if (this.maskTexture.isReady(doNotLoad, priority, doNotCheckGpu, this)) {
+                            this.checkStatus = 2;
                         }
-                        
-                        var layer = this.extraInfo.layer;
-						var path = this.extraInfo.metaPath;
-						
-						if(!this.extraInfo.metaPath) {
-							var path = layer.getMetatileUrl(metaresources.id);	
-							this.extraInfo.metaPath = path;
-						}
-						
-                        var texture = metaresources.getTexture(path, true, null, null, this.tile, this.internal);
-                        
-                        if (this.maskTexture) {
-                            if (this.maskTexture.isReady(doNotLoad, priority, doNotCheckGpu, this)) {
-                                this.checkStatus = 2;
-                            }
-                        } else {
-                            if (texture.isReady(doNotLoad, priority, doNotCheckGpu)) {
-                                var tile = this.extraInfo.tile;
-                                var value = texture.getHeightMapValue(tile.id[1] & 255, tile.id[2] & 255);
-                                this.checkStatus = (value & 128) ? 2 : -1;
+                    } else {
+                        if (texture.isReady(doNotLoad, priority, doNotCheckGpu)) {
+                            var tile = this.extraInfo.tile;
+                            var value = texture.getHeightMapValue(tile.id[1] & 255, tile.id[2] & 255);
+                            this.checkStatus = (value & 128) ? 2 : -1;
                                 
                                 
-                                if (this.checkStatus == 2) {
-                                    if (!(value & 64)) { //load mask
-                                        var path = layer.getMaskUrl(tile.id);
-                                        this.maskTexture = tile.resources.getTexture(path, null, null, null, this.tile, this.internal);
-                                        this.checkStatus = 0;
-                                        tile.resetDrawCommands = true;
-                                        this.map.markDirty();
-                                    }
+                            if (this.checkStatus == 2) {
+                                if (!(value & 64)) { //load mask
+                                    var path = layer.getMaskUrl(tile.id);
+                                    this.maskTexture = tile.resources.getTexture(path, null, null, null, this.tile, this.internal);
+                                    this.checkStatus = 0;
+                                    tile.resetDrawCommands = true;
+                                    this.map.markDirty();
                                 }
                             }
                         }
                     }
                 }
+            }
                 
-                if (this.checkStatus == -1) {
-                    if (!this.extraBound) {
-                        var parent = this.extraInfo.tile.parent;
-                        if (parent.id[0] < this.extraInfo.layer.lodRange[0]) {
-                            this.neverReady = true;
-                            this.extraInfo.tile.resetDrawCommands = true;
-                            this.map.markDirty();
-                            return false;
-                        }
-
-                        this.extraBound = { tile: this.extraInfo.tile, layer: this.extraInfo.layer};
-                        this.setBoundTexture(this.extraBound.tile.parent, this.extraBound.layer);
-                        this.checkMask = true;
+            if (this.checkStatus == -1) {
+                if (!this.extraBound) {
+                    var parent = this.extraInfo.tile.parent;
+                    if (parent.id[0] < this.extraInfo.layer.lodRange[0]) {
+                        this.neverReady = true;
+                        this.extraInfo.tile.resetDrawCommands = true;
+                        this.map.markDirty();
+                        return false;
                     }
 
-                    while (this.extraBound.texture.extraBound || this.extraBound.texture.checkStatus == -1) {
-                    //while (this.extraBound.texture.checkStatus == -1) {
-                        var parent = this.extraBound.sourceTile.parent;
-                        if (parent.id[0] < this.extraBound.layer.lodRange[0]) {
-                            this.neverReady = true;
-                            this.extraBound.tile.resetDrawCommands = true;
-                            this.map.markDirty();
-                            return false;
-                        }
-                        
-                        this.setBoundTexture(parent, this.extraBound.layer);        
-                    }
+                    this.extraBound = { tile: this.extraInfo.tile, layer: this.extraInfo.layer};
+                    this.setBoundTexture(this.extraBound.tile.parent, this.extraBound.layer);
+                    this.checkMask = true;
                 }
 
-                return false;
+                while (this.extraBound.texture.extraBound || this.extraBound.texture.checkStatus == -1) {
+                    //while (this.extraBound.texture.checkStatus == -1) {
+                    var parent = this.extraBound.sourceTile.parent;
+                    if (parent.id[0] < this.extraBound.layer.lodRange[0]) {
+                        this.neverReady = true;
+                        this.extraBound.tile.resetDrawCommands = true;
+                        this.map.markDirty();
+                        return false;
+                    }
+                        
+                    this.setBoundTexture(parent, this.extraBound.layer);        
+                }
             }
+
+            return false;
+        }
         
-            break;
+        break;
     }
 
     var maskState = true;

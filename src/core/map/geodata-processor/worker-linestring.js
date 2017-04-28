@@ -1,13 +1,13 @@
 
 import {globals as globals_, vec3Normalize as vec3Normalize_,
         vec3Length as vec3Length_, vec3Cross as vec3Cross_,
-        vec3AnyPerpendicular as vec3AnyPerpendicular_} from "./worker-globals.js";
+        vec3AnyPerpendicular as vec3AnyPerpendicular_} from './worker-globals.js';
 import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
-        getLayerExpresionValue as getLayerExpresionValue_} from "./worker-style.js";
+        getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
 import {addText as addText_, addTextOnPath as addTextOnPath_,
         setFont as setFont_, addStreetTextOnPath as addStreetTextOnPath_,
         areTextCharactersAvailable as areTextCharactersAvailable_,
-        getCharVerticesCount as getCharVerticesCount_} from "./worker-text.js";
+        getCharVerticesCount as getCharVerticesCount_} from './worker-text.js';
 
 var globals = globals_, vec3Normalize = vec3Normalize_, vec3Length = vec3Length_,
     vec3Cross = vec3Cross_, vec3AnyPerpendicular = vec3AnyPerpendicular_;
@@ -17,10 +17,10 @@ var addText = addText_, addTextOnPath = addTextOnPath_, setFont = setFont_,
     addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
     getCharVerticesCount = getCharVerticesCount_;
 
-import {processPolygonPass as processPolygonPass_} from "./worker-polygon.js";
+import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
 var processPolygonPass = processPolygonPass_;
 
-import {postGroupMessage as postGroupMessage_} from "./worker-message.js";
+import {postGroupMessage as postGroupMessage_} from './worker-message.js';
 var postGroupMessage = postGroupMessage_;
 
 //get rid of compiler mess
@@ -28,37 +28,37 @@ var postGroupMessage = postGroupMessage_;
 
 
 var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) {
-    var lines = lineString["lines"] || [];
+    var lines = lineString['lines'] || [];
 
     if (lines.length == 0) {
         return;
     }
 
-    var line = getLayerPropertyValue(style, "line", lineString, lod);
-    var lineLabel = getLayerPropertyValue(style, "line-label", lineString, lod);
+    var line = getLayerPropertyValue(style, 'line', lineString, lod);
+    var lineLabel = getLayerPropertyValue(style, 'line-label', lineString, lod);
 
     if (!line && !lineLabel) {
         return;
     }
 
-    var hoverEvent = getLayerPropertyValue(style, "hover-event", lineString, lod);
-    var clickEvent = getLayerPropertyValue(style, "click-event", lineString, lod);
-    var drawEvent = getLayerPropertyValue(style, "draw-event", lineString, lod);
-    var enterEvent = getLayerPropertyValue(style, "enter-event", lineString, lod);
-    var leaveEvent = getLayerPropertyValue(style, "leave-event", lineString, lod);
+    var hoverEvent = getLayerPropertyValue(style, 'hover-event', lineString, lod);
+    var clickEvent = getLayerPropertyValue(style, 'click-event', lineString, lod);
+    var drawEvent = getLayerPropertyValue(style, 'draw-event', lineString, lod);
+    var enterEvent = getLayerPropertyValue(style, 'enter-event', lineString, lod);
+    var leaveEvent = getLayerPropertyValue(style, 'leave-event', lineString, lod);
 
-    var zbufferOffset = getLayerPropertyValue(style, "zbuffer-offset", lineString, lod);
+    var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', lineString, lod);
 
-    var lineFlat = getLayerPropertyValue(style, "line-flat", lineString, lod);
-    var lineColor = getLayerPropertyValue(style, "line-color", lineString, lod);
-    var lineWidth = 0.5 * getLayerPropertyValue(style, "line-width", lineString, lod);
+    var lineFlat = getLayerPropertyValue(style, 'line-flat', lineString, lod);
+    var lineColor = getLayerPropertyValue(style, 'line-color', lineString, lod);
+    var lineWidth = 0.5 * getLayerPropertyValue(style, 'line-width', lineString, lod);
 
-    var lineStyle = getLayerPropertyValue(style, "line-style", lineString, lod);
-    var lineStyleTexture = getLayerPropertyValue(style, "line-style-texture", lineString, lod);
-    var lineStyleBackground = getLayerPropertyValue(style, "line-style-background", lineString, lod);
+    var lineStyle = getLayerPropertyValue(style, 'line-style', lineString, lod);
+    var lineStyleTexture = getLayerPropertyValue(style, 'line-style-texture', lineString, lod);
+    var lineStyleBackground = getLayerPropertyValue(style, 'line-style-background', lineString, lod);
 
-    var lineLabel = getLayerPropertyValue(style, "line-label", lineString, lod);
-    var lineLabelSize = getLayerPropertyValue(style, "line-label-size", lineString, lod);
+    var lineLabel = getLayerPropertyValue(style, 'line-label', lineString, lod);
+    var lineLabelSize = getLayerPropertyValue(style, 'line-label-size', lineString, lod);
 
     //console.log("lineflat: "+lineFlat);
     //var lineWidth = Math.pow(2, 23 - lod) / 32;
@@ -144,7 +144,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
         }
     
-        var texturedLine = (lineStyle != "solid");
+        var texturedLine = (lineStyle != 'solid');
     
     
         var dlines = false;
@@ -538,28 +538,28 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
     if (line) {
-        var messageData = {"command":"addRenderJob", "vertexBuffer": vertexBuffer,
-                            "color":lineColor, "z-index":zIndex, "center": center, "normalBuffer": normalBuffer,
-                            "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
-                            "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
-                            "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
-                            "line-width":lineWidth*2, "lod":(globals.autoLod ? null : globals.tileLod) };
+        var messageData = {'command':'addRenderJob', 'vertexBuffer': vertexBuffer,
+            'color':lineColor, 'z-index':zIndex, 'center': center, 'normalBuffer': normalBuffer,
+            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+            'line-width':lineWidth*2, 'lod':(globals.autoLod ? null : globals.tileLod) };
     
         if (lineFlat) {
-            messageData["type"] = texturedLine ? "flat-tline" : "flat-line";
+            messageData['type'] = texturedLine ? 'flat-tline' : 'flat-line';
         } else {
-            messageData["type"] = texturedLine ? "pixel-tline" : "pixel-line";
+            messageData['type'] = texturedLine ? 'pixel-tline' : 'pixel-line';
         }
     
         if (texturedLine) {
             if (lineStyleTexture != null) {
-                messageData["texture"] = [globals.stylesheetBitmaps[lineStyleTexture[0]], lineStyleTexture[1], lineStyleTexture[2]];
-                messageData["background"] = lineStyleBackground;
+                messageData['texture'] = [globals.stylesheetBitmaps[lineStyleTexture[0]], lineStyleTexture[1], lineStyleTexture[2]];
+                messageData['background'] = lineStyleBackground;
             }
         }
 
         var signature = JSON.stringify({
-            type: messageData["type"],
+            type: messageData['type'],
             color : lineColor,
             zIndex : zIndex,
             zOffset : zbufferOffset,
@@ -584,10 +584,10 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
 };
 
 var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, center, lod, style, zIndex, eventInfo) {
-    var labelColor = getLayerPropertyValue(style, "line-label-color", lineString, lod);
-    var labelSource = getLayerPropertyValue(style, "line-label-source", lineString, lod);
-    var labelSize = getLayerPropertyValue(style, "line-label-size", lineString, lod);
-    var labelOffset = getLayerPropertyValue(style, "line-label-offset", lineString, lod);
+    var labelColor = getLayerPropertyValue(style, 'line-label-color', lineString, lod);
+    var labelSource = getLayerPropertyValue(style, 'line-label-source', lineString, lod);
+    var labelSize = getLayerPropertyValue(style, 'line-label-size', lineString, lod);
+    var labelOffset = getLayerPropertyValue(style, 'line-label-offset', lineString, lod);
 
     //console.log("label size: " + lod + "   " + labelSize);
 
@@ -598,27 +598,27 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     var labelText = getLayerExpresionValue(style, labelSource, lineString, lod);
 
-    if (labelSource == "$name") {
-        if (!areTextCharactersAvailable(labelText, globals.fonts["default"])) {
-            var labelText2 = getLayerExpresionValue(style, "$name:en", lineString, lod);
+    if (labelSource == '$name') {
+        if (!areTextCharactersAvailable(labelText, globals.fonts['default'])) {
+            var labelText2 = getLayerExpresionValue(style, '$name:en', lineString, lod);
             
-            if (areTextCharactersAvailable(labelText2, globals.fonts["default"])) {
+            if (areTextCharactersAvailable(labelText2, globals.fonts['default'])) {
                 labelText = labelText2;                     
             }
         }
     }
 
-    if (!labelText || labelText == "") {
+    if (!labelText || labelText == '') {
         return;
     }
 
-    var hoverEvent = getLayerPropertyValue(style, "hover-event", lineString, lod);
-    var clickEvent = getLayerPropertyValue(style, "click-event", lineString, lod);
-    var drawEvent = getLayerPropertyValue(style, "draw-event", lineString, lod);
-    var enterEvent = getLayerPropertyValue(style, "enter-event", lineString, lod);
-    var leaveEvent = getLayerPropertyValue(style, "leave-event", lineString, lod);
+    var hoverEvent = getLayerPropertyValue(style, 'hover-event', lineString, lod);
+    var clickEvent = getLayerPropertyValue(style, 'click-event', lineString, lod);
+    var drawEvent = getLayerPropertyValue(style, 'draw-event', lineString, lod);
+    var enterEvent = getLayerPropertyValue(style, 'enter-event', lineString, lod);
+    var leaveEvent = getLayerPropertyValue(style, 'leave-event', lineString, lod);
 
-    var zbufferOffset = getLayerPropertyValue(style, "zbuffer-offset", lineString, lod);
+    var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', lineString, lod);
 
     var bufferSize = getCharVerticesCount() * labelText.length * 2;
     var vertexBuffer = new Float32Array(bufferSize);
@@ -629,22 +629,22 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
     var index = 0;    
 
-    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, globals.fonts["default"], labelOffset, vertexBuffer, texcoordsBuffer, index);
-    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, globals.fonts["default"], labelOffset, vertexBuffer, texcoordsBuffer, index);
+    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, index);
+    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, index);
 
     var signature = JSON.stringify({
-        type: "line-label",
+        type: 'line-label',
         color : labelColor,
         zIndex : zIndex,
         zOffset : zbufferOffset
     });
 
-    postGroupMessage({"command":"addRenderJob", "type": "line-label", "vertexBuffer": vertexBuffer,
-                      "texcoordsBuffer": texcoordsBuffer, "color":labelColor, "z-index":zIndex, "center": center,
-                      "hover-event":hoverEvent, "click-event":clickEvent, "draw-event":drawEvent,
-                      "enter-event":enterEvent, "leave-event":leaveEvent, "zbuffer-offset":zbufferOffset,
-                      "hitable":hitable, "state":globals.hitState, "eventInfo":eventInfo,
-                      "lod":(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
+    postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
+        'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'z-index':zIndex, 'center': center,
+        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+        'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
 };
 
 export {processLineStringPass, processLineLabel};

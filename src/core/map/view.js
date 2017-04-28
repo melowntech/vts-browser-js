@@ -7,13 +7,13 @@ var MapView = function(map, json) {
 
 
 MapView.prototype.parse = function(json) {
-    this.description = json["description"] || "";
+    this.description = json['description'] || '';
     //this.boundLayers = json["boundLayers"] || [];
-    this.freeLayers = json["freeLayers"] || {};
+    this.freeLayers = json['freeLayers'] || {};
     this.surfaces = {};    
 
-    if (json["surfaces"]) {
-        var surfaces = json["surfaces"]; 
+    if (json['surfaces']) {
+        var surfaces = json['surfaces']; 
         if (Array.isArray(surfaces)) { //convert from old version
             for (var i = 0, li = surfaces.length; i < li; i++) {
                 this.surfaces[surfaces[i]] = [];
@@ -35,10 +35,10 @@ MapView.prototype.parse = function(json) {
 
 MapView.prototype.getInfo = function() {
     return {
-        "description" : JSON.parse(JSON.stringify(this.description)),
-        "surfaces" : JSON.parse(JSON.stringify(this.surfaces)),
+        'description' : JSON.parse(JSON.stringify(this.description)),
+        'surfaces' : JSON.parse(JSON.stringify(this.surfaces)),
         //"boundLayers" : JSON.parse(JSON.stringify(this.boundLayers)),
-        "freeLayers" : JSON.parse(JSON.stringify(this.freeLayers))
+        'freeLayers' : JSON.parse(JSON.stringify(this.freeLayers))
     };
 };
 

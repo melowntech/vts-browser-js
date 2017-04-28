@@ -218,7 +218,7 @@ struct Metanode {
     var nodeSize2 = stream.index - lastIndex;
 
     //if (!this.map.config.mapSmartNodeParsing) {
-        this.generateCullingHelpers();
+    this.generateCullingHelpers();
     //}    
 };
 
@@ -251,15 +251,15 @@ MapMetanode.prototype.clone = function() {
 
 
 //    if (this.map.config.mapGeocentCulling) {
-        node.diskPos = this.diskPos;
-        node.diskNormal = this.diskNormal; 
-        node.diskAngle = this.diskAngle;
-        node.diskAngle2 = this.diskAngle2;
-        node.diskAngle2A = this.diskAngle2A;
-        node.diskDistance = this.diskDistance; 
-        node.bbox2 = this.bbox2;  
+    node.diskPos = this.diskPos;
+    node.diskNormal = this.diskNormal; 
+    node.diskAngle = this.diskAngle;
+    node.diskAngle2 = this.diskAngle2;
+    node.diskAngle2A = this.diskAngle2A;
+    node.diskDistance = this.diskDistance; 
+    node.bbox2 = this.bbox2;  
 
-        node.divisionNode = this.divisionNode;
+    node.divisionNode = this.divisionNode;
 
  //   }
 
@@ -581,7 +581,7 @@ MapMetanode.prototype.drawBBox = function(cameraPos) {
 
     var renderer = this.map.renderer;
 
-    renderer.gpu.useProgram(renderer.progBBox, ["aPosition"]);
+    renderer.gpu.useProgram(renderer.progBBox, ['aPosition']);
 
     var mvp = mat4.create();
     var mv = mat4.create();
@@ -591,10 +591,10 @@ MapMetanode.prototype.drawBBox = function(cameraPos) {
     var proj = renderer.camera.getProjectionMatrix();
     mat4.multiply(proj, mv, mvp);
 
-    renderer.progBBox.setMat4("uMVP", mvp);
+    renderer.progBBox.setMat4('uMVP', mvp);
 
     //draw bbox
-    renderer.bboxMesh.draw(renderer.progBBox, "aPosition");
+    renderer.bboxMesh.draw(renderer.progBBox, 'aPosition');
 };
 
 
@@ -620,9 +620,9 @@ MapMetanode.prototype.drawBBox2 = function(cameraPos) {
     }
     
 
-    renderer.gpu.useProgram(prog, ["aPosition"]);
+    renderer.gpu.useProgram(prog, ['aPosition']);
 
-    prog.setFloatArray("uPoints", buffer);
+    prog.setFloatArray('uPoints', buffer);
 
     //var mvp = mat4.create();
     //var mv = mat4.create();
@@ -634,10 +634,10 @@ MapMetanode.prototype.drawBBox2 = function(cameraPos) {
 
     var mvp = renderer.camera.getMvpMatrix();
 
-    prog.setMat4("uMVP", mvp);
+    prog.setMat4('uMVP', mvp);
 
     //draw bbox
-    renderer.bboxMesh2.draw(prog, "aPosition");
+    renderer.bboxMesh2.draw(prog, 'aPosition');
 };
 
 /*
@@ -675,7 +675,7 @@ MapMetanode.prototype.drawPlane = function(cameraPos, tile) {
         return;
     }
 
-    renderer.gpu.useProgram(renderer.progPlane, ["aPosition", "aTexCoord"]);
+    renderer.gpu.useProgram(renderer.progPlane, ['aPosition', 'aTexCoord']);
 
     var mvp = mat4.create();
     var mv = renderer.camera.getModelviewMatrix();
@@ -695,9 +695,9 @@ MapMetanode.prototype.drawPlane = function(cameraPos, tile) {
     
     var prog = renderer.progPlane; 
 
-    prog.setMat4("uMV", mv);
-    prog.setMat4("uProj", proj);
-    prog.setFloatArray("uPoints", buffer);
+    prog.setMat4('uMV', mv);
+    prog.setMat4('uProj', proj);
+    prog.setFloatArray('uPoints', buffer);
 
     var minTile = 32;
     var embed = 8;
@@ -710,15 +710,15 @@ MapMetanode.prototype.drawPlane = function(cameraPos, tile) {
 
     //prog.setVec4("uParams", [0,0,1/15,0]);
     //prog.setVec4("uParams", [(minTile / step1),0,1/15,(minTile / step2)]);
-    prog.setVec4("uParams", [step1, 0, 1/15, step2]);
+    prog.setVec4('uParams', [step1, 0, 1/15, step2]);
 
     //prog.setVec4("uParams2", [(minTile / step1), (minTile / step2), blend, 0]);
-    prog.setVec4("uParams2", [0, 0, blend, 0]);
+    prog.setVec4('uParams2', [0, 0, blend, 0]);
 
     renderer.gpu.bindTexture(renderer.heightmapTexture);
     
     //draw bbox
-    renderer.planeMesh.draw(renderer.progPlane, "aPosition", "aTexCoord");
+    renderer.planeMesh.draw(renderer.progPlane, 'aPosition', 'aTexCoord');
 };
 
 

@@ -17,28 +17,28 @@ var RendererInterface = function(renderer) {
 
 RendererInterface.prototype.clear = function(options) {
     if (options != null) {
-        this.gpu.clear((options["clearDepth"] || true),
-                        (options["clearColor"] || false),
-                        (options["color"] || [255,255,255,255]),
-                        ((options["depth"] != null) ? options["depth"] : 1.0) );
+        this.gpu.clear((options['clearDepth'] || true),
+                        (options['clearColor'] || false),
+                        (options['color'] || [255,255,255,255]),
+                        ((options['depth'] != null) ? options['depth'] : 1.0) );
     }
     return this;    
 };
 
 
 RendererInterface.prototype.createState = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return this;    
     }
     
     var stateOptions = {
-        blend : (options["blend"] != null) ? options["blend"] : false,
-        stencil : (options["stencil"] != null) ? options["stencil"] : false,
-        zoffset : (options["zoffset"] != null) ? options["zoffset"] : 0,
-        zwrite : (options["zwrite"] != null) ? options["zwrite"] : true,
-        ztest : (options["ztest"] != null) ? options["ztest"] : true,
-        zequal : (options["zequal"] != null) ? options["zequal"] : true,
-        culling : (options["culling"] != null) ? options["culling"] : true
+        blend : (options['blend'] != null) ? options['blend'] : false,
+        stencil : (options['stencil'] != null) ? options['stencil'] : false,
+        zoffset : (options['zoffset'] != null) ? options['zoffset'] : 0,
+        zwrite : (options['zwrite'] != null) ? options['zwrite'] : true,
+        ztest : (options['ztest'] != null) ? options['ztest'] : true,
+        zequal : (options['zequal'] != null) ? options['zequal'] : true,
+        culling : (options['culling'] != null) ? options['culling'] : true
     };
 
     return this.gpu.createState(stateOptions);
@@ -54,21 +54,21 @@ RendererInterface.prototype.setState = function(state) {
 
 
 RendererInterface.prototype.createTexture = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return null;
     }
 
-    var source = options["source"];
+    var source = options['source'];
     if (source == null) {
         return null;
     }
 
-    var filter = options["filter"] || "linear";
-    var repeat = options["repeat"] || false;
+    var filter = options['filter'] || 'linear';
+    var repeat = options['repeat'] || false;
 
     if (source instanceof Uint8Array) {
-        var width = options["width"];
-        var height = options["height"];
+        var width = options['width'];
+        var height = options['height'];
 
         if (width && height) {
             var texture = new GpuTexture(this.gpu);
@@ -96,21 +96,21 @@ RendererInterface.prototype.removeTexture = function(texture) {
 
 
 RendererInterface.prototype.createMesh = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return null;
     }
 
     var data = {
-        vertices : options["vertices"],
-        uvs : options["uvs"],
-        uvs2 : options["normals"],
-        vertexSize : options["vertexSize"],
-        uvSize : options["uvSize"],
-        uv2Size : options["normalSize"] || 3,
-        vertexAttr : options["vertexAttr"],
-        uvAttr : options["uvAttr"],
-        uv2Attr : options["normalAttr"],
-        bbox : options["bbox"]
+        vertices : options['vertices'],
+        uvs : options['uvs'],
+        uvs2 : options['normals'],
+        vertexSize : options['vertexSize'],
+        uvSize : options['uvSize'],
+        uv2Size : options['normalSize'] || 3,
+        vertexAttr : options['vertexAttr'],
+        uvAttr : options['uvAttr'],
+        uv2Attr : options['normalAttr'],
+        bbox : options['bbox']
     };
 
     return new GpuMesh(this.gpu, data, 0, this.renderer.core);
@@ -126,12 +126,12 @@ RendererInterface.prototype.removeMesh = function(mesh) {
 
 
 RendererInterface.prototype.createShader = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return null;
     }
 
-    var vertexShader = options["vertexShader"];
-    var fragmentShader = options["fragmentShader"];
+    var vertexShader = options['vertexShader'];
+    var fragmentShader = options['fragmentShader'];
 
     if (vertexShader != null && fragmentShader) {
         return new GpuProgram(this.gpu, vertexShader, fragmentShader);
@@ -158,69 +158,69 @@ RendererInterface.prototype.clearJobs = function(options) {
 
 
 RendererInterface.prototype.drawMesh = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return this;    
     }
 
-    if (!options["mesh"] == null || !options["shaderVariables"]) {
+    if (!options['mesh'] == null || !options['shaderVariables']) {
         return this;    
     }
 
-    var shaderAttributes = options["shaderAttributes"];
-    var vertexAttr = options["vertex"] || "aPosition";
-    var uvAttr = options["uv"] || "aTexCoord";
-    var uv2Attr = options["normal"] || "aNormal";
+    var shaderAttributes = options['shaderAttributes'];
+    var vertexAttr = options['vertex'] || 'aPosition';
+    var uvAttr = options['uv'] || 'aTexCoord';
+    var uv2Attr = options['normal'] || 'aNormal';
 
-    var shaderVariables = options["shaderVariables"];
-    var shader = options["shader"] || "textured";
+    var shaderVariables = options['shaderVariables'];
+    var shader = options['shader'] || 'textured';
 
    
     var renderer = this.renderer; 
-    var mesh = options["mesh"];
-    var texture = options["texture"];
+    var mesh = options['mesh'];
+    var texture = options['texture'];
     var mv = renderer.camera.getModelviewMatrix();
     var proj = renderer.camera.getProjectionMatrix();
     var fogDensity = renderer.fogDensity;
     
-    if (typeof shader === "string") {
+    if (typeof shader === 'string') {
         switch(shader) {
-            case "hit":
+        case 'hit':
 
-                if (!shaderVariables["uMV"]) {
-                    shaderVariables["uMV"] = ["mat4", mv];
-                } 
+            if (!shaderVariables['uMV']) {
+                shaderVariables['uMV'] = ['mat4', mv];
+            } 
 
-                if (!shaderVariables["uProj"]) {
-                    shaderVariables["uProj"] = ["mat4", proj];
-                } 
+            if (!shaderVariables['uProj']) {
+                shaderVariables['uProj'] = ['mat4', proj];
+            } 
 
-                uvAttr = null;
-                uv2Attr = null;
-                texture = null;
-                shader = renderer.progDepthTile;;
-                break;
+            uvAttr = null;
+            uv2Attr = null;
+            texture = null;
+            shader = renderer.progDepthTile;
+            break;
 
-            case "shaded":
-                uvAttr = null;
+        case 'shaded':
+            uvAttr = null;
 
-            case "textured":
-            case "textured-and-shaded":
+        case 'textured':
+        case 'textured-and-shaded':
 
-                if (!shaderVariables["uMV"]) {
-                    shaderVariables["uMV"] = ["mat4", mv];
-                } 
+            if (!shaderVariables['uMV']) {
+                shaderVariables['uMV'] = ['mat4', mv];
+            } 
 
-                if (!shaderVariables["uProj"]) {
-                    shaderVariables["uProj"] = ["mat4", proj];
-                } 
+            if (!shaderVariables['uProj']) {
+                shaderVariables['uProj'] = ['mat4', proj];
+            } 
 
-                if (!shaderVariables["uFogDensity"]) {
-                    shaderVariables["uFogDensity"] = ["float", fogDensity];
-                } 
+            if (!shaderVariables['uFogDensity']) {
+                shaderVariables['uFogDensity'] = ['float', fogDensity];
+            } 
             
-                uv2Attr = (shader == "textured") ? null : "aNormal";
-                shader = (shader == "textured") ? renderer.progTile : ((shader == "shaded") ? renderer.progShadedTile : renderer.progTShadedTile);
-                break;
+            uv2Attr = (shader == 'textured') ? null : 'aNormal';
+            shader = (shader == 'textured') ? renderer.progTile : ((shader == 'shaded') ? renderer.progShadedTile : renderer.progTShadedTile);
+            break;
         }
     }
 
@@ -239,30 +239,30 @@ RendererInterface.prototype.drawMesh = function(options) {
         
         if (item.length == 2) {
             switch(item[0]){
-                case "floatArray":
-                    shader.setFloatArray(key, item[1]);
-                    break;
-                case "float":
-                    shader.setFloat(key, item[1]);
-                    break;
-                case "mat3":
-                    shader.setMat3(key, item[1]);
-                    break;
-                case "mat4":
-                    shader.setMat4(key, item[1]);
-                    break;
-                case "vec2":
-                    shader.setVec2(key, item[1]);
-                    break;
-                case "vec3":
-                    shader.setVec3(key, item[1]);
-                    break;
-                case "vec4":
-                    shader.setVec4(key, item[1]);
-                    break;
-                case "sampler":
-                    shader.setSampler(key, item[1]);
-                    break;
+            case 'floatArray':
+                shader.setFloatArray(key, item[1]);
+                break;
+            case 'float':
+                shader.setFloat(key, item[1]);
+                break;
+            case 'mat3':
+                shader.setMat3(key, item[1]);
+                break;
+            case 'mat4':
+                shader.setMat4(key, item[1]);
+                break;
+            case 'vec2':
+                shader.setVec2(key, item[1]);
+                break;
+            case 'vec3':
+                shader.setVec3(key, item[1]);
+                break;
+            case 'vec4':
+                shader.setVec4(key, item[1]);
+                break;
+            case 'sampler':
+                shader.setSampler(key, item[1]);
+                break;
             } 
         }
     }
@@ -278,72 +278,72 @@ RendererInterface.prototype.drawMesh = function(options) {
 
 
 RendererInterface.prototype.drawImage = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return this;    
     }
 
-    if (options["texture"] == null || options["rect"] == null) {
+    if (options['texture'] == null || options['rect'] == null) {
         return this;    
     }
 
-    var rect = options["rect"];
-    var color = options["color"] || [255,255,255,255];
-    var depth = (options["depth"] != null) ? options["depth"] : 0;
-    var depthTest = (options["depthTest"] != null) ? options["depthTest"] : false;
-    var blend = (options["blend"] != null) ? options["blend"] : false;
-    var writeDepth = (options["writeDepth"] != null) ? options["writeDepth"] : false;
-    var useState = (options["useState"] != null) ? options["useState"] : false;
+    var rect = options['rect'];
+    var color = options['color'] || [255,255,255,255];
+    var depth = (options['depth'] != null) ? options['depth'] : 0;
+    var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
+    var blend = (options['blend'] != null) ? options['blend'] : false;
+    var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
+    var useState = (options['useState'] != null) ? options['useState'] : false;
     color[0] *= 1.0/255;
     color[1] *= 1.0/255;
     color[2] *= 1.0/255;
     color[3] *= 1.0/255;
 
-    this.renderer.draw.drawImage(rect[0], rect[1], rect[2], rect[3], options["texture"], color, depth, depthTest, blend, writeDepth, useState);
+    this.renderer.draw.drawImage(rect[0], rect[1], rect[2], rect[3], options['texture'], color, depth, depthTest, blend, writeDepth, useState);
     return this;    
 };
 
 
 RendererInterface.prototype.drawBillboard = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return this;    
     }
 
-    if (options["texture"] == null || options["mvp"] == null) {
+    if (options['texture'] == null || options['mvp'] == null) {
         return this;    
     }
 
-    var mvp = options["mvp"];
-    var color = options["color"] || [255,255,255,255];
-    var depthTest = (options["depthTest"] != null) ? options["depthTest"] : false;
-    var blend = (options["blend"] != null) ? options["blend"] : false;
-    var writeDepth = (options["writeDepth"] != null) ? options["writeDepth"] : false;
-    var useState = (options["useState"] != null) ? options["useState"] : false;
+    var mvp = options['mvp'];
+    var color = options['color'] || [255,255,255,255];
+    var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
+    var blend = (options['blend'] != null) ? options['blend'] : false;
+    var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
+    var useState = (options['useState'] != null) ? options['useState'] : false;
     color[0] *= 1.0/255;
     color[1] *= 1.0/255;
     color[2] *= 1.0/255;
     color[3] *= 1.0/255;
 
-    this.renderer.draw.drawBillboard(mvp, options["texture"], color, depthTest, blend, writeDepth, useState);
+    this.renderer.draw.drawBillboard(mvp, options['texture'], color, depthTest, blend, writeDepth, useState);
     return this;    
 };
 
 
 RendererInterface.prototype.drawLineString = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return this;    
     }
 
-    if (options["points"] == null) {
+    if (options['points'] == null) {
         return this;    
     }
 
-    var points = options["points"];
-    var color = options["color"] || [255,255,255,255];
-    var size = options["size"] || 2;
-    var depthTest = (options["depthTest"] != null) ? options["depthTest"] : false;
-    var blend = (options["blend"] != null) ? options["blend"] : false;
-    var writeDepth = (options["writeDepth"] != null) ? options["writeDepth"] : false;
-    var useState = (options["useState"] != null) ? options["useState"] : false;
+    var points = options['points'];
+    var color = options['color'] || [255,255,255,255];
+    var size = options['size'] || 2;
+    var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
+    var blend = (options['blend'] != null) ? options['blend'] : false;
+    var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
+    var useState = (options['useState'] != null) ? options['useState'] : false;
     color[0] *= 1.0/255;
     color[1] *= 1.0/255;
     color[2] *= 1.0/255;
@@ -365,21 +365,21 @@ RendererInterface.prototype.drawBBox = function(options) {
 
 
 RendererInterface.prototype.drawDebugText = function(options) {
-    if (options == null || typeof options !== "object") {
+    if (options == null || typeof options !== 'object') {
         return this;    
     }
 
-    var text = options["text"];
-    var coords = options["coords"];
+    var text = options['text'];
+    var coords = options['coords'];
 
     if (!text || !coords) {
         return this;    
     }
     
-    var color = options["color"] || [255,255,255,255];
-    var size = options["size"] || 16;
-    var depth = options["depth"];
-    var useState = options["useState"] || false;
+    var color = options['color'] || [255,255,255,255];
+    var size = options['size'] || 16;
+    var depth = options['depth'];
+    var useState = options['useState'] || false;
     color[0] *= 1.0/255;
     color[1] *= 1.0/255;
     color[2] *= 1.0/255;

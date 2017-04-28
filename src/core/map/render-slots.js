@@ -11,9 +11,9 @@ var MapRenderSlots = function(map) {
 
 MapRenderSlots.prototype.createRenderSlot = function(id, callback, enabled) {
     return { id:id,
-             callback:callback,
-             enabled : enabled
-           };
+        callback:callback,
+        enabled : enabled
+    };
 };
 
 
@@ -28,8 +28,8 @@ MapRenderSlots.prototype.getRenderSlotIndex = function(id) {
 
 
 MapRenderSlots.prototype.checkRenderSlotId = function(id) {
-    if (id == "after-map-render") {
-        return "map"; 
+    if (id == 'after-map-render') {
+        return 'map'; 
     } else {
         return id;
     }

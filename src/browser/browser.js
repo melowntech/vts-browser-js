@@ -26,20 +26,20 @@ var Browser = function(element, config) {
     this.setConfigParams(config, true);
     this.originalConfig = JSON.parse(JSON.stringify(config));
     
-    this.element = (typeof element === "string") ? document.getElementById(element) : element; 
+    this.element = (typeof element === 'string') ? document.getElementById(element) : element; 
     this.ui = new UI(this, this.element);
 
-    element = (typeof element !== "string") ? element : document.getElementById(element);
+    element = (typeof element !== 'string') ? element : document.getElementById(element);
 
     if (!checkSupport()) {
-        this.ui.setControlDisplayState("fallback", true);
+        this.ui.setControlDisplayState('fallback', true);
         return;
     }
 
     this.core = new CoreInterface(this.ui.getMapControl().getMapElement().getElement(), config);
 
     if (this.core == null) {
-        this.ui.setControlDisplayState("fallback", true);
+        this.ui.setControlDisplayState('fallback', true);
         return;
     }
     
@@ -53,16 +53,16 @@ var Browser = function(element, config) {
     this.controlMode = new ControlMode(this, this.ui);
     this.presenter = new Presenter(this, config);
 
-    this.on("map-loaded", this.onMapLoaded.bind(this));
-    this.on("map-unloaded", this.onMapUnloaded.bind(this));
-    this.on("map-update", this.onMapUpdate.bind(this));
-    this.on("map-position-changed", this.onMapPositionChanged.bind(this));
-    this.on("map-position-fixed-height-changed", this.onMapPositionFixedHeightChanged.bind(this));
-    this.on("map-position-panned", this.onMapPositionPanned.bind(this));
-    this.on("map-position-rotated", this.onMapPositionRotated.bind(this));
-    this.on("map-position-zoomed", this.onMapPositionZoomed.bind(this));
+    this.on('map-loaded', this.onMapLoaded.bind(this));
+    this.on('map-unloaded', this.onMapUnloaded.bind(this));
+    this.on('map-update', this.onMapUpdate.bind(this));
+    this.on('map-position-changed', this.onMapPositionChanged.bind(this));
+    this.on('map-position-fixed-height-changed', this.onMapPositionFixedHeightChanged.bind(this));
+    this.on('map-position-panned', this.onMapPositionPanned.bind(this));
+    this.on('map-position-rotated', this.onMapPositionRotated.bind(this));
+    this.on('map-position-zoomed', this.onMapPositionZoomed.bind(this));
         
-    this.on("tick", this.onTick.bind(this));
+    this.on('tick', this.onTick.bind(this));
 };
 
 
@@ -121,10 +121,10 @@ Browser.prototype.onMapLoaded = function(event) {
     this.mapLoaded = true;
 
     //overwrite browser options
-    var options = event["browserOptions"] || {};
+    var options = event['browserOptions'] || {};
     var originalOptions = this.originalConfig;
     for (var key in originalOptions) {
-        if (typeof options[key] !== "undefined") {
+        if (typeof options[key] !== 'undefined') {
             options[key] = originalOptions[key]; 
         } 
     }    
@@ -141,7 +141,7 @@ Browser.prototype.onMapLoaded = function(event) {
 Browser.prototype.getLinkWithCurrentPos = function() {
     var map = this.getMap();
     if (map == null) {
-        return "";
+        return '';
     }
 
     //get url params
@@ -149,44 +149,44 @@ Browser.prototype.getLinkWithCurrentPos = function() {
     
     //get position string
     var p = map.getPosition();
-    p = map.convertPositionHeightMode(p, "fix", true);
+    p = map.convertPositionHeightMode(p, 'fix', true);
     
-    var s = "";
-    s += p.getViewMode() + ",";
+    var s = '';
+    s += p.getViewMode() + ',';
     var c = p.getCoords();
-    s += c[0].toFixed(6) + "," + c[1].toFixed(6) + "," + p.getHeightMode() + "," + c[2].toFixed(2) + ",";
+    s += c[0].toFixed(6) + ',' + c[1].toFixed(6) + ',' + p.getHeightMode() + ',' + c[2].toFixed(2) + ',';
     var o = p.getOrientation();
-    s += o[0].toFixed(2) + "," + o[1].toFixed(2) + "," + o[2].toFixed(2) + ",";
-    s += p.getViewExtent().toFixed(2) + "," + p.getFov().toFixed(2);
+    s += o[0].toFixed(2) + ',' + o[1].toFixed(2) + ',' + o[2].toFixed(2) + ',';
+    s += p.getViewExtent().toFixed(2) + ',' + p.getFov().toFixed(2);
 
     //replace old value with new one    
-    params["pos"] = s;
+    params['pos'] = s;
 
     if (this.mapInteracted) {
-        if (params["rotate"] || this.getConfigParam("rotate")) {
-            params["rotate"] = "0";
+        if (params['rotate'] || this.getConfigParam('rotate')) {
+            params['rotate'] = '0';
         }
         
-        var pan = this.getConfigParam("pan");
-        if (params["pan"] || (pan && (pan[0] || pan[1]))) {
-            params["pan"] = "0,0";
+        var pan = this.getConfigParam('pan');
+        if (params['pan'] || (pan && (pan[0] || pan[1]))) {
+            params['pan'] = '0,0';
         }
     }
     
     //convert prameters to url parameters string
-    s = "";
+    s = '';
     for (var key in params) {
-        s += ((s.length > 0) ? "&" : "") + key + "=" + params[key];
+        s += ((s.length > 0) ? '&' : '') + key + '=' + params[key];
     }
 
     //separete base url and url params
-    var urlParts = window.location.href.split("?");
+    var urlParts = window.location.href.split('?');
     
     if (urlParts.length > 1) {
-        var extraParts = urlParts[1].split("#"); //is there anchor?
-        return urlParts[0] + "?" + s + (extraParts[1] || ""); 
+        var extraParts = urlParts[1].split('#'); //is there anchor?
+        return urlParts[0] + '?' + s + (extraParts[1] || ''); 
     } else {
-        return urlParts[0] + "?" + s; 
+        return urlParts[0] + '?' + s; 
     }
 };
 
@@ -262,7 +262,7 @@ Browser.prototype.initConfig = function(data) {
         positionInUrl : false,
         positionUrlHistory : false,
         constrainCamera : true,
-        navigationMode : "free",
+        navigationMode : 'free',
         controlCompass : true,
         controlZoom : true,
         controlSpace : true,
@@ -285,7 +285,7 @@ Browser.prototype.initConfig = function(data) {
 
 
 Browser.prototype.setConfigParams = function(params, ignoreCore) {
-    if (typeof params === "object" && params !== null) {
+    if (typeof params === 'object' && params !== null) {
         for (var key in params) {
             this.setConfigParam(key, params[key]);
 
@@ -309,73 +309,73 @@ Browser.prototype.updateUI = function(key) {
 
 Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     switch (key) {
-        case "pos":                
-        case "position":
-            this.config.position = value;
-            if (this.map) {
-                this.map.setPosition(this.config.position);
-            }
-            break;
+    case 'pos':                
+    case 'position':
+        this.config.position = value;
+        if (this.map) {
+            this.map.setPosition(this.config.position);
+        }
+        break;
             
-        case "view":
-            this.config.view = value;
-            if (this.map) {
-                this.map.setView(this.config.view);
-            }
-            break;
+    case 'view':
+        this.config.view = value;
+        if (this.map) {
+            this.map.setView(this.config.view);
+        }
+        break;
 
-        case "panAllowed":           this.config.panAllowed = utils.validateBool(value, true);           break;
-        case "rotationAllowed":      this.config.rotationAllowed = utils.validateBool(value, true);      break;
-        case "zoomAllowed":          this.config.zoomAllowed = utils.validateBool(value, true);          break;
-        case "jumpAllowed":          this.config.jumpAllowed = utils.validateBool(value, false);         break;
-        case "constrainCamera":      this.config.constrainCamera = utils.validateBool(value, true);      break;
-        case "navigationMode":       this.config.navigationMode = value;                                        break;
-        case "positionInUrl":        this.config.positionInUrl = utils.validateBool(value, false);       break;
-        case "positionUrlHistory":   this.config.positionUrlHistory = utils.validateBool(value, false);  break;
-        case "controlCompass":       this.config.controlCompass = utils.validateBool(value, true); this.updateUI(key);    break;
-        case "controlZoom":          this.config.controlZoom = utils.validateBool(value, true); this.updateUI(key);       break;
-        case "controlMeasure":       this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
-        case "controlScale":         this.config.controlScale = utils.validateBool(value, true); this.updateUI(key);      break;
-        case "controlLayers":        this.config.controlLayers = utils.validateBool(value, false); this.updateUI(key);    break;
-        case "controlSpace":         this.config.controlSpace = utils.validateBool(value, false); this.updateUI(key);     break;
-        case "controlSearch":        this.config.controlSearch = utils.validateBool(value, false); this.updateUI(key);    break;
-        case "controlLink":          this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
-        case "controlLogo":          this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
-        case "controlFullscreen":    this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key); break;
-        case "controlCredits":       this.config.controlCredits = utils.validateBool(value, true); this.updateUI(key);    break;
-        case "controlLoading":       this.config.controlLoading = utils.validateBool(value, true); this.updateUI(key);    break;
-        case "controlSearchElement": this.config.controlSearchElement = value; this.updateUI(key);  break;
-        case "controlSearchValue":   this.config.controlSearchValue = /*utils.validateString(*/value/*, null)*/; this.updateUI(key); break;
-        case "minViewExtent":        this.config.minViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, 100); break;
-        case "maxViewExtent":        this.config.maxViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, Number.MAXINTEGER); break;
-        case "sensitivity":          this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
-        case "inertia":              this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
-        case "rotate":             
-            this.config.autoRotate = utils.validateNumber(value, Number.NEGATIVEINFINITY, Number.POSITIVEINFINITY, 0);
-            if (this.map && this.autopilot) {
-                this.autopilot.setAutorotate(this.config.autoRotate);
-            }
-            break;
-        case "pan":
-            if (Array.isArray(value) && value.length == 2){
-                this.config.autoPan = [
-                    utils.validateNumber(value[0], Number.NEGATIVEINFINITY, Number.POSITIVEINFINITY, 0),
-                    utils.validateNumber(value[1], -360, 360, 0)
-                ];
-            }
+    case 'panAllowed':           this.config.panAllowed = utils.validateBool(value, true);           break;
+    case 'rotationAllowed':      this.config.rotationAllowed = utils.validateBool(value, true);      break;
+    case 'zoomAllowed':          this.config.zoomAllowed = utils.validateBool(value, true);          break;
+    case 'jumpAllowed':          this.config.jumpAllowed = utils.validateBool(value, false);         break;
+    case 'constrainCamera':      this.config.constrainCamera = utils.validateBool(value, true);      break;
+    case 'navigationMode':       this.config.navigationMode = value;                                        break;
+    case 'positionInUrl':        this.config.positionInUrl = utils.validateBool(value, false);       break;
+    case 'positionUrlHistory':   this.config.positionUrlHistory = utils.validateBool(value, false);  break;
+    case 'controlCompass':       this.config.controlCompass = utils.validateBool(value, true); this.updateUI(key);    break;
+    case 'controlZoom':          this.config.controlZoom = utils.validateBool(value, true); this.updateUI(key);       break;
+    case 'controlMeasure':       this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
+    case 'controlScale':         this.config.controlScale = utils.validateBool(value, true); this.updateUI(key);      break;
+    case 'controlLayers':        this.config.controlLayers = utils.validateBool(value, false); this.updateUI(key);    break;
+    case 'controlSpace':         this.config.controlSpace = utils.validateBool(value, false); this.updateUI(key);     break;
+    case 'controlSearch':        this.config.controlSearch = utils.validateBool(value, false); this.updateUI(key);    break;
+    case 'controlLink':          this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
+    case 'controlLogo':          this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
+    case 'controlFullscreen':    this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key); break;
+    case 'controlCredits':       this.config.controlCredits = utils.validateBool(value, true); this.updateUI(key);    break;
+    case 'controlLoading':       this.config.controlLoading = utils.validateBool(value, true); this.updateUI(key);    break;
+    case 'controlSearchElement': this.config.controlSearchElement = value; this.updateUI(key);  break;
+    case 'controlSearchValue':   this.config.controlSearchValue = /*utils.validateString(*/value/*, null)*/; this.updateUI(key); break;
+    case 'minViewExtent':        this.config.minViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, 100); break;
+    case 'maxViewExtent':        this.config.maxViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, Number.MAXINTEGER); break;
+    case 'sensitivity':          this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
+    case 'inertia':              this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
+    case 'rotate':             
+        this.config.autoRotate = utils.validateNumber(value, Number.NEGATIVEINFINITY, Number.POSITIVEINFINITY, 0);
+        if (this.map && this.autopilot) {
+            this.autopilot.setAutorotate(this.config.autoRotate);
+        }
+        break;
+    case 'pan':
+        if (Array.isArray(value) && value.length == 2){
+            this.config.autoPan = [
+                utils.validateNumber(value[0], Number.NEGATIVEINFINITY, Number.POSITIVEINFINITY, 0),
+                utils.validateNumber(value[1], -360, 360, 0)
+            ];
+        }
 
-            if (this.map && this.autopilot) {
-                this.autopilot.setAutorotate(this.config.autoRotate);
-            }
-            break;
+        if (this.map && this.autopilot) {
+            this.autopilot.setAutorotate(this.config.autoRotate);
+        }
+        break;
     }
 
     if (ignoreCore) {
-        if ((key.indexOf("map") == 0 || key.indexOf("mario") == 0 || key.indexOf("authorization") == 0) && this.core.getMap()) {
+        if ((key.indexOf('map') == 0 || key.indexOf('mario') == 0 || key.indexOf('authorization') == 0) && this.core.getMap()) {
             this.core.getMap().setConfigParam(key, value);
         }
 
-        if (key.indexOf("renderer") == 0) {
+        if (key.indexOf('renderer') == 0) {
             this.core.getRenderer().setConfigParam(key, value);
         }
     }
@@ -384,61 +384,61 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
 
 Browser.prototype.getConfigParam = function(key) {
     switch (key) {
-        case "pos":
-        case "position":
+    case 'pos':
+    case 'position':
         
-            if (this.map) {
-                this.map.getPosition();
-            } else {
-                return this.config.position;
-            }
+        if (this.map) {
+            this.map.getPosition();
+        } else {
+            return this.config.position;
+        }
             
-            break;
+        break;
         
-        case "view":               
+    case 'view':               
 
-            if (this.map) {
-                return this.map.getView();
-            } else {
-                return this.config.view;
-            }
+        if (this.map) {
+            return this.map.getView();
+        } else {
+            return this.config.view;
+        }
             
-        case "panAllowed":           return this.config.panAllowed;
-        case "rotationAllowed":      return this.config.rotationAllowed;
-        case "zoomAllowed":          return this.config.zoomAllowed;
-        case "jumpAllowed":          return this.config.jumpAllowed;
-        case "sensitivity":          return this.config.sensitivity;
-        case "inertia":              return this.config.inertia;
-        case "navigationMode":       return this.config.navigationMode;
-        case "constrainCamera":      return this.config.constrainCamera;
-        case "positionInUrl":        return this.config.positionInUrl;
-        case "positionUrlHistory":   return this.config.positionUrlHistory;
-        case "controlCompass":       return this.config.controlCompass;
-        case "controlZoom":          return this.config.controlZoom;
-        case "controlMeasure":       return this.config.controlMeasure;
-        case "controlScale":         return this.config.controlScale;
-        case "controlLayers":        return this.config.controlLayers;
-        case "controlSpace":         return this.config.controlSpace;
-        case "controlSearch":        return this.config.controlSearch;
-        case "controlLink":          return this.config.controlLink;
-        case "controlLogo":          return this.config.controlLogo;
-        case "controlFullscreen":    return this.config.controlFullscreen;
-        case "controlCredits":       return this.config.controlCredits;
-        case "controlLoading":       return this.config.controlLoading;
-        case "controlSearchElement": return this.config.controlSearchElement;
-        case "controlSearchValue":   return this.config.controlSearchValue;
-        case "minViewExtent":        return this.config.minViewExtent;
-        case "maxViewExtent":        return this.config.maxViewExtent;
-        case "rotate":               return this.config.autoRotate;
-        case "pan":                  return this.config.autoPan;
+    case 'panAllowed':           return this.config.panAllowed;
+    case 'rotationAllowed':      return this.config.rotationAllowed;
+    case 'zoomAllowed':          return this.config.zoomAllowed;
+    case 'jumpAllowed':          return this.config.jumpAllowed;
+    case 'sensitivity':          return this.config.sensitivity;
+    case 'inertia':              return this.config.inertia;
+    case 'navigationMode':       return this.config.navigationMode;
+    case 'constrainCamera':      return this.config.constrainCamera;
+    case 'positionInUrl':        return this.config.positionInUrl;
+    case 'positionUrlHistory':   return this.config.positionUrlHistory;
+    case 'controlCompass':       return this.config.controlCompass;
+    case 'controlZoom':          return this.config.controlZoom;
+    case 'controlMeasure':       return this.config.controlMeasure;
+    case 'controlScale':         return this.config.controlScale;
+    case 'controlLayers':        return this.config.controlLayers;
+    case 'controlSpace':         return this.config.controlSpace;
+    case 'controlSearch':        return this.config.controlSearch;
+    case 'controlLink':          return this.config.controlLink;
+    case 'controlLogo':          return this.config.controlLogo;
+    case 'controlFullscreen':    return this.config.controlFullscreen;
+    case 'controlCredits':       return this.config.controlCredits;
+    case 'controlLoading':       return this.config.controlLoading;
+    case 'controlSearchElement': return this.config.controlSearchElement;
+    case 'controlSearchValue':   return this.config.controlSearchValue;
+    case 'minViewExtent':        return this.config.minViewExtent;
+    case 'maxViewExtent':        return this.config.maxViewExtent;
+    case 'rotate':               return this.config.autoRotate;
+    case 'pan':                  return this.config.autoPan;
     }
 
     if (ignoreCore) {
-        if (key.indexOf("map") == 0 && this.core.getMap()) {
+        if (key.indexOf('map') == 0 && this.core.getMap()) {
             return this.core.getMap().getConfigParam(key, value);
         }
 
-        if (key.indexOf("renderer") == 0) {
+        if (key.indexOf('renderer') == 0) {
             return this.core.getRenderer().getConfigParam(key, value);
         }
     }

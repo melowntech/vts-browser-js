@@ -12,7 +12,7 @@ var UIControlHolder = function(ui, html, visible, parentElement) {
     this.visible = (visible != null) ? visible : true;
 
     //create holder element
-    this.element = document.createElement("div");
+    this.element = document.createElement('div');
     this.setVisible(this.visible);
 
     //set element content
@@ -34,7 +34,7 @@ UIControlHolder.prototype.setHtml = function(html) {
 
     //store all elements with id attribute to the table
     for (var i = 0, li = allElements.length; i < li; i++) {
-        var id = allElements[i].getAttribute("id");
+        var id = allElements[i].getAttribute('id');
 
         if (id !== null) {
             //store element to the table
@@ -50,7 +50,7 @@ UIControlHolder.prototype.getElement = function(id) {
 
 
 UIControlHolder.prototype.setVisible = function(state) {
-    this.element.style.display = state ? "block" : "none";
+    this.element.style.display = state ? 'block' : 'none';
     this.visible = state;
 };
 

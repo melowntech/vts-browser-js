@@ -70,12 +70,12 @@ UIElement.prototype.getRect = function() {
     var offsetX = window.pageXOffset || 0;
     var offsetY = window.pageYOffset || 0;
     return {
-        "left" : (rect.left + offsetX) - (rect2.left + offsetX), 
-        "top" : (rect.top + offsetY) - (rect2.top + offsetY), 
-        "fromRight" : rect2.right - ((rect.left + offsetX) - (rect2.left + offsetX)), 
-        "fromBottom" : rect2.height - ((rect.top + offsetY) - (rect2.top + offsetY)),
-        "width" : rect.width, 
-        "height" : rect.height 
+        'left' : (rect.left + offsetX) - (rect2.left + offsetX), 
+        'top' : (rect.top + offsetY) - (rect2.top + offsetY), 
+        'fromRight' : rect2.right - ((rect.left + offsetX) - (rect2.left + offsetX)), 
+        'fromBottom' : rect2.height - ((rect.top + offsetY) - (rect2.top + offsetY)),
+        'width' : rect.width, 
+        'height' : rect.height 
     };
 };
 
@@ -87,7 +87,7 @@ UIElement.prototype.setHtml = function(html) {
 
     //store all elements with id attribute to the table
     for (var i = 0, li = allElements.length; i < li; i++) {
-        var id = allElements[i].getAttribute("id");
+        var id = allElements[i].getAttribute('id');
 
         if (id !== null) {
             //store element to the table
@@ -143,8 +143,8 @@ UIElement.prototype.fire = function(type, event) {
 
 
 UIElement.prototype.addEvent = function(type, call, externalElement) {
-    var id = type + "-" + dom.stamp(call)
-              + (externalElement ? ("-" + dom.stamp(externalElement)) : "");
+    var id = type + '-' + dom.stamp(call)
+              + (externalElement ? ('-' + dom.stamp(externalElement)) : '');
 
     var handler = (function(e) {
         if (this.ui.killed) {
@@ -158,8 +158,8 @@ UIElement.prototype.addEvent = function(type, call, externalElement) {
     var element =  externalElement || this.element;
     element.addEventListener(this.getEventName(type), handler, false);
 
-    if (type == "mousewheel") {
-        element.addEventListener("DOMMouseScroll", handler, false);
+    if (type == 'mousewheel') {
+        element.addEventListener('DOMMouseScroll', handler, false);
     }
 
     this.events[type] = this.events[type] || [];
@@ -168,8 +168,8 @@ UIElement.prototype.addEvent = function(type, call, externalElement) {
 
 
 UIElement.prototype.removeEvent = function(type, call, externalElement) {
-    var id = type + "-" + dom.stamp(call)
-              + (externalElement ? ("-" + dom.stamp(externalElement)) : "");
+    var id = type + '-' + dom.stamp(call)
+              + (externalElement ? ('-' + dom.stamp(externalElement)) : '');
 
     var handler = this.events[type] && this.events[type][id];
 
@@ -189,17 +189,17 @@ UIElement.prototype.getEventName = function(type) {
 
 UIElement.prototype.setDraggableState = function(state) {
     if (state) {
-        this.on("mousedown", this.dragBeginCall);
-        this.on("touchstart", this.dragBeginCall);
+        this.on('mousedown', this.dragBeginCall);
+        this.on('touchstart', this.dragBeginCall);
     } else if (this.dragable){
-        this.off("mousedown", this.dragBeginCall);
-        this.off("mousemove", this.dragMoveCall, document);
+        this.off('mousedown', this.dragBeginCall);
+        this.off('mousemove', this.dragMoveCall, document);
         //this.off("mouseup", this.onDragEnd.bind(this));
-        this.off("mouseup", this.dragEndCall, document);
+        this.off('mouseup', this.dragEndCall, document);
         
-        this.off("touchstart", this.dragBeginCall);
-        this.off("touchmove", this.dragMoveCall, document);
-        this.off("touchend", this.dragEndCall, document);
+        this.off('touchstart', this.dragBeginCall);
+        this.off('touchmove', this.dragMoveCall, document);
+        this.off('touchend', this.dragEndCall, document);
         
         this.dragging = false;
     }
@@ -215,9 +215,9 @@ UIElement.prototype.setDraggableState = function(state) {
     
     this.dragable = state;
     this.dragButtons = {
-      "left" : false,
-      "right" : false,
-      "middle" : false
+        'left' : false,
+        'right' : false,
+        'middle' : false
     };
 };
 
@@ -229,14 +229,14 @@ UIElement.prototype.getDraggableState = function() {
 
 UIElement.prototype.getDraggingState = function() {
     return {
-        "dragging" : this.dragging,
-        "buttonLeft" : this.dragButtons["left"],
-        "buttonRight" : this.dragButtons["right"],
-        "buttonMiddle" : this.dragButtons["middle"],
-        "startPos" : this.dragStartPos.slice(), 
-        "lastPos" : this.dragLastPos.slice(), 
-        "currentPos" : this.dragCurrentPos.slice(), 
-        "absMoved" : this.dragAbsMoved.slice() 
+        'dragging' : this.dragging,
+        'buttonLeft' : this.dragButtons['left'],
+        'buttonRight' : this.dragButtons['right'],
+        'buttonMiddle' : this.dragButtons['middle'],
+        'startPos' : this.dragStartPos.slice(), 
+        'lastPos' : this.dragLastPos.slice(), 
+        'currentPos' : this.dragCurrentPos.slice(), 
+        'absMoved' : this.dragAbsMoved.slice() 
     };
 };
 
@@ -249,10 +249,10 @@ UIElement.prototype.onDragBegin = function(event) {
     //console.log("bergin: 2#:  " + JSON.stringify(this.dragButtons));
 
     //if (event.getTouchesCount() == 2) {
-        this.dragTouches = [];
-        this.dragTouches2 = [];
-        this.dragTouches.push(event.getTouchCoords(0));            
-        this.dragTouches2.push(event.getTouchCoords(1));            
+    this.dragTouches = [];
+    this.dragTouches2 = [];
+    this.dragTouches.push(event.getTouchCoords(0));            
+    this.dragTouches2.push(event.getTouchCoords(1));            
     //}
 
     this.resetPos = true;
@@ -269,22 +269,22 @@ UIElement.prototype.onDragBegin = function(event) {
         this.dragLastPos = [pos[0], pos[1]];
         this.dragAbsMoved = [0,0];
 
-        this.on("mousemove", this.dragMoveCall, document);
-        this.on("mouseup", this.dragEndCall, document);
+        this.on('mousemove', this.dragMoveCall, document);
+        this.on('mouseup', this.dragEndCall, document);
         //this.on("mouseup", this.onDragEnd.bind(this), document);
 
-        this.on("touchmove", this.dragMoveCall, document);
-        this.on("touchend", this.dragEndCall, document);
+        this.on('touchmove', this.dragMoveCall, document);
+        this.on('touchend', this.dragEndCall, document);
 
         dom.disableTextSelection();
         dom.disableImageDrag();
         //dom.disableContexMenu();
         dom.preventDefault(event);
 
-        this.fire("dragstart", {
-            "clientX" : pos[0],
-            "clientY" : pos[1]
-            });
+        this.fire('dragstart', {
+            'clientX' : pos[0],
+            'clientY' : pos[1]
+        });
     } else {
         var pos = event.getMouseCoords();
         this.dragLastPos = pos;
@@ -301,7 +301,7 @@ UIElement.prototype.onDragMove = function(event) {
 
     dom.preventDefault(event);
 
-    var mode = "";
+    var mode = '';
     var zoom = 0;
     var rotateDelta = 0;
     var panDelta = [0,0];
@@ -348,7 +348,7 @@ UIElement.prototype.onDragMove = function(event) {
             var d1 = Math.sqrt(v1x * v1x + v1y * v1y);
             var d2 = Math.sqrt(v2x * v2x + v2y * v2y);
 
-            mode = "pan";
+            mode = 'pan';
 
             if (d1 > d2 * 5 || d2 > d1 * 5) { //dectec situation where only one finger is closing to another
                 
@@ -383,7 +383,7 @@ UIElement.prototype.onDragMove = function(event) {
                 rotateDelta = (Math.acos(cosAngle2) * (180.0/Math.PI)) - 90;
 
                 if (cosAngle > 0.9999) { //are vectors in same line?
-                    mode = "zoom";
+                    mode = 'zoom';
                 } else {
                     panDelta = [(v1x + v2x) *0.5, (v1y + v2y) *0.5];
                 }
@@ -401,47 +401,47 @@ UIElement.prototype.onDragMove = function(event) {
                 var cosAngle = nv1x * nv2x + nv1y * nv2y;
                 
                 if (cosAngle < 0.2) {
-                    mode = "zoom";
+                    mode = 'zoom';
                 } else {
                     panDelta = [(v1x + v2x) *0.5, (v1y + v2y) *0.5];
                 } 
             }
             
             //if (mode == "zoom") {
-                var t = this.dragTouches;
-                var t2 = this.dragTouches2;
+            var t = this.dragTouches;
+            var t2 = this.dragTouches2;
 
                 //get distance between points at the beginig
-                var dx = (t2[0][0] - t[0][0]);
-                var dy = (t2[0][1] - t[0][1]);
-                var d1 = Math.sqrt(dx * dx + dy * dy);
+            var dx = (t2[0][0] - t[0][0]);
+            var dy = (t2[0][1] - t[0][1]);
+            var d1 = Math.sqrt(dx * dx + dy * dy);
 
                 //get distance between points at the end
-                var dx = (t2[5][0] - t[5][0]);
-                var dy = (t2[5][1] - t[5][1]);
-                var d2 = Math.sqrt(dx * dx + dy * dy);
+            var dx = (t2[5][0] - t[5][0]);
+            var dy = (t2[5][1] - t[5][1]);
+            var d2 = Math.sqrt(dx * dx + dy * dy);
 
                 //get delta betwwen distances
-                distanceDelta = d2 - d1;   
+            distanceDelta = d2 - d1;   
             //}  
         }
     }
 
-    this.fire("drag", {
-        "clientX" : pos[0],
-        "clientY" : pos[1],
-        "deltaX" : pos[0] - this.dragLastPos[0],
-        "deltaY" : pos[1] - this.dragLastPos[1],
-        "left" : this.dragButtons["left"],
-        "right" : this.dragButtons["right"],
-        "middle" : this.dragButtons["middle"],
-        "zoom" : zoom,
-        "touchMode" : mode,
-        "touchPanDelta" : panDelta,
-        "touchRotateDelta" : rotateDelta,
-        "touchDistanceDelta" : distanceDelta,
-        "touches" : touchCount  
-        });
+    this.fire('drag', {
+        'clientX' : pos[0],
+        'clientY' : pos[1],
+        'deltaX' : pos[0] - this.dragLastPos[0],
+        'deltaY' : pos[1] - this.dragLastPos[1],
+        'left' : this.dragButtons['left'],
+        'right' : this.dragButtons['right'],
+        'middle' : this.dragButtons['middle'],
+        'zoom' : zoom,
+        'touchMode' : mode,
+        'touchPanDelta' : panDelta,
+        'touchRotateDelta' : rotateDelta,
+        'touchDistanceDelta' : distanceDelta,
+        'touches' : touchCount  
+    });
 
     //
     //el.innerHTML = "rotDelta" + rotateDelta;
@@ -458,17 +458,17 @@ UIElement.prototype.onDragEnd = function(event) {
     //this.dragButtons[event.getMouseButton()] = false;
     //console.log("end: 1#:  " + JSON.stringify(this.dragButtons));
 
-    var left = this.dragButtons["left"];
-    var right = this.dragButtons["right"];
-    var middle = this.dragButtons["middle"];
+    var left = this.dragButtons['left'];
+    var right = this.dragButtons['right'];
+    var middle = this.dragButtons['middle'];
 
     this.updateDragButtonsState(event, false);
 
     //if (event.getTouchesCount() == 2) {
-        this.dragTouches = [];
-        this.dragTouches2 = [];
-        this.dragTouches.push(event.getTouchCoords(0));            
-        this.dragTouches2.push(event.getTouchCoords(1));            
+    this.dragTouches = [];
+    this.dragTouches2 = [];
+    this.dragTouches.push(event.getTouchCoords(0));            
+    this.dragTouches2.push(event.getTouchCoords(1));            
     //}
 
     //console.log("end: 2#:  " + JSON.stringify(this.dragButtons));
@@ -484,31 +484,31 @@ UIElement.prototype.onDragEnd = function(event) {
         var pos = event.getMouseCoords();
         this.dragLastPos = pos;
 
-        if (!this.dragButtons["left"] &&
-            !this.dragButtons["right"] &&
-            !this.dragButtons["middle"] ) {
+        if (!this.dragButtons['left'] &&
+            !this.dragButtons['right'] &&
+            !this.dragButtons['middle'] ) {
 
             this.dragging = false;
             var pos = this.dragCurrentPos;//event.getMouseCoords();
-            this.off("mousemove", this.dragMoveCall, document);
-            this.off("mouseup", this.dragEndCall, document);
+            this.off('mousemove', this.dragMoveCall, document);
+            this.off('mouseup', this.dragEndCall, document);
             //this.off("mouseup", this.onDragEnd.bind(this), document);
 
-            this.off("touchmove", this.dragMoveCall, document);
-            this.off("touchend", this.dragEndCall, document);
+            this.off('touchmove', this.dragMoveCall, document);
+            this.off('touchend', this.dragEndCall, document);
 
             dom.enableTextSelection();
             dom.enableImageDrag();
             //dom.enableContexMenu();
             dom.preventDefault(event);
 
-            this.fire("dragend", {
-                "clientX" : pos[0],
-                "clientY" : pos[1],
-                "left" : left,
-                "right" : right,
-                "middle" : middle
-                });
+            this.fire('dragend', {
+                'clientX' : pos[0],
+                'clientY' : pos[1],
+                'left' : left,
+                'right' : right,
+                'middle' : middle
+            });
         }
     }
 };
@@ -516,37 +516,37 @@ UIElement.prototype.onDragEnd = function(event) {
 
 UIElement.prototype.updateDragButtonsState = function(event, state) {
     switch(event.getTouchesCount()) {
-        case -1: this.dragButtons[event.getMouseButton()] = state; break;
-        case 0: this.dragButtons = { "left" : false, "right" : false, "middle" : false }; break;
-        case 1: this.dragButtons = { "left" : true, "right" : false, "middle" : false }; break;
-        case 2: this.dragButtons = { "left" : false, "right" : true, "middle" : false }; break;
-        case 3: this.dragButtons = { "left" : false, "right" : false, "middle" : true }; break;
+    case -1: this.dragButtons[event.getMouseButton()] = state; break;
+    case 0: this.dragButtons = { 'left' : false, 'right' : false, 'middle' : false }; break;
+    case 1: this.dragButtons = { 'left' : true, 'right' : false, 'middle' : false }; break;
+    case 2: this.dragButtons = { 'left' : false, 'right' : true, 'middle' : false }; break;
+    case 3: this.dragButtons = { 'left' : false, 'right' : false, 'middle' : true }; break;
     }        
 };
 
 
 UIElement.prototype.setDraggableState = function(state) {
     if (state) {
-        this.on("mousedown", this.dragBeginCall);
-        this.on("touchstart", this.dragBeginCall);
+        this.on('mousedown', this.dragBeginCall);
+        this.on('touchstart', this.dragBeginCall);
     } else if (this.dragable){
-        this.off("mousedown", this.dragBeginCall);
-        this.off("mousemove", this.dragMoveCall, document);
+        this.off('mousedown', this.dragBeginCall);
+        this.off('mousemove', this.dragMoveCall, document);
         //this.off("mouseup", this.onDragEnd.bind(this));
-        this.off("mouseup", this.dragEndCall, document);
+        this.off('mouseup', this.dragEndCall, document);
         
-        this.off("touchstart", this.dragBeginCall);
-        this.off("touchmove", this.dragMoveCall, document);
-        this.off("touchend", this.dragEndCall, document);
+        this.off('touchstart', this.dragBeginCall);
+        this.off('touchmove', this.dragMoveCall, document);
+        this.off('touchend', this.dragEndCall, document);
         
         this.dragging = false;
     }
 
     this.dragable = state;
     this.dragButtons = {
-      "left" : false,
-      "right" : false,
-      "middle" : false
+        'left' : false,
+        'right' : false,
+        'middle' : false
     };
 };
 

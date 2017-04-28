@@ -15,7 +15,7 @@ var MapConvert = function(map) {
     this.map = map;
     this.config = map.config;
     this.measure = map.measure;
-    this.isProjected = this.map.getNavigationSrs().isProjected()
+    this.isProjected = this.map.getNavigationSrs().isProjected();
 };
 
 
@@ -34,12 +34,12 @@ MapConvert.prototype.movePositionCoordsTo = function(position, azimuth, distance
         var forward = [-Math.sin(yaw), Math.cos(yaw)];
 
         position.setCoords2([coords[0] + (forward[0]*distance),
-                              coords[1] + (forward[1]*distance)]);
+            coords[1] + (forward[1]*distance)]);
     } else {
         var navigationSrsInfo = this.map.getNavigationSrs().getSrsInfo();
 
-        var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo["a"],
-                                                      (navigationSrsInfo["a"] / navigationSrsInfo["b"]) - 1.0);
+        var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo['a'],
+                                                      (navigationSrsInfo['a'] / navigationSrsInfo['b']) - 1.0);
 
         var r = geod.Direct(coords[1], coords[0], azimuth, distance);
         position.setCoords2([r.lon2, r.lat2]);
@@ -52,7 +52,7 @@ MapConvert.prototype.movePositionCoordsTo = function(position, azimuth, distance
         //orientation[0] -= (r.azi1 - r.azi2); 
 
         //if (!skipOrientation) {
-            position.setOrientation(orientation);
+        position.setOrientation(orientation);
         //}
         
         //console.log("azimuthCorrection: " + azimuthCorrectionFactor);
@@ -69,10 +69,10 @@ MapConvert.prototype.convertPositionViewMode = function(position, mode) {
         return position;
     }
 
-    if (mode == "obj") {
-        if (position.getHeightMode() == "float") {
+    if (mode == 'obj') {
+        if (position.getHeightMode() == 'float') {
             var covertToFloat = true;
-            this.convertPositionHeightMode(position, "fix", true);
+            this.convertPositionHeightMode(position, 'fix', true);
         }
         
         var distance = position.getViewDistance();
@@ -103,10 +103,10 @@ MapConvert.prototype.convertPositionViewMode = function(position, mode) {
         position.setCoords(coords);
 
         if (covertToFloat) {
-            this.convertPositionHeightMode(position, "float", true);
+            this.convertPositionHeightMode(position, 'float', true);
         }
         
-    } else if (mode == "subj") {
+    } else if (mode == 'subj') {
         var coords = this.getPositionCameraCoords(position, position.getHeightMode());
         position.setCoords(coords);
                 
@@ -132,10 +132,10 @@ MapConvert.prototype.convertPositionHeightMode = function(position, mode, noPrec
     }
 
     //set new height
-    if (mode == "float") {
+    if (mode == 'float') {
         position.pos[3] = mode;
         position.pos[4] = position.pos[4] - height[0];
-    } else if (mode == "fix") {
+    } else if (mode == 'fix') {
         position.pos[3] = mode;
         position.pos[4] = position.pos[4] + height[0];
     }
@@ -149,13 +149,13 @@ MapConvert.prototype.getPositionCameraCoords = function(position, heightMode) {
     var rotMatrix = mat4.create();
     mat4.multiply(math.rotationMatrix(2, math.radians(-orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), rotMatrix);
 
-    if (position.getViewMode() == "obj") {
+    if (position.getViewMode() == 'obj') {
         var coords = position.getCoords();
         var terrainHeight = 0;
         var lod = -1;
 
         //convert height to fix
-        if (position.getHeightMode() == "float") {
+        if (position.getHeightMode() == 'float') {
             lod = this.measure.getOptimalHeightLod(coords, position.getViewExtent(), this.config.mapNavSamplesPerViewExtent);
             var surfaceHeight = this.measure.getSurfaceHeight(coords, lod);
             terrainHeight = surfaceHeight[0];
@@ -172,15 +172,15 @@ MapConvert.prototype.getPositionCameraCoords = function(position, heightMode) {
             coords[1] += camInfo.orbitCoords[1];
             coords[2] += camInfo.orbitCoords[2] + terrainHeight;
         } else {
-            var worldPos = this.convertCoords([coords[0], coords[1], coords[2] + terrainHeight], "navigation", "physical");
+            var worldPos = this.convertCoords([coords[0], coords[1], coords[2] + terrainHeight], 'navigation', 'physical');
             worldPos[0] += camInfo.orbitCoords[0];
             worldPos[1] += camInfo.orbitCoords[1];
             worldPos[2] += camInfo.orbitCoords[2];// + terrainHeight;
 
-            coords = this.convertCoords(worldPos, "physical", "navigation");
+            coords = this.convertCoords(worldPos, 'physical', 'navigation');
         }
 
-        if (heightMode == "fix") {
+        if (heightMode == 'fix') {
             return coords;
         } else {
             //get float height for new coords
@@ -205,7 +205,7 @@ MapConvert.prototype.getPositionCameraCoords = function(position, heightMode) {
 
             var coords = position.getCoords();
 
-            if (heightMode == "fix") {
+            if (heightMode == 'fix') {
                 coords[2] += surfaceHeight[0];
             } else {
                 coords[2] -= surfaceHeight[0];
@@ -220,26 +220,26 @@ MapConvert.prototype.getPositionCameraCoords = function(position, heightMode) {
 MapConvert.prototype.getPositionPhysCoords = function(position, lod) {
     var coords = position.getCoords();
 
-    if (position.getHeightMode() == "float") {
+    if (position.getHeightMode() == 'float') {
         lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(position.getCoords(), position.getViewExtent(), this.config.mapNavSamplesPerViewExtent);
         var surfaceHeight = this.measure.getSurfaceHeight(position.getCoords(), lod);
         coords[2] += surfaceHeight[0]; 
     }
 
-    return this.convertCoords(coords, "navigation", "physical");
+    return this.convertCoords(coords, 'navigation', 'physical');
 };
 
 
 MapConvert.prototype.getPositionCameraSpaceCoords = function(position, lod) {
     var coords = position.getCoords();
 
-    if (position.getHeightMode() == "float") {
+    if (position.getHeightMode() == 'float') {
         lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(position.getCoords(), position.getViewExtent(), this.config.mapNavSamplesPerViewExtent);
         var surfaceHeight = this.measure.getSurfaceHeight(position.getCoords(), lod);
         coords[2] += surfaceHeight[0]; 
     }
 
-    var worldPos = this.convertCoords(coords, "navigation", "physical");
+    var worldPos = this.convertCoords(coords, 'navigation', 'physical');
     var camPos = this.map.camera.position;
     worldPos[0] -= camPos[0];
     worldPos[1] -= camPos[1];
@@ -254,8 +254,8 @@ MapConvert.prototype.getPositionCanvasCoords = function(position, lod, physical)
         var camPos = this.map.camera.position;
         var coords = position.getCoords();
         var worldPos = [coords[0] - camPos[0],
-                         coords[1] - camPos[1],
-                         coords[2] - camPos[2]];
+            coords[1] - camPos[1],
+            coords[2] - camPos[2]];
     } else {
         var worldPos = this.getPositionCameraSpaceCoords(position, lod);
     }

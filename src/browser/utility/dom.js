@@ -70,32 +70,32 @@ Dom.stopPropagation = function(e) {
 
 
 Dom.disableTextSelection = function() {
-    window.addEventListener("selectstart", Dom.preventDefault);
+    window.addEventListener('selectstart', Dom.preventDefault);
 };
 
 
 Dom.enableTextSelection = function() {
-    window.removeEventListener("selectstart", Dom.preventDefault);
+    window.removeEventListener('selectstart', Dom.preventDefault);
 };
 
 
 Dom.disableImageDrag = function() {
-    window.addEventListener("dragstart", Dom.preventDefault);
+    window.addEventListener('dragstart', Dom.preventDefault);
 };
 
 
 Dom.enableImageDrag = function() {
-    window.removeEventListener("dragstart", Dom.preventDefault);
+    window.removeEventListener('dragstart', Dom.preventDefault);
 };
 
 
 Dom.disableContexMenu = function(element) {
-    element.addEventListener("contextmenu", Dom.preventDefault);
+    element.addEventListener('contextmenu', Dom.preventDefault);
 };
 
 
 Dom.enableContexMenu = function(element) {
-    element.removeEventListener("contextmenu", Dom.preventDefault);
+    element.removeEventListener('contextmenu', Dom.preventDefault);
 };
 
 

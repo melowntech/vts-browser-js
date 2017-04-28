@@ -18,13 +18,13 @@ var utilsUrl = utilsUrl_;
 var MapSurface = function(map, json, type) {
     this.map = map;
     this.id = null;
-    this.type = "basic";
+    this.type = 'basic';
     this.metaBinaryOrder = 1;
-    this.metaUrl = "";
-    this.navUrl = "";
+    this.metaUrl = '';
+    this.navUrl = '';
     this.navDelta = 1;
-    this.meshUrl = "";
-    this.textureUrl = "";
+    this.meshUrl = '';
+    this.textureUrl = '';
     this.baseUrl = this.map.url.baseUrl;
     this.baseUrlSchema = this.map.url.baseUrlSchema;
     this.baseUrlOrigin = this.map.url.baseUrlOrigin;
@@ -32,8 +32,8 @@ var MapSurface = function(map, json, type) {
     this.tileRange = [[0,0],[0,0]];
     this.textureLayer = null;
     this.boundLayerSequence = [];
-    this.glue = (type == "glue");
-    this.free = (type == "free");
+    this.glue = (type == 'glue');
+    this.free = (type == 'free');
     this.virtual = false;
     this.zFactor = 0;
     this.ready = false;
@@ -57,7 +57,7 @@ var MapSurface = function(map, json, type) {
         this.tree = null;
     }
     
-    if (typeof json === "string") {
+    if (typeof json === 'string') {
         this.jsonUrl = this.map.url.processUrl(json);
         this.baseUrl = utilsUrl_.getBase(this.jsonUrl);
         this.baseUrlSchema = utilsUrl_.getSchema(this.jsonUrl);
@@ -81,26 +81,26 @@ var MapSurface = function(map, json, type) {
 
 
 MapSurface.prototype.parseJson = function(json) {
-    this.id = json["id"] || null;
-    this.type = json["type"] || "basic";
-    this.metaBinaryOrder = json["metaBinaryOrder"] || 1;
-    this.metaUrl = this.processUrl(json["metaUrl"], "");
-    this.navUrl = this.processUrl(json["navUrl"], "");
-    this.navDelta = json["navDelta"] || 1;
-    this.meshUrl = this.processUrl(json["meshUrl"], "");
-    this.textureUrl = this.processUrl(json["textureUrl"], "");
-    this.geodataUrl = this.processUrl(json["geodataUrl"] || json["geodata"], "");
-    this.lodRange = json["lodRange"] || [0,0];
-    this.tileRange = json["tileRange"] || [[0,0],[0,0]];
-    this.textureLayer = json["textureLayer"] || null;
-    this.geodata = (this.type == "geodata" || this.type == "geodata-tiles");
-    this.credits = json["credits"] || [];
+    this.id = json['id'] || null;
+    this.type = json['type'] || 'basic';
+    this.metaBinaryOrder = json['metaBinaryOrder'] || 1;
+    this.metaUrl = this.processUrl(json['metaUrl'], '');
+    this.navUrl = this.processUrl(json['navUrl'], '');
+    this.navDelta = json['navDelta'] || 1;
+    this.meshUrl = this.processUrl(json['meshUrl'], '');
+    this.textureUrl = this.processUrl(json['textureUrl'], '');
+    this.geodataUrl = this.processUrl(json['geodataUrl'] || json['geodata'], '');
+    this.lodRange = json['lodRange'] || [0,0];
+    this.tileRange = json['tileRange'] || [[0,0],[0,0]];
+    this.textureLayer = json['textureLayer'] || null;
+    this.geodata = (this.type == 'geodata' || this.type == 'geodata-tiles');
+    this.credits = json['credits'] || [];
     this.creditsUrl = null;
-    this.displaySize = json["displaySize"] || 256;
+    this.displaySize = json['displaySize'] || 256;
     
-    if (json["extents"]) {
-        var ll = json["extents"]["ll"];
-        var ur = json["extents"]["ur"];
+    if (json['extents']) {
+        var ll = json['extents']['ll'];
+        var ur = json['extents']['ur'];
         this.extents = new BBox(ll[0], ll[1], ll[2], ur[0], ur[1], ur[2]);
     } else {
         this.extents = new BBox(0,0,0,1,1,1);
@@ -109,40 +109,40 @@ MapSurface.prototype.parseJson = function(json) {
     this.specificity = Math.pow(2,this.lodRange[0]) / ((this.tileRange[1][0] - this.tileRange[1][0]+1)*(this.tileRange[1][1] - this.tileRange[1][1]+1));    
     
     switch(typeof this.credits) {
-        case "string":
-            this.creditsUrl = this.credits;
+    case 'string':
+        this.creditsUrl = this.credits;
+        this.credits = [];
+        break;
+
+    case 'object':
+        
+        if (!Array.isArray(this.credits)) {
+            var credits = this.credits;
             this.credits = [];
-            break;
-
-        case "object":
-        
-            if (!Array.isArray(this.credits)) {
-                var credits = this.credits;
-                this.credits = [];
                 
-                for (var key in credits){
-                    this.map.addCredit(key, new MapCredit(this.map, credits[key]));
-                    this.credits.push(key);
-                }
+            for (var key in credits){
+                this.map.addCredit(key, new MapCredit(this.map, credits[key]));
+                this.credits.push(key);
             }
+        }
 
-            for (var i = 0, li = this.credits.length; i < li; i++) {
-                var credit = this.map.getCreditById(this.credits[i]);
-                this.creditsNumbers.push(credit ? credit.id : null); 
-            }
+        for (var i = 0, li = this.credits.length; i < li; i++) {
+            var credit = this.map.getCreditById(this.credits[i]);
+            this.creditsNumbers.push(credit ? credit.id : null); 
+        }
         
-            break;
+        break;
     }    
 
 
-    if (this.geodataUrl && (typeof this.geodataUrl === "string") && this.geodataUrl.indexOf("{geonavtile}") != -1) {
+    if (this.geodataUrl && (typeof this.geodataUrl === 'string') && this.geodataUrl.indexOf('{geonavtile}') != -1) {
         //this.geodataNavtileInfo = true;
         this.geodataNavtileInfo = false;
     }
 
     //load stylesheet
     if (this.geodata) {
-        var style = json["style"];
+        var style = json['style'];
         this.originalStyle = style;
         
         if (style) {
@@ -186,23 +186,23 @@ MapSurface.prototype.getOptions = function() {
 MapSurface.prototype.getInfo = function() {
     if (this.geodata) {
         return {
-            "type" : this.type,
-            "metaUrl" : this.metaUrl,
-            "geodataUrl" : this.geodataUrl,
-            "lodRange" : this.lodRange,
-            "tileRange" : this.tileRange,
-            "style" : this.originalStyle
+            'type' : this.type,
+            'metaUrl' : this.metaUrl,
+            'geodataUrl' : this.geodataUrl,
+            'lodRange' : this.lodRange,
+            'tileRange' : this.tileRange,
+            'style' : this.originalStyle
         };
     } else {
         return {
-            "type" : this.type,
-            "metaUrl" : this.metaUrl,
-            "navUrl" : this.navUrl,
-            "meshUrl" : this.meshUrl,
-            "textureUrl" : this.textureUrl,
-            "lodRange" : this.lodRange,
-            "tileRange" : this.tileRange,
-            "textureLayer" : this.textureLayer
+            'type' : this.type,
+            'metaUrl' : this.metaUrl,
+            'navUrl' : this.navUrl,
+            'meshUrl' : this.meshUrl,
+            'textureUrl' : this.textureUrl,
+            'lodRange' : this.lodRange,
+            'tileRange' : this.tileRange,
+            'textureLayer' : this.textureLayer
         };
     }
 };
@@ -213,17 +213,17 @@ MapSurface.prototype.processUrl = function(url, fallback) {
         return fallback;
     }
 
-    if (typeof url !== "string") {
+    if (typeof url !== 'string') {
         return url;
     }
 
     url = url.trim();
     
-    if (url.indexOf("://") != -1) { //absolute
+    if (url.indexOf('://') != -1) { //absolute
         return url;
-    } else if (url.indexOf("//") == 0) {  //absolute without schema
+    } else if (url.indexOf('//') == 0) {  //absolute without schema
         return this.baseUrlSchema + url;
-    } else if (url.indexOf("/") == 0) {  //absolute without host
+    } else if (url.indexOf('/') == 0) {  //absolute without host
         return this.baseUrlOrigin + url;
     } else {  //relative
         return this.baseUrl + url; 
@@ -347,7 +347,7 @@ MapSurface.prototype.getNavUrl = function(id, skipBaseUrl) {
 
 
 MapSurface.prototype.getNavTemplate = function(id, skipBaseUrl) {
-    if (this.navUrl.indexOf("//") != -1){
+    if (this.navUrl.indexOf('//') != -1){
         return this.navUrl;
     } else {
         this.map.url.baseUrl + url;

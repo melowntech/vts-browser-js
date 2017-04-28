@@ -114,7 +114,7 @@ MapPosition.prototype.getHeightMode = function() {
 
 MapPosition.prototype.check = function(mode) {
     //check pich
-    if (this.getViewMode() == "obj") {
+    if (this.getViewMode() == 'obj') {
         this.pos[6] = math.clamp(this.pos[6], -90.0, 90.0);
     } else {
         this.pos[6] = math.clamp(this.pos[6], -90.0, 90.0);
@@ -142,21 +142,21 @@ MapPosition.prototype.isSame = function(pos) {
 
 MapPosition.prototype.validate = function() {
     var pos = this.pos;
-    if (pos[0] == "fixed") { //old format
-        pos[0] = "obj";
+    if (pos[0] == 'fixed') { //old format
+        pos[0] = 'obj';
         pos[9] = pos[8];
         pos[8] = pos[7];
         pos[7] = pos[6];
         pos[6] = pos[5];
         pos[5] = pos[4];
         pos[4] = pos[3];
-        pos[3] = "fix";
+        pos[3] = 'fix';
     }
 
-    pos[0] = (pos[0] == "obj" || pos[0] == "subj") ? pos[0] : "obj";
+    pos[0] = (pos[0] == 'obj' || pos[0] == 'subj') ? pos[0] : 'obj';
     pos[1] = (pos[1] != null) ? pos[1] : 0;
     pos[2] = (pos[2] != null) ? pos[2] : 0;
-    pos[3] = (pos[3] == "fix" || pos[3] == "fixed" || pos[3] == "float") ? pos[3] : "float";
+    pos[3] = (pos[3] == 'fix' || pos[3] == 'fixed' || pos[3] == 'float') ? pos[3] : 'float';
     pos[4] = (pos[4] != null) ? pos[4] : 0;
     pos[5] = (pos[5] != null) ? pos[5] : 0;
     pos[6] = (pos[6] != null) ? pos[6] : -90;
@@ -164,15 +164,15 @@ MapPosition.prototype.validate = function() {
     pos[8] = (pos[8] != null) ? pos[8] : 900;
     pos[9] = (pos[9] != null) ? pos[9] : 55;
 
-    pos[3] = (pos[3] == "fixed") ? "fix" : pos[3];
+    pos[3] = (pos[3] == 'fixed') ? 'fix' : pos[3];
 };
 
 
 MapPosition.prototype.toString = function() {
     var p = this.pos;
-    return p[0] + ", " + p[1].toFixed(0) + ", " + p[2].toFixed(0) + ", " + p[3] + ", " + p[4].toFixed(0)
-           + ", " + p[5].toFixed(0) + ", " + p[6].toFixed(0) + ", " + p[7].toFixed(0) + ", " 
-           + ", " + p[8].toFixed(0) + ", " + p[9].toFixed(0); 
+    return p[0] + ', ' + p[1].toFixed(0) + ', ' + p[2].toFixed(0) + ', ' + p[3] + ', ' + p[4].toFixed(0)
+           + ', ' + p[5].toFixed(0) + ', ' + p[6].toFixed(0) + ', ' + p[7].toFixed(0) + ', ' 
+           + ', ' + p[8].toFixed(0) + ', ' + p[9].toFixed(0); 
 };
 
 

@@ -33,28 +33,28 @@ GpuGroup.prototype.kill = function() {
         var job = this.jobs[i]; 
 
         switch(job.type) {
-            case "flat-line":
-                if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
-                break;
+        case 'flat-line':
+            if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
+            break;
 
-            case "flat-tline":
-            case "pixel-line":
-            case "pixel-tline":
-                if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
-                if (job.vertexNormalBuffer) this.gl.deleteBuffer(job.vertexNormalBuffer);
-                break;
+        case 'flat-tline':
+        case 'pixel-line':
+        case 'pixel-tline':
+            if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
+            if (job.vertexNormalBuffer) this.gl.deleteBuffer(job.vertexNormalBuffer);
+            break;
 
-            case "line-label":
-                if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
-                if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
-                break;
+        case 'line-label':
+            if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
+            if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
+            break;
 
-            case "icon":
-            case "label":
-                if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
-                if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
-                if (job.vertexOriginBuffer) this.gl.deleteBuffer(job.vertexOriginBuffer);
-                break;
+        case 'icon':
+        case 'label':
+            if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
+            if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
+            if (job.vertexOriginBuffer) this.gl.deleteBuffer(job.vertexOriginBuffer);
+            break;
         }
     }
 };
@@ -73,26 +73,26 @@ GpuGroup.prototype.getZbufferOffset = function(params) {
 GpuGroup.prototype.addLineJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data["vertexBuffer"];
-    var color = data["color"];
+    var vertices = data['vertexBuffer'];
+    var color = data['color'];
     var f = 1.0/255;
 
     var job = {};
-    job.type = "flat-line";
-    job.program = data["program"];
+    job.type = 'flat-line';
+    job.program = data['program'];
     job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
-    job.zIndex = data["z-index"] + 256;
-    job.clickEvent = data["click-event"];
-    job.hoverEvent = data["hover-event"];
-    job.enterEvent = data["enter-event"];
-    job.leaveEvent = data["leave-event"];
-    job.hitable = data["hitable"];
-    job.eventInfo = data["eventInfo"];
-    job.state = data["state"];
-    job.center = data["center"];
-    job.lod = data["lod"];
-    job.lineWidth = data["line-width"];
-    job.zbufferOffset = data["zbuffer-offset"];
+    job.zIndex = data['z-index'] + 256;
+    job.clickEvent = data['click-event'];
+    job.hoverEvent = data['hover-event'];
+    job.enterEvent = data['enter-event'];
+    job.leaveEvent = data['leave-event'];
+    job.hitable = data['hitable'];
+    job.eventInfo = data['eventInfo'];
+    job.state = data['state'];
+    job.center = data['center'];
+    job.lod = data['lod'];
+    job.lineWidth = data['line-width'];
+    job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
 
@@ -115,36 +115,36 @@ GpuGroup.prototype.addLineJob = function(data) {
 GpuGroup.prototype.addExtentedLineJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data["vertexBuffer"];
-    var normals = data["normalBuffer"];
-    var color = data["color"];
+    var vertices = data['vertexBuffer'];
+    var normals = data['normalBuffer'];
+    var color = data['color'];
     var f = 1.0/255;
 
     var job = {};
-    job.type = data["type"];
-    job.program = data["program"];
+    job.type = data['type'];
+    job.program = data['program'];
     job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
-    job.zIndex = data["z-index"] + 256;
-    job.clickEvent = data["click-event"];
-    job.hoverEvent = data["hover-event"];
-    job.hitable = data["hitable"];
-    job.eventInfo = data["eventInfo"];
-    job.enterEvent = data["enter-event"];
-    job.leaveEvent = data["leave-event"];
-    job.state = data["state"];
-    job.center = data["center"];
-    job.lod = data["lod"];
-    job.lineWidth = data["line-width"];
-    job.zbufferOffset = data["zbuffer-offset"];
+    job.zIndex = data['z-index'] + 256;
+    job.clickEvent = data['click-event'];
+    job.hoverEvent = data['hover-event'];
+    job.hitable = data['hitable'];
+    job.eventInfo = data['eventInfo'];
+    job.enterEvent = data['enter-event'];
+    job.leaveEvent = data['leave-event'];
+    job.state = data['state'];
+    job.center = data['center'];
+    job.lod = data['lod'];
+    job.lineWidth = data['line-width'];
+    job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
 
-    if (data["texture"] != null) {
-        var texture = data["texture"];
+    if (data['texture'] != null) {
+        var texture = data['texture'];
         var bitmap = texture[0];
-        job.texture = [this.renderer.getBitmap(bitmap["url"], bitmap["filter"] || "linear", bitmap["tiled"] || false),
-                                                  texture[1], texture[2], texture[3], texture[4]];
-        var background = data["background"];
+        job.texture = [this.renderer.getBitmap(bitmap['url'], bitmap['filter'] || 'linear', bitmap['tiled'] || false),
+            texture[1], texture[2], texture[3], texture[4]];
+        var background = data['background'];
 
         if (background[3] != 0) {
             job.background = [background[0]*f, background[1]*f, background[2]*f, background[3]*f];
@@ -152,9 +152,9 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     }
 
     switch(job.type) {
-        case "flat-tline":   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
-        case "pixel-line":   job.program = this.renderer.progLine3;  break;
-        case "pixel-tline":  job.program = (background[3] != 0) ? this.renderer.progTPBLine : this.renderer.progTPLine; break;
+    case 'flat-tline':   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
+    case 'pixel-line':   job.program = this.renderer.progLine3;  break;
+    case 'pixel-tline':  job.program = (background[3] != 0) ? this.renderer.progTPBLine : this.renderer.progTPLine; break;
     }
 
     //create vertex buffer
@@ -185,26 +185,26 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 GpuGroup.prototype.addLineLabelJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data["vertexBuffer"];
-    var texcoords = data["texcoordsBuffer"];
-    var color = data["color"];
+    var vertices = data['vertexBuffer'];
+    var texcoords = data['texcoordsBuffer'];
+    var color = data['color'];
     var f = 1.0/255;
 
     var job = {};
-    job.type = "line-label";
-    job.program = data["program"];
+    job.type = 'line-label';
+    job.program = data['program'];
     job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
-    job.zIndex = data["z-index"] + 256;
-    job.clickEvent = data["click-event"];
-    job.hoverEvent = data["hover-event"];
-    job.enterEvent = data["enter-event"];
-    job.leaveEvent = data["leave-event"];
-    job.hitable = data["hitable"];
-    job.eventInfo = data["eventInfo"];
-    job.state = data["state"];
-    job.center = data["center"];
-    job.lod = data["lod"];
-    job.zbufferOffset = data["zbuffer-offset"];
+    job.zIndex = data['z-index'] + 256;
+    job.clickEvent = data['click-event'];
+    job.hoverEvent = data['hover-event'];
+    job.enterEvent = data['enter-event'];
+    job.leaveEvent = data['leave-event'];
+    job.hitable = data['hitable'];
+    job.eventInfo = data['eventInfo'];
+    job.state = data['state'];
+    job.center = data['center'];
+    job.lod = data['lod'];
+    job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
 
@@ -236,37 +236,37 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 GpuGroup.prototype.addIconJob = function(data, label) {
     var gl = this.gl;
 
-    var vertices = data["vertexBuffer"];
-    var texcoords = data["texcoordsBuffer"];
-    var origins = data["originBuffer"];
-    var color = data["color"];
-    var s = data["stick"];
+    var vertices = data['vertexBuffer'];
+    var texcoords = data['texcoordsBuffer'];
+    var origins = data['originBuffer'];
+    var color = data['color'];
+    var s = data['stick'];
     var f = 1.0/255;
 
     var job = {};
-    job.type = label ? "label" : "icon";
-    job.program = data["program"];
+    job.type = label ? 'label' : 'icon';
+    job.program = data['program'];
     job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
-    job.zIndex = data["z-index"] + 256;
-    job.visibility = data["visibility"];
-    job.culling = data["culling"];
-    job.clickEvent = data["click-event"];
-    job.hoverEvent = data["hover-event"];
-    job.enterEvent = data["enter-event"];
-    job.leaveEvent = data["leave-event"];
-    job.hitable = data["hitable"];
-    job.eventInfo = data["eventInfo"];
-    job.state = data["state"];
-    job.center = data["center"];
+    job.zIndex = data['z-index'] + 256;
+    job.visibility = data['visibility'];
+    job.culling = data['culling'];
+    job.clickEvent = data['click-event'];
+    job.hoverEvent = data['hover-event'];
+    job.enterEvent = data['enter-event'];
+    job.leaveEvent = data['leave-event'];
+    job.hitable = data['hitable'];
+    job.eventInfo = data['eventInfo'];
+    job.state = data['state'];
+    job.center = data['center'];
     job.stick = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f];
-    job.lod = data["lod"];
-    job.zbufferOffset = data["zbuffer-offset"];
+    job.lod = data['lod'];
+    job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
 
     if (label !== true) {
-        var icon = data["icon"];
-        job.texture = this.renderer.getBitmap(icon["url"], icon["filter"] || "linear", icon["tiled"] || false);
+        var icon = data['icon'];
+        job.texture = this.renderer.getBitmap(icon['url'], icon['filter'] || 'linear', icon['tiled'] || false);
     } else {
         job.texture = this.renderer.font.texture;
     }
@@ -308,15 +308,15 @@ GpuGroup.prototype.addIconJob = function(data, label) {
 
 
 GpuGroup.prototype.addRenderJob = function(data) {
-    switch(data["type"]) {
-        case "flat-line":   this.addLineJob(data); break;
-        case "flat-tline":  this.addExtentedLineJob(data); break;
-        case "pixel-line":  this.addExtentedLineJob(data); break;
-        case "pixel-tline": this.addExtentedLineJob(data); break;
-        case "line-label":  this.addLineLabelJob(data); break;
-        case "icon":        this.addIconJob(data); break;
-        case "label":       this.addIconJob(data, true); break;
-        case "optimize":    this.optimaze(data); break;
+    switch(data['type']) {
+    case 'flat-line':   this.addLineJob(data); break;
+    case 'flat-tline':  this.addExtentedLineJob(data); break;
+    case 'pixel-line':  this.addExtentedLineJob(data); break;
+    case 'pixel-tline': this.addExtentedLineJob(data); break;
+    case 'line-label':  this.addLineLabelJob(data); break;
+    case 'icon':        this.addIconJob(data); break;
+    case 'label':       this.addIconJob(data, true); break;
+    case 'optimize':    this.optimaze(data); break;
     }
 };
 
@@ -364,11 +364,11 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin) {
     for (var i = 0, li = this.jobs.length; i < li; i++) {
         var job = this.jobs[i];
 
-        if ((job.type == "icon" || job.type == "label") && job.visibility > 0) {
+        if ((job.type == 'icon' || job.type == 'label') && job.visibility > 0) {
             var center = job.center;
             if (vec3.length([center[0]-cameraPos[0],
-                                    center[1]-cameraPos[1],
-                                    center[2]-cameraPos[2]]) > job.visibility) {
+                center[1]-cameraPos[1],
+                center[2]-cameraPos[2]]) > job.visibility) {
                 continue;
             }
         }

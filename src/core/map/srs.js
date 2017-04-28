@@ -13,14 +13,14 @@ var MapSrs = function(map, id, json) {
     this.map = map;
     this.id = id;
     this.proj4 = map.proj4;
-    this.comment = json["comment"] || null;
-    this.srsDef = json["srsDef"] || null;
-    this.srsModifiers = json["srsModifiers"] || [];
-    this.type = json["type"] || "projected";
-    this.vdatum = json["vdatum"] || "orthometric";
+    this.comment = json['comment'] || null;
+    this.srsDef = json['srsDef'] || null;
+    this.srsModifiers = json['srsModifiers'] || [];
+    this.type = json['type'] || 'projected';
+    this.vdatum = json['vdatum'] || 'orthometric';
     //this.srsDefEllps = json["srsDefEllps"] || "";
-    this.srsDef = json["srsDefEllps"] || this.srsDef;
-    this.periodicity = this.parsePeriodicity(json["periodicity"]);
+    this.srsDef = json['srsDefEllps'] || this.srsDef;
+    this.periodicity = this.parsePeriodicity(json['periodicity']);
     this.srsInfo = this.proj4(this.srsDef).info();
     this.geoidGrid = null;
     this.geoidGridMap = null;
@@ -28,19 +28,19 @@ var MapSrs = function(map, id, json) {
     this.latlonProj4 = null; 
     this.proj4Cache = {};
 
-    if (json["geoidGrid"]) {
-        var geoidGridData = json["geoidGrid"];
+    if (json['geoidGrid']) {
+        var geoidGridData = json['geoidGrid'];
 
         this.geoidGrid = {
-            definition : geoidGridData["definition"] || null,
-            srsDefEllps : geoidGridData["srsDefEllps"] || null,
-            valueRange : geoidGridData["valueRange"] || [0,1]
+            definition : geoidGridData['definition'] || null,
+            srsDefEllps : geoidGridData['srsDefEllps'] || null,
+            valueRange : geoidGridData['valueRange'] || [0,1]
         };
 
-        if (geoidGridData["extents"]) {
+        if (geoidGridData['extents']) {
             this.geoidGrid.extents = {
-                ll : geoidGridData["extents"]["ll"],
-                ur : geoidGridData["extents"]["ur"]
+                ll : geoidGridData['extents']['ll'],
+                ur : geoidGridData['extents']['ur']
             };
         } else {
             this.geoidGrid.extents = {
@@ -59,8 +59,8 @@ var MapSrs = function(map, id, json) {
         }
     }
 
-    if (this.type == "geographic") {
-        this.spheroid = json["spheroid"] || null;
+    if (this.type == 'geographic') {
+        this.spheroid = json['spheroid'] || null;
 
         if (this.spheroid == null) {
             //TODO: return error
@@ -75,8 +75,8 @@ MapSrs.prototype.parsePeriodicity = function(periodicityData) {
     }
 
     var periodicity = {
-        "type" : periodicityData["type"] || "",
-        "period" : periodicityData["period"] || 0
+        'type' : periodicityData['type'] || '',
+        'period' : periodicityData['period'] || 0
     };
 
     return periodicity;
@@ -85,14 +85,14 @@ MapSrs.prototype.parsePeriodicity = function(periodicityData) {
 
 MapSrs.prototype.getInfo = function() {
     return {
-        "comment" : this.comment,
-        "srsDef" : this.srsDef,
-        "srsModifiers" : this.srsModifiers,
-        "type" : this.type,
-        "vdatum" : this.vdatum,
-        "srsDefEllps" : this.srsDef,
-        "a" : this.srsInfo["a"],
-        "b" : this.srsInfo["b"]
+        'comment' : this.comment,
+        'srsDef' : this.srsDef,
+        'srsModifiers' : this.srsModifiers,
+        'type' : this.type,
+        'vdatum' : this.vdatum,
+        'srsDefEllps' : this.srsDef,
+        'a' : this.srsInfo['a'],
+        'b' : this.srsInfo['b']
     };
 };
 
@@ -114,7 +114,7 @@ MapSrs.prototype.isGeoidGridReady = function() {
 
 
 MapSrs.prototype.isProjected = function() {
-    return (this.type == "projected");
+    return (this.type == 'projected');
 };
 
 
@@ -179,15 +179,15 @@ MapSrs.prototype.getGeoidGridDelta = function(coords, original) {
 
 
 MapSrs.prototype.getVerticalAdjustmentFactor = function(coords) {
-    if (this.srsModifiers.indexOf("adjustVertical") != -1) {
+    if (this.srsModifiers.indexOf('adjustVertical') != -1) {
         var info = this.getSrsInfo();
 
         //convert coords to latlon
-        var latlonProj = "+proj=longlat " +
-                          " +alpha=0" +
-                          " +gamma=0 +a=" + info["a"] +
-                          " +b=" + info["b"] +
-                          " +x0=0 +y0=0";
+        var latlonProj = '+proj=longlat ' +
+                          ' +alpha=0' +
+                          ' +gamma=0 +a=' + info['a'] +
+                          ' +b=' + info['b'] +
+                          ' +x0=0 +y0=0';
 
         if (!this.latlonProj4) {
             this.latlonProj4 = this.proj4(latlonProj, null, null, true); 
@@ -196,8 +196,8 @@ MapSrs.prototype.getVerticalAdjustmentFactor = function(coords) {
         var coords2 = this.proj4(this.srsProj4, this.latlonProj4, [coords[0], coords[1]]);
 
         //move coors 1000m
-        var geod = new GeographicLib.Geodesic.Geodesic(info["a"],
-                                                       (info["a"] / info["b"]) - 1.0);
+        var geod = new GeographicLib.Geodesic.Geodesic(info['a'],
+                                                       (info['a'] / info['b']) - 1.0);
 
 
         var r = geod.Direct(coords2[1], coords2[0], 90, 1000);
@@ -224,7 +224,7 @@ MapSrs.prototype.getVerticalAdjustmentFactor = function(coords) {
 
 MapSrs.prototype.convertCoordsTo = function(coords, srs, skipVerticalAdjust) {
     this.isReady();
-    if (typeof srs !== "string") {
+    if (typeof srs !== 'string') {
         if (srs.id == this.id) {
             return coords.slice();
         }
@@ -234,10 +234,10 @@ MapSrs.prototype.convertCoordsTo = function(coords, srs, skipVerticalAdjust) {
 
     coords = coords.slice();
 
-    var stringSrs = (typeof srs === "string");
+    var stringSrs = (typeof srs === 'string');
 
     //if (!skipVerticalAdjust && stringSrs) {
-        coords[2] = this.getOriginalHeight(coords);
+    coords[2] = this.getOriginalHeight(coords);
     //}
 
     var srsDef = (stringSrs) ? srs : srs.srsProj4;
@@ -314,7 +314,7 @@ MapSrs.prototype.convertCoordsToFast = function(coords, srs, skipVerticalAdjust,
 
 MapSrs.prototype.convertCoordsFrom = function(coords, srs) {
     this.isReady();
-    if (typeof srs !== "string") {
+    if (typeof srs !== 'string') {
         if (srs.id == this.id) {
             return coords.slice();
         }
@@ -324,12 +324,12 @@ MapSrs.prototype.convertCoordsFrom = function(coords, srs) {
 
     coords = coords.slice();
 
-    if (typeof srs !== "string") {
+    if (typeof srs !== 'string') {
         coords[2] = srs.getOriginalHeight(coords);
     }
 
-    var srsDef = (typeof srs === "string") ? srs : srs.srsProj4;
-    var srsDef2 = (typeof srs === "string") ? srs : srs.srsDef;
+    var srsDef = (typeof srs === 'string') ? srs : srs.srsProj4;
+    var srsDef2 = (typeof srs === 'string') ? srs : srs.srsDef;
 
     //var coords2 = this.proj4(srsDef, this.srsProj4, coords);
 
@@ -349,20 +349,20 @@ MapSrs.prototype.convertCoordsFrom = function(coords, srs) {
 
 
 MapSrs.prototype.phi2z = function(eccent, ts) {
-  var HALFPI = Math.PI*0.5;
-  var eccnth = 0.5 * eccent;
-  var con, dphi;
-  var phi = HALFPI - 2 * Math.atan(ts);
-  for (var i = 0; i <= 15; i++) {
-    con = eccent * Math.sin(phi);
-    dphi = HALFPI - 2 * Math.atan(ts * (Math.pow(((1 - con) / (1 + con)), eccnth))) - phi;
-    phi += dphi;
-    if (Math.abs(dphi) <= 0.0000000001) {
-      return phi;
+    var HALFPI = Math.PI*0.5;
+    var eccnth = 0.5 * eccent;
+    var con, dphi;
+    var phi = HALFPI - 2 * Math.atan(ts);
+    for (var i = 0; i <= 15; i++) {
+        con = eccent * Math.sin(phi);
+        dphi = HALFPI - 2 * Math.atan(ts * (Math.pow(((1 - con) / (1 + con)), eccnth))) - phi;
+        phi += dphi;
+        if (Math.abs(dphi) <= 0.0000000001) {
+            return phi;
+        }
     }
-  }
   //console.log("phi2z has NoConvergence");
-  return -9999;
+    return -9999;
 };
 
 
@@ -411,19 +411,19 @@ MapSrs.prototype.convertWGSToGeocent = function(coords, srs, coords2, index, ind
      ** test, it should be wrapped by Math.cos() and Math.sin().  NFW for PROJ.4, Sep/2001.
      */
     if (Latitude < -HALFPI && Latitude > -1.001 * HALFPI) {
-      Latitude = -HALFPI;
+        Latitude = -HALFPI;
     }
     else if (Latitude > HALFPI && Latitude < 1.001 * HALFPI) {
-      Latitude = HALFPI;
+        Latitude = HALFPI;
     }
     else if ((Latitude < -HALFPI) || (Latitude > HALFPI)) {
       /* Latitude out of range */
       //..reportError('geocent:lat out of range:' + Latitude);
-      return null;
+        return null;
     }
 
     if (Longitude > Math.PI) {
-      Longitude -= (2 * Math.PI);
+        Longitude -= (2 * Math.PI);
     }
 
     SinLat = Math.sin(Latitude);

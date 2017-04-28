@@ -38,7 +38,7 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
 
     if (vsurfaceCount >= 1) { //do we have virtual surface?
         strId.sort(); 
-        strId = strId.join(";");
+        strId = strId.join(';');
 
         var surface = this.map.virtualSurfaces[strId];
         if (surface) {
@@ -195,18 +195,18 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
             for (var i = 0, li = surfaceLayers.length; i < li; i++) {
                 var item = surfaceLayers[i];
         
-                if (typeof item === "string") {
+                if (typeof item === 'string') {
                     var layer = this.map.getBoundLayerById(item);
                     if (layer) {
                         surface.boundLayerSequence.push([layer, 1]);
                     }
                 } else {
-                    var layer = this.map.getBoundLayerById(item["id"]);
+                    var layer = this.map.getBoundLayerById(item['id']);
                     if (layer) {
 
                         var alpha = 1;
-                        if (typeof item["alpha"] !== "undefined") {
-                            alpha = item["alpha"];
+                        if (typeof item['alpha'] !== 'undefined') {
+                            alpha = item['alpha'];
                         }
 
                         surface.boundLayerSequence.push([layer, alpha]);
@@ -223,25 +223,25 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
         if (freeLayer != null && freeLayer.ready) {
             freeLayer.boundLayerSequence = [];
             
-            var boundLayers = freeLayersProperties["boundLayers"];
+            var boundLayers = freeLayersProperties['boundLayers'];
             
             if (boundLayers && Array.isArray(boundLayers)) {
 
                 for (var i = 0, li = boundLayers.length; i < li; i++) {
                     var item = boundLayers[i];
             
-                    if (typeof item === "string") {
+                    if (typeof item === 'string') {
                         var layer = this.map.getBoundLayerById(item);
                         if (layer) {
                             freeLayer.boundLayerSequence.push([layer, 1]);
                         }
                     } else {
-                        var layer = this.map.getBoundLayerById(item["id"]);
+                        var layer = this.map.getBoundLayerById(item['id']);
                         if (layer) {
     
                             var alpha = 1;
-                            if (typeof item["alpha"] !== "undefined") {
-                                alpha = item["alpha"];
+                            if (typeof item['alpha'] !== 'undefined') {
+                                alpha = item['alpha'];
                             }
     
                             freeLayer.boundLayerSequence.push([layer, alpha]);

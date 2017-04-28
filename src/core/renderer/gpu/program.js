@@ -31,7 +31,7 @@ GpuProgram.prototype.createShader = function(source, vertexShader) {
     gl.compileShader(shader);
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        alert("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
+        alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
         return null;
     }
 
@@ -52,7 +52,7 @@ GpuProgram.prototype.createProgram = function(vertex, fragment) {
     gl.linkProgram(program);
 
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        alert("Unable to initialize the shader program.");
+        alert('Unable to initialize the shader program.');
     }
 
     gl.useProgram(program);

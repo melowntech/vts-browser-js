@@ -52,7 +52,7 @@ var UI = function(browser, element) {
 UI.prototype.init = function() {
     //create browser wrapper
     this.element = document.createElement('div');
-    this.element.className = "vts-browser";
+    this.element.className = 'vts-browser';
     this.rootElement.appendChild(this.element);
 
     //create map cotrol
@@ -143,17 +143,17 @@ UI.prototype.getMapElement = function() {
 
 UI.prototype.setParam = function(key) {
     switch (key) {
-        case "controlCompass":     this.setControlVisible("comapss", this.config.controlCompass); break;
-        case "controlZoom":        this.setControlVisible("zoom", this.config.controlZoom); break;
+    case 'controlCompass':     this.setControlVisible('comapss', this.config.controlCompass); break;
+    case 'controlZoom':        this.setControlVisible('zoom', this.config.controlZoom); break;
         //case "controlMeasure":     this.setControlVisible(this.config.controlCompass); break;
-        case "controlScale":       this.setControlVisible("scale", this.config.controlScale); break;
-        case "controlLayers":      this.setControlVisible("layers", this.config.controlLayers); break;
-        case "controlSpace":       this.setControlVisible("space", this.config.controlSpace); break;
-        case "controlSearch":      this.setControlVisible("search", this.config.controlSearch); break;
-        case "controlLink":        this.setControlVisible("link", this.config.controlLink); break;
-        case "controlLogo":        this.setControlVisible("logo", this.config.controlLogo); break;
-        case "controlFullscreen":  this.setControlVisible("fullscreeen", this.config.controlFullscreen); break;
-        case "controlCredits":     this.setControlVisible("credits", this.config.controlCredits); break;
+    case 'controlScale':       this.setControlVisible('scale', this.config.controlScale); break;
+    case 'controlLayers':      this.setControlVisible('layers', this.config.controlLayers); break;
+    case 'controlSpace':       this.setControlVisible('space', this.config.controlSpace); break;
+    case 'controlSearch':      this.setControlVisible('search', this.config.controlSearch); break;
+    case 'controlLink':        this.setControlVisible('link', this.config.controlLink); break;
+    case 'controlLogo':        this.setControlVisible('logo', this.config.controlLogo); break;
+    case 'controlFullscreen':  this.setControlVisible('fullscreeen', this.config.controlFullscreen); break;
+    case 'controlCredits':     this.setControlVisible('credits', this.config.controlCredits); break;
         //case "controlLoading":     this.setControlVisible("loading", this.config.controlLogo); break;
     }
 };

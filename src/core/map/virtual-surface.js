@@ -10,8 +10,8 @@ var utils = utils_;
 var MapVirtualSurface = function(map, json, type) {
     this.map = map;
     this.id = null;
-    this.metaUrl = "";
-    this.mappingUrl = "";
+    this.metaUrl = '';
+    this.mappingUrl = '';
     this.baseUrl = this.map.url.baseUrl;
     this.baseUrlSchema = this.map.url.baseUrlSchema;
     this.baseUrlOrigin = this.map.url.baseUrlOrigin;
@@ -25,22 +25,22 @@ var MapVirtualSurface = function(map, json, type) {
 
 
 MapVirtualSurface.prototype.parseJson = function(json) {
-    this.id = json["id"] || null;
-    this.metaUrl = this.processUrl(json["metaUrl"], "");
-    this.mappingUrl = this.processUrl(json["mapping"], "");
-    this.lodRange = json["lodRange"] || [0,0];
-    this.tileRange = json["tileRange"] || [[0,0],[0,0]];
-    this.strId = this.id ? this.id.join(";") : null;
+    this.id = json['id'] || null;
+    this.metaUrl = this.processUrl(json['metaUrl'], '');
+    this.mappingUrl = this.processUrl(json['mapping'], '');
+    this.lodRange = json['lodRange'] || [0,0];
+    this.tileRange = json['tileRange'] || [[0,0],[0,0]];
+    this.strId = this.id ? this.id.join(';') : null;
 
     if (this.id) {
         var tmp = this.id.slice();
         tmp.sort(); 
-        this.strId = tmp.join(";");
+        this.strId = tmp.join(';');
     }
 
-    if (json["extents"]) {
-        var ll = json["extents"]["ll"];
-        var ur = json["extents"]["ur"];
+    if (json['extents']) {
+        var ll = json['extents']['ll'];
+        var ur = json['extents']['ur'];
         this.extents = new BBox(ll[0], ll[1], ll[2], ur[0], ur[1], ur[2]);
     } else {
         this.extents = new BBox(0,0,0,1,1,1);
@@ -66,11 +66,11 @@ MapVirtualSurface.prototype.onMappingFileLoadError = function(data) {
 MapVirtualSurface.prototype.parseMappingFile = function(data) {
     var index = 0;
 
-    var magic = "";
+    var magic = '';
     magic += String.fromCharCode(data.getUint8(index, true)); index += 1;
     magic += String.fromCharCode(data.getUint8(index, true)); index += 1;
 
-    if (magic != "TM") {
+    if (magic != 'TM') {
         return false;
     }
 
@@ -92,7 +92,7 @@ MapVirtualSurface.prototype.parseMappingFile = function(data) {
         if (id.length == 1) { //get surface
             this.surfaces.push(this.map.getSurface(id[0]));
         } else { //get glue
-            this.surfaces.push(this.map.getGlue(id.join(";")));
+            this.surfaces.push(this.map.getGlue(id.join(';')));
         }
     }
 
@@ -102,10 +102,10 @@ MapVirtualSurface.prototype.parseMappingFile = function(data) {
 
 MapVirtualSurface.prototype.getInfo = function() {
     return {
-        "metaUrl" : this.metaUrl,
-        "mapping" : this.mappingUrl,
-        "lodRange" : this.lodRange,
-        "tileRange" : this.tileRange
+        'metaUrl' : this.metaUrl,
+        'mapping' : this.mappingUrl,
+        'lodRange' : this.lodRange,
+        'tileRange' : this.tileRange
     };
 };
 
@@ -117,11 +117,11 @@ MapVirtualSurface.prototype.processUrl = function(url, fallback) {
 
     url = url.trim();
     
-    if (url.indexOf("://") != -1) { //absolute
+    if (url.indexOf('://') != -1) { //absolute
         return url;
-    } else if (url.indexOf("//") == 0) {  //absolute without schema
+    } else if (url.indexOf('//') == 0) {  //absolute without schema
         return this.baseUrlSchema + url;
-    } else if (url.indexOf("/") == 0) {  //absolute without host
+    } else if (url.indexOf('/') == 0) {  //absolute without host
         return this.baseUrlOrigin + url;
     } else {  //relative
         return this.baseUrl + url; 

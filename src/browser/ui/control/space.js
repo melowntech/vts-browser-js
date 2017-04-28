@@ -9,7 +9,7 @@ var constrainMapPosition = constrainMapPosition_;
 var UIControlSpace = function(ui, visible) {
     this.ui = ui;
     this.browser = ui.browser;
-    this.control = this.ui.addControl("space",
+    this.control = this.ui.addControl('space',
       '<div id="vts-space"'
       + ' class="vts-space">'
 
@@ -23,23 +23,23 @@ var UIControlSpace = function(ui, visible) {
 
      + ' </div>', visible);
      
-    this.button2D = this.control.getElement("vts-space-2d");
-    this.button2D.on("click", this.onSwitch.bind(this));
-    this.button2D.on("dblclick", this.onDoNothing.bind(this));
+    this.button2D = this.control.getElement('vts-space-2d');
+    this.button2D.on('click', this.onSwitch.bind(this));
+    this.button2D.on('dblclick', this.onDoNothing.bind(this));
 
-    this.button3D = this.control.getElement("vts-space-3d");
-    this.button3D.on("click", this.onSwitch.bind(this));
-    this.button3D.on("dblclick", this.onDoNothing.bind(this));
+    this.button3D = this.control.getElement('vts-space-3d');
+    this.button3D.on('click', this.onSwitch.bind(this));
+    this.button3D.on('dblclick', this.onDoNothing.bind(this));
 
     this.space3D = true;
     this.display3D = this.space3D;
 
     if (this.space3D) {
-        this.button2D.setStyle("display", "block");
-        this.button3D.setStyle("display", "none");
+        this.button2D.setStyle('display', 'block');
+        this.button3D.setStyle('display', 'none');
     } else {
-        this.button2D.setStyle("display", "none");
-        this.button3D.setStyle("display", "block");
+        this.button2D.setStyle('display', 'none');
+        this.button3D.setStyle('display', 'block');
     }
 };
 
@@ -92,11 +92,11 @@ UIControlSpace.prototype.update = function() {
 
     if (space3D != this.display3D) {
         if (space3D) {
-            this.button2D.setStyle("display", "block");
-            this.button3D.setStyle("display", "none");
+            this.button2D.setStyle('display', 'block');
+            this.button3D.setStyle('display', 'none');
         } else {
-            this.button2D.setStyle("display", "none");
-            this.button3D.setStyle("display", "block");
+            this.button2D.setStyle('display', 'none');
+            this.button3D.setStyle('display', 'block');
         }
 
         this.space3D = space3D;

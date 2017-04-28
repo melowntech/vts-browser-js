@@ -59,9 +59,9 @@ MapResourceNode.prototype.addChild = function(index) {
     var childId = [id[0] + 1, id[1] << 1, id[2] << 1];
 
     switch (index) {
-        case 1: childId[1]++; break;
-        case 2: childId[2]++; break;
-        case 3: childId[1]++; childId[2]++; break;
+    case 1: childId[1]++; break;
+    case 2: childId[2]++; break;
+    case 3: childId[1]++; childId[2]++; break;
     }
 
     this.children[index] = new MapResourceNode(this.map, this, childId);

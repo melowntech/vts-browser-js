@@ -22,7 +22,7 @@ var MapCamera = function(map) {
 
 
 MapCamera.prototype.update = function() {
-    var controlMode = "observer";
+    var controlMode = 'observer';
     var map = this.map;
     var position = [0,0,0];
     var orientation = map.position.getOrientation();
@@ -42,7 +42,7 @@ MapCamera.prototype.update = function() {
 
     //console.log("terrain height:" + surfaceHeight[0] + "  pos height:" + map.position.getHeight());
 
-    if (map.position.getHeightMode() == "float") {
+    if (map.position.getHeightMode() == 'float') {
         height += surfaceHeight[0];
     }
 
@@ -73,11 +73,11 @@ MapCamera.prototype.update = function() {
 
     //convert nav coords to physical
     var coords = map.position.getCoords();
-    var worldPos = map.convert.convertCoords([coords[0], coords[1], height], "navigation", "physical");
+    var worldPos = map.convert.convertCoords([coords[0], coords[1], height], 'navigation', 'physical');
     this.center = [worldPos[0], worldPos[1], worldPos[2]];
-	worldPos[0] += camInfo.orbitCoords[0];
-	worldPos[1] += camInfo.orbitCoords[1];
-	worldPos[2] += camInfo.orbitCoords[2];
+    worldPos[0] += camInfo.orbitCoords[0];
+    worldPos[1] += camInfo.orbitCoords[1];
+    worldPos[2] += camInfo.orbitCoords[2];
     this.camera.setPosition([0,0,0]); //always zeros
     this.position = worldPos;
 

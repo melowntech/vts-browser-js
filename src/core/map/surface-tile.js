@@ -235,9 +235,9 @@ MapSurfaceTile.prototype.addChild = function(index) {
     var childId = [id[0] + 1, id[1] << 1, id[2] << 1];
 
     switch (index) {
-        case 1: childId[1]++; break;
-        case 2: childId[2]++; break;
-        case 3: childId[1]++; childId[2]++; break;
+    case 1: childId[1]++; break;
+    case 2: childId[2]++; break;
+    case 3: childId[1]++; childId[2]++; break;
     }
 
     this.children[index] = new MapSurfaceTile(this.map, this, childId);
@@ -1057,7 +1057,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
             //if (this.map.drawLods) { h = this.metanode.minZ; }
 
 
-        var coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
+            var coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
 
             //middle[2] = h;
             //middle = node.getPhysicalCoords(middle, true);
@@ -1127,15 +1127,15 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                 
                 if (!border2) {
                     mnode.border2 = [
-                       (border[0] + border[1] + border[3] + border[4]) * 0.25, 
-                       (border[1] + border[4]) * 0.5,
-                       (border[2] + border[1] + border[5] + border[4]) * 0.25,
-                       (border[3] + border[4]) * 0.5,
+                        (border[0] + border[1] + border[3] + border[4]) * 0.25, 
+                        (border[1] + border[4]) * 0.5,
+                        (border[2] + border[1] + border[5] + border[4]) * 0.25,
+                        (border[3] + border[4]) * 0.5,
                         mnode.minZ,
-                       (border[5] + border[4]) * 0.5,
-                       (border[6] + border[7] + border[3] + border[4]) * 0.25,
-                       (border[7] + border[4]) * 0.5,
-                       (border[8] + border[7] + border[5] + border[4]) * 0.25
+                        (border[5] + border[4]) * 0.5,
+                        (border[6] + border[7] + border[3] + border[4]) * 0.25,
+                        (border[7] + border[4]) * 0.5,
+                        (border[8] + border[7] + border[5] + border[4]) * 0.25
                     ];
                 }
                 
@@ -1258,16 +1258,16 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     if (hasPoles && node.isPole) {
         var factor = map.poleRadiusFactor; 
         var prog = renderer.progPlane2; 
-        renderer.gpu.useProgram(prog, ["aPosition", "aTexCoord"]);
-        prog.setVec4("uParams4", [-sx, -sy, map.poleRadius, 0]);
+        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+        prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
     } else {
         var prog = renderer.progPlane; 
-        renderer.gpu.useProgram(prog, ["aPosition", "aTexCoord"]);
+        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
     }
 
-    prog.setMat4("uMV", mv);
-    prog.setMat4("uProj", proj);
-    prog.setFloatArray("uPoints", buffer);
+    prog.setMat4('uMV', mv);
+    prog.setMat4('uProj', proj);
+    prog.setFloatArray('uPoints', buffer);
     
     /*
     var lx = (ur[0] - ll[0]);
@@ -1298,14 +1298,14 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     var px = (ll[0] - node.extents.ll[0]) * lx * llx;
     var py = (ur[1] - node.extents.ll[1]) * ly * lly;
 
-    prog.setVec4("uParams", [step1 * factor, this.map.fogDensity, 1/15, node.gridStep2 * factor]);
-    prog.setVec4("uParams3", [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
-    prog.setVec4("uParams2", [0, 0, node.gridBlend, 0]);
+    prog.setVec4('uParams', [step1 * factor, this.map.fogDensity, 1/15, node.gridStep2 * factor]);
+    prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
+    prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
 
     renderer.gpu.bindTexture(renderer.heightmapTexture);
     
     //draw bbox
-    renderer.planeMesh.draw(prog, "aPosition", "aTexCoord");    
+    renderer.planeMesh.draw(prog, 'aPosition', 'aTexCoord');    
 }; 
 
 
