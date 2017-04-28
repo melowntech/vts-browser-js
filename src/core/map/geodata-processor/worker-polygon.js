@@ -1,14 +1,16 @@
+
 import {globals as globals_} from './worker-globals.js';
-var globals = globals_;
-
-import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
-var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
-
+import {getLayerPropertyValue as getLayerPropertyValue_} from './worker-style.js';
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
-var postGroupMessage = postGroupMessage_;
+import {processLineStringPass as processLineStringPass_} from './worker-linestring.js';
+import {processPointArrayPass as processPointArrayPass_} from './worker-pointarray.js';
 
 //get rid of compiler mess
-
+var globals = globals_;
+var getLayerPropertyValue = getLayerPropertyValue_;
+var postGroupMessage = postGroupMessage_;
+var processLineStringPass = processLineStringPass_;
+var processPointArrayPass = processPointArrayPass_;
 
 var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
     var vertices = polygon['vertices'] || [];
@@ -56,12 +58,13 @@ var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
     var vertexCount = trisCount * 3;
     var vertexBuffer = new Array (vertexCount * 3);
     
-    var dpoints = false;
     var surfaceI = 0;
     var index = 0;
     var p1;
     var offs;
 
+    var tileX = globals.tileX;
+    var tileY = globals.tileY;
     var forceOrigin = globals.forceOrigin;
     var forceScale = globals.forceScale;    
     
@@ -138,8 +141,7 @@ var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventI
             var points;
             if (processLines) {
                 points = new Array(pointsCount + 1);
-            }
-            else {
+            } else {
                 points = new Array(pointsCount);
             }
             for (var i = 0; i < pointsCount; i++) {
@@ -152,8 +154,7 @@ var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventI
             feature['points'] = points;
             if(processLines) {
                 processLineStringPass(feature, lod, style, zIndex, eventInfo);
-            }
-            else {
+            } else {
                 processPointArrayPass(feature, lod, style, zIndex, eventInfo);
             }
         }

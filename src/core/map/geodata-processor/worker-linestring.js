@@ -1,30 +1,22 @@
 
 import {globals as globals_, vec3Normalize as vec3Normalize_,
-        vec3Length as vec3Length_, vec3Cross as vec3Cross_,
+        vec3Cross as vec3Cross_,
         vec3AnyPerpendicular as vec3AnyPerpendicular_} from './worker-globals.js';
-import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
+import {getLayerPropertyValue as getLayerPropertyValue_,
         getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
-import {addText as addText_, addTextOnPath as addTextOnPath_,
-        setFont as setFont_, addStreetTextOnPath as addStreetTextOnPath_,
+import {addStreetTextOnPath as addStreetTextOnPath_,
         areTextCharactersAvailable as areTextCharactersAvailable_,
         getCharVerticesCount as getCharVerticesCount_} from './worker-text.js';
-
-var globals = globals_, vec3Normalize = vec3Normalize_, vec3Length = vec3Length_,
-    vec3Cross = vec3Cross_, vec3AnyPerpendicular = vec3AnyPerpendicular_;
-var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
-    getLayerExpresionValue = getLayerExpresionValue_;
-var addText = addText_, addTextOnPath = addTextOnPath_, setFont = setFont_,
-    addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
-    getCharVerticesCount = getCharVerticesCount_;
-
-import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
-var processPolygonPass = processPolygonPass_;
-
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
-var postGroupMessage = postGroupMessage_;
 
 //get rid of compiler mess
-
+var globals = globals_, vec3Normalize = vec3Normalize_,
+    vec3Cross = vec3Cross_, vec3AnyPerpendicular = vec3AnyPerpendicular_;
+var getLayerPropertyValue = getLayerPropertyValue_,
+    getLayerExpresionValue = getLayerExpresionValue_;
+var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
+    getCharVerticesCount = getCharVerticesCount_;
+var postGroupMessage = postGroupMessage_;
 
 
 var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) {
@@ -57,7 +49,6 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var lineStyleTexture = getLayerPropertyValue(style, 'line-style-texture', lineString, lod);
     var lineStyleBackground = getLayerPropertyValue(style, 'line-style-background', lineString, lod);
 
-    var lineLabel = getLayerPropertyValue(style, 'line-label', lineString, lod);
     var lineLabelSize = getLayerPropertyValue(style, 'line-label-size', lineString, lod);
 
     //console.log("lineflat: "+lineFlat);
@@ -66,6 +57,8 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var index = 0;
     var index2 = 0;
     var skipJoins = (!lineFlat && lineWidth < 2.1);
+
+    var ii, i, li, p2, v, vv, l, n, nn, p1, p;
 
     //console.log("lod: " + lod + "  width: " + lineWidth);
 
@@ -76,7 +69,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     
         var angle = 0, step = (2.0*Math.PI) / circleSides;
     
-        for (var i = 0; i < circleSides; i++) {
+        for (i = 0; i < circleSides; i++) {
             circleBuffer[i] = [-Math.sin(angle), Math.cos(angle)];
             circleBuffer2[i] = angle;
             angle += step;
@@ -88,7 +81,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
 
     var totalPoints = 0;
 
-    for (var ii = 0; ii < lines.length; ii++) {
+    for (ii = 0; ii < lines.length; ii++) {
         if (Array.isArray(lines[ii])) {
             totalPoints += lines[ii].length;
         }
@@ -119,7 +112,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
 
-    for (var ii = 0; ii < lines.length; ii++) {
+    for (ii = 0; ii < lines.length; ii++) {
         if (!Array.isArray(lines[ii]) || !lines[ii].length) {
             continue;
         }
@@ -133,8 +126,8 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             lineLabelStack.push({points: lineLabelPoints, points2 :lineLabelPoints2});
         }
     
-        var p = points[0];
-        var p1 = [p[0], p[1], p[2]];
+        p = points[0];
+        p1 = [p[0], p[1], p[2]];
     
         if (forceOrigin) {
             p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
@@ -152,10 +145,10 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
         var distance2 = 0.001;
     
         //add lines
-        for (var i = 0, li = points.length - 1; i < li; i++) {
+        for (i = 0, li = points.length - 1; i < li; i++) {
     
             if (dlines) {
-                var p2 = points[i+1];
+                p2 = points[i+1];
                 p2 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
     
                 if (forceOrigin) {
@@ -168,7 +161,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     
             } else {
                 p1 = points[i];
-                var p2 = points[i+1];
+                p2 = points[i+1];
     
                 if (forceOrigin) {
                     p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
@@ -187,17 +180,17 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 //normalize vector to line width and rotate 90 degrees
                 if (geocent) {
                     //direction vector
-                    var v = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                    v = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
         
                     //get line length
-                    var l = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+                    l = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
                     distance2 += l;
         
                     l = (l != 0) ? (1 / l) : 0;
 
-                    var vv = [v[0]*l, v[1]*l, v[2]*l];
-                    var n = [0,0,0];
-                    var nn = [0,0,0];
+                    vv = [v[0]*l, v[1]*l, v[2]*l];
+                    n = [0,0,0];
+                    nn = [0,0,0];
                     
                     vec3Normalize(bboxMin, nn);
                     vec3Cross(nn, vv, n);
@@ -205,15 +198,15 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                     n = [n[0] * lineWidth, n[1] * lineWidth, n[2] * lineWidth];
                 } else {
                     //direction vector
-                    var v = [p2[0] - p1[0], p2[1] - p1[1], 0];
+                    v = [p2[0] - p1[0], p2[1] - p1[1], 0];
         
                     //get line length
-                    var l = Math.sqrt(v[0]*v[0] + v[1]*v[1]);
+                    l = Math.sqrt(v[0]*v[0] + v[1]*v[1]);
                     distance2 += l;
         
                     l = (l != 0) ? (lineWidth / l) : 0;
 
-                    var n = [-v[1]*l, v[0]*l, 0];
+                    n = [-v[1]*l, v[0]*l, 0];
                 }
                         
                 //add polygon
@@ -247,10 +240,10 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             } else {
     
                 //direction vector
-                var v = [p2[0] - p1[0], p2[1] - p1[1], 0];
+                v = [p2[0] - p1[0], p2[1] - p1[1], 0];
     
                 //get line length
-                var l = Math.sqrt(v[0]*v[0] + v[1]*v[1]);
+                l = Math.sqrt(v[0]*v[0] + v[1]*v[1]);
                 distance2 += l;
     
                 //console.log("distance("+i+"): " + distance + " " + distance2);
@@ -259,7 +252,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     
                     //normalize vector to line width and rotate 90 degrees
                     l = (l != 0) ? (lineWidth / l) : 0;
-                    var n = [-v[1]*l, v[0]*l,0];
+                    n = [-v[1]*l, v[0]*l,0];
     
                     if (joinParams != null) {
                         joinParams[i] = (l != 0) ? Math.atan2(v[0], v[1]) + Math.PI *0.5 : 0;
@@ -391,138 +384,133 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             p1 = p2; //only for dlines
         }
     
-        var p1 = [p[0], p[1], p[2]];
+        p1 = [p[0], p[1], p[2]];
     
-        if (true /*!skipJoins || lineLabel*/) {
-
-            //add joins
-            for (var i = 0, li = points.length; i < li; i++) {
-        
-                if (forceOrigin) {
-                    p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+        //add joins
+        for (i = 0, li = points.length; i < li; i++) {
+    
+            if (forceOrigin) {
+                p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+            }
+    
+            if (forceScale != null) {
+                p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+            }
+    
+            center[0] += p1[0];
+            center[1] += p1[1];
+            center[2] += p1[2];
+            
+            if (!skipJoins) {
+                var angleShift = (joinParams != null) ? joinParams[i] : 0;
+    
+                if (geocent) {
+                    vv = [0,0,0];
+                    nn = [0,0,0];
+                    vec3Normalize(bboxMin, nn);
+                    vec3AnyPerpendicular(nn, vv);
+                    vec3Normalize(vv);
+                    vec3Cross(nn, vv, nn);
                 }
         
-                if (forceScale != null) {
-                    p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
-                }
+                for (var j = 0; j < circleSides; j++) {
         
-                center[0] += p1[0];
-                center[1] += p1[1];
-                center[2] += p1[2];
-                
-                if (!skipJoins) {
-                    var angleShift = (joinParams != null) ? joinParams[i] : 0;
+                    if (lineFlat && !texturedLine) {
+    
+                        vertexBuffer[index] = p1[0];
+                        vertexBuffer[index+1] = p1[1];
+                        vertexBuffer[index+2] = p1[2];
         
-                    if (geocent) {
-                        var vv = [0,0,0];
-                        var nn = [0,0,0];
-                        vec3Normalize(bboxMin, nn);
-                        vec3AnyPerpendicular(nn, vv);
-                        vec3Normalize(vv);
-                        vec3Cross(nn, vv, nn);
-                    }
+                        //add polygon
+                        if (geocent) {
+                            var dx = circleBuffer[j][0];
+                            var dy = circleBuffer[j][1];
+                            vertexBuffer[index+3] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth;
+                            vertexBuffer[index+4] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth;
+                            vertexBuffer[index+5] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth;
             
-                    for (var j = 0; j < circleSides; j++) {
-            
-                        if (lineFlat && !texturedLine) {
-        
-                            vertexBuffer[index] = p1[0];
-                            vertexBuffer[index+1] = p1[1];
-                            vertexBuffer[index+2] = p1[2];
-            
-                            //add polygon
-                            if (geocent) {
-                                var dx = circleBuffer[j][0];
-                                var dy = circleBuffer[j][1];
-                                vertexBuffer[index+3] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth;
-                                vertexBuffer[index+4] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth;
-                                vertexBuffer[index+5] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth;
-                
-                                dx = circleBuffer[j+1][0];
-                                dy = circleBuffer[j+1][1];
-                                vertexBuffer[index+6] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth;
-                                vertexBuffer[index+7] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth;
-                                vertexBuffer[index+8] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth;
-                            } else {
-                
-                                vertexBuffer[index+3] = p1[0] + circleBuffer[j][0] * lineWidth;
-                                vertexBuffer[index+4] = p1[1] + circleBuffer[j][1] * lineWidth;
-                                vertexBuffer[index+5] = p1[2];
-                
-                                vertexBuffer[index+6] = p1[0] + circleBuffer[j+1][0] * lineWidth;
-                                vertexBuffer[index+7] = p1[1] + circleBuffer[j+1][1] * lineWidth;
-                                vertexBuffer[index+8] = p1[2];
-                            }
-                
-                            index += 9;
-            
+                            dx = circleBuffer[j+1][0];
+                            dy = circleBuffer[j+1][1];
+                            vertexBuffer[index+6] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth;
+                            vertexBuffer[index+7] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth;
+                            vertexBuffer[index+8] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth;
                         } else {
             
-                            //distance = vertexBuffer[(i >> 1) * lineVertices + ((i & 1) ? 11 : 3)];
-                            if (i != (li-1)) {
-                                distance = vertexBuffer[i * lineVertices + 3];
-                            } else {
-                                distance = vertexBuffer[(i - 1) * lineVertices + 11];
-                            }
-                            //distance = vertexBuffer[((i == li) ? i - 1 : i) * lineVertices + 3];
+                            vertexBuffer[index+3] = p1[0] + circleBuffer[j][0] * lineWidth;
+                            vertexBuffer[index+4] = p1[1] + circleBuffer[j][1] * lineWidth;
+                            vertexBuffer[index+5] = p1[2];
             
-                            //if (distance == null) {
-                              //  debugger
-                            //}
-            
-                            //console.log("distance-dot("+i+"): " + distance);
-            
-                            //add polygon
-                            vertexBuffer[index] = p1[0];
-                            vertexBuffer[index+1] = p1[1];
-                            vertexBuffer[index+2] = p1[2];
-                            vertexBuffer[index+3] = distance;
-                            normalBuffer[index2] = 0;
-                            normalBuffer[index2+1] = 0;
-                            normalBuffer[index2+2] = 0;
-                            normalBuffer[index2+3] = 0;
-            
-                            vertexBuffer[index+4] = p1[0];
-                            vertexBuffer[index+5] = p1[1];
-                            vertexBuffer[index+6] = p1[2];
-                            vertexBuffer[index+7] = distance;
-                            normalBuffer[index2+4] = circleBuffer[j][0] * lineWidth;
-                            normalBuffer[index2+5] = circleBuffer[j][1] * lineWidth;
-                            normalBuffer[index2+6] = circleBuffer2[j] + angleShift;
-                            normalBuffer[index2+7] = 0;
-            
-                            vertexBuffer[index+8] = p1[0];
-                            vertexBuffer[index+9] = p1[1];
-                            vertexBuffer[index+10] = p1[2];
-                            vertexBuffer[index+11] = distance;
-                            normalBuffer[index2+8] = circleBuffer[j+1][0] * lineWidth;
-                            normalBuffer[index2+9] = circleBuffer[j+1][1] * lineWidth;
-                            normalBuffer[index2+10] = circleBuffer2[j+1] + angleShift;
-                            normalBuffer[index2+11] = 0;
-            
-                            index += 12;
-                            index2 += 12;
+                            vertexBuffer[index+6] = p1[0] + circleBuffer[j+1][0] * lineWidth;
+                            vertexBuffer[index+7] = p1[1] + circleBuffer[j+1][1] * lineWidth;
+                            vertexBuffer[index+8] = p1[2];
                         }
+            
+                        index += 9;
+        
+                    } else {
+        
+                        //distance = vertexBuffer[(i >> 1) * lineVertices + ((i & 1) ? 11 : 3)];
+                        if (i != (li-1)) {
+                            distance = vertexBuffer[i * lineVertices + 3];
+                        } else {
+                            distance = vertexBuffer[(i - 1) * lineVertices + 11];
+                        }
+                        //distance = vertexBuffer[((i == li) ? i - 1 : i) * lineVertices + 3];
+        
+                        //if (distance == null) {
+                          //  debugger
+                        //}
+        
+                        //console.log("distance-dot("+i+"): " + distance);
+        
+                        //add polygon
+                        vertexBuffer[index] = p1[0];
+                        vertexBuffer[index+1] = p1[1];
+                        vertexBuffer[index+2] = p1[2];
+                        vertexBuffer[index+3] = distance;
+                        normalBuffer[index2] = 0;
+                        normalBuffer[index2+1] = 0;
+                        normalBuffer[index2+2] = 0;
+                        normalBuffer[index2+3] = 0;
+        
+                        vertexBuffer[index+4] = p1[0];
+                        vertexBuffer[index+5] = p1[1];
+                        vertexBuffer[index+6] = p1[2];
+                        vertexBuffer[index+7] = distance;
+                        normalBuffer[index2+4] = circleBuffer[j][0] * lineWidth;
+                        normalBuffer[index2+5] = circleBuffer[j][1] * lineWidth;
+                        normalBuffer[index2+6] = circleBuffer2[j] + angleShift;
+                        normalBuffer[index2+7] = 0;
+        
+                        vertexBuffer[index+8] = p1[0];
+                        vertexBuffer[index+9] = p1[1];
+                        vertexBuffer[index+10] = p1[2];
+                        vertexBuffer[index+11] = distance;
+                        normalBuffer[index2+8] = circleBuffer[j+1][0] * lineWidth;
+                        normalBuffer[index2+9] = circleBuffer[j+1][1] * lineWidth;
+                        normalBuffer[index2+10] = circleBuffer2[j+1] + angleShift;
+                        normalBuffer[index2+11] = 0;
+        
+                        index += 12;
+                        index2 += 12;
                     }
                 }
-        
-                if (lineLabel) {
-                    var p = [p1[0], p1[1], p1[2] + lineLabelSize*0.1];
-                    lineLabelPoints[i] = p;
-                    lineLabelPoints2[li - i - 1] = p;
-                }
-        
-                if (dlines) {
-                    var p2 = points[i+1];
-                    p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-                } else {
-                    p1 = points[i+1];
-                }
             }
-
-            
-        }
     
+            if (lineLabel) {
+                p = [p1[0], p1[1], p1[2] + lineLabelSize*0.1];
+                lineLabelPoints[i] = p;
+                lineLabelPoints2[li - i - 1] = p;
+            }
+    
+            if (dlines) {
+                p2 = points[i+1];
+                p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
+            } else {
+                p1 = points[i+1];
+            }
+        }
+
     }
 
     if (totalPoints > 0) {
@@ -576,7 +564,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     //debugger
 
     if (lineLabel) {
-        for (var i = 0, li = lineLabelStack.length; i < li; i++) {
+        for (i = 0, li = lineLabelStack.length; i < li; i++) {
             processLineLabel(lineLabelStack[i].points, lineLabelStack[i].points2, lineString, center, lod, style, zIndex, eventInfo);
         }
     }
@@ -596,11 +584,11 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         return;
     }
 
-    var labelText = getLayerExpresionValue(style, labelSource, lineString, lod);
+    var labelText = getLayerExpresionValue(style, labelSource, lineString);
 
     if (labelSource == '$name') {
         if (!areTextCharactersAvailable(labelText, globals.fonts['default'])) {
-            var labelText2 = getLayerExpresionValue(style, '$name:en', lineString, lod);
+            var labelText2 = getLayerExpresionValue(style, '$name:en', lineString);
             
             if (areTextCharactersAvailable(labelText2, globals.fonts['default'])) {
                 labelText = labelText2;                     
@@ -627,7 +615,6 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     //debugger
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
-    var index = 0;    
 
     var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, index);
     index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, index);

@@ -1,23 +1,21 @@
 
 import {globals as globals_, clamp as clamp_} from './worker-globals.js';
-var globals = globals_, clamp = clamp_;
-
-import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
-var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
-
-import {addText as addText_, addTextOnPath as addTextOnPath_, setFont as setFont_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_, getTextLength as getTextLength_,
+import {getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
+import {addText as addText_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_, getTextLength as getTextLength_,
         areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from './worker-text.js';
-var addText = addText_, addTextOnPath = addTextOnPath_, setFont = setFont_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_, getTextLength = getTextLength_,
-    areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
-
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
-var postGroupMessage = postGroupMessage_;
 
 //get rid of compiler mess
+var globals = globals_, clamp = clamp_;
+var getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
+var addText = addText_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_, getTextLength = getTextLength_,
+    areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
+var postGroupMessage = postGroupMessage_;
 
 
 var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) {
     var pointsGroups = []; 
+    var i, li;
 
     if (pointArray['lines']) {  //use lines as points
         pointsGroups = pointArray['lines'] || [];
@@ -46,15 +44,17 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     var pointFlat = getLayerPropertyValue(style, 'point-flat', pointArray, lod);
     var pointColor = getLayerPropertyValue(style, 'point-color', pointArray, lod);
     var pointRadius = 0.5 * getLayerPropertyValue(style, 'point-radius', pointArray, lod);
+
+    var source, bufferSize, bufferSize2;
     //zIndex = (zIndex !== null) ? zIndex : getLayerPropertyValue(style, "z-index", pointArray, lod);
 
     var icon = getLayerPropertyValue(style, 'icon', pointArray, lod);
     if (icon) {
-        var source = getLayerPropertyValue(style, 'icon-source', pointArray, lod);
+        source = getLayerPropertyValue(style, 'icon-source', pointArray, lod);
         
         if (source) {
-            var bufferSize = getCharVerticesCount() * pointsGroups.length;
-            var bufferSize2 = getCharVerticesCount(true) * pointsGroups.length;
+            bufferSize = getCharVerticesCount() * pointsGroups.length;
+            bufferSize2 = getCharVerticesCount(true) * pointsGroups.length;
     
             var iconData = {
                 color : getLayerPropertyValue(style, 'icon-color', pointArray, lod),
@@ -76,13 +76,13 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
     var label = getLayerPropertyValue(style, 'label', pointArray, lod);
     if (label) {
-        var source = getLayerPropertyValue(style, 'label-source', pointArray, lod);
-        var text = getLayerExpresionValue(style, source, pointArray, lod);
+        source = getLayerPropertyValue(style, 'label-source', pointArray, lod);
+        var text = getLayerExpresionValue(style, source, pointArray);
         var size = getLayerPropertyValue(style, 'label-size', pointArray, lod);
         
         if (source == '$name') {
             if (!areTextCharactersAvailable(text, globals.fonts['default'])) {
-                var text2 = getLayerExpresionValue(style, '$name:en', pointArray, lod);
+                var text2 = getLayerExpresionValue(style, '$name:en', pointArray);
                 
                 if (areTextCharactersAvailable(text2, globals.fonts['default'])) {
                     text = text2;                     
@@ -90,8 +90,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             }
         }
         if (text && text != '' && Math.abs(size) > 0.0001) {
-            var bufferSize = getCharVerticesCount() * text.length * pointsGroups.length;
-            var bufferSize2 = getCharVerticesCount(true) * text.length * pointsGroups.length;
+            bufferSize = getCharVerticesCount() * text.length * pointsGroups.length;
+            bufferSize2 = getCharVerticesCount(true) * text.length * pointsGroups.length;
 
             var labelData = {
                 color : getLayerPropertyValue(style, 'label-color', pointArray, lod),
@@ -121,7 +121,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
     var angle = 0, step = (2.0*Math.PI) / circleSides;
 
-    for (var i = 0; i < circleSides; i++) {
+    for (i = 0; i < circleSides; i++) {
         circleBuffer[i] = [-Math.sin(angle), Math.cos(angle)];
         angle += step;
     }
@@ -136,6 +136,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
 
+    var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
+
     for (var g = 0, gl = pointsGroups.length; g < gl; g++) {
         var points = pointsGroups[g];
         
@@ -148,19 +150,19 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             //allocate buffers
         
             if (!pointFlat) {
-                var pointsVertices = circleSides * 3 * 4;
-                var vertexBuffer = new Array(points.length * pointsVertices);
-                var pointsNormals = circleSides * 3 * 4;
-                var normalBuffer = new Array(points.length * pointsNormals);
+                pointsVertices = circleSides * 3 * 4;
+                vertexBuffer = new Array(points.length * pointsVertices);
+                pointsNormals = circleSides * 3 * 4;
+                normalBuffer = new Array(points.length * pointsNormals);
             } else {
-                var pointsVertices = circleSides * 3 * 3;
-                var vertexBuffer = new Array(points.length * pointsVertices);
+                pointsVertices = circleSides * 3 * 3;
+                vertexBuffer = new Array(points.length * pointsVertices);
             }
         
             var dpoints = false;
         
             //add ponints
-            for (var i = 0, li = points.length; i < li; i++) {
+            for (i = 0, li = points.length; i < li; i++) {
         
                 if (forceOrigin) {
                     p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
@@ -435,13 +437,13 @@ var processLabel = function(point, labelData) {
     //split by new line
     var lines = text.match(/[^\r\n]+/g);
     var lines2 = [];
-    var align = false;
 
     //split lines by width
     for (var i = 0, li = lines.length; i < li; i++) {
 
-        var line= lines[i];
+        var line = lines[i];
 
+        // eslint-disable-next-line
         do {
             var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, globals.fonts['default']), globals.fonts['default']);
 
@@ -452,7 +454,6 @@ var processLabel = function(point, labelData) {
 
             lines2.push(line.substring(0,splitIndex));
             line = line.substring(splitIndex+1);
-            align = true;
 
         } while(true);
 
@@ -460,19 +461,18 @@ var processLabel = function(point, labelData) {
 
     var x = 0;
     var y = 0;
-    var textLength = 0;
     var lineHeight = getLineHeight(labelData.size, globals.fonts['default']);
     var maxWidth = 0;
     var lineWidths = [];
 
     //get max width
-    for (var i = 0, li = lines2.length; i < li; i++) {
+    for (i = 0, li = lines2.length; i < li; i++) {
         lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, globals.fonts['default']), globals.fonts['default']);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
     //generate text
-    for (var i = 0, li = lines2.length; i < li; i++) {
+    for (i = 0, li = lines2.length; i < li; i++) {
         var textWidth = lineWidths[i];//getTextLength(lines2[i], getFontFactor(labelData.size, fonts["default"]), fonts["default"]);
         //maxWidth = Math.max(textWidth, maxWidth);
 
@@ -496,7 +496,7 @@ var processLabel = function(point, labelData) {
     var p3 = point[2];
 
     //set origin buffer and apply offset
-    for (var i = lastIndex; i < index; i+=4) {
+    for (i = lastIndex; i < index; i+=4) {
         vertexBuffer[i] += offsetX;
         vertexBuffer[i+1] -= offsetY;
 

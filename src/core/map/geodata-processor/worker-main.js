@@ -1,26 +1,20 @@
 
 import {globals as globals_} from './worker-globals.js';
-var globals = globals_;
-
 import {setFont as setFont_} from './worker-text.js';
-var setFont = setFont_;
-
 import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
-        getLayerExpresionValue as getLayerExpresionValue_,
         processStylesheet as processStylesheet_, getFilterResult as getFilterResult_} from './worker-style.js';
-var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_,
-    processStylesheet = processStylesheet_, getFilterResult = getFilterResult_;
-
-import {processLineStringPass as processLineStringPass_, processLineLabel as processLineLabel_} from './worker-linestring.js';
-var processLineStringPass = processLineStringPass_, processLineLabel = processLineLabel_;
-
+import {processLineStringPass as processLineStringPass_} from './worker-linestring.js';
 import {processPointArrayPass as processPointArrayPass_} from './worker-pointarray.js';
-var processPointArrayPass = processPointArrayPass_;
-
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
-var processPolygonPass = processPolygonPass_;
 
 //get rid of compiler mess
+var globals = globals_;
+var setFont = setFont_;
+var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
+    processStylesheet = processStylesheet_, getFilterResult = getFilterResult_;
+var processLineStringPass = processLineStringPass_;
+var processPointArrayPass = processPointArrayPass_;
+var processPolygonPass = processPolygonPass_;
 
 
 function processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo) {
@@ -46,7 +40,7 @@ function processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo) {
         break;
             
     case 'polygon':
-        processPolygonPass(feature, lod, style, zIndex, eventInfo);
+        processPolygonPass(feature, lod, layer, zIndex, eventInfo);
         break;     
     }
 
@@ -74,29 +68,31 @@ function processFeature(type, feature, lod, featureIndex, featureType, group) {
 function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, eventInfo) {
     var multiPass = getLayerPropertyValue(layer, 'next-pass', feature, lod);
 
+    var mylayer;
+
     if (multiPass != null) {
         for (var i = 0, li = multiPass.length; i < li; i++) {
             var zIndex = multiPass[i][0];
-            var layer = getLayer(multiPass[i][1], type, featureIndex);
-            var visible = getLayerPropertyValue(layer, 'visible', feature, lod);
+            mylayer = getLayer(multiPass[i][1], type, featureIndex);
+            var visible = getLayerPropertyValue(mylayer, 'visible', feature, lod);
 
             if (!visible) {
                 continue;
             }
 
-            var hoverLayerId = getLayerPropertyValue(layer, 'hover-layer', feature, lod);
+            var hoverLayerId = getLayerPropertyValue(mylayer, 'hover-layer', feature, lod);
             var hoverlayer = (hoverLayerId != '') ? getLayer(hoverLayerId, type, featureIndex) : null;
 
             if (hoverlayer != null) {
                 var lastHitState = globals.hitState;
                 globals.hitState = 1;
-                processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo);
+                processLayerFeaturePass(type, feature, lod, mylayer, zIndex, eventInfo);
                 globals.hitState = 2;
                 processLayerFeaturePass(type, feature, lod, hoverlayer, zIndex, eventInfo);
                 globals.hitState = lastHitState;
             } else {
                 //globals.hitState = 0;
-                processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo);
+                processLayerFeaturePass(type, feature, lod, mylayer, zIndex, eventInfo);
             }
         }
     }
@@ -133,6 +129,9 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
 
 
 function processGroup(group, lod) {
+
+    var i, li;
+
     var groupId = group['id'] || '';
 
     var bbox = group['bbox'];    
@@ -160,21 +159,21 @@ function processGroup(group, lod) {
     var points = group['points'] || [];
 
     //process points
-    for (var i = 0, li = points.length; i < li; i++) {
+    for (i = 0, li = points.length; i < li; i++) {
         processFeature('point-array', points[i], lod, i, 'point', groupId);
     }
 
     var lines = group['lines'] || [];
 
     //process lines
-    for (var i = 0, li = lines.length; i < li; i++) {
+    for (i = 0, li = lines.length; i < li; i++) {
         processFeature('line-string', lines[i], lod, i, 'line', groupId);
     }
 
     var polygons = group['polygons'] || [];
 
     //process polygons
-    for (var i = 0, li = polygons.length; i < li; i++) {
+    for (i = 0, li = polygons.length; i < li; i++) {
         processFeature('polygon', polygons[i], lod, i, 'polygon', groupId);
     }
 
@@ -215,9 +214,10 @@ function processGeodata(data, lod) {
 
 function optimizeGroupMessages() {
     //loop messages
-    var index2 = 0;
     var messages = globals.messageBuffer;
     //var messages2 = globals.messageBuffer2;
+    //
+    var j, lk, k, message2, job2, vbufferSize, vbuffer, index, buff, buff2;
 
     for (var i = 0, li = globals.messageBufferIndex; i < li; i++) {
         var message = messages[i];
@@ -230,10 +230,10 @@ function optimizeGroupMessages() {
             
             switch(type) {
             case 'flat-line':
-                var vbufferSize = job['vertexBuffer'].length;
+                vbufferSize = job['vertexBuffer'].length;
 
-                for (var j = i + 1; j < li; j++) {
-                    var message2 = messages[j];
+                for (j = i + 1; j < li; j++) {
+                    message2 = messages[j];
                         
                     if (message2.signature == signature) {
                         message2.reduced = true;
@@ -241,17 +241,17 @@ function optimizeGroupMessages() {
                     }
                 }
 
-                var vbuffer = new Float32Array(vbufferSize);
-                var index = 0;
+                vbuffer = new Float32Array(vbufferSize);
+                index = 0;
 
-                for (var j = i; j < li; j++) {
-                    var message2 = messages[j];
-                    var job2 = message2.job;
+                for (j = i; j < li; j++) {
+                    message2 = messages[j];
+                    job2 = message2.job;
                         
                     if (message2.signature == signature) {
-                        var buff = job2['vertexBuffer'];
+                        buff = job2['vertexBuffer'];
                         job2['vertexBuffer'] = null;
-                        for (var k = 0, lk = buff.length; k < lk; k++) {
+                        for (k = 0, lk = buff.length; k < lk; k++) {
                             vbuffer[index+k] = buff[k];
                         }
                         index+= lk;        
@@ -264,10 +264,10 @@ function optimizeGroupMessages() {
                     
             case 'pixel-line':
             case 'line-label':
-                var vbufferSize = job['vertexBuffer'].length;
+                vbufferSize = job['vertexBuffer'].length;
 
-                for (var j = i + 1; j < li; j++) {
-                    var message2 = messages[j];
+                for (j = i + 1; j < li; j++) {
+                    message2 = messages[j];
                         
                     if (message2.signature == signature) {
                         message2.reduced = true;
@@ -275,27 +275,27 @@ function optimizeGroupMessages() {
                     }
                 }
 
-                var vbuffer = new Float32Array(vbufferSize);
+                vbuffer = new Float32Array(vbufferSize);
                 var nbuffer = new Float32Array(vbufferSize);
-                var index = 0;
+                index = 0;
 
-                for (var j = i; j < li; j++) {
-                    var message2 = messages[j];
-                    var job2 = message2.job;
+                for (j = i; j < li; j++) {
+                    message2 = messages[j];
+                    job2 = message2.job;
                         
                     if (message2.signature == signature) {
-                        var buff = job2['vertexBuffer'];
+                        buff = job2['vertexBuffer'];
                         job2['vertexBuffer'] = null;
                             
                         if (type == 'line-label') {
-                            var buff2 = job2['texcoordsBuffer'];
+                            buff2 = job2['texcoordsBuffer'];
                             job2['texcoordsBuffer'] = null;
                         } else {
-                            var buff2 = job2['normalBuffer'];
+                            buff2 = job2['normalBuffer'];
                             job2['normalBuffer'] = null;
                         }
                             
-                        for (var k = 0, lk = buff.length; k < lk; k++) {
+                        for (k = 0, lk = buff.length; k < lk; k++) {
                             vbuffer[index+k] = buff[k];
                             nbuffer[index+k] = buff2[k];
                         }
@@ -315,27 +315,14 @@ function optimizeGroupMessages() {
                 break;
             }
 
-            //messages2[index2] = message;
-            index2++;
-            
             postMessage(message.job, message.arrays);
             
         } else if (!message.reduced) {
 
             postMessage(message.job, message.arrays);
 
-            //messages2[index2] = message;
-            index2++;
         }
     }
-
-    //for (var i = 0, li = index2; i < li; i++) {
-        //var message = messages2[i];
-        //postMessage(message.job, message.arrays);
-    //}
-
-    //var reduced = messageBufferIndex - index2;  
-    //console.log("total: " + messageBufferIndex + "    reduced: " + reduced);
 
     globals.messageBufferIndex = 0;
 } 

@@ -16,7 +16,7 @@ var getLayer = function(layerId, featureType, index) {
 };
 
 
-var getLayerExpresionValue = function(layer, value, feature, lod) {
+var getLayerExpresionValue = function(layer, value, feature) {
 
     switch(typeof value) {
     case 'string':
@@ -63,8 +63,6 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
 
         return value;
 
-        break;
-
     case 'object':
 
             //is it null?
@@ -107,6 +105,8 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
         var valueType = (typeof lastValue);
         var newValue = lastValue;
 
+        var currentLod, currentValue;
+
         for (var i = 0, li = stops.length; i <= li; i++) {
 
             if (i == li) {
@@ -133,7 +133,7 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
                     case 'boolean':
                         lastValue = lastValue ? 1 : 0;
                         currentValue = lastValue ? 1 : 0;
-                        var newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+                        newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
 
                         newValue = newValue > 0.5 ? true : false;
                         break;
@@ -141,11 +141,11 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
                     case 'number':
 
                                 //debugger
-                        var newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+                        newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
                         break;
 
                     case 'object':
-                        var newValue = [];
+                        newValue = [];
 
                         for (var j = 0, lj= lastValue.length; j < lj; j++) {
                             newValue[j] = lastValue[j] + (currentValue[j] - lastValue[j]) * ((lod - lastLod) / (currentLod - lastLod));
@@ -167,8 +167,6 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
         }
 
         return newValue;
-
-        break;
 
     case 'number':
     case 'boolean':
@@ -234,11 +232,11 @@ var logError = function(errorType, layerId, key, value, index, subkey) {
 
     switch(errorType) {
     case 'wrong-property-value':
-        str = 'Error: wrong layer property ' + (subkey ? ('"' + subkey + '"') : '') + ': ' + layerId + '.' + key + ' = ' + value;
+        str = 'Error: wrong layer property ' + (subkey ? ('\'' + subkey + '\'') : '') + ': ' + layerId + '.' + key + ' = ' + value;
         break;
 
     case 'wrong-property-value[]':
-        str = 'Error: wrong layer property ' + (subkey ? ('"' + subkey + '"') : '') + '['+index+']: ' + layerId + '.' + key + ' = ' + value;
+        str = 'Error: wrong layer property ' + (subkey ? ('\'' + subkey + '\'') : '') + '['+index+']: ' + layerId + '.' + key + ' = ' + value;
         break;
 
     case 'wrong-object':
@@ -263,12 +261,15 @@ var logError = function(errorType, layerId, key, value, index, subkey) {
     }
     
     if (str) {
-        console.log(str);
+        throw str;
     }
 };
 
 
 var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
+
+    var i, li;
+
     //check interpolator
     if (value != null && (typeof value) == 'object' && (value['discrete'] != null || value['linear'] != null || value['lod-scaled'] != null)) {
 
@@ -315,7 +316,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
         if (stops != null) {
             var stopsValueType = null;
 
-            for (var i = 0, li = stops.length; i < li; i++) {
+            for (i = 0, li = stops.length; i < li; i++) {
                 var stopItem = stops[i];
 
                 //is stop array[2]?
@@ -377,20 +378,15 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
         if (key == 'next-pass') {
             if (Array.isArray(value) && value.length > 0) {
 
-                for (var i = 0; i < li; i++) {
+                for (i = 0; i < li; i++) {
                     var valueItem = value[i];
 
-                    if (typeof valueItem == 'object' &&
+                    if (!(typeof valueItem == 'object' &&
                             Array.isArray(valueItem) &&
                             valueItem.length == 2 &&
                             typeof valueItem[0] == 'number' &&
-                            typeof valueItem[1] == 'string') {
+                            typeof valueItem[1] == 'string')) {
 
-                        if (stylesheetLayersData['layers'][valueItem[1]] == null) {
-
-                        }
-
-                    } else {
                         logError('wrong-property-value[]', layerId, key, value, i);
                         return getDefaultLayerPropertyValue(key);
                     }
@@ -407,7 +403,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             if (Array.isArray(value) && value.length == arrayLength) {
 
                     //validate array values
-                var i = 0;
+                i = 0;
 
                 if (key == 'icon-source' || key == 'line-style-texture') {
                     if (typeof value[0] != 'string') {
@@ -510,64 +506,64 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     switch(key) {
        //case "filter" :    return validateValue(layerId, key, value, "string"); break;
 
-    case 'inherit' :    return validateValue(layerId, key, value, 'string'); break;
+    case 'inherit' :    return validateValue(layerId, key, value, 'string');
 
-    case 'line':        return validateValue(layerId, key, value, 'boolean'); break;
-    case 'line-flat':   return validateValue(layerId, key, value, 'boolean'); break;
-    case 'line-width':  return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE); break;
-    case 'line-color':  return validateValue(layerId, key, value, 'object', 4, 0, 255); break;
-    case 'line-style':  return validateValue(layerId, key, value, 'string'); break;
-    case 'line-style-texture':    return validateValue(layerId, key, value, 'object', 3, -Number.MAXVALUE, Number.MAXVALUE); break;
-    case 'line-style-background': return validateValue(layerId, key, value, 'object', 4, 0, 255); break;
+    case 'line':        return validateValue(layerId, key, value, 'boolean');
+    case 'line-flat':   return validateValue(layerId, key, value, 'boolean');
+    case 'line-width':  return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'line-color':  return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'line-style':  return validateValue(layerId, key, value, 'string');
+    case 'line-style-texture':    return validateValue(layerId, key, value, 'object', 3, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'line-style-background': return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
-    case 'line-label':         return validateValue(layerId, key, value, 'boolean'); break;
-    case 'line-label-source':  return validateValue(layerId, key, value, 'string'); break;
-    case 'line-label-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255); break;
-    case 'line-label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE); break;
-    case 'line-label-offset':  return validateValue(layerId, key, value, 'number', null, -Number.MAXVALUE, Number.MAXVALUE); break;
+    case 'line-label':         return validateValue(layerId, key, value, 'boolean');
+    case 'line-label-source':  return validateValue(layerId, key, value, 'string');
+    case 'line-label-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'line-label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'line-label-offset':  return validateValue(layerId, key, value, 'number', null, -Number.MAXVALUE, Number.MAXVALUE);
 
-    case 'point':        return validateValue(layerId, key, value, 'boolean'); break;
-    case 'point-flat':   return validateValue(layerId, key, value, 'boolean'); break;
-    case 'point-radius': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE); break;
-    case 'point-Layer':  return validateValue(layerId, key, value, 'string'); break;
+    case 'point':        return validateValue(layerId, key, value, 'boolean');
+    case 'point-flat':   return validateValue(layerId, key, value, 'boolean');
+    case 'point-radius': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'point-Layer':  return validateValue(layerId, key, value, 'string');
 
-    case 'point-color':  return validateValue(layerId, key, value, 'object', 4, 0, 255); break;
+    case 'point-color':  return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
-    case 'icon':         return validateValue(layerId, key, value, 'boolean'); break;
-    case 'icon-source':  return validateValue(layerId, key, value, 'object', 5, -Number.MAXVALUE, Number.MAXVALUE); break;
-    case 'icon-scale':   return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE); break;
-    case 'icon-offset':  return validateValue(layerId, key, value, 'object', 2, -Number.MAXVALUE, Number.MAXVALUE); break;
-    case 'icon-origin':  return validateValue(layerId, key, value, 'string'); break;
-    case 'icon-stick':   return validateValue(layerId, key, value, 'object', 7, -Number.MAXVALUE, Number.MAXVALUE); break;
-    case 'icon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255); break;
+    case 'icon':         return validateValue(layerId, key, value, 'boolean');
+    case 'icon-source':  return validateValue(layerId, key, value, 'object', 5, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'icon-scale':   return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'icon-offset':  return validateValue(layerId, key, value, 'object', 2, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'icon-origin':  return validateValue(layerId, key, value, 'string');
+    case 'icon-stick':   return validateValue(layerId, key, value, 'object', 7, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'icon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
-    case 'label':         return validateValue(layerId, key, value, 'boolean'); break;
-    case 'label-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255); break;
-    case 'label-source':  return validateValue(layerId, key, value, 'string'); break;
-    case 'label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE); break;
-    case 'label-offset':  return validateValue(layerId, key, value, 'object', 2, -Number.MAXVALUE, Number.MAXVALUE); break;
-    case 'label-origin':  return validateValue(layerId, key, value, 'string'); break;
-    case 'label-align':   return validateValue(layerId, key, value, 'string'); break;
-    case 'label-stick':   return validateValue(layerId, key, value, 'object', 7, -Number.MAXVALUE, Number.MAXVALUE); break;
-    case 'label-width':   return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE); break;
+    case 'label':         return validateValue(layerId, key, value, 'boolean');
+    case 'label-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'label-source':  return validateValue(layerId, key, value, 'string');
+    case 'label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'label-offset':  return validateValue(layerId, key, value, 'object', 2, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'label-origin':  return validateValue(layerId, key, value, 'string');
+    case 'label-align':   return validateValue(layerId, key, value, 'string');
+    case 'label-stick':   return validateValue(layerId, key, value, 'object', 7, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'label-width':   return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
 
-    case 'polygon':         return validateValue(styleId, key, value, 'boolean'); break;
-    case 'polygon-color':   return validateValue(styleId, key, value, 'object', 4, 0, 255); break;
+    case 'polygon':         return validateValue(layerId, key, value, 'boolean');
+    case 'polygon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
-    case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAXVALUE, Number.MAXVALUE); break;
-    case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAXVALUE); break;
+    case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAXVALUE);
 
-    case 'hover-event':  return validateValue(layerId, key, value, 'boolean'); break;
-    case 'hover-layer':  return validateValue(layerId, key, value, 'string'); break;
-    case 'enter-event':  return validateValue(layerId, key, value, 'boolean'); break;
-    case 'leave-event':  return validateValue(layerId, key, value, 'boolean'); break;
-    case 'click-event':  return validateValue(layerId, key, value, 'boolean'); break;
-    case 'draw-event':   return validateValue(layerId, key, value, 'boolean'); break;
+    case 'hover-event':  return validateValue(layerId, key, value, 'boolean');
+    case 'hover-layer':  return validateValue(layerId, key, value, 'string');
+    case 'enter-event':  return validateValue(layerId, key, value, 'boolean');
+    case 'leave-event':  return validateValue(layerId, key, value, 'boolean');
+    case 'click-event':  return validateValue(layerId, key, value, 'boolean');
+    case 'draw-event':   return validateValue(layerId, key, value, 'boolean');
 
-    case 'visible':     return validateValue(layerId, key, value, 'boolean'); break;
-    case 'visibility':  return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE); break;
-    case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180); break;
-    case 'next-pass':   return validateValue(layerId, key, value, 'object'); break;
+    case 'visible':     return validateValue(layerId, key, value, 'boolean');
+    case 'visibility':  return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
+    case 'next-pass':   return validateValue(layerId, key, value, 'object');
     }
 
     return value; //custom property
@@ -640,30 +636,33 @@ var getDefaultLayerPropertyValue = function(key) {
 
 
 function getFilterResult(filter, feature, featureType, group) {
+
+    var result, i, li;
+
     if (!filter || !Array.isArray(filter)) {
         return false;
     }
 
     switch(filter[0]) {
     case 'all': 
-        var result = true;
-        for (var i = 1, li = filter.length; i < li; i++) {
+        result = true;
+        for (i = 1, li = filter.length; i < li; i++) {
             result = result && getFilterResult(filter[i], feature, featureType, group);
         }
            
         return result;                         
 
     case 'any':
-        var result = false;
-        for (var i = 1, li = filter.length; i < li; i++) {
+        result = false;
+        for (i = 1, li = filter.length; i < li; i++) {
             result = result || getFilterResult(filter[i], feature, featureType, group);
         }
            
         return result;                         
 
     case 'none':
-        var result = true;
-        for (var i = 1, li = filter.length; i < li; i++) {
+        result = true;
+        for (i = 1, li = filter.length; i < li; i++) {
             result = result && getFilterResult(filter[i], feature, featureType, group);
         }
            
@@ -703,7 +702,7 @@ function getFilterResult(filter, feature, featureType, group) {
     case '!has': return (typeof value == 'undefined');
         
     case 'in':
-        for (var i = 2, li = filter.length; i < li; i++) {
+        for (i = 2, li = filter.length; i < li; i++) {
             if (filter[i] == value) {
                 return true;
             }
@@ -711,7 +710,7 @@ function getFilterResult(filter, feature, featureType, group) {
         return false;
         
     case '!in':
-        for (var i = 2, li = filter.length; i < li; i++) {
+        for (i = 2, li = filter.length; i < li; i++) {
             if (filter[i] == value) {
                 return false;
             }
@@ -725,6 +724,7 @@ function getFilterResult(filter, feature, featureType, group) {
 
 var processLayer = function(layerId, layerData, stylesheetLayersData) {
     var layer = {};
+    var key;
 
     //copy Layer and inherit Layer if needed
     copyLayer(layerId, layer, layerData, stylesheetLayersData);
@@ -732,7 +732,7 @@ var processLayer = function(layerId, layerData, stylesheetLayersData) {
     //console.log(JSON.stringify(layer));
 
     //replace constants and validate properties
-    for (var key in layer) {
+    for (key in layer) {
 
         var value = layer[key];
 
@@ -767,6 +767,9 @@ var processLayer = function(layerId, layerData, stylesheetLayersData) {
 
 
 var processStylesheet = function(stylesheetLayersData) {
+
+    var key;
+
     globals.stylesheetBitmaps = {};
     globals.stylesheetConstants = stylesheetLayersData['constants'] || {};
 
@@ -774,7 +777,7 @@ var processStylesheet = function(stylesheetLayersData) {
     var bitmaps = stylesheetLayersData['bitmaps'] || {};
 
     //build map
-    for (var key in bitmaps) {
+    for (key in bitmaps) {
         var bitmap = bitmaps[key];
         var skip = false;
 
@@ -808,7 +811,7 @@ var processStylesheet = function(stylesheetLayersData) {
     globals.stylesheetLayers = globals.stylesheetData.layers;
 
     //process layers
-    for (var key in layers) {
+    for (key in layers) {
         globals.stylesheetData.layers[key] = processLayer(key, layers[key], stylesheetLayersData);
 
         //console.log(JSON.stringify(stylesheetData.layers[key]));
