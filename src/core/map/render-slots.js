@@ -72,7 +72,7 @@ MapRenderSlots.prototype.setRenderSlotEnabled = function(id, state) {
 
 
 MapRenderSlots.prototype.getRenderSlotEnabled = function(id) {
-    var index = this.getRenderSlotIndex(id2);
+    var index = this.getRenderSlotIndex(id);
     if (index != -1) {
         return this.renderSlots[index].enabled;
     }

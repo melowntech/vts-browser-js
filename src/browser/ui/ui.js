@@ -121,7 +121,7 @@ UI.prototype.setControlVisible = function(id, state) {
 
 UI.prototype.getControlVisible = function(id) {
     if (this.controls[id] != null) {
-        this.controls[id].getVisible(state);
+        this.controls[id].getVisible();
     }
 };
 

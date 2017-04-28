@@ -308,19 +308,21 @@ Browser.prototype.updateUI = function(key) {
 
 
 Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
+    var map = this.getMap();
+
     switch (key) {
     case 'pos':                
     case 'position':
         this.config.position = value;
-        if (this.map) {
-            this.map.setPosition(this.config.position);
+        if (map) {
+            map.setPosition(this.config.position);
         }
         break;
             
     case 'view':
         this.config.view = value;
-        if (this.map) {
-            this.map.setView(this.config.view);
+        if (map) {
+            map.setView(this.config.view);
         }
         break;
 
@@ -352,7 +354,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'inertia':              this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
     case 'rotate':             
         this.config.autoRotate = utils.validateNumber(value, Number.NEGATIVEINFINITY, Number.POSITIVEINFINITY, 0);
-        if (this.map && this.autopilot) {
+        if (map && this.autopilot) {
             this.autopilot.setAutorotate(this.config.autoRotate);
         }
         break;
@@ -364,31 +366,33 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
             ];
         }
 
-        if (this.map && this.autopilot) {
+        if (map && this.autopilot) {
             this.autopilot.setAutorotate(this.config.autoRotate);
         }
         break;
     }
 
     if (ignoreCore) {
-        if ((key.indexOf('map') == 0 || key.indexOf('mario') == 0 || key.indexOf('authorization') == 0) && this.core.getMap()) {
-            this.core.getMap().setConfigParam(key, value);
+        if ((key.indexOf('map') == 0 || key.indexOf('mario') == 0 || key.indexOf('authorization') == 0) && map) {
+            map.setConfigParam(key, value);
         }
 
         if (key.indexOf('renderer') == 0) {
-            this.core.getRenderer().setConfigParam(key, value);
+            map.setConfigParam(key, value);
         }
     }
 };
 
 
 Browser.prototype.getConfigParam = function(key) {
+    var map = this.getMap();
+
     switch (key) {
     case 'pos':
     case 'position':
         
-        if (this.map) {
-            this.map.getPosition();
+        if (map) {
+            map.getPosition();
         } else {
             return this.config.position;
         }
@@ -397,8 +401,8 @@ Browser.prototype.getConfigParam = function(key) {
         
     case 'view':               
 
-        if (this.map) {
-            return this.map.getView();
+        if (map) {
+            return map.getView();
         } else {
             return this.config.view;
         }
@@ -433,15 +437,15 @@ Browser.prototype.getConfigParam = function(key) {
     case 'pan':                  return this.config.autoPan;
     }
 
-    if (ignoreCore) {
-        if (key.indexOf('map') == 0 && this.core.getMap()) {
-            return this.core.getMap().getConfigParam(key, value);
-        }
-
-        if (key.indexOf('renderer') == 0) {
-            return this.core.getRenderer().getConfigParam(key, value);
-        }
+    //if (ignoreCore) {
+    if (key.indexOf('map') == 0 && map) {
+        return map.getConfigParam(key);
     }
+
+    if (key.indexOf('renderer') == 0) {
+        return map.getConfigParam(key);
+    }
+    //}
 };
 
 

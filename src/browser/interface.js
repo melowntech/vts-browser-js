@@ -156,7 +156,7 @@ BrowserInterface.prototype.setParam = function(key, value) {
 
 
 BrowserInterface.prototype.getParam = function(key) {
-    return this.getConfigParam(key, value);
+    return this.getConfigParam(key);
 };
 
 

@@ -346,15 +346,6 @@ MapSurface.prototype.getNavUrl = function(id, skipBaseUrl) {
 };
 
 
-MapSurface.prototype.getNavTemplate = function(id, skipBaseUrl) {
-    if (this.navUrl.indexOf('//') != -1){
-        return this.navUrl;
-    } else {
-        this.map.url.baseUrl + url;
-    }
-};
-
-
 MapSurface.prototype.getMeshUrl = function(id, skipBaseUrl) {
     return this.map.url.makeUrl(this.meshUrl, {lod:id[0], ix:id[1], iy:id[2] }, null, skipBaseUrl);
 };

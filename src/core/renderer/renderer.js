@@ -559,7 +559,7 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
             window.URL.revokeObjectURL(url);  
         }, 0); 
     } if (output == 'tab') {
-        window.open(canvas.toDataURL('image/' + type));
+        window.open(canvas.toDataURL('image/' + filetype));
     }
     
     return imageData;

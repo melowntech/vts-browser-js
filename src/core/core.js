@@ -433,7 +433,7 @@ Core.prototype.getConfigParam = function(key) {
         return this.config.inspector;
     } else {
         if (key.indexOf('map') == 0 && this.getMap() != null) {
-            return this.getMap().getConfigParam(key, value);
+            return this.getMap().getConfigParam(key);
         }
 
         if (key.indexOf('renderer') == 0) {

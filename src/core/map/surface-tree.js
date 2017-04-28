@@ -12,7 +12,7 @@ var MapSurfaceTree = function(map, freeLayer, freeLayerSurface) {
     this.freeLayer = freeLayer;
     this.freeLayerSurface = freeLayerSurface;
     this.metaBinaryOrder = this.map.referenceFrame.params.metaBinaryOrder;
-    this.initialized = false;
+    //this.initialized = false;
     //this.geocent = !this.map.getNavigationSrs().isProjected();
 
     this.surfaceTree = new MapSurfaceTile(this.map, null, this.rootId);
@@ -41,7 +41,7 @@ MapSurfaceTree.prototype.kill = function() {
 };
 
 
-MapSurfaceTree.prototype.init = function() {
+/*MapSurfaceTree.prototype.init = function() {
     var url = this.map.url.makeUrl(surface.metaUrl, {lod:result[0], ix:result[1], iy:result[2] });  //result???
     map.loader.load(url, metatile.load.bind(metatile, url));
 
@@ -49,7 +49,7 @@ MapSurfaceTree.prototype.init = function() {
     this.surfaceTree.metatile = 1;
 
     this.initialized = true;
-};
+};*/
 
 
 MapSurfaceTree.prototype.findSurfaceTile = function(id) {

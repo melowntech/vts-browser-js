@@ -99,7 +99,7 @@ MapInterface.prototype.getSurfaceInfo = function(surfaceId) {
 
 
 MapInterface.prototype.getSrses = function() {
-    return this.map.getSrses(surfaceId);
+    return this.map.getSrses();
 };
 
 
@@ -294,7 +294,7 @@ MapInterface.prototype.setConfigParam = function(key, value) {
 
 
 MapInterface.prototype.getConfigParam = function(key) {
-    return this.map.getConfigParam(key, value);
+    return this.map.getConfigParam(key);
 };
 
 

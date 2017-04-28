@@ -342,7 +342,7 @@ MapMetatile.prototype.applyMetatatileBitplanes = function() {
     for (var i = 0; i < 1; i++) {
         if (this.flagPlanes[i]) {
             
-            bitplane = this.flagPlanes[i]; 
+            var bitplane = this.flagPlanes[i]; 
     
             for (var y = 0; y < this.sizey; y++) {
                 for (var x = 0; x < this.sizex; x++) {
@@ -368,7 +368,7 @@ MapMetatile.prototype.applyMetatatileBitplanes = function() {
 MapMetatile.prototype.applyMetatanodeBitplanes = function(x, y) {
     for (var i = 0; i < 1; i++) {
         if (this.flagPlanes[i]) {
-            bitplane = this.flagPlanes[i]; 
+            var bitplane = this.flagPlanes[i]; 
             var byteIndex = this.sizex * y + x;
             var bitIndex = byteIndex & 7;
             var bitMask = 1 << bitIndex;
