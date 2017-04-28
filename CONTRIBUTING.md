@@ -27,10 +27,10 @@ The purpose of the Melown CLA is to ensure that
 
 You agree with the CLA by
 
-- downloading a [CLA copy](https://melown.github.io/documents/melown-individual-cla-v1.pdf) and printing it
-- entering your name, your legal adress and current date
-- signing the document
-- scanning the signed document and emailing it to *community at melown.com*
+ 1. downloading a [CLA copy](https://melown.github.io/documents/melown-individual-cla-v1.pdf) and printing it,
+ 2. entering your name, your legal adress and current date,
+ 3. signing the document,
+ 4. scanning the signed document and emailing it to *community at melown.com*.
 
 This is only required once for your contributions to [all Melown repositories](https://github.com/Melown).
 
