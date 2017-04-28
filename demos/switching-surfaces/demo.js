@@ -44,25 +44,25 @@ function onSwitchView() {
         if (button.getElement().checked) { //check switch state
             //set map view without town
             browser.map.setView({
-                'surfaces': {
+                surfaces: {
                     'melown-viewfinder-world': [
                         'bing-world',
                         'bmng08-world'
                     ]
                 },
-                'freeLayers': {}
+                freeLayers: {}
             }); 
         } else {
             //set map view with town
             browser.map.setView({
-                'surfaces': {
+                surfaces: {
                     'melown-viewfinder-world': [
                         'bing-world',
                         'bmng08-world'
                     ],
                     'melown-benatky-nad-jizerou': []
                 },
-                'freeLayers': {}
+                freeLayers: {}
             });    
         }
     }
