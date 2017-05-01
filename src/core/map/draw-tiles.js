@@ -509,7 +509,7 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
 /*    
      else if (tile.lastRenderState){
 
-        if (tile.surfaceGeodata.isReady(true, priority) == true) {
+        if (tile.surfaceGeodata.isReady(true, priority) {
             if (tile.drawCommands[channel].length > 0) {
                 if (!preventRedener) {
                     this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);

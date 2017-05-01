@@ -17,10 +17,10 @@ var MapSurfaceTree = function(map, freeLayer, freeLayerSurface) {
 
     this.surfaceTree = new MapSurfaceTile(this.map, null, this.rootId);
 
-    if (freeLayer !== true) {
+    //if (freeLayer !== true) {
         //this.heightTracer = new MapMetanodeTracer(this, null, this.traceTileHeight.bind(this), this.traceHeightChild.bind(this));
         //this.heightTracerNodeOnly = new MapMetanodeTracer(this, null, this.traceTileHeightNodeOnly.bind(this), this.traceHeightChild.bind(this));
-    }
+    //}
 
     this.surfaceSequence = [];
     this.surfaceOnlySequence = [];
@@ -776,7 +776,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                 var lastProcessBufferIndex = newProcessBufferIndex;
                 var lastDrawBufferIndex = drawBufferIndex;
 
-                if (node.hasChildren() == false || tile.texelSize <= texelSizeFit) {
+                if (!node.hasChildren() || tile.texelSize <= texelSizeFit) {
 
                     priority = ((tile.id[0] + lodShift) * typeFactor) * tile.distance; 
             
@@ -1122,7 +1122,7 @@ MapSurfaceTree.prototype.traceHeightTileByMap = function(tile, params) {
             tile.heightMap = tile.resources.getTexture(path, true);
             //}
         } else {
-            if (tile.heightMap.isReady() == true) {
+            if (tile.heightMap.isReady()) {
                 params.parent = {
                     metanode : params.metanode,
                     heightMap : params.heightMap,

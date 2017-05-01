@@ -122,7 +122,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
     //intit resources
     // eslint-disable-next-line
-    var init = new RenderInit(this);
+    this.init = new RenderInit(this);
     this.draw = new RenderDraw(this);
 
     //if (window["MelMobile"] && this.gpu.canvas != null) {

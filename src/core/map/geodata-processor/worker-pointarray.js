@@ -15,13 +15,15 @@ var postGroupMessage = postGroupMessage_;
 
 var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) {
     var pointsGroups = []; 
-    var i, li;
+    var i, li, dpoints = false;
 
-    if (pointArray['lines']) {  //use lines as points
-        pointsGroups = pointArray['lines'] || [];
+    if (pointArray['lines'] || pointArray['d-lines']) {  //use lines as points
+        pointsGroups = pointArray['lines'] || pointArray['d-lines'];
+        dpoints = (pointArray['d-lines']) ? true : false;
     } else {
-        if (pointArray['points']) {
-            pointsGroups = [pointArray['points']];
+        if (pointArray['points'] || pointArray['d-points']) {
+            pointsGroups = [(pointArray['points'] || pointArray['d-points'])];
+            dpoints = (pointArray['d-points']) ? true : false;
         }
     }
     
@@ -158,8 +160,6 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                 pointsVertices = circleSides * 3 * 3;
                 vertexBuffer = new Array(points.length * pointsVertices);
             }
-        
-            var dpoints = false;
         
             //add ponints
             for (i = 0, li = points.length; i < li; i++) {

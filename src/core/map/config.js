@@ -78,7 +78,7 @@ MapConfig.prototype.parseReferenceFrame = function() {
 
     this.map.referenceFrame = new MapRefFrame(this.map, rf);
 
-    if (this.map.referenceFrame.valid == false) {
+    if (!this.map.referenceFrame.valid) {
         return false;
     }
 

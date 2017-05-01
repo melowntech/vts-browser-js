@@ -515,7 +515,7 @@ MapSurfaceTile.prototype.createVirtualMetanode = function(tree, priority) {
         var alien = surfaces[i][1];
         metatile = this.metaresources.getMetatile(surface, null, this);
 
-        if (metatile.isReady(priority) == true) {
+        if (metatile.isReady(priority)) {
             metanode = metatile.getNode(this.id);
 
             if (metanode != null) {
@@ -762,7 +762,7 @@ MapSurfaceTile.prototype.getPixelSize = function(bbox, screenPixelSize, cameraPo
 
     //console.log("new: " + (factor * screenPixelSize) + " old:" + this.tilePixelSize2(node) );
 
-    if (returnDistance == true) {
+    if (returnDistance) {
         return [(factor[0] * screenPixelSize), factor[1]];
     }
 
@@ -1039,24 +1039,24 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
         [ur[0], middle[1]]
     ];    
 
-    var flatGrid = true, h, coordsRes, factor, prog; 
+    var h, coordsRes, factor, prog; 
 
     if (fastGrid) {
         if (!this.metanode) {
             return;
         }
         
-        if (flatGrid) {
+        /*if (flatGrid) {*/
             //var h = this.metanode.minZ;
-            h = this.metanode.surrogatez;
+        h = this.metanode.surrogatez;
     
             //if (this.map.drawLods) { h = this.metanode.minZ; }
-            coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
+        coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
 
             //middle[2] = h;
             //middle = node.getPhysicalCoords(middle, true);
 
-        } else {
+        /*} else {
 
             var mnode = this.metanode; 
             
@@ -1151,7 +1151,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                 coordsRes[7] = [(border[5] + border[4]) * 0.5];
             }
 
-        }
+        }*/
         
 		
 

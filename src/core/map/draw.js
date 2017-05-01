@@ -140,10 +140,10 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
     var projected = this.isProjected;
 
-    if (!projected) {
+    //if (!projected) {
         //why calling this function distorts camera? why I have call it before update camera< 
         //var camInfo = this.measure.getPositionCameraInfo(this.position, this.getNavigationSrs().isProjected(), true); //
-    }
+    //}
 
     var drawTiles = this.drawTiles;
     var camInfo = camera.update();

@@ -20,12 +20,13 @@ var postGroupMessage = postGroupMessage_;
 
 
 var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) {
-    var lines = lineString['lines'] || [];
+    var lines = (lineString['lines'] || lineString['d-lines'])  || [];
 
     if (lines.length == 0) {
         return;
     }
 
+    var dlines = (lineString['lines']) ? true : false;
     var line = getLayerPropertyValue(style, 'line', lineString, lod);
     var lineLabel = getLayerPropertyValue(style, 'line-label', lineString, lod);
 
@@ -140,7 +141,6 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
         var texturedLine = (lineStyle != 'solid');
     
     
-        var dlines = false;
         var distance = 0.001;
         var distance2 = 0.001;
     

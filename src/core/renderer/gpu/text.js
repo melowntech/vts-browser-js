@@ -400,7 +400,7 @@ GpuText.prototype.compile = function() {
         //this.core.renderer.statsFluxMesh[0][1] += this.size;
     }
 
-    if (this.withNormals == true) {
+    if (this.withNormals) {
         this.normals = [];
     }
 };

@@ -8,7 +8,7 @@ var MapGeodataProcessor = function(surface, listener) {
 
     // eslint-disable-next-line
     var worker = require('worker-loader?inline&fallback=false!./worker-main');
-    //var worker = require("worker-loader?inline!./worker-main");
+    //var worker = require('worker-loader?!./worker-main');
 
     //debug worker
     this.processWorker = new worker;
@@ -22,7 +22,7 @@ var MapGeodataProcessor = function(surface, listener) {
 
 
 MapGeodataProcessor.prototype.kill = function() {
-    if (this.killed == true) {
+    if (this.killed) {
         return;
     }
 
@@ -68,7 +68,7 @@ MapGeodataProcessor.prototype.setListener = function(listener) {
 
 
 MapGeodataProcessor.prototype.sendCommand = function(command, data, tile) {
-    if (this.killed == true) {
+    if (this.killed) {
         return;
     }
 

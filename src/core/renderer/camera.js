@@ -157,7 +157,7 @@ Camera.prototype.scaleFactor = function(worldPos, returnDist) {
     // ('dist' is used instead of camera depth (camPos(2)) to make the tile
     // resolution independent of camera rotation)
 
-    if (returnDist == true) {
+    if (returnDist) {
         if (dist < this.near) return [Number.POSITIVEINFINITY, dist];
         return [this.projection[0] / dist, dist]; 
         //return [(this.projection[5]*0.5) / dist, dist]; //projection by sy

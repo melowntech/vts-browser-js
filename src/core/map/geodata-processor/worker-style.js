@@ -769,9 +769,7 @@ var processLayer = function(layerId, layerData, stylesheetLayersData) {
 
 
 var processStylesheet = function(stylesheetLayersData) {
-
     var key;
-
     globals.stylesheetBitmaps = {};
     globals.stylesheetConstants = stylesheetLayersData['constants'] || {};
 
@@ -781,7 +779,7 @@ var processStylesheet = function(stylesheetLayersData) {
     //build map
     for (key in bitmaps) {
         var bitmap = bitmaps[key];
-        var skip = false;
+        //var skip = false;
 
         if ((typeof bitmap) == 'string') {
             bitmap = {'url':bitmap};
@@ -793,9 +791,9 @@ var processStylesheet = function(stylesheetLayersData) {
             logError('wrong-bitmap', key);
         }
 
-        if (!skip) {
-            globals.stylesheetBitmaps[key] = bitmap;
-        }
+        //if (!skip) {
+        globals.stylesheetBitmaps[key] = bitmap;
+        //}
     }
 
     //load bitmaps

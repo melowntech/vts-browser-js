@@ -39,7 +39,7 @@ MapGeodata.prototype.killGeodata = function(killedByCache) {
         this.geodata = null;
     }
     
-    if (killedByCache != true && this.cacheItem != null) {
+    if (killedByCache !== true && this.cacheItem != null) {
         this.map.resourcesCache.remove(this.cacheItem);
     }
 

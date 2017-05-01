@@ -937,7 +937,7 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
                 this.dirty = true;
             }
 
-            if (this.hoverFeature != null && this.hoverFeature[3] == true) {
+            if (this.hoverFeature != null && this.hoverFeature[3]) {
                 return [this.hoverFeature, true, relatedEvents];
             } else {
                 return [null, false, relatedEvents];

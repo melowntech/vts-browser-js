@@ -436,7 +436,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 ctx.fillRect(i*factorX, height -(value)*factorY, 1, 1);
             }
 
-            if (this.showCursor == true) {
+            if (this.showCursor) {
                 index = (this.cursorIndex + samplesIndex) % samples;
                 str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles[index] + valuesResources[index] + valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + 'MB' +
                       ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources[index]/(1024*1024)) + 'MB' +

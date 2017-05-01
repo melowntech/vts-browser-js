@@ -303,7 +303,7 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
     }
 
     if (useState !== true) {
-        if (depthTest != true) {
+        if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
     
