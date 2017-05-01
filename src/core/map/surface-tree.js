@@ -135,7 +135,7 @@ MapSurfaceTree.prototype.draw = function() {
     
     var srs = map.getPhysicalSrs();
 
-    var divisionNode = this.divisionNode;
+    //var divisionNode = this.divisionNode;
     var periodicity = srs.periodicity;
 
     //if (this.map.config.mapBasicTileSequence) {
@@ -178,17 +178,17 @@ MapSurfaceTree.prototype.updateNodeHeightExtents = function(tile, node) {
     if (!node.heightReady && node.metatile.useVersion < 4) {
         var parent = tile.parent;
 
-        if (node.hasNavtile()) {
-            node = node;
-        }
+        //if (node.hasNavtile()) {
+          //  node = node;
+        //}
         
         while (parent) {
             var parentNode = parent.metanode;  
             if (parentNode.hasNavtile()) {
 
-                if (node.hasNavtile()) {
-                    node = node;
-                }
+                //if (node.hasNavtile()) {
+                  //  node = node;
+                //}
 
                 node.minHeight = parentNode.minHeight;
                 node.maxHeight = parentNode.maxHeight;
@@ -214,13 +214,13 @@ MapSurfaceTree.prototype.logTileInfo = function(tile, node, cameraPos) {
     var visible = tile.bboxVisible(tile.id, node.bbox, cameraPos, node);
     tile.updateTexelSize();
     
-//    console.log("tile: " + JSON.stringify(tile.id) + " visible: " + visible + " texelsize: " +  tile.texelSize);
+    // eslint-disable-next-line
     console.log('tile: ' + JSON.stringify(tile.id) + ' visible: ' + visible + ' texelsize: ' +  tile.texelSize + ' center: '  + JSON.stringify(node.diskPos) + ' vec: ' + node.diskNormal + 'ang: ' + node.diskAngle + ' dist: ' + node.diskDistance);
 };
 
 
 //loadmode = topdown
-MapSurfaceTree.prototype.drawSurface = function(shift) {
+MapSurfaceTree.prototype.drawSurface = function() {
     this.counter++;
 //    this.surfaceTracer.trace(this.surfaceTree);//this.rootId);
 
@@ -274,15 +274,14 @@ MapSurfaceTree.prototype.drawSurface = function(shift) {
     var pocessedNodes = 1;
     var pocessedMetatiles = 1;  
     var usedNodes = 1;
-    var usedMetatiles = 1;  
-    var drawCounter = draw.drawCounter;
+    var drawCounter = draw.drawCounter, i, j, lj;
 
 
     do {
         var best = 0;
         newProcessBufferIndex = 0;
         
-        for (var i = processBufferIndex - 1; i >= 0; i--) {
+        for (i = processBufferIndex - 1; i >= 0; i--) {
             tile = processBuffer[i];
             node = tile.metanode;
 
@@ -331,7 +330,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift) {
                     
                     var more3 = 0;
         
-                    for (var j = 0; j < 4; j++) {
+                    for (j = 0; j < 4; j++) {
                         var child = tile.children[j];
                         if (child) {
                             childrenCount++;
@@ -385,7 +384,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift) {
                         do {
                             var sorted = true;
                             
-                            for (var j = 0, lj = childrenBuffer.length - 1; j < lj; j++) {
+                            for (j = 0, lj = childrenBuffer.length - 1; j < lj; j++) {
                                 if (childrenBuffer[j].distance > childrenBuffer[j+1].distance) {
                                     var t = childrenBuffer[j];
                                     childrenBuffer[j] = childrenBuffer[j+1];
@@ -398,7 +397,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift) {
     
     
                         //add childern to new process buffer 
-                        for (var j = 0, lj = childrenBuffer.length; j < lj; j++) {
+                        for (j = 0, lj = childrenBuffer.length; j < lj; j++) {
                             
                             /*var n = childrenBuffer[j].metanode.divisionNode;
                             if ((n.id[0] == 1 && n.id[1] == 1 && n.id[2] == 0)) {*/
@@ -449,12 +448,12 @@ MapSurfaceTree.prototype.drawSurface = function(shift) {
         }
         
         var tiles = draw.tileBuffer[0];
-        for (var i = drawBufferIndex - 1; i >= 0; i--) {
+        for (i = drawBufferIndex - 1; i >= 0; i--) {
             tiles.push(drawBuffer[i]);
         }
     }
 
-    for (var i = drawBufferIndex - 1; i >= 0; i--) {
+    for (i = drawBufferIndex - 1; i >= 0; i--) {
         tile = drawBuffer[i];
         //draw tile,  preventRender=false, preventLoad=false
         drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false);
@@ -463,7 +462,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift) {
 
 
 //loadmode = fitonly
-MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
+MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
     this.counter++;
 //    this.surfaceTracer.trace(this.surfaceTree);//this.rootId);
 
@@ -483,7 +482,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
 
     tile.updateTexelSize();
     
-    var typeFactor = this.freeLayerSurface ? 1 : 1;
+    //var typeFactor = this.freeLayerSurface ? 1 : 1;
     
     var draw = map.draw;
     var drawTiles = draw.drawTiles;
@@ -493,14 +492,12 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
     var drawBufferIndex = 0;
     var processBufferIndex = 0;
     var newProcessBufferIndex = 0;
-    var checkGpu = true;
     
     processBuffer[0] = tile;
     processBufferIndex = 1;
 
     var texelSizeFit = draw.texelSizeFit;
 
-    var best2 = 0;
     var replay = map.draw.replay;
     var storeNodes = replay.storeNodes || replay.storeFreeNodes;
     var storeNodesBuffer = replay.nodeBuffer; 
@@ -510,13 +507,13 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
     var usedNodes = 1;
     var pocessedNodes = 1;
     var pocessedMetatiles = 1;  
-    var drawCounter = map.drawCounter;
+    var drawCounter = map.drawCounter, i, j, lj;
     
     do {
         var best = 0;
         newProcessBufferIndex = 0;
         
-        for (var i = processBufferIndex - 1; i >= 0; i--) {
+        for (i = processBufferIndex - 1; i >= 0; i--) {
             tile = processBuffer[i];
             node = tile.metanode;
 
@@ -550,10 +547,9 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
                 } else { //go deeper
 
                     var childrenCount = 0;
-                    var readyCount = 0;
                     var childrenBuffer = [];
         
-                    for (var j = 0; j < 4; j++) {
+                    for (j = 0; j < 4; j++) {
                         var child = tile.children[j];
                         if (child) {
                             childrenCount++;
@@ -563,7 +559,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
                                 this.updateNodeHeightExtents(child, child.metanode);
                                 child.updateTexelSize();
                                 
-                                var priority = child.id[0] * typeFactor * child.distance; 
+                                //var priority = child.id[0] * typeFactor * child.distance; 
                                 
                                 //are draw buffers ready? preventRender=true, preventLoad=false
                                 //if (this.map.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false)) {
@@ -597,7 +593,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
                         do {
                             var sorted = true;
                             
-                            for (var j = 0, lj = childrenBuffer.length - 1; j < lj; j++) {
+                            for (j = 0, lj = childrenBuffer.length - 1; j < lj; j++) {
                                 if (childrenBuffer[j].distance > childrenBuffer[j+1].distance) {
                                     var t = childrenBuffer[j];
                                     childrenBuffer[j] = childrenBuffer[j+1];
@@ -609,7 +605,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
                         } while(!sorted);
     
                         //add childern to new process buffer 
-                        for (var j = 0, lj = childrenBuffer.length; j < lj; j++) {
+                        for (j = 0, lj = childrenBuffer.length; j < lj; j++) {
 
                             //var n = childrenBuffer[j].metanode.divisionNode;
                             //if ((n.id[0] == 1 && n.id[1] == 1 && n.id[2] == 0)) {
@@ -631,9 +627,9 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
         newProcessBuffer = tmp;
         processBufferIndex = newProcessBufferIndex;
 
-        if (best != 0) {
-            best2 = best;
-        }
+        //if (best != 0) {
+          //  best2 = best;
+        //}
         
     } while(processBufferIndex > 0);
 
@@ -647,12 +643,12 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
         }
         
         var tiles = draw.tileBuffer[0];
-        for (var i = drawBufferIndex - 1; i >= 0; i--) {
+        for (i = drawBufferIndex - 1; i >= 0; i--) {
             tiles.push(drawBuffer[i]);
         }
     }
 
-    for (var i = drawBufferIndex - 1; i >= 0; i--) {
+    for (i = drawBufferIndex - 1; i >= 0; i--) {
         tile = drawBuffer[i];
         //draw tile,  preventRender=false, preventLoad=false
         drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false);
@@ -661,7 +657,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift) {
 
 
 //loadmode = fit
-MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
+MapSurfaceTree.prototype.drawSurfaceFit = function() {
     this.counter++;
 //    this.surfaceTracer.trace(this.surfaceTree);//this.rootId);
 
@@ -704,7 +700,6 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
 
     var texelSizeFit = draw.texelSizeFit;
 
-    var best2 = 0;
     var storeNodes = replay.storeNodes || replay.storeFreeNodes;
     var storeNodesBuffer = replay.nodeBuffer; 
 
@@ -714,7 +709,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
     var pocessedNodes = 1;
     var pocessedMetatiles = 1;  
     var drawCounter = draw.drawCounter;
-    var maxHiresLodLevels = map.config.mapMaxHiresLodLevels; 
+    var maxHiresLodLevels = map.config.mapMaxHiresLodLevels, i, j, lj, child, priority; 
     
     do {
         var best = 0;
@@ -724,7 +719,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
             console.log("processed begin==============================================");
         }*/            
        
-        for (var i = processBufferIndex - 1; i >= 0; i--) {
+        for (i = processBufferIndex - 1; i >= 0; i--) {
             var pack = processBuffer[i];
             tile = pack[0];
             var depth = pack[1];
@@ -783,14 +778,14 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
 
                 if (node.hasChildren() == false || tile.texelSize <= texelSizeFit) {
 
-                    var priority = ((tile.id[0] + lodShift) * typeFactor) * tile.distance; 
+                    priority = ((tile.id[0] + lodShift) * typeFactor) * tile.distance; 
             
                     if (node.hasChildren() && !drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, (depth > 0), checkGpu)) {
 
                         depth++; //we dont have tile ready, so we try to draw more detailed tiles
             
-                        for (var j = 0; j < 4; j++) {
-                            var child = tile.children[j];
+                        for (j = 0; j < 4; j++) {
+                            child = tile.children[j];
                             if (child) {
            
                                 if (child.isMetanodeReady(this, child.id[0], true)) { //lod is used as priority
@@ -798,7 +793,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
                                     this.updateNodeHeightExtents(child, child.metanode);
                                     child.updateTexelSize();
                                     
-                                    var priority = ((child.id[0] + lodShift) * typeFactor) * child.distance; 
+                                    //var priority = ((child.id[0] + lodShift) * typeFactor) * child.distance; 
 
                                     /*if (child.id[0] == 18 && 
                                     child.id[1] == 20982 &&
@@ -832,8 +827,8 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
                     var readyCount = 0;
                     var childrenBuffer = [];
         
-                    for (var j = 0; j < 4; j++) {
-                        var child = tile.children[j];
+                    for (j = 0; j < 4; j++) {
+                        child = tile.children[j];
                         if (child) {
                             childrenCount++;
        
@@ -842,7 +837,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
                                 this.updateNodeHeightExtents(child, child.metanode);
                                 child.updateTexelSize();
                                 
-                                var priority = ((child.id[0] + lodShift) * typeFactor) * child.distance; 
+                                priority = ((child.id[0] + lodShift) * typeFactor) * child.distance; 
                                
                                 //are draw buffers ready? preventRender=true, preventLoad=false
                                 if (drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, true, checkGpu)) {
@@ -861,7 +856,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
                         do {
                             var sorted = true;
                             
-                            for (var j = 0, lj = childrenBuffer.length - 1; j < lj; j++) {
+                            for (j = 0, lj = childrenBuffer.length - 1; j < lj; j++) {
                                 if (childrenBuffer[j].distance > childrenBuffer[j+1].distance) {
                                     var t = childrenBuffer[j];
                                     childrenBuffer[j] = childrenBuffer[j+1];
@@ -873,7 +868,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
                         } while(!sorted);
     
                         //add childern to new process buffer 
-                        for (var j = 0, lj = childrenBuffer.length; j < lj; j++) {
+                        for (j = 0, lj = childrenBuffer.length; j < lj; j++) {
                             newProcessBuffer[newProcessBufferIndex] = [childrenBuffer[j], depth];
                             newProcessBufferIndex++;
                         }
@@ -882,14 +877,14 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
                         //can i use coarser lod
                         //if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
 
-                        var priority = ((tile.id[0] + lodShift) * typeFactor) * tile.distance; 
+                        priority = ((tile.id[0] + lodShift) * typeFactor) * tile.distance; 
 
                         if (drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, true, checkGpu)) {
                             drawBuffer[drawBufferIndex] = [tile, false];
                             drawBufferIndex++;
 
-                            for (var j = 0; j < 4; j++) {
-                                var child = tile.children[j];
+                            for (j = 0; j < 4; j++) {
+                                child = tile.children[j];
                                 if (child) {
                                     if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
                                         priority = ((child.id[0] + lodShift) * typeFactor) * child.distance; 
@@ -907,8 +902,8 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
                                 newProcessBufferIndex++;
                             }*/
 
-                            for (var j = 0; j < 4; j++) {
-                                var child = tile.children[j];
+                            for (j = 0; j < 4; j++) {
+                                child = tile.children[j];
                                 if (child) {
                                     if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
                                         this.updateNodeHeightExtents(child, child.metanode);
@@ -926,8 +921,8 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
                 }  else  {  //go deeper
                     
                     
-                    for (var j = 0; j < 4; j++) {
-                        var child = tile.children[j];
+                    for (j = 0; j < 4; j++) {
+                        child = tile.children[j];
                         if (child) {
 
                             /*if (child.id[0] == 18 && 
@@ -968,10 +963,6 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
         processBuffer = newProcessBuffer;
         newProcessBuffer = tmp;
         processBufferIndex = newProcessBufferIndex;
-
-        if (best != 0) {
-            best2 = best;
-        }
         
     } while(processBufferIndex > 0);
 
@@ -985,12 +976,12 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
         }
         
         var tiles = draw.tileBuffer[0];
-        for (var i = drawBufferIndex - 1; i >= 0; i--) {
+        for (i = drawBufferIndex - 1; i >= 0; i--) {
             tiles.push(drawBuffer[i]);
         }
     }
 
-    for (var i = drawBufferIndex - 1; i >= 0; i--) {
+    for (i = drawBufferIndex - 1; i >= 0; i--) {
         var item = drawBuffer[i];
         tile = drawBuffer[i];
 /*
@@ -1002,7 +993,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift) {
 */            
         //draw tile,  preventRender=false, preventLoad=false
         
-        var tile = item[0];
+        tile = item[0];
         if (drawGrid && item[1]) {
             tile.drawGrid(cameraPos); 
         } else if (!item[1]) {
@@ -1059,7 +1050,7 @@ MapSurfaceTree.prototype.traceHeightTile = function(tile, priority, nodeReadyOnl
 };
 
 
-MapSurfaceTree.prototype.traceHeightChild = function(tile, params, res) {
+MapSurfaceTree.prototype.traceHeightChild = function(tile, params) {
     var coords = params.coords;
     var extents = params.extents;
     var center = [(extents.ll[0] + extents.ur[0]) *0.5,
@@ -1104,7 +1095,7 @@ MapSurfaceTree.prototype.traceHeightChild = function(tile, params, res) {
 };
 
 
-MapSurfaceTree.prototype.traceHeightTileByMap = function(tile, params, priority) {
+MapSurfaceTree.prototype.traceHeightTileByMap = function(tile, params) {
     if (!tile || (tile.id[0] > params.desiredLod && params.heightMap)) {
         return false;
     }
@@ -1159,7 +1150,7 @@ MapSurfaceTree.prototype.traceHeightTileByMap = function(tile, params, priority)
 };
 
 
-MapSurfaceTree.prototype.traceHeightTileByNodeOnly = function(tile, params, priority) {
+MapSurfaceTree.prototype.traceHeightTileByNodeOnly = function(tile, params) {
     if (!tile || tile.id[0] > params.desiredLod) {
         return false;
     }
@@ -1181,7 +1172,6 @@ MapSurfaceTree.prototype.traceHeightTileByNodeOnly = function(tile, params, prio
 
 MapSurfaceTree.prototype.getNodeById = function(id) {
     var tile = this.surfaceTree;
-    var createNonexisted = true;
 
     if (tile == null) {
         return;

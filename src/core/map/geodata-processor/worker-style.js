@@ -261,7 +261,9 @@ var logError = function(errorType, layerId, key, value, index, subkey) {
     }
     
     if (str) {
-        throw str;
+         // eslint-disable-next-line 
+        console.log(str);
+        //throw str;
     }
 };
 

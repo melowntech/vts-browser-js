@@ -50,7 +50,7 @@ UIControlLink.prototype.onSwitch = function() {
 
 
 UIControlLink.prototype.update = function() {
-    var button = this.control.getElement('vts-link-button');
+    //var button = this.control.getElement('vts-link-button');
     
     var left = 10 + (this.ui.config.controlZoom ? 70 : 0) +
                 (this.ui.config.controlSpace ? 35 : 0);

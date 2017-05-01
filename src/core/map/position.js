@@ -1,9 +1,7 @@
 
 import {math as math_} from '../utils/math';
-import {utils as utils_} from '../utils/utils';
 
 //get rid of compiler mess
-var utils = utils_;
 var math = math_;
 
 var MapPosition = function(pos) {
@@ -112,7 +110,7 @@ MapPosition.prototype.getHeightMode = function() {
 };
 
 
-MapPosition.prototype.check = function(mode) {
+MapPosition.prototype.check = function() {
     //check pich
     if (this.getViewMode() == 'obj') {
         this.pos[6] = math.clamp(this.pos[6], -90.0, 90.0);
@@ -126,7 +124,7 @@ MapPosition.prototype.check = function(mode) {
 
 
 MapPosition.prototype.isSame = function(pos) {
-    var pos = pos.pos;
+    pos = pos.pos;
     return (this.pos[0] == pos[0] &&
              math.isEqual(this.pos[1], pos[1], 0.0000001) &&
              math.isEqual(this.pos[2], pos[2], 0.0000001) &&

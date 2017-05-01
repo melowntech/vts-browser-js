@@ -1,5 +1,5 @@
 
-import {mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
+import {mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
 import InspectorInput_ from './input';
 import InspectorStats_ from './stats';
@@ -9,7 +9,7 @@ import InspectorReplay_ from './replay';
 import InspectorStylesheets_ from './stylesheets';
 
 //get rid of compiler mess
-var mat3 = mat3_, mat4 = mat4_;
+var mat4 = mat4_;
 var math = math_;
 var InspectorInput = InspectorInput_;
 var InspectorStats = InspectorStats_;
@@ -81,7 +81,7 @@ Inspector.prototype.preventDefault = function(e) {
 };
 
 
-Inspector.prototype.onMapUpdate = function(string) {
+Inspector.prototype.onMapUpdate = function() {
     var map = this.core.getMapInterface();
     if (!map) {
         return;
@@ -97,18 +97,17 @@ Inspector.prototype.onMapUpdate = function(string) {
         map.convertCoordsFromPhysToCanvas(this.measurePoints[0]);
     }*/
 
+    var renderer = this.core.getRenderer(), i, li, j, lj, lines, slines, p;
+
     if (this.replay.drawGlobe) {
-        var renderer = this.core.getRenderer();
-        var p = map.convertCoordsFromPhysToCameraSpace([0,0,0]);
+        p = map.convertCoordsFromPhysToCameraSpace([0,0,0]);
         renderer.draw.drawTBall(p, 12742000 * 0.5, renderer.progStardome, this.replay.globeTexture, 12742000 * 0.5, true);
     }
 
     if (this.replay.drawCamera) {
-        var renderer = this.core.getRendererInterface();
-
-        var lines = this.replay.cameraLines;
-        var slines = []; 
-        for (var i = 0, li = lines.length; i < li; i++) {
+        lines = this.replay.cameraLines;
+        slines = []; 
+        for (i = 0, li = lines.length; i < li; i++) {
             slines.push(map.convertCoordsFromPhysToCanvas(lines[i]));
         }
         
@@ -120,10 +119,10 @@ Inspector.prototype.onMapUpdate = function(string) {
             'blend' : false
         });            
 
-        var lines = this.replay.cameraLines3;
-        for (var i = 0, li = lines.length; i < li; i++) {
-            var slines = []; 
-            for (var j = 0, lj = lines[i].length; j < lj; j++) {
+        lines = this.replay.cameraLines3;
+        for (i = 0, li = lines.length; i < li; i++) {
+            slines = []; 
+            for (j = 0, lj = lines[i].length; j < lj; j++) {
                 slines.push(map.convertCoordsFromPhysToCanvas(lines[i][j]));
             }
 
@@ -136,10 +135,10 @@ Inspector.prototype.onMapUpdate = function(string) {
             });   
         }
 
-        var lines = this.replay.cameraLines2;
-        for (var i = 0, li = lines.length; i < li; i++) {
-            var slines = []; 
-            for (var j = 0, lj = lines[i].length; j < lj; j++) {
+        lines = this.replay.cameraLines2;
+        for (i = 0, li = lines.length; i < li; i++) {
+            slines = []; 
+            for (j = 0, lj = lines[i].length; j < lj; j++) {
                 slines.push(map.convertCoordsFromPhysToCanvas(lines[i][j]));
             }
 
@@ -156,7 +155,7 @@ Inspector.prototype.onMapUpdate = function(string) {
         var cameInfo = map.getCameraInfo();
         var p1 = map.convertCoordsFromPhysToCameraSpace(this.replay.cameraLines[0]);
 
-        var map2 = this.core.getMap();
+        //var map2 = this.core.getMap();
     
         //var m2 = map2.camera.getRotationviewMatrix();
         var mv = mat4.create(this.replay.cameraMatrix);
@@ -210,7 +209,7 @@ Inspector.prototype.onMapUpdate = function(string) {
     }
     
     if (this.drawRadar && this.circleTexture) {
-        var renderer = this.core.getRendererInterface();
+        //var renderer = this.core.getRendererInterface();
         var pos = map.getPosition();
         var count = 16;
         var step = pos.getViewExtent() / (count * 4);
@@ -231,8 +230,8 @@ Inspector.prototype.onMapUpdate = function(string) {
 */
 
 
-        for (var j = 0; j < count; j++) {
-            for (var i = 0; i < count; i++) {
+        for (j = 0; j < count; j++) {
+            for (i = 0; i < count; i++) {
                 var dx =  i*step - count*0.5*step;
                 var dy =  j*step - count*0.5*step;
                 var a = Math.atan2(dy, dx);
@@ -250,8 +249,8 @@ Inspector.prototype.onMapUpdate = function(string) {
 
         var lbuffer = new Array(count);
 
-        for (var j = 0; j < count; j++) {
-            for (var i = 0; i < count; i++) {
+        for (j = 0; j < count; j++) {
+            for (i = 0; i < count; i++) {
                 lbuffer[i] =  cbuffer[j * count + i];
             }
             
@@ -265,8 +264,8 @@ Inspector.prototype.onMapUpdate = function(string) {
         }
 
 
-        for (var i = 0; i < count; i++) {
-            for (var j = 0; j < count; j++) {
+        for (i = 0; i < count; i++) {
+            for (j = 0; j < count; j++) {
                 lbuffer[j] =  cbuffer[j * count + i];
             }
             
@@ -279,8 +278,8 @@ Inspector.prototype.onMapUpdate = function(string) {
             });            
         }
 
-        for (var i = 0, li = cbuffer.length; i < li; i++) {
-            var p = cbuffer[i];
+        for (i = 0, li = cbuffer.length; i < li; i++) {
+            p = cbuffer[i];
             renderer.drawImage({
                 'rect' : [p[0]-10, p[1]-10, 20, 20],
                 'texture' : this.circleTexture,

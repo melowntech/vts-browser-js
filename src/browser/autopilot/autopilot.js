@@ -70,7 +70,6 @@ Autopilot.prototype.flyTo = function(position, options) {
 
 
 Autopilot.prototype.flyTrajectory = function(trajectory, sampleDuration) {
-    var options = {};
     this.setTrajectory(trajectory, sampleDuration || 10, {});
 };
 
@@ -115,12 +114,12 @@ Autopilot.prototype.tick = function() {
         return;
     }
 
-    var time = performance.now();
+    var time = performance.now(), pos;
     var timeFactor =  (time - this.lastTime) / 1000; 
     this.lastTime = time;
 
     if (this.autoRotate != 0) {
-        var pos = map.getPosition();
+        pos = map.getPosition();
         var o = pos.getOrientation();
         o[0] = (o[0] + this.autoRotate*timeFactor) % 360;
         pos.setOrientation(o);
@@ -128,7 +127,7 @@ Autopilot.prototype.tick = function() {
     }
     
     if (this.autoPan != 0) {
-        var pos = map.getPosition();
+        pos = map.getPosition();
         pos = map.movePositionCoordsTo(pos, this.autoPanAzimuth, map.getPositionViewExtent(pos)*(this.autoPan*0.01)*timeFactor, 0);
         map.setPosition(pos);
     }

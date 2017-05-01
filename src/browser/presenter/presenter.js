@@ -183,8 +183,8 @@ Presenter.prototype.readTextInput = function(id) {
                     path = path + loc[i] + '/';
                 }
                 path = path + this.htmlDataStorage.split(split)[1];
-                console.log('Final path:');
-                console.log(path);
+                //console.log('Final path:');
+                //console.log(path);
                 this.htmlDataStorage = path;
                 return 'url';
             } else if (hash.test(this.htmlDataStorage)) {
@@ -278,7 +278,7 @@ Presenter.prototype.linksDecode = function(obj) {
 
 // parseFloat here
 Presenter.prototype.getNumbers = function(obj) {
-    var obj = obj;
+    //var obj = obj;
     for (var i = 0; i < obj.length; i++){
         if (typeof obj == 'string' && parseFloat(obj)) {
             obj = parseFloat(obj);
@@ -333,9 +333,10 @@ Presenter.prototype.useToolbox = function() {
     }
     
     var rightPanel = this.container.getElementsByClassName('vts-presenter panelContainer')[0];
-    var toolboxContainer = this.container.getElementsByClassName('vts-presenter toolboxContainer')[0];
+    //var toolboxContainer = this.container.getElementsByClassName('vts-presenter toolboxContainer')[0];
     var subtitles = this.container.getElementsByClassName('vts-presenter subtitlesContainer')[0];
     var swipeControl = this.container.getElementsByClassName('vts-presenter swipeControl');
+    var i;
     this.currentToolbox = type;
     
     subtitles.setAttribute('style', 'opacity: 0;');
@@ -347,7 +348,7 @@ Presenter.prototype.useToolbox = function() {
         }, 20);
         swipeControl[0].style.display = 'block';
         swipeControl[1].style.display = 'block';
-        for (var i = 0; i < this.sectionTags.length; i++) { // Set maxHeight back as there is no dynamic rescaling of rightPanel
+        for (i = 0; i < this.sectionTags.length; i++) { // Set maxHeight back as there is no dynamic rescaling of rightPanel
             this.sectionTags[i].style.height = this.maxHeight + 'px';
         }
         this.nextArticle(0);
@@ -360,7 +361,7 @@ Presenter.prototype.useToolbox = function() {
         rightPanel.style.opacity = 0;
         swipeControl[0].style.display = 'none';
         swipeControl[1].style.display = 'none';
-        for (var i = 0; i < this.sectionTags.length; i++) { // Set height to auto so we can dynamicaly adjust subtitles height
+        for (i = 0; i < this.sectionTags.length; i++) { // Set height to auto so we can dynamicaly adjust subtitles height
             this.sectionTags[i].style.height = 'auto';
         }
         this.handleSubtitlesPosition(0, true);
@@ -427,7 +428,7 @@ Presenter.prototype.getElementsTrueHeight = function(elems) {
         }
     }
     
-    for (var i = 0; i < elems.length; i++) {
+    for (i = 0; i < elems.length; i++) {
         elems[i].style.height = this.maxHeight + 'px';
     }
 };

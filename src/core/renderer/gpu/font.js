@@ -49,7 +49,7 @@ GpuFont.prototype.generate = function(font, size) {
 
     //utDrawFilledRect(0, 0, textureLX, textureLY, [0,0,0,255]);
 
-    var fontSize = 10;
+    //var fontSize = 10;
     ctx.beginPath();
     ctx.font = size + 'pt ' + font;
     ctx.textAlign = 'left';
@@ -68,29 +68,26 @@ GpuFont.prototype.generate = function(font, size) {
     var x = space;
     var y = space;
 
-
     var cly = Math.floor(ctx.measureText('e').width * 2.5);
-    var clxe = Math.floor(ctx.measureText('e').width);
-    //var clxe = Math.floor(ctx.measureText("ee").width);
 
     this.chars = [];
     this.space = cly;
     this.size = size;
     this.font = font;
 
-    var codes = [];
+    var codes = [], i, li;
 
-    for (var i = 33; i < 191; i++) {
+    for (i = 33; i < 191; i++) {
         codes.push(i);
     }
 
-    for (var i = 192; i < 688; i++) {
+    for (i = 192; i < 688; i++) {
         codes.push(i);
     }
 
     codes = codes.concat(0x20, 0x2026, 0x2018, 0x2019, 0x201a, 0x201b, 0x201c, 0x201d, 0x201e, 0x2032, 0x2033, 0x203c);
 
-    for (var i = 0, li = codes.length; i < li; i++) {
+    for (i = 0, li = codes.length; i < li; i++) {
         var c = String.fromCharCode(codes[i]);
         var clx2 = Math.round(ctx.measureText(c).width);
         var clx = clx2 + ctx.lineWidth;

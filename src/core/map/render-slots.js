@@ -81,7 +81,7 @@ MapRenderSlots.prototype.getRenderSlotEnabled = function(id) {
 };
 
 
-MapRenderSlots.prototype.processRenderSlots = function(id, callback) {
+MapRenderSlots.prototype.processRenderSlots = function() {
     if (this.draw.drawChannel != 1) {
         this.renderer.gpu.setViewport(); //just in case
     }

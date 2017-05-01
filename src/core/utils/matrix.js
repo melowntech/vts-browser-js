@@ -193,7 +193,7 @@ vec3.normalize3 = function (a, i, b, j) {
 };
 
 
-vec3.normalize4 = function (a, b, dd) {
+vec3.normalize4 = function (a, b) {
     b || (b = a);
     var c = a[0],
         d = a[1],
@@ -1061,7 +1061,8 @@ mat4.lookAt = function (a, b, c, d) {
     k = h * b - i * j;
     i = i * c - f * b;
     f = f * j - h * c;
-    if (m = Math.sqrt(k * k + i * i + f * f)) {
+    m = Math.sqrt(k * k + i * i + f * f);
+    if (m) {
         m = 1 / m;
         k *= m;
         i *= m;
@@ -1070,7 +1071,8 @@ mat4.lookAt = function (a, b, c, d) {
     h = j * f - b * i;
     l = b * k - c * f;
     o = c * i - j * k;
-    if (m = Math.sqrt(h * h + l * l + o * o)) {
+    m = Math.sqrt(h * h + l * l + o * o);
+    if (m) {
         m = 1 / m;
         h *= m;
         l *= m;

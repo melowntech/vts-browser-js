@@ -1,11 +1,11 @@
 
-import GpuTexture from '../renderer/gpu/texture';
+import GpuTexture_ from '../renderer/gpu/texture';
 import {math as math_} from '../utils/math';
 import {vec3 as vec3_, mat4 as mat4_} from '../utils/matrix';
 
 //get rid of compiler mess
 var math = math_;
-var GpuTexture = GpuTexture;
+var GpuTexture = GpuTexture_;
 var vec3 = vec3_, mat4 = mat4_;
 
 
@@ -18,101 +18,101 @@ var InspectorReplay = function(inspector) {
 InspectorReplay.prototype.init = function() {
     var inspector = this.inspector;
     inspector.addStyle(
-        "#vts-replay-panel {"
-            + "font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;"
-            + "display: none;"
-            + "padding:15px;"
-            + "width: 618px;"
-            + "font-size: 14px;"
-            + "position: absolute;"
-            + "right: 10px;"
-            + "top: 10px;"
-            + "cursor: default;"
-            + "background-color: rgba(255,255,255,0.95);"
-            + "border-radius: 5px;"
-            + "border: solid 1px #ccc;"
-            + "text-align: left;"
-            + "z-index: 7;"
-            + "padding: 10px;"
-        + "}"
+        '#vts-replay-panel {'
+            + 'font-family: Arial, \'Helvetica Neue\', Helvetica, sans-serif;'
+            + 'display: none;'
+            + 'padding:15px;'
+            + 'width: 618px;'
+            + 'font-size: 14px;'
+            + 'position: absolute;'
+            + 'right: 10px;'
+            + 'top: 10px;'
+            + 'cursor: default;'
+            + 'background-color: rgba(255,255,255,0.95);'
+            + 'border-radius: 5px;'
+            + 'border: solid 1px #ccc;'
+            + 'text-align: left;'
+            + 'z-index: 7;'
+            + 'padding: 10px;'
+        + '}'
 
-        + "#vts-replay-panel-left {"
-            + "width: 253px;"
-            + "height: 100%;"
-            + "float: left;"
-        + "}"
+        + '#vts-replay-panel-left {'
+            + 'width: 253px;'
+            + 'height: 100%;'
+            + 'float: left;'
+        + '}'
 
-        + "#vts-replay-panel-right {"
-            + "width: 340px;"
-            + "height: 100%;"
-            + "float: right;"
-        + "}"
+        + '#vts-replay-panel-right {'
+            + 'width: 340px;'
+            + 'height: 100%;'
+            + 'float: right;'
+        + '}'
 
-        + "#vts-replay-items {"
-            + "width: 240px;"
-            + "overflow-x: hidden;"
-            + "border: 1px solid #ddd;"
-            + "padding-right: 5px;"
-        + "}"
+        + '#vts-replay-items {'
+            + 'width: 240px;'
+            + 'overflow-x: hidden;'
+            + 'border: 1px solid #ddd;'
+            + 'padding-right: 5px;'
+        + '}'
 
-        + ".vts-replay-item {"
-            + "width: 100%;"
-            + "overflow: hidden;"
-            + "text-overflow: ellipsis;"
-            + "white-space: nowrap;"    
-        + "}" 
+        + '.vts-replay-item {'
+            + 'width: 100%;'
+            + 'overflow: hidden;'
+            + 'text-overflow: ellipsis;'
+            + 'white-space: nowrap;'    
+        + '}' 
 
-        + "#vts-replay-lod-slider {"
-            + "width: 240px;"
-        + "}"
+        + '#vts-replay-lod-slider {'
+            + 'width: 240px;'
+        + '}'
 
-        + "#vts-replay-lod-text {"
-            + "width: 60px;"
-            + "margin-left: 10px;"
-            + "margin-right: 10px;"
-        + "}"
+        + '#vts-replay-lod-text {'
+            + 'width: 60px;'
+            + 'margin-left: 10px;'
+            + 'margin-right: 10px;'
+        + '}'
 
-        + "#vts-replay-lod-single {"
-            + "margin-left: 10px;"
-        + "}"
+        + '#vts-replay-lod-single {'
+            + 'margin-left: 10px;'
+        + '}'
     
-        + "#vts-replay-time-slider {"
-            + "width: 330px;"
-        + "}"
+        + '#vts-replay-time-slider {'
+            + 'width: 330px;'
+        + '}'
 
-        + "#vts-replay-time-text {"
-            + "width: 60px;"
-            + "margin-left: 10px;"
-            + "margin-right: 10px;"
-        + "}"
+        + '#vts-replay-time-text {'
+            + 'width: 60px;'
+            + 'margin-left: 10px;'
+            + 'margin-right: 10px;'
+        + '}'
 
-        + "#vts-replay-time-single {"
-            + "margin-left: 10px;"
-        + "}"
+        + '#vts-replay-time-single {'
+            + 'margin-left: 10px;'
+        + '}'
 
-        + "#vts-replay-panel-gtime canvas{"
-            + "border: 1px solid #555;"
-        + "}"
+        + '#vts-replay-panel-gtime canvas{'
+            + 'border: 1px solid #555;'
+        + '}'
 
-        + "#vts-replay-panel-gtime span{"
-            + "font-size: 10px;"
-        + "}"
+        + '#vts-replay-panel-gtime span{'
+            + 'font-size: 10px;'
+        + '}'
 
-        + "#vts-replay-info {"
-            + "width: 240px;"
-            + "height: 140px;"
-            + "overflow-x: hidden;"
-            + "border: 1px solid #ddd;"
-            + "padding-right: 5px;"
-            + "margin-top: 10px;"            
-            + "font-size: 12px;"
-            + "word-wrap: break-word;"   
-        + "}"
+        + '#vts-replay-info {'
+            + 'width: 240px;'
+            + 'height: 140px;'
+            + 'overflow-x: hidden;'
+            + 'border: 1px solid #ddd;'
+            + 'padding-right: 5px;'
+            + 'margin-top: 10px;'            
+            + 'font-size: 12px;'
+            + 'word-wrap: break-word;'   
+        + '}'
        
     );
 
-    this.element = document.createElement("div");
-    this.element.id = "vts-replay-panel";
+    this.element = document.createElement('div');
+    this.element.id = 'vts-replay-panel';
     this.element.innerHTML =
             '<div id="vts-replay-panel-left">'
             + '<div id="vts-replay-items"></div>'
@@ -158,51 +158,51 @@ InspectorReplay.prototype.init = function() {
 
     this.core.element.appendChild(this.element);
 
-    this.items = document.getElementById("vts-replay-items");
+    this.items = document.getElementById('vts-replay-items');
 
-    this.lodSlider = document.getElementById("vts-replay-lod-slider");
-    this.lodSlider.onchange = this.onSliderChange.bind(this, "lod");
-    this.lodSlider.oninput = this.onSliderChange.bind(this, "lod");
+    this.lodSlider = document.getElementById('vts-replay-lod-slider');
+    this.lodSlider.onchange = this.onSliderChange.bind(this, 'lod');
+    this.lodSlider.oninput = this.onSliderChange.bind(this, 'lod');
 
-    this.lodText = document.getElementById("vts-replay-lod-text");
-    this.lodText.onchange = this.onTextChange.bind(this, "lod");
+    this.lodText = document.getElementById('vts-replay-lod-text');
+    this.lodText.onchange = this.onTextChange.bind(this, 'lod');
     
-    document.getElementById("vts-replay-lod-up").onclick = this.onSliderChange.bind(this, "lod", "down");
-    document.getElementById("vts-replay-lod-down").onclick = this.onSliderChange.bind(this, "lod", "up");
-    document.getElementById("vts-replay-lod-single").onclick = this.onSliderChange.bind(this, "lod", "single");
+    document.getElementById('vts-replay-lod-up').onclick = this.onSliderChange.bind(this, 'lod', 'down');
+    document.getElementById('vts-replay-lod-down').onclick = this.onSliderChange.bind(this, 'lod', 'up');
+    document.getElementById('vts-replay-lod-single').onclick = this.onSliderChange.bind(this, 'lod', 'single');
     
-    this.timeSlider = document.getElementById("vts-replay-time-slider");
-    this.timeSlider.onchange = this.onSliderChange.bind(this, "time");
-    this.timeSlider.oninput = this.onSliderChange.bind(this, "time");
+    this.timeSlider = document.getElementById('vts-replay-time-slider');
+    this.timeSlider.onchange = this.onSliderChange.bind(this, 'time');
+    this.timeSlider.oninput = this.onSliderChange.bind(this, 'time');
 
-    this.timeText = document.getElementById("vts-replay-time-text");
-    this.timeText.onchange = this.onTextChange.bind(this, "time");
+    this.timeText = document.getElementById('vts-replay-time-text');
+    this.timeText.onchange = this.onTextChange.bind(this, 'time');
 
-    this.timeInfo = document.getElementById("vts-replay-info");
+    this.timeInfo = document.getElementById('vts-replay-info');
 
-    document.getElementById("vts-replay-time-up").onclick = this.onSliderChange.bind(this, "time", "down");
-    document.getElementById("vts-replay-time-down").onclick = this.onSliderChange.bind(this, "time", "up");
-    document.getElementById("vts-replay-time-single").onclick = this.onSliderChange.bind(this, "time", "single");
+    document.getElementById('vts-replay-time-up').onclick = this.onSliderChange.bind(this, 'time', 'down');
+    document.getElementById('vts-replay-time-down').onclick = this.onSliderChange.bind(this, 'time', 'up');
+    document.getElementById('vts-replay-time-single').onclick = this.onSliderChange.bind(this, 'time', 'single');
 
-    this.element.addEventListener("mouseup", inspector.doNothing.bind(this), true);
-    this.element.addEventListener("mousedown", inspector.doNothing.bind(this), true);
-    this.element.addEventListener("mousewheel", inspector.doNothing.bind(this), false);
-    this.element.addEventListener("dblclick", inspector.doNothing.bind(this), false);
+    this.element.addEventListener('mouseup', inspector.doNothing.bind(this), true);
+    this.element.addEventListener('mousedown', inspector.doNothing.bind(this), true);
+    this.element.addEventListener('mousewheel', inspector.doNothing.bind(this), false);
+    this.element.addEventListener('dblclick', inspector.doNothing.bind(this), false);
 
-    this.infoMeshes = document.getElementById("vts-replay-info-meshes");
-    this.ctxMeshes = document.getElementById("vts-replay-canvas-meshes").getContext("2d");  
-    this.infoTextures = document.getElementById("vts-replay-info-textures");
-    this.ctxTextures = document.getElementById("vts-replay-canvas-textures").getContext("2d");  
-    this.infoTextures2 = document.getElementById("vts-replay-info-textures2");
-    this.ctxTextures2 = document.getElementById("vts-replay-canvas-textures2").getContext("2d");  
-    this.infoGeodata = document.getElementById("vts-replay-info-geodata");
-    this.ctxGeodata = document.getElementById("vts-replay-canvas-geodata").getContext("2d");  
-    this.infoMetatiles = document.getElementById("vts-replay-info-metatiles");
-    this.ctxMetatiles = document.getElementById("vts-replay-canvas-metatiles").getContext("2d");  
-    this.infoIntervals = document.getElementById("vts-replay-info-intervals");
-    this.ctxIntervals = document.getElementById("vts-replay-canvas-intervals").getContext("2d");  
-    this.infoThreads = document.getElementById("vts-replay-info-threads");
-    this.ctxThreads = document.getElementById("vts-replay-canvas-threads").getContext("2d");  
+    this.infoMeshes = document.getElementById('vts-replay-info-meshes');
+    this.ctxMeshes = document.getElementById('vts-replay-canvas-meshes').getContext('2d');  
+    this.infoTextures = document.getElementById('vts-replay-info-textures');
+    this.ctxTextures = document.getElementById('vts-replay-canvas-textures').getContext('2d');  
+    this.infoTextures2 = document.getElementById('vts-replay-info-textures2');
+    this.ctxTextures2 = document.getElementById('vts-replay-canvas-textures2').getContext('2d');  
+    this.infoGeodata = document.getElementById('vts-replay-info-geodata');
+    this.ctxGeodata = document.getElementById('vts-replay-canvas-geodata').getContext('2d');  
+    this.infoMetatiles = document.getElementById('vts-replay-info-metatiles');
+    this.ctxMetatiles = document.getElementById('vts-replay-canvas-metatiles').getContext('2d');  
+    this.infoIntervals = document.getElementById('vts-replay-info-intervals');
+    this.ctxIntervals = document.getElementById('vts-replay-canvas-intervals').getContext('2d');  
+    this.infoThreads = document.getElementById('vts-replay-info-threads');
+    this.ctxThreads = document.getElementById('vts-replay-canvas-threads').getContext('2d');  
 
     this.cameraLines = [];
     this.cameraLines2 = [];
@@ -215,7 +215,7 @@ InspectorReplay.prototype.init = function() {
 
 InspectorReplay.prototype.showPanel = function() {
     this.buildReplayCombo();
-    this.element.style.display = "block";
+    this.element.style.display = 'block';
     this.panelVisible = true;
 
     var map = this.core.getMap();
@@ -230,7 +230,7 @@ InspectorReplay.prototype.showPanel = function() {
 
 
 InspectorReplay.prototype.hidePanel = function() {
-    this.element.style.display = "none";
+    this.element.style.display = 'none';
     this.panelVisible = false;
 };
 
@@ -245,35 +245,35 @@ InspectorReplay.prototype.switchPanel = function() {
 
 
 InspectorReplay.prototype.onSliderChange = function(type, button) {
-    if (type == "lod") {
+    if (type == 'lod') {
         switch (button) {
-            case "up":
-                this.lodSlider.stepUp();
-                this.lodText.value = this.lodSlider.value;    
-                break;
+        case 'up':
+            this.lodSlider.stepUp();
+            this.lodText.value = this.lodSlider.value;    
+            break;
             
-            case "down":
-                this.lodSlider.stepDown();
-                this.lodText.value = this.lodSlider.value;    
-                break;
+        case 'down':
+            this.lodSlider.stepDown();
+            this.lodText.value = this.lodSlider.value;    
+            break;
 
-            default:
-                this.lodText.value = this.lodSlider.value;    
+        default:
+            this.lodText.value = this.lodSlider.value;    
         } 
     } else {
         switch (button) {
-            case "up":
-                this.timeSlider.stepUp();
-                this.timeText.value = this.timeSlider.value;    
-                break;
+        case 'up':
+            this.timeSlider.stepUp();
+            this.timeText.value = this.timeSlider.value;    
+            break;
             
-            case "down":
-                this.timeSlider.stepDown();
-                this.timeText.value = this.timeSlider.value;    
-                break;
+        case 'down':
+            this.timeSlider.stepDown();
+            this.timeText.value = this.timeSlider.value;    
+            break;
 
-            default:
-                this.timeText.value = this.timeSlider.value;    
+        default:
+            this.timeText.value = this.timeSlider.value;    
         } 
     }
 
@@ -284,12 +284,12 @@ InspectorReplay.prototype.onSliderChange = function(type, button) {
 
     var replay = map.draw.replay;
 
-    if (type == "lod") {
+    if (type == 'lod') {
         replay.lod = parseFloat(this.lodText.value);
-        replay.singleLod = document.getElementById("vts-replay-lod-single").checked;
+        replay.singleLod = document.getElementById('vts-replay-lod-single').checked;
     } else {
         replay.loadedIndex = parseFloat(this.timeText.value);
-        replay.singleLodedIndex = document.getElementById("vts-replay-time-single").checked;
+        replay.singleLodedIndex = document.getElementById('vts-replay-time-single').checked;
         this.updateFileInfo(replay.loadedIndex);
         this.updateLoadGraphs();
     }
@@ -299,7 +299,7 @@ InspectorReplay.prototype.onSliderChange = function(type, button) {
 
 
 InspectorReplay.prototype.onTextChange = function(type) {
-    if (type == "lod") {
+    if (type == 'lod') {
         this.lodSlider.value = this.lodText.value;    
     } else {
         this.timeSlider.value = this.timeText.value;    
@@ -312,7 +312,7 @@ InspectorReplay.prototype.onTextChange = function(type) {
 
     var replay = map.draw.replay;
 
-    if (type == "lod") {
+    if (type == 'lod') {
         replay.lod = parseFloat(this.lodText.value);
     } else {
         replay.loadedIndex = parseFloat(this.timeText.value);
@@ -325,11 +325,7 @@ InspectorReplay.prototype.onTextChange = function(type) {
 
 
 InspectorReplay.prototype.generateCameraLines = function(camera) {
-    var map = this.core.getMapInterface();
     var renderer = this.core.getRendererInterface();
-    
-    var pos = map.getPosition();
-
     var p1 = camera.position;
     var p2 = camera.center;
 
@@ -396,12 +392,13 @@ InspectorReplay.prototype.generateCameraLines = function(camera) {
     var l = camera.cameraDistance / segments;
     var l2 = 0.5 * l * Math.tan(dfov);
     var l3 = l2 * map2.camera.getAspect();
+    var v1, v2, v3, v4;
 
     for (var i = 0; i < segments; i++) {
-        var v1 = [-l3, -l2, -l];
-        var v2 = [l3, -l2, -l];
-        var v3 = [l3, l2, -l];
-        var v4 = [-l3, l2, -l];
+        v1 = [-l3, -l2, -l];
+        v2 = [l3, -l2, -l];
+        v3 = [l3, l2, -l];
+        v4 = [-l3, l2, -l];
 
         vec3.scale(v1, (i+1));
         vec3.scale(v2, (i+1));
@@ -432,11 +429,11 @@ InspectorReplay.prototype.generateCameraLines = function(camera) {
     l2 = 0.5 * l * Math.tan(dfov);
     l3 = l2 * map2.camera.getAspect();
     
-    for (var i = 0; i < segments; i++) {
-        var v1 = [-l3, -l2, -l];
-        var v2 = [l3, -l2, -l];
-        var v3 = [l3, l2, -l];
-        var v4 = [-l3, l2, -l];
+    for (i = 0; i < segments; i++) {
+        v1 = [-l3, -l2, -l];
+        v2 = [l3, -l2, -l];
+        v3 = [l3, l2, -l];
+        v4 = [-l3, l2, -l];
 
         vec3.scale(v1, (i+1));
         vec3.scale(v2, (i+1));
@@ -459,10 +456,10 @@ InspectorReplay.prototype.generateCameraLines = function(camera) {
         this.cameraLines3[3].push(v4);
     }
 
-    var v1 = [-l3, -l2, -l];
-    var v2 = [l3, -l2, -l];
-    var v3 = [l3, l2, -l];
-    var v4 = [-l3, l2, -l];
+    v1 = [-l3, -l2, -l];
+    v2 = [l3, -l2, -l];
+    v3 = [l3, l2, -l];
+    v4 = [-l3, l2, -l];
 
     vec3.scale(v1, segments);
     vec3.scale(v2, segments);
@@ -472,40 +469,40 @@ InspectorReplay.prototype.generateCameraLines = function(camera) {
     p1 = [0,0,0];
     
     var vertices = [ p1[0], p1[1], p1[2],
-                      v1[0], v1[1], v1[2],
-                      v2[0], v2[1], v2[2],
+        v1[0], v1[1], v1[2],
+        v2[0], v2[1], v2[2],
 
-                      p1[0], p1[1], p1[2],
-                      v2[0], v2[1], v2[2],
-                      v3[0], v3[1], v3[2],
+        p1[0], p1[1], p1[2],
+        v2[0], v2[1], v2[2],
+        v3[0], v3[1], v3[2],
 
-                      p1[0], p1[1], p1[2],
-                      v3[0], v3[1], v3[2],
-                      v4[0], v4[1], v4[2],
+        p1[0], p1[1], p1[2],
+        v3[0], v3[1], v3[2],
+        v4[0], v4[1], v4[2],
 
-                      p1[0], p1[1], p1[2],
-                      v4[0], v4[1], v4[2],
-                      v1[0], v1[1], v1[2]
-                    ];
+        p1[0], p1[1], p1[2],
+        v4[0], v4[1], v4[2],
+        v1[0], v1[1], v1[2]
+    ];
                       
     var uvs = [ 0,0, 0,0, 0,0,
-                 0,0, 0,0, 0,0,
-                 0,0, 0,0, 0,0,
-                 0,0, 0,0, 0,0 ];
+        0,0, 0,0, 0,0,
+        0,0, 0,0, 0,0,
+        0,0, 0,0, 0,0 ];
 
     var normals = [ 0,0,1, 0,0,1, 0,0,1,
-                     0,0,1, 0,0,1, 0,0,1,
-                     0,0,1, 0,0,1, 0,0,1,
-                     0,0,1, 0,0,1, 0,0,1 ];
+        0,0,1, 0,0,1, 0,0,1,
+        0,0,1, 0,0,1, 0,0,1,
+        0,0,1, 0,0,1, 0,0,1 ];
 
     this.frustumState = renderer.createState({
-        "blend" : true,
-        "zwrite" : false,
-        "ztest" : true,
-        "culling" : false
+        'blend' : true,
+        'zwrite' : false,
+        'ztest' : true,
+        'culling' : false
     });
     
-    this.frustumMesh = renderer.createMesh({ "vertices": vertices, "uvs": uvs, "normals": normals });
+    this.frustumMesh = renderer.createMesh({ 'vertices': vertices, 'uvs': uvs, 'normals': normals });
     this.cameraGenarated = true;
 };
 
@@ -519,51 +516,51 @@ InspectorReplay.prototype.itemButton = function(item, button) {
     var replay = map.draw.replay;    
     
     switch (item) {
-        case "DrawnTiles":
-            replay.storeTiles = true;
-            break;
+    case 'DrawnTiles':
+        replay.storeTiles = true;
+        break;
 
-        case "DrawnTilesFreeLayers":
-            replay.storeFreeTiles = true;
-            break;
+    case 'DrawnTilesFreeLayers':
+        replay.storeFreeTiles = true;
+        break;
 
-        case "TracedNodes":
-            replay.storeNodes = true;
-            break;
+    case 'TracedNodes':
+        replay.storeNodes = true;
+        break;
 
-        case "TracedNodesFreeLayers":
-            replay.storeFreeNodes = true;
-            break;
+    case 'TracedNodesFreeLayers':
+        replay.storeFreeNodes = true;
+        break;
 
-        case "LoadSequence":
-            replay.storeLoaded = (button == "S");
+    case 'LoadSequence':
+        replay.storeLoaded = (button == 'S');
 
-            if (button == "S") {
-                replay.loadedIndex = 0;
-                replay.loaded = [];
-            } else {
-                this.updateFileInfo(replay.loadedIndex);
-                this.updateLoadGraphs();
-            }
-            break;
+        if (button == 'S') {
+            replay.loadedIndex = 0;
+            replay.loaded = [];
+        } else {
+            this.updateFileInfo(replay.loadedIndex);
+            this.updateLoadGraphs();
+        }
+        break;
 
-        case "Camera":
+    case 'Camera':
 
-            var camera = replay.camera = {
-                distance : map.camera.distance,
-                position : map.camera.position.slice(),
-                vector : map.camera.vector.slice(),
-                center : map.camera.center.slice(),
-                height : map.camera.height
-            };
+        var camera = replay.camera = {
+            distance : map.camera.distance,
+            position : map.camera.position.slice(),
+            vector : map.camera.vector.slice(),
+            center : map.camera.center.slice(),
+            height : map.camera.height
+        };
             
-            this.generateCameraLines(camera);
+        this.generateCameraLines(camera);
             //this.drawCamera = true; 
-            break;
+        break;
             
-        case "Globe":
+    case 'Globe':
                         
-            break;
+        break;
     }
 
     map.markDirty();
@@ -582,53 +579,53 @@ InspectorReplay.prototype.switchItem = function(item, htmlId) {
     var replay = map.draw.replay;
 
     switch (item) {
-        case "DrawnTiles":
-            replay.drawTiles = element.checked;
-            break;
+    case 'DrawnTiles':
+        replay.drawTiles = element.checked;
+        break;
 
-        case "DrawnTilesFreeLayers":
-            replay.drawFreeTiles = element.checked;
-            break;
+    case 'DrawnTilesFreeLayers':
+        replay.drawFreeTiles = element.checked;
+        break;
 
-        case "TracedNodes":
-            replay.drawNodes = element.checked;
-            break;
+    case 'TracedNodes':
+        replay.drawNodes = element.checked;
+        break;
 
-        case "TracedNodesFreeLayers":
-            replay.drawFreeNodes = element.checked;
-            break;
+    case 'TracedNodesFreeLayers':
+        replay.drawFreeNodes = element.checked;
+        break;
 
-        case "LoadSequence":
-            replay.drawLoaded = element.checked;
-            break;
+    case 'LoadSequence':
+        replay.drawLoaded = element.checked;
+        break;
 
-        case "Camera":
+    case 'Camera':
         
-            if (!this.cameraGenarated) {
-                this.itemButton("Camera");
-            }
+        if (!this.cameraGenarated) {
+            this.itemButton('Camera');
+        }
         
-            this.drawCamera = element.checked;
-            break;
+        this.drawCamera = element.checked;
+        break;
             
-        case "Globe":
-            var renderer = this.core.getRenderer();
+    case 'Globe':
+        var renderer = this.core.getRenderer();
         
-            if (!this.globeTexture) {
-                var texture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAEACAMAAADyTj5VAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0Mzk4RkVFMzlGNjUxMUU2OTBDM0I0OEM1NjU0RURBMyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0Mzk4RkVFNDlGNjUxMUU2OTBDM0I0OEM1NjU0RURBMyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQzOThGRUUxOUY2NTExRTY5MEMzQjQ4QzU2NTRFREEzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjQzOThGRUUyOUY2NTExRTY5MEMzQjQ4QzU2NTRFREEzIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+5rvbhAAAAAZQTFRFwcHBLS0tMDfv/wAAAiZJREFUeNrs2LENAEEIA0HTf9ME5DTgIZn8ta+TnLjymzuW6kMIwIcQgA8hAAqAAmBdAM4O4E/wBPgQAqAAKAAKgAKgHcDZAegJoAAoAAqAAqAAaAdwdgB6AigACoACoAAoANoBnB2AngAKgAKgACgACoB2AGcHoCeAAqAAKAAKgAKgHcDZAegJoAAoAAqAAqAAaAdwdgB6AigACoACoAAoANoBnB2AngAKgAKgACgACoB2AGcHoCeAAqAAKAAKgAKgHcDZAegJoAAoAAqAAqAAaAdwdgB6AigACoACEIAPIQAfwg7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABUABUAAUAAVAO4CzA9ATQAFQABQABUAB0A7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABUABUAAUAAVAO4CzA9ATQAFQABQABUAB0A7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABSAAH0IAPoQAfAgB0A7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABUABUAAUAAVAO4CzA9ATQAFQABQABUAB0A7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABUABUAAUAAVAO4CzA9ATQAFQABQABUAB0A7g7AD0BFAAFAAFQAFQAPxcAQYAZt2IEFFJhxsAAAAASUVORK5CYII=";        
-                this.globeTexture = new GpuTexture(renderer.gpu, texture, this.core, null, true);
-            }
+        if (!this.globeTexture) {
+            var texture = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAEACAMAAADyTj5VAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0Mzk4RkVFMzlGNjUxMUU2OTBDM0I0OEM1NjU0RURBMyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0Mzk4RkVFNDlGNjUxMUU2OTBDM0I0OEM1NjU0RURBMyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQzOThGRUUxOUY2NTExRTY5MEMzQjQ4QzU2NTRFREEzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjQzOThGRUUyOUY2NTExRTY5MEMzQjQ4QzU2NTRFREEzIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+5rvbhAAAAAZQTFRFwcHBLS0tMDfv/wAAAiZJREFUeNrs2LENAEEIA0HTf9ME5DTgIZn8ta+TnLjymzuW6kMIwIcQgA8hAAqAAmBdAM4O4E/wBPgQAqAAKAAKgAKgHcDZAegJoAAoAAqAAqAAaAdwdgB6AigACoACoAAoANoBnB2AngAKgAKgACgACoB2AGcHoCeAAqAAKAAKgAKgHcDZAegJoAAoAAqAAqAAaAdwdgB6AigACoACoAAoANoBnB2AngAKgAKgACgACoB2AGcHoCeAAqAAKAAKgAKgHcDZAegJoAAoAAqAAqAAaAdwdgB6AigACoACEIAPIQAfwg7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABUABUAAUAAVAO4CzA9ATQAFQABQABUAB0A7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABUABUAAUAAVAO4CzA9ATQAFQABQABUAB0A7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABSAAH0IAPoQAfAgB0A7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABUABUAAUAAVAO4CzA9ATQAFQABQABUAB0A7g7AD0BFAAFAAFQAFQALQDODsAPQEUAAVAAVAAFADtAM4OQE8ABUABUAAUAAVAO4CzA9ATQAFQABQABUAB0A7g7AD0BFAAFAAFQAFQAPxcAQYAZt2IEFFJhxsAAAAASUVORK5CYII=';        
+            this.globeTexture = new GpuTexture(renderer.gpu, texture, this.core, null, true);
+        }
 
-            this.drawGlobe = element.checked;
-            this.drawGlobe = this.drawGlobe;
-            break;
+        this.drawGlobe = element.checked;
+        this.drawGlobe = this.drawGlobe;
+        break;
     }
 
     map.markDirty();
 };
 
 
-InspectorReplay.prototype.updateLoadGraphs = function(index) {
+InspectorReplay.prototype.updateLoadGraphs = function() {
     var map = this.core.getMap();
     if (!map) {
         return;
@@ -644,53 +641,52 @@ InspectorReplay.prototype.updateLoadGraphs = function(index) {
     var lx = 340;
     var ly = 30;
 
-    this.ctxMeshes.fillStyle = "#000000";
+    this.ctxMeshes.fillStyle = '#000000';
     this.ctxMeshes.fillRect(0, 0, lx, ly);
-    this.ctxTextures.fillStyle = "#000000";
+    this.ctxTextures.fillStyle = '#000000';
     this.ctxTextures.fillRect(0, 0, lx, ly);
-    this.ctxTextures2.fillStyle = "#000000";
+    this.ctxTextures2.fillStyle = '#000000';
     this.ctxTextures2.fillRect(0, 0, lx, ly);
-    this.ctxGeodata.fillStyle = "#000000";
+    this.ctxGeodata.fillStyle = '#000000';
     this.ctxGeodata.fillRect(0, 0, lx, ly);
-    this.ctxMetatiles.fillStyle = "#000000";
+    this.ctxMetatiles.fillStyle = '#000000';
     this.ctxMetatiles.fillRect(0, 0, lx, ly);
-    this.ctxIntervals.fillStyle = "#000000";
+    this.ctxIntervals.fillStyle = '#000000';
     this.ctxIntervals.fillRect(0, 0, lx, ly);
-    this.ctxThreads.fillStyle = "#000000";
+    this.ctxThreads.fillStyle = '#000000';
     this.ctxThreads.fillRect(0, 0, lx, ly);
 
-    var i = Math.floor(replay.loadedIndex / lx) * lx;
-    var shift = i;
-    var li = (lx-1);
+    var i = Math.floor(replay.loadedIndex / lx) * lx, li = (lx-1);
+    var shift = i, file;
     
-    for (var i = 0; i < li; i++) {
-        var file = loaded[i + shift];
+    for (i = 0; i < li; i++) {
+        file = loaded[i + shift];
         
         if (file) {
             switch(file.kind) {
-                case "mesh":       ctx = this.ctxMeshes; break;
-                case "texture-in": ctx = this.ctxTextures; break;
-                case "texture-ex": ctx = this.ctxTextures2; break;
-                case "geodata":    ctx = this.ctxGeodata; break;
-                case "metatile":   ctx = this.ctxMetatiles; break;
-                default:
-                    continue;
+            case 'mesh':       ctx = this.ctxMeshes; break;
+            case 'texture-in': ctx = this.ctxTextures; break;
+            case 'texture-ex': ctx = this.ctxTextures2; break;
+            case 'geodata':    ctx = this.ctxGeodata; break;
+            case 'metatile':   ctx = this.ctxMetatiles; break;
+            default:
+                continue;
             }
 
             var grey = Math.round(Math.min(255, 60+20 * Math.max(1, file.duration / 300)));
-            ctx.fillStyle="rgb("+grey+","+grey+","+grey+")";
+            ctx.fillStyle='rgb('+grey+','+grey+','+grey+')';
 
             var h = (file.duration / 300) * 30;                 
             ctx.fillRect(i, ly, 1, -h);
 
             //interval
             grey = Math.round(Math.min(255, 60+20 * Math.max(1, file.interval / 300)));
-            this.ctxIntervals.fillStyle="rgb("+grey+","+grey+","+grey+")";
+            this.ctxIntervals.fillStyle='rgb('+grey+','+grey+','+grey+')';
             h = (file.interval / 300) * 30;                 
             this.ctxIntervals.fillRect(i, ly, 1, -h);
 
             //interval
-            this.ctxThreads.fillStyle="rgb(80,80,80)";
+            this.ctxThreads.fillStyle='rgb(80,80,80)';
             h = (file.threads / map.config.mapDownloadThreads) * 30;                 
             this.ctxThreads.fillRect(i, ly, 1, -h);
         }
@@ -706,49 +702,49 @@ InspectorReplay.prototype.updateLoadGraphs = function(index) {
     
     li = loaded.length;
 
-    for (var i = 0; i < li; i++) {
-        var file = loaded[i];
+    for (i = 0; i < li; i++) {
+        file = loaded[i];
         
         if (file) {
             
             switch(file.kind) {
-                case "mesh":
-                    if (file.duration < minMeshes) minMeshes = file.duration; 
-                    if (file.duration > maxMeshes) maxMeshes = file.duration; 
-                    avgMeshes += file.duration;
-                    avgMeshesCount++;  
-                    break;
+            case 'mesh':
+                if (file.duration < minMeshes) minMeshes = file.duration; 
+                if (file.duration > maxMeshes) maxMeshes = file.duration; 
+                avgMeshes += file.duration;
+                avgMeshesCount++;  
+                break;
                     
-                case "texture-in":
-                    if (file.duration < minTextures) minTextures = file.duration; 
-                    if (file.duration > maxTextures) maxTextures = file.duration; 
-                    avgTextures += file.duration;
-                    avgTexturesCount++;  
-                    break;
+            case 'texture-in':
+                if (file.duration < minTextures) minTextures = file.duration; 
+                if (file.duration > maxTextures) maxTextures = file.duration; 
+                avgTextures += file.duration;
+                avgTexturesCount++;  
+                break;
                     
-                case "texture-ex":
-                    if (file.duration < minTextures2) minTextures2 = file.duration; 
-                    if (file.duration > maxTextures2) maxTextures2 = file.duration; 
-                    avgTextures2 += file.duration;
-                    avgTextures2Count++;  
-                    break;
+            case 'texture-ex':
+                if (file.duration < minTextures2) minTextures2 = file.duration; 
+                if (file.duration > maxTextures2) maxTextures2 = file.duration; 
+                avgTextures2 += file.duration;
+                avgTextures2Count++;  
+                break;
                     
-                case "geodata":
-                    if (file.duration < minGeodata) minGeodata = file.duration; 
-                    if (file.duration > maxGeodata) maxGeodata = file.duration; 
-                    avgGeodata += file.duration;
-                    avgGeodataCount++;  
-                    break;
+            case 'geodata':
+                if (file.duration < minGeodata) minGeodata = file.duration; 
+                if (file.duration > maxGeodata) maxGeodata = file.duration; 
+                avgGeodata += file.duration;
+                avgGeodataCount++;  
+                break;
                     
-                case "metatile":
-                    if (file.duration < minMetatiles) minMetatiles = file.duration; 
-                    if (file.duration > maxMetatiles) maxMetatiles = file.duration; 
-                    avgMetatiles += file.duration;
-                    avgMetatilesCount++;  
-                    break;
+            case 'metatile':
+                if (file.duration < minMetatiles) minMetatiles = file.duration; 
+                if (file.duration > maxMetatiles) maxMetatiles = file.duration; 
+                avgMetatiles += file.duration;
+                avgMetatilesCount++;  
+                break;
 
-                default:
-                    continue;
+            default:
+                continue;
             }
                 
             if (file.threads < minThreads) minThreads = file.threads; 
@@ -765,25 +761,25 @@ InspectorReplay.prototype.updateLoadGraphs = function(index) {
     
     index -= shift;
 
-    this.ctxMeshes.fillStyle = "#ff0000";
+    this.ctxMeshes.fillStyle = '#ff0000';
     this.ctxMeshes.fillRect(index - 1, 0, 1, ly);
     this.ctxMeshes.fillRect(index + 1, 0, 1, ly);
-    this.ctxTextures.fillStyle = "#ff0000";
+    this.ctxTextures.fillStyle = '#ff0000';
     this.ctxTextures.fillRect(index - 1, 0, 1, ly);
     this.ctxTextures.fillRect(index + 1, 0, 1, ly);
-    this.ctxTextures2.fillStyle = "#ff0000";
+    this.ctxTextures2.fillStyle = '#ff0000';
     this.ctxTextures2.fillRect(index - 1, 0, 1, ly);
     this.ctxTextures2.fillRect(index + 1, 0, 1, ly);
-    this.ctxGeodata.fillStyle = "#ff0000";
+    this.ctxGeodata.fillStyle = '#ff0000';
     this.ctxGeodata.fillRect(index - 1, 0, 1, ly);
     this.ctxGeodata.fillRect(index + 1, 0, 1, ly);
-    this.ctxMetatiles.fillStyle = "#ff0000";
+    this.ctxMetatiles.fillStyle = '#ff0000';
     this.ctxMetatiles.fillRect(index - 1, 0, 1, ly);
     this.ctxMetatiles.fillRect(index + 1, 0, 1, ly);
-    this.ctxIntervals.fillStyle = "#ff0000";
+    this.ctxIntervals.fillStyle = '#ff0000';
     this.ctxIntervals.fillRect(index - 1, 0, 1, ly);
     this.ctxIntervals.fillRect(index + 1, 0, 1, ly);
-    this.ctxThreads.fillStyle = "#ff0000";
+    this.ctxThreads.fillStyle = '#ff0000';
     this.ctxThreads.fillRect(index - 1, 0, 1, ly);
     this.ctxThreads.fillRect(index + 1, 0, 1, ly);
 
@@ -803,13 +799,13 @@ InspectorReplay.prototype.updateLoadGraphs = function(index) {
     avgIntervals = avgIntervalsCount ? (avgIntervals/avgIntervalsCount) : 0;
     avgThreads = avgThreadsCount ? (avgThreads/avgThreadsCount) : 0;
 
-    this.infoMeshes.innerHTML = "Meshes Min/Max/Avg/Count: " + minMeshes.toFixed(0) + "/" + maxMeshes.toFixed(0) + "/" + avgMeshes.toFixed(1) + "/" + avgMeshesCount;
-    this.infoTextures.innerHTML = "Internal Textures Min/Max/Avg/Count: " + minTextures.toFixed(0) + "/" + maxTextures.toFixed(0) + "/" + avgTextures.toFixed(1) + "/" + avgTexturesCount;
-    this.infoTextures2.innerHTML = "External Textures Min/Max/Avg/Count: " + minTextures2.toFixed(0) + "/" + maxTextures2.toFixed(0) + "/" + avgTextures2.toFixed(1) + "/" + avgTextures2Count;
-    this.infoGeodata.innerHTML = "Geodata Min/Max/Avg/Count: " + minGeodata.toFixed(0) + "/" + maxGeodata.toFixed(0) + "/" + avgGeodata.toFixed(1) + "/" + avgGeodataCount;
-    this.infoMetatiles.innerHTML = "Metatiles Min/Max/Avg/Count: " + minMetatiles.toFixed(0) + "/" + maxMetatiles.toFixed(0) + "/" + avgMetatiles.toFixed(1) + "/" + avgMetatilesCount;
-    this.infoIntervals.innerHTML = "Intervals Min/Max/Avg: " + minIntervals.toFixed(0) + "/" + maxIntervals.toFixed(0) + "/" + avgIntervals.toFixed(1);  
-    this.infoThreads.innerHTML = "Threads Min/Max/Avg: " + minThreads + "/" + maxThreads + "/" + avgThreads.toFixed(1);  
+    this.infoMeshes.innerHTML = 'Meshes Min/Max/Avg/Count: ' + minMeshes.toFixed(0) + '/' + maxMeshes.toFixed(0) + '/' + avgMeshes.toFixed(1) + '/' + avgMeshesCount;
+    this.infoTextures.innerHTML = 'Internal Textures Min/Max/Avg/Count: ' + minTextures.toFixed(0) + '/' + maxTextures.toFixed(0) + '/' + avgTextures.toFixed(1) + '/' + avgTexturesCount;
+    this.infoTextures2.innerHTML = 'External Textures Min/Max/Avg/Count: ' + minTextures2.toFixed(0) + '/' + maxTextures2.toFixed(0) + '/' + avgTextures2.toFixed(1) + '/' + avgTextures2Count;
+    this.infoGeodata.innerHTML = 'Geodata Min/Max/Avg/Count: ' + minGeodata.toFixed(0) + '/' + maxGeodata.toFixed(0) + '/' + avgGeodata.toFixed(1) + '/' + avgGeodataCount;
+    this.infoMetatiles.innerHTML = 'Metatiles Min/Max/Avg/Count: ' + minMetatiles.toFixed(0) + '/' + maxMetatiles.toFixed(0) + '/' + avgMetatiles.toFixed(1) + '/' + avgMetatilesCount;
+    this.infoIntervals.innerHTML = 'Intervals Min/Max/Avg: ' + minIntervals.toFixed(0) + '/' + maxIntervals.toFixed(0) + '/' + avgIntervals.toFixed(1);  
+    this.infoThreads.innerHTML = 'Threads Min/Max/Avg: ' + minThreads + '/' + maxThreads + '/' + avgThreads.toFixed(1);  
 };
 
 
@@ -823,16 +819,16 @@ InspectorReplay.prototype.updateFileInfo = function(index) {
     var file = replay.loaded[index];
 
     if (file) {
-        this.timeInfo.innerHTML = ""
-            + "Resource Kind: " + file.kind + "<br/>"
-            + "Time: " + file.time.toFixed(2) + "<br/>"
-            + "Duration: " + file.duration.toFixed(2) + "<br/>"
-            + "Interval: " + file.interval.toFixed(2) + "<br/>"
-            + "Priority: " + file.priority.toFixed(2) + "<br/>"
-            + "Threads: " + file.threads + "<br/>"
-            + "" + file.url;
+        this.timeInfo.innerHTML = ''
+            + 'Resource Kind: ' + file.kind + '<br/>'
+            + 'Time: ' + file.time.toFixed(2) + '<br/>'
+            + 'Duration: ' + file.duration.toFixed(2) + '<br/>'
+            + 'Interval: ' + file.interval.toFixed(2) + '<br/>'
+            + 'Priority: ' + file.priority.toFixed(2) + '<br/>'
+            + 'Threads: ' + file.threads + '<br/>'
+            + '' + file.url;
     } else {
-        this.timeInfo.innerHTML = "";
+        this.timeInfo.innerHTML = '';
     }
 };
 
@@ -844,28 +840,28 @@ InspectorReplay.prototype.buildReplayCombo = function() {
     }
 
     var items = [
-        ["Drawn Tiles",1],
-        ["Drawn Tiles - Free Layers",1],
-        ["Traced Nodes",1],
-        ["Traced Nodes - Free Layers",1],
-        ["Load Sequence",2],
-        ["Camera",1],
-        ["Globe",0]
+        ['Drawn Tiles',1],
+        ['Drawn Tiles - Free Layers',1],
+        ['Traced Nodes',1],
+        ['Traced Nodes - Free Layers',1],
+        ['Load Sequence',2],
+        ['Camera',1],
+        ['Globe',0]
     ];
 
     var keys = [
-        "DrawnTiles",
-        "DrawnTilesFreeLayers",
-        "TracedNodes",
-        "TracedNodesFreeLayers",
-        "LoadSequence",
-        "Camera",
-        "Globe"
+        'DrawnTiles',
+        'DrawnTilesFreeLayers',
+        'TracedNodes',
+        'TracedNodesFreeLayers',
+        'LoadSequence',
+        'Camera',
+        'Globe'
     ];
 
-    var html = "";
+    var html = '', i, li, htmlId;
 
-    for (var i = 0, li = items.length; i < li; i++) {
+    for (i = 0, li = items.length; i < li; i++) {
         html += '<div id="vts-replay-item-' + keys[i] + '" class="vts-replay-item">'
                  + '<input id="vts-replay-checkbox-' + keys[i] + '" type="checkbox"/>'
                  + '<span title=' + items[i][0] + '>' + items[i][0] + '&nbsp;&nbsp;</span>';
@@ -884,20 +880,20 @@ InspectorReplay.prototype.buildReplayCombo = function() {
     this.items.innerHTML = html;
     //this.currentItem = keys[0];
 
-    for (var i = 0, li = items.length; i < li; i++) {
-        var htmlId = "vts-replay-checkbox-" + keys[i];
+    for (i = 0, li = items.length; i < li; i++) {
+        htmlId = 'vts-replay-checkbox-' + keys[i];
         document.getElementById(htmlId).onchange = this.switchItem.bind(this, keys[i], htmlId);
         //var htmlId = "vts-replay-item-" + keys[i];
         //document.getElementById(htmlId).onclick = this.selectReplayItem.bind(this, keys[i]);
 
         if (items[i][1] > 0) {
-            var htmlId = "vts-replay-sbutton-" + keys[i];
-            document.getElementById(htmlId).onclick = this.itemButton.bind(this, keys[i], "S");
+            htmlId = 'vts-replay-sbutton-' + keys[i];
+            document.getElementById(htmlId).onclick = this.itemButton.bind(this, keys[i], 'S');
         }
 
         if (items[i][1] > 1) {
-            var htmlId = "vts-replay-fbutton-" + keys[i];
-            document.getElementById(htmlId).onclick = this.itemButton.bind(this, keys[i], "F");
+            htmlId = 'vts-replay-fbutton-' + keys[i];
+            document.getElementById(htmlId).onclick = this.itemButton.bind(this, keys[i], 'F');
         }
     }
 };

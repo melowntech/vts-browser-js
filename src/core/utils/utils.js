@@ -181,6 +181,7 @@ utils.loadJSON = function(path, onLoaded, onError, skipParse, withCredentials, x
                         //var parsedData = skipParse ? data : eval("("+data+")");
                     parsedData = JSON.parse(data);
                 } catch(e) {
+                    // eslint-disable-next-line
                     console.log('JSON Parse Error ('+path+'): ' + (e['message'] ? e['message'] : ''));
                         
                     if (onError ) {
@@ -291,7 +292,7 @@ utils.loadBinary = function(path, onLoaded, onError, withCredentials, xhrParams,
 };
 
 
-utils.headRequest = function(url, onLoaded, onError, withCredentials, xhrParams, responseType) { 
+utils.headRequest = function(url, onLoaded, onError, withCredentials, xhrParams) { 
     var xhr = new XMLHttpRequest();
 
     xhr.onreadystatechange = (function (){

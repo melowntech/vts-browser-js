@@ -59,8 +59,8 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
     this.ctrlDown = event.ctrlKey;
     this.shiftDown = event.shiftKey;
 
-    var done = (function(){});
     var hit = false;
+    var blockHit = true;
 
     if (event) {
         var keyCode;
@@ -123,7 +123,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             }
 
             if (this.diagnosticMode) {
-                var blockHit = true;
+                blockHit = true;
 
                 switch(keyCode) {
 
@@ -167,9 +167,12 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 case 81:
                 case 113:
                     var pos = map.getPosition();
+                    // eslint-disable-next-line
                     console.log('pos-before: ' + JSON.stringify(pos.pos));
                     map.convertPositionViewMode(pos, (pos.getViewMode() == 'obj') ? 'subj' : 'obj');
+                    // eslint-disable-next-line
                     console.log('new mode: ' + pos.getViewMode());
+                    // eslint-disable-next-line
                     console.log('pos-after: ' + JSON.stringify(pos.pos));
                     map.setPosition(pos);
                     /*this.core.saveScreenshot(pos);*/ break;  //key Q pressed
@@ -255,6 +258,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                         //console.log("zfactor  " + map.zFactor2 + "   zz: " + map.renderer.getZoffsetFactor([map.zFactor2, 0, 0]));
                         
                     map.loaderSuspended = !map.loaderSuspended;            
+                    // eslint-disable-next-line
                     console.log('loader state ' + map.loaderSuspended);
 
                     break; //key M pressed
@@ -262,7 +266,6 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 case 74:
                 case 106:
                     debug.drawEarth = !debug.drawEarth; hit = true; break; //key X pressed
-                    break; //key J pressed
 
                 case 88:
                 case 120:
@@ -301,7 +304,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
         }
 
         if (this.diagnosticMode && inspector.drawRadar && !this.shiftDown && !press) {
-            var blockHit = true;
+            blockHit = true;
 
             switch(keyCode) {
             case 43:
@@ -329,7 +332,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
         }
 
         if (this.diagnosticMode && debug.drawBBoxes && !this.shiftDown && !press) {
-            var blockHit = true;
+            blockHit = true;
 
             switch(keyCode) {
             case 76:

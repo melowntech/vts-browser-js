@@ -287,15 +287,17 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
     var totalTexture = 0;
     var totalMeshes = 0;
     var totalGpuMeshes = 0;
-    var realCount = 0;
+    var realCount = 0, i, j, lj;
+    var index, value, values, str, y, factorY, max, min;
 
     var valuesFrame = stats.graphsFrameTimes;
     var valuesRender = stats.graphsRenderTimes;
     var valuesTextures = stats.graphsCreateTextureTimes;
     var valuesMeshes = stats.graphsCreateMeshTimes;
     var valuesGpuMeshes = stats.graphsCreateGpuMeshTimes;
+    var valuesGeodata;
 
-    for (var i = 0; i < samples; i++) {
+    for (i = 0; i < samples; i++) {
         totalFrame += valuesFrame[i];
         totalRender += valuesRender[i];
         totalTexture += valuesTextures[i];
@@ -321,10 +323,10 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
         maxValue = (totalFrame / realCount) * 0.5;
     }
 
-    var factorY = height / maxValue;
+    factorY = height / maxValue;
 
-    for (var i = 0; i < samples; i++) {
-        var index = samplesIndex + i;
+    for (i = 0; i < samples; i++) {
+        index = samplesIndex + i;
         index %= samples;
 
         ctx.fillStyle='#000000';
@@ -335,7 +337,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
         ctx.fillStyle='#0000ff';
         ctx.fillRect(i*factorX, height, 1, -(valuesTextures[index])*factorY);
 
-        var y = height -(valuesTextures[index])*factorY;
+        y = height -(valuesTextures[index])*factorY;
 
         ctx.fillStyle='#007700';
         ctx.fillRect(i*factorX, y, 1, -(valuesMeshes[index])*factorY);
@@ -349,38 +351,38 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
     if (this.showCursor) {
         ctx.fillStyle='#aa00aa';
-        var index = (this.cursorIndex) % samples;
+        index = (this.cursorIndex) % samples;
         ctx.fillRect(Math.floor(index*factorX)-1, 0, 1, height);
         ctx.fillRect(Math.floor(index*factorX)+1, 0, 1, height);
         index = (this.cursorIndex + samplesIndex) % samples;
 
-        var str = '&FilledSmallSquare; Frame: ' + valuesFrame[index].toFixed(2) +
-                   ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + valuesRender[index].toFixed(2) +
-                   ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + valuesTextures[index].toFixed(2) +
-                   ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + valuesMeshes[index].toFixed(2) +
-                   ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + valuesGpuMeshes[index].toFixed(2) + '</div>';
+        str = '&FilledSmallSquare; Frame: ' + valuesFrame[index].toFixed(2) +
+              ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + valuesRender[index].toFixed(2) +
+              ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + valuesTextures[index].toFixed(2) +
+              ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + valuesMeshes[index].toFixed(2) +
+              ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + valuesGpuMeshes[index].toFixed(2) + '</div>';
     } else {
-        var str = '&FilledSmallSquare; Frame: ' + Math.round(totalFrame) +
-                   ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + Math.round(totalRender) +
-                   ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.round(totalTexture) +
-                   ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.round(totalMeshes) +
-                   ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + Math.round(totalGpuMeshes) +'</div>';
+        str = '&FilledSmallSquare; Frame: ' + Math.round(totalFrame) +
+              ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Render: ' + Math.round(totalRender) +
+              ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Textures: ' + Math.round(totalTexture) +
+              ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Meshes: ' + Math.round(totalMeshes) +
+              ' &nbsp <span style="color:#00bb00">&FilledSmallSquare;</span> GpuMeshes: ' + Math.round(totalGpuMeshes) +'</div>';
     }
 
     document.getElementById('vts-graphs-info').innerHTML = str;
 
-    var width = this.canvasCache.width;
-    var height = this.canvasCache.height;
-    var ctx = this.canvasCacheCtx;
+    width = this.canvasCache.width;
+    height = this.canvasCache.height;
+    ctx = this.canvasCacheCtx;
 
-    var factorX = width / samples;
+    factorX = width / samples;
 
     ctx.clearRect(0, 0, width, height);
 
     switch (this.graph) {
     case 'Cache':
         {
-            var factorY = height / ((map.gpuCache.maxCost+map.resourcesCache.maxCost+map.metatileCache.maxCost));
+            factorY = height / ((map.gpuCache.maxCost+map.resourcesCache.maxCost+map.metatileCache.maxCost));
 
             var maxMetatiles = 0;
             var maxResources = 0;
@@ -391,12 +393,12 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
             var valuesMetatiles = stats.graphsCpuMemoryMetatiles;
             var valuesResources = stats.graphsCpuMemoryUsed;
-            var valuesTextures = stats.graphsGpuMemoryTextures;
-            var valuesMeshes = stats.graphsGpuMemoryMeshes;
-            var valuesGeodata = stats.graphsGpuMemoryGeodata;
             var valuesGpu = stats.graphsGpuMemoryRender;
+            valuesGeodata = stats.graphsGpuMemoryGeodata;
+            valuesTextures = stats.graphsGpuMemoryTextures;
+            valuesMeshes = stats.graphsGpuMemoryMeshes;
 
-            for (var i = 0; i < samples; i++) {
+            for (i = 0; i < samples; i++) {
                 maxMetatiles = valuesMetatiles[i] > maxMetatiles ? valuesMetatiles[i] : maxMetatiles;
                 maxResources = valuesResources[i] > maxResources ? valuesResources[i] : maxResources;
                 maxTextures = valuesTextures[i] > maxTextures ? valuesTextures[i] : maxTextures;
@@ -405,11 +407,11 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 maxGpu = valuesGpu[i] > maxGpu ? valuesGpu[i] : maxGpu;
             }
 
-            for (var i = 0; i < samples; i++) {
-                var index = samplesIndex + i;
+            for (i = 0; i < samples; i++) {
+                index = samplesIndex + i;
                 index %= samples;
 
-                var value = valuesMetatiles[index] + valuesMeshes[index] + valuesTextures[index] + valuesGeodata[index] + valuesResources[index];
+                value = valuesMetatiles[index] + valuesMeshes[index] + valuesTextures[index] + valuesGeodata[index] + valuesResources[index];
                 ctx.fillStyle='#000000';
                 ctx.fillRect(i*factorX, height, 1, -(value)*factorY);
                 value -= valuesResources[index];
@@ -435,24 +437,24 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
             }
 
             if (this.showCursor == true) {
-                var index = (this.cursorIndex + samplesIndex) % samples;
-                var str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles[index] + valuesResources[index] + valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources[index]/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te: ' + Math.ceil(valuesTextures[index]/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(valuesMeshes[index]/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(valuesGeodata[index]/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(valuesMetatiles[index]/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(valuesGpu[index]/(1024*1024)) + 'MB' +'</div>';
+                index = (this.cursorIndex + samplesIndex) % samples;
+                str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.ceil((valuesMetatiles[index] + valuesResources[index] + valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(valuesResources[index]/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((valuesTextures[index] + valuesMeshes[index])/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te: ' + Math.ceil(valuesTextures[index]/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(valuesMeshes[index]/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(valuesGeodata[index]/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(valuesMetatiles[index]/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(valuesGpu[index]/(1024*1024)) + 'MB' +'</div>';
             } else {
-                var str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles + maxResources + maxTextures + maxMeshes)/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures + maxMeshes)/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te ' + Math.ceil(maxTextures/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(maxMeshes/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(maxGeodata/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(maxMetatiles/(1024*1024)) + 'MB' +
-                           ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(maxGpu/(1024*1024)) + 'MB' +'</div>';
+                str = '<span style="color:#555">&FilledSmallSquare;</span> Total: ' + Math.round((maxMetatiles + maxResources + maxTextures + maxMeshes)/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> CPU: ' + Math.ceil(maxResources/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#000000">&FilledSmallSquare;</span> GPU: ' + Math.ceil((maxTextures + maxMeshes)/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#0000ff">&FilledSmallSquare;</span> Te ' + Math.ceil(maxTextures/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#005500">&FilledSmallSquare;</span> Me: ' + Math.ceil(maxMeshes/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#009999">&FilledSmallSquare;</span> Ge: ' + Math.ceil(maxGeodata/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#ff0000">&FilledSmallSquare;</span> Met: ' + Math.ceil(maxMetatiles/(1024*1024)) + 'MB' +
+                      ' &nbsp <span style="color:#ffff00">&FilledSmallSquare;</span> Render: ' + Math.ceil(maxGpu/(1024*1024)) + 'MB' +'</div>';
             }
 
         }
@@ -462,13 +464,13 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
     case 'Polygons':
     case 'Processing':
         {
-            var max = 0;
-            var min = 99999999999;
+            max = 0;
+            min = 99999999999;
+            realCount = 0;
+            values = (this.graph == 'Polygons') ? stats.graphsPolygons : stats.graphsBuild;
             var total = 0;
-            var realCount = 0;
-            var values = (this.graph == 'Polygons') ? stats.graphsPolygons : stats.graphsBuild;
 
-            for (var i = 0; i < samples; i++) {
+            for (i = 0; i < samples; i++) {
                 max = values[i] > max ? values[i] : max;
 
                 if (values[i] > 0) {
@@ -478,10 +480,10 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 }
             }
 
-            var factorY = height / max;
+            factorY = height / max;
 
-            for (var i = 0; i < samples; i++) {
-                var index = samplesIndex + i;
+            for (i = 0; i < samples; i++) {
+                index = samplesIndex + i;
                 index %= samples;
 
                 ctx.fillStyle='#007700';
@@ -489,10 +491,10 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
             }
 
             if (this.showCursor) {
-                var index = (this.cursorIndex + samplesIndex) % samples;
-                var str = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graph + ' Max: ' + Math.round(values[index]) +'</div>';
+                index = (this.cursorIndex + samplesIndex) % samples;
+                str = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graph + ' Max: ' + Math.round(values[index]) +'</div>';
             } else {
-                var str = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graph + ' Max: ' + max +'</div>';
+                str = '<span style="color:#007700">&FilledSmallSquare;</span> ' + this.graph + ' Max: ' + max +'</div>';
                 str += ' &nbsp Min: ' + min;
                 str += ' &nbsp Avrg: ' + Math.round(total / realCount) +'</div>';
             }
@@ -502,33 +504,35 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
     case 'LODs':
         {
-            var max = 0;
-            var values = stats.graphsLODs;
+            max = 0;
+            values = stats.graphsLODs;
 
-            for (var i = 0; i < samples; i++) {
+            for (i = 0; i < samples; i++) {
                 max = values[i][0] > max ? values[i][0] : max;
             }
 
-            var factorY = height / max;
+            factorY = height / max;
 
             ctx.fillStyle='#000000';
             ctx.fillRect(0, 0, width, height);
 
-            for (var i = 0; i < samples; i++) {
-                var index = samplesIndex + i;
+            var lods;
+
+            for (i = 0; i < samples; i++) {
+                index = samplesIndex + i;
                 index %= samples;
 
                 //ctx.fillStyle="#000000";
                 //ctx.fillRect(i*factorX, height, 1, -(values[index][0])*factorY);
 
-                var y = height;
+                y = height;
                 
-                var lods = values[index][1]; 
+                lods = values[index][1]; 
 
-                for (var j = 0, lj = lods.length; j < lj; j++) {
+                for (j = 0, lj = lods.length; j < lj; j++) {
                     if (lods[j]) {
                         ctx.fillStyle='hsl('+((j*23)%360)+',100%,50%)';
-                        var value = Math.round((lods[j])*factorY);
+                        value = Math.round((lods[j])*factorY);
                         ctx.fillRect(i*factorX, y, 1, -value);
                         y -= value;
                     }
@@ -537,19 +541,19 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
             }
 
             if (this.showCursor) {
-                var index = (this.cursorIndex + samplesIndex) % samples;
+                index = (this.cursorIndex + samplesIndex) % samples;
 
-                var str = 'LODs:' + values[index][0];
-                var lods = values[index][1]; 
+                str = 'LODs:' + values[index][0];
+                lods = values[index][1]; 
 
-                for (var j = 0, lj = lods.length; j < lj; j++) {
+                for (j = 0, lj = lods.length; j < lj; j++) {
                     if (lods[j]) {
                         str += '<span style="color:hsl('+((j*23)%360)+',100%,50%)">&FilledSmallSquare;</span>'+j+':'+lods[j];
                     }
                 }
 
             } else {
-                var str = 'LODs:' + values[index][0];
+                str = 'LODs:' + values[index][0];
             }
 
             str += '</div>';
@@ -576,11 +580,11 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
             var maxGeodataMinusCount = 0;
             var maxGeodataMinusSize = 0;
 
-            var valuesTextures = stats.graphsFluxTextures;
-            var valuesMeshes = stats.graphsFluxMeshes;
-            var valuesGeodata = stats.graphsFluxGeodatas;
+            valuesTextures = stats.graphsFluxTextures;
+            valuesMeshes = stats.graphsFluxMeshes;
+            valuesGeodata = stats.graphsFluxGeodatas;
 
-            for (var i = 0; i < samples; i++) {
+            for (i = 0; i < samples; i++) {
                 var tmp = valuesTextures[i][0][0] + valuesMeshes[i][0][0];
                 maxCount = tmp > maxCount ? tmp : maxCount;
                 tmp = valuesTextures[i][1][0] + valuesMeshes[i][1][0];
@@ -607,14 +611,14 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 maxGeodataMinusSize = valuesGeodata[i][1][1] > maxGeodataMinusSize ? valuesGeodata[i][1][1] : maxGeodataMinusSize;
             }
 
-            var factorY = (height*0.25-2) / maxCount;
+            factorY = (height*0.25-2) / maxCount;
             var factorY2 = (height*0.25-2) / maxSize;
 
             var base = Math.floor(height*0.25);
             var base2 = Math.floor(height*0.75);
 
-            for (var i = 0; i < samples; i++) {
-                var index = samplesIndex + i;
+            for (i = 0; i < samples; i++) {
+                index = samplesIndex + i;
                 index %= samples;
                 
                 var y1Up = base;
@@ -662,8 +666,8 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
 
             if (this.showCursor) {
-                var index = (this.cursorIndex + samplesIndex) % samples;
-                var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + valuesTextures[index][0][0] + '/' + valuesTextures[index][1][0];
+                index = (this.cursorIndex + samplesIndex) % samples;
+                str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + valuesTextures[index][0][0] + '/' + valuesTextures[index][1][0];
                 str += ' &nbsp Size +/-: ' + (valuesTextures[index][0][1]/1024/1024).toFixed(2) + '/' + (valuesTextures[index][1][1]/1024/1024).toFixed(2);
                 str += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + valuesMeshes[index][0][0] + '/' + valuesMeshes[index][1][0];
                 str += ' &nbsp Size +/-: ' + (valuesMeshes[index][0][1]/1024/1024).toFixed(2) + '/' + (valuesMeshes[index][1][1]/1024/1024).toFixed(2);
@@ -671,7 +675,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
                 str += ' &nbsp Size +/-: ' + (valuesGeodata[index][0][1]/1024/1024).toFixed(2) + '/' + (valuesGeodata[index][1][1]/1024/1024).toFixed(2);
                 str += '</div>';
             } else {
-                var str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + maxTexPlusCount + '/' + maxTexMinusCount;
+                str = '<span style="color:#007700">&FilledSmallSquare;</span> Textures Count +/-: ' + maxTexPlusCount + '/' + maxTexMinusCount;
                 str += ' &nbsp Size +/-: ' + (maxTexPlusSize/1024/1024).toFixed(2) + '/' + (maxTexMinusSize/1024/1024).toFixed(2);
                 str += ' &nbsp <span style="color:#0000aa">&FilledSmallSquare;</span> Meshes Count +/-: ' + maxMeshPlusCount + '/' + maxMeshMinusCount;
                 str += ' &nbsp Size +/-: ' + (maxMeshPlusSize/1024/1024).toFixed(2) + '/' + (maxMeshMinusSize/1024/1024).toFixed(2);
@@ -687,7 +691,7 @@ InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
 
     if (this.showCursor) {
         ctx.fillStyle='#aa00aa';
-        var index = (this.cursorIndex) % samples;
+        index = (this.cursorIndex) % samples;
         ctx.fillRect(Math.floor(index*factorX)-1, 0, 1, height);
         ctx.fillRect(Math.floor(index*factorX)+1, 0, 1, height);
     }

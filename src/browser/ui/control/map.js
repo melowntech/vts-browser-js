@@ -5,7 +5,7 @@ var UIControlMap = function(ui, visible) {
     this.control = this.ui.addControl('map',
       '<div id="vts-map"'
       + ' class="vts-map">'
-      + ' </div>');
+      + ' </div>', visible);
 
     var map = this.getMapElement();
     map.setDraggableState(true);

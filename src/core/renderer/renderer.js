@@ -121,6 +121,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.gpu.init();
 
     //intit resources
+    // eslint-disable-next-line
     var init = new RenderInit(this);
     this.draw = new RenderDraw(this);
 
@@ -235,7 +236,7 @@ Renderer.prototype.project2 = function(point, mvp) {
 };
 
 
-Renderer.prototype.project = function(point, mvp) {
+Renderer.prototype.project = function(point) {
     //get mode-view-projection matrix
     var mvp = this.camera.getMvpMatrix();
 
@@ -308,7 +309,7 @@ Renderer.prototype.getScreenRay = function(screenX, screenY) {
 };
 
 
-Renderer.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
+Renderer.prototype.hitTestGeoLayers = function(screenX, screenY) {
     var gl = this.gpu.gl;
 
     //conver screen coords to texture coords
@@ -332,9 +333,9 @@ Renderer.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
         var pixel = this.geoHitmapTexture.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1);
 
         //convert rgb values into depth
-        var id = (pixel[0]) + (pixel[1]<<8) + (pixel[2]<<16);// + (pixel[3]*16581375.0);
+        //var id = (pixel[0]) + (pixel[1]<<8) + (pixel[2]<<16);// + (pixel[3]*16581375.0);
 
-        var surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
+        surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
 
     //    console.log(JSON.stringify([pixel[0], pixel[1], pixel[2], pixel[3], surfaceHit]));
 
@@ -349,12 +350,12 @@ Renderer.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
 
 
 Renderer.prototype.switchToFramebuffer = function(type) {
-    var gl = this.gpu.gl;
+    var gl = this.gpu.gl, size, width, height;
     
     switch(type) {
     case 'base':
-        var width = this.oldSize[0];
-        var height = this.oldSize[1];
+        width = this.oldSize[0];
+        height = this.oldSize[1];
     
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
     
@@ -378,7 +379,7 @@ Renderer.prototype.switchToFramebuffer = function(type) {
         gl.clearColor(1.0,1.0, 1.0, 1.0);
         gl.enable(gl.DEPTH_TEST);
 
-        var size = this.hitmapSize;
+        size = this.hitmapSize;
     
             //clear screen
         gl.viewport(0, 0, size, size);
@@ -402,15 +403,15 @@ Renderer.prototype.switchToFramebuffer = function(type) {
             
         this.hoverFeatureCounter = 0;
             
-        var size = this.hitmapSize;
+        size = this.hitmapSize;
             
             //set texture framebuffer
         this.gpu.setFramebuffer(this.geoHitmapTexture);
             
-        var oldSize = [ this.curSize[0], this.curSize[1] ];
+        //var oldSize = [ this.curSize[0], this.curSize[1] ];
             
-        var width = size;
-        var height = size;
+        width = size;
+        height = size;
             
         gl.clearColor(1.0,1.0, 1.0, 1.0);
         gl.enable(gl.DEPTH_TEST);
@@ -538,7 +539,7 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
 
         var byteString = atob(dataURI.split(',')[1]);
         // separate out the mime component
-        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        //var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
         
           // write the bytes of the string to an ArrayBuffer
         var ab = new ArrayBuffer(byteString.length);

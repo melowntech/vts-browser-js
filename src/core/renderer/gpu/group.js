@@ -65,7 +65,7 @@ GpuGroup.prototype.size = function() {
 };
 
 
-GpuGroup.prototype.getZbufferOffset = function(params) {
+GpuGroup.prototype.getZbufferOffset = function() {
     return this.size;
 };
 
@@ -329,20 +329,20 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin) {
     }
 
     if (applyOrigin) {
+        var origin;
         var mvp2 = mat4.create();
         var mv2 = mat4.create();
-
         var pos = this.renderer.position;
 
         var transform = this.renderer.layerGroupTransform[this.id];
 
         if (transform != null) {
-            var origin = transform[1];
+            origin = transform[1];
             origin = [origin[0] - pos[0], origin[1] - pos[1], origin[2]];
             mat4.multiply(math.translationMatrix(origin[0], origin[1], origin[2]), transform[0], mv2);
             mat4.multiply(mv, mv2, mv2);
         } else {
-            var origin = [this.origin[0] - pos[0], this.origin[1] - pos[1], this.origin[2]];
+            origin = [this.origin[0] - pos[0], this.origin[1] - pos[1], this.origin[2]];
             mat4.multiply(mv, math.translationMatrix(origin[0], origin[1], origin[2]), mv2);
         }
 
@@ -351,11 +351,7 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin) {
         mvp = mvp2;
     }
 
-    var gl = this.gl;
-    var gpu = this.gpu;
-
     var cameraPos = this.renderer.cameraPosition;
-    
     var jobZBuffer = this.renderer.jobZBuffer;
     var jobZBufferSize = this.renderer.jobZBufferSize;
 

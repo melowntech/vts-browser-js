@@ -9,8 +9,6 @@ var GpuMesh = function(gpu, meshData, fileSize, core) {
     this.uvBuffer = null;
     this.uv2Buffer = null;
 
-    var timer = performance.now();
-
     var vertices = meshData.vertices;
     var uvs = meshData.uvs;
     var uvs2 = meshData.uvs2;
@@ -101,10 +99,6 @@ GpuMesh.prototype.draw = function(program, attrVertex, attrUV, attrUV2, attrBary
     var gl = this.gl;
     if (gl == null || !this.valid) {
         return;
-    }
-    
-    if (!this.vertexBuffer) {
-        gl = gl;
     }
 
     //bind vetex positions

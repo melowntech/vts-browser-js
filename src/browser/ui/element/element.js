@@ -256,7 +256,6 @@ UIElement.prototype.onDragBegin = function(event) {
     //}
 
     this.resetPos = true;
-
     this.firstDragDistance = 0;
     this.lastDragDistance = 0;
     this.zoomDrag = false;
@@ -286,8 +285,7 @@ UIElement.prototype.onDragBegin = function(event) {
             'clientY' : pos[1]
         });
     } else {
-        var pos = event.getMouseCoords();
-        this.dragLastPos = pos;
+        this.dragLastPos = event.getMouseCoords();
     }
 };
 
@@ -340,28 +338,31 @@ UIElement.prototype.onDragMove = function(event) {
             var v1y = (t[5][1] - t[4][1]) + (t[4][1] - t[3][1]) + (t[3][1] - t[2][1]) + (t[2][1] - t[1][1]) + (t[1][1] - t[0][1]);
 
             //get vector for touch #2
-            t2 = this.dragTouches2;
+            var t2 = this.dragTouches2;
             var v2x = (t2[5][0] - t2[4][0]) + (t2[4][0] - t2[3][0]) + (t2[3][0] - t2[2][0]) + (t2[2][0] - t2[1][0]) + (t2[1][0] - t2[0][0]);
             var v2y = (t2[5][1] - t2[4][1]) + (t2[4][1] - t2[3][1]) + (t2[3][1] - t2[2][1]) + (t2[2][1] - t2[1][1]) + (t2[1][1] - t2[0][1]);
             
             //get distance of each vector
             var d1 = Math.sqrt(v1x * v1x + v1y * v1y);
             var d2 = Math.sqrt(v2x * v2x + v2y * v2y);
+            var cosAngle, cosAngle2; 
 
             mode = 'pan';
 
             if (d1 > d2 * 5 || d2 > d1 * 5) { //dectec situation where only one finger is closing to another
+
+                var p1, p2, p3;
                 
                 //make first vector from non moving point to beginnig position of moving point
                 //make seconf vector from non moving point to ending position of moving point
                 if (d1 > d2 * 5) {
-                    var p1 = t2[0];
-                    var p2 = t[0];
-                    var p3 = t[5];
+                    p1 = t2[0];
+                    p2 = t[0];
+                    p3 = t[5];
                 } else {
-                    var p1 = t[0];
-                    var p2 = t2[0];
-                    var p3 = t2[5];
+                    p1 = t[0];
+                    p2 = t2[0];
+                    p3 = t2[5];
                 }
                 
                 var v1 = [p2[0] - p1[0], p2[1] - p1[1]];
@@ -377,8 +378,8 @@ UIElement.prototype.onDragMove = function(event) {
                 v2[1] /= d;
 
                 //measure angle between vectors
-                var cosAngle = v1[0] * v2[0] + v1[1] * v2[1];
-                var cosAngle2 = -v1[1] * v2[0] + v1[0] * v2[1]; //v1 is rotated by 90deg
+                cosAngle = v1[0] * v2[0] + v1[1] * v2[1];
+                cosAngle2 = -v1[1] * v2[0] + v1[0] * v2[1]; //v1 is rotated by 90deg
                 
                 rotateDelta = (Math.acos(cosAngle2) * (180.0/Math.PI)) - 90;
 
@@ -398,7 +399,7 @@ UIElement.prototype.onDragMove = function(event) {
                 var nv2y = v2y / d2;
                 
                 //do vectors move in same direction
-                var cosAngle = nv1x * nv2x + nv1y * nv2y;
+                cosAngle = nv1x * nv2x + nv1y * nv2y;
                 
                 if (cosAngle < 0.2) {
                     mode = 'zoom';
@@ -408,18 +409,18 @@ UIElement.prototype.onDragMove = function(event) {
             }
             
             //if (mode == "zoom") {
-            var t = this.dragTouches;
-            var t2 = this.dragTouches2;
+            t = this.dragTouches;
+            t2 = this.dragTouches2;
 
                 //get distance between points at the beginig
             var dx = (t2[0][0] - t[0][0]);
             var dy = (t2[0][1] - t[0][1]);
-            var d1 = Math.sqrt(dx * dx + dy * dy);
+            d1 = Math.sqrt(dx * dx + dy * dy);
 
                 //get distance between points at the end
-            var dx = (t2[5][0] - t[5][0]);
-            var dy = (t2[5][1] - t[5][1]);
-            var d2 = Math.sqrt(dx * dx + dy * dy);
+            dx = (t2[5][0] - t[5][0]);
+            dy = (t2[5][1] - t[5][1]);
+            d2 = Math.sqrt(dx * dx + dy * dy);
 
                 //get delta betwwen distances
             distanceDelta = d2 - d1;   
@@ -489,7 +490,7 @@ UIElement.prototype.onDragEnd = function(event) {
             !this.dragButtons['middle'] ) {
 
             this.dragging = false;
-            var pos = this.dragCurrentPos;//event.getMouseCoords();
+            pos = this.dragCurrentPos;//event.getMouseCoords();
             this.off('mousemove', this.dragMoveCall, document);
             this.off('mouseup', this.dragEndCall, document);
             //this.off("mouseup", this.onDragEnd.bind(this), document);

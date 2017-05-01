@@ -1,4 +1,3 @@
-
 import MapCredit_ from './credit';
 import MapStylesheet_ from './stylesheet';
 import MapSurfaceTree_ from './surface-tree';
@@ -59,9 +58,9 @@ var MapSurface = function(map, json, type) {
     
     if (typeof json === 'string') {
         this.jsonUrl = this.map.url.processUrl(json);
-        this.baseUrl = utilsUrl_.getBase(this.jsonUrl);
-        this.baseUrlSchema = utilsUrl_.getSchema(this.jsonUrl);
-        this.baseUrlOrigin = utilsUrl_.getOrigin(this.jsonUrl);
+        this.baseUrl = utilsUrl.getBase(this.jsonUrl);
+        this.baseUrlSchema = utilsUrl.getSchema(this.jsonUrl);
+        this.baseUrlOrigin = utilsUrl.getOrigin(this.jsonUrl);
         
         var onLoaded = (function(data){
             this.parseJson(data);            
@@ -97,6 +96,8 @@ MapSurface.prototype.parseJson = function(json) {
     this.credits = json['credits'] || [];
     this.creditsUrl = null;
     this.displaySize = json['displaySize'] || 256;
+
+    var i, li;
     
     if (json['extents']) {
         var ll = json['extents']['ll'];
@@ -126,7 +127,7 @@ MapSurface.prototype.parseJson = function(json) {
             }
         }
 
-        for (var i = 0, li = this.credits.length; i < li; i++) {
+        for (i = 0, li = this.credits.length; i < li; i++) {
             var credit = this.map.getCreditById(this.credits[i]);
             this.creditsNumbers.push(credit ? credit.id : null); 
         }
@@ -153,7 +154,7 @@ MapSurface.prototype.parseJson = function(json) {
 
     this.surfaceReference = [];
     if (this.glue) {
-        for (var i = 0, li = this.id.length; i < li; i++) {
+        for (i = 0, li = this.id.length; i < li; i++) {
             this.surfaceReference.push(this.map.getSurface(this.id[i]));
         }
     }
@@ -174,7 +175,7 @@ MapSurface.prototype.kill = function() {
 };
 
 
-MapSurface.prototype.setOptions = function(options) {
+MapSurface.prototype.setOptions = function() {
 };
 
 
@@ -371,6 +372,4 @@ export default MapSurface;
 
 
 
-
-
-
+  

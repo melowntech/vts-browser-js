@@ -5,7 +5,6 @@ var GpuPixelLine3 = function(gpu, core, lines, maxLines, joins, joinSides) {
     this.gl = gpu.gl;
     this.core = core;
 
-    var timer = performance.now();
     var gl = this.gl;
 
     if (gl == null){
@@ -30,20 +29,21 @@ GpuPixelLine3.prototype.kill = function() {
 
 
 GpuPixelLine3.prototype.init = function() {
+    var i;
     if (this.lines) {
-    	if (this.joins) {
-        this.addCircle(0, this.joinSides);
-    	}
-    	
-        for (var i = 0; i < this.maxLines; i++) {
+        if (this.joins) {
+            this.addCircle(0, this.joinSides);
+        }
+
+        for (i = 0; i < this.maxLines; i++) {
             this.addLine(i, i+1);
 
             if (this.joins) {
-		        this.addCircle(i+1, this.joinSides);
+                this.addCircle(i+1, this.joinSides);
             }
         }
     } else if (this.joins) {
-        for (var i = 0; i <= this.maxLines; i++) {
+        for (i = 0; i <= this.maxLines; i++) {
             this.addCircle(i, this.joinSides);
         }
     }

@@ -1,5 +1,5 @@
 
-import {Core as Core_, getCoreVersion as getCoreVersion_, checkSupport as checkSupport_} from '../core/core';
+import {checkSupport as checkSupport_} from '../core/core';
 import {CoreInterface as CoreInterface_} from '../core/interface';
 import {utils as utils_} from '../core/utils/utils';
 import UI_ from './ui/ui';
@@ -16,7 +16,7 @@ var Autopilot = Autopilot_;
 var ControlMode = ControlMode_;
 var Presenter = Presenter_;
 var Rois = Rois_;
-var Core = Core_, getCoreVersion = getCoreVersion_, checkSupport = checkSupport_;
+var checkSupport = checkSupport_;
 
 
 var Browser = function(element, config) {
@@ -251,7 +251,7 @@ Browser.prototype.onTick = function() {
 };
 
 
-Browser.prototype.initConfig = function(data) {
+Browser.prototype.initConfig = function() {
     this.config = {
         panAllowed : true,
         rotationAllowed : true,
@@ -287,7 +287,7 @@ Browser.prototype.initConfig = function(data) {
 Browser.prototype.setConfigParams = function(params, ignoreCore) {
     if (typeof params === 'object' && params !== null) {
         for (var key in params) {
-            this.setConfigParam(key, params[key]);
+            this.setConfigParam(key, params[key], ignoreCore);
 
             /*if (!(key == "pos" || key == "position" || key == "view" ||
                 key.indexOf("map") == 0 || key.indexOf("renderer") == 0)) {

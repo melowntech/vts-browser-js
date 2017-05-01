@@ -65,7 +65,7 @@ MapMetanode.prototype.hasChildren = function() {
 };
 
 
-MapMetanode.prototype.parseExtentBits = function(extentBytes, extentBits, index, maxExtent) {
+MapMetanode.prototype.parseExtentBits = function(extentBytes, extentBits, index) {
     var value = 0;
 
     for (var i = 0, li = extentBits; i < li; i++) {
@@ -122,7 +122,7 @@ struct Metanode {
 */
 
     var streamData = stream.data;
-    var lastIndex = stream.index;
+    //var lastIndex = stream.index;
     var version = this.metatile.version;
 
     this.flags = streamData.getUint8(stream.index, true); stream.index += 1;
@@ -144,7 +144,7 @@ struct Metanode {
         var spaceExtentSize = this.map.spaceExtentSize;
         var spaceExtentOffset = this.map.spaceExtentOffset;
     
-        for (var i = 0; i < 3; i++) {
+        for (i = 0; i < 3; i++) {
             minExtents[i] = this.parseExtentBits(extentsBytes, extentBits, index) * spaceExtentSize[i] + spaceExtentOffset[i];
             //minExtents[i] = this.parseExtentBits(extentsBytes, extentBits, index, 1.0);
             index += extentBits;
@@ -155,7 +155,7 @@ struct Metanode {
     
         //check zero bbox
         var extentsBytesSum = 0;
-        for (var i = 0, li = extentsBytes.length; i < li; i++) {
+        for (i = 0, li = extentsBytes.length; i < li; i++) {
             extentsBytesSum += extentsBytes[i];
         }
         
@@ -215,7 +215,7 @@ struct Metanode {
     
     this.alien = false;
 
-    var nodeSize2 = stream.index - lastIndex;
+    //var nodeSize2 = stream.index - lastIndex;
 
     //if (!this.map.config.mapSmartNodeParsing) {
     this.generateCullingHelpers();
@@ -288,23 +288,25 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
             return; //result is same for each tile id
         }
 
+        var divisionNode;
+        var llx, lly, urx, ury;
         var pos = draw.tmpVec3;
         
         if (this.id[0] > map.measure.maxDivisionNodeDepth) {
             var pos2 = draw.tmpVec5;
             
-            var divisionNode = map.measure.getSpatialDivisionNodeFromId(this.id);
+            divisionNode = map.measure.getSpatialDivisionNodeFromId(this.id);
 
             if (!divisionNode) {
                 return;
             }
 
             map.measure.getSpatialDivisionNodeAndExtents2(this.id, pos2, divisionNode);
-            var node = pos2[0]; 
-            var llx = pos2[1];
-            var lly = pos2[2];
-            var urx = pos2[3];
-            var ury = pos2[4];
+            //var node = pos2[0]; 
+            llx = pos2[1];
+            lly = pos2[2];
+            urx = pos2[3];
+            ury = pos2[4];
 
             this.divisionNode = divisionNode;
 
@@ -315,16 +317,16 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
             
         } else {
             var res = map.measure.getSpatialDivisionNodeAndExtents(this.id);
-            var divisionNode = res[0]; 
+            divisionNode = res[0]; 
 
             if (!divisionNode) {
                 return;
             }
                         
-            var llx = res[1][0][0];
-            var lly = res[1][0][1];
-            var urx = res[1][1][0];
-            var ury = res[1][1][1];
+            llx = res[1][0][0];
+            lly = res[1][0][1];
+            urx = res[1][1][0];
+            ury = res[1][1][1];
             this.divisionNode = divisionNode;
         }
         
@@ -376,8 +378,10 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
         pos[1] = ury; 
         divisionNode.getPhysicalCoordsFast(pos, true, bbox, 0, 9);
 
+        var height;
+
         if (!geocent) {
-            var height = this.maxZ - h;
+            height = this.maxZ - h;
             
             bbox[12] = bbox[0];
             bbox[13] = bbox[1];
@@ -397,28 +401,30 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
             return;        
         }
 
-        var dot = vec3.dot; 
+        var normalize;
+        var dot = vec3.dot;
+        var d1, d2, d3, d4, maxDelta;
 
         if (map.config.mapPreciseBBoxTest || version >= 4) { 
         //if (true) { 
-            var height = this.maxZ - h;
+            height = this.maxZ - h;
 
             if (this.id[0] <= 3) { //get aabbox for low lods
-                var normalize = vec3.normalize2; 
+                normalize = vec3.normalize2; 
 
                 normalize(bbox, 0, pos);
-                var d1 = dot(normal, pos);
+                d1 = dot(normal, pos);
                 
                 normalize(bbox, 3, pos);
-                var d2 = dot(normal, pos);
+                d2 = dot(normal, pos);
         
                 normalize(bbox, 6, pos);
-                var d3 = dot(normal, pos);
+                d3 = dot(normal, pos);
         
                 normalize(bbox, 9, pos);
-                var d4 = dot(normal, pos);
+                d4 = dot(normal, pos);
 
-                var maxDelta = Math.min(d1, d2, d3, d4);
+                maxDelta = Math.min(d1, d2, d3, d4);
 
                 pos[0] = (urx + llx)* 0.5; 
                 pos[1] = ury; 
@@ -482,22 +488,22 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
                 bbox[18] = maxX; bbox[19] = maxY; bbox[20] = maxZ;
                 bbox[21] = minX; bbox[22] = maxY; bbox[23] = maxZ;
             } else {
-                var normalize = vec3.normalize3; 
-                var dot = vec3.dot2;
+                normalize = vec3.normalize3; 
+                dot = vec3.dot2;
 
                 normalize(bbox, 0, bbox, 12);
-                var d1 = dot(normal, bbox, 12);
+                d1 = dot(normal, bbox, 12);
                 
                 normalize(bbox, 3, bbox, 15);
-                var d2 = dot(normal, bbox, 15);
+                d2 = dot(normal, bbox, 15);
         
                 normalize(bbox, 6, bbox, 18);
-                var d3 = dot(normal, bbox, 18);
+                d3 = dot(normal, bbox, 18);
         
                 normalize(bbox, 9, bbox, 21);
-                var d4 = dot(normal, bbox, 21);
+                d4 = dot(normal, bbox, 21);
     
-                var maxDelta = Math.min(d1, d2, d3, d4);
+                maxDelta = Math.min(d1, d2, d3, d4);
 
                 //extend bbox height by tile curvature 
                 height += draw.planetRadius - (draw.planetRadius * maxDelta);  
@@ -520,21 +526,21 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
             }
         
         } else {
-            var normalize = vec3.normalize2; 
+            normalize = vec3.normalize2; 
 
             normalize(bbox, 0, pos);
-            var d1 = dot(normal, pos);
+            d1 = dot(normal, pos);
             
             normalize(bbox, 3, pos);
-            var d2 = dot(normal, pos);
+            d2 = dot(normal, pos);
     
             normalize(bbox, 6, pos);
-            var d3 = dot(normal, pos);
+            d3 = dot(normal, pos);
     
             normalize(bbox, 9, pos);
-            var d4 = dot(normal, pos);
+            d4 = dot(normal, pos);
 
-            var maxDelta = Math.min(d1, d2, d3, d4);
+            maxDelta = Math.min(d1, d2, d3, d4);
         }
 
         //get cos angle based at 90deg
@@ -564,7 +570,7 @@ MapMetanode.prototype.getWorldMatrix = function(geoPos, matrix) {
         m[8] = 0; m[9] = 0; m[10] = this.bbox.side(2); m[11] = 0;
         m[12] = this.bbox.min[0] - geoPos[0]; m[13] = this.bbox.min[1] - geoPos[1]; m[14] = this.bbox.min[2] - geoPos[2]; m[15] = 1;
     } else {
-        var m = mat4.create();
+        m = mat4.create();
 
         mat4.multiply( math.translationMatrix(this.bbox.min[0] - geoPos[0], this.bbox.min[1] - geoPos[1], this.bbox.min[2] - geoPos[2]),
                        math.scaleMatrix(this.bbox.side(0), this.bbox.side(1), this.bbox.side(2)), m);
@@ -598,8 +604,8 @@ MapMetanode.prototype.drawBBox = function(cameraPos) {
 };
 
 
-MapMetanode.prototype.drawBBox2 = function(cameraPos) {
-    var spoints = []; 
+MapMetanode.prototype.drawBBox2 = function() {
+    //var spoints = []; 
     //for (var i = 0, li = this.bbox2.length; i < li; i++) {
         //var pos = this.bbox2[i];
         //pos = ["obj", pos[0], pos[1], "fix", pos[2], 0, 0, 0, 10, 90 ];
@@ -699,7 +705,7 @@ MapMetanode.prototype.drawPlane = function(cameraPos, tile) {
     prog.setMat4('uProj', proj);
     prog.setFloatArray('uPoints', buffer);
 
-    var minTile = 32;
+    //var minTile = 32;
     var embed = 8;
     var altitude = Math.max(10, tile.distance + 20);
     var gridSelect = (Math.log(altitude) / Math.log(embed));

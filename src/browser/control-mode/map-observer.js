@@ -37,9 +37,10 @@ ControlModeMapObserver.prototype.drag = function(event) {
     var pos = map.getPosition();
     var coords = pos.getCoords();
     var delta = event.getDragDelta();
-    var zoom = event.getDragZoom(); 
+    //var zoom = event.getDragZoom(); 
     var touches = event.getDragTouches(); 
     var azimuthDistance = this.getAzimuthAndDistance(delta[0], delta[1]);
+    var sensitivity;
     
     var modifierKey = (this.browser.controlMode.altKey
                || this.browser.controlMode.shiftKey
@@ -54,8 +55,8 @@ ControlModeMapObserver.prototype.drag = function(event) {
         }
         
         if (event.getTouchParameter('touchMode') == 'pan' && this.config.rotationAllowed) {
-            var pan = event.getTouchParameter('touchPanDelta');
-            var sensitivity = this.config.sensitivity[1] * this.retinaFactor;
+            //var pan = event.getTouchParameter('touchPanDelta');
+            sensitivity = this.config.sensitivity[1] * this.retinaFactor;
             this.orientationDeltas.push([delta[0] * sensitivity, 
                 -delta[1] * sensitivity, 0]);
             this.browser.callListener('map-position-rotated', {});
@@ -76,7 +77,7 @@ ControlModeMapObserver.prototype.drag = function(event) {
                 this.setPosition(pos);
             }
         } else {
-            var sensitivity = this.config.sensitivity[0] * this.retinaFactor;
+            sensitivity = this.config.sensitivity[0] * this.retinaFactor;
             var fov = pos.getFov();
             var fovCorrection = (fov > 0.01 && fov < 179) ? (1.0 / Math.tan(math.radians(fov*0.5))) : 1.0;
             var azimuth = math.radians(azimuthDistance[0]);
@@ -92,7 +93,7 @@ ControlModeMapObserver.prototype.drag = function(event) {
     } else if (((touches <= 1 && event.getDragButton('right')) || event.getDragButton('middle') || modifierKey) 
                && this.config.rotationAllowed) { //rotate
                    
-        var sensitivity = this.config.sensitivity[1] * this.retinaFactor;
+        sensitivity = this.config.sensitivity[1] * this.retinaFactor;
         this.orientationDeltas.push([delta[0] * sensitivity,
             -delta[1] * sensitivity, 0]);
         this.browser.callListener('map-position-rotated', {});
@@ -164,15 +165,15 @@ ControlModeMapObserver.prototype.doubleclick = function(event) {
 };
 
 
-ControlModeMapObserver.prototype.keyup = function(event) {
+ControlModeMapObserver.prototype.keyup = function() {
 };
 
 
-ControlModeMapObserver.prototype.keydown = function(event) {
+ControlModeMapObserver.prototype.keydown = function() {
 };
 
 
-ControlModeMapObserver.prototype.keypress = function(event) {
+ControlModeMapObserver.prototype.keypress = function() {
 };
 
 
@@ -231,31 +232,31 @@ ControlModeMapObserver.prototype.getAzimuthAndDistance = function(dx, dy) {
 };
 
 
-ControlModeMapObserver.prototype.tick = function(event) {
+ControlModeMapObserver.prototype.tick = function() {
     var map = this.browser.getMap();
     if (map == null) {
         return;
     }
 
-    var pos = map.getPosition();
-    var update = false;
+    var pos = map.getPosition(), delta, deltas;
+    var update = false, azimuth, correction, i;
     var inertia = this.config.inertia; //[0.83, 0.9, 0.7]; 
     //var inertia = [0.95, 0.8, 0.8]; 
     //var inertia = [0, 0, 0]; 
 
     //process coords deltas
     if (this.coordsDeltas.length > 0) {
-        var deltas = this.coordsDeltas;
+        deltas = this.coordsDeltas;
         var forward = [0,0];
         var coords = pos.getCoords();
         
         //get foward vector form coord deltas    
-        for (var i = 0; i < deltas.length; i++) {
-            var delta = deltas[i];
+        for (i = 0; i < deltas.length; i++) {
+            delta = deltas[i];
 
-            var coords2 = [delta[4], delta[5]];
+            //var coords2 = [delta[4], delta[5]];
             
-            var azimuth = delta[3];
+            azimuth = delta[3];
             azimuth += 0;//map.getAzimuthCorrection(coords2, coords);
             azimuth = math.radians(azimuth);
 
@@ -277,18 +278,18 @@ ControlModeMapObserver.prototype.tick = function(event) {
         }
         
         var distance = Math.sqrt(forward[0]*forward[0] + forward[1]*forward[1]);
-        var azimuth = math.degrees(Math.atan2(forward[0], forward[1]));
+        azimuth = math.degrees(Math.atan2(forward[0], forward[1]));
     
         //console.log("tick: " + azimuth + " " + distance);
 
         //apply final azimuth and distance
         if (this.config.navigationMode == 'free') { 
-            var correction = pos.getOrientation()[0];
+            correction = pos.getOrientation()[0];
             pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance);
             correction = pos.getOrientation()[0] - correction;
         } else { // "azimuthal" 
 
-            var correction = pos.getOrientation()[0];
+            correction = pos.getOrientation()[0];
             //pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, true);
             
             
@@ -341,8 +342,8 @@ ControlModeMapObserver.prototype.tick = function(event) {
         
         //console.log("correction2: " + correction);
 
-        for (var i = 0; i < deltas.length; i++) {
-            var delta = deltas[i];
+        for (i = 0; i < deltas.length; i++) {
+            delta = deltas[i];
             delta[3] += correction; 
         }
 
@@ -351,12 +352,12 @@ ControlModeMapObserver.prototype.tick = function(event) {
 
     //process coords deltas
     if (this.orientationDeltas.length > 0) {
-        var deltas = this.orientationDeltas;
+        deltas = this.orientationDeltas;
         var orientation = pos.getOrientation();
         
         //apply detals to current orientation    
-        for (var i = 0; i < deltas.length; i++) {
-            var delta = deltas[i];
+        for (i = 0; i < deltas.length; i++) {
+            delta = deltas[i];
             orientation[0] += delta[0];  
             orientation[1] += delta[1];
             orientation[2] += delta[2];
@@ -379,11 +380,11 @@ ControlModeMapObserver.prototype.tick = function(event) {
 
     //process view extents deltas
     if (this.viewExtentDeltas.length > 0) {
-        var deltas = this.viewExtentDeltas;
+        deltas = this.viewExtentDeltas;
         var viewExtent = pos.getViewExtent();
         
         //apply detals to current view extent    
-        for (var i = 0; i < deltas.length; i++) {
+        for (i = 0; i < deltas.length; i++) {
             viewExtent *= deltas[i];
             deltas[i] += (1 - deltas[i]) * (1.0 - inertia[2]);
             
@@ -408,7 +409,7 @@ ControlModeMapObserver.prototype.tick = function(event) {
 };
 
 
-ControlModeMapObserver.prototype.reset = function(config) {
+ControlModeMapObserver.prototype.reset = function() {
     this.coordsDeltas = [];
     this.orientationDeltas = [];
     this.viewExtentDeltas = [];
@@ -423,7 +424,7 @@ function constrainMapPosition(browser, pos) {
     var minVE = browser.config.minViewExtent;
     var maxVE = browser.config.maxViewExtent;
 
-    var map = browser.getMap();
+    var map = browser.getMap(), o;
 
     //clamp view extets
     var viewExtent = math.clamp(pos.getViewExtent(), minVE, maxVE); 
@@ -442,7 +443,7 @@ function constrainMapPosition(browser, pos) {
             var maxTilt = 20 + ((-90) - 20) * factor; 
             var minTilt = -90; 
             
-            var o = pos.getOrientation();
+            o = pos.getOrientation();
             
             if (o[1] > maxTilt) {
                 o[1] = maxTilt;
@@ -468,7 +469,7 @@ function constrainMapPosition(browser, pos) {
     var cameraHeight = camPos[2]; //this.cameraHeight() - this.cameraHeightOffset - this.cameraHeightOffset2;
 
     if (cameraHeight < hmax) {
-        var o = pos.getOrientation();
+        o = pos.getOrientation();
 
         var getFinalOrientation = (function(start, end, level) {
             var value = (start + end) * 0.5;

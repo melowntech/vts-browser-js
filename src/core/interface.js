@@ -1,10 +1,10 @@
 
 import Proj4 from 'proj4';
 import {Core as Core_} from './core';
-import {CoreInterface as CoreInterface_} from './interface';
+//import {CoreInterface as CoreInterface_} from './interface';
 
 //get rid of compiler mess
-var CoreInterface = CoreInterface_;
+//var CoreInterface = CoreInterface_;
 var Core = Core_;
 var proj4 = Proj4;
 

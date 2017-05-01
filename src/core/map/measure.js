@@ -28,8 +28,8 @@ var MapMeasure = function(map) {
 MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, nodeCoords, coordsArray) {
     if (!node) {
         var result = this.getSpatialDivisionNode(coords);
-        var node = result[0];
-        var nodeCoords = result[1];
+        node = result[0];
+        nodeCoords = result[1];
     }
     
     if (!this.config.mapHeightLodBlend) {
@@ -61,8 +61,7 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
 
         tree.traceHeight(root, params, false);
 
-        var heightMap = params.heightMap;
-        var metanode = params.metanode;
+        var metanode = params.metanode, i, li, height;
 
         if (params.heightMap != null) {
             if (storeStats) {
@@ -73,22 +72,22 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
             }
             
             var res = metanode.id[0] >= Math.ceil(lod);
-            var arrayRes;
+            var arrayRes, height1, height2;
            
             if (this.config.mapHeightLodBlend && metanode.id[0] > 0 &&
                 params.parent && params.parent.heightMap && lod <= metanode.id[0]) {
-                var height1 = this.getHeightmapValue(nodeCoords, params.parent.metanode, params.parent);  
-                var height2 = this.getHeightmapValue(nodeCoords, metanode, params);  
+                height1 = this.getHeightmapValue(nodeCoords, params.parent.metanode, params.parent);  
+                height2 = this.getHeightmapValue(nodeCoords, metanode, params);  
                 var factor = lod - Math.floor(lod);
-                var height = height1 + (height2 - height1) * factor;
+                height = height1 + (height2 - height1) * factor;
                 
                 if (coordsArray) {
                     arrayRes = new Array(coordsArray.length);
                     
-                    for (var i = 0, li = coordsArray.length; i < li; i++) {
+                    for (i = 0, li = coordsArray.length; i < li; i++) {
                         var nodeCoords2 = coordsArray[i];//node.getInnerCoords(coordsArray[i]);
-                        var height1 = this.getHeightmapValue(nodeCoords2, params.parent.metanode, params.parent);  
-                        var height2 = this.getHeightmapValue(nodeCoords2, metanode, params);  
+                        height1 = this.getHeightmapValue(nodeCoords2, params.parent.metanode, params.parent);  
+                        height2 = this.getHeightmapValue(nodeCoords2, metanode, params);  
 
                         arrayRes[i] = [height1 + (height2 - height1) * factor, res, true];
                     }
@@ -96,13 +95,13 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
                 
                 //console.log("lod: " + lod + " h1: " + height1 + " h2: " + height2 + " h: " + height);  
             } else {
-                var height = this.getHeightmapValue(nodeCoords, metanode, params);  
+                height = this.getHeightmapValue(nodeCoords, metanode, params);  
 
                 if (coordsArray) {
                     arrayRes = new Array(coordsArray.length);
                     
-                    for (var i = 0, li = coordsArray.length; i < li; i++) {
-                        var height2 = this.getHeightmapValue(coordsArray[i], metanode, params);  
+                    for (i = 0, li = coordsArray.length; i < li; i++) {
+                        height2 = this.getHeightmapValue(coordsArray[i], metanode, params);  
 
                         arrayRes[i] = [height2, res, true];
                     }
@@ -112,7 +111,7 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
             return [height, res, true, null, null, arrayRes];
 
         } else if (metanode != null /*&& metanode.id[0] == lod && !metanode.hasNavtile()*/){
-            var res = this.getSurfaceHeightNodeOnly(coords, lod + 8, storeStats, lod, null, node, nodeCoords, coordsArray);
+            res = this.getSurfaceHeightNodeOnly(coords, lod + 8, storeStats, lod, null, node, nodeCoords, coordsArray);
 
             //console.log("lod2: " + lod + " h: " + height[0]);  
             return [res[0], res[1], true, null, null, res[5]];
@@ -133,13 +132,13 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
 
 
 MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats, statsLod, deltaSample, node, nodeCoords, coordsArray) {
-    var arrayRes; 
+    var arrayRes, height, stats = this.map.stats; 
     
     if (!deltaSample) {
         if (!node) {
             var result = this.getSpatialDivisionNode(coords);
-            var node = result[0];
-            var nodeCoords = result[1];
+            node = result[0];
+            nodeCoords = result[1];
         }
         
         if (coordsArray) {
@@ -151,8 +150,8 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
         }
         
     } else {
-        var node = deltaSample[0];
-        var nodeCoords = deltaSample[1];
+        node = deltaSample[0];
+        nodeCoords = deltaSample[1];
     }
 
     if (!this.config.mapHeightLodBlend) {
@@ -185,7 +184,7 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
 
             var w0 = (res1[0] + (res2[0] - res1[0])*fx);
             var w1 = (res3[0] + (res4[0] - res3[0])*fx);
-            var height = (w0 + (w1 - w0)*fy);
+            height = (w0 + (w1 - w0)*fy);
             
             //console.log("h: " + height + "fx: " + fx + "fy: " + fy + "s1234: " + res1[0] + " "  + res2[0] + " "  + res3[0] + " "  + res4[0]);            
             /*
@@ -231,7 +230,6 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
             //console.log("lod2: " + lod + " nodelod: " + metanode.id[0] + " h: " + center[2]/1.55);  
 
             if (storeStats) {
-                var stats = this.map.stats;
                 stats.heightClass = 1;
                 stats.heightLod = statsLod;
                 stats.heightNode = metanode.id[0];                        
@@ -242,9 +240,9 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
                 var center2 = this.convert.convertCoords(params.parent.metanode.bbox.center(), 'physical', 'navigation');
 
                 var factor = lod - Math.floor(lod);
-                var height = center[2] + (center2[2] - center[2]) * factor;
+                height = center[2] + (center2[2] - center[2]) * factor;
                
-                var extetnts = params.extents;
+                //extetnts = params.extents;
                 return [height, true, true, params.extents, metanode, arrayRes];
                 //console.log("lod: " + lod + " h1: " + center[2] + " h2: " + center2[2] + " h: " + height);  
             } else {
@@ -263,7 +261,6 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
     //console.log("lod3: " + lod + " h: 0");  
 
     if (storeStats) {
-        var stats = this.map.stats;
         stats.heightClass = 0;
         stats.heightLod = statsLod;
         stats.heightNode = 0;                        
@@ -350,16 +347,16 @@ MapMeasure.prototype.getSpatialDivisionNodeAndExtents = function(id) {
     var nodes = this.map.referenceFrame.getSpatialDivisionNodes();
 
     var bestNode = null;
-    var bestLod = -1;
-    var bestNodeCoords = [0,0];
-    var bestExtents = {ll:[0,0], ur:[1,1]};
+    //var bestLod = -1;
+    var bestNodeCoords = [0,0], shift;
+    //var bestExtents = {ll:[0,0], ur:[1,1]};
 
     for (var i = 0, li = nodes.length; i < li; i++) {
         var node = nodes[i];
         
         //has division node this tile node 
         //var shift = node.id[0] - this.lodRange[0];
-        var shift = id[0] - node.id[0];
+        shift = id[0] - node.id[0];
 
         if (shift >= 0) {
             var x = id[1] >> shift;
@@ -367,8 +364,8 @@ MapMeasure.prototype.getSpatialDivisionNodeAndExtents = function(id) {
             
             if (node.id[1] == x && node.id[2] == y) {
                 bestNode = node;
-                bestLod = node.id[0];
-                bestExtents = node.extents;
+                //bestLod = node.id[0];
+                //bestExtents = node.extents;
                 bestNodeCoords = [node.id[1] << shift, node.id[2] << shift];                
             }
         }
@@ -378,7 +375,7 @@ MapMeasure.prototype.getSpatialDivisionNodeAndExtents = function(id) {
         return null;
     }
     
-    var shift = id[0] - bestNode.id[0];
+    shift = id[0] - bestNode.id[0];
     
     var factor = 1.0 / Math.pow(2, shift);
     var ur = bestNode.extents.ur;
@@ -397,8 +394,6 @@ MapMeasure.prototype.getSpatialDivisionNodeAndExtents = function(id) {
 
 
 MapMeasure.prototype.getSpatialDivisionNodeFromId = function(id) {
-    var nodes = this.map.referenceFrame.getSpatialDivisionNodes();
-
     var shift = id[0] - this.maxDivisionNodeDepth;
     var nx = id[1] >> shift;
     var ny = id[2] >> shift;
@@ -458,7 +453,6 @@ MapMeasure.prototype.getSpatialDivisionNodeDepths = function() {
 MapMeasure.prototype.getOptimalHeightLodBySampleSize = function(coords, desiredSamplesSize) {
     var result = this.getSpatialDivisionNode(coords);
     var node = result[0];
-    var nodeCoords = result[1];
 
     if (node != null) {
         var nodeLod = node.id[0];
@@ -478,7 +472,6 @@ MapMeasure.prototype.getOptimalHeightLodBySampleSize = function(coords, desiredS
 MapMeasure.prototype.getOptimalHeightLod = function(coords, viewExtent, desiredSamplesPerViewExtent) {
     var result = this.getSpatialDivisionNode(coords);
     var node = result[0];
-    var nodeCoords = result[1];
 
     if (node != null) {
         var nodeLod = node.id[0];
@@ -558,12 +551,13 @@ MapMeasure.prototype.getAzimuthCorrection = function(coords, coords2) {
 };
 
 
-MapMeasure.prototype.getNED = function(coords, returnMatrix) {
+MapMeasure.prototype.getNED = function(coords) {
     var centerCoords = this.convert.convertCoords([coords[0], coords[1], 0], 'navigation', 'physical');
+    var upCoords, rightCoords;
 
     if (this.isProjected) {
-        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], 'navigation', 'physical');
-        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], 'navigation', 'physical');
+        upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], 'navigation', 'physical');
+        rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], 'navigation', 'physical');
     } else {
         var cy = (coords[1] + 90) - 0.0001;
         var cx = (coords[0] + 180) + 0.0001;
@@ -573,15 +567,15 @@ MapMeasure.prototype.getNED = function(coords, returnMatrix) {
         
             //up coords
             var r = geodesic.Direct(coords[1], coords[0], 0, -100);
-            var upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
+            upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
     
             //right coords
             r = geodesic.Direct(coords[1], coords[0], 90, 100);
-            var rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
+            rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
         } else {
             // substraction instead of addition is probably case of complicated view matrix calculation
-            var upCoords = this.convert.convertCoords([coords[0], coords[1] - 0.0001, 0], 'navigation', 'physical');
-            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], 'navigation', 'physical');
+            upCoords = this.convert.convertCoords([coords[0], coords[1] - 0.0001, 0], 'navigation', 'physical');
+            rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], 'navigation', 'physical');
         }
     }
 
@@ -608,10 +602,11 @@ MapMeasure.prototype.getNED = function(coords, returnMatrix) {
 
 MapMeasure.prototype.getNewNED = function(coords, returnMatrix) {
     var centerCoords = this.convert.convertCoords([coords[0], coords[1], 0], 'navigation', 'physical');
+    var upCoords, rightCoords;
 
     if (this.isProjected) {
-        var upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], 'navigation', 'physical');
-        var rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], 'navigation', 'physical');
+        upCoords = this.convert.convertCoords([coords[0], coords[1] + 100, 0], 'navigation', 'physical');
+        rightCoords = this.convert.convertCoords([coords[0] + 100, coords[1], 0], 'navigation', 'physical');
     } else {
         //get NED for latlon coordinates
         //http://www.mathworks.com/help/aeroblks/directioncosinematrixeceftoned.html
@@ -651,15 +646,15 @@ MapMeasure.prototype.getNewNED = function(coords, returnMatrix) {
         
             //up coords
             var r = geodesic.Direct(coords[1], coords[0], 0, -100);
-            var upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
+            upCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
     
             //right coords
             r = geodesic.Direct(coords[1], coords[0], 90, -100);
-            var rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
+            rightCoords = this.convert.convertCoords([r.lon2, r.lat2, 0], 'navigation', 'physical');
         } else {
             // substraction instead of addition is probably case of complicated view matrix calculation
-            var upCoords = this.convert.convertCoords([coords[0], coords[1] + 0.0001, 0], 'navigation', 'physical');
-            var rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], 'navigation', 'physical');
+            upCoords = this.convert.convertCoords([coords[0], coords[1] + 0.0001, 0], 'navigation', 'physical');
+            rightCoords = this.convert.convertCoords([coords[0] + 0.0001, coords[1], 0], 'navigation', 'physical');
         }
     }
 
@@ -685,7 +680,7 @@ MapMeasure.prototype.getNewNED = function(coords, returnMatrix) {
         return [
             east[0], east[1], east[2], 0,
             north[0], north[1], north[2], 0,
-            up[0], up[1], up[2], 0,
+            direction[0], direction[1], direction[2], 0,
             0, 0, 0, 1
         ];        
     }
@@ -709,12 +704,14 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
     
     var tmpMatrix = mat4.create();
     mat4.multiply(math.rotationMatrix(2, math.radians(-orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), tmpMatrix);
+    var orbitPos, ned, north, east, direction, spaceMatrix, rotationMatrix;
+    var east2, north2, direction2, dir, up, right;
 
     if (position.getViewMode() == 'obj') {
-        var orbitPos = [0, -distance, 0];
+        orbitPos = [0, -distance, 0];
         mat4.multiplyVec3(tmpMatrix, orbitPos);
     } else {
-        var orbitPos = [0, 0, 0];
+        orbitPos = [0, 0, 0];
     }
 
     //this.cameraVector = [0, 0, 1];
@@ -735,25 +732,25 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         tmpMatrix = mat4.create();
         mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), tmpMatrix);
 
-        var ned = this.getNED(coords);
-        var north = ned.north;
-        var east  = ned.east;
-        var direction = ned.direction;
+        ned = this.getNED(coords);
+        north = ned.north;
+        east  = ned.east;
+        direction = ned.direction;
 
-        var spaceMatrix = [
+        spaceMatrix = [
             east[0], east[1], east[2], 0,
             direction[0], direction[1], direction[2], 0,
             north[0], north[1], north[2], 0,
             0, 0, 0, 1
         ];
         
-        var east2  = [1,0,0];
-        var direction2 = [0,1,0];
-        var north2 = [0,0,1];
+        east2  = [1,0,0];
+        direction2 = [0,1,0];
+        north2 = [0,0,1];
 
-        var dir = [1,0,0];
-        var up = [0,0,-1];
-        var right = [0,0,0];
+        dir = [1,0,0];
+        up = [0,0,-1];
+        right = [0,0,0];
         vec3.cross(dir, up, right);
 
         //rotate vectors according to eulers
@@ -781,7 +778,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         */
 
         //get rotation matrix
-        var rotationMatrix = [
+        rotationMatrix = [
             east2[0], east2[1], east2[2], 0,
             direction2[0], direction2[1], direction2[2], 0,
             north2[0], north2[1], north2[2], 0,
@@ -807,13 +804,13 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
     } else { //geographics
 
       
-        var ned = this.getNED(coords);
+        ned = this.getNED(coords);
         north = ned.north;
         east  = ned.east;
         direction = ned.direction;
         
 
-        var spaceMatrix = [
+        spaceMatrix = [
             east[0], east[1], east[2], 0,
             direction[0], direction[1], direction[2], 0,
             north[0], north[1], north[2], 0,
@@ -825,11 +822,11 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         var localRotMatrix = mat4.create();
         mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), localRotMatrix);
 
-        var east2  = [1,0,0];
-        var direction2 = [0,1,0];
-        var north2 = [0,0,1];
+        east2  = [1,0,0];
+        direction2 = [0,1,0];
+        north2 = [0,0,1];
 
-        var coords = position.getCoords();
+        coords = position.getCoords();
         var latlonMatrix = mat4.create();
         mat4.multiply(math.rotationMatrix(0, math.radians((coords[1] - 90.0))), math.rotationMatrix(2, math.radians((-coords[0]-90))), latlonMatrix);
 //      mat4.multiply(math.rotationMatrix(2, math.radians((coords[0]-90))), math.rotationMatrix(0, math.radians((coords[1] - 90.0))), latlonMatrix);
@@ -844,16 +841,16 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         mat4.multiplyVec3(latlonMatrix, direction2);
 
 
-        var spaceMatrix = [
+        spaceMatrix = [
             east2[0], east2[1], east2[2], 0,
             direction2[0], direction2[1], direction2[2], 0,
             north2[0], north2[1], north2[2], 0,
             0, 0, 0, 1
         ];
 
-        var right = [1,0,0];
-        var dir = [0,1,0];
-        var up = [0,0,1];
+        right = [1,0,0];
+        dir = [0,1,0];
+        up = [0,0,1];
         //vec3.cross(dir, up, right);
 
         //rotate vectors according to eulers
@@ -884,7 +881,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         ];
 */        
 
-        var rotationMatrix = [
+        rotationMatrix = [
             right[0], right[1], right[2], 0,
             dir[0], dir[1], dir[2], 0,
             up[0], up[1], up[2], 0,

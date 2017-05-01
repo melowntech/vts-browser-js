@@ -127,13 +127,13 @@ MapCache.prototype.remove = function(item) {
     //if (item != this.last && item != this.first) {
 
         if (!item.prev) {
-            debugger;
+            //debugger;
         } else {
             item.prev.next = item.next;
         }
         
         if (!item.next) {
-            debugger;
+            //debugger;
         } else {
             item.next.prev = item.prev;
         }

@@ -7,7 +7,7 @@ var BBox = BBox_;
 var utils = utils_;
 
 
-var MapVirtualSurface = function(map, json, type) {
+var MapVirtualSurface = function(map, json) {
     this.map = map;
     this.id = null;
     this.metaUrl = '';
@@ -59,7 +59,7 @@ MapVirtualSurface.prototype.onMappingFileLoaded = function(data) {
 };
 
 
-MapVirtualSurface.prototype.onMappingFileLoadError = function(data) {
+MapVirtualSurface.prototype.onMappingFileLoadError = function() {
 };
 
 

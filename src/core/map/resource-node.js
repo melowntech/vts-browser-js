@@ -117,16 +117,17 @@ MapResourceNode.prototype.getGeodata = function(path, extraInfo) {
 // Textures ---------------------------------
 
 MapResourceNode.prototype.getTexture = function(path, heightMap, extraBound, extraInfo, tile, internal) {
+    var texture;
     if (extraInfo && extraInfo.layer) {
         var id = path + extraInfo.layer.id;
-        var texture = this.textures[id];
+        texture = this.textures[id];
         
         if (!texture) {
             texture = new MapTexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
             this.textures[id] = texture;
         }
     } else {
-        var texture = this.textures[path];
+        texture = this.textures[path];
         
         if (!texture) {
             texture = new MapTexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
@@ -141,7 +142,7 @@ MapResourceNode.prototype.getTexture = function(path, heightMap, extraBound, ext
 // SubTextures ---------------------------------
 
 MapResourceNode.prototype.getSubtexture = function(texture, path, heightMap, extraBound, extraInfo, tile, internal) {
-    var texture = this.subtextures[path];
+    texture = this.subtextures[path];
     
     if (!texture) {
         texture = new MapSubtexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
@@ -169,7 +170,7 @@ MapResourceNode.prototype.removeMetatile = function(metatile) {
 
 
 MapResourceNode.prototype.getMetatile = function(surface, allowCreation, tile) {
-    var metatiles = this.metatiles; 
+    var metatiles = this.metatiles, metatile; 
     for (var key in metatiles) {
         if (metatiles[key].surface == surface) {
             return metatiles[key];
@@ -179,13 +180,13 @@ MapResourceNode.prototype.getMetatile = function(surface, allowCreation, tile) {
     var path = surface.getMetaUrl(this.id);
 
     if (metatiles[path]) {
-        var metatile = metatiles[path].clone(surface);
+        metatile = metatiles[path].clone(surface);
         this.addMetatile(path, metatile);
         return metatile;
     }
 
     if (allowCreation) {
-        var metatile = new MapMetatile(this, surface, tile);
+        metatile = new MapMetatile(this, surface, tile);
         this.addMetatile(path, metatile);
         return metatile; 
     } else {

@@ -51,7 +51,7 @@ MapResourceTree.prototype.findNode = function(id, createNonexisted) {
 
 
 MapResourceTree.prototype.findAgregatedNode = function(id, agregation, createNonexisted) {
-    var rootLod = 0;  //TODO: fix is it same way as findNavTile
+    //var rootLod = 0;  //TODO: fix is it same way as findNavTile
     var node = this.tree;
     var ix = ((id[1] >> agregation) << agregation);
     var iy = ((id[2] >> agregation) << agregation);

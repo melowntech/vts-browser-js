@@ -18,7 +18,7 @@ var Rois = function(roiServers) {
  * @param clb callback
  * @return Response promise object (if ES6 is supported otherwise null)
  */
-Rois.prototype.roisAtPosition = function(position, count, clb) {
+Rois.prototype.roisAtPosition = function(/*position, count, clb*/) {
     // TODO request ROI server
     // ROI gravity must be defined before implementation
 };

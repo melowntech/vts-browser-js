@@ -15,8 +15,10 @@ var GpuBBox = function(gpu, free) {
     this.vertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
 
+    var vertices;
+
     if (free) {
-        var vertices = [0,0,0, 0,0,1,
+        vertices = [0,0,0, 0,0,1,
             0,0,1, 0,0,2,
             0,0,2, 0,0,3,
             0,0,3, 0,0,0,
@@ -31,7 +33,7 @@ var GpuBBox = function(gpu, free) {
             0,0,2, 0,0,6,
             0,0,3, 0,0,7 ];
     } else {
-        var vertices = [0,0,0, 1,0,0,
+        vertices = [0,0,0, 1,0,0,
             1,0,0, 1,1,0,
             1,1,0, 0,1,0,
             0,1,0, 0,0,0,
