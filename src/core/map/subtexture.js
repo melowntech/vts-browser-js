@@ -159,6 +159,8 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
     }
 
     if (this.loadState == 2) { //loaded
+        var t;
+
         if (!doNotLoad && this.cacheItem) {
             this.map.resourcesCache.updateItem(this.cacheItem);
         }
@@ -173,7 +175,7 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
         if (doNotCheckGpu) {
             if (this.heightMap) {
                 if (!this.imageData) {
-                    var t = performance.now();
+                    t = performance.now();
                     this.buildHeightMap();
                     this.stats.renderBuild += performance.now() - t; 
                 }
@@ -184,7 +186,7 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
 
         if (this.heightMap) {
             if (!this.imageData) {
-                var t = performance.now();
+                t = performance.now();
                 this.buildHeightMap();
                 this.stats.renderBuild += performance.now() - t; 
             }
@@ -202,7 +204,7 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
                    // return false;
                 //}
 
-                var t = performance.now();
+                t = performance.now();
                 this.buildGpuTexture();
                 this.stats.renderBuild += performance.now() - t; 
             }
@@ -318,9 +320,9 @@ MapSubtexture.prototype.onLoaded = function(killBlob) {
 
     var size = this.image.naturalWidth * this.image.naturalHeight * (this.heightMap ? 3 : 3);
     
-    if (!this.image.complete) {
-        size = size;
-    }
+    //if (!this.image.complete) {
+       // size = size;
+    //}
     
     //console.log(size);
 
@@ -360,7 +362,7 @@ MapSubtexture.prototype.onLoadHead = function(downloadAll, url, onLoaded, onErro
 };
 
 
-MapSubtexture.prototype.onLoadHeadError = function(downloadAll) {
+MapSubtexture.prototype.onLoadHeadError = function() {
     if (this.map.killed){
         return;
     }
@@ -428,9 +430,9 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
                 
         case 'negative-type':
             if (data) {
-                if (!data.indexOf) {
-                    data = data;
-                }
+                //if (!data.indexOf) {
+                  //  data = data;
+                //}
                     
                 if (data.indexOf(this.checkValue) != -1) {
                     this.checkStatus = -1;

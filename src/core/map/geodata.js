@@ -39,7 +39,7 @@ MapGeodata.prototype.killGeodata = function(killedByCache) {
         this.geodata = null;
     }
     
-    if (killedByCache != true && this.cacheItem != null) {
+    if (killedByCache !== true && this.cacheItem != null) {
         this.map.resourcesCache.remove(this.cacheItem);
     }
 
@@ -53,7 +53,7 @@ MapGeodata.prototype.killGeodata = function(killedByCache) {
 };
 
 
-MapGeodata.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
+MapGeodata.prototype.isReady = function(doNotLoad, priority) {
     var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
     doNotLoad = doNotLoad || doNotUseGpu;
 

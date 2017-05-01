@@ -1,7 +1,6 @@
 
 import MapBoundLayer_ from './bound-layer';
 import MapCredit_ from './credit';
-import MapPosition_ from './position';
 import MapRefFrame_ from './refframe';
 import MapView_ from './view';
 import MapSrs_ from './srs';
@@ -10,7 +9,6 @@ import MapVirtualSurface_ from './virtual-surface';
 import MapStylesheet_ from './stylesheet';
 
 //get rid of compiler mess
-var MapPosition = MapPosition_;
 var MapCredit = MapCredit_;
 var MapBoundLayer = MapBoundLayer_;
 var MapRefFrame = MapRefFrame_;
@@ -80,7 +78,7 @@ MapConfig.prototype.parseReferenceFrame = function() {
 
     this.map.referenceFrame = new MapRefFrame(this.map, rf);
 
-    if (this.map.referenceFrame.valid == false) {
+    if (!this.map.referenceFrame.valid) {
         return false;
     }
 

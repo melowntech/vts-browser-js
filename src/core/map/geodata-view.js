@@ -181,7 +181,7 @@ MapGeodataView.prototype.getWorldMatrix = function(bbox, geoPos, matrix) {
         m[8] = 0; m[9] = 0; m[10] = bbox.side(2); m[11] = 0;
         m[12] = this.bbox.min[0] - geoPos[0]; m[13] = this.bbox.min[1] - geoPos[1]; m[14] = this.bbox.min[2] - geoPos[2]; m[15] = 1;*/
     } else {
-        var m = mat4.create();
+        m = mat4.create();
 
         mat4.multiply( math.translationMatrix(bbox.min[0] - geoPos[0], bbox.min[1] - geoPos[1], bbox.min[2] - geoPos[2]),
                        math.scaleMatrix(1, 1, 1), m);

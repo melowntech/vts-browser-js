@@ -62,7 +62,7 @@ MapTexture.prototype.kill = function() {
 };
 
 
-MapTexture.prototype.killImage = function(killedByCache) {
+MapTexture.prototype.killImage = function() {
     this.mainTexture.killImage();
 
     if (this.maskTexture) {
@@ -71,7 +71,7 @@ MapTexture.prototype.killImage = function(killedByCache) {
 };
 
 
-MapTexture.prototype.killGpuTexture = function(killedByCache) {
+MapTexture.prototype.killGpuTexture = function() {
     this.mainTexture.killGpuTexture();
 
     if (this.maskTexture) {
@@ -110,12 +110,14 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
     if (this.neverReady) {
         return false;
     }
+
+    var parent;
    
     if (this.extraBound) {
         if (this.extraBound.texture) {
             while (this.extraBound.texture.extraBound || this.extraBound.texture.checkStatus == -1) {
 //            while (this.extraBound.texture.checkStatus == -1) {
-                var parent = this.extraBound.sourceTile.parent;
+                parent = this.extraBound.sourceTile.parent;
                 if (parent.id[0] < this.extraBound.layer.lodRange[0]) {
                     this.neverReady = true;
                     this.extraBound.tile.resetDrawCommands = true;
@@ -168,7 +170,7 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
                     var path = this.extraInfo.metaPath;
 						
                     if(!this.extraInfo.metaPath) {
-                        var path = layer.getMetatileUrl(metaresources.id);	
+                        path = layer.getMetatileUrl(metaresources.id);	
                         this.extraInfo.metaPath = path;
                     }
 						
@@ -187,7 +189,7 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
                                 
                             if (this.checkStatus == 2) {
                                 if (!(value & 64)) { //load mask
-                                    var path = layer.getMaskUrl(tile.id);
+                                    path = layer.getMaskUrl(tile.id);
                                     this.maskTexture = tile.resources.getTexture(path, null, null, null, this.tile, this.internal);
                                     this.checkStatus = 0;
                                     tile.resetDrawCommands = true;
@@ -201,7 +203,7 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
                 
             if (this.checkStatus == -1) {
                 if (!this.extraBound) {
-                    var parent = this.extraInfo.tile.parent;
+                    parent = this.extraInfo.tile.parent;
                     if (parent.id[0] < this.extraInfo.layer.lodRange[0]) {
                         this.neverReady = true;
                         this.extraInfo.tile.resetDrawCommands = true;
@@ -216,7 +218,7 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
 
                 while (this.extraBound.texture.extraBound || this.extraBound.texture.checkStatus == -1) {
                     //while (this.extraBound.texture.checkStatus == -1) {
-                    var parent = this.extraBound.sourceTile.parent;
+                    parent = this.extraBound.sourceTile.parent;
                     if (parent.id[0] < this.extraBound.layer.lodRange[0]) {
                         this.neverReady = true;
                         this.extraBound.tile.resetDrawCommands = true;

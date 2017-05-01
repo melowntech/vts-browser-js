@@ -203,7 +203,7 @@ MapMesh.prototype.onLoadError = function() {
 
 
 MapMesh.prototype.onLoaded = function(data, task) {
-    if (this.map.killed == true){
+    if (this.map.killed){
         return;
     }
 

@@ -3,7 +3,6 @@ import {vec3 as vec3_} from '../utils/matrix';
 import {utils as utils_} from '../utils/utils';
 import {platform as platform_} from '../utils/platform';
 import MapView_ from './view';
-import MapVirtualSurface_ from './virtual-surface';
 import MapSurfaceTree_ from './surface-tree';
 import MapResourceTree_ from './resource-tree';
 import MapSrs_ from './srs';
@@ -25,7 +24,6 @@ var vec3 = vec3_;
 var utils = utils_;
 var platform = platform_;
 var MapView = MapView_;
-var MapVirtualSurface = MapVirtualSurface_;
 var MapSurfaceTree = MapSurfaceTree_;
 var MapResourceTree = MapResourceTree_;
 var MapSrs = MapSrs_;
@@ -195,11 +193,11 @@ Map.prototype.getRendererInterface = function() {
 };
 
 
-Map.prototype.setOption = function(key, value) {
+Map.prototype.setOption = function(/*key, value*/) {
 };
 
 
-Map.prototype.getOption = function(key) {
+Map.prototype.getOption = function(/*key*/) {
 };
 
 
@@ -249,7 +247,8 @@ Map.prototype.getVisibleCredits = function() {
     var imagery = this.visibleCredits.imagery;
     var glueImagery = this.visibleCredits.glueImagery;
     var imageryArray = []; 
-    var imagerySpecificity = []; 
+    var imagerySpecificity = [];
+    var i, li, t, sorted;
 
     for (var key in glueImagery) {
         if (!imagery[key]) {
@@ -259,18 +258,18 @@ Map.prototype.getVisibleCredits = function() {
     
     this.visibleCredits.glueImagery = {};
     
-    for (var key in imagery) {
+    for (key in imagery) {
         imageryArray.push(key);
         imagerySpecificity.push(imagery[key]); 
     }
 
     //sort imagery
     do {
-        var sorted = true;
+        sorted = true;
         
-        for (var i = 0, li = imagerySpecificity.length - 1; i < li; i++) {
+        for (i = 0, li = imagerySpecificity.length - 1; i < li; i++) {
             if (imagerySpecificity[i] < imagerySpecificity[i+1]) {
-                var t = imagerySpecificity[i];
+                t = imagerySpecificity[i];
                 imagerySpecificity[i] = imagerySpecificity[i+1];
                 imagerySpecificity[i+1] = t;
                 t = imageryArray[i];
@@ -286,18 +285,18 @@ Map.prototype.getVisibleCredits = function() {
     var mapdataArray = []; 
     var mapdataSpecificity = []; 
 
-    for (var key in mapdata) {
+    for (key in mapdata) {
         mapdataArray.push(key);
         mapdataSpecificity.push(mapdata[key]); 
     }
     
     //sort imagery
     do {
-        var sorted = true;
+        sorted = true;
         
-        for (var i = 0, li = mapdataSpecificity.length - 1; i < li; i++) {
+        for (i = 0, li = mapdataSpecificity.length - 1; i < li; i++) {
             if (mapdataSpecificity[i] < mapdataSpecificity[i+1]) {
-                var t = mapdataSpecificity[i];
+                t = mapdataSpecificity[i];
                 mapdataSpecificity[i] = mapdataSpecificity[i+1];
                 mapdataSpecificity[i+1] = t;
                 t = mapdataArray[i];
@@ -368,7 +367,7 @@ Map.prototype.getBoundLayerOptions = function(id) {
 };
 
 
-Map.prototype.removeBoundLayer = function(id, layer) {
+Map.prototype.removeBoundLayer = function(id) {
     if (this.boundLayers[id]) {
         this.boundLayers[id].kill();
         this.boundLayers[id] = null;
@@ -559,7 +558,7 @@ Map.prototype.getStylesheets = function() {
 };
 
 
-Map.prototype.getStylesheetData = function(id, data) {
+Map.prototype.getStylesheetData = function(id) {
     var stylesheet = this.getStylesheet(id);
 
     if (stylesheet) {
@@ -671,7 +670,7 @@ Map.prototype.setPosition = function(pos) {
 };
 
 
-Map.prototype.getPhysicalSrs = function(coords, source, destination) {
+Map.prototype.getPhysicalSrs = function() {
     return this.referenceFrame.model.physicalSrs;
 };
 
@@ -814,15 +813,15 @@ Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
     var cameraPos = this.camera.position;
     var worldPos;
 
-    var ray = cameraSpaceCoords[4];
+    var ray = cameraSpaceCoords[4], a, d;
 
     if (this.getNavigationSrs().isProjected()) { //plane fallback
         var planePos = [0,0,Math.min(-1000,this.referenceFrame.getGlobalHeightRange()[0])];
         var planeNormal = [0,0,1];
 
-        var d = vec3.dot(planeNormal, ray); //minification is wrong there
+        d = vec3.dot(planeNormal, ray); //minification is wrong there
         //if (d > 1e-6) {
-        var a = [planePos[0] - cameraPos[0], planePos[1] - cameraPos[1], planePos[2] - cameraPos[2]];
+        a = [planePos[0] - cameraPos[0], planePos[1] - cameraPos[1], planePos[2] - cameraPos[2]];
         t = vec3.dot(a, planeNormal) / d;
             
             //var t = (vec3.dot(cameraPos, planeNormal) + (-500)) / d;            
@@ -842,10 +841,10 @@ Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
         var planetRadius = navigationSrsInfo['b'] + this.referenceFrame.getGlobalHeightRange()[0];
     
         var offset = [cameraPos[0], cameraPos[1], cameraPos[2]];
-        var a = vec3.dot(ray, ray); //minification is wrong there
+        a = vec3.dot(ray, ray); //minification is wrong there
         var b = 2 * vec3.dot(ray, offset);
         var c = vec3.dot(offset, offset) - planetRadius * planetRadius;
-        var d = b * b - 4 * a * c;
+        d = b * b - 4 * a * c;
         
         if (d > 0) {
             d = Math.sqrt(d);
@@ -876,7 +875,7 @@ Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
     var navCoords = this.convert.convertCoords(worldPos, 'physical', 'navigation');
 
     if (mode == 'float') {
-        var lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(navCoords, 100, this.config.mapNavSamplesPerViewExtent);
+        lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(navCoords, 100, this.config.mapNavSamplesPerViewExtent);
         var surfaceHeight = this.measure.getSurfaceHeight(navCoords, lod);
         navCoords[2] -= surfaceHeight[0]; 
     }
@@ -902,12 +901,13 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
     }
 
     var res = this.renderer.hitTestGeoLayers(screenX, screenY, mode);
+    var relatedEvents;
 
     if (res[0]) { //do we hit something?
         //console.log(JSON.stringify([id, JSON.stringify(this.hoverFeatureList[id])]));
         
         var id = (res[1]) + (res[2]<<8);
-        var elementId = (res[3]) + (res[4]<<8);
+        //var elementId = (res[3]) + (res[4]<<8);
 		
         var feature = this.hoverFeatureList[id];
 
@@ -923,7 +923,7 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
                 this.hoverFeatureId = null;
             }
 
-            var relatedEvents = [];
+            relatedEvents = [];
 
             if (this.hoverFeatureId != this.lastHoverFeatureId) {
                 if (this.lastHoverFeatureId != null) {
@@ -937,7 +937,7 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
                 this.dirty = true;
             }
 
-            if (this.hoverFeature != null && this.hoverFeature[3] == true) {
+            if (this.hoverFeature != null && this.hoverFeature[3]) {
                 return [this.hoverFeature, true, relatedEvents];
             } else {
                 return [null, false, relatedEvents];
@@ -954,7 +954,7 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
             }
         }
     } else {
-        var relatedEvents = [];
+        relatedEvents = [];
 
         if (mode == 'hover') {
             this.lastHoverFeature = this.hoverFeature;
@@ -977,9 +977,10 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
 
 
 Map.prototype.applyCredits = function(tile) {
+    var value, value2;
     for (var key in tile.imageryCredits) {
-        var value = tile.imageryCredits[key];
-        var value2 = this.visibleCredits.imagery[key];
+        value = tile.imageryCredits[key];
+        value2 = this.visibleCredits.imagery[key];
 
         if (value2) {
             this.visibleCredits.imagery[key] = value > value2 ? value : value2;
@@ -987,9 +988,9 @@ Map.prototype.applyCredits = function(tile) {
             this.visibleCredits.imagery[key] = value;
         }
     }
-    for (var key in tile.glueImageryCredits) {
-        var value = tile.glueImageryCredits[key];
-        var value2 = this.visibleCredits.imagery[key];
+    for (key in tile.glueImageryCredits) {
+        value = tile.glueImageryCredits[key];
+        value2 = this.visibleCredits.imagery[key];
 
         if (value2) {
             this.visibleCredits.glueImagery[key] = value > value2 ? value : value2;
@@ -997,9 +998,9 @@ Map.prototype.applyCredits = function(tile) {
             this.visibleCredits.glueImagery[key] = value;
         }
     }
-    for (var key in tile.mapdataCredits) {
-        var value = tile.mapdataCredits[key];
-        var value2 = this.visibleCredits.mapdata[key];
+    for (key in tile.mapdataCredits) {
+        value = tile.mapdataCredits[key];
+        value2 = this.visibleCredits.mapdata[key];
 
         if (value2) {
             this.visibleCredits.mapdata[key] = value > value2 ? value : value2;
@@ -1073,7 +1074,7 @@ Map.prototype.update = function() {
         this.dirty = true;
     }
 
-    var dirty = this.dirty;
+    var dirty = this.dirty, result;
     this.stats.begin(dirty);
 
     this.loader.update();
@@ -1104,7 +1105,7 @@ Map.prototype.update = function() {
         //this.updateGeoHitmap = this.dirty;
 
         if (this.hoverEvent != null) {
-            var result = this.hitTestGeoLayers(this.hoverEvent[0], this.hoverEvent[1], 'hover');
+            result = this.hitTestGeoLayers(this.hoverEvent[0], this.hoverEvent[1], 'hover');
 
             if (result[1] && result[0] != null) {
                 this.core.callListener('geo-feature-hover', {'feature': result[0][0], 'canvas-coords':this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
@@ -1138,7 +1139,7 @@ Map.prototype.update = function() {
         }
 
         if (this.clickEvent != null) {
-            var result = this.hitTestGeoLayers(this.clickEvent[0], this.clickEvent[1], 'click');
+            result = this.hitTestGeoLayers(this.clickEvent[0], this.clickEvent[1], 'click');
 
             if (result[1] && result[0] != null) {
                 this.core.callListener('geo-feature-click', {'feature': result[0][0], 'canvas-coords':this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),

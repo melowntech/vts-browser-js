@@ -66,7 +66,7 @@ MapStylesheet.prototype.scheduleLoad = function(priority) {
 };
 
 
-MapStylesheet.prototype.onLoad = function(url, onLoaded, onError) {
+MapStylesheet.prototype.onLoad = function() {
     //this.mapLoaderCallLoaded = onLoaded;
     //this.mapLoaderCallError = onError;
 
@@ -85,7 +85,7 @@ MapStylesheet.prototype.onLoadError = function() {
 
 
 MapStylesheet.prototype.onLoaded = function(data) {
-    if (this.map.killed == true){
+    if (this.map.killed){
         return;
     }
     

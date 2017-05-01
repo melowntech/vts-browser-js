@@ -22,10 +22,7 @@ var MapCamera = function(map) {
 
 
 MapCamera.prototype.update = function() {
-    var controlMode = 'observer';
     var map = this.map;
-    var position = [0,0,0];
-    var orientation = map.position.getOrientation();
 
     //check position orientaion ...
     map.position.check();

@@ -84,7 +84,7 @@ var MapTrajectory = function(map, p1, p2, options) {
         this.azimuth = (this.azimuth < 0) ? (360 + this.azimuth) : this.azimuth;
 
         if (!this.map.getNavigationSrs().isProjected()) {
-            var res = this.geodesic.Inverse(this.pp1.pos[2], this.pp1.pos[1], this.pp2.pos[2], this.pp2.pos[1]);
+            res = this.geodesic.Inverse(this.pp1.pos[2], this.pp1.pos[1], this.pp2.pos[2], this.pp2.pos[1]);
             this.geoAzimuth = res.azi1; 
             this.geoDistance = res.s12;
             this.azimuth = this.geoAzimuth % 360;
@@ -170,11 +170,11 @@ MapTrajectory.prototype.generate = function() {
     for (var time = 0; time <= this.duration; time += this.samplePeriod) {
         var factor = time / this.duration;
 
-        var p = this.pp1.clone();
+        var p = this.pp1.clone(), x, coords;
         
         if (this.mode == 'direct') {
 
-            var x = factor;
+            x = factor;
             
             switch(this.fade) {
             case 'in':
@@ -227,7 +227,7 @@ MapTrajectory.prototype.generate = function() {
         } else {
 
             //http://en.wikipedia.org/wiki/Smoothstep
-            var x = factor;
+            x = factor;
             factor =  x*x*(3 - 2*x);
             x = factor;
             factor =  x*x*(3 - 2*x);
@@ -250,13 +250,13 @@ MapTrajectory.prototype.generate = function() {
                               * (1 - Math.cos(2 * Math.PI * time / this.duration))
                               + h1 + (h2 - h1) * time  / this.duration;
 
-                var coords = this.getInterpolatedCoords(distanceFactor);
+                coords = this.getInterpolatedCoords(distanceFactor);
 
                 p.setCoords(coords);
                 p.setHeight(height);            
             } else {
 
-                var coords = this.getInterpolatedCoords(factor2);
+                coords = this.getInterpolatedCoords(factor2);
     
                 p.setCoords(coords);
                 p.setHeight(this.getSineHeight(factor));            

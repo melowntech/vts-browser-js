@@ -18,7 +18,7 @@ var MapLoader = function(map, maxThreads) {
 };
 
 
-MapLoader.prototype.updateThreadCount = function(channel) {
+MapLoader.prototype.updateThreadCount = function() {
     this.maxThreads = this.map.config.mapDownloadThreads;
     this.maxPending = Math.max(20, this.maxThreads * 2);
     this.fadeout = (this.maxPending-1) / this.maxPending;
@@ -41,7 +41,7 @@ MapLoader.prototype.load = function(path, downloadFunction, priority, id, kind) 
     var pending = this.pending[this.channel];
 
    // put the request to the beginning of the pending list
-    var index = this.map.searchArrayIndexById(pending, path);
+    index = this.map.searchArrayIndexById(pending, path);
     if (index != -1) {
         pending[index].priority = priority; 
     } else {
@@ -97,10 +97,10 @@ MapLoader.prototype.onLoaded = function(item) {
             threads : this.downloading.length
         });
 
-        var a = (timer - this.downloadingTime[index]);
-        if (Number.isNaN(a)) {
-            a = a; 
-        }
+        //var a = (timer - this.downloadingTime[index]);
+        //if (Number.isNaN(a)) {
+            //a = a; 
+        //}
 
     }
 
@@ -157,9 +157,6 @@ MapLoader.prototype.updateChannel = function(channel) {
     }
 
     var timer = performance.now();
-    var stats = this.map.stats;
-
-    var recordStats = this.map.draw.replay.storeLoaded;
 
     while (pending.length > 0 && this.usedThreads < this.maxThreads) {
         var item = pending.shift();

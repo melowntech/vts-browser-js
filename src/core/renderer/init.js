@@ -87,7 +87,7 @@ RendererInit.prototype.initHeightmap = function() {
     var meshData = RendererGeometry.buildHeightmap(5);
     renderer.heightmapMesh = new GpuMesh(gpu, meshData, null, this.core);
 
-    var meshData = RendererGeometry.buildPlane(16);
+    meshData = RendererGeometry.buildPlane(16);
     renderer.planeMesh = new GpuMesh(gpu, meshData, null, this.core);
 
     // create heightmap texture
@@ -140,14 +140,12 @@ RendererInit.prototype.initTestMap = function() {
     var gpu = this.gpu;
 
    // create red texture
-    var size = 16;
+    var size = 16, i, j, li, lj, index;
     var data = new Uint8Array( size * size * 4 );
 
-    for (var i = 0; i < size; i++) {
-        for (var j = 0; j < size; j++) {
-
-            var index = (i*size+j)*4;
-
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            index = (i*size+j)*4;
             data[index] = 255;
             data[index + 1] = 0;
             data[index + 2] = 0;
@@ -158,11 +156,11 @@ RendererInit.prototype.initTestMap = function() {
     renderer.redTexture = new GpuTexture(gpu);
     renderer.redTexture.createFromData(size, size, data);
 
-    var data = new Uint8Array( size * size * 4 );
+    data = new Uint8Array( size * size * 4 );
 
-    for (var i = 0; i < size; i++) {
-        for (var j = 0; j < size; j++) {
-            var index = (i*size+j)*4;
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            index = (i*size+j)*4;
             data[index] = 255;
             data[index + 1] = 255;
             data[index + 2] = 255;
@@ -173,11 +171,11 @@ RendererInit.prototype.initTestMap = function() {
     renderer.whiteTexture = new GpuTexture(gpu);
     renderer.whiteTexture.createFromData(size, size, data);
 
-    var data = new Uint8Array( size * size * 4 );
+    data = new Uint8Array( size * size * 4 );
 
-    for (var i = 0; i < size; i++) {
-        for (var j = 0; j < size; j++) {
-            var index = (i*size+j)*4;
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            index = (i*size+j)*4;
             data[index] = 0;
             data[index + 1] = 0;
             data[index + 2] = 0;
@@ -190,7 +188,7 @@ RendererInit.prototype.initTestMap = function() {
 
     var sizeX = 64;
     var sizeY = 8;
-    var data = new Uint8Array( sizeX * sizeY * 4 );
+    data = new Uint8Array( sizeX * sizeY * 4 );
 
     var chars = [
         '............................................................',
@@ -204,14 +202,12 @@ RendererInit.prototype.initTestMap = function() {
 
 
     // create red texture
-    var data = new Uint8Array( sizeX * sizeY * 4 );
+    data = new Uint8Array( sizeX * sizeY * 4 );
 
     //clear texture
-    for (var i = 0; i < sizeY; i++) {
-        for (var j = 0; j < sizeX; j++) {
-
-            var index = (i*sizeX+j)*4;
-
+    for (i = 0; i < sizeY; i++) {
+        for (j = 0; j < sizeX; j++) {
+            index = (i*sizeX+j)*4;
             data[index] = 0;
             data[index + 1] = 0;
             data[index + 2] = 0;
@@ -219,13 +215,11 @@ RendererInit.prototype.initTestMap = function() {
         }
     }
 
-    for (var i = 0, li = chars.length; i < li; i++) {
-
+    for (i = 0, li = chars.length; i < li; i++) {
         var string = chars[i];
 
-        for (var j = 0, lj = string.length; j < lj; j++) {
-
-            var index = (i*sizeX+j)*4;
+        for (j = 0, lj = string.length; j < lj; j++) {
+            index = (i*sizeX+j)*4;
 
             if (string.charAt(j) != '.') {
                 data[index] = 255;
@@ -243,8 +237,6 @@ RendererInit.prototype.initTestMap = function() {
 
 RendererInit.prototype.initTextMap = function() {
     var renderer = this.renderer;
-    var sizeX = 64;
-    var sizeY = 8;
 
     //font texture
     var texture = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAACACAMAAADTa0c4AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRFAAAA////pdmf3QAABIFJREFUeNrsnNuyqzAIhsP7v/Se6Yxra0L4OUVNCzetVqP5DAQItrVOiLg95739NnfOaR99RDj6esBw+CKZXiMK4PiuBkAcANoHAP3J5fzzAV2jePQIt6f4Ndb/MIChlVcCEFpAACZPfN4KUAF0/ufboDW3AuBMFgBwHTCfg2ftYgDUKBuA1ABuHKvA2P+5XdONIEt7BO2o2MdlAJoTQOsV6GEAswt0Zq/bsBhdeQQkqEDMwmIAnJHzA8i3ASkWRFKBbADyLGB3mlYD6DyhA4DfBlgsBDtirUPcBgC5woStYMgVtgKATWcB6DskKUEkGFLYrGw3+l3ydR16wKbbPDlWp4Xfo9vZwR1jtOMA6GkABrdvNmt1Vluy6pyvxu4Xt62fquyTggCTsIkCoIuv8gAA08w+ATBXAdSRY56xPDFPx/VPWFZp5v65kFMPgFjP70YASMfRsDn01xLPcwkRq1HLMoK647hR8v+nId74MQBjvIbUQePra42ZVXVcBCR3mIY89mYAlNGLflqA0V1seosCQNMg80B0bsLGAIDNwvFyiqu66ngVGGMGVBwyWwIwpty2DqEr/qf0Bq+DbjYkkcr4VUoOxiRjrYn3YY5SC4BQB/cF0Lq4kD1RCJ+tN4g6Jps5zfWu+QmSz9sUABkA0BIAXocmBwCJ99MDIASATkmtLQAIft4IgE/ZDStZ59yQbOQQAGZWYMbZ3FFCAGRHnwHQznegGAE+zwxNi8kALCOgS9tzAC4jYG1Qo0myRm0Ae/z8eleqewBoZLwfUswCsbT1KgBZD6QAzAEoXUe3K+xxVf2uLf5U3nBeMPRyACW/LtrwVX989id3PRQOG5Io6vh9XwC6stHIdGdJozun03lxNlwvH4u6UgDM8/LmJyx7ak12feEebaXmUwCOYJWk1JcYKsl74HL74wAaH93NqkE1FSKXc4cv0AjaPEEPgE4ru/ieWdvzVq/4psG3AYDFHlEAioQCuEgMgPjK1VDrqlkbTABAiQBGK38B0BlBSf9xtiAJQDM4NtDqMlaeyduTtkDjHgAtEQBj5ZGK2QE0aCcMAIxLSw0WVYlGDgOQXWE+afouAM0S398O4Nej3wIQf4cIHSfz9pbWugyep4MFIAFARvspbm8BcE2DOdvWnCJQAWFhJ/hKzh4AaB2A7NxedKmLPc+6PN4cL2S8GYC1QMIEQJvmFsJfxdvkEQAoLV4AogBS8/kNvdXlWe5GKhABvQUAZASDALJffY1XfsrToFXFbvYD1gBo6wC8LR7/uvj9CwHcfWuoUJItsVl5nwWAnhxxqsXatUq0OYCcaS/fkbK61u5H8jwAuUIEZXHNL1Jmub5oSKZWiDR9FttM4HEAigqRpn8TeB2AuWNiByAXSHCGbB7/3qYCfgCgPgADEEskbjCCaJDB/+kR6wP4P1Obl8jsBwDUB4yAxqKkthaATjX0KmCtDyCxm+yIMLjCbwBgrg94FYC3h8vLPPmfAVBSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlLy9fJPgAEAvWMULbGsSjwAAAAASUVORK5CYII=';
@@ -302,7 +294,7 @@ RendererInit.prototype.initSkydome = function() {
     renderer.skydomeMesh = new GpuMesh(this.gpu, meshData, null, this.core);
     //this.skydomeTexture = new GpuTexture(this.gpu, "./skydome.jpg", this.core);
 
-    var meshData = RendererGeometry.buildSkydome(128, 256);
+    meshData = RendererGeometry.buildSkydome(128, 256);
 //    var meshData = RendererGeometry.buildSkydome(256, 512);
     renderer.atmoMesh = new GpuMesh(this.gpu, meshData, null, this.core);
 };

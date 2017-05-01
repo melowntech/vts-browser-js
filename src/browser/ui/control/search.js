@@ -68,12 +68,12 @@ UIControlSearch.prototype.processTemplate = function(str, obj) {
 };
 
 
-UIControlSearch.prototype.showList = function(event) {
+UIControlSearch.prototype.showList = function() {
     this.list.setStyle('display', 'block');
 };
 
 
-UIControlSearch.prototype.hideList = function(event) {
+UIControlSearch.prototype.hideList = function() {
     //this.data = {};
     this.list.setStyle('display', 'none');
 };
@@ -97,13 +97,14 @@ UIControlSearch.prototype.moveSelector = function(delta) {
 
 UIControlSearch.prototype.updateList = function(json) {
     if (json['data']) {
+        var item;
         var list = '';
         var data = json['data'];
         data = data.slice(0,10);
-        this.data = data; 
-        
+        this.data = data;
+
         for (var i = 0, li = data.length; i < li; i++) {
-            var item = data[i];
+            item = data[i];
 
             if (this.itemIndex == i) {
                 list += '<div id="vts-search-item' + i + '"'+ ' class="vts-search-listitem-selected">' + item['title'] + ' ' + (item['region'] ? item['region'] : '') + '</div>';
@@ -115,9 +116,9 @@ UIControlSearch.prototype.updateList = function(json) {
         
         this.list.setHtml(list);
 
-        for (var i = 0, li = data.length; i < li; i++) {
+        for (i = 0, li = data.length; i < li; i++) {
             var id = 'vts-search-item' + i;
-            var item = this.control.getElement(id);
+            item = this.control.getElement(id);
             
             if (item) {
                 item.on('click', this.onSelectItem.bind(this, i));
@@ -134,7 +135,7 @@ UIControlSearch.prototype.updateList = function(json) {
 };
 
 
-UIControlSearch.prototype.onSelectItem = function(index, event) {
+UIControlSearch.prototype.onSelectItem = function(index) {
     var map = this.browser.getMap();
     if (map == null) {
         return;
@@ -185,7 +186,7 @@ UIControlSearch.prototype.onSelectItem = function(index, event) {
 };
 
 
-UIControlSearch.prototype.onHoverItem = function(index, event) {
+UIControlSearch.prototype.onHoverItem = function(index) {
     if (this.itemIndex == index) {
         return;
     }
@@ -202,11 +203,11 @@ UIControlSearch.prototype.onListLoaded = function(counter, data) {
 };
 
 
-UIControlSearch.prototype.onListLoadError = function(event) {
+UIControlSearch.prototype.onListLoadError = function() {
 };
 
 
-UIControlSearch.prototype.onFocus = function(event) {
+UIControlSearch.prototype.onFocus = function() {
     this.lastSearch = '';
     var element = this.input.getElement();  
     element.value = this.lastSearch;
@@ -215,7 +216,7 @@ UIControlSearch.prototype.onFocus = function(event) {
 
 
 UIControlSearch.prototype.onKeyPress = function(event) {
-    console.log('press');
+    //console.log('press');
 
     this.onKeyUp(event);
 };
@@ -246,7 +247,7 @@ UIControlSearch.prototype.onKeyUp = function(event) {
 };
 
 
-UIControlSearch.prototype.onChange = function(event) {
+UIControlSearch.prototype.onChange = function() {
     var value = this.input.getElement().value;
     value = value.trim();
 
@@ -273,13 +274,13 @@ UIControlSearch.prototype.onChange = function(event) {
 };
 
 
-UIControlSearch.prototype.onDrag2 = function(event) {
+UIControlSearch.prototype.onDrag2 = function() {
     this.ignoreDrag = true; 
-    var element = this.input.getElement();  
+    //var element = this.input.getElement();  
 };
 
 
-UIControlSearch.prototype.onDrag = function(event) {
+UIControlSearch.prototype.onDrag = function() {
     if (this.ignoreDrag) {
         this.ignoreDrag = false;
         return; 
@@ -292,7 +293,7 @@ UIControlSearch.prototype.onDrag = function(event) {
 };
 
 
-UIControlSearch.prototype.update = function(event) {
+UIControlSearch.prototype.update = function() {
     if (this.initialValueUsed && this.browser.mapLoaded) {
         this.initialValueUsed = false;
         this.onSelectItem(0);

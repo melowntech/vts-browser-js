@@ -4,7 +4,7 @@ var MapSurfaceSequence = function(map) {
 };
 
 
-MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) {
+MapSurfaceSequence.prototype.generateSurfaceSequence = function() {
     var view = this.map.currentView;
     var tree = this.map.tree;
     
@@ -16,15 +16,14 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
     tree.surfaceSequenceIndices = []; //probably not used
     tree.surfaceOnlySequence = [];
 
-    var vsurfaces = {}; 
+    var vsurfaces = {}, surface, glue; 
     var vsurfaceCount = 0;
-    var list = [];
-    
+    var list = [], listId, i, li, j , lj, key;
     var strId = [];
         
     //add surfaces to the list
-    for (var key in view.surfaces) {
-        var surface = this.map.getSurface(key);
+    for (key in view.surfaces) {
+        surface = this.map.getSurface(key);
         
         if (surface) {
             strId.push(surface.id);
@@ -40,7 +39,7 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
         strId.sort(); 
         strId = strId.join(';');
 
-        var surface = this.map.virtualSurfaces[strId];
+        surface = this.map.virtualSurfaces[strId];
         if (surface) {
             list = [ [ [(surface.index + 1)], surface, true, false] ]; //[surfaceId, surface, isSurface, isAlien]    
             vsurfaceCount = 1;
@@ -53,15 +52,15 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
         var glues = [];
     
         //add proper glues to the list
-        for (var key in this.map.glues) {
-            var glue = this.map.glues[key];
+        for (key in this.map.glues) {
+            glue = this.map.glues[key];
             
             //add only glue which contains desired surfaces
             var id = glue.id; 
             if (id.length <= vsurfaceCount) {
     
                 var missed = false;
-                for (var j = 0, lj = id.length; j < lj; j++) {
+                for (j = 0, lj = id.length; j < lj; j++) {
                     if (!vsurfaces[id[j]]) {
                         missed = true;
                         break;
@@ -70,10 +69,10 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
     
                 if (!missed) {
                     //var listId = "";
-                    var listId = [];
+                    listId = [];
                     
                     //create glue id in reverse order for sorting
-                    for (var j = 0, lj = id.length; j < lj; j++) {
+                    for (j = 0, lj = id.length; j < lj; j++) {
                         //listId = vsurfaces[id[j]] + (j ? "." : "") + listId;
                         listId.unshift(vsurfaces[id[j]]);
                     }
@@ -84,9 +83,9 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
         }
     
         //process glue flags
-        for (var i = 0, li = glues.length; i < li; i++) {
+        for (i = 0, li = glues.length; i < li; i++) {
             var item = glues[i];
-            var glue = item[1];
+            glue = item[1];
     
             glue.flagProper = true;
             glue.flagAlien = true;
@@ -97,7 +96,7 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
                     
             if (glue.flagAlien) {
                 //remove first surface from id
-                var listId = item[0].slice(1);
+                listId = item[0].slice(1);
                             
                 //add same glue as alien
                 list.push([listId, item[1], false, true]); //[surfaceId, surface, isSurface, isAlien]   
@@ -110,13 +109,13 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
         do {
             var sorted = true;
             
-            for (var i = 0, li = list.length - 1; i < li; i++) {
+            for (i = 0, li = list.length - 1; i < li; i++) {
                 var a1 = list[i][0];
                 var a2 = list[i+1][0];
                 
                 var lesser = false;
                 
-                for (var j = 0, lj = Math.min(a1.length, a2.length); j < lj; j++) {
+                for (j = 0, lj = Math.min(a1.length, a2.length); j < lj; j++) {
                     if (a1[j] < a2[j] || (j == (lj -1) && a1[j] == a2[j] && a2.length > a1.length)) {
                         lesser = true;
                         break;                    
@@ -140,7 +139,7 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
         var lastIndex = vsurfaceCount - 1;
     
         //convert list to surface sequence
-        for (var i = 0, li = list.length; i < li; i++) {
+        for (i = 0, li = list.length; i < li; i++) {
             tree.surfaceSequence.push([list[i][1], list[i][3]]); //[surface, isAlien]
             //this.surfaceSequence.push(list[i][1]); 
             list[i][1].viewSurfaceIndex = lastIndex; 
@@ -164,7 +163,7 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
     this.map.freeLayersHaveGeodata = false;
 
     //free layers
-    for (var key in view.freeLayers) {
+    for (key in view.freeLayers) {
         var freeLayer = this.map.getFreeLayer(key);
         if (freeLayer) {
             freeLayer.surfaceSequence = [freeLayer];
@@ -183,28 +182,28 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function(tree, surfaces) 
 
 MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
     var view = this.map.currentView;
-    var surfaces = [];
+    var key, item, layer, alpha, i, li;
     
     //surfaces
-    for (var key in view.surfaces) {
+    for (key in view.surfaces) {
         var surfaceLayers = view.surfaces[key];
         var surface = this.map.getSurface(key);
         if (surface != null) {
             surface.boundLayerSequence = [];
             
-            for (var i = 0, li = surfaceLayers.length; i < li; i++) {
-                var item = surfaceLayers[i];
+            for (i = 0, li = surfaceLayers.length; i < li; i++) {
+                item = surfaceLayers[i];
         
                 if (typeof item === 'string') {
-                    var layer = this.map.getBoundLayerById(item);
+                    layer = this.map.getBoundLayerById(item);
                     if (layer) {
                         surface.boundLayerSequence.push([layer, 1]);
                     }
                 } else {
-                    var layer = this.map.getBoundLayerById(item['id']);
+                    layer = this.map.getBoundLayerById(item['id']);
                     if (layer) {
 
-                        var alpha = 1;
+                        alpha = 1;
                         if (typeof item['alpha'] !== 'undefined') {
                             alpha = item['alpha'];
                         }
@@ -217,7 +216,7 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
     }
 
     //free layers
-    for (var key in view.freeLayers) {
+    for (key in view.freeLayers) {
         var freeLayersProperties = view.freeLayers[key];
         var freeLayer = this.map.getFreeLayer(key);
         if (freeLayer != null && freeLayer.ready) {
@@ -227,19 +226,19 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
             
             if (boundLayers && Array.isArray(boundLayers)) {
 
-                for (var i = 0, li = boundLayers.length; i < li; i++) {
-                    var item = boundLayers[i];
+                for (i = 0, li = boundLayers.length; i < li; i++) {
+                    item = boundLayers[i];
             
                     if (typeof item === 'string') {
-                        var layer = this.map.getBoundLayerById(item);
+                        layer = this.map.getBoundLayerById(item);
                         if (layer) {
                             freeLayer.boundLayerSequence.push([layer, 1]);
                         }
                     } else {
-                        var layer = this.map.getBoundLayerById(item['id']);
+                        layer = this.map.getBoundLayerById(item['id']);
                         if (layer) {
     
-                            var alpha = 1;
+                            alpha = 1;
                             if (typeof item['alpha'] !== 'undefined') {
                                 alpha = item['alpha'];
                             }

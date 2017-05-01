@@ -96,7 +96,7 @@ var Core = function(element, config, coreInterface) {
                window.mozRequestAnimationFrame ||
                window.oRequestAnimationFrame ||
                window.msRequestAnimationFrame ||
-               function(callback, element) {
+               function(callback) {
                    window.setTimeout(callback, 1000/60);
                });
 
@@ -132,7 +132,7 @@ Core.prototype.loadMap = function(path) {
         return;
     }
     
-    path = utilsUrl_.getProcessUrl(path, window.location.href);
+    path = utilsUrl.getProcessUrl(path, window.location.href);
 
     this.tokenCookieLoaded = true;
     this.mapConfigData = null;
@@ -210,6 +210,7 @@ Core.prototype.loadMap = function(path) {
     }).bind(this);
 
     var onAutorizationError = (function() {
+        // eslint-disable-next-line
         console.log('auth token not loaded');
         
         if (this.tokenCanBeSkiped) {
@@ -217,16 +218,17 @@ Core.prototype.loadMap = function(path) {
         }
     }).bind(this);
 
-    var onImageCookieLoaded = (function(data) {
+    var onImageCookieLoaded = (function() {
         document.body.removeChild(this.tokenIFrame);
         this.tokenIFrame = null;   
         this.tokenCookieLoaded = true;
         onLoaded();
     }).bind(this);
 
-    var onImageCookieError = (function() {
+    /*var onImageCookieError = (function() {
+        // eslint-disable-next-line
         console.log('auth cookie not loaded');
-    }).bind(this);
+    }).bind(this);*/
 
     //var baseUrl = path.split('?')[0].split('/').slice(0, -1).join('/')+'/';
 
@@ -235,8 +237,8 @@ Core.prototype.loadMap = function(path) {
     }).bind(this);
 
     var onLoadImageCookie = (function(url, originUrl) {
-        url = utilsUrl_.getProcessUrl(url, originUrl);
-        this.tokenCookieHost = utilsUrl_.getHost(url);
+        url = utilsUrl.getProcessUrl(url, originUrl);
+        this.tokenCookieHost = utilsUrl.getHost(url);
         //utils.loadImage(url, onImageCookieLoaded, onImageCookieError);
         var iframe = document.createElement('iframe');
         this.tokenIFrame = iframe;
@@ -310,11 +312,11 @@ Core.prototype.getProj4 = function() {
 };
 
 
-Core.prototype.getOption = function(key, value) {
+Core.prototype.getOption = function(/*key, value*/) {
 };
 
 
-Core.prototype.setOption = function(key, value) {
+Core.prototype.setOption = function(/*key, value*/) {
 };
 
 
@@ -343,6 +345,7 @@ Core.prototype.callListener = function(name, event, log) {
     }
     
     if (log) {
+        // eslint-disable-next-line
         console.log('event ' + name + ': ' + JSON.stringify(event));
     }
 };
@@ -380,7 +383,7 @@ Core.prototype.onUpdate = function() {
 };
 
 
-Core.prototype.setConfigParams = function(params, onlyMapRelated) {
+Core.prototype.setConfigParams = function(params) {
     if (typeof params === 'object' && params !== null) {
         for (var key in params) {
             this.setConfigParam(key, params[key]);

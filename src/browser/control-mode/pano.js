@@ -75,19 +75,19 @@ ControlModePano.prototype.wheel = function(event) {
 };
 
 
-ControlModePano.prototype.keyup = function(event) {
+ControlModePano.prototype.keyup = function() {
 };
 
 
-ControlModePano.prototype.keydown = function(event) {
+ControlModePano.prototype.keydown = function() {
 };
 
 
-ControlModePano.prototype.keypress = function(event) {
+ControlModePano.prototype.keypress = function() {
 };
 
 
-ControlModePano.prototype.tick = function(event) {
+ControlModePano.prototype.tick = function() {
     if (this.velocity[0] == 0.0 && this.velocity[1] == 0.0) {
         return;
     }

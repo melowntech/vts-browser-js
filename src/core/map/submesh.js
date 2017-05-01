@@ -141,6 +141,7 @@ struct VerticesBlock {
         this.valid = false;
     }
 
+    var internalUVs = null;
     var externalUVs = null;
 
     var vertices = new Float32Array(numVertices * 3);//[];
@@ -150,18 +151,17 @@ struct VerticesBlock {
     }
 
     var uvfactor = 1.0 / 65535;
-    var vfactor = uvfactor;
-    var ufactor = uvfactor;
     var vindex = 0;
     var uvindex = 0;
+    var i, li;
 
-    for (var i = 0; i < numVertices; i++) {
+    for (i = 0; i < numVertices; i++) {
         //vertices[vindex] = data.getUint16(index, true) * vfactor; index += 2;
         //vertices[vindex+1] = data.getUint16(index, true) * vfactor; index += 2;
         //vertices[vindex+2] = data.getUint16(index, true) * vfactor; index += 2;
-        vertices[vindex] = (uint8Data[index] + (uint8Data[index + 1]<<8)) * vfactor;
-        vertices[vindex+1] = (uint8Data[index+2] + (uint8Data[index + 3]<<8)) * vfactor;
-        vertices[vindex+2] = (uint8Data[index+4] + (uint8Data[index + 5]<<8)) * vfactor;
+        vertices[vindex] = (uint8Data[index] + (uint8Data[index + 1]<<8)) * uvfactor;
+        vertices[vindex+1] = (uint8Data[index+2] + (uint8Data[index + 3]<<8)) * uvfactor;
+        vertices[vindex+2] = (uint8Data[index+4] + (uint8Data[index + 5]<<8)) * uvfactor;
         vindex += 3;
 
         if (externalUVs != null) {
@@ -197,10 +197,10 @@ struct TexcoorsBlock {
     if (this.flags & this.flagsInternalTexcoords) {
         var numUVs = data.getUint16(index, true); index += 2;
     
-        var internalUVs = new Float32Array(numUVs * 2);//[];
-        var uvfactor = 1.0 / 65535;
+        internalUVs = new Float32Array(numUVs * 2);//[];
+        //var uvfactor = 1.0 / 65535;
     
-        for (var i = 0, li = numUVs * 2; i < li; i+=2) {
+        for (i = 0, li = numUVs * 2; i < li; i+=2) {
             internalUVs[i] = (uint8Data[index] + (uint8Data[index + 1]<<8)) * uvfactor;
             internalUVs[i+1] = (65535 - (uint8Data[index+2] + (uint8Data[index + 3]<<8))) * uvfactor;
             index += 4;
@@ -224,10 +224,10 @@ struct FacesBlock {
 
     var numFaces = data.getUint16(index, true); index += 2;
 
-    var internalUVs = null;
-    var externalUVs = null;
+    internalUVs = null;
+    externalUVs = null;
 
-    var vertices = new Float32Array(numFaces * 3 * 3);//[];
+    vertices = new Float32Array(numFaces * 3 * 3);//[];
 
     if (this.flags & this.flagsInternalTexcoords) {
         internalUVs = new Float32Array(numFaces * 3 * 2);//[];
@@ -241,8 +241,8 @@ struct FacesBlock {
     var eUVs = this.tmpExternalUVs;
     var iUVs = this.tmpInternalUVs;
 
-    for (var i = 0; i < numFaces; i++) {
-        var vindex = i * (3 * 3);
+    for (i = 0; i < numFaces; i++) {
+        vindex = i * (3 * 3);
         var v1 = (uint8Data[index] + (uint8Data[index + 1]<<8));
         var v2 = (uint8Data[index+2] + (uint8Data[index + 3]<<8));
         var v3 = (uint8Data[index+4] + (uint8Data[index + 5]<<8));
@@ -380,6 +380,7 @@ struct VerticesBlock {
     var externalUVs = null;
 
     var vertices = new Float32Array(numVertices * 3);//[];
+    var vindex;
     
     var x = 0, y = 0,z = 0;
     var cx = center[0], cy = center[1], cz = center[2];
@@ -391,8 +392,9 @@ struct VerticesBlock {
     var sz = 1.0 / (this.bbox.max[2] - this.bbox.min[2]);
     
     var res = [0, index];
+    var i, li;
 
-    for (var i = 0; i < numVertices; i++) {
+    for (i = 0; i < numVertices; i++) {
         this.parseDelta(uint8Data, res);
         x += res[0];
         this.parseDelta(uint8Data, res);
@@ -400,7 +402,7 @@ struct VerticesBlock {
         this.parseDelta(uint8Data, res);
         z += res[0];
         
-        var vindex = i * 3;
+        vindex = i * 3;
         vertices[vindex] = ((x * multiplier * scale + cx) - mx) * sx;
         vertices[vindex+1] = ((y * multiplier * scale + cy) - my) * sy;
         vertices[vindex+2] = ((z * multiplier * scale + cz) - mz) * sz;
@@ -416,10 +418,10 @@ struct VerticesBlock {
         x = 0, y = 0;
         res[1] = index;
 
-        for (var i = 0; i < numVertices; i++) {
-            var d = this.parseDelta(uint8Data, res);
+        for (i = 0; i < numVertices; i++) {
+            this.parseDelta(uint8Data, res);
             x += res[0];
-            d = this.parseDelta(uint8Data, res);
+            this.parseDelta(uint8Data, res);
             y += res[0];
 
             var uvindex = i * 2;
@@ -458,7 +460,7 @@ struct TexcoorsBlock {
         var internalUVs = new Float32Array(numUVs * 2);//[];
         res[1] = index;
 
-        for (var i = 0, li = numUVs * 2; i < li; i+=2) {
+        for (i = 0, li = numUVs * 2; i < li; i+=2) {
             this.parseDelta(uint8Data, res);
             x += res[0];
             this.parseDelta(uint8Data, res);
@@ -488,10 +490,10 @@ struct FacesBlock {
 
     var numFaces = data.getUint16(index, true); index += 2;
 
-    var internalUVs = null;
-    var externalUVs = null;
+    internalUVs = null;
+    externalUVs = null;
 
-    var vertices = new Float32Array(numFaces * 3 * 3);//[];
+    vertices = new Float32Array(numFaces * 3 * 3);//[];
 
     if (this.flags & this.flagsInternalTexcoords) {
         internalUVs = new Float32Array(numFaces * 3 * 2);//[];
@@ -505,21 +507,22 @@ struct FacesBlock {
     var eUVs = this.tmpExternalUVs;
     var iUVs = this.tmpInternalUVs;
     var high = 0;
+    var v1, v2, v3;
     res[1] = index;
 
-    for (var i = 0; i < numFaces; i++) {
-        var vindex = i * (3 * 3);
+    for (i = 0; i < numFaces; i++) {
+        vindex = i * (3 * 3);
        
         this.parseWord(uint8Data, res);
-        var v1 = high - res[0];
+        v1 = high - res[0];
         if (!res[0]) { high++; }
 
         this.parseWord(uint8Data, res);
-        var v2 = high - res[0];
+        v2 = high - res[0];
         if (!res[0]) { high++; }
 
         this.parseWord(uint8Data, res);
-        var v3 = high - res[0];
+        v3 = high - res[0];
         if (!res[0]) { high++; }
         
         //var dindex = i * (3 * 3);
@@ -552,17 +555,17 @@ struct FacesBlock {
     high = 0;
 
     if (internalUVs != null) {
-        for (var i = 0; i < numFaces; i++) {
+        for (i = 0; i < numFaces; i++) {
             this.parseWord(uint8Data, res);
-            var v1 = high - res[0];
+            v1 = high - res[0];
             if (!res[0]) { high++; }
     
             this.parseWord(uint8Data, res);
-            var v2 = high - res[0];
+            v2 = high - res[0];
             if (!res[0]) { high++; }
     
             this.parseWord(uint8Data, res);
-            var v3 = high - res[0];
+            v3 = high - res[0];
             if (!res[0]) { high++; }
 
             vindex = i * (3 * 2);
@@ -631,7 +634,7 @@ MapSubmesh.prototype.getWorldMatrix = function(geoPos, matrix) {
         m[8] = 0; m[9] = 0; m[10] = this.bbox.side(2); m[11] = 0;
         m[12] = this.bbox.min[0] - geoPos[0]; m[13] = this.bbox.min[1] - geoPos[1]; m[14] = this.bbox.min[2] - geoPos[2]; m[15] = 1;
     } else {
-        var m = mat4.create();
+        m = mat4.create();
 
         mat4.multiply( math.translationMatrix(this.bbox.min[0] - geoPos[0], this.bbox.min[1] - geoPos[1], this.bbox.min[2] - geoPos[2]),
                        math.scaleMatrix(this.bbox.side(0), this.bbox.side(1), this.bbox.side(2)), m);

@@ -129,7 +129,7 @@ MapMetatile.prototype.getNode = function(id) {
     if (!node) {
         var index = this.sizex * y + x;
         var stream = {data:this.data, index:this.metanodesIndex + (index * this.metanodeSize)};
-        var node = (new MapMetanode(this, [this.lod, this.metatileIdx + this.offsetx + x, this.metatileIdy + this.offsety + y], stream, this.divisionNode)); 
+        node = (new MapMetanode(this, [this.lod, this.metatileIdx + this.offsetx + x, this.metatileIdy + this.offsety + y], stream, this.divisionNode)); 
         this.nodes[index] = node;
         this.applyMetanodeCredits(x, y);
         this.applyMetatanodeBitplanes(x, y); 

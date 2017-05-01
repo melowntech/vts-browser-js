@@ -131,7 +131,7 @@ GpuDevice.prototype.useProgram = function(program, attributes, nextSampler) {
         }
         
         //
-        for (var i = 0, li = attributes.length; i < li; i++){
+        for (i = 0, li = attributes.length; i < li; i++){
             var index = program.getAttribute(attributes[i]);
             
             if (index != -1){
@@ -140,7 +140,7 @@ GpuDevice.prototype.useProgram = function(program, attributes, nextSampler) {
         }
 
         //enable or disable current attributes according to new attributes list
-        for (var i = 0, li = newAttributes.length; i < li; i++){
+        for (i = 0, li = newAttributes.length; i < li; i++){
             if (enabledAttributes[i] != newAttributes[i]) {
                 if (newAttributes[i]) {
                     this.gl.enableVertexAttribArray(i);
@@ -193,30 +193,13 @@ GpuDevice.prototype.createState = function(state) {
 };
 
 
-GpuDevice.prototype.setState = function(state, directOffset) {
-    /*
-    if (this.currentState == state) {
-
-        if (directOffset != null) {
-            //if (directOffset != this.currentOffset) {
-                this.currentOffset = directOffset;
-                this.gl.polygonOffset(-1.0, directOffset);
-            //}
-        }
-
-        return;
-    }
-
-    //this.gl.polygonOffset(-1.0, 0);
-    */
-
+GpuDevice.prototype.setState = function(state) {
     if (!state) {
         return;
     }
 
     var gl = this.gl;
     var currentState = this.currentState;
-    //directOffset = directOffset || state.zoffset;
 
     if (currentState.blend != state.blend) {
         if (state.blend) {
@@ -235,17 +218,7 @@ GpuDevice.prototype.setState = function(state, directOffset) {
             gl.disable(gl.STENCIL_TEST);
         }
     }
-/*
-    if (currentState.zoffset != directOffset) {
-        if (directOffset != 0) {
-            gl.polygonOffset(-1.0, directOffset);
-            gl.enable(gl.POLYGON_OFFSET_FILL);
-        } else {
-            gl.disable(gl.POLYGON_OFFSET_FILL);
-        }
-        this.currentOffset = directOffset;
-    }
-*/
+
     if (currentState.zwrite != state.zwrite) {
         if (state.zwrite) {
             gl.depthMask(true);

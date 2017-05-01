@@ -64,21 +64,21 @@ RendererInterface.prototype.createTexture = function(options) {
     }
 
     var filter = options['filter'] || 'linear';
-    var repeat = options['repeat'] || false;
+    var repeat = options['repeat'] || false, texture;
 
     if (source instanceof Uint8Array) {
         var width = options['width'];
         var height = options['height'];
 
         if (width && height) {
-            var texture = new GpuTexture(this.gpu);
+            texture = new GpuTexture(this.gpu);
             texture.createFromData(width, height, source, filter, repeat);
             return texture;
         }
     }
 
     if (source instanceof Image) {
-        var texture = new GpuTexture(this.gpu);
+        texture = new GpuTexture(this.gpu);
         texture.createFromImage(source, filter, repeat);
         return texture;
     }
@@ -147,12 +147,12 @@ RendererInterface.prototype.removeResource = function(resource) {
 };
 
 
-RendererInterface.prototype.addJob = function(options) {
+RendererInterface.prototype.addJob = function(/*options*/) {
     return this;    
 };
 
 
-RendererInterface.prototype.clearJobs = function(options) {
+RendererInterface.prototype.clearJobs = function(/*options*/) {
     return this;    
 };
 
@@ -166,7 +166,7 @@ RendererInterface.prototype.drawMesh = function(options) {
         return this;    
     }
 
-    var shaderAttributes = options['shaderAttributes'];
+    //var shaderAttributes = options['shaderAttributes'];
     var vertexAttr = options['vertex'] || 'aPosition';
     var uvAttr = options['uv'] || 'aTexCoord';
     var uv2Attr = options['normal'] || 'aNormal';
@@ -203,6 +203,7 @@ RendererInterface.prototype.drawMesh = function(options) {
         case 'shaded':
             uvAttr = null;
 
+        // eslint-disable-next-line
         case 'textured':
         case 'textured-and-shaded':
 
@@ -354,12 +355,12 @@ RendererInterface.prototype.drawLineString = function(options) {
 };
 
 
-RendererInterface.prototype.drawJobs = function(options) {
+RendererInterface.prototype.drawJobs = function(/*options*/) {
     return this;    
 };
 
 
-RendererInterface.prototype.drawBBox = function(options) {
+RendererInterface.prototype.drawBBox = function(/*options*/) {
     return this;    
 };
 
@@ -409,7 +410,7 @@ RendererInterface.prototype.getCanvasCoords = function(point, mvp) {
 };
 
 
-RendererInterface.prototype.getCanvasSize = function(point, mvp) {
+RendererInterface.prototype.getCanvasSize = function() {
     return this.renderer.curSize.slice();
 };
 

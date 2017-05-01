@@ -118,7 +118,7 @@ MapSrs.prototype.isProjected = function() {
 };
 
 
-MapSrs.prototype.getOriginalHeight = function(coords, direction) {
+MapSrs.prototype.getOriginalHeight = function(coords) {
     var height = coords[2] || 0;
     height /= this.getVerticalAdjustmentFactor(coords);
     height -= this.getGeoidGridDelta(coords);
@@ -134,7 +134,7 @@ MapSrs.prototype.getFinalHeight = function(coords) {
 };
 
 
-MapSrs.prototype.getGeoidGridDelta = function(coords, original) {
+MapSrs.prototype.getGeoidGridDelta = function(coords) {
     if (this.geoidGridMap != null && this.isGeoidGridReady()) {
         //get cooords in geoidGrid space
         var mapCoords = this.proj4(this.srsProj4, this.geoidGrid.srsProj4, [coords[0], coords[1]]);

@@ -17,14 +17,15 @@ var UIControlCredits = function(ui, visible) {
 UIControlCredits.prototype.getCreditsString = function(array, separator, full) {
     var map = this.browser.getMap();
     var html = '';
-    var copyright = '&copy;' + (new Date().getFullYear());
+    //var copyright = '&copy;' + (new Date().getFullYear());
     
     var li = array.length;
     var plain = ''; 
     var more = false;
+    var creditInfo;
 
     for (var i = 0; i < li; i++) {
-        var creditInfo = map.getCreditInfo(array[i]);
+        creditInfo = map.getCreditInfo(array[i]);
         if (creditInfo['plain']) {
             plain += creditInfo['plain'];
         }
@@ -35,8 +36,8 @@ UIControlCredits.prototype.getCreditsString = function(array, separator, full) {
         more = true; 
     }
 
-    for (var i = 0; i < li; i++) {
-        var creditInfo = map.getCreditInfo(array[i]);
+    for (i = 0; i < li; i++) {
+        creditInfo = map.getCreditInfo(array[i]);
        
         if (creditInfo['html']) {
             html += creditInfo['html'];
@@ -57,30 +58,28 @@ UIControlCredits.prototype.update = function() {
         return;
     }
 
-    var html = '';
-    var html2 = '';
-    var html3 = '';
+    var html = '', html2 = '', html3 = '', res;
     var credits = map.getCurrentCredits();
     
     if (credits['imagery'].length > 0) {
-        var res = this.getCreditsString(credits['imagery'], ', ');
+        res = this.getCreditsString(credits['imagery'], ', ');
         html += '<div class="vts-credits-supercell">';
         html += '<div class="vts-credits-cell">Imagery: ' + res[0] + '</div>';
         html += res[1] ? '<div class="vts-credits-cell-button" id="vts-credits-imagery-more">and others</div>' : '';
         html += '<div class="vts-credits-separator"></div>';
         html += '</div>';
-        var html2 = '<div class="vts-credits-list">';
+        html2 = '<div class="vts-credits-list">';
         html2 += this.getCreditsString(credits['imagery'], '<br/>', true)[0] + '</div>';
     }
     
     if (credits['mapdata'].length > 0) {
-        var res = this.getCreditsString(credits['mapdata'], ', ');
+        res = this.getCreditsString(credits['mapdata'], ', ');
         html += '<div class="vts-credits-supercell">';
         html += '<div class="vts-credits-cell">Map Data: ' + res[0] + '</div>';
         html += res[1] ? '<div class="vts-credits-cell-button" id="vts-credits-mapdata-more">and others</div>' : '';
         html += '<div class="vts-credits-separator"></div>';
         html += '</div>';
-        var html3 = '<div class="vts-credits-list">';
+        html3 = '<div class="vts-credits-list">';
         html3 += this.getCreditsString(credits['mapdata'], '<br/>', true)[0] + '</div>';
     }
 

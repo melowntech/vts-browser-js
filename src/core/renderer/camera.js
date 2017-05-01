@@ -157,7 +157,7 @@ Camera.prototype.scaleFactor = function(worldPos, returnDist) {
     // ('dist' is used instead of camera depth (camPos(2)) to make the tile
     // resolution independent of camera rotation)
 
-    if (returnDist == true) {
+    if (returnDist) {
         if (dist < this.near) return [Number.POSITIVEINFINITY, dist];
         return [this.projection[0] / dist, dist]; 
         //return [(this.projection[5]*0.5) / dist, dist]; //projection by sy
@@ -189,10 +189,12 @@ Camera.prototype.distance = function(worldPos) {
 Camera.prototype.pointVisible = function(point, shift) {
     if (this.dirty) this.update();
 
+    var p;
+
     if (shift) {
-        var p = [ point[0] - shift[0], point[1] - shift[1], point[2] - shift[2], 1 ];
+        p = [ point[0] - shift[0], point[1] - shift[1], point[2] - shift[2], 1 ];
     } else {
-        var p = [ point[0], point[1], point[2], 1 ];
+        p = [ point[0], point[1], point[2], 1 ];
     }
 
     // test all frustum planes quickly
@@ -213,17 +215,16 @@ Camera.prototype.pointsVisible = function(points, shift) {
     if (this.dirty) this.update();
    
     var planes = this.frustumPlanes;
-    var points2 = this.bboxPoints;
-    var lj = points.length;
+    var lj = points.length, sx, sy, sz;
 
     if (shift) {
-        var sx = shift[0];
-        var sy = shift[1];
-        var sz = shift[2];
+        sx = shift[0];
+        sy = shift[1];
+        sz = shift[2];
     } else {
-        var sx = 0;
-        var sy = 0;
-        var sz = 0;
+        sx = 0;
+        sy = 0;
+        sz = 0;
     }
         
     var dot = vec4.dot3;
@@ -273,24 +274,24 @@ Camera.prototype.bboxVisible = function(bbox, shift) {
     */
    
     var points = this.bboxPoints;
-    var p;
+    var p, minX, minY, minZ, maxX, maxY, maxZ;
 
     if (shift) {
-        var minX = min[0] - shift[0];        
-        var minY = min[1] - shift[1];        
-        var minZ = min[2] - shift[2];        
-
-        var maxX = max[0] - shift[0];        
-        var maxY = max[1] - shift[1];        
-        var maxZ = max[2] - shift[2];        
+        minX = min[0] - shift[0];        
+        minY = min[1] - shift[1];        
+        minZ = min[2] - shift[2];        
+       
+        maxX = max[0] - shift[0];        
+        maxY = max[1] - shift[1];        
+        maxZ = max[2] - shift[2];        
     } else {
-        var minX = min[0];        
-        var minY = min[1];        
-        var minZ = min[2];        
+        minX = min[0];        
+        minY = min[1];        
+        minZ = min[2];        
 
-        var maxX = max[0];        
-        var maxY = max[1];        
-        var maxZ = max[2];        
+        maxX = max[0];        
+        maxY = max[1];        
+        maxZ = max[2];        
     }
 
     p = points[0];

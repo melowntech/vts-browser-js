@@ -21,7 +21,7 @@ GpuProgram.prototype.createShader = function(source, vertexShader) {
 
     var shader;
 
-    if (vertexShader != true) {
+    if (vertexShader !== true) {
         shader = gl.createShader(gl.FRAGMENT_SHADER);
     } else {
         shader = gl.createShader(gl.VERTEX_SHADER);

@@ -23,7 +23,7 @@ MapInterface.prototype.setPosition = function(position) {
 };
 
 
-MapInterface.prototype.getPosition = function(type) {
+MapInterface.prototype.getPosition = function() {
     return this.map.getPosition();
 };
 

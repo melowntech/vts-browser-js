@@ -5,8 +5,8 @@ import {utilsUrl as utilsUrl_} from '../utils/url';
 
 //get rid of compiler mess
 var utils = utils_;
-var MapCredit = MapCredit_;
 var utilsUrl = utilsUrl_;
+var MapCredit = MapCredit_;
 
 
 var MapBoundLayer = function(map, json, id) {
@@ -38,9 +38,9 @@ var MapBoundLayer = function(map, json, id) {
     
     if (typeof json === 'string') {
         this.jsonUrl = this.map.url.processUrl(json);
-        this.baseUrl = utilsUrl_.getBase(this.jsonUrl);
-        this.baseUrlSchema = utilsUrl_.getSchema(this.jsonUrl);
-        this.baseUrlOrigin = utilsUrl_.getOrigin(this.jsonUrl);
+        this.baseUrl = utilsUrl.getBase(this.jsonUrl);
+        this.baseUrlSchema = utilsUrl.getSchema(this.jsonUrl);
+        this.baseUrlOrigin = utilsUrl.getOrigin(this.jsonUrl);
         
         var onLoaded = (function(data){
             this.parseJson(data);            
@@ -110,10 +110,11 @@ MapBoundLayer.prototype.parseJson = function(json) {
             }
         }
 
+        /*
         for (var i = 0, li = this.credits.length; i < li; i++) {
             var credit = this.map.getCreditById(this.credits[i]);
                 //this.creditsNumbers.push(credit ? credit.id : null); 
-        }
+        }*/
         
         break;
     }
@@ -124,7 +125,7 @@ MapBoundLayer.prototype.kill = function() {
 };
 
 
-MapBoundLayer.prototype.setOptions = function(options) {
+MapBoundLayer.prototype.setOptions = function() {
 };
 
 

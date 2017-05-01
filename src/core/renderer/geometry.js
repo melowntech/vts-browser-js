@@ -45,7 +45,6 @@ RendererGeometry.buildHeightmap = function(size) {
     var vertices = new Float32Array(numFaces * 3 * 3);//[];
     var uvs = new Float32Array(numFaces * 3 * 2);//[];
 
-    var USHRTMAX = 65535;
     var factor = 1.0 * size;
     var index = 0;
     var index2 = 0;
@@ -84,7 +83,6 @@ RendererGeometry.buildPlane = function(size) {
     var vertices = new Float32Array(numFaces * 3 * 3);//[];
     var uvs = new Float32Array(numFaces * 3 * 2);//[];
 
-    var USHRTMAX = 65535;
     var factor = 1.0 / (size);
     var index = 0;
     var index2 = 0;

@@ -11,9 +11,9 @@ var MapUrl = function(map, path) {
     this.map = map;
 
     path = path.trim();
-    this.baseUrl = utilsUrl_.getBase(path);
-    this.baseUrlSchema = utilsUrl_.getSchema(path);
-    this.baseUrlOrigin = utilsUrl_.getOrigin(path); 
+    this.baseUrl = utilsUrl.getBase(path);
+    this.baseUrlSchema = utilsUrl.getSchema(path);
+    this.baseUrlOrigin = utilsUrl.getOrigin(path); 
 
     this.urlCounter = 0;
 };
@@ -45,7 +45,7 @@ MapUrl.prototype['msDigit'] = function(iy, ix) {
 };
 
 
-MapUrl.prototype.hex = function(v, n) {
+MapUrl.prototype.hex = function(v) {
     var s = v.toString(16);
     while (s.length < 8) {
         s = '0' + s;
@@ -65,28 +65,28 @@ MapUrl.prototype['ppy'] = function(lod, iy) {
 
 
 MapUrl.prototype.processUrlFunction = function(id, counter, string) {
+    var string2, fc;
     if (typeof string == 'string') {
         if (string.indexOf('quad') != -1) {
-            var string2 = '(function(lod,x,y,loclod,locx,locy){' + string.replace('quad', 'return this.quad') + '})';
+            string2 = '(function(lod,x,y,loclod,locx,locy){' + string.replace('quad', 'return this.quad') + '})';
 
             try {
-                var fc = eval(string2).bind(this);
+                fc = eval(string2).bind(this);
                 return fc(id.lod, id.ix, id.iy, id.loclod, id.locx, id.locy);
             } catch(e) {
                 return string;
             }
         } else if (string.indexOf('msdigit') != -1) {
-            var string2 = '(function(x,y,loclod,locx,locy){' + string.replace('msdigit', 'return this.msDigit') + '})';
+            string2 = '(function(x,y,loclod,locx,locy){' + string.replace('msdigit', 'return this.msDigit') + '})';
 
             try {
-                var fc = eval(string2).bind(this);
+                fc = eval(string2).bind(this);
                 return fc(id.ix, id.iy, id.loclod, id.locx, id.locy);
             } catch(e) {
                 return string;
             }
 
         } else if (string.indexOf('alt') != -1) {
-
             var result = /\(([^)]*)\)/.exec(string);
 
             if (result && result[1]) {
@@ -100,22 +100,20 @@ MapUrl.prototype.processUrlFunction = function(id, counter, string) {
             return string;
 
         } else if (string.indexOf('ppx') != -1) {
-
-            var string2 = '(function(lod,x,loclod,locx){' + string.replace('ppx', 'return this.ppx') + '})';
+            string2 = '(function(lod,x,loclod,locx){' + string.replace('ppx', 'return this.ppx') + '})';
 
             try {
-                var fc = eval(string2).bind(this);
+                fc = eval(string2).bind(this);
                 return fc(id.lod, id.ix, id.loclod, id.locx);
             } catch(e) {
                 return string;
             }
 
         } else if (string.indexOf('ppy') != -1) {
-
-            var string2 = '(function(lod,y,loclod,locy){' + string.replace('ppy', 'return this.ppy') + '})';
+            string2 = '(function(lod,y,loclod,locy){' + string.replace('ppy', 'return this.ppy') + '})';
 
             try {
-                var fc = eval(string2).bind(this);
+                fc = eval(string2).bind(this);
                 return fc(id.lod, id.iy, id.loclod, id.locy);
             } catch(e) {
                 return string;
@@ -150,7 +148,7 @@ MapUrl.prototype.findLocalRoot = function(id) {
     var bestNode = null;
     var bestLod = -1;
     
-    for (var i = 0, li = validNodes.length; i < li; i++) {
+    for (i = 0, li = validNodes.length; i < li; i++) {
         if (validNodes[i].id[0] > bestLod) {
             bestNode = validNodes[i]; 
         }

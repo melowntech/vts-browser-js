@@ -20,7 +20,9 @@ UIEvent.prototype.getMouseButton = function() {
             case 2: return 'right';
             case 3: return 'middle';
             }
-        }   
+        }
+
+        return '';   
 
     default:
     
@@ -50,7 +52,7 @@ UIEvent.prototype.getMouseButton = function() {
 
 
 UIEvent.prototype.getMouseCoords = function(absolute) {
-    var event = null;
+    var pos = [0,0];
 
     switch (this.type) {
     case 'touchstart':
@@ -62,8 +64,6 @@ UIEvent.prototype.getMouseCoords = function(absolute) {
             break;
         }
             
-        var pos = [0,0];
-            
         for (var i = 0, li = touches.length; i < li; i++) {
             var pos2 = this.getEventCoords(this.event['touches'][i], absolute);
             pos[0] += pos2[0];   
@@ -72,7 +72,7 @@ UIEvent.prototype.getMouseCoords = function(absolute) {
             
         pos[0] /= li;
         pos[1] /= li;
-        return pos;    
+        break;
 
     case 'mousedown':
     case 'mouseup':
@@ -82,12 +82,11 @@ UIEvent.prototype.getMouseCoords = function(absolute) {
     case 'dragend':
     case 'drag':
 
-        return this.getEventCoords(this.event, absolute);
+        pos = this.getEventCoords(this.event, absolute);
         break;
-
     }
 
-    return [0,0];
+    return pos;
 };
 
 

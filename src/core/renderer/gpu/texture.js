@@ -98,8 +98,6 @@ GpuTexture.prototype.createFromData = function(lx, ly, data, filter, repeat) {
 GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
     var gl = this.gl;
 
-    var timer = performance.now();
-
     this.texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 

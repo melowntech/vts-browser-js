@@ -76,9 +76,10 @@ UIControlLoading.prototype.hide = function() {
 
 UIControlLoading.prototype.update = function() {
     var timer = Date.now();
+    var timeDelta;
 
     if (this.hiding) { 
-        var timeDelta = (timer - this.hiding) * 0.001;
+        timeDelta = (timer - this.hiding) * 0.001;
         this.loading.setStyle('opacity', (1-Math.min(1.0, timeDelta*2)) + '' );
         
         if (timeDelta > 0.5) {
@@ -87,7 +88,7 @@ UIControlLoading.prototype.update = function() {
     }
 
 
-    var timeDelta = (timer - this.time) * 0.001;
+    timeDelta = (timer - this.time) * 0.001;
 
     //sine wave
     /*

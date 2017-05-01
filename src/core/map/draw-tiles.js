@@ -101,17 +101,19 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
 
 
 MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, checkGpu) {
+    var path;
+
     if (!tile.surfaceMesh) {
         if (tile.resourceSurface.virtual) {
             return true;
             //debugger;
         }
         
-        var path = tile.resourceSurface.getMeshUrl(tile.id);
+        path = tile.resourceSurface.getMeshUrl(tile.id);
         tile.surfaceMesh = tile.resources.getMesh(path, tile);
     }
 
-    var draw = this.draw;
+    var draw = this.draw, texture, layer, credits;
     var channel = draw.drawChannel;
     var ret = false;
 
@@ -166,18 +168,19 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         tile.boundsDebug = {}; //used for inspector
 
         var specificity = 0;
+        var i, li, j, lj, k, lk, surface;
         
         if (tile.surface.glue) {
             var surfaces = tile.surface.id; 
-            for (var i = 0, li = surfaces.length; i < li; i++) {
-                var surface = this.map.getSurface(surfaces[i]);
+            for (i = 0, li = surfaces.length; i < li; i++) {
+                surface = this.map.getSurface(surfaces[i]);
                 if (surface) {
                     specificity = Math.max(specificity, surface.specificity);
                 }
             }
 
             //set credits
-            for (var k = 0, lk = node.credits.length; k < lk; k++) {
+            for (k = 0, lk = node.credits.length; k < lk; k++) {
                 tile.glueImageryCredits[node.credits[k]] = specificity;  
             }
 
@@ -185,12 +188,12 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             specificity = tile.surface.specificity;
 
             //set credits
-            for (var k = 0, lk = node.credits.length; k < lk; k++) {
+            for (k = 0, lk = node.credits.length; k < lk; k++) {
                 tile.imageryCredits[node.credits[k]] = specificity;  
             }
         }
 
-        for (var i = 0, li = submeshes.length; i < li; i++) {
+        for (i = 0, li = submeshes.length; i < li; i++) {
             var submesh = submeshes[i];
             
             //debug bbox
@@ -205,7 +208,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                     this.updateTileBounds(tile, submeshes);
                 }
                 
-                var surface = tile.resourceSurface;
+                surface = tile.resourceSurface;
                 if (tile.resourceSurface.glue /*&& submesh.surfaceReference != 0*/) { //glue have multiple surfaces per tile
                     surface = tile.resourceSurface.getSurfaceReference(submesh.surfaceReference);
                 }
@@ -221,7 +224,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                 if (bounds.transparent) {
                                     if (submesh.internalUVs) {  //draw surface
                                         if (tile.surfaceTextures[i] == null) {
-                                            var path = tile.resourceSurface.getTextureUrl(tile.id, i);
+                                            path = tile.resourceSurface.getTextureUrl(tile.id, i);
                                             tile.surfaceTextures[i] = tile.resources.getTexture(path, null, null, null, tile, true);
                                         }
                                                 
@@ -240,8 +243,8 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                     });            
                                     
                                     var layers = bounds.sequence;
-                                    for (var j = 0, lj = layers.length; j < lj; j++) {
-                                        var texture = tile.boundTextures[layers[j]];
+                                    for (j = 0, lj = layers.length; j < lj; j++) {
+                                        texture = tile.boundTextures[layers[j]];
                                         if (texture) {
 
                                             //debug stuff
@@ -251,9 +254,9 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                             tile.boundsDebug[surface.id].push(layers[j]);
 
                                             //set credits
-                                            var layer = tile.boundLayers[layers[j]];
-                                            var credits = layer.credits;
-                                            for (var k = 0, lk = credits.length; k < lk; k++) {
+                                            layer = tile.boundLayers[layers[j]];
+                                            credits = layer.credits;
+                                            for (k = 0, lk = credits.length; k < lk; k++) {
                                                 tile.imageryCredits[credits[k]] = layer.specificity;  
                                             }
 
@@ -282,7 +285,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                     });  
                                 } else {
                                     var layerId = bounds.sequence[bounds.sequence.length-1];
-                                    var texture = tile.boundTextures[layerId];
+                                    texture = tile.boundTextures[layerId];
                                     if (texture) {
 
                                         //debug stuff
@@ -292,9 +295,9 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                         tile.boundsDebug[surface.id].push(layerId);
                                         
                                         //set credits
-                                        var layer = tile.boundLayers[layerId];
-                                        var credits = layer.credits;
-                                        for (var k = 0, lk = credits.length; k < lk; k++) {
+                                        layer = tile.boundLayers[layerId];
+                                        credits = layer.credits;
+                                        for (k = 0, lk = credits.length; k < lk; k++) {
                                             tile.imageryCredits[credits[k]] = layer.specificity;  
                                         }
                                         
@@ -311,10 +314,10 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                             } else {
                                 if (submesh.textureLayer) {
                                     
-                                    var layer = this.map.getBoundLayerByNumber(submesh.textureLayer);
+                                    layer = this.map.getBoundLayerByNumber(submesh.textureLayer);
                                     
                                     if (layer) {
-                                        var texture = tile.boundTextures[layer.id];
+                                        texture = tile.boundTextures[layer.id];
                                         
                                         if (texture) {
                                             
@@ -325,9 +328,9 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                             tile.boundsDebug[surface.id].push(layer.id);
                                             
                                             //set credits
-                                            var layer = tile.boundLayers[layer.id];
-                                            var credits = layer.credits;
-                                            for (var k = 0, lk = credits.length; k < lk; k++) {
+                                            layer = tile.boundLayers[layer.id];
+                                            credits = layer.credits;
+                                            for (k = 0, lk = credits.length; k < lk; k++) {
                                                 tile.imageryCredits[credits[k]] = layer.specificity;  
                                             }
                                             
@@ -346,7 +349,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
     
                                     if (submesh.internalUVs) {  //draw surface
                                         if (tile.surfaceTextures[i] == null) {
-                                            var path = tile.resourceSurface.getTextureUrl(tile.id, i);
+                                            path = tile.resourceSurface.getTextureUrl(tile.id, i);
                                             tile.surfaceTextures[i] = tile.resources.getTexture(path, null, null, null, tile, true);
                                         }
 
@@ -374,7 +377,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                         } else if (submesh.internalUVs) {
     
                             if (tile.surfaceTextures[i] == null) {
-                                var path = tile.resourceSurface.getTextureUrl(tile.id, i);
+                                path = tile.resourceSurface.getTextureUrl(tile.id, i);
                                 tile.surfaceTextures[i] = tile.resources.getTexture(path, null, null, null, tile, true);
                             } //else {
                             tile.drawCommands[0].push({
@@ -391,7 +394,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             } else if (submesh.internalUVs) {
 
                 if (tile.surfaceTextures[i] == null) {
-                    var path = tile.resourceSurface.getTextureUrl(tile.id, i);
+                    path = tile.resourceSurface.getTextureUrl(tile.id, i);
                     tile.surfaceTextures[i] = tile.resources.getTexture(path, null, null, null, tile, true);
                 } //else {
                 tile.drawCommands[0].push({
@@ -506,7 +509,7 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
 /*    
      else if (tile.lastRenderState){
 
-        if (tile.surfaceGeodata.isReady(true, priority) == true) {
+        if (tile.surfaceGeodata.isReady(true, priority) {
             if (tile.drawCommands[channel].length > 0) {
                 if (!preventRedener) {
                     this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
@@ -551,10 +554,6 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
     return false;
 };
 
-
-MapDrawTiles.prototype.updateTileRenderCommands = function(tile, submeshes) {
-
-};
 
 
 /*MapDrawTiles.prototype.updateTileBoundsDirectly = function(preventLoad, priority) {
@@ -627,7 +626,8 @@ MapDrawTiles.prototype.getTileTextureTransform = function(sourceTile, targetTile
 
 
 MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface, bound, fullUpdate) {
-        
+    var path, extraBound, layer, texture;
+
     //search map view
     if (surface.boundLayerSequence.length > 0) {
         if (fullUpdate) {
@@ -636,10 +636,10 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
             var fullAndOpaqueCounter = 0;
             
             for (var j = 0, lj = surface.boundLayerSequence.length; j < lj; j++) {
-                var layer = surface.boundLayerSequence[j][0];
+                layer = surface.boundLayerSequence[j][0];
                 
                 if (layer && layer.ready && layer.hasTileOrInfluence(tile.id) && surface.boundLayerSequence[j][1] > 0) {
-                    var extraBound = null; 
+                    extraBound = null; 
                     
                     if (tile.id[0] > layer.lodRange[1]) {
                         extraBound = {
@@ -650,10 +650,10 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                         };
                     }
 
-                    var texture = tile.boundTextures[layer.id];
+                    texture = tile.boundTextures[layer.id];
 
                     if (!texture) { //TODO: make sure that we load only textures which we need  
-                        var path = layer.getUrl(tile.id);
+                        path = layer.getUrl(tile.id);
                         texture = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
                         texture.isReady(true); //check for mask but do not load
                         tile.boundTextures[layer.id] = texture; 
@@ -687,7 +687,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
             //and remove all layer after first FullAndOpaque 
             if (fullAndOpaqueCounter > 0) {
                 var newSequence = [];
-                var firstFull = false; 
+                //var firstFull = false; 
                 
                 for (var i = bound.sequence.length - 1; i >= 0; i--) {
                     var layerId = bound.sequence[i];
@@ -696,7 +696,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                         newSequence.unshift(layerId);    
                         break;
                     } else {
-                        var texture = tile.boundTextures[layerId];
+                        texture = tile.boundTextures[layerId];
 
                         if (bound.alpha[layerId][1] < 1.0 ||
                             tile.boundLayers[layerId].isTransparent ||
@@ -712,9 +712,9 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
         }
     } else if (surface.textureLayer != null) { //search surface
         if (fullUpdate) {
-            var layer = this.map.getBoundLayerById(surface.textureLayer);
+            layer = this.map.getBoundLayerById(surface.textureLayer);
             if (layer && layer.hasTileOrInfluence(tile.id)) {
-                var extraBound = null; 
+                extraBound = null; 
                 
                 if (tile.id[0] > layer.lodRange[1]) {
                     extraBound = {
@@ -728,17 +728,17 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                 bound.sequence.push(layer.id);
                 tile.boundLayers[layer.id] = layer;
                 if (!tile.boundTextures[layer.id]) {
-                    var path = layer.getUrl(tile.id);
+                    path = layer.getUrl(tile.id);
                     tile.boundTextures[layer.id] = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
                 }
             }
         }
     } else { //search submeshes
         if (submesh.textureLayer != 0) {
-            var layer = this.map.getBoundLayerByNumber(submesh.textureLayer);
+            layer = this.map.getBoundLayerByNumber(submesh.textureLayer);
 
             if (layer && layer.hasTileOrInfluence(tile.id)) {
-                var extraBound = null; 
+                extraBound = null; 
                 
                 if (tile.id[0] > layer.lodRange[1]) {
                     extraBound = {
@@ -752,7 +752,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                 //submeshes[j].textureLayerId = tile.id;
                 tile.boundLayers[layer.id] = layer;
                 if (!tile.boundTextures[layer.id]) {
-                    var path = layer.getUrl(tile.id);
+                    path = layer.getUrl(tile.id);
                     tile.boundTextures[layer.id] = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
                 }
             }
@@ -761,8 +761,8 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
 };
 
 
-MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixelSize) {
-    var debug = this.debug;
+MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
+    var debug = this.debug, pos;
 
     if (!debug.drawMeshBBox) {
         //if (this.drawCredits) {
@@ -777,11 +777,11 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
         var min = node.bbox.min;
         var max = node.bbox.max;
     
-        var pos =  this.core.getRendererInterface().getCanvasCoords(
+        pos =  this.core.getRendererInterface().getCanvasCoords(
             [(min[0] + (max[0] - min[0])*0.5) - cameraPos[0],
                 (min[1] + (max[1] - min[1])*0.5) - cameraPos[1],
                 (max[2]) - cameraPos[2]],
-                         this.camera.getMvpMatrix());
+             this.camera.getMvpMatrix());
     
         pos[2] = pos[2] * 0.9992;
     } else {
@@ -791,11 +791,11 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
     
         var d = Math.sqrt(dx*dx + dy*dy + dz*dz);
     
-        var pos =  this.core.getRendererInterface().getCanvasCoords(
+        pos =  this.core.getRendererInterface().getCanvasCoords(
             [(node.bbox2[12] + node.bbox2[15] + node.bbox2[18] + node.bbox2[21])*0.25 + node.diskNormal[0] * d*0.1 - cameraPos[0],
                 (node.bbox2[13] + node.bbox2[16] + node.bbox2[19] + node.bbox2[22])*0.25 + node.diskNormal[1] * d*0.1 - cameraPos[1],
                 (node.bbox2[14] + node.bbox2[17] + node.bbox2[20] + node.bbox2[23])*0.25 + node.diskNormal[2] * d*0.1 - cameraPos[2]],
-                         this.camera.getMvpMatrix());
+             this.camera.getMvpMatrix());
         
         /*
             var pos =  this.core.getRendererInterface().getCanvasCoords(
@@ -806,7 +806,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
         */
     }
 
-    var factor = debug.debugTextSize;
+    var factor = debug.debugTextSize, text, i, li;
 
     //draw lods
     if (debug.drawLods) {
@@ -816,41 +816,41 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
 
     //draw indices
     if (debug.drawIndices) {
-        var text = '' + tile.id[1] + ' ' + tile.id[2];
+        text = '' + tile.id[1] + ' ' + tile.id[2];
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-11*factor), 4*factor, text, [0,1,1,1], pos[2]);
     }
 
     //draw positions
     if (debug.drawPositions) {
-        //var text = "" + min[0].toFixed(1) + " " + min[1].toFixed(1) + " " + min[2].toFixed(1);
-        //var text = "" + Math.floor(node.corners[0]) + " " + Math.floor(node.corners[1]) + " " + Math.floor(node.corners[2]) + " " + Math.floor(node.corners[3]);
+        //text = "" + min[0].toFixed(1) + " " + min[1].toFixed(1) + " " + min[2].toFixed(1);
+        //text = "" + Math.floor(node.corners[0]) + " " + Math.floor(node.corners[1]) + " " + Math.floor(node.corners[2]) + " " + Math.floor(node.corners[3]);
         var b = node.border2;
         if (b) {
-            var text = '' + Math.floor(b[0]) + ' ' + Math.floor(b[1]) + ' ' + Math.floor(b[2]) + ' ' + Math.floor(b[3]) + ' ' + Math.floor(b[4]) + ' ' + Math.floor(b[5]) + ' ' + Math.floor(b[6]) + ' ' + Math.floor(b[7]) + ' ' + Math.floor(b[8]);
+            text = '' + Math.floor(b[0]) + ' ' + Math.floor(b[1]) + ' ' + Math.floor(b[2]) + ' ' + Math.floor(b[3]) + ' ' + Math.floor(b[4]) + ' ' + Math.floor(b[5]) + ' ' + Math.floor(b[6]) + ' ' + Math.floor(b[7]) + ' ' + Math.floor(b[8]);
             this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+3*factor), 4*factor, text, [0,1,1,1], pos[2]);
         }
 
-        var b = node.border;
+        b = node.border;
         if (b) {
-            var text = '' + Math.floor(b[0]) + ' ' + Math.floor(b[1]) + ' ' + Math.floor(b[2]) + ' ' + Math.floor(b[3]) + ' ' + Math.floor(b[4]) + ' ' + Math.floor(b[5]) + ' ' + Math.floor(b[6]) + ' ' + Math.floor(b[7]) + ' ' + Math.floor(b[8]);
+            text = '' + Math.floor(b[0]) + ' ' + Math.floor(b[1]) + ' ' + Math.floor(b[2]) + ' ' + Math.floor(b[3]) + ' ' + Math.floor(b[4]) + ' ' + Math.floor(b[5]) + ' ' + Math.floor(b[6]) + ' ' + Math.floor(b[7]) + ' ' + Math.floor(b[8]);
             this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,1,1], pos[2]);
         }
     }
 
     //draw face count
     if (debug.drawFaceCount && mesh) {
-        var text = '' + mesh.faces + ' - ' + mesh.submeshes.length + ((tile.surface && tile.surface.glue) ? ' - 1' : ' - 0');
+        text = '' + mesh.faces + ' - ' + mesh.submeshes.length + ((tile.surface && tile.surface.glue) ? ' - 1' : ' - 0');
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
     }
 
     //draw order
     if (debug.drawOrder) {
-        var text = '' + this.drawTileCounter;
+        text = '' + this.drawTileCounter;
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
     }
 
     if (debug.drawSurfaces) {
-        var text = JSON.stringify(tile.surface.id);
+        text = JSON.stringify(tile.surface.id);
         if (node.alien) {
             text = '[A]' + text;
         }
@@ -862,9 +862,9 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
             var surface = tile.resourceSurface;
             if (surface.glue) { 
               
-                for (var i = 0, li = surface.id.length; i < li; i++) {
+                for (i = 0, li = surface.id.length; i < li; i++) {
                     if (tile.boundsDebug[surface.id[i]]) {
-                        var text = '< ' + surface.id[i] + ' >';
+                        text = '< ' + surface.id[i] + ' >';
                         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(10+i*7*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
                         text = JSON.stringify(tile.boundsDebug[surface.id[i]]);
                         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*7*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
@@ -872,7 +872,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
                 }
                 
             } else if (tile.boundsDebug[surface.id]) {
-                var text = '< ' + surface.id + ' >';
+                text = '< ' + surface.id + ' >';
                 this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [1,1,1,1], pos[2]);
     
                 text = JSON.stringify(tile.boundsDebug[surface.id]);
@@ -882,7 +882,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
     }
 
     if (debug.drawCredits) {
-        var text = '{ ';
+        text = '{ ';
        
         for (var key in tile.imageryCredits) {
             if (tile.imageryCredits[key]) {
@@ -890,7 +890,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
             }
         }
 
-        for (var key in tile.glueImageryCredits) {
+        for (key in tile.glueImageryCredits) {
             if (!tile.imageryCredits[key]) {
                 text += key + ':' + tile.glueImageryCredits[key] + ', ';
                 //text += key + ", ";
@@ -904,7 +904,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
 
     //draw distance
     if (debug.drawDistance) {
-        var text = '' + tile.distance.toFixed(2) + '  ' + tile.texelSize.toFixed(3) + '  ' + node.pixelSize.toFixed(3);
+        text = '' + tile.distance.toFixed(2) + '  ' + tile.texelSize.toFixed(3) + '  ' + node.pixelSize.toFixed(3);
         text += '--' + tile.texelSize2.toFixed(3); 
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+17*factor), 4*factor, text, [1,0,1,1], pos[2]);
     }
@@ -912,7 +912,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
     //draw node info
     if (debug.drawNodeInfo) {
         var children = ((node.flags & ((15)<<4))>>4);
-        var text = 'v' + node.metatile.version + '-' + node.flags.toString(2) + '-' + ((children & 1) ? '1' : '0') + ((children & 2) ? '1' : '0') + ((children & 4) ? '1' : '0') + ((children & 8) ? '1' : '0');
+        text = 'v' + node.metatile.version + '-' + node.flags.toString(2) + '-' + ((children & 1) ? '1' : '0') + ((children & 2) ? '1' : '0') + ((children & 4) ? '1' : '0') + ((children & 8) ? '1' : '0');
         text += '-' + node.minHeight + '/' + node.maxHeight+ '-' + Math.floor(node.minZ) + '/' + Math.floor(node.maxZ)+ '-' + Math.floor(node.surrogatez);
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-18*factor), 4*factor, text, [1,0,1,1], pos[2]);
     }
@@ -920,13 +920,13 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh, pixe
     //draw texture size
     if (debug.drawTextureSize && mesh) {
         var submeshes = mesh.submeshes;
-        for (var i = 0, li = submeshes.length; i < li; i++) {
+        for (i = 0, li = submeshes.length; i < li; i++) {
 
             if (submeshes[i].internalUVs) {
                 var texture = tile.surfaceTextures[i];
 
                 if (texture && texture.gpuTexture) {
-                    var text = '[' + i + ']: ' + texture.gpuTexture.width + ' x ' + texture.gpuTexture.height;
+                    text = '[' + i + ']: ' + texture.gpuTexture.width + ' x ' + texture.gpuTexture.height;
                     this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*7*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
                 }
             }
