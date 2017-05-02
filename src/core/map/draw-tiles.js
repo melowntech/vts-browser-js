@@ -628,9 +628,9 @@ MapDrawTiles.prototype.getTileTextureTransform = function(sourceTile, targetTile
 MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface, bound, fullUpdate) {
     var path, extraBound, layer, texture;
 
-    if (tile.id[0] == 18 && tile.id[1] == 70930 && tile.id[2] == 44286) {
-        tile = tile;
-    }
+    //if (tile.id[0] == 18 && tile.id[1] == 70930 && tile.id[2] == 44286) {
+      //  tile = tile;
+    //}
 
     //search map view
     if (surface.boundLayerSequence.length > 0) {
