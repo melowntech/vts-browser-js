@@ -26,7 +26,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
         return;
     }
 
-    var dlines = (lineString['lines']) ? true : false;
+    var dlines = (lineString['d-lines']) ? true : false;
     var line = getLayerPropertyValue(style, 'line', lineString, lod);
     var lineLabel = getLayerPropertyValue(style, 'line-label', lineString, lod);
 
@@ -503,11 +503,13 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 lineLabelPoints2[li - i - 1] = p;
             }
     
-            if (dlines) {
-                p2 = points[i+1];
-                p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-            } else {
-                p1 = points[i+1];
+            if ((i + 1) < li) {
+                if (dlines) {
+                    p2 = points[i+1];
+                    p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
+                } else {
+                    p1 = points[i+1];
+                }
             }
         }
 

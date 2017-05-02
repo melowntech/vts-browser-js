@@ -48,12 +48,13 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
     }
 
     var map = this.core.getMap();
-    var debug = map.draw.debug;
     var inspector = this.inspector;
 
     if (map == null) {
         return;
     }
+
+    var debug = map.draw.debug;
 
     this.altDown = event.altKey;
     this.ctrlDown = event.ctrlKey;
