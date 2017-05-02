@@ -661,12 +661,12 @@ RendererDraw.prototype.drawGpuJobs = function() {
         if (onlyHitLayers) {
             for (j = 0; j < lj; j++) {
                 if (buffer[j].hitable) {
-                    this.drawGpuJob(gpu, gl, this, buffer[j], screenPixelSize);
+                    this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize);
                 }
             }
         } else {
             for (j = 0; j < lj; j++) {
-                this.drawGpuJob(gpu, gl, this, buffer[j], screenPixelSize);
+                this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize);
                 //buffer[j] = null;
             }
         }
