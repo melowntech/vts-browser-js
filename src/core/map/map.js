@@ -851,6 +851,8 @@ Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
             var t1 = (-b - d) / (2*a);
             var t2 = (-b + d) / (2*a);
             var t = (t1 < t2) ? t1 : t2;
+
+            //console.log("hit: " + t + ",   " + cameraSpaceCoords[5]);
             
             if (!cameraSpaceCoords[3] || t < cameraSpaceCoords[5]) {
                 worldPos = [ (ray[0] * t) + cameraPos[0],

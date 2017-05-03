@@ -972,6 +972,7 @@ GpuShaders.tileDepthVertexShader =
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
         'vDepth = camDist;\n'+
+        //'vDepth = log(camDist)/log(1.002);\n'+
         //"vTexCoord = aTexCoord;\n"+
     '}';
 
