@@ -61,7 +61,7 @@ function onMouseDown(event) {
         var coords = event.getMouseCoords();
 
         //get hit coords with fixed height
-        clickCoords = map.getHitCoords(coords[0], coords[1], 'fixed');
+        clickCoords = map.getHitCoords(coords[0], coords[1], 'fix');
 
         console.log(JSON.stringify(clickCoords));
         
@@ -78,7 +78,7 @@ function onDrawPoints(renderChannel) {
 
     if (clickCoords) { //draw hit point
         //conver hit coords to canvas coords
-        coords = map.convertCoordsFromNavToCanvas(clickCoords, "fixed");
+        coords = map.convertCoordsFromNavToCanvas(clickCoords, "fix");
 
         renderer.drawImage({
             rect : [coords[0]-12, coords[1]-12, 24, 24],

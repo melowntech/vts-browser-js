@@ -618,7 +618,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
-    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, index);
+    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, 0);
     index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, index);
 
     var signature = JSON.stringify({

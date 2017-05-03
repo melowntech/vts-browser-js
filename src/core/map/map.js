@@ -1096,8 +1096,8 @@ Map.prototype.update = function() {
 
         //this.renderer.gpu.setState(this.drawTileState);
         //this.renderer.gpu.gl.disable(this.renderer.gpu.gl.BLEND);
-        //this.renderer.drawImage(300, 0, 256, 256, this.renderer.hitmapTexture, null, null, null, false);
-        //this.renderer.drawImage(558, 0, 256, 256, this.renderer.hitmapTexture, null, null, null, false);
+        //this.renderer.drawImage(300, 0, 256, 256, this.renderer.hitmapTexture, null, null, null, null, false);
+        //this.renderer.drawImage(558, 0, 256, 256, this.renderer.hitmapTexture, null, null, null, null, false);
 
         //console.log("" + this.stats.gpuRenderUsed);
     }

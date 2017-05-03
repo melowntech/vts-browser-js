@@ -809,7 +809,7 @@ GpuShaders.tileTShadedFragmentShader = 'precision mediump float;\n'+
         'float diffW = min(1.0, max(dot(normal, ldir), 0.0));\n'+
         'vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n'+
         'vec4 tcolor = texture2D(uSampler, vTexCoord);\n'+
-        'gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor);\n'+
+        'gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor); gl_FragColor.w *= uMaterial[3][1];\n'+
     '}';
 
 
@@ -829,7 +829,7 @@ GpuShaders.tileShadedFragmentShader = 'precision mediump float;\n'+
         'float diffW = min(1.0,max(dot(normal, ldir), 0.0));\n'+
         'vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n'+
         //"gl_FragColor = vec4(lcolor.xyz*(1.0/255.0),1.0);\n"+
-        'gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);\n'+
+        'gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);  gl_FragColor.w = uMaterial[3][1];\n'+
 
         //"gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor); gl_FragColor.w=uMaterial[3][1]*(1.0/255.0);\n"+
     '}';

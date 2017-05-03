@@ -90,6 +90,7 @@ MapRenderSlots.prototype.processRenderSlots = function() {
         var slot = this.renderSlots[i];
 
         if (slot.enabled && slot.callback) {
+            this.renderer.gpu.setState(this.draw.drawTileState);
             slot.callback(this.draw.drawChannelNames[this.draw.drawChannel]);
         }
     }

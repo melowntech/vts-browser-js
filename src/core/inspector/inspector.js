@@ -97,11 +97,12 @@ Inspector.prototype.onMapUpdate = function() {
         map.convertCoordsFromPhysToCanvas(this.measurePoints[0]);
     }*/
 
-    var renderer = this.core.getRenderer(), i, li, j, lj, lines, slines, p;
+    var renderer = this.core.getRendererInterface(), i, li, j, lj, lines, slines, p;
 
     if (this.replay.drawGlobe) {
         p = map.convertCoordsFromPhysToCameraSpace([0,0,0]);
-        renderer.draw.drawTBall(p, 12742000 * 0.5, renderer.progStardome, this.replay.globeTexture, 12742000 * 0.5, true);
+        var renderer2 = this.core.getRenderer();
+        renderer2.draw.drawTBall(p, 12742000 * 0.5, renderer2.progStardome, this.replay.globeTexture, 12742000 * 0.5, true);
     }
 
     if (this.replay.drawCamera) {
@@ -112,11 +113,11 @@ Inspector.prototype.onMapUpdate = function() {
         }
         
         renderer.drawLineString({
-            'points' : slines,
-            'size' : 2.0,
-            'color' : [0,128,255,255],
-            'depthTest' : false,
-            'blend' : false
+            points : slines,
+            size : 2.0,
+            color : [0,128,255,255],
+            depthTest : false,
+            blend : false
         });            
 
         lines = this.replay.cameraLines3;
@@ -127,11 +128,11 @@ Inspector.prototype.onMapUpdate = function() {
             }
 
             renderer.drawLineString({
-                'points' : slines,
-                'size' : 2.0,
-                'color' : [0,255,128,255],
-                'depthTest' : false,
-                'blend' : false
+                points : slines,
+                size : 2.0,
+                color : [0,255,128,255],
+                depthTest : false,
+                blend : false
             });   
         }
 
@@ -143,11 +144,11 @@ Inspector.prototype.onMapUpdate = function() {
             }
 
             renderer.drawLineString({
-                'points' : slines,
-                'size' : 2.0,
-                'color' : [0,255,255,255],
-                'depthTest' : false,
-                'blend' : false
+                points : slines,
+                size : 2.0,
+                color : [0,255,255,255],
+                depthTest : false,
+                blend : false
             });   
         }
 
@@ -182,7 +183,7 @@ Inspector.prototype.onMapUpdate = function() {
         ];
     
         //multiply cube matrix with camera view matrix
-        mat4.multiply(cameInfo['view-matrix'], mv, mv);
+        mat4.multiply(cameInfo.viewMatrix, mv, mv);
     
         var norm = [
             0,0,0,
@@ -197,10 +198,10 @@ Inspector.prototype.onMapUpdate = function() {
     
         //draw cube
         renderer.drawMesh({
-            'mesh' : this.replay.frustumMesh,
-            'texture' : null,
-            'shader' : 'shaded',
-            'shader-variables' : {
+            mesh : this.replay.frustumMesh,
+            texture : null,
+            shader : 'shaded',
+            shaderVariables : {
                 'uMV' : ['mat4', mv],
                 'uNorm' : ['mat3', norm],
                 'uMaterial' : ['mat4', material]
@@ -255,11 +256,11 @@ Inspector.prototype.onMapUpdate = function() {
             }
             
             renderer.drawLineString({
-                'points' : lbuffer,
-                'size' : 2.0,
-                'color' : [0,255,255,255],
-                'depthTest' : false,
-                'blend' : false
+                points : lbuffer,
+                size : 2.0,
+                color : [0,255,255,255],
+                depthTest : false,
+                blend : false
             });            
         }
 
@@ -270,23 +271,23 @@ Inspector.prototype.onMapUpdate = function() {
             }
             
             renderer.drawLineString({
-                'points' : lbuffer,
-                'size' : 2.0,
-                'color' : [0,255,255,255],
-                'depthTest' : false,
-                'blend' : false
+                points : lbuffer,
+                size : 2.0,
+                color : [0,255,255,255],
+                depthTest : false,
+                blend : false
             });            
         }
 
         for (i = 0, li = cbuffer.length; i < li; i++) {
             p = cbuffer[i];
             renderer.drawImage({
-                'rect' : [p[0]-10, p[1]-10, 20, 20],
-                'texture' : this.circleTexture,
-                'color' : [255,0,255,255],
-                'depth' : p[2],
-                'depthTest' : false,
-                'blend' : true
+                rect : [p[0]-10, p[1]-10, 20, 20],
+                texture : this.circleTexture,
+                color : [255,0,255,255],
+                depth : p[2],
+                depthTest : false,
+                blend : true
             });
         }
     }
