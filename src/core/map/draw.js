@@ -423,7 +423,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     }
 
     //draw skydome before geodata
-    if (!projected && debug.drawFog && map.referenceFrame.id == 'melown2015') {    
+    if (this.drawChannel != 1 && !projected && debug.drawFog && map.referenceFrame.id == 'melown2015') {    
 
         //var camInfo = this.measure.getPositionCameraInfo(this.position, true);
         var navigationSrsInfo = map.getNavigationSrs().getSrsInfo();

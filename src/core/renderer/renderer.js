@@ -458,6 +458,7 @@ Renderer.prototype.hitTest = function(screenX, screenY) {
 
     //convert rgb values into depth
     var depth = (pixel[0] * (1.0/255)) + (pixel[1]) + (pixel[2]*255.0) + (pixel[3]*65025.0);// + (pixel[3]*16581375.0);
+    //var depth = Math.pow(1.002,(pixel[0] * (1.0/255)) + (pixel[1]) + (pixel[2]*255.0));// + (pixel[3]*16581375.0);
 
     var surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
 
