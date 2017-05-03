@@ -233,9 +233,11 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
             if (replay.drawTiles && replay.drawnTiles) {
                 tiles = replay.drawnTiles;
                 for (i = 0, li = tiles.length; i < li; i++) {
-                    tile = tiles[i];
-                    if ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod)) {
-                        drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.pixelSize, tile.priority, false, false);
+                    if (!tiles[i][1]) { //skip grids
+                        tile = tiles[i][0];
+                        if ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod)) {
+                            drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.pixelSize, tile.priority, false, false);
+                        }
                     }
                 }
             }
@@ -243,9 +245,11 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
             if (replay.drawFreeTiles && replay.drawnFreeTiles) {
                 tiles = replay.drawnFreeTiles;
                 for (i = 0, li = tiles.length; i < li; i++) {
-                    tile = tiles[i];
-                    if ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod)) {
-                        drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.pixelSize, tile.priority, false, false);
+                    if (!tiles[i][1]) { //skip grids
+                        tile = tiles[i][0];
+                        if ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod)) {
+                            drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.pixelSize, tile.priority, false, false);
+                        }
                     }
                 }
             }

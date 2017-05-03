@@ -128,7 +128,7 @@ RoiPhoto.prototype.draw = function() {
 
     //  projection-view matrix from map.getCamera()
     var cam = this.map.getCameraInfo();
-    var pv = cam['view-projection-matrix'];
+    var pv = cam.viewProjectionMatrix;
 
     var mvp = mat4.create();
     mat4.identity(mvp);

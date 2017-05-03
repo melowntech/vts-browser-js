@@ -1290,7 +1290,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     var px = (ll[0] - node.extents.ll[0]) * lx * llx;
     var py = (ur[1] - node.extents.ll[1]) * ly * lly;
 
-    prog.setVec4('uParams', [step1 * factor, this.map.fogDensity, 1/15, node.gridStep2 * factor]);
+    prog.setVec4('uParams', [step1 * factor, map.draw.fogDensity, 1/15, node.gridStep2 * factor]);
     prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
     prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
 

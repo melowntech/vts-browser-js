@@ -662,13 +662,13 @@ MapMetanode.prototype.drawBBox3 = function(cameraPos) {
     }
     
     var renderer = this.map.renderer;
-    renderer.drawLineString([spoints[0], spoints[1], spoints[2], spoints[3], spoints[0] ], 2, [0,1,0.5,255], false, false, true);
-    renderer.drawLineString([spoints[4], spoints[5], spoints[6], spoints[7], spoints[4] ], 2, [0,1,0.5,255], false, false, true);
+    renderer.drawLineString([spoints[0], spoints[1], spoints[2], spoints[3], spoints[0] ], 2, [0,1,0.5,255], null, false, false, true);
+    renderer.drawLineString([spoints[4], spoints[5], spoints[6], spoints[7], spoints[4] ], 2, [0,1,0.5,255], null, false, false, true);
 
-    renderer.drawLineString([spoints[0], spoints[4]], 2, [0,1,0.5,255], false, false, true);
-    renderer.drawLineString([spoints[1], spoints[5]], 2, [0,1,0.5,255], false, false, true);
-    renderer.drawLineString([spoints[2], spoints[6]], 2, [0,1,0.5,255], false, false, true);
-    renderer.drawLineString([spoints[3], spoints[7]], 2, [0,1,0.5,255], false, false, true);
+    renderer.drawLineString([spoints[0], spoints[4]], 2, [0,1,0.5,255], null, false, false, true);
+    renderer.drawLineString([spoints[1], spoints[5]], 2, [0,1,0.5,255], null, false, false, true);
+    renderer.drawLineString([spoints[2], spoints[6]], 2, [0,1,0.5,255], null, false, false, true);
+    renderer.drawLineString([spoints[3], spoints[7]], 2, [0,1,0.5,255], null, false, false, true);
 };*/
 
 

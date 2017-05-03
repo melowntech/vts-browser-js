@@ -444,7 +444,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         switch(type) {
         case 'internal':
         case 'fog':
-                //program.setFloat("uFogDensity", this.map.fogDensity);
+                //program.setFloat("uFogDensity", draw.fogDensity);
             program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
             break;
 
@@ -455,7 +455,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
         case 'external':
             program.setFloat('uAlpha', 1);
-                //program.setFloat("uFogDensity", this.map.fogDensity);
+                //program.setFloat("uFogDensity", draw.fogDensity);
             program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
             program.setVec4('uTransform', texture.getTransform());
             break;

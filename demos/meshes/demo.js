@@ -159,11 +159,12 @@ function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shin
     vts.mat4.toInverseMat3(mv, norm);
 
     //setup material 
+    var opacity = 1;
     var material = [
         ambientColor[0], ambientColor[1], ambientColor[2], 0,
         diffuseColor[0], diffuseColor[1], diffuseColor[2], 0,
         specularColor[0], specularColor[1], specularColor[2], 0,
-        shininess, 0, 0, 0
+        shininess, opacity, 0, 0   
     ];
 
     //draw cube

@@ -18,7 +18,6 @@ var setFont = function(fontData) {
 
 
 var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, font, vertexBuffer, texcoordsBuffer, flat) {
-    
     var n;
 
     if (globals.geocent && !flat) {

@@ -183,7 +183,7 @@ RoiPano.prototype.update = function() {
     }
 
     // get view projection matric
-    var vpMat = this.map.getCameraInfo()['view-projection-matrix'];
+    var vpMat = this.map.getCameraInfo().viewProjectionMatrix;
     // calc zoom (suitable lod)
     var useLod = this.suitableLod();
     // console.log('Using lod: ' + useLod);
@@ -241,7 +241,7 @@ RoiPano.prototype.drawTile = function(tile) {
 
     //  projection-view matrix from map.getCamera()
     var cam = this.map.getCameraInfo();
-    var pv = cam['view-projection-matrix'];
+    var pv = cam.viewProjectionMatrix;
     //  tile (model) matrix
     if (tile.mat === null) {
         this.perepareTileMatrix(tile);

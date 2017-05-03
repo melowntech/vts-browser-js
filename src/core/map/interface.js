@@ -246,7 +246,7 @@ MapInterface.prototype.getCameraInfo = function() {
     return {
         'projectionMatrix' : camera.camera.projection.slice(),
         'viewMatrix' : camera.camera.modelview.slice(),
-        'view-projectionMatrix' : camera.camera.mvp.slice(),
+        'viewProjectionMatrix' : camera.camera.mvp.slice(),
         'rotationMatrix' : camera.camera.rotationview.slice(),
         'position' : this.map.camera.position.slice(),
         'vector' : this.map.camera.vector.slice(),

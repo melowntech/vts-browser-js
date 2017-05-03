@@ -218,7 +218,7 @@ RendererDraw.prototype.drawBall2 = function(position, size, shader, nfactor, dir
 };
 
 
-RendererDraw.prototype.drawLineString = function(points, size, color, depthTest, transparent, writeDepth, useState) {
+RendererDraw.prototype.drawLineString = function(points, size, color, depthOffset, depthTest, transparent, writeDepth, useState) {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
@@ -229,7 +229,7 @@ RendererDraw.prototype.drawLineString = function(points, size, color, depthTest,
     if (totalPoints > 32) {
         for (i = 0; i < totalPoints; i += 31) {
             p = points.slice(i, i + 32); 
-            this.drawLineString(p, size, color, depthTest, transparent, writeDepth, useState);
+            this.drawLineString(p, size, color, depthOffset, depthTest, transparent, writeDepth, useState);
         }
         return;
     }
@@ -267,7 +267,7 @@ RendererDraw.prototype.drawLineString = function(points, size, color, depthTest,
     var prog = renderer.progLine4;   
 
     gpu.useProgram(prog, ['aPosition']);
-    prog.setMat4('uMVP', renderer.imageProjectionMatrix);
+    prog.setMat4('uMVP', renderer.imageProjectionMatrix, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
     prog.setVec3('uScale', [(2 / renderer.curSize[0]), (2 / renderer.curSize[1]), size*0.5]);
     prog.setVec4('uColor', (color != null ? color : [255,255,255,255]));
     prog.setVec3('uPoints', plineBuffer);
@@ -293,7 +293,7 @@ RendererDraw.prototype.drawLineString = function(points, size, color, depthTest,
 
 
 //draw 2d image - used for debuging
-RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth, depthTest, transparent, writeDepth, useState) {
+RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth, depthOffset, depthTest, transparent, writeDepth, useState) {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
@@ -333,6 +333,7 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
     var indices = renderer.rectIndicesBuffer;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
 
+//    prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix, renderer.getZoffsetFactor(depthOffset));
     prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
 
     prog.setMat4('uData', [
@@ -341,8 +342,15 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
         x + lx, y + ly, 1, 1,
         x,  y + ly,  0, 1  ]);
 
+    //depth = (depth != null) ? depth : 0;
+
+    if (depthOffset) {
+        //depth = ((depth + 1) * (1 + renderer.getZoffsetFactor(depthOffset))) - 1;
+        depth = depth * (1 + renderer.getZoffsetFactor(depthOffset) * 2);
+    }
+
     prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
-    prog.setFloat('uDepth', depth != null ? depth : 0);
+    prog.setFloat('uDepth', depth);
 
     gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -364,7 +372,7 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
 };
 
 
-RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthTest, transparent, writeDepth, useState) {
+RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset, depthTest, transparent, writeDepth, useState) {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
@@ -401,7 +409,7 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthTest, 
     var indices = renderer.rectIndicesBuffer;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
 
-    prog.setMat4('uProjectionMatrix', mvp);
+    prog.setMat4('uProjectionMatrix', mvp, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
 
     var x = 0, y = 0, lx = 1, ly = 1;
 
@@ -435,7 +443,7 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthTest, 
 
 
 //draw flat 2d image - used for debuging
-RendererDraw.prototype.drawFlatImage = function(x, y, lx, ly, texture, color, depth) {
+RendererDraw.prototype.drawFlatImage = function(x, y, lx, ly, texture, color, depth, depthOffset) {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
@@ -1044,7 +1052,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 var pp = renderer.project2(job.center, mvp);
                 pp[0] = Math.round(pp[0]);
 
-                this.drawLineString([[pp[0], pp[1], pp[2]], [pp[0], pp[1]-stickShift, pp[2]]], s[2], [s[3], s[4], s[5], s[6]], null, null, null, true);
+                this.drawLineString([[pp[0], pp[1], pp[2]], [pp[0], pp[1]-stickShift, pp[2]]], s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
             }
         }
 

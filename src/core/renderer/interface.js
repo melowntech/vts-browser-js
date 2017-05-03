@@ -290,6 +290,7 @@ RendererInterface.prototype.drawImage = function(options) {
     var rect = options['rect'];
     var color = options['color'] || [255,255,255,255];
     var depth = (options['depth'] != null) ? options['depth'] : 0;
+    var depthOffset = (options['depthOffset'] != null) ? options['depthOffset'] : null;
     var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
     var blend = (options['blend'] != null) ? options['blend'] : false;
     var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
@@ -299,7 +300,7 @@ RendererInterface.prototype.drawImage = function(options) {
     color[2] *= 1.0/255;
     color[3] *= 1.0/255;
 
-    this.renderer.draw.drawImage(rect[0], rect[1], rect[2], rect[3], options['texture'], color, depth, depthTest, blend, writeDepth, useState);
+    this.renderer.draw.drawImage(rect[0], rect[1], rect[2], rect[3], options['texture'], color, depth, depthOffset, depthTest, blend, writeDepth, useState);
     return this;    
 };
 
@@ -315,6 +316,7 @@ RendererInterface.prototype.drawBillboard = function(options) {
 
     var mvp = options['mvp'];
     var color = options['color'] || [255,255,255,255];
+    var depthOffset = (options['depthOffset'] != null) ? options['depthOffset'] : null;
     var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
     var blend = (options['blend'] != null) ? options['blend'] : false;
     var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
@@ -324,7 +326,7 @@ RendererInterface.prototype.drawBillboard = function(options) {
     color[2] *= 1.0/255;
     color[3] *= 1.0/255;
 
-    this.renderer.draw.drawBillboard(mvp, options['texture'], color, depthTest, blend, writeDepth, useState);
+    this.renderer.draw.drawBillboard(mvp, options['texture'], color, depthOffset, depthTest, blend, writeDepth, useState);
     return this;    
 };
 
@@ -340,6 +342,7 @@ RendererInterface.prototype.drawLineString = function(options) {
 
     var points = options['points'];
     var color = options['color'] || [255,255,255,255];
+    var depthOffset = (options['depthOffset'] != null) ? options['depthOffset'] : null;
     var size = options['size'] || 2;
     var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
     var blend = (options['blend'] != null) ? options['blend'] : false;
@@ -350,7 +353,7 @@ RendererInterface.prototype.drawLineString = function(options) {
     color[2] *= 1.0/255;
     color[3] *= 1.0/255;
 
-    this.renderer.draw.drawLineString(points, size, color, depthTest, blend, writeDepth, useState);
+    this.renderer.draw.drawLineString(points, size, color, depthOffset, depthTest, blend, writeDepth, useState);
     return this;    
 };
 
