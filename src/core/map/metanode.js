@@ -509,7 +509,7 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
                 if (this.id[0] <= 8) { //extend bbox because of lon curvature
                     pos = this.diskPos;
 
-                    var expand = 0.11;
+                    var expand = 0.12 / (9-4) * (5-(this.id[0]-4));
 
                     bbox[0] += (bbox[0] - pos[0]) * expand;
                     bbox[1] += (bbox[1] - pos[1]) * expand;

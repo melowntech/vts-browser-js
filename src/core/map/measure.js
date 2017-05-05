@@ -701,9 +701,11 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
     if (clampTilt) { //used for street labels
         orientation[1] = math.clamp(orientation[1], -89.0, 90.0);
     }
-    
+
+    var roty = math.clamp(orientation[1], -89.5, 89.5);
+
     var tmpMatrix = mat4.create();
-    mat4.multiply(math.rotationMatrix(2, math.radians(-orientation[0])), math.rotationMatrix(0, math.radians(orientation[1])), tmpMatrix);
+    mat4.multiply(math.rotationMatrix(2, math.radians(-orientation[0])), math.rotationMatrix(0, math.radians(roty)), tmpMatrix);
     var orbitPos, ned, north, east, direction, spaceMatrix, rotationMatrix;
     var east2, north2, direction2, dir, up, right;
 
@@ -730,7 +732,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
     if (projected) {
         
         tmpMatrix = mat4.create();
-        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), tmpMatrix);
+        mat4.multiply(math.rotationMatrix(0, math.radians(-roty - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), tmpMatrix);
 
         ned = this.getNED(coords);
         north = ned.north;
@@ -820,7 +822,7 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         //spaceMatrix = mat4.inverse(spaceMatrix);
         
         var localRotMatrix = mat4.create();
-        mat4.multiply(math.rotationMatrix(0, math.radians(-orientation[1] - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), localRotMatrix);
+        mat4.multiply(math.rotationMatrix(0, math.radians(-roty - 90.0)), math.rotationMatrix(2, math.radians(orientation[0])), localRotMatrix);
 
         east2  = [1,0,0];
         direction2 = [0,1,0];
@@ -892,13 +894,14 @@ MapMeasure.prototype.getPositionCameraInfo = function(position, projected, clamp
         spaceMatrix = mat4.inverse(spaceMatrix);
         mat4.multiplyVec3(spaceMatrix, orbitPos);
 
-        ret.vector2 = [-spaceMatrix[8], -spaceMatrix[9], -spaceMatrix[10]]; //vector2 is probably hack for tree.js bboxVisible 
+        //ret.vector2 = [-spaceMatrix[8], -spaceMatrix[9], -spaceMatrix[10]]; //vector2 is probably hack for tree.js bboxVisible 
+        ret.vector = [-rotationMatrix[2], -rotationMatrix[6], -rotationMatrix[10]];
 
         //var ray = this.map.renderer.getScreenRay(800,400);
 
         //get camera direction
-        mat4.inverse(rotationMatrix, spaceMatrix);
-        ret.vector = [-spaceMatrix[8], -spaceMatrix[9], -spaceMatrix[10]]; 
+        //mat4.inverse(rotationMatrix, spaceMatrix);
+        //ret.vector = [-spaceMatrix[8], -spaceMatrix[9], -spaceMatrix[10]]; 
         
         //console.log("cam vec: " + JSON.stringify(this.cameraVector));
          
