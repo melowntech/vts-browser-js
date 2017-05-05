@@ -270,7 +270,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 88:
                 case 120:
-                    debug.config.mapFog = !debug.config.mapFog; hit = true; break; //key X pressed
+                    debug.drawFog = !debug.drawFog; hit = true; break; //key X pressed
 
                 case 82:
                 case 114:

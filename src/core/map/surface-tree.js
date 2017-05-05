@@ -443,8 +443,8 @@ MapSurfaceTree.prototype.drawSurface = function() {
 
 
     if (replay.storeTiles || replay.storeFreeTiles) { //used only in inspectors
-        if (!this.map.tileBuffer[0]) {
-            this.map.tileBuffer[0] = [];
+        if (!draw.tileBuffer[0]) {
+            draw.tileBuffer[0] = [];
         }
         
         var tiles = draw.tileBuffer[0];

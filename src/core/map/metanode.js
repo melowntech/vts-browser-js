@@ -488,6 +488,7 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
                 bbox[18] = maxX; bbox[19] = maxY; bbox[20] = maxZ;
                 bbox[21] = minX; bbox[22] = maxY; bbox[23] = maxZ;
             } else {
+
                 normalize = vec3.normalize3; 
                 dot = vec3.dot2;
 
@@ -504,6 +505,28 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
                 d4 = dot(normal, bbox, 21);
     
                 maxDelta = Math.min(d1, d2, d3, d4);
+
+                if (this.id[0] <= 8) { //extend bbox because of lon curvature
+                    pos = this.diskPos;
+
+                    var expand = 0.12 / (9-4) * (5-(this.id[0]-4));
+
+                    bbox[0] += (bbox[0] - pos[0]) * expand;
+                    bbox[1] += (bbox[1] - pos[1]) * expand;
+                    bbox[2] += (bbox[2] - pos[2]) * expand;
+
+                    bbox[3] += (bbox[3] - pos[0]) * expand;
+                    bbox[4] += (bbox[4] - pos[1]) * expand;
+                    bbox[5] += (bbox[5] - pos[2]) * expand;
+
+                    bbox[6] += (bbox[6] - pos[0]) * expand;
+                    bbox[7] += (bbox[7] - pos[1]) * expand;
+                    bbox[8] += (bbox[8] - pos[2]) * expand;
+
+                    bbox[9] += (bbox[9] - pos[0]) * expand;
+                    bbox[10] += (bbox[10] - pos[1]) * expand;
+                    bbox[11] += (bbox[11] - pos[2]) * expand;
+                }
 
                 //extend bbox height by tile curvature 
                 height += draw.planetRadius - (draw.planetRadius * maxDelta);  

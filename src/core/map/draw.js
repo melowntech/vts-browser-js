@@ -235,7 +235,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 for (i = 0, li = tiles.length; i < li; i++) {
                     if (!tiles[i][1]) { //skip grids
                         tile = tiles[i][0];
-                        if ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod)) {
+                        if (tile && ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod))) {
                             drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.pixelSize, tile.priority, false, false);
                         }
                     }
@@ -247,7 +247,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 for (i = 0, li = tiles.length; i < li; i++) {
                     if (!tiles[i][1]) { //skip grids
                         tile = tiles[i][0];
-                        if ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod)) {
+                        if (tile && ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod))) {
                             drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.pixelSize, tile.priority, false, false);
                         }
                     }
@@ -260,7 +260,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 debug.drawBBoxes = true;  
                 for (i = 0, li = tiles.length; i < li; i++) {
                     tile = tiles[i];
-                    if ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod)) {
+                    if (tile && ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod))) {
                         drawTiles.drawTileInfo(tile, tile.metanode, cameraPos, tile.surfaceMesh, tile.pixelSize);
                     }
                 }
