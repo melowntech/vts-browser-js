@@ -158,12 +158,12 @@ Camera.prototype.scaleFactor = function(worldPos, returnDist) {
     // resolution independent of camera rotation)
 
     if (returnDist) {
-        if (dist < this.near) return [Number.POSITIVEINFINITY, dist];
+        if (dist < this.near) return [Number.POSITIVE_INFINITY, dist];
         return [this.projection[0] / dist, dist]; 
         //return [(this.projection[5]*0.5) / dist, dist]; //projection by sy
     }
 
-    if (dist < this.near) return Number.POSITIVEINFINITY;
+    if (dist < this.near) return Number.POSITIVE_INFINITY;
     return this.projection[0] / dist;
     //return (this.projection[5]*0.5) / dist; //projection by sy
 };
@@ -172,7 +172,7 @@ Camera.prototype.scaleFactor = function(worldPos, returnDist) {
 Camera.prototype.scaleFactor2 = function(dist) {
     if (this.dirty) this.update();
 
-    if (dist < this.near) return Number.POSITIVEINFINITY;
+    if (dist < this.near) return Number.POSITIVE_INFINITY;
     return this.projection[0] / dist;
     //return (this.projection[5]*0.5) / dist; //projection by sy
 };

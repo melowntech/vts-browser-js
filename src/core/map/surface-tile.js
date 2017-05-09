@@ -669,10 +669,10 @@ MapSurfaceTile.prototype.getPixelSize = function(bbox, screenPixelSize, cameraPo
             cameraPos[2] > min[2] && cameraPos[2] < max[2]) {
     
             if (returnDistance) {
-                return [Number.POSITIVEINFINITY, 0.1];
+                return [Number.POSITIVE_INFINITY, 0.1];
             }
         
-            return Number.POSITIVEINFINITY;
+            return Number.POSITIVE_INFINITY;
         }
     }
 
@@ -775,7 +775,7 @@ MapSurfaceTile.prototype.getPixelSize3Old = function(node, screenPixelSize, fact
     var d = (camera.geocentDistance*factor) - node.diskDistance;
     if (d < 0) {
         d = -d;
-        //return [Number.POSITIVEINFINITY, 0.1];
+        //return [Number.POSITIVE_INFINITY, 0.1];
     } 
 
     var a = vec3.dot(camera.geocentNormal, node.diskNormal);
@@ -830,7 +830,7 @@ MapSurfaceTile.prototype.getPixelSize3 = function(node, screenPixelSize) {
             if (d2 < 0) { //is camera is belown bottom bbox level?
                 d = -d2;
             } else { //is camera inside bbox
-                return [Number.POSITIVEINFINITY, 0.1];
+                return [Number.POSITIVE_INFINITY, 0.1];
             }
         } 
     }
@@ -874,7 +874,7 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
     var preciseDistance = (map.isGeocent && (map.config.mapPreciseDistanceTest || node.metatile.useVersion >= 4));  
 
     if (node.hasGeometry()) {
-        var screenPixelSize = Number.POSITIVEINFINITY;
+        var screenPixelSize = Number.POSITIVE_INFINITY;
 
         if (node.usedTexelSize()) {
             screenPixelSize = draw.ndcToScreenPixel * node.pixelSize;
@@ -931,7 +931,7 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
         }
 
         //pixelSize = this.getPixelSize(node.bbox, 1, cameraPos, cameraPos, true);
-        pixelSize[0] = Number.POSITIVEINFINITY;
+        pixelSize[0] = Number.POSITIVE_INFINITY;
     }
 
     this.texelSize = pixelSize[0];
@@ -976,7 +976,7 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
 
 
 MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
-    if ((this.texelSize == Number.POSITIVEINFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
+    if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
         return;
     }
     

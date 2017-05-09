@@ -3,13 +3,13 @@ var BBox = function(xmin, ymin, zmin, xmax, ymax, zmax) {
     this.min = [];
     this.max = [];
 
-    this.min[0] = (xmin != null) ? xmin : Number.POSITIVEINFINITY;
-    this.min[1] = (ymin != null) ? ymin : Number.POSITIVEINFINITY;
-    this.min[2] = (zmin != null) ? zmin : Number.POSITIVEINFINITY;
+    this.min[0] = (xmin != null) ? xmin : Number.POSITIVE_INFINITY;
+    this.min[1] = (ymin != null) ? ymin : Number.POSITIVE_INFINITY;
+    this.min[2] = (zmin != null) ? zmin : Number.POSITIVE_INFINITY;
 
-    this.max[0] = (xmax != null) ? xmax : Number.NEGATIVEINFINITY;
-    this.max[1] = (ymax != null) ? ymax : Number.NEGATIVEINFINITY;
-    this.max[2] = (zmax != null) ? zmax : Number.NEGATIVEINFINITY;
+    this.max[0] = (xmax != null) ? xmax : Number.NEGATIVE_INFINITY;
+    this.max[1] = (ymax != null) ? ymax : Number.NEGATIVE_INFINITY;
+    this.max[2] = (zmax != null) ? zmax : Number.NEGATIVE_INFINITY;
 
     /*
     this.maxSize = Math.max(this.max[0] - this.min[0],
@@ -43,7 +43,23 @@ BBox.prototype.center = function(vec) {
         vec[1] = (this.min[1] + this.max[1])*0.5;
         return vec;
     } else {
-        return [(this.min[0] + this.max[0])*0.5, (this.min[1] + this.max[1])*0.5, (this.min[2] + this.max[2])*0.5];
+        if (!this.middle) {
+            this.middle = [(this.min[0] + this.max[0])*0.5, (this.min[1] + this.max[1])*0.5, (this.min[2] + this.max[2])*0.5];
+
+            if (Number.isNaN(this.middle[0])) {
+                this.middle[0] = 0;
+            }
+
+            if (Number.isNaN(this.middle[1])) {
+                this.middle[1] = 0;
+            }
+
+            if (Number.isNaN(this.middle[2])) {
+                this.middle[2] = 0;
+            }
+        } 
+
+        return this.middle;
     }
 };
 

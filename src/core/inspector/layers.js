@@ -435,31 +435,36 @@ InspectorLayers.prototype.buildSurfaces = function() {
 
 InspectorLayers.prototype.buildBoundLayers = function(id) {
     var view = this.views[this.currentView];
-    var layers = view.surfaces[id].layers;
     var html = '';
 
-    for (var i = 0, li = layers.length; i < li; i++) {
-        var layer = layers[i];
+    if (view.surfaces[id]) {
+        var layers = view.surfaces[id].layers;
 
-        html += '<div class="vts-layers-item"><input id="vts-boundlayer-checkbox-' + layer.id + '" type="checkbox" ' + (layer.enabled ? 'checked' : '')   + '/>'
-                 + '<div class="vts-layers-name">' + layer.id + '</div>'
-                 + '<input id="vts-boundlayer-spinner-' + layer.id + '" type="number" title="Alpha" min="0" max="100" step="10" value="' + layer.alpha + '">'
-                 + '<button id="vts-boundlayer-ubutton-' + layer.id + '" type="button" title="Move Above">&uarr;</button>' 
-                 + '<button id="vts-boundlayer-dbutton-' + layer.id + '" type="button" title="Move Bellow">&darr;</button>' 
-                 + '</div>';
+        for (var i = 0, li = layers.length; i < li; i++) {
+            var layer = layers[i];
+
+            html += '<div class="vts-layers-item"><input id="vts-boundlayer-checkbox-' + layer.id + '" type="checkbox" ' + (layer.enabled ? 'checked' : '')   + '/>'
+                     + '<div class="vts-layers-name">' + layer.id + '</div>'
+                     + '<input id="vts-boundlayer-spinner-' + layer.id + '" type="number" title="Alpha" min="0" max="100" step="10" value="' + layer.alpha + '">'
+                     + '<button id="vts-boundlayer-ubutton-' + layer.id + '" type="button" title="Move Above">&uarr;</button>' 
+                     + '<button id="vts-boundlayer-dbutton-' + layer.id + '" type="button" title="Move Bellow">&darr;</button>' 
+                     + '</div>';
+        }
     }
 
     this.boundLayersItems.innerHTML = html;
 
-    for (i = 0, li = layers.length; i < li; i++) {
-        var htmlId = 'vts-boundlayer-checkbox-' + layers[i].id;
-        document.getElementById(htmlId).onchange = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'enable');
-        htmlId = 'vts-boundlayer-spinner-' + layers[i].id;
-        document.getElementById(htmlId).onchange = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'alpha');
-        htmlId = 'vts-boundlayer-ubutton-' + layers[i].id;
-        document.getElementById(htmlId).onclick = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'up');
-        htmlId = 'vts-boundlayer-dbutton-' + layers[i].id;
-        document.getElementById(htmlId).onclick = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'down');
+    if (view.surfaces[id]) {
+        for (i = 0, li = layers.length; i < li; i++) {
+            var htmlId = 'vts-boundlayer-checkbox-' + layers[i].id;
+            document.getElementById(htmlId).onchange = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'enable');
+            htmlId = 'vts-boundlayer-spinner-' + layers[i].id;
+            document.getElementById(htmlId).onchange = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'alpha');
+            htmlId = 'vts-boundlayer-ubutton-' + layers[i].id;
+            document.getElementById(htmlId).onclick = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'up');
+            htmlId = 'vts-boundlayer-dbutton-' + layers[i].id;
+            document.getElementById(htmlId).onclick = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'down');
+        }
     }
 };
 
@@ -664,7 +669,9 @@ InspectorLayers.prototype.selectSurface = function(id) {
 
     //select new one
     element = document.getElementById('vts-surface-item-' + id);
-    element.style.backgroundColor = '#ddd';
+    if (element) {
+        element.style.backgroundColor = '#ddd';
+    }
     this.currentSurface = id;
     this.buildBoundLayers(this.currentSurface);
 };
