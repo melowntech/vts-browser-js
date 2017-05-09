@@ -301,7 +301,7 @@ MapSurfaceTree.prototype.drawSurface = function() {
 
                 usedNodes++;
 
-                if (tile.texelSize != Number.POSITIVEINFINITY){
+                if (tile.texelSize != Number.POSITIVE_INFINITY){
                     if (tile.texelSize > best) {
                         best = tile.texelSize;
                     }
@@ -533,7 +533,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
                     storeNodesBuffer.push(tile);
                 }
 
-                if (tile.texelSize  != Number.POSITIVEINFINITY){
+                if (tile.texelSize  != Number.POSITIVE_INFINITY){
                     if (tile.texelSize > best) {
                         best = tile.texelSize;
                     }
@@ -763,7 +763,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
                 usedNodes++;
 
-                if (tile.texelSize  != Number.POSITIVEINFINITY){
+                if (tile.texelSize  != Number.POSITIVE_INFINITY){
                     if (tile.texelSize > best) {
                         best = tile.texelSize;
                     }

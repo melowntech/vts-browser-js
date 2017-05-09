@@ -164,12 +164,12 @@ struct Metanode {
             //console.log("empty-node: id: " + JSON.stringify(this.id));
             //console.log("empty-node: surafce: " + this.metatile.surface.id);
     
-            minExtents[0] = Number.POSITIVEINFINITY;
-            minExtents[1] = Number.POSITIVEINFINITY;
-            minExtents[2] = Number.POSITIVEINFINITY;
-            maxExtents[0] = Number.NEGATIVEINFINITY;
-            maxExtents[1] = Number.NEGATIVEINFINITY;
-            maxExtents[2] = Number.NEGATIVEINFINITY;
+            minExtents[0] = Number.POSITIVE_INFINITY;
+            minExtents[1] = Number.POSITIVE_INFINITY;
+            minExtents[2] = Number.POSITIVE_INFINITY;
+            maxExtents[0] = Number.NEGATIVE_INFINITY;
+            maxExtents[1] = Number.NEGATIVE_INFINITY;
+            maxExtents[2] = Number.NEGATIVE_INFINITY;
         }
     
         this.bbox = new BBox(minExtents[0], minExtents[1], minExtents[2], maxExtents[0], maxExtents[1], maxExtents[2]);
@@ -187,7 +187,7 @@ struct Metanode {
     this.displaySize = streamData.getUint16(stream.index, true); stream.index += 2;
     this.displaySize = 1024;
     if ((this.flags & (1 << 2)) == 0) {
-        this.pixelSize = Number.POSITIVEINFINITY;
+        this.pixelSize = Number.POSITIVE_INFINITY;
     }
 
     if ((this.flags & (1 << 3)) == 0) {

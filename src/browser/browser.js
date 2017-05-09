@@ -353,7 +353,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'sensitivity':          this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
     case 'inertia':              this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
     case 'rotate':             
-        this.config.autoRotate = utils.validateNumber(value, Number.NEGATIVEINFINITY, Number.POSITIVEINFINITY, 0);
+        this.config.autoRotate = utils.validateNumber(value, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, 0);
         if (map && this.autopilot) {
             this.autopilot.setAutorotate(this.config.autoRotate);
         }
@@ -361,7 +361,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'pan':
         if (Array.isArray(value) && value.length == 2){
             this.config.autoPan = [
-                utils.validateNumber(value[0], Number.NEGATIVEINFINITY, Number.POSITIVEINFINITY, 0),
+                utils.validateNumber(value[0], Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, 0),
                 utils.validateNumber(value[1], -360, 360, 0)
             ];
         }

@@ -118,6 +118,12 @@ Autopilot.prototype.tick = function() {
     var timeFactor =  (time - this.lastTime) / 1000; 
     this.lastTime = time;
 
+    if (this.browser.ui && this.browser.ui.loading &&
+        this.browser.ui.loading.control.getVisible()) {
+        return;
+    }
+
+
     if (this.autoRotate != 0) {
         pos = map.getPosition();
         var o = pos.getOrientation();
