@@ -378,7 +378,8 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
         }
 
         if (key.indexOf('renderer') == 0) {
-            map.setConfigParam(key, value);
+            var renderer = this.getRenderer();
+            renderer.setConfigParam(key, value);
         }
     }
 };
