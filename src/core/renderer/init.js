@@ -132,6 +132,10 @@ RendererInit.prototype.initHitmap = function() {
     renderer.geoHitmapTexture = new GpuTexture(this.gpu);
     renderer.geoHitmapTexture.createFromData(size, size, data);
     renderer.geoHitmapTexture.createFramebuffer(size, size);
+
+    renderer.geoHitmapTexture2 = new GpuTexture(this.gpu);
+    renderer.geoHitmapTexture2.createFromData(size, size, data);
+    renderer.geoHitmapTexture2.createFramebuffer(size, size);
 };
 
 

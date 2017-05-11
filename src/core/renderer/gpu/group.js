@@ -35,6 +35,7 @@ GpuGroup.prototype.kill = function() {
         switch(job.type) {
         case 'flat-line':
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
+            if (job.vertexElementBuffer) this.gl.deleteBuffer(job.vertexElementBuffer);
             break;
 
         case 'flat-tline':
@@ -42,11 +43,13 @@ GpuGroup.prototype.kill = function() {
         case 'pixel-tline':
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
             if (job.vertexNormalBuffer) this.gl.deleteBuffer(job.vertexNormalBuffer);
+            if (job.vertexElementBuffer) this.gl.deleteBuffer(job.vertexElementBuffer);
             break;
 
         case 'line-label':
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
             if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
+            if (job.vertexElementBuffer) this.gl.deleteBuffer(job.vertexElementBuffer);
             break;
 
         case 'icon':
@@ -54,6 +57,7 @@ GpuGroup.prototype.kill = function() {
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
             if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
             if (job.vertexOriginBuffer) this.gl.deleteBuffer(job.vertexOriginBuffer);
+            if (job.vertexElementBuffer) this.gl.deleteBuffer(job.vertexElementBuffer);
             break;
         }
     }
@@ -86,6 +90,7 @@ GpuGroup.prototype.addLineJob = function(data) {
     job.hoverEvent = data['hover-event'];
     job.enterEvent = data['enter-event'];
     job.leaveEvent = data['leave-event'];
+    job.advancedHit = data['advancedHit'];
     job.hitable = data['hitable'];
     job.eventInfo = data['eventInfo'];
     job.state = data['state'];
@@ -104,6 +109,14 @@ GpuGroup.prototype.addLineJob = function(data) {
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
     job.vertexPositionBuffer.itemSize = 3;
     job.vertexPositionBuffer.numItems = vertices.length / 3;
+
+    if (job.advancedHit) {
+        var elements = data['elementBuffer'];
+
+        gl.bufferData(gl.ARRAY_BUFFER, elements, gl.STATIC_DRAW);
+        job.vertexElementBuffer.itemSize = 1;
+        job.vertexElementBuffer.numItems = elements.length;
+    }
 
     this.jobs.push(job);
 
@@ -131,6 +144,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     job.eventInfo = data['eventInfo'];
     job.enterEvent = data['enter-event'];
     job.leaveEvent = data['leave-event'];
+    job.advancedHit = data['advancedHit'];
     job.state = data['state'];
     job.center = data['center'];
     job.lod = data['lod'];
@@ -174,6 +188,14 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
     job.vertexNormalBuffer.itemSize = 4;
     job.vertexNormalBuffer.numItems = normals.length / 4;
+
+    if (job.advancedHit) {
+        var elements = data['elementBuffer'];
+
+        gl.bufferData(gl.ARRAY_BUFFER, elements, gl.STATIC_DRAW);
+        job.vertexElementBuffer.itemSize = 1;
+        job.vertexElementBuffer.numItems = elements.length;
+    }
 
     this.jobs.push(job);
 
