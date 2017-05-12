@@ -628,8 +628,8 @@ MapDrawTiles.prototype.getTileTextureTransform = function(sourceTile, targetTile
 MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface, bound, fullUpdate) {
     var path, extraBound, layer, texture;
 
-    //if (tile.id[0] == 18 && tile.id[1] == 70930 && tile.id[2] == 44286) {
-        //tile = tile;
+    //if (tile.id[0] == 10 && tile.id[1] == 273 && tile.id[2] == 171) {
+      //  tile = tile;
     //}
 
     //search map view
@@ -672,7 +672,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                     }
                     
                     //var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || texture.extraBound || texture.getMaskTexture() || layer.isTransparent);
-                    var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || extraBound || texture.getMaskTexture() || layer.isTransparent);
+                    var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || /*extraBound ||*/ texture.getMaskTexture() || layer.isTransparent);
                     if (fullAndOpaque) {
                         fullAndOpaqueCounter++;
                     }
@@ -692,13 +692,41 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
             //and remove all layer after first FullAndOpaque 
             if (fullAndOpaqueCounter > 0) {
                 var newSequence = [];
-                //var firstFull = false; 
                 
                 for (var i = bound.sequence.length - 1; i >= 0; i--) {
                     var layerId = bound.sequence[i];
                     
                     if (sequenceFullAndOpaque[i]) {
-                        newSequence.unshift(layerId);    
+                        var bestLayerId = layerId;
+                        var bestLod = tile.id[0];
+                        texture = tile.boundTextures[layerId];
+
+                        if (texture && texture.extraBound && texture.extraBound.sourceTile) {
+                            bestLod = texture.extraBound.sourceTile.id[0];
+                        }
+
+                        i--;
+                        
+                        //get best quality 
+                        for (; i >= 0; i--) {
+                            if (sequenceFullAndOpaque[i]) {
+                                layerId = bound.sequence[i];
+                                texture = tile.boundTextures[layerId];
+
+                                var lod = tile.id[0];
+
+                                if (texture && texture.extraBound && texture.extraBound.sourceTile) {
+                                    lod = texture.extraBound.sourceTile.id[0];
+                                }
+
+                                if (lod > bestLod) {
+                                    bestLayerId = layerId;
+                                    bestLod = lod;
+                                }
+                            }
+                        }
+
+                        newSequence.unshift(bestLayerId);    
                         break;
                     } else {
                         texture = tile.boundTextures[layerId];
@@ -764,11 +792,9 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
         }
     }
 
-    if (tile.id[0] == 18 && tile.id[1] == 70930 && tile.id[2] == 44286) {
-        console.log(JSON.stringify(bound.sequence))
-        //tile = tile;
-    }
-
+    //if (tile.id[0] == 10 && tile.id[1] == 273 && tile.id[2] == 171) {
+      //  console.log(JSON.stringify(bound.sequence))
+    //}
 };
 
 

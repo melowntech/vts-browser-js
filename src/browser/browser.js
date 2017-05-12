@@ -377,8 +377,8 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
             map.setConfigParam(key, value);
         }
 
-        if (key.indexOf('renderer') == 0) {
-            map.setConfigParam(key, value);
+        if (key.indexOf('renderer') == 0 && this.getRenderer()) {
+            this.getRenderer().setConfigParam(key, value);
         }
     }
 };
