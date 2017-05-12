@@ -11,10 +11,6 @@ var BBox = function(xmin, ymin, zmin, xmax, ymax, zmax) {
     this.max[1] = (ymax != null) ? ymax : Number.NEGATIVE_INFINITY;
     this.max[2] = (zmax != null) ? zmax : Number.NEGATIVE_INFINITY;
 
-    /*
-    this.maxSize = Math.max(this.max[0] - this.min[0],
-                             this.max[1] - this.min[1],
-                             this.max[2] - this.min[2]);*/
     this.updateMaxSize();
 };
 
@@ -32,8 +28,8 @@ BBox.prototype.side = function(index) {
 
 BBox.prototype.updateMaxSize = function() {
     this.maxSize = Math.abs(Math.max(this.max[0] - this.min[0],
-                                      this.max[1] - this.min[1],
-                                      this.max[2] - this.min[2]));
+                                     this.max[1] - this.min[1],
+                                     this.max[2] - this.min[2]));
 };
 
 

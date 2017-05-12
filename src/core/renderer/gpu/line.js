@@ -25,12 +25,6 @@ var GpuLine = function(gpu, core) {
 //destructor
 GpuLine.prototype.kill = function() {
     this.gl.deleteBuffer(this.vertexPositionBuffer);
-/*
-    if (this.core.renderer != null) {
-        this.core.renderer.statsFluxMesh[1][0] ++;
-        this.core.renderer.statsFluxMesh[1][1] += this.size;
-    }
-*/
 };
 
 //add line to vertices buffer
@@ -135,15 +129,6 @@ GpuLine.prototype.compile = function() {
 
     this.size = this.vertexPositionBuffer.numItems * 3 * 4;
     this.polygons = this.vertexPositionBuffer.numItems / 3;
-
-/*
-    if (this.core.renderer != null) {
-        this.core.renderer.statsCreateGpuMeshTime += performance.now() - timer;
-        this.core.renderer.statsFluxMesh[0][0] ++;
-        this.core.renderer.statsFluxMesh[0][1] += this.size;
-    }
-*/
-
 };
 
 // Draws the mesh, given the two vertex shader attributes locations.

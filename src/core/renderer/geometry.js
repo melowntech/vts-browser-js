@@ -116,41 +116,6 @@ RendererGeometry.buildPlane = function(size) {
     return { bbox:bbox, vertices:vertices, uvs: uvs};
 };
 
-/*
-var v = document.getElementById("canv");
-v.width = 250;v.height = 250;
-var c = v.getContext("2d"); 
-
-function getQuadPoint(p1,p2,p3,t) {
-  var t2 = (1-t);
-  var px = 2*p2[0]-p1[0]*0.5-p3[0]*0.5;
-  var py = 2*p2[1]-p1[1]*0.5-p3[1]*0.5;
-  return [t2*t2*p1[0]+2*t2*t*px+t*t*p3[0],
-          t2*t2*p1[1]+2*t2*t*py+t*t*p3[1]];
-}
-
-var plane = [
-  [[50,50], [100,10], [150,50]],
-  [[10,100], [100,100], [190,100]],
-  [[50,150], [100,190], [150,150]]
-];
-
-var size = 16;
-
-c.fillStyle = "rgb(200,0,0)";
-for (var i = 0; i < size; i++) {
-    for (var j = 0; j < size; j++) {
-     var t = j / (size-1);
-     var p1 = getQuadPoint(plane[0][0],plane[0][1],plane[0][2],t);
-     var p2 = getQuadPoint(plane[1][0],plane[1][1],plane[1][2],t);
-     var p3 = getQuadPoint(plane[2][0],plane[2][1],plane[2][2],t);
-     var t2 = i / (size-1);
-     var p = getQuadPoint(p1,p2,p3,t2);
-         c.fillRect(p[0], p[1], 5, 5);
-   }
-}
- */
-
 RendererGeometry.spherePos = function(lon, lat) {
     lat *= Math.PI;
     lon *= 2*Math.PI;
