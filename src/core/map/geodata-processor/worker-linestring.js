@@ -59,7 +59,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var index = 0, index2 = 0, index3 = 0;
     var skipJoins = (!lineFlat && lineWidth < 2.1);
 
-    var ii, i, li, p2, v, vv, l, n, nn, p1, p;
+    var ii, i, li, p2, v, vv, l, n, nn, p1, p, elementIndex, elemetBase = 0;
 
     //console.log("lod: " + lod + "  width: " + lineWidth);
 
@@ -178,14 +178,16 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             }
     
             if (advancedHit) {
-                elementBuffer[index3] = i;
-                elementBuffer[index3+1] = i;
-                elementBuffer[index3+2] = i;
+                elementIndex = elemetBase + i;
+
+                elementBuffer[index3] = elementIndex;
+                elementBuffer[index3+1] = elementIndex;
+                elementBuffer[index3+2] = elementIndex;
     
                 //add polygon
-                elementBuffer[index3+3] = i;
-                elementBuffer[index3+4] = i;
-                elementBuffer[index3+5] = i;
+                elementBuffer[index3+3] = elementIndex;
+                elementBuffer[index3+4] = elementIndex;
+                elementBuffer[index3+5] = elementIndex;
 
                 index3 += 6;
             }
@@ -431,9 +433,10 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 for (var j = 0; j < circleSides; j++) {
        
                     if (advancedHit) {
-                        elementBuffer[index3] = i;
-                        elementBuffer[index3+1] = i;
-                        elementBuffer[index3+2] = i;
+                        elementIndex = elemetBase + i;
+                        elementBuffer[index3] = elementIndex;
+                        elementBuffer[index3+1] = elementIndex;
+                        elementBuffer[index3+2] = elementIndex;
                         index3 += 3;
                     }
 
@@ -535,6 +538,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             }
         }
 
+        elemetBase += points.length;
     }
 
     if (totalPoints > 0) {

@@ -111,6 +111,8 @@ GpuGroup.prototype.addLineJob = function(data) {
     if (job.advancedHit) {
         var elements = data['elementBuffer'];
 
+        job.vertexElementBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexElementBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, elements, gl.STATIC_DRAW);
         job.vertexElementBuffer.itemSize = 1;
         job.vertexElementBuffer.numItems = elements.length;

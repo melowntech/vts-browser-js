@@ -69,6 +69,11 @@ utilsUrl.getSchema = function(url) {
 utilsUrl.getOrigin = function(url) {
     var location = document.createElement('a');
     location.href = url;
+
+    if (!location.origin) {  //IE11 hack
+      return location.protocol + "//" + location.hostname + (location.port ? ':' + location.port: '');
+    }
+
     return location.origin; 
 };
 
