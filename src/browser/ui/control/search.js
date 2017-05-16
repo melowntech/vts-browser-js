@@ -143,6 +143,7 @@ UIControlSearch.prototype.onSelectItem = function(index) {
 
     var pos = map.getPosition();
     //var coords = map.getPositionCoords(pos);                
+    pos = map.convertPositionHeightMode(pos, "float", true);
 
     var item = this.data[index];
     if (item) {
