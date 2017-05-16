@@ -9,8 +9,8 @@ var math = math_;
 
 var Camera = function(parent, fov, near, far) {
     this.parent = parent;
-    this.position = /*(position != null) ? position :*/ [0,0,0];
-    this.orientation = /*(orientation != null) ? orientation :*/ [0,0,0]; // {yaw, pitch, roll}
+    this.position = [0,0,0];
+    this.orientation = [0,0,0];
     this.aspect = 1;
     this.fov = fov;
     this.near = near;
@@ -25,7 +25,7 @@ var Camera = function(parent, fov, near, far) {
     this.mvp = mat4.create();
     this.mvp2 = mat4.create();
     this.frustumPlanes = [ [0,0,0,0], [0,0,0,0], [0,0,0,0],
-                            [0,0,0,0], [0,0,0,0], [0,0,0,0] ];
+                           [0,0,0,0], [0,0,0,0], [0,0,0,0] ];
     this.bboxPoints = [
         [ 0, 0, 0, 1 ],
         [ 0, 0, 0, 1 ],
@@ -254,25 +254,6 @@ Camera.prototype.bboxVisible = function(bbox, shift) {
 
     var min = bbox.min;
     var max = bbox.max;
-
-    /* old
-    if (shift) {
-        min = [min[0] - shift[0], min[1] - shift[1], min[2] - shift[2]];
-        max = [max[0] - shift[0], max[1] - shift[1], max[2] - shift[2]];
-    }
-
-    var points = [
-        [ min[0], min[1], min[2], 1 ],
-        [ min[0], min[1], max[2], 1 ],
-        [ min[0], max[1], min[2], 1 ],
-        [ min[0], max[1], max[2], 1 ],
-        [ max[0], min[1], min[2], 1 ],
-        [ max[0], min[1], max[2], 1 ],
-        [ max[0], max[1], min[2], 1 ],
-        [ max[0], max[1], max[2], 1 ]
-    ];
-    */
-   
     var points = this.bboxPoints;
     var p, minX, minY, minZ, maxX, maxY, maxZ;
 

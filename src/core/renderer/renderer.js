@@ -17,7 +17,6 @@ var RenderDraw = RenderDraw_;
 
 var Renderer = function(core, div, onUpdate, onResize, config) {
     this.config = config || {};
-    //this.setConfigParams(config);
     this.core = core;
     this.progTile = null;
     this.progHeightmap = null;
@@ -31,6 +30,8 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.onlyDepth = false;
     this.onlyLayers = false;
     this.onlyHitLayers = false;
+    this.onlyAdvancedHitLayers = false;
+    this.advancedPassNeeded = false;
     this.renderCounter = 1;
     this.hitmapCounter = 0;
     this.geoHitmapCounter = 0;
@@ -125,12 +126,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.init = new RenderInit(this);
     this.draw = new RenderDraw(this);
 
-    //if (window["MelMobile"] && this.gpu.canvas != null) {
-      //  this.gpu.canvas.style.width = "100%";
-      //  this.gpu.canvas.style.height = "100%";
-    //}
-
-    var factor = 1; //window["MelScreenScaleFactor"];
+    var factor = 1;
     this.resizeGL(Math.floor(this.curSize[0]*factor), Math.floor(this.curSize[1]*factor));
 };
 
@@ -141,7 +137,6 @@ Renderer.prototype.onResize = function() {
     }
 
     var rect = this.div.getBoundingClientRect();
-    //var factor = window["MelScreenScaleFactor"];
     this.resizeGL(Math.floor(rect.width), Math.floor(rect.height));
     
     if (this.onResizeCall) {
@@ -160,8 +155,6 @@ Renderer.prototype.kill = function() {
     if (this.planet != null) {
         this.planet.kill();
     }
-
-    //this.gpuCache.reset();
 
     if (this.heightmapMesh) this.heightmapMesh.kill();
     if (this.heightmapTexture) this.heightmapTexture.kill();
@@ -226,8 +219,6 @@ Renderer.prototype.project2 = function(point, mvp) {
 
         //depth in meters
         sp[2] = p2[2]/p2[3];
-        //sp[2] = p2[2];
-        //sp[2] =  this.camera.getNear() + sp[2] ;//* (this.camera.getFar() - this.camera.getNear());
 
         return sp;
     } else {
@@ -263,8 +254,6 @@ Renderer.prototype.project = function(point) {
 
         //depth in meters
         sp[2] = p2[2]/p2[3];
-        //sp[2] = p2[2];
-        //sp[2] =  this.camera.getNear() + sp[2] ;//* (this.camera.getFar() - this.camera.getNear());
 
         return sp;
     } else {
@@ -282,8 +271,6 @@ Renderer.prototype.getScreenRay = function(screenX, screenY) {
     var x = (2.0 * screenX) / this.curSize[0] - 1.0;
     var y = 1.0 - (2.0 * screenY) / this.curSize[1];
     
-    //console.log("x: " + x + " y: " + y);
-
     var rayNormalizeDeviceSpace = [x, y, 1.0];
 
     var rayClipCoords = [rayNormalizeDeviceSpace[0], rayNormalizeDeviceSpace[1], -1.0, 1.0];
@@ -309,16 +296,15 @@ Renderer.prototype.getScreenRay = function(screenX, screenY) {
 };
 
 
-Renderer.prototype.hitTestGeoLayers = function(screenX, screenY) {
+Renderer.prototype.hitTestGeoLayers = function(screenX, screenY, secondTexture) {
     var gl = this.gpu.gl;
 
     //conver screen coords to texture coords
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
-        //return [null, false, []];
         return [false, 0,0,0,0];
     }
 
-    var surfaceHit = false;
+    var surfaceHit = false, pixel;
 
     if (screenX >= 0 && screenX < this.curSize[0] &&
         screenY >= 0 && screenY < this.curSize[1]) {
@@ -330,15 +316,14 @@ Renderer.prototype.hitTestGeoLayers = function(screenX, screenY) {
         y = Math.floor(screenY * (this.hitmapSize / this.curSize[1]));
 
         //get pixel value from framebuffer
-        var pixel = this.geoHitmapTexture.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1);
 
-        //convert rgb values into depth
-        //var id = (pixel[0]) + (pixel[1]<<8) + (pixel[2]<<16);// + (pixel[3]*16581375.0);
+        if (secondTexture) {
+            pixel = this.geoHitmapTexture2.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1);
+        } else {
+            pixel = this.geoHitmapTexture.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1);
+        }
 
         surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
-
-    //    console.log(JSON.stringify([pixel[0], pixel[1], pixel[2], pixel[3], surfaceHit]));
-
     }
 
     if (surfaceHit) {
@@ -368,10 +353,12 @@ Renderer.prototype.switchToFramebuffer = function(type) {
             //this.updateCamera();
         this.onlyDepth = false;
         this.onlyHitLayers = false;
+        this.onlyAdvancedHitLayers = false;
+        this.advancedPassNeeded = false;
         break;
 
     case 'depth':
-            //set texture framebuffer
+        //set texture framebuffer
         this.gpu.setFramebuffer(this.hitmapTexture);
 
         this.oldSize = [ this.curSize[0], this.curSize[1] ];
@@ -381,34 +368,28 @@ Renderer.prototype.switchToFramebuffer = function(type) {
 
         size = this.hitmapSize;
     
-            //clear screen
+        //clear screen
         gl.viewport(0, 0, size, size);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
         this.curSize = [size, size];
-            //this.gpu.resize(this.curSize, true);
-
-            //var width = this.oldSize[0];
-            //var height = this.oldSize[1];
-            //this.camera.setAspect(width / height);
 
         this.gpu.clear();
-            //this.camera.setAspect(2.5);
         this.camera.update();
         this.onlyDepth = true;
         this.onlyHitLayers = false;
+        this.onlyAdvancedHitLayers = false;
+        this.advancedPassNeeded = false;
         break;
 
     case 'geo':
+    case 'geo2':
             
         this.hoverFeatureCounter = 0;
-            
         size = this.hitmapSize;
             
-            //set texture framebuffer
-        this.gpu.setFramebuffer(this.geoHitmapTexture);
-            
-        //var oldSize = [ this.curSize[0], this.curSize[1] ];
+        //set texture framebuffer
+        this.gpu.setFramebuffer(type == 'geo' ? this.geoHitmapTexture : this.geoHitmapTexture2);
             
         width = size;
         height = size;
@@ -416,14 +397,16 @@ Renderer.prototype.switchToFramebuffer = function(type) {
         gl.clearColor(1.0,1.0, 1.0, 1.0);
         gl.enable(gl.DEPTH_TEST);
             
-            //clear screen
+        //clear screen
         gl.viewport(0, 0, size, size);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             
         this.curSize = [width, height];
             
-            //render scene
+        //render scene
         this.onlyHitLayers = true;
+        this.advancedPassNeeded = false;
+        this.onlyAdvancedHitLayers = (type == 'geo2');
             
         this.gpu.clear();
         this.camera.update();
@@ -447,48 +430,30 @@ Renderer.prototype.hitTest = function(screenX, screenY) {
     var x = 0, y = 0;
 
     //get screen coords
-    //if (this.curSize[0] > this.curSize[1]) {
     x = Math.floor(screenX * (this.hitmapSize / this.curSize[0]));
     y = Math.floor(screenY * (this.hitmapSize / this.curSize[1]));
-
-    //console.log("hit screen: " + x + " " + y);
 
     //get pixel value from framebuffer
     var pixel = this.hitmapTexture.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1);
 
     //convert rgb values into depth
     var depth = (pixel[0] * (1.0/255)) + (pixel[1]) + (pixel[2]*255.0) + (pixel[3]*65025.0);// + (pixel[3]*16581375.0);
-    //var depth = Math.pow(1.002,(pixel[0] * (1.0/255)) + (pixel[1]) + (pixel[2]*255.0));// + (pixel[3]*16581375.0);
 
     var surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
 
-
     //compute hit postion
     this.lastHitPosition = [cameraPos[0] + screenRay[0]*depth, cameraPos[1] + screenRay[1]*depth, cameraPos[2] + screenRay[2]*depth];
-
-
-    //this.hitTestGeoLayers(screenX, screenY, "hover");
-    //this.core.hover(screenX, screenY, false, { test:true});
-    //this.core.click(screenX, screenY, { test2:true});
 
     return [this.lastHitPosition[0], this.lastHitPosition[1], this.lastHitPosition[2], surfaceHit, screenRay, depth, cameraPos];
 };
 
 
 Renderer.prototype.getZoffsetFactor = function(params) {
-    //var offsetFactor = 1.0 + this.distanceFactor*params[1]*((1-params[2])+params[2]*this.tiltFactor);
-//    return -Math.round(2000 * offsetFactor * params[0]);
-//    return 1.0/(this.camera.getFar() - this.camera.getNear()) * offsetFactor * params[0];
-//    return (1.0/(this.camera.getFar() - this.camera.getNear())) * (params[0]*10000) * this.distanceFactor;
-//    return (1.0/(this.camera.getFar() - this.camera.getNear())) * offsetFactor * (params[0]*10000);
-
     return (params[0] + params[1]*this.distanceFactor + params[2]*this.tiltFactor)*0.0001;
 };
 
 
 Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
-    //this.updateHitmap = true;
-
     var gl = this.gpu.gl;
 
     //get current screen size
@@ -530,19 +495,15 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
     context.putImageData(imageData, 0, 0);
 
     filetype = filetype || 'jpg'; 
-
-    //open image in new window
-    
+   
     if (output == 'file') {
         var a = document.createElement('a');
 
         var dataURI= canvas.toDataURL('image/' + filetype);
 
         var byteString = atob(dataURI.split(',')[1]);
-        // separate out the mime component
-        //var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
         
-          // write the bytes of the string to an ArrayBuffer
+        // write the bytes of the string to an ArrayBuffer
         var ab = new ArrayBuffer(byteString.length);
         var ia = new Uint8Array(ab);
         for (var i = 0; i < byteString.length; i++) {
@@ -561,6 +522,7 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
             window.URL.revokeObjectURL(url);  
         }, 0); 
     } if (output == 'tab') {
+        //open image in new window
         window.open(canvas.toDataURL('image/' + filetype));
     }
     
@@ -582,12 +544,3 @@ Renderer.prototype.getBitmap = function(url, filter, tiled) {
 
 
 export default Renderer;
-
-/*
-Renderer.prototype.setConfigParams = function(params) {
-    if (typeof params === "object" && params !== null) {
-        for (var key in params) {
-            this.setConfigParam(key, params[key]);
-        }
-    }
-};*/

@@ -393,12 +393,6 @@ RendererInterface.prototype.drawDebugText = function(options) {
 
     this.renderer.draw.drawText(coords[0] - (lx * 0.5), coords[1], size, text, color, depth, useState);
 
-    /*
-    var depthTest = options["depthTest"] || false;
-    var blend = options["blend"] || false;
-    var writeDepth = options["writeDepth"] || false;
-    */
-
     return this;    
 };
 

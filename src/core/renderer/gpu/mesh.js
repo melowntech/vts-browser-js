@@ -55,13 +55,6 @@ var GpuMesh = function(gpu, meshData, fileSize, core) {
     this.size += (uvs2 == null) ? 0 : this.uv2Buffer.numItems * uv2Size * 4;
     this.polygons = this.vertexBuffer.numItems / 3;
 
-    /*
-    if (this.core.renderer != null) {
-        this.core.renderer.statsCreateGpuMeshTime += performance.now() - timer;
-        this.core.renderer.statsFluxMesh[0][0] ++;
-        this.core.renderer.statsFluxMesh[0][1] += this.size;
-    }*/
-
     this.valid = true;
 };
 
@@ -86,12 +79,6 @@ GpuMesh.prototype.kill = function() {
     this.vertexBuffer = null;
     this.uvBuffer = null;
     this.uv2Buffer = null;
-
-    /*
-    if (this.core.renderer != null) {
-        this.core.renderer.statsFluxMesh[1][0] ++;
-        this.core.renderer.statsFluxMesh[1][1] += this.size;
-    }*/
 };
 
 // Draws the mesh, given the two vertex shader attributes locations.
@@ -129,17 +116,9 @@ GpuMesh.prototype.draw = function(program, attrVertex, attrUV, attrUV2, attrBary
     }
 
     //draw polygons
-    //try {
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffer.numItems);
-    //} catch(e) {
-      //  e = e;
-    //}
 };
-/*
-window.onerror = (function(e,d,c){
-  var a = 0, b =1;
-  a += b; 
-});*/
+
 
 // Returns GPU RAM used, in bytes.
 GpuMesh.prototype.size = function(){ return this.size; };

@@ -24,15 +24,11 @@ RendererDraw.prototype.drawSkydome = function(texture, shader) {
     var gl = this.gl;
     var renderer = this.renderer;
     
-    //this.gpu.gl.disable(this.gpu.gl.CULL_FACE);
-
-    ///progSkydome.use();
     var lower = 400; // put the dome a bit lower
     var normMat = mat4.create();
     mat4.multiply(math.scaleMatrix(2, 2, 2), math.translationMatrix(-0.5, -0.5, -0.5), normMat);
 
     var domeMat = mat4.create();
-//    mat4.multiply(math.translationMatrix(0, 0, this.camera.getPosition()[2] - lower), math.scaleMatrixf(this.camera.getFar()*0.5), domeMat);
 
     var pos = renderer.camera.getPosition();
     mat4.multiply(math.translationMatrix(pos[0], pos[1], pos[2] - lower), math.scaleMatrixf(Math.min(renderer.camera.getFar()*0.9,600000)), domeMat);
@@ -44,7 +40,6 @@ RendererDraw.prototype.drawSkydome = function(texture, shader) {
 
     gpu.useProgram(shader, ['aPosition', 'aTexCoord']);
     gpu.bindTexture(texture);
-//    this.gpu.bindTexture(this.hitmapTexture);
 
     shader.setSampler('uSampler', 0);
     shader.setMat4('uMVP', mvp);
@@ -78,12 +73,10 @@ RendererDraw.prototype.drawTBall = function(position, size, shader, texture, siz
 
     var domeMat = mat4.create();
     mat4.multiply(math.translationMatrix(pos[0], pos[1], pos[2]), math.scaleMatrix(size, size, size2 || size), domeMat);
-    //mat4.multiply(math.translationMatrix(this.camera.getPosition()[0]+pos[0], this.camera.getPosition()[1]+pos[1], this.camera.getPosition()[2]), math.scaleMatrixf(21.5), domeMat);
 
     var mvp = mat4.create();
     mat4.multiply(renderer.camera.getMvpMatrix(), domeMat, mvp);
     mat4.multiply(mvp, normMat, mvp);
-    //var shader = this.progStardome;
 
     gpu.useProgram(shader, ['aPosition', 'aTexCoord']);
     gpu.bindTexture(texture || renderer.redTexture);
@@ -91,8 +84,6 @@ RendererDraw.prototype.drawTBall = function(position, size, shader, texture, siz
     shader.setSampler('uSampler', 0);
     shader.setMat4('uMVP', mvp);
 
-    //this.atmoMesh.draw(shader, "aPosition", null /*"aTexCoord"*/);
-    //this.atmoMesh.draw(shader, "aPosition", "aTexCoord");
     renderer.skydomeMesh.draw(shader, 'aPosition', 'aTexCoord');
 
     renderer.renderedPolygons += renderer.skydomeMesh.getPolygons();
@@ -108,13 +99,6 @@ RendererDraw.prototype.drawBall = function(position, size, shader, params, param
     var gl = this.gl;
     var renderer = this.renderer;
 
-    //gl.disable(gl.CULL_FACE);
-
-//            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-//            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-//            gl.enable(gl.BLEND);
-
-
     var normMat = mat4.create();
     mat4.multiply(math.scaleMatrix(2, 2, 2), math.translationMatrix(-0.5, -0.5, -0.5), normMat);
 
@@ -122,7 +106,6 @@ RendererDraw.prototype.drawBall = function(position, size, shader, params, param
 
     var domeMat = mat4.create();
     mat4.multiply(math.translationMatrix(pos[0], pos[1], pos[2]), math.scaleMatrixf(size != null ? size : 1.5), domeMat);
-    //mat4.multiply(math.translationMatrix(this.camera.getPosition()[0]+pos[0], this.camera.getPosition()[1]+pos[1], this.camera.getPosition()[2]), math.scaleMatrixf(21.5), domeMat);
 
     var mv = mat4.create();
     mat4.multiply(renderer.camera.getModelviewMatrix(), domeMat, mv);
@@ -133,8 +116,6 @@ RendererDraw.prototype.drawBall = function(position, size, shader, params, param
     mat4.toInverseMat3(mv, norm);
     mat3.transpose(norm);
     
-    //var shader = this.progStardome;
-
     gpu.useProgram(shader, ['aPosition']);
     gpu.bindTexture(renderer.redTexture);
 
@@ -165,21 +146,15 @@ RendererDraw.prototype.drawBall = function(position, size, shader, params, param
 
     renderer.renderedPolygons += renderer.skydomeMesh.getPolygons();
 
-    //gl.enable(gl.CULL_FACE);
     if (normals) {
         gl.cullFace(gl.BACK);
-        //gl.enable(gl.DEPTH_TEST);
     }
-
-//    gl.disable(gl.BLEND);
 };
 
 
 RendererDraw.prototype.drawBall2 = function(position, size, shader, nfactor, dir, radius2) {
     var gpu = this.gpu;
     var renderer = this.renderer;
-
-    //gl.disable(gl.CULL_FACE);
 
     var normMat = mat4.create();
     mat4.multiply(math.scaleMatrix(2, 2, 2), math.translationMatrix(-0.5, -0.5, -0.5), normMat);
@@ -188,7 +163,6 @@ RendererDraw.prototype.drawBall2 = function(position, size, shader, nfactor, dir
 
     var domeMat = mat4.create();
     mat4.multiply(math.translationMatrix(pos[0], pos[1], pos[2]), math.scaleMatrixf(size != null ? size : 1.5), domeMat);
-    //mat4.multiply(math.translationMatrix(this.camera.getPosition()[0]+pos[0], this.camera.getPosition()[1]+pos[1], this.camera.getPosition()[2]), math.scaleMatrixf(21.5), domeMat);
 
     var mv = mat4.create();
     mat4.multiply(renderer.camera.getModelviewMatrix(), domeMat, mv);
@@ -199,8 +173,6 @@ RendererDraw.prototype.drawBall2 = function(position, size, shader, nfactor, dir
     mat4.toInverseMat3(mv, norm);
     mat3.transpose(norm);
     
-    //var shader = this.progStardome;
-
     gpu.useProgram(shader, ['aPosition']);
     gpu.bindTexture(renderer.redTexture);
 
@@ -210,7 +182,6 @@ RendererDraw.prototype.drawBall2 = function(position, size, shader, nfactor, dir
     shader.setMat3('uNorm', norm);
     shader.setFloat('uNFactor', nfactor);
     shader.setVec3('uCenter', position);
-    //shader.setVec3("uDir", dir);
     shader.setVec2('uRadius', [size, radius2]);
 
     renderer.atmoMesh.draw(shader, 'aPosition', null /*"aTexCoord"*/);
@@ -251,7 +222,6 @@ RendererDraw.prototype.drawLineString = function(points, size, color, depthOffse
         }
     
         if (transparent) {
-            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
             gl.enable(gl.BLEND);
@@ -308,7 +278,6 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
         }
     
         if (transparent) {
-            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
             gl.enable(gl.BLEND);
@@ -333,7 +302,6 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
     var indices = renderer.rectIndicesBuffer;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
 
-//    prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix, renderer.getZoffsetFactor(depthOffset));
     prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
 
     prog.setMat4('uData', [
@@ -342,10 +310,7 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
         x + lx, y + ly, 1, 1,
         x,  y + ly,  0, 1  ]);
 
-    //depth = (depth != null) ? depth : 0;
-
     if (depthOffset) {
-        //depth = ((depth + 1) * (1 + renderer.getZoffsetFactor(depthOffset))) - 1;
         depth = depth * (1 + renderer.getZoffsetFactor(depthOffset) * 2);
     }
 
@@ -383,7 +348,6 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
         }
     
         if (transparent) {
-            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
             gl.enable(gl.BLEND);
@@ -505,7 +469,6 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
 
     gpu.useProgram(prog, ['aPosition']);
     gpu.bindTexture(renderer.textTexture2);
-    //this.gpu.bindTexture(this.textTexture2);
 
     var vertices = renderer.rectVerticesBuffer;
     gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
@@ -518,12 +481,10 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
     prog.setVec4('uColor', color);
     prog.setFloat('uDepth', depth != null ? depth : 0);
 
-    //size *= 2;
-
     var sizeX = size - 1;
-    var sizeY = size;// * (7/4);
+    var sizeY = size;
 
-    var sizeX2 = Math.round(size*0.5);// - 1;
+    var sizeX2 = Math.round(size*0.5);
 
     var texelX = 1 / 256;
     var texelY = 1 / 128;
@@ -597,7 +558,7 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
 
 RendererDraw.prototype.getTextSize = function(size, text) {
     var sizeX = size - 1;
-    var sizeX2 = Math.round(size*0.5);// - 1;
+    var sizeX2 = Math.round(size*0.5);
     var x = 0;
 
     for (var i = 0, li = text.length; i < li; i++) {
@@ -643,6 +604,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var jobZBuffer = renderer.jobZBuffer;
     var jobZBufferSize = renderer.jobZBufferSize;
     var onlyHitLayers = renderer.onlyHitLayers;
+    var onlyAdvancedHitLayers = renderer.onlyAdvancedHitLayers;
 
     if (clearStencilPasses.length > 0) {
         clearPass = clearStencilPasses[0];
@@ -665,77 +627,31 @@ RendererDraw.prototype.drawGpuJobs = function() {
             }
         }
 
-
         if (onlyHitLayers) {
-            for (j = 0; j < lj; j++) {
-                if (buffer[j].hitable) {
-                    this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize);
+            if (onlyAdvancedHitLayers) {
+                for (j = 0; j < lj; j++) {
+                    if (buffer[j].advancedHit) {
+                        this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize, true);
+                    }
+                }
+            } else {
+                for (j = 0; j < lj; j++) {
+                    var job = buffer[j];
+                    if (job.hitable) {
+                        this.drawGpuJob(gpu, gl, renderer, job, screenPixelSize);
+                        if (job.advancedHit) {
+                            renderer.advancedPassNeeded = true;
+                        }
+                    }
                 }
             }
         } else {
             for (j = 0; j < lj; j++) {
                 this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize);
-                //buffer[j] = null;
             }
         }
-
-        //this.jobZBufferSize[i] = 0;
     }
 };
-
-/*
-RendererDraw.prototype.drawHitmapGpuJobs = function() {
-    var gpu = this.gpu;
-    var gl = this.gl;
-    var renderer = this.renderer;
-
-    renderer.hoverFeatureCounter = 0;
-
-    var size = renderer.hitmapSize;
-
-    //set texture framebuffer
-    gpu.setFramebuffer(renderer.geoHitmapTexture);
-
-    var oldSize = [ renderer.curSize[0], renderer.curSize[1] ];
-
-    var width = size;
-    var height = size;
-
-    gl.clearColor(1.0,1.0, 1.0, 1.0);
-    gl.enable(gl.DEPTH_TEST);
-
-    //clear screen
-    gl.viewport(0, 0, size, size);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    renderer.curSize = [width, height];
-
-    //render scene
-    renderer.onlyHitLayers = true;
-    //this.paintGL();
-
-    gpu.clear();
-    renderer.updateCamera();
-
-    //this.camera.update();
-    this.drawGpuJobs();
-
-    renderer.onlyHitLayers = false;
-
-    //return screen framebuffer
-    width = oldSize[0];
-    height = oldSize[1];
-
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-    gpu.setFramebuffer(null);
-
-    renderer.camera.setAspect(width / height);
-    renderer.curSize = [width, height];
-    gpu.resize(this.curSize, true);
-    renderer.camera.update();
-    renderer.updateCamera();
-};*/
 
 
 RendererDraw.prototype.clearJobBuffer = function() {
@@ -756,33 +672,6 @@ RendererDraw.prototype.clearJobBuffer = function() {
     }
 };
 
-/*
-RendererDraw.prototype.fogSetup = function(program, fogDensity) {
-    var renderer = this.renderer;
-
-    // the fog equation is: exp(-density*distance), this gives the fraction
-    // of the original color that is still visible at some distance
-
-    // we define visibility as a distance where only 5% of the original color
-    // is visible; from this it is easy to calculate the correct fog density
-
-    //var density = Math.log(0.05) / this.core.coreConfig.cameraVisibility;
-	var cameraVisibility = 1200000.0;
-    var density = Math.log(0.05) / (cameraVisibility * 10*(Math.max(5,-renderer.camera.getOrientation()[1])/90));
-    density *= (5.0) / (Math.min(50000, Math.max(renderer.cameraDistance, 1000)) /5000);
-
-    if (!renderer.drawFog) {
-        density = 0;
-    }
-
-    //console.log("fden: " + density);
-
-    //reduce fog when camera is facing down
-    //density *= 1.0 - (-this.orientation[0]/90)
-
-    program.setFloat(fogDensity, density);
-};*/
-
 
 RendererDraw.prototype.paintGL = function() {
     var renderer = this.renderer;
@@ -797,9 +686,10 @@ RendererDraw.prototype.paintGL = function() {
 };
 
 
-RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixelSize) {
+RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixelSize, advancedHitPass) {
     var mvp = job.mvp, prog, texture;
-    var vertexPositionAttribute, vertexTexcoordAttribute;
+    var vertexPositionAttribute, vertexTexcoordAttribute,
+        vertexNormalAttribute, vertexOriginAttribute, vertexElementAttribute;
 
     if (!job.ready) {
         return;
@@ -837,32 +727,34 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         var c = renderer.hoverFeatureCounter;
         //color = [(c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255, 1];
         color = [(c&255)/255, ((c>>8)&255)/255, 0, 0];
-        renderer.hoverFeatureList[c] = [job.eventInfo, job.center, job.clickEvent, job.hoverEvent, job.enterEvent, job.leaveEvent];
+        renderer.hoverFeatureList[c] = [job.eventInfo, job.center, job.clickEvent, job.hoverEvent, job.enterEvent, job.leaveEvent, advancedHitPass];
         renderer.hoverFeatureCounter++;
     }
 
     switch(job.type) {
     case 'flat-line':
-        if (hitmapRender) {
-            gpu.setState(renderer.stencilLineHitState);
-        } else {
-            gpu.setState(renderer.stencilLineState);
-        }
+        gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
 
-        gpu.setState(renderer.stencilLineState);
-        prog = renderer.progLine;
+        prog = advancedHitPass ? renderer.progELine : renderer.progLine;
 
-        gpu.useProgram(prog, ['aPosition']);
+        gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : ['aPosition']);
+
         prog.setVec4('uColor', color);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
 
-            //bind vetex positions
+        //bind vetex positions
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
         gl.vertexAttribPointer(vertexPositionAttribute, job.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //draw polygons
+        if (advancedHitPass) {
+            vertexElementAttribute = prog.getAttribute('aElement');
+            gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexElementBuffer);
+            gl.vertexAttribPointer(vertexElementAttribute, job.vertexElementBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        }
+
+        //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
         break;
@@ -870,13 +762,9 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case 'flat-tline':
     case 'pixel-line':
     case 'pixel-tline':
-        if (hitmapRender) {
-            gpu.setState(renderer.stencilLineHitState);
-        } else {
-            gpu.setState(renderer.stencilLineState);
-        }
+        gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
             
-        prog = job.program;
+        prog = advancedHitPass ? job.program2 : job.program;
         texture = null;
         var textureParams = [0,0,0,0];
 
@@ -897,7 +785,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 if (job.type == 'flat-tline') {
                     textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);
                 } else {
-                    //lod = job.lod; // || job.layer.currentLod;
                     var tileSize = 256;//job.layer.core.mapConfig.tileSize(lod);
                     var tilePixelSize = tileSize / 256;//job.layer.tilePixels;
                     textureParams[0] = 1/texture.width/tilePixelSize;
@@ -911,7 +798,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             gpu.bindTexture(texture);
         }
 
-        gpu.useProgram(prog, ['aPosition','aNormal']);
+        gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
+
         prog.setVec4('uColor', color);
         prog.setVec2('uScale', screenPixelSize);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
@@ -925,32 +813,31 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         }
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
-        var vertexNormalAttribute = prog.getAttribute('aNormal');
+        vertexNormalAttribute = prog.getAttribute('aNormal');
 
-            //bind vetex positions
+        //bind vetex positions
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
         gl.vertexAttribPointer(vertexPositionAttribute, job.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //bind vetex normals
+        //bind vetex normals
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexNormalBuffer);
         gl.vertexAttribPointer(vertexNormalAttribute, job.vertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //draw polygons
+        if (advancedHitPass) {
+            vertexElementAttribute = prog.getAttribute('aElement');
+            gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexElementBuffer);
+            gl.vertexAttribPointer(vertexElementAttribute, job.vertexElementBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        }
+
+        //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
         break;
 
     case 'line-label':
-        if (hitmapRender) {
-            gpu.setState(renderer.lineLabelHitState);
-        } else {
-            gpu.setState(renderer.lineLabelState);
-        }
+        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
         texture = hitmapRender ? renderer.whiteTexture : renderer.font.texture;
-            
-            //var yaw = math.radians(renderer.cameraOrientation[0]);
-            //var forward = [-Math.sin(yaw), Math.cos(yaw), 0, 0];
 
         prog = renderer.progText;
 
@@ -966,26 +853,22 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         vertexPositionAttribute = prog.getAttribute('aPosition');
         vertexTexcoordAttribute = prog.getAttribute('aTexCoord');
 
-            //bind vetex positions
+        //bind vetex positions
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
         gl.vertexAttribPointer(vertexPositionAttribute, job.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //bind vetex texcoords
+        //bind vetex texcoords
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
         gl.vertexAttribPointer(vertexTexcoordAttribute, job.vertexTexcoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //draw polygons
+        //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
         break;
 
     case 'icon':
     case 'label':
-        if (hitmapRender) {
-            gpu.setState(renderer.lineLabelHitState);
-        } else {
-            gpu.setState(renderer.lineLabelState);
-        }
+        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
         texture = hitmapRender ? renderer.whiteTexture : job.texture;
 
@@ -1030,13 +913,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 return;
             }
         }
-            
-            //console.log(""+JSON.stringify(renderer.cameraPosition));
-            
-            //value larger then 0 means that visibility is tested
-            //if (job.visibility != 0) {
-                //job.visibility
-            //}
 
         gpu.setState(renderer.lineLabelState);
             
@@ -1065,25 +941,24 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == 'label' ? 1.0 : 1.0 / texture.width), stickShift*2]);
         prog.setVec4('uColor', color);
-            //prog.setVec2("uScale", screenPixelSize);
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
         vertexTexcoordAttribute = prog.getAttribute('aTexCoord');
-        var vertexOriginAttribute = prog.getAttribute('aOrigin');
+        vertexOriginAttribute = prog.getAttribute('aOrigin');
 
-            //bind vetex positions
+        //bind vetex positions
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
         gl.vertexAttribPointer(vertexPositionAttribute, job.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //bind vetex texcoordds
+        //bind vetex texcoordds
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
         gl.vertexAttribPointer(vertexTexcoordAttribute, job.vertexTexcoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //bind vetex origin
+        //bind vetex origin
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexOriginBuffer);
         gl.vertexAttribPointer(vertexOriginAttribute, job.vertexOriginBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //draw polygons
+        //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
         break;
