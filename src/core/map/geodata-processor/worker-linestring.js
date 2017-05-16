@@ -39,6 +39,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var drawEvent = getLayerPropertyValue(style, 'draw-event', lineString, lod);
     var enterEvent = getLayerPropertyValue(style, 'enter-event', lineString, lod);
     var leaveEvent = getLayerPropertyValue(style, 'leave-event', lineString, lod);
+    var advancedHit = getLayerPropertyValue(style, 'advanced-hit', lineString, lod);
 
     var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', lineString, lod);
 
@@ -55,11 +56,10 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     //console.log("lineflat: "+lineFlat);
     //var lineWidth = Math.pow(2, 23 - lod) / 32;
 
-    var index = 0;
-    var index2 = 0;
+    var index = 0, index2 = 0, index3 = 0;
     var skipJoins = (!lineFlat && lineWidth < 2.1);
 
-    var ii, i, li, p2, v, vv, l, n, nn, p1, p;
+    var ii, i, li, p2, v, vv, l, n, nn, p1, p, elementIndex, elemetBase = 0;
 
     //console.log("lod: " + lod + "  width: " + lineWidth);
 
@@ -93,6 +93,9 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var joinVertices = skipJoins ? 0 : (circleSides * (texturedLine || !lineFlat? 4 : 3) * 3);
     var vertexBuffer = new Float32Array(totalPoints * lineVertices + totalPoints * joinVertices);
 
+    if (advancedHit) {
+       var elementBuffer = new Float32Array(totalPoints * (3 * 2) + totalPoints * (skipJoins ? 0 : circleSides) * 3);
+    }
 
     if (!lineFlat || texturedLine) {
         var lineNormals = 3 * 4 * 2;
@@ -174,7 +177,21 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 }
             }
     
+            if (advancedHit) {
+                elementIndex = elemetBase + i;
+
+                elementBuffer[index3] = elementIndex;
+                elementBuffer[index3+1] = elementIndex;
+                elementBuffer[index3+2] = elementIndex;
     
+                //add polygon
+                elementBuffer[index3+3] = elementIndex;
+                elementBuffer[index3+4] = elementIndex;
+                elementBuffer[index3+5] = elementIndex;
+
+                index3 += 6;
+            }
+
             if (lineFlat && !texturedLine) {
 
                 //normalize vector to line width and rotate 90 degrees
@@ -236,7 +253,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 vertexBuffer[index+17] = p2[2] + n[2];
     
                 index += 18;
-    
+
             } else {
     
                 //direction vector
@@ -414,7 +431,15 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 }
         
                 for (var j = 0; j < circleSides; j++) {
-        
+       
+                    if (advancedHit) {
+                        elementIndex = elemetBase + i;
+                        elementBuffer[index3] = elementIndex;
+                        elementBuffer[index3+1] = elementIndex;
+                        elementBuffer[index3+2] = elementIndex;
+                        index3 += 3;
+                    }
+
                     if (lineFlat && !texturedLine) {
     
                         vertexBuffer[index] = p1[0];
@@ -513,6 +538,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             }
         }
 
+        elemetBase += points.length;
     }
 
     if (totalPoints > 0) {
@@ -530,8 +556,8 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     if (line) {
         var messageData = {'command':'addRenderJob', 'vertexBuffer': vertexBuffer,
             'color':lineColor, 'z-index':zIndex, 'center': center, 'normalBuffer': normalBuffer,
-            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+            'elementBuffer': elementBuffer, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
             'line-width':lineWidth*2, 'lod':(globals.autoLod ? null : globals.tileLod) };
     
@@ -607,6 +633,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var drawEvent = getLayerPropertyValue(style, 'draw-event', lineString, lod);
     var enterEvent = getLayerPropertyValue(style, 'enter-event', lineString, lod);
     var leaveEvent = getLayerPropertyValue(style, 'leave-event', lineString, lod);
+    var advancedHit = getLayerPropertyValue(style, 'advanced-hit', lineString, lod);
 
     var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', lineString, lod);
 
@@ -632,7 +659,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'z-index':zIndex, 'center': center,
         'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
 };
 

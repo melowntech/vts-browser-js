@@ -6,7 +6,6 @@ var vec3 = vec3_;
 
 
 var GpuText = function(gpu, core, font, withNormals) {
-    //this.bbox = mesh.bbox; //< bbox copy from Mesh
     this.gpu = gpu;
     this.gl = gpu.gl;
     this.core = core;
@@ -393,12 +392,6 @@ GpuText.prototype.compile = function() {
 
     this.size = this.vertexPositionBuffer.numItems * 3 * 4 + this.vertexTextureCoordBuffer.numItems * 4 * 4;
     this.polygons = this.vertexPositionBuffer.numItems / 3;
-
-    if (this.core != null && this.core.renderer != null) {
-        //this.core.renderer.statsCreateGpuTextTime += performance.now() - timer;
-        //this.core.renderer.statsFluxMesh[0][0] ++;
-        //this.core.renderer.statsFluxMesh[0][1] += this.size;
-    }
 
     if (this.withNormals) {
         this.normals = [];

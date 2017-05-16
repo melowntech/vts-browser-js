@@ -31,13 +31,6 @@ GpuTexture.prototype.kill = function() {
     this.gl.deleteTexture(this.texture);
     
     this.texture = null;
-
-    /*
-    if (this.core != null && this.core.renderer != null) {
-        this.core.renderer.statsFluxTexture[1][0] ++;
-        this.core.renderer.statsFluxTexture[1][1] += this.size;
-    }
-    */
 };
 
 // Returns GPU RAM used, in bytes.
@@ -79,7 +72,6 @@ GpuTexture.prototype.createFromData = function(lx, ly, data, filter, repeat) {
     }
 
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, lx, ly, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
@@ -129,15 +121,8 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
         break;
     }
 
-    //gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
     if (this.gpu.noTextures !== true) {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        //if (gl.getError() == 1281) {
-          //  gl = gl;
-        //}
-        //console.log(gl.getError());
 
         if (mipmaps) {
             gl.generateMipmap(gl.TEXTURE_2D);
@@ -150,14 +135,6 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
     this.height = image.naturalHeight;
     this.size = image.naturalWidth * image.naturalHeight * 4;
     this.loaded = true;
-
-    /*
-    if (this.core != null && this.core.renderer!= null) {
-        this.core.renderer.dirty = true;
-        this.core.renderer.statsCreateTextureTime += performance.now() - timer;
-        this.core.renderer.statsFluxTexture[0][0] ++;
-        this.core.renderer.statsFluxTexture[0][1] += this.size;
-    }*/
 };
 
 GpuTexture.prototype.load = function(path, onLoaded, onError, direct) {
@@ -216,7 +193,6 @@ GpuTexture.prototype.createFramebufferFromData = function(lx, ly, data) {
     gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, lx, ly);
 
-    //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture.texture, 0);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
@@ -229,15 +205,6 @@ GpuTexture.prototype.createFramebufferFromData = function(lx, ly, data) {
     this.renderbuffer = renderbuffer;
     this.framebuffer = framebuffer;
 
-    //gl.generateMipmap(gl.TEXTURE_2D);
-/*
-    gl.clearColor(0.0, 1.0, 0.0, 1.0);
-    //gl.enable(gl.DEPTH_TEST);
-
-    //clear screen
-    gl.viewport(0, 0, lx, ly);
-    gl.clear(gl.COLOR_BUFFER_BIT);// | gl.DEPTH_BUFFER_BIT);
-*/
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -264,23 +231,12 @@ GpuTexture.prototype.createFramebuffer = function(lx, ly) {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
 
-/*
-    gl.clearColor(0.0, 1.0, 0.0, 1.0);
-    //gl.enable(gl.DEPTH_TEST);
-
-    //clear screen
-    gl.viewport(0, 0, lx, ly);
-//    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-*/
-
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     this.framebuffer = framebuffer;
     this.renderbuffer = renderbuffer;
-
 };
 
 

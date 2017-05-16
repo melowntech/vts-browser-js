@@ -522,17 +522,22 @@ MapDraw.prototype.drawHitmap = function() {
     this.map.renderSlots.processRenderSlots();    
     this.renderer.switchToFramebuffer('base');
     this.drawChannel = 0;
+    this.map.hitMapDirty = false;
 };
 
 
 MapDraw.prototype.drawGeodataHitmap = function() {
     this.renderer.gpu.setState(this.drawTileState);
     this.renderer.switchToFramebuffer('geo');
-    //this.renderer.onlyHitLayers = true;
     this.renderer.draw.drawGpuJobs();
-    //this.renderer.onlyHitLayers = false;
+
+    if (this.renderer.advancedPassNeeded) {
+        this.renderer.switchToFramebuffer('geo2');
+        this.renderer.draw.drawGpuJobs();
+    }
+
     this.renderer.switchToFramebuffer('base');
-    this.geoHitMapDirty = false;
+    this.map.geoHitMapDirty = false;
 };
 
 

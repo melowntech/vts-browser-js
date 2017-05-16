@@ -46,6 +46,7 @@ var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
     var drawEvent = getLayerPropertyValue(style, 'draw-event', polygon, lod);
     var enterEvent = getLayerPropertyValue(style, 'enter-event', polygon, lod);
     var leaveEvent = getLayerPropertyValue(style, 'leave-event', polygon, lod);
+    var advancedHit = getLayerPropertyValue(style, 'advanced-hit', polygon, lod);
 
     var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', polygon, lod);
     
@@ -110,7 +111,7 @@ var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
     var messageData = {'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
         'color':polygonColor, 'z-index':zIndex, 'center': center,
         'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
         'lod':(globals.autoLod ? null : globals.tileLod) };
 

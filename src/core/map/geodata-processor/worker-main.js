@@ -22,7 +22,7 @@ function processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo) {
     switch(type) {
     case 'line-string':
         if (getLayerPropertyValue(layer, 'point', feature, lod) ||
-                getLayerPropertyValue(layer, 'label', feature, lod)) {
+            getLayerPropertyValue(layer, 'label', feature, lod)) {
             processPointArrayPass(feature, lod, layer, zIndex, eventInfo);
         }
 
@@ -129,9 +129,7 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
 
 
 function processGroup(group, lod) {
-
     var i, li;
-
     var groupId = group['id'] || '';
 
     var bbox = group['bbox'];    

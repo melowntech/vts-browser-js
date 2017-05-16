@@ -902,16 +902,23 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
         return [null, false, []];
     }
 
-    var res = this.renderer.hitTestGeoLayers(screenX, screenY, mode);
-    var relatedEvents;
+    var res = this.renderer.hitTestGeoLayers(screenX, screenY);
+    var relatedEvents, elementIndex;
 
     if (res[0]) { //do we hit something?
         //console.log(JSON.stringify([id, JSON.stringify(this.hoverFeatureList[id])]));
-        
+       
         var id = (res[1]) + (res[2]<<8);
-        //var elementId = (res[3]) + (res[4]<<8);
 		
         var feature = this.hoverFeatureList[id];
+
+        if (feature[6]) { //advanced hit feature?
+            res = this.renderer.hitTestGeoLayers(screenX, screenY, true);
+        
+            if (res[0]) { //do we hit something?
+                elementIndex = (res[1]) + (res[2]<<8);
+            }
+        }
 
         if (mode == 'hover') {
             this.lastHoverFeature = this.hoverFeature;
@@ -940,19 +947,17 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
             }
 
             if (this.hoverFeature != null && this.hoverFeature[3]) {
-                return [this.hoverFeature, true, relatedEvents];
+                return [this.hoverFeature, true, relatedEvents, elementIndex];
             } else {
-                return [null, false, relatedEvents];
+                return [null, false, relatedEvents, elementIndex];
             }
         }
 
         if (mode == 'click') {
-            //this.hoverFeatureId = (this.hoverFeature != null) ? this.hoverFeature["id"] : null;
-
             if (feature != null && feature[2]) {
-                return [feature, true, []];
+                return [feature, true, [], elementIndex];
             } else {
-                return [null, false, []];
+                return [null, false, [], elementIndex];
             }
         }
     } else {
@@ -973,7 +978,7 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
             }
         }
 
-        return [null, false, relatedEvents];
+        return [null, false, relatedEvents, elementIndex];
     }
 };
 
@@ -1111,7 +1116,7 @@ Map.prototype.update = function() {
 
             if (result[1] && result[0] != null) {
                 this.core.callListener('geo-feature-hover', {'feature': result[0][0], 'canvas-coords':this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
-                    'camera-coords':result[0][1], 'state': this.hoverEvent[3] }, true);
+                    'camera-coords':result[0][1], 'state': this.hoverEvent[3], 'element': result[3]}, true);
             }
 
             var relatedEvents = result[2];
@@ -1123,12 +1128,12 @@ Map.prototype.update = function() {
                     switch(event[0]) {
                     case 'enter':
                         this.core.callListener('geo-feature-enter', {'feature': event[1][0], 'canvas-coords':this.renderer.project2(event[1][1], this.camera.getMvpMatrix()),
-                            'camera-coords':event[1][1], 'state': this.hoverEvent[3] }, true);
+                            'camera-coords':event[1][1], 'state': this.hoverEvent[3], 'element': result[3] }, true);
                         break;
 
                     case 'leave':
                         this.core.callListener('geo-feature-leave', {'feature':event[1][0], 'canvas-coords':this.renderer.project2(event[1][1], this.camera.getMvpMatrix()),
-                            'camera-coords':event[1][1], 'state': this.hoverEvent[3] }, true);
+                            'camera-coords':event[1][1], 'state': this.hoverEvent[3], 'element': result[3] }, true);
                         break;
                     }
                 }
@@ -1145,7 +1150,7 @@ Map.prototype.update = function() {
 
             if (result[1] && result[0] != null) {
                 this.core.callListener('geo-feature-click', {'feature': result[0][0], 'canvas-coords':this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
-                    'camera-coords':result[0][1], 'state': this.clickEvent[2] }, true);
+                    'camera-coords':result[0][1], 'state': this.clickEvent[2], 'element': result[3] }, true);
             }
 
             this.clickEvent = null;

@@ -101,15 +101,10 @@ GpuDevice.prototype.clear = function(clearDepth, clearColor, color) {
         this.gl.clearColor(color[0]/255, color[1]/255, color[2]/255, color[3]/255);
     }
     
-//    if (this.keepFrameBuffer) {
-//        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT );
-//    } else {
     this.gl.clear((clearColor ? this.gl.COLOR_BUFFER_BIT : 0) |
-                       (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0) );
-//    }
+                  (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0) );
 };
 
-//aPosition, attrTexCoord, attrTexCoord2, attrBarycentric, attrNormal, attrNormal2, attrNormal3
 
 GpuDevice.prototype.useProgram = function(program, attributes, nextSampler) {
     if (this.currentProgram != program) {
@@ -130,7 +125,6 @@ GpuDevice.prototype.useProgram = function(program, attributes, nextSampler) {
             newAttributes[i] = 0;
         }
         
-        //
         for (i = 0, li = attributes.length; i < li; i++){
             var index = program.getAttribute(attributes[i]);
             
@@ -164,14 +158,10 @@ GpuDevice.prototype.bindTexture = function(texture, id) {
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture.texture);
 };
 
-//GpuDeviceSupported = function() {
-//    return true;
-//};
 
 GpuDevice.prototype.setFramebuffer = function(texture) {
     if (texture != null) {
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, texture.framebuffer);
-        //utResizeViewport(texture.framebuffer.width, texture.framebuffer.height, true);
     } else {
         this.gl.bindTexture(this.gl.TEXTURE_2D, null);
         this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, null);
@@ -183,7 +173,6 @@ GpuDevice.prototype.setFramebuffer = function(texture) {
 GpuDevice.prototype.createState = function(state) {
     if (state.blend == null) { state.blend = false; }
     if (state.stencil == null) { state.stencil = false; }
-    //if (state.zoffset == null) { state.zoffset = 0; }
     if (state.zwrite == null) { state.zwrite = true; }
     if (state.ztest == null) { state.ztest = true; }
     if (state.zequal == null) { state.zequal = false; }
