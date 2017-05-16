@@ -57,6 +57,11 @@ UIControlSpace.prototype.onSwitch = function() {
         return;
     }
 
+    if (this.browser.autopilot) { //stop autorotation
+        this.browser.autopilot.setAutorotate(0);
+        this.browser.autopilot.setAutopan(0,0);
+    }
+
     var pos = map.getPosition();
     var orientation = pos.getOrientation();
 

@@ -62,6 +62,11 @@ UIControlCompass.prototype.onDrag = function(event) {
         return;
     }
 
+    if (this.browser.autopilot) { //stop autorotation
+        this.browser.autopilot.setAutorotate(0);
+        this.browser.autopilot.setAutopan(0,0);
+    }
+
     var delta = event.getDragDelta();
     var sensitivity = 0.4;
     
@@ -78,6 +83,11 @@ UIControlCompass.prototype.onDoubleClick = function(event) {
     var map = this.browser.getMap();
     if (map == null) {
         return;
+    }
+
+    if (this.browser.autopilot) { //stop autorotation
+        this.browser.autopilot.setAutorotate(0);
+        this.browser.autopilot.setAutopan(0,0);
     }
 
     var pos = map.getPosition();
