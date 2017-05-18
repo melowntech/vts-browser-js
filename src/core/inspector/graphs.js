@@ -120,7 +120,7 @@ InspectorGraphs.prototype.switchPanel = function() {
 InspectorGraphs.prototype.recordingPressed = function(state) {
     var map = this.core.getMap();
 
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -140,7 +140,7 @@ InspectorGraphs.prototype.refreshPressed = function() {
 InspectorGraphs.prototype.resetPressed = function() {
     var map = this.core.getMap();
 
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -200,7 +200,7 @@ InspectorGraphs.prototype.magnifyPressed = function() {
 InspectorGraphs.prototype.updateGraphsPanel = function() {
     var map = this.core.getMap();
 
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -245,7 +245,7 @@ InspectorGraphs.prototype.onMouseMove = function(event) {
     this.cursorIndex = x;
 
     var map = this.core.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -264,7 +264,7 @@ InspectorGraphs.prototype.onMouseOut = function() {
 InspectorGraphs.prototype.updateGraphs = function(stats, ignoreRefresh) {
     var map = this.core.getMap();
 
-    if (map == null || (!this.refresh && !ignoreRefresh) || !this.panelVisible) {
+    if (!map || (!this.refresh && !ignoreRefresh) || !this.panelVisible) {
         return;
     }
 

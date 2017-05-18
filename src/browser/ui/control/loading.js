@@ -103,7 +103,7 @@ UIControlLoading.prototype.update = function() {
     }
 
     var map = this.ui.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 

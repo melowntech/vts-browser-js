@@ -61,7 +61,7 @@ ControlModePano.prototype.up = function(event) {
 
 ControlModePano.prototype.wheel = function(event) {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -93,7 +93,7 @@ ControlModePano.prototype.tick = function() {
     }
 
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
     

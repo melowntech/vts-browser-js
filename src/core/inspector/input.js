@@ -50,7 +50,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
     var map = this.core.getMap();
     var inspector = this.inspector;
 
-    if (map == null) {
+    if (!map) {
         return;
     }
 

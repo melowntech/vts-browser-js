@@ -1,11 +1,12 @@
 
 import Dom_ from '../../utility/dom';
 import {utils as utils_} from '../../../core/utils/utils';
+import {filterSearch as filterSearch_} from './search-filter';
 
 //get rid of compiler mess
 var dom = Dom_;
 var utils = utils_;
-
+var filterSearch = filterSearch_;
 
 var UIControlSearch = function(ui, visible) {
     this.ui = ui;
@@ -44,12 +45,19 @@ var UIControlSearch = function(ui, visible) {
 
     this.ignoreDrag = false; 
 
-    this.urlTemplate = 'https://www.windy.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l';
+//    this.urlTemplate = 'https://www.windy.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l';
+//    this.urlTemplate = 'http://nominatim.openstreetmap.org/search?q={value}&addressdetails=1&format=json&limit=20';
+    this.urlTemplate = 'http://n1.windyty.com/search.php?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
     this.data = [];
     this.lastSearch = '';
     this.itemIndex = -1;
     this.searchCounter = 0;
     this.coordsSrs = '+proj=longlat +datum=WGS84 +nodefs';
+
+    //http://n1.windyty.com/search.php?q=praha&format=json&polygon=1&lang=en-US
+    //http://n1.windyty.com/reverse.php?format=json&lat=50&lon=14&lang=en-US
+    //http://nominatim.openstreetmap.org/search?q=praha&addressdetails=1&format=json
+
 
     this.initialValueUsed = false;
 
@@ -91,15 +99,13 @@ UIControlSearch.prototype.moveSelector = function(delta) {
         this.itemIndex = 0;
     }
     
-    this.updateList({'data' : this.data});
+    this.updateList(this.data);
 };
 
 
 UIControlSearch.prototype.updateList = function(json) {
-    if (json['data']) {
-        var item;
-        var list = '';
-        var data = json['data'];
+    if (Array.isArray(json)) {
+        var data = json, item, list = '';
         data = data.slice(0,10);
         this.data = data;
 
@@ -137,7 +143,7 @@ UIControlSearch.prototype.updateList = function(json) {
 
 UIControlSearch.prototype.onSelectItem = function(index) {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -193,12 +199,27 @@ UIControlSearch.prototype.onHoverItem = function(index) {
     }
 
     this.itemIndex = index;
-    this.updateList({'data' : this.data});
+    this.updateList(this.data);
 };
 
 
 UIControlSearch.prototype.onListLoaded = function(counter, data) {
+    var map = this.browser.getMap();
+    if (!map) {
+        return;
+    }
+
     if (this.searchCounter == counter) {
+
+        var pos = map.getPosition();
+        var refFrame = map.getReferenceFrame();
+        var navigationSrsId = refFrame['navigationSrs'];
+        var navigationSrs = map.getSrsInfo(navigationSrsId);
+
+        var proj4 = this.browser.getProj4();
+        var coords = proj4(navigationSrs['srsDef'], this.coordsSrs, pos.getCoords());
+
+        data = filterSearch(data, coords[0], coords[1]);
         this.updateList(data);
     }
 };

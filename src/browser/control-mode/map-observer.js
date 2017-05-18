@@ -234,7 +234,7 @@ ControlModeMapObserver.prototype.getAzimuthAndDistance = function(dx, dy) {
 
 ControlModeMapObserver.prototype.tick = function() {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 

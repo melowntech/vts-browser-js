@@ -39,7 +39,7 @@ var UIControlCompass = function(ui, visible) {
 
 UIControlCompass.prototype.update = function() {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -58,7 +58,7 @@ UIControlCompass.prototype.update = function() {
 
 UIControlCompass.prototype.onDrag = function(event) {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -81,7 +81,7 @@ UIControlCompass.prototype.onDrag = function(event) {
 
 UIControlCompass.prototype.onDoubleClick = function(event) {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 

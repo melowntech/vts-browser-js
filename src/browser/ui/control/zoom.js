@@ -54,7 +54,7 @@ UIControlZoom.prototype.repeat = function(count, factor, delay) {
     }
 
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 

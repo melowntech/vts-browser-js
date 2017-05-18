@@ -53,7 +53,7 @@ UIControlSpace.prototype.onSwitch = function() {
     this.space3D = !this.space3D;
 
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -86,7 +86,7 @@ UIControlSpace.prototype.onSwitch = function() {
 
 UIControlSpace.prototype.update = function() {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
