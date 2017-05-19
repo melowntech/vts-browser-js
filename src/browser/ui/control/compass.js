@@ -39,7 +39,7 @@ var UIControlCompass = function(ui, visible) {
 
 UIControlCompass.prototype.update = function() {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -58,8 +58,13 @@ UIControlCompass.prototype.update = function() {
 
 UIControlCompass.prototype.onDrag = function(event) {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
+    }
+
+    if (this.browser.autopilot) { //stop autorotation
+        this.browser.autopilot.setAutorotate(0);
+        this.browser.autopilot.setAutopan(0,0);
     }
 
     var delta = event.getDragDelta();
@@ -76,8 +81,13 @@ UIControlCompass.prototype.onDrag = function(event) {
 
 UIControlCompass.prototype.onDoubleClick = function(event) {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
+    }
+
+    if (this.browser.autopilot) { //stop autorotation
+        this.browser.autopilot.setAutorotate(0);
+        this.browser.autopilot.setAutopan(0,0);
     }
 
     var pos = map.getPosition();

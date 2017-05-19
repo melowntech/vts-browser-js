@@ -54,8 +54,13 @@ UIControlZoom.prototype.repeat = function(count, factor, delay) {
     }
 
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
+    }
+
+    if (this.browser.autopilot) { //stop autorotation
+        this.browser.autopilot.setAutorotate(0);
+        this.browser.autopilot.setAutopan(0,0);
     }
     
     var controller = this.browser.controlMode.getCurrentController();

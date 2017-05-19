@@ -140,7 +140,7 @@ Browser.prototype.onMapLoaded = function(event) {
 
 Browser.prototype.getLinkWithCurrentPos = function() {
     var map = this.getMap();
-    if (map == null) {
+    if (!map) {
         return '';
     }
 

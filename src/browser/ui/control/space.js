@@ -53,8 +53,13 @@ UIControlSpace.prototype.onSwitch = function() {
     this.space3D = !this.space3D;
 
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
+    }
+
+    if (this.browser.autopilot) { //stop autorotation
+        this.browser.autopilot.setAutorotate(0);
+        this.browser.autopilot.setAutopan(0,0);
     }
 
     var pos = map.getPosition();
@@ -81,7 +86,7 @@ UIControlSpace.prototype.onSwitch = function() {
 
 UIControlSpace.prototype.update = function() {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 

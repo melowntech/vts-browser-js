@@ -234,7 +234,7 @@ ControlModeMapObserver.prototype.getAzimuthAndDistance = function(dx, dy) {
 
 ControlModeMapObserver.prototype.tick = function() {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
@@ -432,7 +432,7 @@ function constrainMapPosition(browser, pos) {
 
     var distance = (pos.getViewExtent()*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
 
-    //reduce tilt whe you are far off the planet
+    //reduce tilt when you are far off the planet
     if (pos.getViewMode() == 'obj') {
         var rf = map.getReferenceFrame();
         var srs = map.getSrsInfo(rf['navigationSrs']);
@@ -453,7 +453,7 @@ function constrainMapPosition(browser, pos) {
                 o[1] = minTilt;
             }
     
-            pos = pos.setOrientation(o);
+            pos.setOrientation(o);
         }
     }
 

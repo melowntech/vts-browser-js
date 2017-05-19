@@ -54,7 +54,7 @@ UIControlCredits.prototype.getCreditsString = function(array, separator, full) {
 
 UIControlCredits.prototype.update = function() {
     var map = this.browser.getMap();
-    if (map == null) {
+    if (!map) {
         return;
     }
 
