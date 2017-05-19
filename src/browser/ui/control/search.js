@@ -2,9 +2,13 @@
 import Dom_ from '../../utility/dom';
 import {utils as utils_} from '../../../core/utils/utils';
 import {filterSearch as filterSearch_} from './search-filter';
+import {vec3 as vec3_} from '../../../core/utils/matrix';
+import {math as math_} from '../../../core/utils/math';
 
 //get rid of compiler mess
 var dom = Dom_;
+var vec3 = vec3_;
+var math = math_;
 var utils = utils_;
 var filterSearch = filterSearch_;
 
@@ -48,6 +52,7 @@ var UIControlSearch = function(ui, visible) {
 //    this.urlTemplate = 'https://www.windy.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l';
 //    this.urlTemplate = 'http://nominatim.openstreetmap.org/search?q={value}&addressdetails=1&format=json&limit=20';
     this.urlTemplate = 'http://n1.windyty.com/search.php?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
+    this.urlTemplate2 = 'http://n1.windyty.com/search.php?q={value}&format=json&lang=en-US&addressdetails=1&limit=20&polygon=1';
     this.data = [];
     this.lastSearch = '';
     this.itemIndex = -1;
@@ -140,15 +145,33 @@ UIControlSearch.prototype.updateList = function(json) {
     }
 };
 
-
 UIControlSearch.prototype.onSelectItem = function(index) {
+    var url = this.processTemplate(this.urlTemplate2, { 'value' : this.lastSearch });
+
+    //load data with polygons
+    utils.loadJSON(url, this.onDisplayItem.bind(this, index), this.onListLoadError.bind(this));
+};
+
+UIControlSearch.prototype.onDisplayItem = function(index, data) {
     var map = this.browser.getMap();
     if (!map) {
         return;
     }
-
+    
+    //sort list with polygons
     var pos = map.getPosition();
-    //var coords = map.getPositionCoords(pos);                
+    var refFrame = map.getReferenceFrame();
+    var navigationSrsId = refFrame['navigationSrs'];
+    var navigationSrs = map.getSrsInfo(navigationSrsId);
+    var physicalSrsId = refFrame['physicalSrs'];
+    var physicalSrs = map.getSrsInfo(physicalSrsId);
+
+    var proj4 = this.browser.getProj4();
+    var coords = proj4(navigationSrs['srsDef'], this.coordsSrs, pos.getCoords());
+
+    this.data = filterSearch(data, coords[0], coords[1]);
+
+
     pos = map.convertPositionHeightMode(pos, "float", true);
 
     var item = this.data[index];
@@ -156,29 +179,80 @@ UIControlSearch.prototype.onSelectItem = function(index) {
         var coords = [item['lon'], item['lat']];
         
         //conver coords from location srs to map navigation srs         
-        var refFrame = map.getReferenceFrame();
-        var navigationSrsId = refFrame['navigationSrs'];
-        var navigationSrs = map.getSrsInfo(navigationSrsId);
-        
-        var proj4 = this.browser.getProj4();
         coords = proj4(this.coordsSrs, navigationSrs['srsDef'], coords);
         coords[2] = 0;
 
         pos.setCoords(coords);
-        
-        //try to guess view extent from location type
+
         var viewExtent = 10000;                
 
-        switch(item['type']) {
-        case 'peak': viewExtent = 20000; break;
-        case 'city': viewExtent = 30000; break;                
-        case 'street': viewExtent = 4000; break;
-        case 'residential': viewExtent = 3000; break;               
+        if (item.polygon) {
+            var points = item.polygon;
+            //var cameraInfo = map.getCameraInfo();
+            //var cameraVector = cameraInfo.vector;
+            //var cameraPosition = cameraInfo.position;
+
+            //convert point to physical coords
+            var cameraPosition = proj4(this.coordsSrs, physicalSrs['srsDef'], coords);
+            var cameraVector = [-cameraPosition[0], -cameraPosition[1], -cameraPosition[2]];
+            vec3.normalize(cameraVector);
+
+            for (var i = 0, li = points.length; i < li; i++) {
+                //convert point to physical coords
+                coords = proj4(this.coordsSrs, physicalSrs['srsDef'], [points[i][0], points[i][1], 0]);
+
+                var ab = cameraVector;
+                var av = [coords[0] - cameraPosition[0], coords[1] - cameraPosition[1], coords[2] - cameraPosition[2]];
+
+                //final R3 bv  = v.sub( b ) ;
+                var b = [cameraPosition[0] + cameraVector[0], cameraPosition[1] + cameraVector[1], cameraPosition[2] + cameraVector[2]];
+                var bv = [coords[0] - b[0], coords[1] - b[1], coords[2] - b[2]];
+
+                var af = [0,0,0];
+                vec3.cross(ab, av, af);
+
+                var d = (vec3.length(bv) / vec3.length(ab)) * 2;
+
+                if (d > viewExtent) {
+                    viewExtent = d;
+                }
+            }
+        } else {
+            //try to guess view extent from location type
+            switch(item['type']) {
+            case 'peak': viewExtent = 20000; break;
+            case 'city': viewExtent = 30000; break;                
+            case 'street': viewExtent = 4000; break;
+            case 'residential': viewExtent = 3000; break;               
+            }
         }
         
         pos.setViewExtent(viewExtent);                
-        pos.setOrientation([0,-60,0]);                
 
+        var orientation = [0,-60,0];
+
+        //reduce tilt when you are far off the planet
+        if (pos.getViewMode() == 'obj') {
+            if (navigationSrs['a']) {
+                var distance = (pos.getViewExtent()*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
+                var factor = Math.min(distance / (navigationSrs['a']*0.5), 1.0);
+                var maxTilt = 20 + ((-90) - 20) * factor; 
+                var minTilt = -90; 
+                
+                orientation = pos.getOrientation();
+                
+                if (orientation[1] > maxTilt) {
+                    orientation[1] = maxTilt;
+                }
+        
+                if (orientation[1] < minTilt) {
+                    orientation[1] = minTilt;
+                }
+        
+            }
+        }
+
+        pos.setOrientation(orientation);
         map.setPosition(pos);
         
         this.itemIndex = index;

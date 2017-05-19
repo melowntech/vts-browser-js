@@ -209,7 +209,9 @@ function filterSearch(data, lon, lat) {
             state: region || '',
             cc: adr.country_code,
             type: hit.type, 
-            bounds: bounds
+            bounds: bounds,
+            polygon : hit.polygonpoints || [],
+            bbox : hit.boundingbox
         }
 
         // Calculate distance
