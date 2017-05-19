@@ -49,20 +49,13 @@ var UIControlSearch = function(ui, visible) {
 
     this.ignoreDrag = false; 
 
-//    this.urlTemplate = 'https://www.windy.com/search/get/v1.0/{value}?lang=en-US&hash=b0f07fGWSGdsx-l';
-//    this.urlTemplate = 'http://nominatim.openstreetmap.org/search?q={value}&addressdetails=1&format=json&limit=20';
     this.urlTemplate = 'http://n1.windyty.com/search.php?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
-    this.urlTemplate2 = 'http://n1.windyty.com/search.php?q={value}&format=json&lang=en-US&addressdetails=1&limit=20&polygon=1';
+    this.urlTemplate2 = this.urlTemplate;
     this.data = [];
     this.lastSearch = '';
     this.itemIndex = -1;
     this.searchCounter = 0;
     this.coordsSrs = '+proj=longlat +datum=WGS84 +nodefs';
-
-    //http://n1.windyty.com/search.php?q=praha&format=json&polygon=1&lang=en-US
-    //http://n1.windyty.com/reverse.php?format=json&lat=50&lon=14&lang=en-US
-    //http://nominatim.openstreetmap.org/search?q=praha&addressdetails=1&format=json
-
 
     this.initialValueUsed = false;
 
@@ -145,14 +138,8 @@ UIControlSearch.prototype.updateList = function(json) {
     }
 };
 
+
 UIControlSearch.prototype.onSelectItem = function(index) {
-    var url = this.processTemplate(this.urlTemplate2, { 'value' : this.lastSearch });
-
-    //load data with polygons
-    utils.loadJSON(url, this.onDisplayItem.bind(this, index), this.onListLoadError.bind(this));
-};
-
-UIControlSearch.prototype.onDisplayItem = function(index, data) {
     var map = this.browser.getMap();
     if (!map) {
         return;
@@ -169,9 +156,6 @@ UIControlSearch.prototype.onDisplayItem = function(index, data) {
     var proj4 = this.browser.getProj4();
     var coords = proj4(navigationSrs['srsDef'], this.coordsSrs, pos.getCoords());
 
-    this.data = filterSearch(data, coords[0], coords[1]);
-
-
     pos = map.convertPositionHeightMode(pos, "float", true);
 
     var item = this.data[index];
@@ -184,13 +168,23 @@ UIControlSearch.prototype.onDisplayItem = function(index, data) {
 
         pos.setCoords(coords);
 
-        var viewExtent = 10000;                
+        var viewExtent = 6667;                
 
-        if (item.polygon) {
+        if (item.bbox) {
+            var lat1 = item.bbox[0];
+            var lat2 = item.bbox[1];
+            var lon1 = item.bbox[2];
+            var lon2 = item.bbox[3];
+
+            item.polygon = [
+                [lon1, lat1], [(lon2+lon1)*0.5, lat1], [lon2, lat1],
+                [lon1, (lat2+lat1)*0.5],  [lon2, (lat2+lat1)*0.5],
+                [lon1, lat2], [(lon2+lon1)*0.5, lat2], [lon2, lat2]
+            ];
+        }
+
+        if (item.polygon && item.type != 'continent') {
             var points = item.polygon;
-            //var cameraInfo = map.getCameraInfo();
-            //var cameraVector = cameraInfo.vector;
-            //var cameraPosition = cameraInfo.position;
 
             //convert point to physical coords
             var cameraPosition = proj4(this.coordsSrs, physicalSrs['srsDef'], coords);
@@ -219,11 +213,12 @@ UIControlSearch.prototype.onDisplayItem = function(index, data) {
             }
         } else {
             //try to guess view extent from location type
-            switch(item['type']) {
-            case 'peak': viewExtent = 20000; break;
-            case 'city': viewExtent = 30000; break;                
-            case 'street': viewExtent = 4000; break;
-            case 'residential': viewExtent = 3000; break;               
+            switch(item.type) {
+            case 'peak':        viewExtent = 20000;   break;
+            case 'city':        viewExtent = 30000;   break;                
+            case 'street':      viewExtent = 4000;    break;
+            case 'residential': viewExtent = 3000;    break;
+            case 'continent':   viewExtent = 8550000; break;             
             }
         }
         
@@ -239,8 +234,6 @@ UIControlSearch.prototype.onDisplayItem = function(index, data) {
                 var maxTilt = 20 + ((-90) - 20) * factor; 
                 var minTilt = -90; 
                 
-                orientation = pos.getOrientation();
-                
                 if (orientation[1] > maxTilt) {
                     orientation[1] = maxTilt;
                 }
@@ -248,7 +241,6 @@ UIControlSearch.prototype.onDisplayItem = function(index, data) {
                 if (orientation[1] < minTilt) {
                     orientation[1] = minTilt;
                 }
-        
             }
         }
 
