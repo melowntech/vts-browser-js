@@ -171,10 +171,10 @@ UIControlSearch.prototype.onSelectItem = function(index) {
         var viewExtent = 6667;                
 
         if (item.bbox) {
-            var lat1 = item.bbox[0];
-            var lat2 = item.bbox[1];
-            var lon1 = item.bbox[2];
-            var lon2 = item.bbox[3];
+            var lat1 = parseFloat(item.bbox[0]);
+            var lat2 = parseFloat(item.bbox[1]);
+            var lon1 = parseFloat(item.bbox[2]);
+            var lon2 = parseFloat(item.bbox[3]);
 
             item.polygon = [
                 [lon1, lat1], [(lon2+lon1)*0.5, lat1], [lon2, lat1],
@@ -209,6 +209,12 @@ UIControlSearch.prototype.onSelectItem = function(index) {
 
                 if (d > viewExtent) {
                     viewExtent = d;
+                }
+            }
+
+            if (navigationSrs['type'] != 'projected') {
+                if (viewExtent > navigationSrs['a']*1.4) {
+                    viewExtent = navigationSrs['a']*1.4;
                 }
             }
         } else {
