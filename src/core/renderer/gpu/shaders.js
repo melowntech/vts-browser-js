@@ -743,13 +743,14 @@ GpuShaders.tile3FragmentShader = 'precision mediump float;\n'+
 GpuShaders.fogTileVertexShader =
     'attribute vec3 aPosition;\n'+
     'uniform mat4 uMV, uProj;\n'+
-    'uniform float uFogDensity;\n'+
+//    'uniform float uFogDensity;\n'+
+    'uniform vec4 uParams;\n'+    //[zfactor, fogDensity, 0, 0]
     'varying float vFogFactor;\n'+
     'void main() {\n'+
         'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
-        'vFogFactor = exp(uFogDensity * camDist);\n'+
+        'vFogFactor = exp(uParams[1] * camDist);\n'+
     '}';
 
 

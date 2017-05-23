@@ -466,7 +466,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         
         var t1 = 1.4, t2 = 1.6; //previous value t1=1.1
 
-        if (camera.height > 60000) { //don render ground color in aura
+        if (camera.height > 45000) { //don render ground color in aura
             t1 = 1.4, t2 = 1.8;
             params3 = [t2,1.0,t2,0];
         } else {
@@ -595,8 +595,6 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
             break;
 
         case 'submesh':
-                //this.renderer.gpu.setState(this.drawBlendedTileState);
-                
             var mesh = command.mesh; 
             var texture = command.texture;
 
