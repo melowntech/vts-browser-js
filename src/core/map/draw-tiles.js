@@ -23,11 +23,11 @@ var MapDrawTiles = function(map, draw) {
 
 
 MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, checkGpu) {
-    /*if (tile.id[0] == 12 &&
-        tile.id[1] == 690 &&
-        tile.id[2] == 1232) {
-        tile = tile;
-        //return true;
+    /*if (!(tile.id[0] == 14 &&
+        tile.id[1] == 4450 &&
+        tile.id[2] == 2749)) {
+        //tile = tile;
+        return true;
     }*/
 
     if (this.stats.gpuRenderUsed >= this.draw.maxGpuUsed) {
