@@ -780,10 +780,12 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 }
 
                 texture = t[0];
-                textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, 0];
+                textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, renderer.cameraViewExtent];
 
                 if (job.type == 'flat-tline') {
-                    textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);
+                    //textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);
+                    textureParams[0] = 1/(renderer.cameraViewExtent2*job.lineWidth)/(texture.width/t[2]);
+                    //textureParams[0] = 1/(renderer.cameraViewExtent*job.lineWidth)/(texture.width/t[2]);
                 } else {
                     var tileSize = 256;//job.layer.core.mapConfig.tileSize(lod);
                     var tilePixelSize = tileSize / 256;//job.layer.tilePixels;

@@ -136,6 +136,25 @@ GpuShaders.line4FragmentShader = 'precision mediump float;\n'+
     '}';
 
 
+GpuShaders.tlineVertexShader2 =
+    'attribute vec4 aPosition;\n'+
+    'attribute vec4 aNormal;\n'+
+    'uniform mat4 uMVP;\n'+
+    'uniform vec2 uScale;\n'+
+    'uniform vec4 uParams;\n'+
+    'varying vec2 vTexCoord;\n'+
+    'void main(){ \n'+
+        'vec4 p=vec4(aPosition.xyz, 1.0);\n'+
+        'p.xyz+=aNormal.xyz;\n'+
+        'if (aNormal.w < 0.0){\n'+
+            'vTexCoord=vec2(abs(aPosition.w)*uParams[0], (uParams[1]+uParams[2])*0.5);\n'+
+        '} else {\n'+
+            'vTexCoord=vec2(abs(aPosition.w)*uParams[0], aPosition.w < 0.0 ? uParams[1] : uParams[2]);\n'+
+        '}\n'+
+
+        'gl_Position = uMVP * p;\n'+
+    '}';
+
 GpuShaders.tlineVertexShader =
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
@@ -145,12 +164,9 @@ GpuShaders.tlineVertexShader =
     'varying vec2 vTexCoord;\n'+
     'void main(){ \n'+
         'vec4 p=vec4(aPosition.xyz, 1.0);\n'+
-        'p.xy+=aNormal.xy;\n'+
-        'if (aNormal.w == 0.0){\n'+
-            'float tcy=(uParams[1]+uParams[2])*0.5;\n'+
-            'float tdy=uParams[1]-tcy;\n'+
-            'float ty=(aNormal.x == 0.0 && aNormal.y == 0.0)?tcy:tcy+tdy*cos(aNormal.z);\n'+
-            'vTexCoord=vec2(abs(aPosition.w)*uParams[0], ty);\n'+
+        'p.xyz+=aNormal.xyz*(abs(aNormal.w)*uParams[3]);\n'+
+        'if (aNormal.w < 0.0){\n'+
+            'vTexCoord=vec2(abs(aPosition.w)*uParams[0], (uParams[1]+uParams[2])*0.5);\n'+
         '} else {\n'+
             'vTexCoord=vec2(abs(aPosition.w)*uParams[0], aPosition.w < 0.0 ? uParams[1] : uParams[2]);\n'+
         '}\n'+
@@ -233,11 +249,12 @@ GpuShaders.tblineFragmentShader = 'precision mediump float;\n'+
     'uniform vec4 uColor2;\n'+
     'varying vec2 vTexCoord;\n'+
     'void main() {\n'+
-        'vec4 c=texture2D(uSampler, vTexCoord)*uColor;\n'+
-        'vec4 c2=uColor2;\n'+
+        'vec4 c1=texture2D(uSampler, vTexCoord)*uColor;\n'+
+        'vec4 c2=uColor2,c=c1;\n'+
         'c.xyz*=c.w; c2.xyz*=c2.w;\n'+
         'c=mix(c,c2,1.0-c.w);\n'+
         'c.xyz/=(c.w+0.00001);\n'+
+        'c.w=max(c1.w,c2.w);\n'+
         'gl_FragColor = c;\n'+
     '}';
 

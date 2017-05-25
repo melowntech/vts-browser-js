@@ -158,6 +158,8 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     this.renderer.cameraOrientation = map.position.getOrientation();
     this.renderer.cameraTiltFator = Math.cos(math.radians(renderer.cameraOrientation[1]));
     this.renderer.cameraVector = camera.vector; 
+    this.renderer.cameraViewExtent = map.position.getViewExtent();
+    this.renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
 
     if (projected) {
         var yaw = math.radians(renderer.cameraOrientation[0]);
