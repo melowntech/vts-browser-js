@@ -759,6 +759,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         break;
 
+    case 'flat-rline':
     case 'flat-tline':
     case 'pixel-line':
     case 'pixel-tline':
@@ -774,18 +775,19 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 texture = renderer.whiteTexture;
             } else {
                 var t = job.texture;
-
                 if (t == null || t[0] == null) {
                     return;
                 }
 
                 texture = t[0];
-                textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, renderer.cameraViewExtent];
+                textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, job.widthByRatio ? renderer.cameraViewExtent : 1];
 
-                if (job.type == 'flat-tline') {
-                    //textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);
-                    textureParams[0] = 1/(renderer.cameraViewExtent2*job.lineWidth)/(texture.width/t[2]);
-                    //textureParams[0] = 1/(renderer.cameraViewExtent*job.lineWidth)/(texture.width/t[2]);
+                if (job.type == 'flat-tline' || job.type == 'flat-rline') {
+                    if (job.widthByRatio) {
+                        textureParams[0] = 1/(renderer.cameraViewExtent2*job.lineWidth)/(texture.width/t[2]);
+                    } else {
+                        textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);    
+                    }
                 } else {
                     var tileSize = 256;//job.layer.core.mapConfig.tileSize(lod);
                     var tilePixelSize = tileSize / 256;//job.layer.tilePixels;

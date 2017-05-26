@@ -145,6 +145,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     job.enterEvent = data['enter-event'];
     job.leaveEvent = data['leave-event'];
     job.advancedHit = data['advancedHit'];
+    job.widthByRatio = data['width-units'] == 'ratio',
     job.state = data['state'];
     job.center = data['center'];
     job.lod = data['lod'];
@@ -167,6 +168,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 
     switch(job.type) {
     case 'flat-tline':   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
+    case 'flat-rline':   job.program = this.renderer.progRLine;  break;
     case 'pixel-line':   job.program = this.renderer.progLine3;  break;
     case 'pixel-tline':  job.program = (background[3] != 0) ? this.renderer.progTPBLine : this.renderer.progTPLine; break;
     }
@@ -174,6 +176,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     if (job.advancedHit) {
         switch(job.type) {
         case 'flat-tline':   job.program2 = this.renderer.progETLine;  break;
+        case 'flat-rline':   job.program2 = this.renderer.progERLine;  break;
         case 'pixel-line':   job.program2 = this.renderer.progELine3;  break;
         case 'pixel-tline':  job.program2 = this.renderer.progETPLine; break;
         }
@@ -328,8 +331,9 @@ GpuGroup.prototype.addIconJob = function(data, label) {
 GpuGroup.prototype.addRenderJob = function(data) {
     switch(data['type']) {
     case 'flat-line':   this.addLineJob(data); break;
-    case 'flat-tline':  this.addExtentedLineJob(data); break;
-    case 'pixel-line':  this.addExtentedLineJob(data); break;
+    case 'flat-tline':
+    case 'flat-rline':
+    case 'pixel-line':
     case 'pixel-tline': this.addExtentedLineJob(data); break;
     case 'line-label':  this.addLineLabelJob(data); break;
     case 'icon':        this.addIconJob(data); break;

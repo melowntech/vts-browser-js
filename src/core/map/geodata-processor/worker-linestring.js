@@ -46,6 +46,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var lineFlat = getLayerPropertyValue(style, 'line-flat', lineString, lod);
     var lineColor = getLayerPropertyValue(style, 'line-color', lineString, lod);
     var lineWidth = 0.5 * getLayerPropertyValue(style, 'line-width', lineString, lod);
+    var lineWidthUnits = getLayerPropertyValue(style, 'line-width-units', lineString, lod);
 
     var lineStyle = getLayerPropertyValue(style, 'line-style', lineString, lod);
     var lineStyleTexture = getLayerPropertyValue(style, 'line-style-texture', lineString, lod);
@@ -54,6 +55,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     var lineLabelSize = getLayerPropertyValue(style, 'line-label-size', lineString, lod);
 
     var texturedLine = (lineStyle != 'solid');
+    var widthByRatio = (lineWidthUnits == 'ratio');
 
     //console.log("lineflat: "+lineFlat);
     //var lineWidth = Math.pow(2, 23 - lod) / 32;
@@ -92,7 +94,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     }
 
 
-    if (lineFlat && texturedLine) {
+    if (lineFlat && (texturedLine || widthByRatio)) {
         circleSides = 2;
     }
 
@@ -105,10 +107,10 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
        var elementBuffer = new Float32Array(totalPoints * (3 * 2) + totalPoints * (skipJoins ? 0 : circleSides) * 3);
     }
 
-    //debugger
+    debugger
 
     //if (!lineFlat || texturedLine) {
-    if (!(lineFlat && !texturedLine)) {
+    if (!(lineFlat && !texturedLine && !widthByRatio)) {
         var lineNormals = 3 * 4 * 2;
         var joinNormals = skipJoins ? 0 : (circleSides * 3 * 4);
         var normalBuffer = new Float32Array(totalPoints * lineNormals + totalPoints * joinNormals);
@@ -202,7 +204,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 index3 += 6;
             }
 
-            if (lineFlat && !texturedLine) {
+            if (lineFlat && !texturedLine && !widthByRatio) {
 
                 //normalize vector to line width and rotate 90 degrees
                 if (geocent) {
@@ -327,7 +329,6 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                         if (i == (li - 1)) {
                             vend = [v[0]*l, v[1]*l, 0];
                         }
-                        
                     }
 
                     //add polygon
@@ -389,76 +390,6 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                     index += 24;
                     index2 += 24;
                     
-                    /*
-                    if (!ln) {
-                        ln = n;
-                    }
-
-                    //add polygon
-                    vertexBuffer[index] = p1[0];
-                    vertexBuffer[index+1] = p1[1];
-                    vertexBuffer[index+2] = p1[2];
-                    vertexBuffer[index+3] = distance;
-                    normalBuffer[index2] = 0;
-                    normalBuffer[index2+1] = 0;
-                    normalBuffer[index2+2] = 0;
-                    normalBuffer[index2+3] = -lineWidth;
-    
-                    vertexBuffer[index+4] = p1[0];
-                    vertexBuffer[index+5] = p1[1];
-                    vertexBuffer[index+6] = p1[2];
-                    vertexBuffer[index+7] = distance;
-                    normalBuffer[index2+4] = n[0];
-                    normalBuffer[index2+5] = n[1];
-                    normalBuffer[index2+6] = n[2];
-                    normalBuffer[index2+7] = -lineWidth;
-    
-                    vertexBuffer[index+8] = p1[0];
-                    vertexBuffer[index+9] = p1[1];
-                    vertexBuffer[index+10] = p1[2];
-                    vertexBuffer[index+11] = distance;
-                    normalBuffer[index2+8] = ln[0];
-                    normalBuffer[index2+9] = ln[1];
-                    normalBuffer[index2+10] = ln[2];
-                    normalBuffer[index2+11] = -lineWidth;
-
-                    index += 12;
-                    index2 += 12;
-
-                    //add polygon
-                    vertexBuffer[index] = p1[0];
-                    vertexBuffer[index+1] = p1[1];
-                    vertexBuffer[index+2] = p1[2];
-                    vertexBuffer[index+3] = distance;
-                    normalBuffer[index2] = 0;
-                    normalBuffer[index2+1] = 0;
-                    normalBuffer[index2+2] = 0;
-                    normalBuffer[index2+3] = -lineWidth;
-    
-                    vertexBuffer[index+4] = p1[0];
-                    vertexBuffer[index+5] = p1[1];
-                    vertexBuffer[index+6] = p1[2];
-                    vertexBuffer[index+7] = -distance;
-                    normalBuffer[index2+4] = -n[0];
-                    normalBuffer[index2+5] = -n[1];
-                    normalBuffer[index2+6] = -n[2];
-                    normalBuffer[index2+7] = -lineWidth;
-    
-                    vertexBuffer[index+8] = p1[0];
-                    vertexBuffer[index+9] = p1[1];
-                    vertexBuffer[index+10] = p1[2];
-                    vertexBuffer[index+11] = -distance;
-                    normalBuffer[index2+8] = -ln[0];
-                    normalBuffer[index2+9] = -ln[1];
-                    normalBuffer[index2+10] = -ln[2];
-                    normalBuffer[index2+11] = -lineWidth;
-
-                    index += 12;
-                    index2 += 12;
-
-                    ln = n;
-                    */
-
                 } else {
 
                     //direction vector
@@ -563,7 +494,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                     vec3Cross(nn, vv, nn);
                 }
 
-                if (lineFlat && texturedLine) {
+                if (lineFlat && (texturedLine || widthByRatio)) {
 
                     if (i != (li-1)) {
                         distance = vertexBuffer[i * lineVertices + 3];
@@ -850,11 +781,11 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             'color':lineColor, 'z-index':zIndex, 'center': center, 'normalBuffer': normalBuffer,
             'elementBuffer': elementBuffer, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
-            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'width-units': lineWidthUnits,
             'line-width':lineWidth*2, 'lod':(globals.autoLod ? null : globals.tileLod) };
     
         if (lineFlat) {
-            messageData['type'] = texturedLine ? 'flat-tline' : 'flat-line';
+            messageData['type'] = texturedLine ? 'flat-tline' : (widthByRatio ? 'flat-rline' : 'flat-line');
         } else {
             messageData['type'] = texturedLine ? 'pixel-tline' : 'pixel-line';
         }

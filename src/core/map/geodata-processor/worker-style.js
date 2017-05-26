@@ -450,6 +450,17 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
+        if (key == 'line-width-units') {
+            switch(value) {
+            case 'pixels':
+            case 'meters':
+            case 'ratio': return value;
+            default:
+                logError('wrong-property-value', layerId, key, value);
+                return getDefaultLayerPropertyValue(key);
+            }
+        }
+
             //validate origin enum
         if (key == 'label-origin' || key == 'icon-origin') {
             switch(value) {
@@ -510,11 +521,12 @@ var validateLayerPropertyValue = function(layerId, key, value) {
 
     case 'inherit' :    return validateValue(layerId, key, value, 'string');
 
-    case 'line':        return validateValue(layerId, key, value, 'boolean');
-    case 'line-flat':   return validateValue(layerId, key, value, 'boolean');
-    case 'line-width':  return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
-    case 'line-color':  return validateValue(layerId, key, value, 'object', 4, 0, 255);
-    case 'line-style':  return validateValue(layerId, key, value, 'string');
+    case 'line':              return validateValue(layerId, key, value, 'boolean');
+    case 'line-flat':         return validateValue(layerId, key, value, 'boolean');
+    case 'line-width':        return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'line-width-units':  return validateValue(layerId, key, value, 'string');
+    case 'line-color':        return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'line-style':        return validateValue(layerId, key, value, 'string');
     case 'line-style-texture':    return validateValue(layerId, key, value, 'object', 3, -Number.MAXVALUE, Number.MAXVALUE);
     case 'line-style-background': return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
@@ -579,11 +591,12 @@ var getDefaultLayerPropertyValue = function(key) {
 
     case 'inherit': return '';
 
-    case 'line':       return false;
-    case 'line-flat':  return false;
-    case 'line-width': return 1;
-    case 'line-color': return [255,255,255,255];
-    case 'line-style': return 'solid';
+    case 'line':             return false;
+    case 'line-flat':        return false;
+    case 'line-width':       return 1;
+    case 'line-width-units': return 'meters';
+    case 'line-color':       return [255,255,255,255];
+    case 'line-style':       return 'solid';
     case 'line-style-texture':    return null;
     case 'line-style-background': return [0,0,0,0];
 

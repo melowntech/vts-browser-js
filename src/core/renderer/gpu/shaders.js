@@ -25,7 +25,7 @@ GpuShaders.bboxFragmentShader = 'precision mediump float;\n'+
     '}';
 
 
-GpuShaders.lineVertexShader =
+GpuShaders.lineVertexShader = //line
     'attribute vec3 aPosition;\n'+
     'uniform mat4 uMVP;\n'+
     'void main(){ \n'+
@@ -33,14 +33,13 @@ GpuShaders.lineVertexShader =
     '}';
 
 
-GpuShaders.lineFragmentShader = 'precision mediump float;\n'+
+GpuShaders.lineFragmentShader = 'precision mediump float;\n'+ //line
     'uniform vec4 uColor;\n'+
     'void main() {\n'+
         'gl_FragColor = uColor;\n'+
     '}';
 
-
-GpuShaders.elineVertexShader =
+GpuShaders.elineVertexShader = //line elements
     'attribute vec3 aPosition;\n'+
     'attribute float aElement;\n'+
     'uniform mat4 uMVP;\n'+
@@ -51,7 +50,7 @@ GpuShaders.elineVertexShader =
     '}';
 
 
-GpuShaders.elineFragmentShader = 'precision mediump float;\n'+
+GpuShaders.elineFragmentShader = 'precision mediump float;\n'+ //line elements
     'uniform vec4 uColor;\n'+
     'varying float vElement;\n'+
     'void main() {\n'+
@@ -60,7 +59,7 @@ GpuShaders.elineFragmentShader = 'precision mediump float;\n'+
     '}';
 
 
-GpuShaders.line3VertexShader =
+GpuShaders.line3VertexShader = //pixel line
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
     'uniform mat4 uMVP;\n'+
@@ -78,7 +77,7 @@ GpuShaders.line3VertexShader =
         '}\n'+
     '}';
 
-GpuShaders.eline3VertexShader =
+GpuShaders.eline3VertexShader = //pixel line elements
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
     'attribute float aElement;\n'+
@@ -99,14 +98,7 @@ GpuShaders.eline3VertexShader =
         '}\n'+
     '}';
 
-GpuShaders.line3FragmentShader = 'precision mediump float;\n'+
-    'uniform vec4 uColor;\n'+
-    'void main() {\n'+
-        'gl_FragColor = uColor;\n'+
-    '}';
-
-
-GpuShaders.line4VertexShader =
+GpuShaders.line4VertexShader = //direct linestring pixel line
     'attribute vec3 aPosition;\n'+
     'uniform mat4 uMVP;\n'+
     'uniform vec3 uScale;\n'+
@@ -128,34 +120,7 @@ GpuShaders.line4VertexShader =
         '}\n'+
     '}';
 
-
-GpuShaders.line4FragmentShader = 'precision mediump float;\n'+
-    'uniform vec4 uColor;\n'+
-    'void main() {\n'+
-        'gl_FragColor = uColor;\n'+
-    '}';
-
-
-GpuShaders.tlineVertexShader2 =
-    'attribute vec4 aPosition;\n'+
-    'attribute vec4 aNormal;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec2 uScale;\n'+
-    'uniform vec4 uParams;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'void main(){ \n'+
-        'vec4 p=vec4(aPosition.xyz, 1.0);\n'+
-        'p.xyz+=aNormal.xyz;\n'+
-        'if (aNormal.w < 0.0){\n'+
-            'vTexCoord=vec2(abs(aPosition.w)*uParams[0], (uParams[1]+uParams[2])*0.5);\n'+
-        '} else {\n'+
-            'vTexCoord=vec2(abs(aPosition.w)*uParams[0], aPosition.w < 0.0 ? uParams[1] : uParams[2]);\n'+
-        '}\n'+
-
-        'gl_Position = uMVP * p;\n'+
-    '}';
-
-GpuShaders.tlineVertexShader =
+GpuShaders.tlineVertexShader = // textured line
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
     'uniform mat4 uMVP;\n'+
@@ -174,7 +139,34 @@ GpuShaders.tlineVertexShader =
         'gl_Position = uMVP * p;\n'+
     '}';
 
-GpuShaders.etlineVertexShader =
+GpuShaders.rlineVertexShader =  // dynamic width line
+    'attribute vec4 aPosition;\n'+
+    'attribute vec4 aNormal;\n'+
+    'uniform mat4 uMVP;\n'+
+    'uniform vec2 uScale;\n'+
+    'uniform vec4 uParams;\n'+
+    'void main(){ \n'+
+        'vec4 p=vec4(aPosition.xyz, 1.0);\n'+
+        'p.xyz+=aNormal.xyz*(abs(aNormal.w)*uParams[3]);\n'+
+        'gl_Position = uMVP * p;\n'+
+    '}';
+
+GpuShaders.erlineVertexShader = // dynamic width line elements
+    'attribute vec4 aPosition;\n'+
+    'attribute vec4 aNormal;\n'+
+    'attribute float aElement;\n'+
+    'uniform mat4 uMVP;\n'+
+    'uniform vec2 uScale;\n'+
+    'uniform vec4 uParams;\n'+
+    'varying float vElement;\n'+
+    'void main(){ \n'+
+        'vec4 p=vec4(aPosition.xyz, 1.0);\n'+
+        'p.xyz+=aNormal.xyz*(abs(aNormal.w)*uParams[3]);\n'+
+        'vElement = aElement;\n'+
+        'gl_Position = uMVP * p;\n'+
+    '}';
+
+GpuShaders.etlineVertexShader = // textured line elements
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
     'attribute float aElement;\n'+
@@ -189,7 +181,7 @@ GpuShaders.etlineVertexShader =
         'gl_Position = uMVP * p;\n'+
     '}';
 
-GpuShaders.tplineVertexShader =
+GpuShaders.tplineVertexShader = // textured pixel line
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
     'uniform mat4 uMVP;\n'+
@@ -210,7 +202,7 @@ GpuShaders.tplineVertexShader =
         '}\n'+
     '}';
 
-GpuShaders.etplineVertexShader =
+GpuShaders.etplineVertexShader = // textured pixel line elements
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
     'attribute float aElement;\n'+
@@ -232,7 +224,7 @@ GpuShaders.etplineVertexShader =
         '}\n'+
     '}';
 
-GpuShaders.tlineFragmentShader = 'precision mediump float;\n'+
+GpuShaders.tlineFragmentShader = 'precision mediump float;\n'+ // textured line
     'uniform sampler2D uSampler;\n'+
     'uniform vec4 uColor;\n'+
     'uniform vec4 uColor2;\n'+
@@ -243,7 +235,7 @@ GpuShaders.tlineFragmentShader = 'precision mediump float;\n'+
     '}';
 
 
-GpuShaders.tblineFragmentShader = 'precision mediump float;\n'+
+GpuShaders.tblineFragmentShader = 'precision mediump float;\n'+  // textured line with background color
     'uniform sampler2D uSampler;\n'+
     'uniform vec4 uColor;\n'+
     'uniform vec4 uColor2;\n'+
