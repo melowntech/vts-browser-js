@@ -100,20 +100,20 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     }
 
 
-    if (lineFlat && (texturedLine || widthByRatio)) {
+    if (lineFlat) { //} && (texturedLine || widthByRatio)) {
         circleSides = 2;
     }
 
     //allocate buffers
-    var lineVertices = ((texturedLine || widthByRatio) || !lineFlat ? 4 : 3) * 3 * 2;
-    var joinVertices = skipJoins ? 0 : (circleSides * ((texturedLine || widthByRatio) || !lineFlat? 4 : 3) * 3);
+    var lineVertices = (/*(texturedLine || widthByRatio) ||*/ !lineFlat ? 4 : 3) * 3 * 2;
+    var joinVertices = skipJoins ? 0 : (circleSides * (/*(texturedLine || widthByRatio) ||*/ !lineFlat? 4 : 3) * 3);
     var vertexBuffer = new Float32Array(totalPoints * lineVertices + totalPoints * joinVertices);
 
     if (advancedHit) {
        var elementBuffer = new Float32Array(totalPoints * (3 * 2) + totalPoints * (skipJoins ? 0 : circleSides) * 3);
     }
 
-    //debugger
+    debugger
 
     //if (!lineFlat || texturedLine) {
     if (!(lineFlat && !texturedLine && !widthByRatio)) {
@@ -229,6 +229,14 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                     
                     vec3Normalize(bboxMin, nn);
                     vec3Cross(nn, vv, n);
+
+                    if (i == 0) {
+                        vstart = vv;
+                    }
+
+                    if (i == (li - 1)) {
+                        vend = vv;
+                    }
                     
                     n = [n[0] * lineWidth, n[1] * lineWidth, n[2] * lineWidth];
                 } else {
@@ -242,6 +250,14 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                     l = (l != 0) ? (lineWidth / l) : 0;
 
                     n = [-v[1]*l, v[0]*l, 0];
+
+                    if (i == 0) {
+                        vstart = [v[0]*l, v[1]*l, 0];
+                    }
+
+                    if (i == (li - 1)) {
+                        vend = [v[0]*l, v[1]*l, 0];
+                    }
                 }
                         
                 //add polygon
@@ -500,159 +516,276 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                     vec3Cross(nn, vv, nn);
                 }
 
-                if (lineFlat && (texturedLine || widthByRatio)) {
+                if (lineFlat) {
 
-                    if (i != (li-1)) {
-                        distance = vertexBuffer[i * lineVertices + 3];
-                    } else {
-                        distance = vertexBuffer[(i - 1) * lineVertices + 11];
+                    if (advancedHit) {
+                        elementIndex = elemetBase + i;
+
+                        elementBuffer[index3] = elementIndex;
+                        elementBuffer[index3+1] = elementIndex;
+                        elementBuffer[index3+2] = elementIndex;
+            
+                        //add polygon
+                        elementBuffer[index3+3] = elementIndex;
+                        elementBuffer[index3+4] = elementIndex;
+                        elementBuffer[index3+5] = elementIndex;
+
+                        index3 += 6;
                     }
 
-                    var lineIndex, lineIndex2;
+                    if (!(texturedLine || widthByRatio)) {
 
-                    if (i != (li-1)) {
-                        lineIndex = i * lineVertices;
+                        var lineIndex, lineIndex2;
+
+                        if (i != (li-1)) {
+                            lineIndex = i * lineVertices;
+                        } else {
+                            lineIndex = (i - 1) * lineVertices;
+                        }
+
+                        if (i > 0) {
+                            lineIndex2 = (i - 1) * lineVertices;
+                        } else {
+                            lineIndex2 = lineIndex;
+                        }
+
+                        if (i == 0) { //start cap
+                            //add polygon
+                            vertexBuffer[index] = p1[0];
+                            vertexBuffer[index+1] = p1[1];
+                            vertexBuffer[index+2] = p1[2];
+
+                            vertexBuffer[index+3] = vertexBuffer[lineIndex];
+                            vertexBuffer[index+4] = vertexBuffer[lineIndex+1];
+                            vertexBuffer[index+5] = vertexBuffer[lineIndex+2];
+
+                            vertexBuffer[index+6] = p1[0] - vstart[0] * lineWidth;
+                            vertexBuffer[index+7] = p1[1] - vstart[1] * lineWidth;
+                            vertexBuffer[index+8] = p1[2] - vstart[2] * lineWidth;
+
+                            //add polygon
+                            vertexBuffer[index+9] = p1[0];
+                            vertexBuffer[index+9+1] = p1[1];
+                            vertexBuffer[index+9+2] = p1[2];
+
+                            vertexBuffer[index+9+3] = vertexBuffer[lineIndex+3];
+                            vertexBuffer[index+9+4] = vertexBuffer[lineIndex+4];
+                            vertexBuffer[index+9+5] = vertexBuffer[lineIndex+5];
+
+                            vertexBuffer[index+9+6] = p1[0] - vstart[0] * lineWidth;
+                            vertexBuffer[index+9+7] = p1[1] - vstart[1] * lineWidth;
+                            vertexBuffer[index+9+8] = p1[2] - vstart[2] * lineWidth;
+                        } else if (i == (li - 1)) {  //end cap
+                            //add polygon
+                            vertexBuffer[index] = p1[0];
+                            vertexBuffer[index+1] = p1[1];
+                            vertexBuffer[index+2] = p1[2];
+
+                            vertexBuffer[index+3] = vertexBuffer[lineIndex+15];
+                            vertexBuffer[index+4] = vertexBuffer[lineIndex+16];
+                            vertexBuffer[index+5] = vertexBuffer[lineIndex+17];
+
+                            vertexBuffer[index+6] = p1[0] + vend[0] * lineWidth;
+                            vertexBuffer[index+7] = p1[1] + vend[1] * lineWidth;
+                            vertexBuffer[index+8] = p1[2] + vend[2] * lineWidth;
+
+                            //add polygon
+                            vertexBuffer[index+9] = p1[0];
+                            vertexBuffer[index+9+1] = p1[1];
+                            vertexBuffer[index+9+2] = p1[2];
+
+                            vertexBuffer[index+9+3] = vertexBuffer[lineIndex+12];
+                            vertexBuffer[index+9+4] = vertexBuffer[lineIndex+13];
+                            vertexBuffer[index+9+5] = vertexBuffer[lineIndex+14];
+
+                            vertexBuffer[index+9+6] = p1[0] + vend[0] * lineWidth;
+                            vertexBuffer[index+9+7] = p1[1] + vend[1] * lineWidth;
+                            vertexBuffer[index+9+8] = p1[2] + vend[2] * lineWidth;
+                        } else {
+                            //add polygon
+                            vertexBuffer[index] = p1[0];
+                            vertexBuffer[index+1] = p1[1];
+                            vertexBuffer[index+2] = p1[2];
+
+                            vertexBuffer[index+3] = vertexBuffer[lineIndex];
+                            vertexBuffer[index+4] = vertexBuffer[lineIndex+1];
+                            vertexBuffer[index+5] = vertexBuffer[lineIndex+2];
+
+                            vertexBuffer[index+6] = vertexBuffer[lineIndex2 + 15];
+                            vertexBuffer[index+7] = vertexBuffer[lineIndex2 + 16];
+                            vertexBuffer[index+8] = vertexBuffer[lineIndex2 + 17];
+
+                            //add polygon
+                            vertexBuffer[index+9] = p1[0];
+                            vertexBuffer[index+9+1] = p1[1];
+                            vertexBuffer[index+9+2] = p1[2];
+
+                            vertexBuffer[index+9+3] = vertexBuffer[lineIndex+3];
+                            vertexBuffer[index+9+4] = vertexBuffer[lineIndex+4];
+                            vertexBuffer[index+9+5] = vertexBuffer[lineIndex+5];
+
+                            vertexBuffer[index+9+6] = vertexBuffer[lineIndex2 + 12];
+                            vertexBuffer[index+9+7] = vertexBuffer[lineIndex2 + 13];
+                            vertexBuffer[index+9+8] = vertexBuffer[lineIndex2 + 14];
+                        }
+
+                        index += 18;
+
                     } else {
-                        lineIndex = (i - 1) * lineVertices + 8;
-                    }
 
-                    if (i > 0) {
-                        lineIndex2 = (i - 1) * lineVertices + 8;
-                    } else {
-                        lineIndex2 = lineIndex;
-                    }
+                        if (i != (li-1)) {
+                            distance = vertexBuffer[i * lineVertices + 3];
+                        } else {
+                            distance = vertexBuffer[(i - 1) * lineVertices + 11];
+                        }
 
-                    //add polygon
-                    vertexBuffer[index] = p1[0];
-                    vertexBuffer[index+1] = p1[1];
-                    vertexBuffer[index+2] = p1[2];
-                    vertexBuffer[index+3] = distance;
+                        var lineIndex, lineIndex2;
 
-                    vertexBuffer[index+4] = p1[0];
-                    vertexBuffer[index+5] = p1[1];
-                    vertexBuffer[index+6] = p1[2];
-                    vertexBuffer[index+7] = distance;
+                        if (i != (li-1)) {
+                            lineIndex = i * lineVertices;
+                        } else {
+                            lineIndex = (i - 1) * lineVertices + 8;
+                        }
 
-                    vertexBuffer[index+8] = p1[0];
-                    vertexBuffer[index+9] = p1[1];
-                    vertexBuffer[index+10] = p1[2];
-                    vertexBuffer[index+11] = distance;
-
-                    //add polygon
-                    vertexBuffer[index+12] = p1[0];
-                    vertexBuffer[index+1+12] = p1[1];
-                    vertexBuffer[index+2+12] = p1[2];
-                    vertexBuffer[index+3+12] = distance;
-
-                    vertexBuffer[index+4+12] = p1[0];
-                    vertexBuffer[index+5+12] = p1[1];
-                    vertexBuffer[index+6+12] = p1[2];
-                    vertexBuffer[index+7+12] = -distance;
-
-                    vertexBuffer[index+8+12] = p1[0];
-                    vertexBuffer[index+9+12] = p1[1];
-                    vertexBuffer[index+10+12] = p1[2];
-                    vertexBuffer[index+11+12] = -distance;
-
-                    if (i == 0) { //start cap
-                        //first polygon
-                        normalBuffer[index2] = 0;
-                        normalBuffer[index2+1] = 0;
-                        normalBuffer[index2+2] = 0;
-                        normalBuffer[index2+3] = -lineWidth;
-        
-                        normalBuffer[index2+4] = normalBuffer[lineIndex];
-                        normalBuffer[index2+5] = normalBuffer[lineIndex+1];
-                        normalBuffer[index2+6] = normalBuffer[lineIndex+2];
-                        normalBuffer[index2+7] = lineWidth;
-        
-                        normalBuffer[index2+8] = -vstart[0];
-                        normalBuffer[index2+9] = -vstart[1];
-                        normalBuffer[index2+10] = -vstart[2];
-                        normalBuffer[index2+11] = -lineWidth;
-
-                        //second polygon
-                        normalBuffer[index2+12] = 0;
-                        normalBuffer[index2+1+12] = 0;
-                        normalBuffer[index2+2+12] = 0;
-                        normalBuffer[index2+3+12] = -lineWidth;
-
-                        normalBuffer[index2+4+12] = -normalBuffer[lineIndex];
-                        normalBuffer[index2+5+12] = -normalBuffer[lineIndex+1];
-                        normalBuffer[index2+6+12] = -normalBuffer[lineIndex+2];
-                        normalBuffer[index2+7+12] = lineWidth;
-        
-                        normalBuffer[index2+8+12] = -vstart[0];
-                        normalBuffer[index2+9+12] = -vstart[1];
-                        normalBuffer[index2+10+12] = -vstart[2];
-                        normalBuffer[index2+11+12] = -lineWidth;
-                    } else if (i == (li - 1)) {  //end cap
-                        //first polygon
-                        normalBuffer[index2] = 0;
-                        normalBuffer[index2+1] = 0;
-                        normalBuffer[index2+2] = 0;
-                        normalBuffer[index2+3] = -lineWidth;
-        
-                        normalBuffer[index2+4] = normalBuffer[lineIndex2];
-                        normalBuffer[index2+5] = normalBuffer[lineIndex2+1];
-                        normalBuffer[index2+6] = normalBuffer[lineIndex2+2];
-                        normalBuffer[index2+7] = lineWidth;
-        
-                        normalBuffer[index2+8] = vend[0];
-                        normalBuffer[index2+9] = vend[1];
-                        normalBuffer[index2+10] = vend[2];
-                        normalBuffer[index2+11] = -lineWidth;
-
-                        //second polygon
-                        normalBuffer[index2+12] = 0;
-                        normalBuffer[index2+1+12] = 0;
-                        normalBuffer[index2+2+12] = 0;
-                        normalBuffer[index2+3+12] = -lineWidth;
-
-                        normalBuffer[index2+4+12] = -normalBuffer[lineIndex2];
-                        normalBuffer[index2+5+12] = -normalBuffer[lineIndex2+1];
-                        normalBuffer[index2+6+12] = -normalBuffer[lineIndex2+2];
-                        normalBuffer[index2+7+12] = lineWidth;
-        
-                        normalBuffer[index2+8+12] = vend[0];
-                        normalBuffer[index2+9+12] = vend[1];
-                        normalBuffer[index2+10+12] = vend[2];
-                        normalBuffer[index2+11+12] = -lineWidth;
-                    } else {
-                        normalBuffer[index2] = 0;
-                        normalBuffer[index2+1] = 0;
-                        normalBuffer[index2+2] = 0;
-                        normalBuffer[index2+3] = -lineWidth;
-        
-                        normalBuffer[index2+4] = normalBuffer[lineIndex];
-                        normalBuffer[index2+5] = normalBuffer[lineIndex+1];
-                        normalBuffer[index2+6] = normalBuffer[lineIndex+2];
-                        normalBuffer[index2+7] = lineWidth;
-        
-                        normalBuffer[index2+8] = normalBuffer[lineIndex2];
-                        normalBuffer[index2+9] = normalBuffer[lineIndex2+1];
-                        normalBuffer[index2+10] = normalBuffer[lineIndex2+2];
-                        normalBuffer[index2+11] = lineWidth;
+                        if (i > 0) {
+                            lineIndex2 = (i - 1) * lineVertices + 8;
+                        } else {
+                            lineIndex2 = lineIndex;
+                        }
 
                         //add polygon
-                        normalBuffer[index2+12] = 0;
-                        normalBuffer[index2+1+12] = 0;
-                        normalBuffer[index2+2+12] = 0;
-                        normalBuffer[index2+3+12] = -lineWidth;
+                        vertexBuffer[index] = p1[0];
+                        vertexBuffer[index+1] = p1[1];
+                        vertexBuffer[index+2] = p1[2];
+                        vertexBuffer[index+3] = distance;
 
-                        normalBuffer[index2+4+12] = -normalBuffer[lineIndex];
-                        normalBuffer[index2+5+12] = -normalBuffer[lineIndex+1];
-                        normalBuffer[index2+6+12] = -normalBuffer[lineIndex+2];
-                        normalBuffer[index2+7+12] = lineWidth;
-        
-                        normalBuffer[index2+8+12] = -normalBuffer[lineIndex2];
-                        normalBuffer[index2+9+12] = -normalBuffer[lineIndex2+1];
-                        normalBuffer[index2+10+12] = -normalBuffer[lineIndex2+2];
-                        normalBuffer[index2+11+12] = lineWidth;
+                        vertexBuffer[index+4] = p1[0];
+                        vertexBuffer[index+5] = p1[1];
+                        vertexBuffer[index+6] = p1[2];
+                        vertexBuffer[index+7] = distance;
+
+                        vertexBuffer[index+8] = p1[0];
+                        vertexBuffer[index+9] = p1[1];
+                        vertexBuffer[index+10] = p1[2];
+                        vertexBuffer[index+11] = distance;
+
+                        //add polygon
+                        vertexBuffer[index+12] = p1[0];
+                        vertexBuffer[index+1+12] = p1[1];
+                        vertexBuffer[index+2+12] = p1[2];
+                        vertexBuffer[index+3+12] = distance;
+
+                        vertexBuffer[index+4+12] = p1[0];
+                        vertexBuffer[index+5+12] = p1[1];
+                        vertexBuffer[index+6+12] = p1[2];
+                        vertexBuffer[index+7+12] = -distance;
+
+                        vertexBuffer[index+8+12] = p1[0];
+                        vertexBuffer[index+9+12] = p1[1];
+                        vertexBuffer[index+10+12] = p1[2];
+                        vertexBuffer[index+11+12] = -distance;
+
+                        if (i == 0) { //start cap
+                            //first polygon
+                            normalBuffer[index2] = 0;
+                            normalBuffer[index2+1] = 0;
+                            normalBuffer[index2+2] = 0;
+                            normalBuffer[index2+3] = -lineWidth;
+            
+                            normalBuffer[index2+4] = normalBuffer[lineIndex];
+                            normalBuffer[index2+5] = normalBuffer[lineIndex+1];
+                            normalBuffer[index2+6] = normalBuffer[lineIndex+2];
+                            normalBuffer[index2+7] = lineWidth;
+            
+                            normalBuffer[index2+8] = -vstart[0];
+                            normalBuffer[index2+9] = -vstart[1];
+                            normalBuffer[index2+10] = -vstart[2];
+                            normalBuffer[index2+11] = -lineWidth;
+
+                            //second polygon
+                            normalBuffer[index2+12] = 0;
+                            normalBuffer[index2+1+12] = 0;
+                            normalBuffer[index2+2+12] = 0;
+                            normalBuffer[index2+3+12] = -lineWidth;
+
+                            normalBuffer[index2+4+12] = -normalBuffer[lineIndex];
+                            normalBuffer[index2+5+12] = -normalBuffer[lineIndex+1];
+                            normalBuffer[index2+6+12] = -normalBuffer[lineIndex+2];
+                            normalBuffer[index2+7+12] = lineWidth;
+            
+                            normalBuffer[index2+8+12] = -vstart[0];
+                            normalBuffer[index2+9+12] = -vstart[1];
+                            normalBuffer[index2+10+12] = -vstart[2];
+                            normalBuffer[index2+11+12] = -lineWidth;
+                        } else if (i == (li - 1)) {  //end cap
+                            //first polygon
+                            normalBuffer[index2] = 0;
+                            normalBuffer[index2+1] = 0;
+                            normalBuffer[index2+2] = 0;
+                            normalBuffer[index2+3] = -lineWidth;
+            
+                            normalBuffer[index2+4] = normalBuffer[lineIndex2];
+                            normalBuffer[index2+5] = normalBuffer[lineIndex2+1];
+                            normalBuffer[index2+6] = normalBuffer[lineIndex2+2];
+                            normalBuffer[index2+7] = lineWidth;
+            
+                            normalBuffer[index2+8] = vend[0];
+                            normalBuffer[index2+9] = vend[1];
+                            normalBuffer[index2+10] = vend[2];
+                            normalBuffer[index2+11] = -lineWidth;
+
+                            //second polygon
+                            normalBuffer[index2+12] = 0;
+                            normalBuffer[index2+1+12] = 0;
+                            normalBuffer[index2+2+12] = 0;
+                            normalBuffer[index2+3+12] = -lineWidth;
+
+                            normalBuffer[index2+4+12] = -normalBuffer[lineIndex2];
+                            normalBuffer[index2+5+12] = -normalBuffer[lineIndex2+1];
+                            normalBuffer[index2+6+12] = -normalBuffer[lineIndex2+2];
+                            normalBuffer[index2+7+12] = lineWidth;
+            
+                            normalBuffer[index2+8+12] = vend[0];
+                            normalBuffer[index2+9+12] = vend[1];
+                            normalBuffer[index2+10+12] = vend[2];
+                            normalBuffer[index2+11+12] = -lineWidth;
+                        } else {
+                            normalBuffer[index2] = 0;
+                            normalBuffer[index2+1] = 0;
+                            normalBuffer[index2+2] = 0;
+                            normalBuffer[index2+3] = -lineWidth;
+            
+                            normalBuffer[index2+4] = normalBuffer[lineIndex];
+                            normalBuffer[index2+5] = normalBuffer[lineIndex+1];
+                            normalBuffer[index2+6] = normalBuffer[lineIndex+2];
+                            normalBuffer[index2+7] = lineWidth;
+            
+                            normalBuffer[index2+8] = normalBuffer[lineIndex2];
+                            normalBuffer[index2+9] = normalBuffer[lineIndex2+1];
+                            normalBuffer[index2+10] = normalBuffer[lineIndex2+2];
+                            normalBuffer[index2+11] = lineWidth;
+
+                            //add polygon
+                            normalBuffer[index2+12] = 0;
+                            normalBuffer[index2+1+12] = 0;
+                            normalBuffer[index2+2+12] = 0;
+                            normalBuffer[index2+3+12] = -lineWidth;
+
+                            normalBuffer[index2+4+12] = -normalBuffer[lineIndex];
+                            normalBuffer[index2+5+12] = -normalBuffer[lineIndex+1];
+                            normalBuffer[index2+6+12] = -normalBuffer[lineIndex+2];
+                            normalBuffer[index2+7+12] = lineWidth;
+            
+                            normalBuffer[index2+8+12] = -normalBuffer[lineIndex2];
+                            normalBuffer[index2+9+12] = -normalBuffer[lineIndex2+1];
+                            normalBuffer[index2+10+12] = -normalBuffer[lineIndex2+2];
+                            normalBuffer[index2+11+12] = lineWidth;
+                        }
+
+                        index += 24;
+                        index2 += 24;
+
                     }
-
-                    index += 24;
-                    index2 += 24;
 
                     //debugger
 
@@ -668,85 +801,50 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                             index3 += 3;
                         }
 
-                        if (lineFlat && !texturedLine) {
-        
-                            vertexBuffer[index] = p1[0];
-                            vertexBuffer[index+1] = p1[1];
-                            vertexBuffer[index+2] = p1[2];
-            
-                            //add polygon
-                            if (geocent) {
-                                dx = circleBuffer[j][0];
-                                dy = circleBuffer[j][1];
-                                vertexBuffer[index+3] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth;
-                                vertexBuffer[index+4] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth;
-                                vertexBuffer[index+5] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth;
-                
-                                dx = circleBuffer[j+1][0];
-                                dy = circleBuffer[j+1][1];
-                                vertexBuffer[index+6] = p1[0] + (nn[0] * dx + vv[0] * dy) * lineWidth;
-                                vertexBuffer[index+7] = p1[1] + (nn[1] * dx + vv[1] * dy) * lineWidth;
-                                vertexBuffer[index+8] = p1[2] + (nn[2] * dx + vv[2] * dy) * lineWidth;
-                            } else {
-                
-                                vertexBuffer[index+3] = p1[0] + circleBuffer[j][0] * lineWidth;
-                                vertexBuffer[index+4] = p1[1] + circleBuffer[j][1] * lineWidth;
-                                vertexBuffer[index+5] = p1[2];
-                
-                                vertexBuffer[index+6] = p1[0] + circleBuffer[j+1][0] * lineWidth;
-                                vertexBuffer[index+7] = p1[1] + circleBuffer[j+1][1] * lineWidth;
-                                vertexBuffer[index+8] = p1[2];
-                            }
-                
-                            index += 9;
-            
+                        //distance = vertexBuffer[(i >> 1) * lineVertices + ((i & 1) ? 11 : 3)];
+                        if (i != (li-1)) {
+                            distance = vertexBuffer[i * lineVertices + 3];
                         } else {
-            
-                            //distance = vertexBuffer[(i >> 1) * lineVertices + ((i & 1) ? 11 : 3)];
-                            if (i != (li-1)) {
-                                distance = vertexBuffer[i * lineVertices + 3];
-                            } else {
-                                distance = vertexBuffer[(i - 1) * lineVertices + 11];
-                            }
-                            //distance = vertexBuffer[((i == li) ? i - 1 : i) * lineVertices + 3];
-            
-                            //if (distance == null) {
-                              //  debugger
-                            //}
-            
-                            //console.log("distance-dot("+i+"): " + distance);
-
-                            //add polygon
-                            vertexBuffer[index] = p1[0];
-                            vertexBuffer[index+1] = p1[1];
-                            vertexBuffer[index+2] = p1[2];
-                            vertexBuffer[index+3] = distance;
-                            normalBuffer[index2] = 0;
-                            normalBuffer[index2+1] = 0;
-                            normalBuffer[index2+2] = 0;
-                            normalBuffer[index2+3] = 0;
-            
-                            vertexBuffer[index+4] = p1[0];
-                            vertexBuffer[index+5] = p1[1];
-                            vertexBuffer[index+6] = p1[2];
-                            vertexBuffer[index+7] = distance;
-                            normalBuffer[index2+4] = circleBuffer[j][0] * lineWidth;
-                            normalBuffer[index2+5] = circleBuffer[j][1] * lineWidth;
-                            normalBuffer[index2+6] = circleBuffer2[j] + angleShift;
-                            normalBuffer[index2+7] = 0;
-            
-                            vertexBuffer[index+8] = p1[0];
-                            vertexBuffer[index+9] = p1[1];
-                            vertexBuffer[index+10] = p1[2];
-                            vertexBuffer[index+11] = distance;
-                            normalBuffer[index2+8] = circleBuffer[j+1][0] * lineWidth;
-                            normalBuffer[index2+9] = circleBuffer[j+1][1] * lineWidth;
-                            normalBuffer[index2+10] = circleBuffer2[j+1] + angleShift;
-                            normalBuffer[index2+11] = 0;
-            
-                            index += 12;
-                            index2 += 12;
+                            distance = vertexBuffer[(i - 1) * lineVertices + 11];
                         }
+                        //distance = vertexBuffer[((i == li) ? i - 1 : i) * lineVertices + 3];
+        
+                        //if (distance == null) {
+                          //  debugger
+                        //}
+        
+                        //console.log("distance-dot("+i+"): " + distance);
+
+                        //add polygon
+                        vertexBuffer[index] = p1[0];
+                        vertexBuffer[index+1] = p1[1];
+                        vertexBuffer[index+2] = p1[2];
+                        vertexBuffer[index+3] = distance;
+                        normalBuffer[index2] = 0;
+                        normalBuffer[index2+1] = 0;
+                        normalBuffer[index2+2] = 0;
+                        normalBuffer[index2+3] = 0;
+        
+                        vertexBuffer[index+4] = p1[0];
+                        vertexBuffer[index+5] = p1[1];
+                        vertexBuffer[index+6] = p1[2];
+                        vertexBuffer[index+7] = distance;
+                        normalBuffer[index2+4] = circleBuffer[j][0] * lineWidth;
+                        normalBuffer[index2+5] = circleBuffer[j][1] * lineWidth;
+                        normalBuffer[index2+6] = circleBuffer2[j] + angleShift;
+                        normalBuffer[index2+7] = 0;
+        
+                        vertexBuffer[index+8] = p1[0];
+                        vertexBuffer[index+9] = p1[1];
+                        vertexBuffer[index+10] = p1[2];
+                        vertexBuffer[index+11] = distance;
+                        normalBuffer[index2+8] = circleBuffer[j+1][0] * lineWidth;
+                        normalBuffer[index2+9] = circleBuffer[j+1][1] * lineWidth;
+                        normalBuffer[index2+10] = circleBuffer2[j+1] + angleShift;
+                        normalBuffer[index2+11] = 0;
+        
+                        index += 12;
+                        index2 += 12;
                     }
                 }
             }
