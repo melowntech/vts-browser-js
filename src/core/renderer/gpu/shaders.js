@@ -192,13 +192,13 @@ GpuShaders.tplineVertexShader = // textured pixel line
         'vec4 pp0 = (uMVP * vec4(aPosition.xyz, 1.0));\n'+
         'vTexCoord=vec2(abs(aPosition.w)*uParams[0], aPosition.w < 0.0 ? uParams[1] : uParams[2]);\n'+
         'if (aNormal.w == 0.0) {\n'+
-            'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
+            'gl_Position = pp0 + vec4((vec3(aNormal.x*uParams[3]*uScale.x*pp0.w, aNormal.y*uParams[3]*uScale.y*pp0.w, 0.0)), 0.0);\n'+
         '} else {\n'+
             'vec2 pp1 = pp0.xy / pp0.w;\n'+
             'vec4 pp3 = (uMVP * vec4(aNormal.xyz, 1.0));\n'+
             'vec2 pp2 = pp3.xy / pp3.w;\n'+
             'vec2 n = normalize(pp2 - pp1);\n'+
-            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
+            'gl_Position = pp0 + vec4((vec3(-n.y*uParams[3]*uScale.x*aNormal.w*pp0.w, n.x*uParams[3]*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
         '}\n'+
     '}';
 
@@ -220,7 +220,7 @@ GpuShaders.etplineVertexShader = // textured pixel line elements
             'vec4 pp3 = (uMVP * vec4(aNormal.xyz, 1.0));\n'+
             'vec2 pp2 = pp3.xy / pp3.w;\n'+
             'vec2 n = normalize(pp2 - pp1);\n'+
-            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
+            'gl_Position = pp0 + vec4((vec3(-n.y*uParams[3]*uScale.x*aNormal.w*pp0.w, n.x*uParams[3]*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
         '}\n'+
     '}';
 

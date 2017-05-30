@@ -61,7 +61,13 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     //var lineWidth = Math.pow(2, 23 - lod) / 32;
 
     var index = 0, index2 = 0, index3 = 0;
-    var skipJoins = (!lineFlat && lineWidth < 2.1);
+    var skipJoins = false;
+
+    if (widthByRatio) {
+        skipJoins = (!lineFlat && (lineWidth*1080) < 2.1);
+    } else {
+        skipJoins = (!lineFlat && lineWidth < 2.1);        
+    }
 
     var ii, i, li, p2, v, vv, l, n, nn, p1, p, elementIndex, elemetBase = 0;
 
@@ -99,15 +105,15 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     }
 
     //allocate buffers
-    var lineVertices = (texturedLine || !lineFlat ? 4 : 3) * 3 * 2;
-    var joinVertices = skipJoins ? 0 : (circleSides * (texturedLine || !lineFlat? 4 : 3) * 3);
+    var lineVertices = ((texturedLine || widthByRatio) || !lineFlat ? 4 : 3) * 3 * 2;
+    var joinVertices = skipJoins ? 0 : (circleSides * ((texturedLine || widthByRatio) || !lineFlat? 4 : 3) * 3);
     var vertexBuffer = new Float32Array(totalPoints * lineVertices + totalPoints * joinVertices);
 
     if (advancedHit) {
        var elementBuffer = new Float32Array(totalPoints * (3 * 2) + totalPoints * (skipJoins ? 0 : circleSides) * 3);
     }
 
-    debugger
+    //debugger
 
     //if (!lineFlat || texturedLine) {
     if (!(lineFlat && !texturedLine && !widthByRatio)) {

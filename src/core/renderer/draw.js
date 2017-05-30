@@ -771,35 +771,46 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (job.type != 'pixel-line') {
 
-            if (hitmapRender) {
-                texture = renderer.whiteTexture;
+            if (job.type == 'flat-rline') {
+                textureParams = [0, 0, 0, job.widthByRatio ? renderer.cameraViewExtent : 1];
             } else {
-                var t = job.texture;
-                if (t == null || t[0] == null) {
+                if (hitmapRender) {
+                    texture = renderer.whiteTexture;
+                } else {
+                    var t = job.texture;
+                    if (t == null || t[0] == null) {
+                        return;
+                    }
+
+                    texture = t[0];
+                    textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, job.widthByRatio ? renderer.cameraViewExtent : 1];
+
+                    if (job.type == 'flat-tline' || job.type == 'flat-rline') {
+                        if (job.widthByRatio) {
+                            textureParams[0] = 1/(renderer.cameraViewExtent2*job.lineWidth)/(texture.width/t[2]);
+                        } else {
+                            textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);    
+                        }
+                    } else {
+                        if (job.widthByRatio) {
+                            textureParams[0] = 1/(renderer.cameraViewExtent2/renderer.curSize[1])/(texture.width/t[2]);
+                            textureParams[0] /= (renderer.curSize[1]*job.lineWidth*0.5);
+                            //textureParams[3] = renderer.curSize[1]*(1.0/job.lineWidth)*0.5;
+                            textureParams[3] = renderer.curSize[1];
+                        } else {
+                            textureParams[0] = 1/(renderer.cameraViewExtent2/renderer.curSize[1])/(texture.width/t[2]);
+                            textureParams[0] /= (job.lineWidth*0.5);
+                            textureParams[3] = 1;
+                        }    
+                    }
+                }
+
+                if (!texture.loaded) {
                     return;
                 }
 
-                texture = t[0];
-                textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, job.widthByRatio ? renderer.cameraViewExtent : 1];
-
-                if (job.type == 'flat-tline' || job.type == 'flat-rline') {
-                    if (job.widthByRatio) {
-                        textureParams[0] = 1/(renderer.cameraViewExtent2*job.lineWidth)/(texture.width/t[2]);
-                    } else {
-                        textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);    
-                    }
-                } else {
-                    var tileSize = 256;//job.layer.core.mapConfig.tileSize(lod);
-                    var tilePixelSize = tileSize / 256;//job.layer.tilePixels;
-                    textureParams[0] = 1/texture.width/tilePixelSize;
-                }
+                gpu.bindTexture(texture);
             }
-
-            if (!texture.loaded) {
-                return;
-            }
-
-            gpu.bindTexture(texture);
         }
 
         gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
