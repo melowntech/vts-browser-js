@@ -105,15 +105,15 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     }
 
     //allocate buffers
-    var lineVertices = (/*(texturedLine || widthByRatio) ||*/ !lineFlat ? 4 : 3) * 3 * 2;
-    var joinVertices = skipJoins ? 0 : (circleSides * (/*(texturedLine || widthByRatio) ||*/ !lineFlat? 4 : 3) * 3);
+    var lineVertices = ((texturedLine || widthByRatio) || !lineFlat ? 4 : 3) * 3 * 2;
+    var joinVertices = skipJoins ? 0 : (circleSides * ((texturedLine || widthByRatio) || !lineFlat? 4 : 3) * 3);
     var vertexBuffer = new Float32Array(totalPoints * lineVertices + totalPoints * joinVertices);
 
     if (advancedHit) {
        var elementBuffer = new Float32Array(totalPoints * (3 * 2) + totalPoints * (skipJoins ? 0 : circleSides) * 3);
     }
 
-    debugger
+    //debugger
 
     //if (!lineFlat || texturedLine) {
     if (!(lineFlat && !texturedLine && !widthByRatio)) {
@@ -507,14 +507,14 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 var angleShift = 0;//(joinParams != null) ? joinParams[i] : 0;
                 var dx, dy;
 
-                if (geocent) {
+                /*if (geocent) {
                     vv = [0,0,0];
                     nn = [0,0,0];
                     vec3Normalize(bboxMin, nn);
                     vec3AnyPerpendicular(nn, vv);
                     vec3Normalize(vv);
                     vec3Cross(nn, vv, nn);
-                }
+                }*/
 
                 if (lineFlat) {
 
@@ -533,9 +533,9 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                         index3 += 6;
                     }
 
-                    if (!(texturedLine || widthByRatio)) {
+                    var lineIndex, lineIndex2;
 
-                        var lineIndex, lineIndex2;
+                    if (!(texturedLine || widthByRatio)) {
 
                         if (i != (li-1)) {
                             lineIndex = i * lineVertices;
@@ -638,8 +638,6 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                         } else {
                             distance = vertexBuffer[(i - 1) * lineVertices + 11];
                         }
-
-                        var lineIndex, lineIndex2;
 
                         if (i != (li-1)) {
                             lineIndex = i * lineVertices;
