@@ -105,8 +105,8 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     }
 
     //allocate buffers
-    var lineVertices = ((texturedLine || widthByRatio) || !lineFlat ? 4 : 3) * 3 * 2;
-    var joinVertices = skipJoins ? 0 : (circleSides * ((texturedLine || widthByRatio) || !lineFlat? 4 : 3) * 3);
+    var lineVertices = ((texturedLine || (widthByRatio)) || !lineFlat ? 4 : 3) * 3 * 2;
+    var joinVertices = skipJoins ? 0 : (circleSides * ((texturedLine || (widthByRatio)) || !lineFlat? 4 : 3) * 3);
     var vertexBuffer = new Float32Array(totalPoints * lineVertices + totalPoints * joinVertices);
 
     if (advancedHit) {
@@ -164,7 +164,9 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
         var distance = 0.001;
         var distance2 = 0.001;
         var ln = null;
-    
+        var vertexBase = index;
+        var normalBase = index2;
+
         //add lines
         for (i = 0, li = points.length - 1; i < li; i++) {
     
@@ -507,15 +509,6 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 var angleShift = 0;//(joinParams != null) ? joinParams[i] : 0;
                 var dx, dy;
 
-                /*if (geocent) {
-                    vv = [0,0,0];
-                    nn = [0,0,0];
-                    vec3Normalize(bboxMin, nn);
-                    vec3AnyPerpendicular(nn, vv);
-                    vec3Normalize(vv);
-                    vec3Cross(nn, vv, nn);
-                }*/
-
                 if (lineFlat) {
 
                     if (advancedHit) {
@@ -538,15 +531,15 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                     if (!(texturedLine || widthByRatio)) {
 
                         if (i != (li-1)) {
-                            lineIndex = i * lineVertices;
+                            lineIndex = vertexBase + i * lineVertices;
                         } else {
-                            lineIndex = (i - 1) * lineVertices;
+                            lineIndex = vertexBase + (i - 1) * lineVertices;
                         }
 
                         if (i > 0) {
-                            lineIndex2 = (i - 1) * lineVertices;
+                            lineIndex2 = vertexBase + (i - 1) * lineVertices;
                         } else {
-                            lineIndex2 = lineIndex;
+                            lineIndex2 = vertexBase + lineIndex;
                         }
 
                         if (i == 0) { //start cap
@@ -640,15 +633,15 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                         }
 
                         if (i != (li-1)) {
-                            lineIndex = i * lineVertices;
+                            lineIndex = normalBase + i * lineVertices;
                         } else {
-                            lineIndex = (i - 1) * lineVertices + 8;
+                            lineIndex = normalBase + (i - 1) * lineVertices + 8;
                         }
 
                         if (i > 0) {
-                            lineIndex2 = (i - 1) * lineVertices + 8;
+                            lineIndex2 = normalBase + (i - 1) * lineVertices + 8;
                         } else {
-                            lineIndex2 = lineIndex;
+                            lineIndex2 = normalBase + lineIndex;
                         }
 
                         //add polygon

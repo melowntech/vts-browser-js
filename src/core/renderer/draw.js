@@ -720,8 +720,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     }
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
-
-    var color = job.color;
+    var screenPixelSize2, color = job.color;
 
     if (hitmapRender) {
         var c = renderer.hoverFeatureCounter;
@@ -768,6 +767,16 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog = advancedHitPass ? job.program2 : job.program;
         texture = null;
         var textureParams = [0,0,0,0];
+        screenPixelSize2 = screenPixelSize;
+
+        if (hitmapRender) {
+            if (job.type == 'pixel-tline') {
+                if (job.widthByRatio) {
+                    screenPixelSize2 = [ screenPixelSize[0] * renderer.curSize[1], screenPixelSize[1] * renderer.curSize[1]];
+                }
+                prog = advancedHitPass ? this.renderer.progELine3 : this.renderer.progLine3;
+            }
+        }
 
         if (job.type != 'pixel-line') {
 
@@ -776,6 +785,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             } else {
                 if (hitmapRender) {
                     texture = renderer.whiteTexture;
+
+                    if (job.type == 'flat-tline' || job.type == 'flat-rline') {
+                        textureParams = [0, 0, 0, job.widthByRatio ? renderer.cameraViewExtent : 1];
+                    }
+
                 } else {
                     var t = job.texture;
                     if (t == null || t[0] == null) {
@@ -811,17 +825,20 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 gpu.bindTexture(texture);
             }
+
+        } else if (job.widthByRatio) {
+            screenPixelSize2 = [ screenPixelSize[0] * renderer.curSize[1], screenPixelSize[1] * renderer.curSize[1]];
         }
 
         gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
 
         prog.setVec4('uColor', color);
-        prog.setVec2('uScale', screenPixelSize);
+        prog.setVec2('uScale', screenPixelSize2);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
 
         if (job.type != 'pixel-line') {
             if (job.background != null) {
-                prog.setVec4('uColor2', job.background);
+                prog.setVec4('uColor2', hitmapRender ? [0,0,0,0] : job.background);
             }
             prog.setVec4('uParams', textureParams);
             prog.setSampler('uSampler', 0);

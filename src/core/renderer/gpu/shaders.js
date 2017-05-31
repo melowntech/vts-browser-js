@@ -176,7 +176,7 @@ GpuShaders.etlineVertexShader = // textured line elements
     'varying float vElement;\n'+
     'void main(){ \n'+
         'vec4 p=vec4(aPosition.xyz, 1.0);\n'+
-        'p.xy+=aNormal.xy;\n'+
+        'p.xyz+=aNormal.xyz*(abs(aNormal.w)*uParams[3]);\n'+
         'vElement = aElement;\n'+
         'gl_Position = uMVP * p;\n'+
     '}';
@@ -214,7 +214,7 @@ GpuShaders.etplineVertexShader = // textured pixel line elements
         'vec4 pp0 = (uMVP * vec4(aPosition.xyz, 1.0));\n'+
         'vElement = aElement;\n'+
         'if (aNormal.w == 0.0) {\n'+
-            'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
+            'gl_Position = pp0 + vec4((vec3(aNormal.x*uParams[3]*uScale.x*pp0.w, aNormal.y*uParams[3]*uScale.y*pp0.w, 0.0)), 0.0);\n'+
         '} else {\n'+
             'vec2 pp1 = pp0.xy / pp0.w;\n'+
             'vec4 pp3 = (uMVP * vec4(aNormal.xyz, 1.0));\n'+
