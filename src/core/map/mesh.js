@@ -262,6 +262,10 @@ MapMesh.prototype.parseMapMesh = function (stream) {
     var streamData = stream.data;
     var magic = '';
 
+    if (streamData.length < 2) {
+        return false;
+    }
+
     magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
     magic += String.fromCharCode(streamData.getUint8(stream.index, true)); stream.index += 1;
 

@@ -720,8 +720,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     }
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
-
-    var color = job.color;
+    var screenPixelSize2, color = job.color;
 
     if (hitmapRender) {
         var c = renderer.hoverFeatureCounter;
@@ -759,6 +758,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         break;
 
+    case 'flat-rline':
     case 'flat-tline':
     case 'pixel-line':
     case 'pixel-tline':
@@ -767,46 +767,78 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog = advancedHitPass ? job.program2 : job.program;
         texture = null;
         var textureParams = [0,0,0,0];
+        screenPixelSize2 = screenPixelSize;
+
+        if (hitmapRender) {
+            if (job.type == 'pixel-tline') {
+                if (job.widthByRatio) {
+                    screenPixelSize2 = [ screenPixelSize[0] * renderer.curSize[1], screenPixelSize[1] * renderer.curSize[1]];
+                }
+                prog = advancedHitPass ? this.renderer.progELine3 : this.renderer.progLine3;
+            }
+        }
 
         if (job.type != 'pixel-line') {
 
-            if (hitmapRender) {
-                texture = renderer.whiteTexture;
+            if (job.type == 'flat-rline') {
+                textureParams = [0, 0, 0, job.widthByRatio ? renderer.cameraViewExtent : 1];
             } else {
-                var t = job.texture;
+                if (hitmapRender) {
+                    texture = renderer.whiteTexture;
 
-                if (t == null || t[0] == null) {
+                    if (job.type == 'flat-tline' || job.type == 'flat-rline') {
+                        textureParams = [0, 0, 0, job.widthByRatio ? renderer.cameraViewExtent : 1];
+                    }
+
+                } else {
+                    var t = job.texture;
+                    if (t == null || t[0] == null) {
+                        return;
+                    }
+
+                    texture = t[0];
+                    textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, job.widthByRatio ? renderer.cameraViewExtent : 1];
+
+                    if (job.type == 'flat-tline' || job.type == 'flat-rline') {
+                        if (job.widthByRatio) {
+                            textureParams[0] = 1/(renderer.cameraViewExtent2*job.lineWidth)/(texture.width/t[2]);
+                        } else {
+                            textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);    
+                        }
+                    } else {
+                        if (job.widthByRatio) {
+                            textureParams[0] = 1/(renderer.cameraViewExtent2/renderer.curSize[1])/(texture.width/t[2]);
+                            textureParams[0] /= (renderer.curSize[1]*job.lineWidth*0.5);
+                            //textureParams[3] = renderer.curSize[1]*(1.0/job.lineWidth)*0.5;
+                            textureParams[3] = renderer.curSize[1];
+                        } else {
+                            textureParams[0] = 1/(renderer.cameraViewExtent2/renderer.curSize[1])/(texture.width/t[2]);
+                            textureParams[0] /= (job.lineWidth*0.5);
+                            textureParams[3] = 1;
+                        }    
+                    }
+                }
+
+                if (!texture.loaded) {
                     return;
                 }
 
-                texture = t[0];
-                textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, 0];
-
-                if (job.type == 'flat-tline') {
-                    textureParams[0] = 1/job.lineWidth/(texture.width/t[2]);
-                } else {
-                    var tileSize = 256;//job.layer.core.mapConfig.tileSize(lod);
-                    var tilePixelSize = tileSize / 256;//job.layer.tilePixels;
-                    textureParams[0] = 1/texture.width/tilePixelSize;
-                }
+                gpu.bindTexture(texture);
             }
 
-            if (!texture.loaded) {
-                return;
-            }
-
-            gpu.bindTexture(texture);
+        } else if (job.widthByRatio) {
+            screenPixelSize2 = [ screenPixelSize[0] * renderer.curSize[1], screenPixelSize[1] * renderer.curSize[1]];
         }
 
         gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
 
         prog.setVec4('uColor', color);
-        prog.setVec2('uScale', screenPixelSize);
+        prog.setVec2('uScale', screenPixelSize2);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
 
         if (job.type != 'pixel-line') {
             if (job.background != null) {
-                prog.setVec4('uColor2', job.background);
+                prog.setVec4('uColor2', hitmapRender ? [0,0,0,0] : job.background);
             }
             prog.setVec4('uParams', textureParams);
             prog.setSampler('uSampler', 0);

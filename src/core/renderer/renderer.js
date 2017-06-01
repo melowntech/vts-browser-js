@@ -101,6 +101,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.cameraPosition = [0,0,0];
     this.cameraOrientation = [0,0,0];
     this.cameraTiltFator = 1;
+    this.cameraViewExtent = 1;
     this.distanceFactor = 1;
     this.tiltFactor = 1;
     this.cameraVector = [0,0,0];

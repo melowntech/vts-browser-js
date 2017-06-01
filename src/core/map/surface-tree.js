@@ -677,8 +677,8 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
     tile.updateTexelSize();
 
-    var geodata = tile.surface.geodata;
-    var free = tile.surface.free;
+    var geodata = tile.surface ? tile.surface.geodata : null;
+    var free = tile.surface ? tile.surface.free : null;
     var drawGrid = (!geodata && !free && map.config.mapHeightfiledWhenUnloaded);
     var checkGpu = true;
     
