@@ -672,7 +672,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                     }
                     
                     //var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || texture.extraBound || texture.getMaskTexture() || layer.isTransparent);
-                    var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || /*extraBound ||*/ texture.getMaskTexture() || layer.isTransparent);
+                    var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || extraBound || texture.getMaskTexture() || layer.isTransparent);
                     if (fullAndOpaque) {
                         fullAndOpaqueCounter++;
                     }
@@ -697,36 +697,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                     var layerId = bound.sequence[i];
                     
                     if (sequenceFullAndOpaque[i]) {
-                        var bestLayerId = layerId;
-                        var bestLod = tile.id[0];
-                        texture = tile.boundTextures[layerId];
-
-                        if (texture && texture.extraBound && texture.extraBound.sourceTile) {
-                            bestLod = texture.extraBound.sourceTile.id[0];
-                        }
-
-                        i--;
-                        
-                        //get best quality 
-                        for (; i >= 0; i--) {
-                            if (sequenceFullAndOpaque[i]) {
-                                layerId = bound.sequence[i];
-                                texture = tile.boundTextures[layerId];
-
-                                var lod = tile.id[0];
-
-                                if (texture && texture.extraBound && texture.extraBound.sourceTile) {
-                                    lod = texture.extraBound.sourceTile.id[0];
-                                }
-
-                                if (lod > bestLod) {
-                                    bestLayerId = layerId;
-                                    bestLod = lod;
-                                }
-                            }
-                        }
-
-                        newSequence.unshift(bestLayerId);    
+                        newSequence.unshift(layerId);   
                         break;
                     } else {
                         texture = tile.boundTextures[layerId];
