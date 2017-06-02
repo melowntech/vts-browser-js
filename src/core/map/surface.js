@@ -319,7 +319,7 @@ MapSurface.prototype.setStyle = function(style) {
     this.stylesheet = this.map.getStylesheet(style);
     
     if (!this.stylesheet) {
-        this.stylesheet = new MapStylesheet(this.map, style, style);
+        this.stylesheet = new MapStylesheet(this.map, style, style, this);
         this.map.addStylesheet(style, this.stylesheet); 
     } 
 

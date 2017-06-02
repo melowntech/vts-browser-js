@@ -5,7 +5,7 @@ import {utils as utils_} from '../utils/utils';
 var utils = utils_;
 
 
-var MapStylesheet = function(map, id, url) {
+var MapStylesheet = function(map, id, url, freeLayer) {
     this.generateLines = true;
     this.map = map;
     this.stats = map.stats;
@@ -15,12 +15,17 @@ var MapStylesheet = function(map, id, url) {
     this.loadState = 0;
     this.size = 0;
     this.fileSize = 0;
+    this.freeLayer = freeLayer;
     
     if (typeof url === 'object') {
         this.data = url;
         this.loadState = 2;
     } else {
-        this.url = this.map.url.processUrl(url);
+        if (this.freeLayer) {
+            this.url = this.freeLayer.processUrl(url, '');
+        } else {
+            this.url = this.map.url.processUrl(url);
+        }
 
         //load style directly
         utils.loadJSON(this.url, this.onLoaded.bind(this), this.onLoadError.bind(this), null, (utils.useCredentials ? (this.url.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);

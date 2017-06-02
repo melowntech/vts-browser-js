@@ -271,7 +271,7 @@ MapTexture.prototype.getMaskTexture = function() {
 
 MapTexture.prototype.getGpuMaskTexture = function() {
     if (this.extraBound) {
-        if (this.extraBound.texture && this.extraBound.texture.mask) {
+        if (this.extraBound.texture && this.extraBound.texture.maskTexture) {
             return this.extraBound.texture.getGpuMaskTexture();
         }
         return null;
