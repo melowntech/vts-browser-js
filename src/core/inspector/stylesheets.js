@@ -121,7 +121,7 @@ InspectorStylesheets.prototype.onUpdate = function() {
 
 
 InspectorStylesheets.prototype.niceStyleFormat = function(data) {
-    if (!data) {
+    if (!data || !data.data) {
         return '';
     }
     
