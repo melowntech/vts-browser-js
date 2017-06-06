@@ -186,16 +186,16 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
                             var value = texture.getHeightMapValue(tile.id[1] & 255, tile.id[2] & 255);
                             this.checkStatus = (value & 128) ? 2 : -1;
                                 
-                                
                             if (this.checkStatus == 2) {
                                 if (!(value & 64)) { //load mask
                                     path = layer.getMaskUrl(tile.id);
                                     this.maskTexture = tile.resources.getTexture(path, null, null, null, this.tile, this.internal);
                                     this.checkStatus = 0;
-                                    tile.resetDrawCommands = true;
-                                    this.map.markDirty();
                                 }
                             }
+
+                            tile.resetDrawCommands = true;
+                            this.map.markDirty();
                         }
                     }
                 }
@@ -245,6 +245,41 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
     return this.mainTexture.isReady(doNotLoad, priority, doNotCheckGpu, this) && maskState;
 };
 
+MapTexture.prototype.isMaskPosible = function() {
+    var texture = this;
+
+    if (this.extraBound) {
+        if (this.extraBound.texture) {
+            texture = this.extraBound.texture;
+        }
+    }
+
+    if (texture.checkType == 'metatile') {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+MapTexture.prototype.isMaskInfoReady = function() {
+    var texture = this;
+
+    if (this.extraBound) {
+        if (this.extraBound.texture) {
+            texture = this.extraBound.texture;
+        }
+    }
+
+    if (texture.checkType == 'metatile') {
+        if (this.maskTexture || texture.checkStatus == 2 || texture.checkStatus ==  -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    return true;
+}
 
 MapTexture.prototype.getGpuTexture = function() {
     if (this.extraBound) {
