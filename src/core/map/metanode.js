@@ -476,6 +476,8 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
                     
                     maxZ =  Math.max(maxZ, bbox[14], bbox[17], bbox[20], bbox[23]);
                     minZ =  Math.min(minZ, bbox[14], bbox[17], bbox[20], bbox[23]);
+
+                    maxDelta = -1;//full circle;
                 }
 
                 bbox[0] = minX; bbox[1] = minY; bbox[2] = minZ;
