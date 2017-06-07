@@ -8,7 +8,11 @@ var InspectorStylesheets = function(inspector) {
 InspectorStylesheets.prototype.init = function() {
     var inspector = this.inspector;
     inspector.addStyle(
-        '#vts-stylesheets-panel {'
+        '#vts-stylesheets-panel * {'
+            + 'all: initial;'
+        + '}'
+
+        + '#vts-stylesheets-panel {'
             + 'font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;'
             + 'display: none;'
             + 'padding:15px;'
@@ -33,19 +37,51 @@ InspectorStylesheets.prototype.init = function() {
         + '}'
 
         + '#vts-stylesheets-panel-combo {'
-            + 'width: 1115px;'
-            + 'height: 21px;'
+            + 'font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;'
+            + 'font-size: 13px;'
+            + 'border: 1px solid #a9a9a9;'
+            + 'width: 1070px;'
+            + 'height: 17px;'
+            + 'padding: 2px;'
+            + 'margin-bottom: 5px;'
+            + '-webkit-appearance: menulist;'
+            + '-moz-appearance: menulist;'
         + '}'
 
-        + '#vts-stylesheets-panel-button {'
+        + '#vts-stylesheets-panel-combo option {'
+            + 'font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;'
+            + 'font-size: 13px;'
+        + '}'
+
+        + '#vts-stylesheets-panel-update-button {'
+            + 'font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;'
+            + 'font-size: 14px;'
             + 'float: right;'
+            + 'background-color: #dedede;'
+            + 'padding: 3px 2px 2px 2px;'
+            + 'border: 1px solid #a0a0a0;'
+            + 'border-radius: 2px;'
+            + 'margin-right: 5px;'
+        + '}'
+
+        + '#vts-stylesheets-panel-hide-button {'
+            + 'font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;'
+            + 'font-size: 14px;'
+            + 'float: right;'
+            + 'background-color: #dedede;'
+            + 'padding: 3px 2px 2px 2px;'
+            + 'border: 1px solid #a0a0a0;'
+            + 'border-radius: 2px;'
         + '}'
 
         + '#vts-stylesheets-panel-text {'
+            + 'font-family: monospace;'
+            + 'border: 1px solid #a9a9a9;'
+            + 'padding: 2px 0px 0px 2px;'
             + 'width: 100%;'
             + 'height: 300px;'
             + 'resize: none;'
-            + 'white-space: nowrap;'
+            + 'white-space: pre;'
         + '}'
     );
 
@@ -54,9 +90,10 @@ InspectorStylesheets.prototype.init = function() {
     this.element.innerHTML =
             '<div id="vts-stylesheets-panel-header">'
             + '<select id="vts-stylesheets-panel-combo"></select>'
-            + '<button id="vts-stylesheets-panel-button" type="button" title="Update">Update</button>'
+            + '<button id="vts-stylesheets-panel-hide-button" type="button" title="Hide">Hide</button>'
+            + '<button id="vts-stylesheets-panel-update-button" type="button" title="Update">Update</button>'
           + '</div>'
-          + '<textarea id="vts-stylesheets-panel-text" cols="50"></textarea>';
+          + '<textarea id="vts-stylesheets-panel-text" rows="4" cols="50">aa\naa\n</textarea>';
 
     //this.inspectorElement.appendChild(this.element);
     this.core.element.appendChild(this.element);
@@ -66,12 +103,16 @@ InspectorStylesheets.prototype.init = function() {
 
     this.textElement = document.getElementById('vts-stylesheets-panel-text');
     
-    document.getElementById('vts-stylesheets-panel-button').onclick = this.onUpdate.bind(this);
+    document.getElementById('vts-stylesheets-panel-update-button').onclick = this.onUpdate.bind(this);
+    document.getElementById('vts-stylesheets-panel-hide-button').onclick = this.hidePanel.bind(this);
 
     this.element.addEventListener('mouseup', inspector.doNothing.bind(this), true);
     this.element.addEventListener('mousedown', inspector.doNothing.bind(this), true);
     this.element.addEventListener('mousewheel', inspector.doNothing.bind(this), false);
     this.element.addEventListener('dblclick', inspector.doNothing.bind(this), false);
+
+    this.textElement.addEventListener('keyup', inspector.doNothing.bind(this), false);
+    this.textElement.addEventListener('keydown', inspector.doNothing.bind(this), false);
 
     this.panelVisible = false;
 };

@@ -37,6 +37,7 @@ var UIControlSearch = function(ui, visible) {
     this.input.on('focus', this.onFocus.bind(this));
     this.input.on('mousedown', this.onDrag2.bind(this));
     this.input.on('mousewheel', this.onDrag.bind(this));
+    this.input.on('dblclick', this.onDoNothing.bind(this));
 
     this.list = this.control.getElement('vts-search-list');
     this.list.on('mousedown', this.onDrag2.bind(this));
@@ -64,6 +65,12 @@ var UIControlSearch = function(ui, visible) {
         this.input.getElement().value = this.browser.config.controlSearchValue;
         this.onChange();
     }
+};
+
+
+UIControlSearch.prototype.onDoNothing = function(event) {
+    dom.preventDefault(event);    
+    dom.stopPropagation(event);    
 };
 
 

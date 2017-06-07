@@ -637,6 +637,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
         if (fullUpdate) {
             bound.sequence = [];
             var sequenceFullAndOpaque = [];
+            var sequenceMaskPosible = [];
             var fullAndOpaqueCounter = 0;
             
             for (var j = 0, lj = surface.boundLayerSequence.length; j < lj; j++) {
@@ -659,6 +660,11 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                     if (!texture) { //TODO: make sure that we load only textures which we need  
                         path = layer.getUrl(tile.id);
                         texture = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
+
+                        if (texture.checkType == 'metatile') {
+                            texture.checkMask = true;
+                        }
+
                         texture.isReady(true); //check for mask but do not load
                         tile.boundTextures[layer.id] = texture; 
                     } 
@@ -667,12 +673,25 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                         continue; //do not use this layer
                     }
 
-                    if (texture.getMaskTexture()) {
-                        bound.transparent = true;
+                    var maskPosible = false;
+                    var skipOther = false;
+
+                    if (texture.isMaskPosible()) {
+                        if (texture.isMaskInfoReady()) {
+                            if (texture.getMaskTexture()) {
+                                bound.transparent = true;
+                                maskPosible = true;
+                            }
+                        } else {
+                            skipOther = true;
+                            maskPosible = true;
+                        }
                     }
+
+                    sequenceMaskPosible.push(maskPosible);
                     
                     //var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || texture.extraBound || texture.getMaskTexture() || layer.isTransparent);
-                    var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || extraBound || texture.getMaskTexture() || layer.isTransparent);
+                    var fullAndOpaque = !((surface.boundLayerSequence[j][1] < 1.0) || maskPosible || layer.isTransparent);
                     if (fullAndOpaque) {
                         fullAndOpaqueCounter++;
                     }
@@ -684,6 +703,10 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                     tile.boundLayers[layer.id] = layer;
                     if (bound.alpha[layer.id][1] < 1.0 || layer.isTransparent) {
                         bound.transparent = true;
+                    }
+
+                    if (skipOther) {
+                        break; //wait until mask info is loaded
                     }
                 }
             }
@@ -704,7 +727,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
 
                         if (bound.alpha[layerId][1] < 1.0 ||
                             tile.boundLayers[layerId].isTransparent ||
-                            (texture.getMaskTexture() && !texture.extraBound)) {
+                            (sequenceMaskPosible[i] /*texture.getMaskTexture() /*&& !texture.extraBound*/)) {
                             newSequence.unshift(layerId);    
                         }
                     }

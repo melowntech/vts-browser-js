@@ -112,7 +112,7 @@ InspectorLayers.prototype.init = function() {
             + 'resize: none;'
             + 'height: 180px;'
             + 'border: 1px solid #ddd;'
-            + 'white-space: nowrap;'
+            + 'white-space: pre;'
             + 'padding: 0px;'
         + '}'
 
