@@ -266,7 +266,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 74:
                 case 106:
-                    debug.drawEarth = !debug.drawEarth; hit = true; break; //key X pressed
+                    debug.drawEarth = !debug.drawEarth; hit = true; break; //key J pressed
 
                 case 88:
                 case 120:

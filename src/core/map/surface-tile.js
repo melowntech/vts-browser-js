@@ -10,7 +10,7 @@ var MapSurfaceTile = function(map, parent, id) {
     this.id = id;
     this.parent = parent;
     this.viewCounter = map.viewCounter;
-    this.renderCounter = 0;
+    this.drawCounter = 0;
     this.renderReady = false;
     this.geodataCounter = 0;
     this.texelSize = 1;
@@ -1046,17 +1046,21 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
             return;
         }
         
-        /*if (flatGrid) {*/
-            //var h = this.metanode.minZ;
-        h = this.metanode.surrogatez;
+        var flatGrid = false;
+        var linearGrid = this.map.draw.debug.drawFog;
+        var joinGrids = true;
+
+        if (flatGrid) {
+            var h = this.metanode.minZ;
+            //h = this.metanode.surrogatez;
     
             //if (this.map.drawLods) { h = this.metanode.minZ; }
-        coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
+            coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
 
             //middle[2] = h;
             //middle = node.getPhysicalCoords(middle, true);
 
-        /*} else {
+        } else {
 
             var mnode = this.metanode; 
             
@@ -1118,18 +1122,23 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                 }
 
                 var border2 = mnode.border2;
+                h = linearGrid ? this.metanode.minZ : 0;
                 
                 if (!border2) {
                     mnode.border2 = [
-                        (border[0] + border[1] + border[3] + border[4]) * 0.25, 
-                        (border[1] + border[4]) * 0.5,
-                        (border[2] + border[1] + border[5] + border[4]) * 0.25,
-                        (border[3] + border[4]) * 0.5,
-                        mnode.minZ,
-                        (border[5] + border[4]) * 0.5,
-                        (border[6] + border[7] + border[3] + border[4]) * 0.25,
-                        (border[7] + border[4]) * 0.5,
-                        (border[8] + border[7] + border[5] + border[4]) * 0.25
+                        (border[6] + border[7] + border[3] + border[4]) * 0.25 - h,
+                        (border[7] + border[4]) * 0.5 - h,
+                        (border[8] + border[7] + border[5] + border[4]) * 0.25 - h,
+
+
+                        (border[3] + border[4]) * 0.5 - h,
+                        mnode.minZ - h,
+                        (border[5] + border[4]) * 0.5 -h,
+
+                        (border[0] + border[1] + border[3] + border[4]) * 0.25 - h, 
+                        (border[1] + border[4]) * 0.5 - h,
+                        (border[2] + border[1] + border[5] + border[4]) * 0.25 - h
+
                     ];
                 }
                 
@@ -1138,22 +1147,22 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
             h = this.metanode.minZ;      
             coordsRes = [[h],[h],[h],[h],[h],[h],[h],[h]];
 
-            coordsRes[0] = [(border[8] + border[7] + border[5] + border[4]) * 0.25];
-            coordsRes[1] = [(border[2] + border[1] + border[5] + border[4]) * 0.25];
-            coordsRes[2] = [(border[0] + border[1] + border[3] + border[4]) * 0.25];
-            coordsRes[3] = [(border[6] + border[7] + border[3] + border[4]) * 0.25];
-            coordsRes[4] = [(border[7] + border[4]) * 0.5];
-            coordsRes[5] = [(border[1] + border[4]) * 0.5];
-
-            
-            if (this.map.drawFog) {
-                coordsRes[6] = [(border[3] + border[4]) * 0.5];
-                coordsRes[7] = [(border[5] + border[4]) * 0.5];
+            if (!linearGrid) {
+                coordsRes[0] = [(border[8] + border[7] + border[5] + border[4]) * 0.25];
+                coordsRes[1] = [(border[2] + border[1] + border[5] + border[4]) * 0.25];
+                coordsRes[2] = [(border[0] + border[1] + border[3] + border[4]) * 0.25];
+                coordsRes[3] = [(border[6] + border[7] + border[3] + border[4]) * 0.25];
+                coordsRes[4] = [(border[7] + border[4]) * 0.5];
+                coordsRes[5] = [(border[1] + border[4]) * 0.5];
+                
+                //if (this.map.drawFog) {
+                    coordsRes[6] = [(border[3] + border[4]) * 0.5];
+                    coordsRes[7] = [(border[5] + border[4]) * 0.5];
+                //}
             }
 
-        }*/
-        
-		
+
+        }
 
         middle[2] = h;
         middle = node.getPhysicalCoords(middle, true);
@@ -1253,8 +1262,18 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
         renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
         prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
     } else {
-        prog = renderer.progPlane; 
-        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+
+        if (linearGrid) {
+            prog = renderer.progPlane3; 
+            renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+
+            prog.setFloatArray('uHeights', mnode.border2);
+            prog.setVec3('uVector', mnode.diskNormal);
+
+        } else {
+            prog = renderer.progPlane; 
+            renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+        }
     }
 
     prog.setMat4('uMV', mv);

@@ -53,6 +53,7 @@ RendererInit.prototype.initShaders = function() {
     renderer.progHeightmap = new GpuProgram(gpu, shaders.heightmapVertexShader, shaders.heightmapFragmentShader);
     renderer.progPlane = new GpuProgram(gpu, shaders.planeVertexShader, shaders.planeFragmentShader);
     renderer.progPlane2 = new GpuProgram(gpu, shaders.planeVertex2Shader, shaders.planeFragment2Shader);
+    renderer.progPlane3 = new GpuProgram(gpu, shaders.planeVertex3Shader, shaders.planeFragmentShader);
     renderer.progSkydome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.skydomeFragmentShader);
     renderer.progStardome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.stardomeFragmentShader);
     
@@ -106,7 +107,7 @@ RendererInit.prototype.initHeightmap = function() {
     for (var i = 0; i < size; i++) {
         for (var j = 0; j < size; j++) {
 
-            var index =(i*size+j)*4;
+            var index = (i*size+j)*4;
 
             if (i < halfLineWidth || i >= size-halfLineWidth || j < halfLineWidth || j >= size-halfLineWidth) {
                 data[index] = 255;

@@ -318,7 +318,7 @@ MapSurfaceTree.prototype.drawSurface = function() {
                 
                 
                 if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit) {
-                    
+                    tile.drawCounter = draw.drawCounter;
                     drawBuffer[drawBufferIndex] = tile;
                     drawBufferIndex++;
                     
@@ -407,6 +407,7 @@ MapSurfaceTree.prototype.drawSurface = function() {
                             
                         }
                     } else {
+                        tile.drawCounter = draw.drawCounter;
                         drawBuffer[drawBufferIndex] = tile;
                         drawBufferIndex++;
                     }
