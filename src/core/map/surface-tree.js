@@ -542,6 +542,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
                 
                 if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit) {
                     
+                    tile.drawCounter = draw.drawCounter;
                     drawBuffer[drawBufferIndex] = tile;
                     drawBufferIndex++;
                     
@@ -615,6 +616,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
                             //}
                         }
                     } else {
+                        tile.drawCounter = draw.drawCounter;
                         drawBuffer[drawBufferIndex] = tile;
                         drawBufferIndex++;
                     }
@@ -1225,6 +1227,58 @@ MapSurfaceTree.prototype.getNodeById = function(id) {
         tile.restoreLastState();
         //return;
     }*/
+};
+
+MapSurfaceTree.prototype.getRenderedNodeById = function(id, drawCounter) {
+    var tile = this.surfaceTree;
+
+    if (tile == null) {
+        return;
+    }
+
+    if (tile.drawCounter == drawCounter) {
+        if (!tile.isMetanodeReady(this, 0)) {
+            return;
+        }
+
+        return tile.metanode;
+    }
+
+    for (var lod = id[0]; lod > 0; lod--) {
+        var mask = 1 << (lod-1);
+        var index = 0;
+
+        if ((id[1] & mask) != 0) {
+            index += 1;
+        }
+
+        if ((id[2] & mask) != 0) {
+            index += 2;
+        }
+        
+        if (!tile.children[index]) {
+
+            if (!tile.isMetanodeReady(this, 0)) {
+                return;
+            }
+
+            if (!tile.metanode.hasChild(index)) {
+                return;
+            }
+        } 
+
+        tile = tile.children[index];
+
+        if (tile.drawCounter == drawCounter) {
+            if (!tile.isMetanodeReady(this, 0)) {
+                return;
+            }
+
+            return tile.metanode;
+        }
+    }
+
+    return;
 };
 
 

@@ -1078,42 +1078,42 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                 var skip = false;
                 
                 if (border[0] == null) {
-                    n = this.map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2] - 1]);
+                    n = map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2] - 1]);
                     if (n) { border[0] = n.minZ; } else { skip = true; }
                 }
 
                 if (border[1] == null) {
-                    n = this.map.tree.getNodeById([this.id[0], this.id[1], this.id[2] - 1]);
+                    n = map.tree.getNodeById([this.id[0], this.id[1], this.id[2] - 1]);
                     if (n) { border[1] = n.minZ; } else { skip = true; }
                 }
 
                 if (border[2] == null) {
-                    n = this.map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2] - 1]);
+                    n = map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2] - 1]);
                     if (n) { border[2] = n.minZ; } else { skip = true; }
                 }
 
                 if (border[3] == null) {
-                    n = this.map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2]]);
+                    n = map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2]]);
                     if (n) { border[3] = n.minZ; } else { skip = true; }
                 }
 
                 if (border[5] == null) {
-                    n = this.map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2]]);
+                    n = map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2]]);
                     if (n) { border[5] = n.minZ; } else { skip = true; }
                 }
 
                 if (border[6] == null) {
-                    n = this.map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2] + 1]);
+                    n = map.tree.getNodeById([this.id[0], this.id[1] - 1, this.id[2] + 1]);
                     if (n) { border[6] = n.minZ; } else { skip = true; }
                 }
 
                 if (border[7] == null) {
-                    n = this.map.tree.getNodeById([this.id[0], this.id[1], this.id[2] + 1]);
+                    n = map.tree.getNodeById([this.id[0], this.id[1], this.id[2] + 1]);
                     if (n) { border[7] = n.minZ; } else { skip = true; }
                 }
 
                 if (border[8] == null) {
-                    n = this.map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2] + 1]);
+                    n = map.tree.getNodeById([this.id[0], this.id[1] + 1, this.id[2] + 1]);
                     if (n) { border[8] = n.minZ; } else { skip = true; }
                 }
                 
@@ -1141,7 +1141,121 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
 
                     ];
                 }
-                
+
+                if (joinGrids) {
+                    var border2 = mnode.border2;
+                    mnode.border3 = [];
+
+                    /*
+                    var borderTable = [
+                        [-1, -1, 0, 0],
+                        [0, -1, 0.5, 1], //
+                        [1, -1, 1, 0],
+
+                        [-1, 0, 0, 0.5],
+                        [0, 0, 0.5, 0.5],
+                        [1, 0, 1, 0.5],
+
+                        [-1, 1, 0, 1],
+                        [0, 1, 0.5, 0], //
+                        [1, 1, 1, 1]
+                    ];
+
+                    var nx, ny, dlod, t;
+
+                    for (var i = 0, li = borderTable.length; i < li; i++) {
+                        t = borderTable[i];
+                        n = this.map.tree.getRenderedNodeById([this.id[0], this.id[1] + t[0], this.id[2] + t[1]], map.draw.drawCounter);
+
+                        if (i == 4 )
+
+                        if (i != 4 && (n && n.id[0] < this.id[0])) {
+                            dlod = (this.id[0] - n.id[0]);
+                            nx = n.id[1] << dlod;
+                            ny = n.id[2] << dlod;
+                            nx = ((nx - (this.id[1] + t[0])) + t[2]) / (dlod+1);
+                            ny = ((ny - (this.id[2] + t[0])) + t[3]) / (dlod+1);
+                            mnode.border3[i] = n.getGridHeight(nx, ny);
+                        } else {
+                            mnode.border3[i] = border2[i];
+                        }
+                    }
+                    */
+
+                    var borderTable = [
+                        [-1, -1, 0, 0],
+                        [0, -1, 0.5, 1], //
+                        [1, -1, 1, 0],
+
+                        [-1, 0, 0, 0.5],
+                        [0, 0, 0.5, 0.5],
+                        [1, 0, 1, 0.5],
+
+                        [-1, 1, 0, 1],
+                        [0, 1, 0.5, 0], //
+                        [1, 1, 1, 1]
+                    ];
+
+                    var cornerTable = [
+                        [0,1,3],
+                        [2,1,5],
+                        [6,2,7],
+                        [8,6,5]
+                    ];
+
+                    var nodeTable = [];
+
+                    //get bodrer nodes
+                    for (var i = 0, li = borderTable.length; i < li; i++) {
+                        if (i != 4) {
+                            nodeTable[i] = this.map.tree.getRenderedNodeById([this.id[0], this.id[1] + borderTable[i][0], this.id[2] + borderTable[i][1]], map.draw.drawCounter);
+                        }
+                    }
+
+                    //solve corners
+                    for (i = 0, li = cornerTable.length; i < li; i++) {
+                        var lowestNode = nodeTable[cornerTable[i][0]];
+
+                        for (var j = 1; j < 3; j++) {
+                            n = nodeTable[cornerTable[i][j]];
+
+                            if (n) {
+                                if (lowestNode) {
+                                    if (n.id[0] < lowestNode.id[0]) {
+                                        lowestNode = n;
+                                    } 
+                                } else {
+                                    lowestNode = n;
+                                }
+                            }
+                        }
+                    }
+
+                    for (var i = 0, li = borderTable.length; i < li; i++) {
+                        if (i != 4 && (n && n.id[0] < this.id[0])) {
+                            var bcoords;
+
+                            switch(i) {
+                                case 0:  bcoords = [mnode.llx, mnode.lly]; break;
+                                case 1:  bcoords = [mnode.llx, mnode.lly]; break;
+                                case 2:  bcoords = [mnode.llx, mnode.lly]; break;
+                                case 3:  bcoords = [mnode.llx, mnode.lly]; break;
+                                case 5:  bcoords = [mnode.llx, mnode.lly]; break;
+                                case 6:  bcoords = [mnode.llx, mnode.lly]; break;
+                                case 7:  bcoords = [mnode.llx, mnode.lly]; break;
+                                case 8:  bcoords = [mnode.llx, mnode.lly]; break;
+                            }
+
+                            if (n.border2) {
+                                mnode.border3[i] = n.getGridHeight(bcoords, n.border2, 3);
+                            }
+                        } else {
+                            mnode.border3[i] = border2[i];
+                        }
+                    }
+
+
+                }                     
             }
             
             h = this.metanode.minZ;      

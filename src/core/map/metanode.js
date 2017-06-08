@@ -329,6 +329,11 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
             ury = res[1][1][1];
             this.divisionNode = divisionNode;
         }
+
+        this.llx = llx;
+        this.lly = lly;
+        this.urx = urx;
+        this.ury = ury;
         
         var h = this.minZ;
         //var middle = [(ur[0] + ll[0])* 0.5, (ur[1] + ll[1])* 0.5, h];
@@ -752,6 +757,40 @@ MapMetanode.prototype.drawPlane = function(cameraPos, tile) {
     renderer.planeMesh.draw(renderer.progPlane, 'aPosition', 'aTexCoord');
 };
 
+
+MapMetanode.prototype.getGridHeight = function(coords, data, dataWidth) {
+    var x = coords[0] - this.llx;
+    var y = this.urx - coords[1];
+    var maxX = (dataWidth-1);
+    var maxY = (dataWidth-1);
+    
+    //data coords
+    x = (maxX) * (x / (this.urx - this.llx));
+    y = (maxY) * (y / (this.ury - this.lly));
+
+    if (x < 0) { x = 0; }
+    if (y < 0) { y = 0; }
+    if (x > maxX) { x = maxX; }
+    if (y > maxY) { y = maxY; }
+
+    var ix = Math.floor(x);
+    var iy = Math.floor(y);
+    var fx = x - ix;
+    var fy = y - iy;
+
+    var index = iy * dataWidth;
+    var index2 = (iy == maxY) ? index : index + dataWidth;
+    var ix2 = (ix == maxX) ? ix : ix + 1; 
+    var h00 = heights[index + ix];
+    var h01 = heights[index + ix2];
+    var h10 = heights[index2 + ix];
+    var h11 = heights[index2 + ix2];
+    var w0 = (h00 + (h01 - h00)*fx);
+    var w1 = (h10 + (h11 - h10)*fx);
+    var height = (w0 + (w1 - w0)*fy);
+
+    return height;
+};
 
 export default MapMetanode;
 
