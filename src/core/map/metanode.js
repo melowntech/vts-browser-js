@@ -760,7 +760,8 @@ MapMetanode.prototype.drawPlane = function(cameraPos, tile) {
 
 MapMetanode.prototype.getGridHeight = function(coords, data, dataWidth) {
     var x = coords[0] - this.llx;
-    var y = this.urx - coords[1];
+    //var y = this.ury - coords[1];
+    var y = coords[1]  - this.lly;
     var maxX = (dataWidth-1);
     var maxY = (dataWidth-1);
     
@@ -781,10 +782,10 @@ MapMetanode.prototype.getGridHeight = function(coords, data, dataWidth) {
     var index = iy * dataWidth;
     var index2 = (iy == maxY) ? index : index + dataWidth;
     var ix2 = (ix == maxX) ? ix : ix + 1; 
-    var h00 = heights[index + ix];
-    var h01 = heights[index + ix2];
-    var h10 = heights[index2 + ix];
-    var h11 = heights[index2 + ix2];
+    var h00 = data[index + ix];
+    var h01 = data[index + ix2];
+    var h10 = data[index2 + ix];
+    var h11 = data[index2 + ix2];
     var w0 = (h00 + (h01 - h00)*fx);
     var w1 = (h10 + (h11 - h10)*fx);
     var height = (w0 + (w1 - w0)*fy);
