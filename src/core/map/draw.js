@@ -49,7 +49,8 @@ var MapDraw = function(map) {
         drawTileCounter : 0,
         drawFog : this.config.mapFog,
         debugTextSize : 2.0,
-        ignoreTexelSize : false
+        ignoreTexelSize : false,
+        maxZoom : false
     };
 
     this.fogDensity = 0;

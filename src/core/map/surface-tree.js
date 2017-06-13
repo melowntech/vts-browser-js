@@ -541,7 +541,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
                 }
                 
                 if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit) {
-                    
+                   
                     tile.drawCounter = draw.drawCounter;
                     drawBuffer[drawBufferIndex] = tile;
                     drawBufferIndex++;
@@ -712,7 +712,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
     var pocessedNodes = 1;
     var pocessedMetatiles = 1;  
     var drawCounter = draw.drawCounter;
-    var maxHiresLodLevels = map.config.mapMaxHiresLodLevels, i, j, lj, child, priority; 
+    var maxHiresLodLevels = map.config.mapMaxHiresLodLevels, i, j, lj, child, priority, parent; 
     
     do {
         var best = 0;
@@ -726,6 +726,8 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
             var pack = processBuffer[i];
             tile = pack[0];
             var depth = pack[1];
+
+            tile.childrenReadyCount = 0;
             
             /*if (this.map.drawIndices) {
                 console.log(JSON.stringify(tile.id));
@@ -733,8 +735,21 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
             
             if (depth >= maxHiresLodLevels) {
                 if (drawGrid) {
-                    drawBuffer[drawBufferIndex] = [tile, true]; //draw grid
-                    drawBufferIndex++;
+                    parent = tile;
+
+                    for (j = depth; j > 0; j--) { //make sure that we draw grid with lowest possible detail 
+                        if (parent.childrenReadyCount != 0) {
+                            break;
+                        }
+
+                        parent = tile.parent;
+                    }
+
+                    if (parent.drawCounter != draw.drawCounter) { //make sure that grid tile is rendered only one time
+                        parent.drawCounter = draw.drawCounter;
+                        drawBuffer[drawBufferIndex] = [parent, true]; //draw grid
+                        drawBufferIndex++;
+                    }
                 }
 
                 continue;
@@ -786,7 +801,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                     if (node.hasChildren() && !drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, (depth > 0), checkGpu)) {
 
                         depth++; //we dont have tile ready, so we try to draw more detailed tiles
-            
+
                         for (j = 0; j < 4; j++) {
                             child = tile.children[j];
                             if (child) {
@@ -806,6 +821,8 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                                     
                                     //are draw buffers ready? preventRender=true, preventLoad=false
                                     if (drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, (depth > 0), checkGpu)) {
+                                        tile.childrenReadyCount++;
+                                        child.drawCounter = draw.drawCounter;
                                         drawBuffer[drawBufferIndex] = [child, false];
                                         drawBufferIndex++;
                                     } else {
@@ -818,7 +835,12 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                             }
                         }
 
+                        if (lastProcessBufferIndex == newProcessBufferIndex && lastDrawBufferIndex == drawBufferIndex) {
+                            depth--; 
+                        }
+
                     } else {
+                        tile.drawCounter = draw.drawCounter;
                         drawBuffer[drawBufferIndex] = [tile, false];
                         drawBufferIndex++;
                     }
@@ -883,6 +905,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                         priority = ((tile.id[0] + lodShift) * typeFactor) * tile.distance; 
 
                         if (drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, true, checkGpu)) {
+                            tile.drawCounter = draw.drawCounter;
                             drawBuffer[drawBufferIndex] = [tile, false];
                             drawBufferIndex++;
 
@@ -952,8 +975,21 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
 
             if (drawGrid && lastProcessBufferIndex == newProcessBufferIndex && lastDrawBufferIndex == drawBufferIndex) {
-                drawBuffer[drawBufferIndex] = [tile, true]; //draw grid
-                drawBufferIndex++;
+                parent = tile;
+
+                for (j = depth; j > 0; j--) { //make sure that we draw grid with lowest possible detail 
+                    if (parent.childrenReadyCount != 0) {
+                        break;
+                    }
+
+                    parent = tile.parent;
+                }
+
+                if (parent.drawCounter != draw.drawCounter) { //make sure that grid tile is rendered only one time
+                    parent.drawCounter = draw.drawCounter;
+                    drawBuffer[drawBufferIndex] = [parent, true]; //draw grid
+                    drawBufferIndex++;
+                }
             }
 
         }
@@ -986,7 +1022,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
     for (i = drawBufferIndex - 1; i >= 0; i--) {
         var item = drawBuffer[i];
-        tile = drawBuffer[i];
+        tile = drawBuffer[i]; //remove this line
 /*
             if (tile.id[0] == 10 && 
                 tile.id[1] == 304 &&
@@ -998,6 +1034,11 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
         
         tile = item[0];
         if (drawGrid && item[1]) {
+
+            if (drawTiles.debug.drawBBoxes) {
+                drawTiles.drawTileInfo(tile, tile.metanode, cameraPos);
+            }
+
             tile.drawGrid(cameraPos); 
         } else if (!item[1]) {
             drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false, checkGpu);

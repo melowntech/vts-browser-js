@@ -109,6 +109,10 @@ ControlModeMapObserver.prototype.wheel = function(event) {
         return;
     }
 
+    if (map.getStats(true)['maxZoom']) {
+        this.browser.config.minViewExtent = 0.5;
+    }
+
     var pos = map.getPosition();
     var delta = event.getWheelDelta();
     var sensitivity = this.config.sensitivity[2];

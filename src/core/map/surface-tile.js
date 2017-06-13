@@ -11,6 +11,7 @@ var MapSurfaceTile = function(map, parent, id) {
     this.parent = parent;
     this.viewCounter = map.viewCounter;
     this.drawCounter = 0;
+    this.childrenReadyCount = 0;
     this.renderReady = false;
     this.geodataCounter = 0;
     this.texelSize = 1;
@@ -1430,6 +1431,8 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     
     //draw bbox
     renderer.planeMesh.draw(prog, 'aPosition', 'aTexCoord');    
+
+    this.map.stats.drawnFaces += renderer.planeMesh.polygons;
 }; 
 
 

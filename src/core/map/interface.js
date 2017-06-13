@@ -365,7 +365,13 @@ MapInterface.prototype.getScreenRay = function(screenX, screenY) {
 };
 
 
-MapInterface.prototype.getStats = function() {
+MapInterface.prototype.getStats = function(switches) {
+    if (switches) {
+        return {
+            'maxZoom' : this.map.draw.debug.maxZoom
+        };
+    }
+
     var busyWorkers = 0;
     for (var i = 0, li = this.map.geodataProcessors; i < li; i++) {
         if (this.map.geodataProcessors[i].busy) {

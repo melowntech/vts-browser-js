@@ -286,7 +286,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 90:
                 case 122:
-                    debug.ignoreTexelSize = !debug.ignoreTexelSize; break; //key Z pressed
+                    debug.maxZoom = !debug.maxZoom; break; //key Z pressed
 
                 case 78:
                 case 110:
