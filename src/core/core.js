@@ -57,6 +57,7 @@ var Core = function(element, config, coreInterface) {
         mapLoadErrorMaxRetryCount : 3,
         mapLoadMode : 'topdown', // "topdown", "downtop", "fit", "fitonly"
         mapGeodataLoadMode : 'fit', //"fitonly"
+        mapGridMode : 'linear', //"fitonly"
         mapXhrImageLoad : false,
         mapStoreLoadStats : false,
         mapDegradeHorizon : false,

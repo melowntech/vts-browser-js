@@ -728,6 +728,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapXhrImageLoad':               this.config.mapXhrImageLoad = utils.validateBool(value, false); break;
     case 'mapLoadMode':                   this.config.mapLoadMode = utils.validateString(value, 'topdown'); break;
     case 'mapGeodataLoadMode':            this.config.mapGeodataLoadMode = utils.validateString(value, 'fit'); break;
+    case 'mapGridMode':                   this.config.mapGridMode = utils.validateString(value, 'linear'); break;
     case 'mapPreciseBBoxTest':            this.config.mapPreciseBBoxTest = utils.validateBool(value, true); break;
     case 'mapPreciseDistanceTest':        this.config.mapPreciseDistanceTest = utils.validateBool(value, false); break;
     case 'mapHeightfiledWhenUnloaded':    this.config.mapHeightfiledWhenUnloaded= utils.validateBool(value, false); break;
@@ -769,6 +770,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapXhrImageLoad':               return this.config.mapXhrImageLoad;
     case 'mapLoadMode':                   return this.config.mapLoadMode;
     case 'mapGeodataLoadMode':            return this.config.mapGeodataLoadMode;
+    case 'mapGridMode':                   return this.config.mapGridMode;
     case 'mapPreciseBBoxTest':            return this.config.mapPreciseBBoxTest;
     case 'mapPreciseDistanceTest':        return this.config.mapPreciseDistanceTest;
     case 'mapHeightfiledWhenUnloaded':    return this.config.mapHeightfiledWhenUnloaded;
