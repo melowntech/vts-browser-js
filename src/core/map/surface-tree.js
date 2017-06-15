@@ -662,7 +662,6 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
 //loadmode = fit
 MapSurfaceTree.prototype.drawSurfaceFit = function() {
     this.counter++;
-//    this.surfaceTracer.trace(this.surfaceTree);//this.rootId);
 
     var tile = this.surfaceTree;
     
@@ -738,11 +737,11 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                     parent = tile;
 
                     for (j = depth; j > 0; j--) { //make sure that we draw grid with lowest possible detail 
-                        if (parent.childrenReadyCount != 0) {
+                        if ((!parent.parent) || parent.parent.childrenReadyCount != 0) {
                             break;
                         }
 
-                        parent = tile.parent;
+                        parent = parent.parent;
                     }
 
                     if (parent.drawCounter != draw.drawCounter) { //make sure that grid tile is rendered only one time
@@ -754,17 +753,6 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
                 continue;
             }
-            /*
-            if (tile.id[0] >= 16) { 
-                tile = tile;    
-            }*/ 
-
-            /*
-            if (tile.id[0] == 12 &&
-                tile.id[1] == 1107 &&
-                tile.id[2] == 688) {
-                tile = tile;
-            }*/
             
             node = tile.metanode;
 
@@ -811,14 +799,6 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                                     this.updateNodeHeightExtents(child, child.metanode);
                                     child.updateTexelSize();
                                     
-                                    //var priority = ((child.id[0] + lodShift) * typeFactor) * child.distance; 
-
-                                    /*if (child.id[0] == 18 && 
-                                    child.id[1] == 20982 &&
-                                    child.id[2] == 50643){
-                                        child = child;    
-                                    }*/
-                                    
                                     //are draw buffers ready? preventRender=true, preventLoad=false
                                     if (drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, (depth > 0), checkGpu)) {
                                         tile.childrenReadyCount++;
@@ -829,9 +809,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                                         newProcessBuffer[newProcessBufferIndex] = [child, depth];
                                         newProcessBufferIndex++;
                                     }
-                                } //if (drawGrid) {
-                                 //   child.drawGrid(cameraPos);
-                                //}
+                                }
                             }
                         }
 
@@ -869,9 +847,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                                     readyCount++;
                                     childrenBuffer.push(child);
                                 }
-                            } //if (drawGrid) {
-                             //   child.drawGrid(cameraPos);
-                            //}
+                            }
                         }
                     }
         
@@ -900,8 +876,6 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                     } else {
                         
                         //can i use coarser lod
-                        //if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
-
                         priority = ((tile.id[0] + lodShift) * typeFactor) * tile.distance; 
 
                         if (drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, true, checkGpu)) {
@@ -922,12 +896,6 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                         } else {
 
                             //add childern to new process buffer 
-                            /*
-                            for (var j = 0, lj = childrenBuffer.length; j < lj; j++) {
-                                newProcessBuffer[newProcessBufferIndex] = [childrenBuffer[j], depth];
-                                newProcessBufferIndex++;
-                            }*/
-
                             for (j = 0; j < 4; j++) {
                                 child = tile.children[j];
                                 if (child) {
@@ -951,23 +919,13 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                         child = tile.children[j];
                         if (child) {
 
-                            /*if (child.id[0] == 18 && 
-                            child.id[1] == 20982 &&
-                            child.id[2] == 50643){
-                                child = child;    
-                            }*/
-
                             if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
                                 this.updateNodeHeightExtents(child, child.metanode);
                                 child.updateTexelSize();
                                 
-                                //var priority = child.id[0] * typeFactor * child.distance; 
-
                                 newProcessBuffer[newProcessBufferIndex] = [child, depth];
                                 newProcessBufferIndex++;
-                            } //if (drawGrid) {
-                            //    child.drawGrid(cameraPos);
-                            //}
+                            }
                         }
                     }                    
                 }
@@ -978,11 +936,11 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                 parent = tile;
 
                 for (j = depth; j > 0; j--) { //make sure that we draw grid with lowest possible detail 
-                    if (parent.childrenReadyCount != 0) {
+                    if ((!parent.parent) || parent.parent.childrenReadyCount != 0) {
                         break;
                     }
 
-                    parent = tile.parent;
+                    parent = parent.parent;
                 }
 
                 if (parent.drawCounter != draw.drawCounter) { //make sure that grid tile is rendered only one time
@@ -1022,17 +980,8 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
     for (i = drawBufferIndex - 1; i >= 0; i--) {
         var item = drawBuffer[i];
-        tile = drawBuffer[i]; //remove this line
-/*
-            if (tile.id[0] == 10 && 
-                tile.id[1] == 304 &&
-                tile.id[2] == 193){
-                tile = tile;    
-            }
-*/            
-        //draw tile,  preventRender=false, preventLoad=false
-        
         tile = item[0];
+
         if (drawGrid && item[1]) {
 
             if (drawTiles.debug.drawBBoxes) {

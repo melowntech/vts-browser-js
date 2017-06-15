@@ -241,6 +241,13 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                         if (tile && ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod))) {
                             drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.pixelSize, tile.priority, false, false);
                         }
+                    } else {
+                        tile = tiles[i][0];
+                        if (drawTiles.debug.drawBBoxes) {
+                            drawTiles.drawTileInfo(tile, tile.metanode, cameraPos);
+                        }
+
+                        tile.drawGrid(cameraPos); 
                     }
                 }
             }
