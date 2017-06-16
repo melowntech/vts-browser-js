@@ -25,6 +25,7 @@ var tileCornerTable = [
     [8,7,5]
 ];
 
+
 var MapSurfaceTile = function(map, parent, id) {
     this.map = map;
     this.id = id;
@@ -1044,21 +1045,20 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     var lod = Math.log((desiredSamplesPerViewExtent * nodeExtent) / viewExtent) / map.log2;
     lod = Math.max(0,lod - 8 + node.id[0]);
    
-    var h, coordsRes, factor, prog; 
+    var h, coordsRes, factor, prog, draw = map.draw; 
 
     var sx = cameraPos[0];
     var sy = cameraPos[1];
     var sz = cameraPos[2];
-    var buffer = map.draw.planeBuffer;
-    
-    var flatGrid = false;
-    var linearGrid = true;
-    var joinGrids = this.map.draw.debug.drawFog;
+    var buffer = draw.planeBuffer;
+    var flatGrid = draw.gridFlat;
+    var joinGrids = draw.gridGlues; //this.map.draw.debug.drawFog;
     var gridPoints = this.gridPoints;
 
     if (!gridPoints) {
 
-        h = this.metanode.minZ;
+        //h = this.metanode.minZ;
+        h = this.metanode.surrogatez;
         var n1 = node.getPhysicalCoords([ur[0], ur[1], h], true);
         var n2 = node.getPhysicalCoords([ur[0], ll[1], h], true);
         var n3 = node.getPhysicalCoords([ll[0], ll[1], h], true);
@@ -1135,85 +1135,65 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
         var mnode = this.metanode; 
            
         var border = mnode.border;
-        var n, tree = map.tree, id = this.id;
+        var i, li, n, tree = map.tree, id = this.id;
         
         if (!border) {
             mnode.border = new Array(9);
             border = mnode.border;
-            border[4] = mnode.minZ;
+            //border[4] = mnode.minZ;
+            border[4] = mnode.surrogatez;
         }
         
-        //TODO: remember when all are ready skip all together
 
-        var skip = false;
-        
-        if (border[0] == null) {
-            n = tree.getNodeById([id[0], id[1] - 1, id[2] - 1]);
-            if (n) { border[0] = n.minZ; } else { skip = true; }
-        }
+        var borderTable = tileBorderTable;
 
-        if (border[1] == null) {
-            n = tree.getNodeById([id[0], id[1], id[2] - 1]);
-            if (n) { border[1] = n.minZ; } else { skip = true; }
-        }
+        if (!mnode.borderReady) {
+            var skip = false;
+            
+            for (i = 0; i < 9; i++) {
+                if (i != 4) {
+                    n = tree.getNodeById([this.id[0], this.id[1] + borderTable[i][0], this.id[2] + borderTable[i][1]]);
 
-        if (border[2] == null) {
-            n = tree.getNodeById([id[0], id[1] + 1, id[2] - 1]);
-            if (n) { border[2] = n.minZ; } else { skip = true; }
-        }
+                    if (n) {
+                        //border[i] = n.minZ;
+                        border[i] = n.surrogatez;
+                    } else {
+                        skip = true;
+                    }
+                }
+            }
+            
+            if (skip) {
+                return;
+            }
 
-        if (border[3] == null) {
-            n = tree.getNodeById([id[0], id[1] - 1, id[2]]);
-            if (n) { border[3] = n.minZ; } else { skip = true; }
-        }
-
-        if (border[5] == null) {
-            n = tree.getNodeById([id[0], id[1] + 1, id[2]]);
-            if (n) { border[5] = n.minZ; } else { skip = true; }
-        }
-
-        if (border[6] == null) {
-            n = tree.getNodeById([id[0], id[1] - 1, id[2] + 1]);
-            if (n) { border[6] = n.minZ; } else { skip = true; }
-        }
-
-        if (border[7] == null) {
-            n = map.tree.getNodeById([id[0], id[1], id[2] + 1]);
-            if (n) { border[7] = n.minZ; } else { skip = true; }
-        }
-
-        if (border[8] == null) {
-            n = map.tree.getNodeById([id[0], id[1] + 1, id[2] + 1]);
-            if (n) { border[8] = n.minZ; } else { skip = true; }
-        }
-        
-        if (skip) {
-            return;
+            mnode.borderReady = true;
         }
 
         var border2 = mnode.border2;
-        h = linearGrid ? mnode.minZ : 0;
-        
+        //h = mnode.minZ;
+        h = mnode.surrogatez;
+
         if (!border2) {
             border2 = [
-                (border[0] + border[1] + border[3] + border[4]) * 0.25, 
-                (border[1] + border[4]) * 0.5,
-                (border[2] + border[1] + border[5] + border[4]) * 0.25,
+                ((border[0] + border[1] + border[3] + border[4]) * 0.25) - h, 
+                ((border[1] + border[4]) * 0.5) - h,
+                ((border[2] + border[1] + border[5] + border[4]) * 0.25) - h,
 
-                (border[3] + border[4]) * 0.5,
-                mnode.minZ,
-                (border[5] + border[4]) * 0.5,
+                ((border[3] + border[4]) * 0.5) - h,
+                border[4] - h,
+                ((border[5] + border[4]) * 0.5) - h,
 
-                (border[6] + border[7] + border[3] + border[4]) * 0.25,
-                (border[7] + border[4]) * 0.5,
-                (border[8] + border[7] + border[5] + border[4]) * 0.25
+                ((border[6] + border[7] + border[3] + border[4]) * 0.25) - h,
+                ((border[7] + border[4]) * 0.5) - h,
+                ((border[8] + border[7] + border[5] + border[4]) * 0.25) - h
             ];
 
             mnode.border2 = border2;
         }
 
         if (joinGrids) {
-            var borderTable = tileBorderTable, cornerTable = tileCornerTable;
+            var cornerTable = tileCornerTable;
             var nodeTable = this.nodeTable;
 
             if (!nodeTable) {
@@ -1222,9 +1202,9 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
             }
 
             //get bodrer nodes
-            for (var i = 0, li = borderTable.length; i < li; i++) {
+            for (i = 0, li = borderTable.length; i < li; i++) {
                 if (i != 4) {
-                    nodeTable[i] = this.map.tree.getRenderedNodeById([this.id[0], this.id[1] + borderTable[i][0], this.id[2] + borderTable[i][1]], map.draw.drawCounter);
+                    nodeTable[i] = tree.getRenderedNodeById([this.id[0], this.id[1] + borderTable[i][0], this.id[2] + borderTable[i][1]], draw.drawCounter);
                 }
             }
 
@@ -1276,7 +1256,8 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                     }
 
                     if (n.border2) {
-                        mnode.border3[i] = n.getGridHeight(bcoords, n.border2, 3); //- mnode.minZ; 
+                        //mnode.border3[i] = (n.getGridHeight(bcoords, n.border2, 3) + n.minZ)  - h; 
+                        mnode.border3[i] = (n.getGridHeight(bcoords, n.border2, 3) + n.surrogatez)  - h; 
                     }
                 } else {
                     mnode.border3[i] = border2[i];
@@ -1342,7 +1323,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
         prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
     } else {
 
-        if (linearGrid) {
+        if (!flatGrid) {
             prog = renderer.progPlane3; 
             renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
 
@@ -1354,22 +1335,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                 border = mnode.border2;
             }
 
-            var sborder = [
-                border[6] - mnode.minZ,
-                border[7] - mnode.minZ,
-                border[8] - mnode.minZ,
-
-                border[3] - mnode.minZ,
-                border[4] - mnode.minZ,
-                border[5] - mnode.minZ,
-
-                border[0] - mnode.minZ,
-                border[1] - mnode.minZ,
-                border[2] - mnode.minZ
-            ];
-
-            prog.setFloatArray('uHeights', sborder);
-
+            prog.setFloatArray('uHeights', border);
             prog.setVec3('uVector', mnode.diskNormal);
 
         } else {
@@ -1411,7 +1377,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     var px = (ll[0] - node.extents.ll[0]) * lx * llx;
     var py = (ur[1] - node.extents.ll[1]) * ly * lly;
 
-    prog.setVec4('uParams', [step1 * factor, map.draw.fogDensity, 1/15, node.gridStep2 * factor]);
+    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/15, node.gridStep2 * factor]);
     prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
     prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
 

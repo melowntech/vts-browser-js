@@ -53,6 +53,9 @@ var MapDraw = function(map) {
         maxZoom : false
     };
 
+    this.gridFlat = false;
+    this.gridGlues = false;
+
     this.fogDensity = 0;
     this.zFactor = 0;
     //this.zFactor2 = 0.000012;
@@ -145,6 +148,12 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         //why calling this function distorts camera? why I have call it before update camera< 
         //var camInfo = this.measure.getPositionCameraInfo(this.position, this.getNavigationSrs().isProjected(), true); //
     //}
+
+    switch (this.config.mapGridMode) {
+        case 'flat':       this.gridFlat = true; this.gridGlues = false;  break;
+        case 'linear':     this.gridFlat = false; this.gridGlues = true;  break;
+        case 'fastlinear': this.gridFlat = false; this.gridGlues = false; break;
+    }
 
     var drawTiles = this.drawTiles;
     var camInfo = camera.update();

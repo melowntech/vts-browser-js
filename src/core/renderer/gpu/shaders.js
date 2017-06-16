@@ -698,11 +698,12 @@ GpuShaders.planeVertex3Shader =
     'float linearHeight(float x, float y) {\n'+
         'int ix = int(x);\n'+
         'int iy = int(y);\n'+
-        'int index = iy*3+ix;\n'+
+        'int index = (2-iy)*3+ix;\n'+
+        'int index2 = (2-(iy+1))*3+ix;\n'+
         'float fx = fract(x);\n'+
         'float fy = fract(y);\n'+
         'float w0 = (uHeights[index] + (uHeights[index+1] - uHeights[index])*fx);\n'+
-        'float w1 = (uHeights[index+3] + (uHeights[index+4] - uHeights[index+3])*fx);\n'+
+        'float w1 = (uHeights[index2] + (uHeights[index2+1] - uHeights[index2])*fx);\n'+
         'return (w0 + (w1 - w0)*fy);\n'+
     '}\n'+
     'void main() {\n'+
