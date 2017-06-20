@@ -362,35 +362,6 @@ MapSurfaceTile.prototype.checkSurface = function(tree, priority) {
         return; 
     }
 
-    /*
-    if (this.id[0] == 0 && this.id[1] == 0 && this.id[2] == 0) {
-        tree = tree;
-    }
-
-    if (this.id[0] == 1 && this.id[1] == 0 && this.id[2] == 0) {
-        tree = tree;
-    }
-
-    if (this.id[0] == 2 && this.id[1] == 1 && this.id[2] == 1) {
-        tree = tree;
-    }
-
-    if (this.id[0] == 3 && this.id[1] == 3 && this.id[2] == 3) {
-        tree = tree;
-    }
-
-    if (this.id[0] == 4 && this.id[1] == 7 && this.id[2] == 7) {
-        tree = tree;
-    }
-
-    if (this.id[0] == 15 && this.id[1] == 16297 && this.id[2] == 16143) {
-        tree = tree;
-    }
-
-    if (this.id[0] == 16 && this.id[1] == 32595 && this.id[2] == 32287) {
-        tree = tree;
-    }*/
-
     var sequence = tree.surfaceSequence;
 
     //multiple surfaces
@@ -443,11 +414,6 @@ MapSurfaceTile.prototype.checkSurface = function(tree, priority) {
         }
     }
 
-  //  if (this.virtualSurfacesUncomplete) {
-  //      this.metanode = null;
-  //  }
-
-    //
     if (this.virtualSurfaces.length > 1) {
         this.virtual = true;
     } else {
@@ -467,7 +433,6 @@ MapSurfaceTile.prototype.checkMetanode = function(tree, priority) {
         }
     }
 
-    //var surface = this.surface || this.surface; ?????
     var surface = this.surface;
 
     if (surface == null) {
@@ -1008,8 +973,11 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
 
     var map = this.map, node, ll, ur, res;
 
-    var fastGrid = map.config.mapFastHeightfiled;
-    
+    if (map.draw.gridSkipped) {
+        return;
+    }
+
+
     if (divNode) {
         node = divNode[0]; 
         ll = divNode[1][0];
@@ -1045,8 +1013,9 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     var lod = Math.log((desiredSamplesPerViewExtent * nodeExtent) / viewExtent) / map.log2;
     lod = Math.max(0,lod - 8 + node.id[0]);
    
-    var h, coordsRes, factor, prog, draw = map.draw; 
+    var h, factor, prog, draw = map.draw; 
 
+    var sx = cameraPos[0];
     var sx = cameraPos[0];
     var sy = cameraPos[1];
     var sz = cameraPos[2];
@@ -1054,11 +1023,11 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     var flatGrid = draw.gridFlat;
     var joinGrids = draw.gridGlues; //this.map.draw.debug.drawFog;
     var gridPoints = this.gridPoints;
+    var useSurrogatez = map.config.mapGridSurrogatez;
 
     if (!gridPoints) {
 
-        //h = this.metanode.minZ;
-        h = this.metanode.surrogatez;
+        h = useSurrogatez ? this.metanode.surrogatez : this.metanode.minZ;
         var n1 = node.getPhysicalCoords([ur[0], ur[1], h], true);
         var n2 = node.getPhysicalCoords([ur[0], ll[1], h], true);
         var n3 = node.getPhysicalCoords([ll[0], ll[1], h], true);
@@ -1126,7 +1095,6 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
             buffer[25] = n2[1] - sy;
             buffer[26] = n2[2] - sz;
         }
-
      }
 
 
@@ -1134,14 +1102,14 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
 
         var mnode = this.metanode; 
            
-        var border = mnode.border;
+        var border = mnode.border, borderNodes = mnode.borderNodes;
         var i, li, n, tree = map.tree, id = this.id;
         
         if (!border) {
             mnode.border = new Array(9);
-            border = mnode.border;
-            //border[4] = mnode.minZ;
-            border[4] = mnode.surrogatez;
+            mnode.borderNodes = new Array(9);
+            border = mnode.border, borderNodes = mnode.borderNodes;
+            border[4] = useSurrogatez ? mnode.surrogatez : mnode.minZ;
         }
         
 
@@ -1151,30 +1119,28 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
             var skip = false;
             
             for (i = 0; i < 9; i++) {
-                if (i != 4) {
-                    n = tree.getNodeById([this.id[0], this.id[1] + borderTable[i][0], this.id[2] + borderTable[i][1]]);
+                if (i != 4 && !borderNodes[i]) {
+                    n = tree.getNodeById([id[0], id[1] + borderTable[i][0], id[2] + borderTable[i][1]], true);
 
                     if (n) {
-                        //border[i] = n.minZ;
-                        border[i] = n.surrogatez;
+                        borderNodes[i] = n;
+                        border[i] = (useSurrogatez ? n.surrogatez : n.minZ);
                     } else {
+                        border[i] = border[4];
                         skip = true;
                     }
                 }
             }
             
-            if (skip) {
-                return;
+            if (!skip) {
+                mnode.borderReady = true;
             }
-
-            mnode.borderReady = true;
         }
 
         var border2 = mnode.border2;
-        //h = mnode.minZ;
-        h = mnode.surrogatez;
+        h = useSurrogatez ? mnode.surrogatez : mnode.minZ
 
-        if (!border2) {
+        if (!border2 || !mnode.borderReady) {
             border2 = [
                 ((border[0] + border[1] + border[3] + border[4]) * 0.25) - h, 
                 ((border[1] + border[4]) * 0.5) - h,
@@ -1204,7 +1170,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
             //get bodrer nodes
             for (i = 0, li = borderTable.length; i < li; i++) {
                 if (i != 4) {
-                    nodeTable[i] = tree.getRenderedNodeById([this.id[0], this.id[1] + borderTable[i][0], this.id[2] + borderTable[i][1]], draw.drawCounter);
+                    nodeTable[i] = tree.getRenderedNodeById([id[0], id[1] + borderTable[i][0], id[2] + borderTable[i][1]], draw.drawCounter);
                 }
             }
 
@@ -1239,7 +1205,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
             for (i = 0, li = borderTable.length; i < li; i++) {
                 n = nodeTable[i];
 
-                if (i != 4 && (n && n.id[0] < this.id[0])) {
+                if (i != 4 && (n && n.id[0] < id[0])) {
                     var bcoords;
 
                     switch(i) {
@@ -1256,8 +1222,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                     }
 
                     if (n.border2) {
-                        //mnode.border3[i] = (n.getGridHeight(bcoords, n.border2, 3) + n.minZ)  - h; 
-                        mnode.border3[i] = (n.getGridHeight(bcoords, n.border2, 3) + n.surrogatez)  - h; 
+                        mnode.border3[i] = (n.getGridHeight(bcoords, n.border2, 3) + (useSurrogatez ? n.surrogatez : n.minZ))  - h; 
                     }
                 } else {
                     mnode.border3[i] = border2[i];

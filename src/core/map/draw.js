@@ -55,6 +55,7 @@ var MapDraw = function(map) {
 
     this.gridFlat = false;
     this.gridGlues = false;
+    this.gridSkipped = false;
 
     this.fogDensity = 0;
     this.zFactor = 0;
@@ -150,9 +151,10 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     //}
 
     switch (this.config.mapGridMode) {
-        case 'flat':       this.gridFlat = true; this.gridGlues = false;  break;
-        case 'linear':     this.gridFlat = false; this.gridGlues = true;  break;
-        case 'fastlinear': this.gridFlat = false; this.gridGlues = false; break;
+        case 'none':       this.gridSkipped = true; this.gridFlat = false; this.gridGlues = false;  break;
+        case 'flat':       this.gridSkipped = false; this.gridFlat = true; this.gridGlues = false;  break;
+        case 'linear':     this.gridSkipped = false; this.gridFlat = false; this.gridGlues = true;  break;
+        case 'fastlinear': this.gridSkipped = false; this.gridFlat = false; this.gridGlues = false; break;
     }
 
     var drawTiles = this.drawTiles;
