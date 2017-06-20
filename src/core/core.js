@@ -51,12 +51,13 @@ var Core = function(element, config, coreInterface) {
         mapPreciseDistanceTest : false,
         mapHeightfiledWhenUnloaded : true,
         mapForceMetatileV3 : false,
-        mapFastHeightfiled : true,
         mapSmartNodeParsing : true,
         mapLoadErrorRetryTime : 3000,
         mapLoadErrorMaxRetryCount : 3,
         mapLoadMode : 'topdown', // "topdown", "downtop", "fit", "fitonly"
         mapGeodataLoadMode : 'fit', //"fitonly"
+        mapGridMode : 'linear', //"flat"
+        mapGridSurrogatez : false, 
         mapXhrImageLoad : false,
         mapStoreLoadStats : false,
         mapDegradeHorizon : false,
@@ -468,7 +469,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.5.4';
+    return (full ? 'Core: ' : '') + '2.6.1';
 }
 
 

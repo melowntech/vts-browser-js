@@ -546,16 +546,23 @@ InspectorReplay.prototype.itemButton = function(item, button) {
 
     case 'Camera':
 
-        var camera = replay.camera = {
-            distance : map.camera.distance,
-            position : map.camera.position.slice(),
-            vector : map.camera.vector.slice(),
-            center : map.camera.center.slice(),
-            height : map.camera.height
-        };
-            
-        this.generateCameraLines(camera);
-            //this.drawCamera = true; 
+        if (button == 'S') {
+            var camera = replay.camera = {
+                distance : map.camera.distance,
+                position : map.camera.position.slice(),
+                vector : map.camera.vector.slice(),
+                center : map.camera.center.slice(),
+                height : map.camera.height
+            };
+
+            replay.cameraPos = map.getPosition();
+            this.generateCameraLines(camera);
+        } else {
+            if (replay.cameraPos) {
+                map.setPosition(replay.cameraPos);
+            }
+        }
+
         break;
             
     case 'Globe':
@@ -845,7 +852,7 @@ InspectorReplay.prototype.buildReplayCombo = function() {
         ['Traced Nodes',1],
         ['Traced Nodes - Free Layers',1],
         ['Load Sequence',2],
-        ['Camera',1],
+        ['Camera',2],
         ['Globe',0]
     ];
 
@@ -871,7 +878,7 @@ InspectorReplay.prototype.buildReplayCombo = function() {
         }
         
         if (items[i][1] > 1) {
-            html += '<input id="vts-replay-fbutton-' + keys[i] + '" type="button" value="F"/>';
+            html += '<input id="vts-replay-fbutton-' + keys[i] + '" type="button" value="' + ((keys[i] == 'Camera') ? 'R' : 'F') + '"/>';
         }
         
         html += '</div>';
@@ -893,7 +900,7 @@ InspectorReplay.prototype.buildReplayCombo = function() {
 
         if (items[i][1] > 1) {
             htmlId = 'vts-replay-fbutton-' + keys[i];
-            document.getElementById(htmlId).onclick = this.itemButton.bind(this, keys[i], 'F');
+            document.getElementById(htmlId).onclick = this.itemButton.bind(this, keys[i], ((keys[i] == 'Camera') ? 'R' : 'F'));
         }
     }
 };

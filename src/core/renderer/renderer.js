@@ -32,7 +32,6 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.onlyHitLayers = false;
     this.onlyAdvancedHitLayers = false;
     this.advancedPassNeeded = false;
-    this.renderCounter = 1;
     this.hitmapCounter = 0;
     this.geoHitmapCounter = 0;
     this.clearStencilPasses = [];

@@ -728,6 +728,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapXhrImageLoad':               this.config.mapXhrImageLoad = utils.validateBool(value, false); break;
     case 'mapLoadMode':                   this.config.mapLoadMode = utils.validateString(value, 'topdown'); break;
     case 'mapGeodataLoadMode':            this.config.mapGeodataLoadMode = utils.validateString(value, 'fit'); break;
+    case 'mapGridMode':                   this.config.mapGridMode = utils.validateString(value, 'linear'); break;
     case 'mapPreciseBBoxTest':            this.config.mapPreciseBBoxTest = utils.validateBool(value, true); break;
     case 'mapPreciseDistanceTest':        this.config.mapPreciseDistanceTest = utils.validateBool(value, false); break;
     case 'mapHeightfiledWhenUnloaded':    this.config.mapHeightfiledWhenUnloaded= utils.validateBool(value, false); break;
@@ -735,6 +736,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapVirtualSurfaces':            this.config.mapVirtualSurfaces = utils.validateBool(value, true); break;
     case 'mapDegradeHorizon':             this.config.mapDegradeHorizon = utils.validateBool(value, true); break;
     case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAXVALUE, Number.MAXVALUE, Number.MAXVALUE], [1, 3000, 15000, 7000]); break;
+    case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
@@ -769,6 +771,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapXhrImageLoad':               return this.config.mapXhrImageLoad;
     case 'mapLoadMode':                   return this.config.mapLoadMode;
     case 'mapGeodataLoadMode':            return this.config.mapGeodataLoadMode;
+    case 'mapGridMode':                   return this.config.mapGridMode;
     case 'mapPreciseBBoxTest':            return this.config.mapPreciseBBoxTest;
     case 'mapPreciseDistanceTest':        return this.config.mapPreciseDistanceTest;
     case 'mapHeightfiledWhenUnloaded':    return this.config.mapHeightfiledWhenUnloaded;
@@ -776,6 +779,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapVirtualSurfaces':            return this.config.mapVirtualSurfaces;
     case 'mapDegradeHorizon':             return this.config.mapDegradeHorizon;
     case 'mapDegradeHorizonParams':       return this.config.mapDegradeHorizonParams;
+    case 'mapGridSurrogatez':             return this.config.mapGridSurrogatez;
     case 'mario':                         return this.config.mario;
     }
 };

@@ -266,7 +266,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 74:
                 case 106:
-                    debug.drawEarth = !debug.drawEarth; hit = true; break; //key X pressed
+                    debug.drawEarth = !debug.drawEarth; hit = true; break; //key J pressed
 
                 case 88:
                 case 120:
@@ -286,7 +286,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 90:
                 case 122:
-                    debug.ignoreTexelSize = !debug.ignoreTexelSize; break; //key Z pressed
+                    debug.maxZoom = !debug.maxZoom; break; //key Z pressed
 
                 case 78:
                 case 110:

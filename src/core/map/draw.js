@@ -49,8 +49,13 @@ var MapDraw = function(map) {
         drawTileCounter : 0,
         drawFog : this.config.mapFog,
         debugTextSize : 2.0,
-        ignoreTexelSize : false
+        ignoreTexelSize : false,
+        maxZoom : false
     };
+
+    this.gridFlat = false;
+    this.gridGlues = false;
+    this.gridSkipped = false;
 
     this.fogDensity = 0;
     this.zFactor = 0;
@@ -144,6 +149,13 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         //why calling this function distorts camera? why I have call it before update camera< 
         //var camInfo = this.measure.getPositionCameraInfo(this.position, this.getNavigationSrs().isProjected(), true); //
     //}
+
+    switch (this.config.mapGridMode) {
+        case 'none':       this.gridSkipped = true; this.gridFlat = false; this.gridGlues = false;  break;
+        case 'flat':       this.gridSkipped = false; this.gridFlat = true; this.gridGlues = false;  break;
+        case 'linear':     this.gridSkipped = false; this.gridFlat = false; this.gridGlues = true;  break;
+        case 'fastlinear': this.gridSkipped = false; this.gridFlat = false; this.gridGlues = false; break;
+    }
 
     var drawTiles = this.drawTiles;
     var camInfo = camera.update();
@@ -240,6 +252,13 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                         if (tile && ((single && tile.id[0] == lod) || (!single && tile.id[0] <= lod))) {
                             drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.pixelSize, tile.priority, false, false);
                         }
+                    } else {
+                        tile = tiles[i][0];
+                        if (drawTiles.debug.drawBBoxes) {
+                            drawTiles.drawTileInfo(tile, tile.metanode, cameraPos);
+                        }
+
+                        tile.drawGrid(cameraPos); 
                     }
                 }
             }

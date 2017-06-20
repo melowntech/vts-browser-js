@@ -676,6 +676,62 @@ GpuShaders.planeFragment2Shader = 'precision mediump float;\n'+
         'gl_FragColor = mix(fogColor, c, vFogFactor);\n'+
     '}';
 
+GpuShaders.planeVertex3Shader =
+    'attribute vec3 aPosition;\n'+
+    'attribute vec2 aTexCoord;\n'+
+    'uniform mat4 uMV, uProj;\n'+
+    'uniform vec4 uParams;\n'+    //[uGridStep1, fogDensity, indexFactor, uGridStep2]
+    'uniform vec4 uParams3;\n'+    //[px, py, sx, sy]
+    'uniform float uPoints[9*3];\n'+
+    'uniform vec3 uVector;\n'+  
+    'uniform float uHeights[9];\n'+
+    'varying vec2 vTexCoord;\n'+
+    'varying vec2 vTexCoord2;\n'+
+    'varying float vFogFactor;\n'+
+    'vec3 quadPoint(int i1, int i2, int i3, float t, float t2) {\n'+
+        'float p1x = uPoints[i1], p1y = uPoints[i1+1], p1z = uPoints[i1+2];\n'+
+        'float p3x = uPoints[i3], p3y = uPoints[i3+1], p3z = uPoints[i3+2];\n'+
+        'float p2x = 2.0*uPoints[i2]-p1x*0.5-p3x*0.5;\n'+
+        'float p2y = 2.0*uPoints[i2+1]-p1y*0.5-p3y*0.5;\n'+
+        'float p2z = 2.0*uPoints[i2+2]-p1z*0.5-p3z*0.5;\n'+
+        'return vec3(t2*t2*p1x+2.0*t2*t*p2x+t*t*p3x, t2*t2*p1y+2.0*t2*t*p2y+t*t*p3y, t2*t2*p1z+2.0*t2*t*p2z+t*t*p3z); }\n'+
+    'float linearHeight(float x, float y) {\n'+
+        'int ix = int(x);\n'+
+        'int iy = int(y);\n'+
+        'int index = (2-iy)*3+ix;\n'+
+        'int index2 = (2-(iy+1))*3+ix;\n'+
+        'float fx = fract(x);\n'+
+        'float fy = fract(y);\n'+
+        'float w0 = (uHeights[index] + (uHeights[index+1] - uHeights[index])*fx);\n'+
+        'float w1 = (uHeights[index2] + (uHeights[index2+1] - uHeights[index2])*fx);\n'+
+        'return (w0 + (w1 - w0)*fy);\n'+
+    '}\n'+
+    'void main() {\n'+
+        'vec3 indices = aPosition;\n'+
+        'float t = aPosition.y * uParams[2];\n'+  //vertical index
+        'float tt = t;\n'+
+        'float t2 = (1.0-t);\n'+
+        'vec3 p1 = quadPoint(0, 3, 6, t, t2);\n'+
+        'vec3 p2 = quadPoint(9, 9+3, 9+6, t, t2);\n'+
+        'vec3 p3 = quadPoint(18, 18+3, 18+6, t, t2);\n'+
+        't = aPosition.x * uParams[2];\n'+  //horizontal index
+        'float tt2 = t;\n'+
+        't2 = (1.0-t);\n'+
+        'float p2x = 2.0*p2.x-p1.x*0.5-p3.x*0.5;\n'+
+        'float p2y = 2.0*p2.y-p1.y*0.5-p3.y*0.5;\n'+
+        'float p2z = 2.0*p2.z-p1.z*0.5-p3.z*0.5;\n'+
+        'vec4 p = vec4(t2*t2*p1.x+2.0*t2*t*p2x+t*t*p3.x, t2*t2*p1.y+2.0*t2*t*p2y+t*t*p3.y, t2*t2*p1.z+2.0*t2*t*p2z+t*t*p3.z, 1);\n'+
+        'p.xyz += uVector * linearHeight(tt*2.0, tt2*2.0);\n'+
+        'vec4 camSpacePos = uMV * p;\n'+
+        'gl_Position = uProj * camSpacePos;\n'+
+        'float camDist = length(camSpacePos.xyz);\n'+
+        'vFogFactor = exp(uParams[1] * camDist);\n'+
+        'vec2 uv = aTexCoord;\n'+
+        'uv.x = uv.x * uParams3[2] + uParams3[0];\n'+
+        'uv.y = uv.y * uParams3[3] + uParams3[1];\n'+
+        'vTexCoord = uv;\n'+
+    '}';
+
     
 //textured tile mesh
 GpuShaders.tileVertexShader =
