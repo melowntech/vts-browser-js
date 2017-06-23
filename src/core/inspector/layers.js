@@ -286,6 +286,8 @@ InspectorLayers.prototype.initViews = function() {
                 style : null,
                 originalStyle : freeLayerInfo['style'],
                 depthShift : 0,
+                depthShift2 : 0,
+                depthShift3 : 0,
                 layers : states 
             };
         }
@@ -327,13 +329,15 @@ InspectorLayers.prototype.initViews = function() {
             if (view.freeLayers[skey]) {
                 freeLayer = view.freeLayers[skey]; 
                 freeLayer.enabled = true;
-                freeLayer.depthShift = freeLayerProperties['depthShift'] || 0;
-                freeLayer.depthShift *= 100;
+                var depthShift = freeLayerProperties['depthOffset'] || [0,0,0];
+                freeLayer.depthShift = depthShift[0];
+                freeLayer.depthShift2 = depthShift[1];
+                freeLayer.depthShift3 = depthShift[2];
                 freeLayer.style = freeLayerProperties['style'];
                 //freeLayer.originalStyle = freeLayer.style;
                 
-                layers = [];
-                freeLayer.layers = layers;
+                layers = freeLayerProperties['boundLayers'] || [];
+                //freeLayer.layers = layers;
                 
                 for (i = 0, li = layers.length; i < li; i++) {
                     if (typeof layers[i] === 'string') {
@@ -509,8 +513,10 @@ InspectorLayers.prototype.buildFreeLayerProperties = function(id) {
     case 'mesh':
     case 'mesh-tiles':
 
-        html += '<div class="vts-layers-item"><div class="vts-layers-name" style="width:185px">' + 'DepthShift:' + '</div>'
+        html += '<div class="vts-layers-item"><div class="vts-layers-name" style="width:90px">' + 'DepthOffset:' + '</div>'
                      + '<input id="vts-fl-properties-depth-shift" type="number" min="-100" max="100" step="1" value="' + view.freeLayers[id].depthShift + '">'
+                     + '<input id="vts-fl-properties-depth-shift2" type="number" min="-100" max="100" step="1" value="' + view.freeLayers[id].depthShift2 + '">'
+                     + '<input id="vts-fl-properties-depth-shift3" type="number" min="-100" max="100" step="1" value="' + view.freeLayers[id].depthShift3 + '">'
                      + '</div>';
     
         html += '<div class="vts-layers-item"><div class="vts-layers-name">' + 'BoundLayers:' + '</div></div>';
@@ -530,6 +536,10 @@ InspectorLayers.prototype.buildFreeLayerProperties = function(id) {
     
         htmlId = 'vts-fl-properties-depth-shift';
         document.getElementById(htmlId).onchange = this.switchFreeLayerProperty.bind(this, htmlId, 'depthShift');
+        htmlId = 'vts-fl-properties-depth-shift2';
+        document.getElementById(htmlId).onchange = this.switchFreeLayerProperty.bind(this, htmlId, 'depthShift2');
+        htmlId = 'vts-fl-properties-depth-shift3';
+        document.getElementById(htmlId).onchange = this.switchFreeLayerProperty.bind(this, htmlId, 'depthShift3');
         
         for (i = 0, li = layers.length; i < li; i++) {
             htmlId = 'vts-fl-properties-checkbox-' + layers[i].id;
@@ -771,12 +781,10 @@ InspectorLayers.prototype.switchFreeLayerProperty = function(htmlId, action) {
     var layer = view.freeLayers[this.currentFreeLayer];
 
     switch(action) {
-    case 'depthShift':
-        layer.depthShift = parseInt(element.value, 10);
-        break;
-    case 'style':
-        layer.style = element.value;
-        break;
+    case 'depthShift':  layer.depthShift = parseInt(element.value, 10); break;
+    case 'depthShift2': layer.depthShift2 = parseInt(element.value, 10); break;
+    case 'depthShift3': layer.depthShift3 = parseInt(element.value, 10); break;
+    case 'style':       layer.style = element.value; break;
     }
     
     this.applyMapView();
@@ -840,8 +848,11 @@ InspectorLayers.prototype.applyMapView = function(jsonOnly) {
                 view['freeLayers'][key]['style'] = freeLayers[key].style;
             }
             
-            if (freeLayers[key].depthShift != 0) {
-                view['freeLayers'][key]['depthShift'] = parseFloat((freeLayers[key].depthShift*0.01).toFixed(2));
+            if (!(freeLayers[key].depthShift == 0 && freeLayers[key].depthShift2 == 0 && freeLayers[key].depthShift3 == 0)) {
+                view['freeLayers'][key]['depthOffset'] = [
+                    parseFloat((freeLayers[key].depthShift).toFixed(2)),
+                    parseFloat((freeLayers[key].depthShift2).toFixed(2)),
+                    parseFloat((freeLayers[key].depthShift3).toFixed(2)) ];
             } 
             
         }

@@ -442,7 +442,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var proj = renderer.camera.getProjectionMatrix();
 
     program.setMat4('uMV', mv);
-    program.setMat4('uProj', proj);
+
+    if (draw.zbufferOffset) {
+        program.setMat4('uProj', proj, renderer.getZoffsetFactor(draw.zbufferOffset));
+    } else {
+        program.setMat4('uProj', proj);
+    }
 
     if (drawWireframe == 0) {
         switch(type) {

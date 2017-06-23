@@ -513,7 +513,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
     do {
         var best = 0;
         newProcessBufferIndex = 0;
-        
+       
         for (i = processBufferIndex - 1; i >= 0; i--) {
             tile = processBuffer[i];
             node = tile.metanode;
