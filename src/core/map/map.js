@@ -519,7 +519,7 @@ Map.prototype.setView = function(view, forceRefresh) {
         
         if (freeLayer) {
             
-            freeLayer.zFactor = freeLayers[key]['depthShift'] || 0;
+            freeLayer.zFactor = freeLayers[key]['depthOffset'];
             
             this.freeLayerSequence.push(freeLayer);
             

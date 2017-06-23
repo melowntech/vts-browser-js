@@ -314,13 +314,19 @@ MapSurface.prototype.hasMetatile = function(id) {
 MapSurface.prototype.setStyle = function(style) {
     if (this.style == style) {
         return;
-    } 
+    }
+
+    var id = style;
+
+    if (typeof id !== 'object') {
+        id = this.processUrl(id, '');
+    }
     
-    this.stylesheet = this.map.getStylesheet(style);
+    this.stylesheet = this.map.getStylesheet(id);
     
     if (!this.stylesheet) {
-        this.stylesheet = new MapStylesheet(this.map, style, style, this);
-        this.map.addStylesheet(style, this.stylesheet); 
+        this.stylesheet = new MapStylesheet(this.map, id, style, this);
+        this.map.addStylesheet(id, this.stylesheet); 
     } 
 
     this.style = style;

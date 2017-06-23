@@ -61,6 +61,7 @@ var MapDraw = function(map) {
     this.zFactor = 0;
     //this.zFactor2 = 0.000012;
     this.zFactor2 = 0.003;
+    this.zbufferOffset = null;    
     this.zShift = 0;
     this.zLastShift = 0;
     this.bestMeshTexelSize = 1;
@@ -89,7 +90,6 @@ var MapDraw = function(map) {
     this.drawAuraState = gpu.createState({zwrite:false, blend:true});
     this.drawAtmoState = gpu.createState({zwrite:false, ztest:false, blend:true});
     this.drawAtmoState2 = gpu.createState({zwrite:false, ztest:true, blend:false});
-//    this.drawAuraState = this.renderer.gpu.createState({zwrite:false, ztest:false, blend:true});
 
     this.degradeHorizonFactor = 0;
     this.degradeHorizonTiltFactor = 0;
@@ -145,11 +145,6 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
     var projected = this.isProjected;
 
-    //if (!projected) {
-        //why calling this function distorts camera? why I have call it before update camera< 
-        //var camInfo = this.measure.getPositionCameraInfo(this.position, this.getNavigationSrs().isProjected(), true); //
-    //}
-
     switch (this.config.mapGridMode) {
         case 'none':       this.gridSkipped = true; this.gridFlat = false; this.gridGlues = false;  break;
         case 'flat':       this.gridSkipped = false; this.gridFlat = true; this.gridGlues = false;  break;
@@ -189,7 +184,6 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
    
     if (this.drawChannel != 1) {
         gpu.clear(true, false);
-        //this.gpu.clear(true, true, [0,0,0,255]);
     } else { //dender depth map
         gpu.clear(true, true, [255,255,255,255]);
     }
@@ -197,10 +191,6 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     gpu.setState(this.drawStardomeState);
 
     if (this.drawChannel != 1) {
-        //if (this.getNavigationSrs().isProjected()) {    
-            //this.renderer.drawSkydome(this.renderer.skydomeTexture, this.renderer.progSkydome);
-        //} else {
-            
         if (this.config.mapLowresBackground < 0.8) {
             if (debug.drawWireframe == 2) {
                 renderer.draw.drawSkydome(renderer.whiteTexture, renderer.progStardome);
@@ -208,8 +198,6 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 renderer.draw.drawSkydome(renderer.blackTexture, renderer.progStardome);
             }
         }
-        
-        //}
     }
 
     gpu.setState(this.drawTileState);
@@ -382,11 +370,17 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
             if (layer.ready && layer.tree && 
                 (!layer.geodata || (layer.stylesheet && layer.stylesheet.isReady())) && this.drawChannel == 0) {
                 
+                if (layer.zFactor) {
+                    this.zbufferOffset = layer.zFactor;
+                }
+
                 if (layer.type == 'geodata') {
                     this.drawMonoliticGeodata(layer);
                 } else {
                     layer.tree.draw(camInfo);
                 }
+
+                this.zbufferOffset = null;
             }
         }
     
@@ -425,42 +419,17 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
             replay.tracedFreeNodes = nodeBuffer;
             replay.storeFreeNodes = false; 
         }
-        
-        //draw surface tiles stored in buffer
-        /*
-        for (var i = 0, li = this.tileBuffer.length; i < li; i++) {
-            var tiles = this.tileBuffer[i];
-            
-            if (tiles) {
-                for (var j = 0, lj = tiles.length; j < lj; j++) {
-                    var tile = tiles[j];
-                    var surface = tile.tile.surface;
-                    
-                    if (surface && !surface.free) { //do no draw free layers
-                        //var tmp = this.zFactor;
-                        //this.zFactor += (surface) ? surface.zFactor : 0;
-                        this.drawSurfaceTile(tile.tile, tile.node, cameraPos, tile.pixelSize, tile.priority, false, false);
-                        //this.zFactor = tmp;
-                    }
-                }
-            } 
-        }*/
     }
 
     //draw skydome before geodata
     if (this.drawChannel != 1 && !projected && debug.drawFog && map.referenceFrame.id == 'melown2015') {    
 
-        //var camInfo = this.measure.getPositionCameraInfo(this.position, true);
         var navigationSrsInfo = map.getNavigationSrs().getSrsInfo();
-
         var earthRadius =  navigationSrsInfo['a'];
         var atmoSize = 50000;
         
         var cameraPosToEarthCenter = [0,0,0,0];
         vec3.normalize(camera.position, cameraPosToEarthCenter);
-        
-        //var horizAngle = Math.atan(1.0/(vec3.length(camera.position) / navigationSrsInfo['a']));  //cotan = cameraDistFromCenter / earthRadius
-        //var horizAngle2 = (horizAngle / Math.PI * 180)*0.5;
 
         var pos = map.getPosition();
         var orientation = pos.getOrientation();
@@ -507,28 +476,6 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
     if (debug.drawEarth) {
         if (!skipFreeLayers) {
-            //draw free layers tiles stored in buffer
-            /*
-            if (this.freeLayerSequence.length > 0) {
-                for (var i = 0, li = this.tileBuffer.length; i < li; i++) {
-                    var tiles = this.tileBuffer[i];
-                    
-                    if (tiles) {
-                        for (var j = 0, lj = tiles.length; j < lj; j++) {
-                            var tile = tiles[j];
-                            var surface = tile.tile.surface;
-                            
-                            if (surface && surface.free) { //draw only free layers
-                                var tmp = this.zFactor;
-                                this.zFactor += (surface) ? surface.zFactor : 0;
-                                this.drawSurfaceTile(tile.tile, tile.node, cameraPos, tile.pixelSize, tile.priority, false, false);
-                                this.zFactor = tmp;
-                            }
-                        }
-                    } 
-                }
-            }*/
-        
             if (map.freeLayersHaveGeodata && this.drawChannel == 0) {
                 renderer.draw.drawGpuJobs();
             }
@@ -601,8 +548,6 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
 
 
 MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, doNotLoad) {
-    //var commands = tile.drawCommands;
-
     if (commands.length > 0) {
         this.drawTileCounter++;
     }
@@ -698,17 +643,6 @@ MapDraw.prototype.drawMonoliticGeodata = function(surface) {
         if (surface.monoGeodataView.isReady()) {
             surface.monoGeodataView.draw(this.camera.position);
         }
-
-        /*
-        surface.credits = {};
-
-        //set credits
-        for (var k = 0, lk = node.credits.length; k < lk; k++) {
-            surface.credits[node.credits[k]] = true;  
-        }
-
-        this.applyCredits(surface);
-        */
     }
 };
 
@@ -725,18 +659,8 @@ MapDraw.prototype.updateFogDensity = function() {
     var orientation = pos.getOrientation();
     
     var cameraVisibility = this.camera.getFar();
-//    var density = Math.log(0.05) / (cameraVisibility * 10*(Math.max(5,-orientation[1])/90));
-
-
-    //var atmosphereHeight = 100000;
-    //this.cameraHeight;
-
-    //var density = Math.log(0.05) / (cameraVisibility * (Math.max(5,-orientation[1])/90));
     
     var tiltFactor = (Math.max(5,-orientation[1])/90);
-    //var heightFactor = 1-Math.max(0,Math.min(1.0,this.cameraHeight / atmosphereHeight));
-    
-//    var density = ((Math.log(0.05) / (cameraVisibility)) * tiltFactor * heightFactor);
     var density = Math.log(0.05) / ((cameraVisibility * Math.max(1,this.camera.height*0.0001))* tiltFactor);
     density *= (5.0) / (Math.min(50000, Math.max(this.camera.distance, 1000)) /5000);
 
