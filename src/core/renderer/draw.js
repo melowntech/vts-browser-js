@@ -6,12 +6,12 @@ import {math as math_} from '../utils/math';
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
 var math = math_;
 
-
 var RendererDraw = function(renderer) {
     this.renderer = renderer;
     this.core = renderer.core;
     this.gpu = renderer.gpu;
     this.gl = renderer.gpu.gl;
+    this.rmap = renderer.rmap;
 };
 
 
@@ -591,6 +591,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var gl = this.gl;
     var renderer = this.renderer;
 
+    renderer.geoRenderCounter++;
+
     //setup stencil
     gl.stencilMask(0xFF);
     gl.clear(gl.STENCIL_BUFFER_BIT);
@@ -961,6 +963,21 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 pp[0] = Math.round(pp[0]);
 
                 this.drawLineString([[pp[0], pp[1], pp[2]], [pp[0], pp[1]-stickShift, pp[2]]], s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
+            }
+        }
+
+        if (job.noOverlap) {
+            //var pp = renderer.project2(job.center, mvp, renderer.cameraPosition);
+            var pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+            var o = job.noOverlap;
+
+            if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3])) {
+                return;
+            }
+
+            if (renderer.drawLabelBoxes) {
+                this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
+                                     [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], 1, [255, 0, 0, 255], null, true, null, null, null);
             }
         }
 

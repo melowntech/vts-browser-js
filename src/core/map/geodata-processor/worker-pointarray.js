@@ -105,6 +105,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                 align : getLayerPropertyValue(style, 'label-align', pointArray, lod),
                 text : text,
                 width : getLayerPropertyValue(style, 'label-width', pointArray, lod),
+                noOverlap : getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod),
+                noOverlapMargin : getLayerPropertyValue(style, 'label-no-overlap-margin', pointArray, lod),
                 vertexBuffer : new Float32Array(bufferSize),
                 originBuffer : new Float32Array(bufferSize2),
                 texcoordsBuffer : new Float32Array(bufferSize),
@@ -138,6 +140,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     var tileX = globals.tileX;
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
+    var labelBBox;
 
     var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
 
@@ -151,7 +154,6 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             totalPoints += points.length;
         
             //allocate buffers
-        
             if (!pointFlat) {
                 pointsVertices = circleSides * 3 * 4;
                 vertexBuffer = new Array(points.length * pointsVertices);
@@ -182,7 +184,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                 }
     
                 if (label) {
-                    processLabel(p1, labelData); //, pointArray, lod, style, zIndex);
+                    labelBBox = processLabel(p1, labelData); //, pointArray, lod, style, zIndex);
                 }
         
                 for (var j = 0; j < circleSides; j++) {
@@ -298,10 +300,15 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     }
 
     if (label && labelData.vertexBuffer.length > 0) {
+        if (labelData.noOverlap) {
+            var margin = labelData.noOverlapMargin;
+            var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1]];
+        }
+
         postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,
             'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer,
             'color':labelData.color, 'z-index':zIndex, 'visibility': visibility, 'culling': culling, 
-            'center': center, 'stick': labelData.stick,
+            'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
@@ -511,6 +518,8 @@ var processLabel = function(point, labelData) {
 
     labelData.index = index;
     labelData.index2 = index2;
+
+    return [offsetX * 0.5, offsetY * 0.5, (offsetX + maxWidth) * 0.5 + 1, (offsetY + Math.abs(y)) *0.5];
 };
 
 export {processPointArrayPass};

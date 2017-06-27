@@ -5,6 +5,7 @@ import GpuTexture_ from './gpu/texture';
 import Camera_ from './camera';
 import RenderInit_ from './init';
 import RenderDraw_ from './draw';
+import RenderRMap_ from './rmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat4 = mat4_;
@@ -13,7 +14,7 @@ var GpuTexture = GpuTexture_;
 var Camera = Camera_;
 var RenderInit = RenderInit_;
 var RenderDraw = RenderDraw_;
-
+var RenderRMap = RenderRMap_;
 
 var Renderer = function(core, div, onUpdate, onResize, config) {
     this.config = config || {};
@@ -33,11 +34,13 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.onlyAdvancedHitLayers = false;
     this.advancedPassNeeded = false;
     this.hitmapCounter = 0;
+    this.geoRenderCounter = 0;
     this.geoHitmapCounter = 0;
     this.clearStencilPasses = [];
     this.onResizeCall = onResize;
     //this.math = Math;
     this.stencilLineState = null;
+    this.drawLabelBoxes = false;
 
 
     this.hoverFeatureCounter = 0;
@@ -55,7 +58,6 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     //this.texelSizeLimit = this.core.mapConfig.texelSize * texelSizeFactor;
 
     this.gpu = new GpuDevice(div, this.curSize, this.config.rendererAllowScreenshots, this.config.rendererAntialiasing);
-
     this.camera = new Camera(this, 45, 2, 1200000.0);
 
     //reduce garbage collection
@@ -124,6 +126,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     //intit resources
     // eslint-disable-next-line
     this.init = new RenderInit(this);
+    this.rmap = new RenderRMap(this, 50);
     this.draw = new RenderDraw(this);
 
     var factor = 1;
@@ -203,22 +206,25 @@ Renderer.prototype.resizeGL = function(width, height, skipCanvas, skipPaint) {
 };
 
 
-Renderer.prototype.project2 = function(point, mvp) {
-    var p = [point[0], point[1], point[2], 1 ];
+Renderer.prototype.project2 = function(point, mvp, cameraPos) {
+    var p = [0, 0, 0, 1];
+
+    if (cameraPos) {
+        p = mat4.multiplyVec4(mvp, [point[0] - cameraPos[0], point[1] - cameraPos[1], point[2] - cameraPos[2], 1 ]);
+    } else {
+        p = mat4.multiplyVec4(mvp, [point[0], point[1], point[2], 1 ]);
+    }
 
     //project point coords to screen
-    var p2 = [0, 0, 0, 1];
-    p2 = mat4.multiplyVec4(mvp, p);
-
-    if (p2[3] != 0) {
+    if (p[3] != 0) {
         var sp = [0,0,0];
 
         //x and y are in screen pixels
-        sp[0] = ((p2[0]/p2[3])+1.0)*0.5*this.curSize[0];
-        sp[1] = (-(p2[1]/p2[3])+1.0)*0.5*this.curSize[1];
+        sp[0] = ((p[0]/p[3])+1.0)*0.5*this.curSize[0];
+        sp[1] = (-(p[1]/p[3])+1.0)*0.5*this.curSize[1];
 
         //depth in meters
-        sp[2] = p2[2]/p2[3];
+        sp[2] = p[2]/p[3];
 
         return sp;
     } else {
@@ -384,7 +390,7 @@ Renderer.prototype.switchToFramebuffer = function(type) {
 
     case 'geo':
     case 'geo2':
-            
+
         this.hoverFeatureCounter = 0;
         size = this.hitmapSize;
             

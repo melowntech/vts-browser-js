@@ -12,7 +12,6 @@ var MapDrawTiles = MapDrawTiles_;
 var MapGeodataView = MapGeodataView_;
 var MapGeodata = MapGeodata_;
 
-
 var MapDraw = function(map) {
     this.map = map;
     this.config = map.config;
@@ -45,6 +44,7 @@ var MapDraw = function(map) {
         drawSurfaces : false,
         drawCredits : false,
         drawOrder : false,
+        drawLabelBoxes : false,
         drawEarth : true,   
         drawTileCounter : 0,
         drawFog : this.config.mapFog,
@@ -167,6 +167,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     this.renderer.cameraVector = camera.vector; 
     this.renderer.cameraViewExtent = map.position.getViewExtent();
     this.renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
+    this.renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
 
     if (projected) {
         var yaw = math.radians(renderer.cameraOrientation[0]);
