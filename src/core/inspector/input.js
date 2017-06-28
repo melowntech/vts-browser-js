@@ -384,6 +384,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 111:
                 debug.drawOrder = !debug.drawOrder; break; //key O pressed
 
+            case 65:
+            case 97:
+                debug.drawLabelBoxes = !debug.drawLabelBoxes; break; //key A pressed
+
             case 69:
             case 101:
                 debug.debugTextSize = (debug.debugTextSize == 2.0) ? 3.0 : 2.0; break; //key E pressed

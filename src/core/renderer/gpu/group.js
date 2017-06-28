@@ -296,6 +296,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
         job.texture = this.renderer.getBitmap(icon['url'], icon['filter'] || 'linear', icon['tiled'] || false);
     } else {
         job.texture = this.renderer.font.texture;
+        job.noOverlap = data['noOverlap'];
     }
 
     //create vertex buffer
