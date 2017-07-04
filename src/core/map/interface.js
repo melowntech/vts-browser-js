@@ -3,12 +3,14 @@ import MapTrajectory_ from './trajectory';
 import MapBoundLayer_ from './bound-layer';
 import MapSurface_ from './surface';
 import MapPosition_ from './position';
+import MapGeodataBuilder_ from './geodata-builder';
 
 //get rid of compiler mess
 var MapTrajectory = MapTrajectory_;
 var MapBoundLayer = MapBoundLayer_;
 var MapSurface = MapSurface_;
 var MapPosition = MapPosition_;
+var MapGeodataBuilder = MapGeodataBuilder_;
 
 
 var MapInterface = function(map) {
@@ -406,5 +408,8 @@ MapInterface.prototype.hover = function(screenX, screenY, persistent, state) {
     this.map.hover(screenX, screenY, persistent, state);
 };
 
+MapInterface.prototype.createGeodata = function() {
+    return new MapGeodataBuilder(this.map);
+};
 
 export default MapInterface;

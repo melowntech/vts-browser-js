@@ -650,6 +650,7 @@ var getDefaultLayerPropertyValue = function(key) {
 
     case 'visible':    return true;
     case 'visibility': return 0;
+
     case 'culling':    return 180;
     case 'next-pass':  return null;
     }
