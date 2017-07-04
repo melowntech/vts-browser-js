@@ -26,6 +26,8 @@ MapGeodataBuilder.prototype.addGroup = function(id) {
     });
 
     this.currentGroup = this.groups[this.groups.length - 1];
+
+    return this;
 };
 
 MapGeodataBuilder.prototype.addPoint = function(point, properties, id, srs) {
@@ -38,6 +40,8 @@ MapGeodataBuilder.prototype.addPoint = function(point, properties, id, srs) {
         points : [ this.physSrs.convertCoordsFrom(point, srs ? srs : this.defaultSrs) ],
         properties : properties
     });
+
+    return this;
 };
 
 MapGeodataBuilder.prototype.addPointArray = function(points, properties, id, srs) {
@@ -57,6 +61,8 @@ MapGeodataBuilder.prototype.addPointArray = function(points, properties, id, srs
         points : convertedPoints,
         properties : properties
     });
+
+    return this;
 };
 
 MapGeodataBuilder.prototype.addLineString = function(linePoints, properties, id, srs) {
@@ -76,6 +82,8 @@ MapGeodataBuilder.prototype.addLineString = function(linePoints, properties, id,
         lines : [convertedPoints],
         properties : properties
     });
+
+    return this;
 };
 
 MapGeodataBuilder.prototype.addLineStringArray = function(lines, properties, id, srs) {
@@ -103,6 +111,8 @@ MapGeodataBuilder.prototype.addLineStringArray = function(lines, properties, id,
         lines : convertedLines,
         properties : properties
     });
+
+    return this;
 };
 
 MapGeodataBuilder.prototype.compileGroup = function(group, resolution) {
@@ -266,6 +276,27 @@ MapGeodataBuilder.prototype.makeGeodata = function(resolution) {
 
 MapGeodataBuilder.prototype.makeFreeLayer = function(style, resolution) {
     var geodata = this.makeGeodata(resolution);
+
+    if (!style) {
+        style = {
+            "layers" : {
+                "my-lines" : {
+                    "filter" : ["==", "#type", "line"],
+                    "line": true,
+                    "line-width" : 4,
+                    "line-color": [255,0,255,255],
+                    "zbuffer-offset" : [-5,0,0]
+                },
+                "my-points" : {
+                    "filter" : ["==", "#type", "point"],
+                    "point": true,
+                    "point-radius" : 10,
+                    "point-color": [0,0,255,255],
+                    "zbuffer-offset" : [-5,0,0]
+                }
+            }
+        }        
+    }
 
     var freeLayer = {
             'credits' : [],
