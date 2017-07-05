@@ -317,7 +317,7 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
             
         } else {
             var res = map.measure.getSpatialDivisionNodeAndExtents(this.id);
-            divisionNode = res[0]; 
+            divisionNode = res ? res[0] : null; 
 
             if (!divisionNode) {
                 return;
