@@ -1,7 +1,6 @@
 
 import {globals as globals_, vec3Normalize as vec3Normalize_,
-        vec3Cross as vec3Cross_,
-        vec3AnyPerpendicular as vec3AnyPerpendicular_} from './worker-globals.js';
+        vec3Cross as vec3Cross_} from './worker-globals.js';
 import {getLayerPropertyValue as getLayerPropertyValue_,
         getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
 import {addStreetTextOnPath as addStreetTextOnPath_,
@@ -11,7 +10,7 @@ import {postGroupMessage as postGroupMessage_} from './worker-message.js';
 
 //get rid of compiler mess
 var globals = globals_, vec3Normalize = vec3Normalize_,
-    vec3Cross = vec3Cross_, vec3AnyPerpendicular = vec3AnyPerpendicular_;
+    vec3Cross = vec3Cross_;
 var getLayerPropertyValue = getLayerPropertyValue_,
     getLayerExpresionValue = getLayerExpresionValue_;
 var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
@@ -163,7 +162,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     
         var distance = 0.001;
         var distance2 = 0.001;
-        var ln = null;
+        /*var ln = null;*/
         var vertexBase = index;
         var normalBase = index2;
 
@@ -507,7 +506,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
             
             if (!skipJoins) {
                 var angleShift = 0;//(joinParams != null) ? joinParams[i] : 0;
-                var dx, dy;
+                /*var dx, dy;*/
 
                 if (lineFlat) {
 
@@ -981,5 +980,76 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
 };
 
-export {processLineStringPass, processLineLabel};
+var processLineStringGeometry = function(lineString) {
+    var lines = (lineString['lines'] || lineString['d-lines'])  || [];
+
+    if (lines.length == 0) {
+        return;
+    }
+
+    var dlines = (lineString['d-lines']) ? true : false;
+    var totalPoints = 0;
+    var indicesBuffer = new Uint32Array(lines.length);
+
+    for (ii = 0; ii < lines.length; ii++) {
+        indicesBuffer[ii] = totalPoints;
+
+        if (Array.isArray(lines[ii])) {
+            totalPoints += lines[ii].length;
+        }
+    }
+
+    var geometryBuffer = new Float64Array(totalPoints * 3);
+
+    /*var forceOrigin = globals.forceOrigin;
+    var tileX = globals.tileX;
+    var tileY = globals.tileY;*/
+    var forceScale = globals.forceScale;
+    var index = 0, p1, p2, pp, p;
+
+    for (ii = 0; ii < lines.length; ii++) {
+        if (!Array.isArray(lines[ii]) || !lines[ii].length) {
+            continue;
+        }
+        
+        var points = lines[ii];
+   
+        p = points[0];
+        p1 = [p[0], p[1], p[2]];
+    
+        //add lines
+        for (i = 0, li = points.length; i < li; i++) {
+
+            /*if (forceOrigin) {
+                pp = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+            }*/
+    
+            if (forceScale != null) {
+                pp = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+            }
+
+            geometryBuffer[index] = pp[0];
+            geometryBuffer[index+1] = pp[1];
+            geometryBuffer[index+2] = pp[2];
+            index += 3;
+
+            if (i == (li - 1)) {
+                break;
+            }
+    
+            if (dlines) {
+                p2 = points[i+1];
+                p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
+            } else {
+                p1 = points[i+1];
+            }   
+        }
+    }
+
+    postGroupMessage({'command':'addLineGeometry', 'type': 'line-geometry', 'geometryBuffer': geometryBuffer, 'indicesBuffer': indicesBuffer }, 
+                       [geometryBuffer.buffer, indicesBuffer.buffer]);
+};
+
+
+export {processLineStringPass, processLineLabel, processLineStringGeometry};
 

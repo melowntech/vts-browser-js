@@ -2,7 +2,7 @@
 
 var MapCache = function(map, maxCost) {
     this.map = map;
-    this.maxCost = (maxCost != null) ? maxCost : Number.MAXVALUE;
+    this.maxCost = (maxCost != null) ? maxCost : Number.MAX_VALUE;
     this.last = null;
     this.first = null;
 

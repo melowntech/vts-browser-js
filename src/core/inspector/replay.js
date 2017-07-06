@@ -699,13 +699,13 @@ InspectorReplay.prototype.updateLoadGraphs = function() {
         }
     }
 
-    var minMeshes = Number.MAXVALUE, maxMeshes = 0, avgMeshes = 0, avgMeshesCount = 0;
-    var minTextures = Number.MAXVALUE, maxTextures = 0, avgTextures = 0, avgTexturesCount = 0;
-    var minTextures2 = Number.MAXVALUE, maxTextures2 = 0, avgTextures2 = 0, avgTextures2Count = 0;
-    var minGeodata = Number.MAXVALUE, maxGeodata = 0, avgGeodata = 0, avgGeodataCount = 0;
-    var minMetatiles = Number.MAXVALUE, maxMetatiles = 0, avgMetatiles = 0, avgMetatilesCount = 0;
-    var minThreads = Number.MAXVALUE, maxThreads = 0, avgThreads = 0, avgThreadsCount = 0;
-    var minIntervals = Number.MAXVALUE, maxIntervals = 0, avgIntervals = 0, avgIntervalsCount = 0;
+    var minMeshes = Number.MAX_VALUE, maxMeshes = 0, avgMeshes = 0, avgMeshesCount = 0;
+    var minTextures = Number.MAX_VALUE, maxTextures = 0, avgTextures = 0, avgTexturesCount = 0;
+    var minTextures2 = Number.MAX_VALUE, maxTextures2 = 0, avgTextures2 = 0, avgTextures2Count = 0;
+    var minGeodata = Number.MAX_VALUE, maxGeodata = 0, avgGeodata = 0, avgGeodataCount = 0;
+    var minMetatiles = Number.MAX_VALUE, maxMetatiles = 0, avgMetatiles = 0, avgMetatilesCount = 0;
+    var minThreads = Number.MAX_VALUE, maxThreads = 0, avgThreads = 0, avgThreadsCount = 0;
+    var minIntervals = Number.MAX_VALUE, maxIntervals = 0, avgIntervals = 0, avgIntervalsCount = 0;
     
     li = loaded.length;
 

@@ -432,7 +432,7 @@ MapMeasure.prototype.getSpatialDivisionNodeAndExtents2 = function(id, res, divis
 MapMeasure.prototype.getSpatialDivisionNodeDepths = function() {
     var nodes = this.map.referenceFrame.getSpatialDivisionNodes();
     var maxLod = -1;
-    var minLod = Number.MAXVALUE;
+    var minLod = Number.MAX_VALUE;
 
     for (var i = 0, li = nodes.length; i < li; i++) {
         var node = nodes[i];

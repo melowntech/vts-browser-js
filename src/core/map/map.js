@@ -735,7 +735,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapForceMetatileV3':            this.config.mapForceMetatileV3= utils.validateBool(value, false); break;
     case 'mapVirtualSurfaces':            this.config.mapVirtualSurfaces = utils.validateBool(value, true); break;
     case 'mapDegradeHorizon':             this.config.mapDegradeHorizon = utils.validateBool(value, true); break;
-    case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAXVALUE, Number.MAXVALUE, Number.MAXVALUE], [1, 3000, 15000, 7000]); break;
+    case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], [1, 3000, 15000, 7000]); break;
     case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
@@ -1094,8 +1094,8 @@ Map.prototype.update = function() {
 
     if (this.dirty) {
         this.dirty = false;
-        this.bestMeshTexelSize = 0;//Number.MAXVALUE;
-        this.bestGeodataTexelSize = 0;//Number.MAXVALUE;
+        this.bestMeshTexelSize = 0;//Number.MAX_VALUE;
+        this.bestGeodataTexelSize = 0;//Number.MAX_VALUE;
         
         this.renderSlots.processRenderSlots();
 

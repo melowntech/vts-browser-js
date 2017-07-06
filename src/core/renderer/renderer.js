@@ -430,7 +430,7 @@ Renderer.prototype.hitTest = function(screenX, screenY) {
 
     //conver screen coords to texture coords
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
-        return [0, 0, 0, null, screenRay, Number.MAXVALUE, cameraPos];
+        return [0, 0, 0, null, screenRay, Number.MAX_VALUE, cameraPos];
     }
 
     var x = 0, y = 0;

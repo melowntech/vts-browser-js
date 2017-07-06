@@ -523,51 +523,51 @@ var validateLayerPropertyValue = function(layerId, key, value) {
 
     case 'line':              return validateValue(layerId, key, value, 'boolean');
     case 'line-flat':         return validateValue(layerId, key, value, 'boolean');
-    case 'line-width':        return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'line-width':        return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'line-width-units':  return validateValue(layerId, key, value, 'string');
     case 'line-color':        return validateValue(layerId, key, value, 'object', 4, 0, 255);
     case 'line-style':        return validateValue(layerId, key, value, 'string');
-    case 'line-style-texture':    return validateValue(layerId, key, value, 'object', 3, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'line-style-texture':    return validateValue(layerId, key, value, 'object', 3, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'line-style-background': return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
     case 'line-label':         return validateValue(layerId, key, value, 'boolean');
     case 'line-label-source':  return validateValue(layerId, key, value, 'string');
     case 'line-label-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
-    case 'line-label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
-    case 'line-label-offset':  return validateValue(layerId, key, value, 'number', null, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'line-label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'line-label-offset':  return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
 
     case 'point':        return validateValue(layerId, key, value, 'boolean');
     case 'point-flat':   return validateValue(layerId, key, value, 'boolean');
-    case 'point-radius': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'point-radius': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'point-Layer':  return validateValue(layerId, key, value, 'string');
 
     case 'point-color':  return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
     case 'icon':         return validateValue(layerId, key, value, 'boolean');
-    case 'icon-source':  return validateValue(layerId, key, value, 'object', 5, -Number.MAXVALUE, Number.MAXVALUE);
-    case 'icon-scale':   return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
-    case 'icon-offset':  return validateValue(layerId, key, value, 'object', 2, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'icon-source':  return validateValue(layerId, key, value, 'object', 5, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'icon-scale':   return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'icon-offset':  return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'icon-origin':  return validateValue(layerId, key, value, 'string');
-    case 'icon-stick':   return validateValue(layerId, key, value, 'object', 7, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'icon-stick':   return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'icon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
     case 'label':            return validateValue(layerId, key, value, 'boolean');
     case 'label-color':      return validateValue(layerId, key, value, 'object', 4, 0, 255);
     case 'label-source':     return validateValue(layerId, key, value, 'string');
-    case 'label-size':       return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
-    case 'label-offset':     return validateValue(layerId, key, value, 'object', 2, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'label-size':       return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'label-offset':     return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'label-origin':     return validateValue(layerId, key, value, 'string');
     case 'label-align':      return validateValue(layerId, key, value, 'string');
-    case 'label-stick':      return validateValue(layerId, key, value, 'object', 7, -Number.MAXVALUE, Number.MAXVALUE);
-    case 'label-width':      return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'label-stick':      return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'label-width':      return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'label-no-overlap': return validateValue(layerId, key, value, 'boolean');
-    case 'label-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAXVALUE, Number.MAXVALUE);
+    case 'label-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
 
     case 'polygon':         return validateValue(layerId, key, value, 'boolean');
     case 'polygon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
-    case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAXVALUE, Number.MAXVALUE);
-    case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAXVALUE);
+    case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAX_VALUE);
 
     case 'hover-event':  return validateValue(layerId, key, value, 'boolean');
     case 'hover-layer':  return validateValue(layerId, key, value, 'string');
@@ -576,9 +576,10 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'click-event':  return validateValue(layerId, key, value, 'boolean');
     case 'draw-event':   return validateValue(layerId, key, value, 'boolean');
     case 'advanced-hit': return validateValue(layerId, key, value, 'boolean');
+    case 'export-geometry': return validateValue(layerId, key, value, 'boolean');
 
     case 'visible':     return validateValue(layerId, key, value, 'boolean');
-    case 'visibility':  return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAXVALUE);
+    case 'visibility':  return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
     case 'next-pass':   return validateValue(layerId, key, value, 'object');
     }
@@ -647,6 +648,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'click-event':  return false;
     case 'draw-event':   return false;
     case 'advanced-hit': return false;
+    case 'export-geometry': return false;
 
     case 'visible':    return true;
     case 'visibility': return 0;
