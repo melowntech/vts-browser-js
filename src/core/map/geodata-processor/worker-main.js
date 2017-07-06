@@ -3,8 +3,8 @@ import {globals as globals_} from './worker-globals.js';
 import {setFont as setFont_} from './worker-text.js';
 import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
         processStylesheet as processStylesheet_, getFilterResult as getFilterResult_} from './worker-style.js';
-import {processLineStringPass as processLineStringPass_} from './worker-linestring.js';
-import {processPointArrayPass as processPointArrayPass_} from './worker-pointarray.js';
+import {processLineStringPass as processLineStringPass_, processLineStringGeometry as processLineStringGeometry_} from './worker-linestring.js';
+import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_} from './worker-pointarray.js';
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
 
 //get rid of compiler mess
@@ -15,6 +15,10 @@ var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
 var processLineStringPass = processLineStringPass_;
 var processPointArrayPass = processPointArrayPass_;
 var processPolygonPass = processPolygonPass_;
+var processLineStringGeometry = processLineStringGeometry_;
+var processPointArrayGeometry = processPointArrayGeometry_;
+
+var exportedGeometries = [];
 
 
 function processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo) {
@@ -106,6 +110,26 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
 
     if (!visible) {
         return;
+    }
+
+    if (getLayerPropertyValue(layer, 'export-geometry', feature, lod)) {
+        if (!exportedGeometries[feature]) {
+
+            switch(type) {
+            case 'line-string':
+                processLineStringGeometry(feature);
+                break;
+
+            case 'point-array':
+                processPointArrayGeometry(feature);
+                break;
+                    
+            case 'polygon':
+                break;     
+            }
+
+            exportedGeometries[feature] = true;
+        }
     }
 
     var eventInfo = feature.properties;
@@ -224,7 +248,8 @@ function optimizeGroupMessages() {
         var signature = message.signature;
         
         if (!message['hitable'] && !message.reduced &&  //!message["culling"] &&
-            !(type == 'icon' || type == 'label')) {
+            !(type == 'icon' || type == 'label' ||
+              type == 'line-geometry' || type == 'point-geometry')) {
             
             switch(type) {
             case 'flat-line':
@@ -350,6 +375,7 @@ self.onmessage = function (e) {
     case 'processGeodata':
         globals.tileLod = message['lod'] || 0;
         data = JSON.parse(data);            
+        exportedGeometries = [];
         processGeodata(data, globals.tileLod);
             
         if (globals.groupOptimize) {

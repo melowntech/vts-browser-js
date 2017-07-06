@@ -522,6 +522,60 @@ var processLabel = function(point, labelData) {
     return [offsetX * 0.5, offsetY * 0.5, (offsetX + maxWidth) * 0.5 + 1, (offsetY + Math.abs(y)) *0.5];
 };
 
-export {processPointArrayPass};
+var processPointArrayGeometry = function(pointArray) {
+    var i, li, dpoints = false;
+
+    if (pointArray['points'] || pointArray['d-points']) {
+        points = (pointArray['points'] || pointArray['d-points']);
+        dpoints = (pointArray['d-points']) ? true : false;
+
+        if (!(Array.isArray(points) && points.length > 0)) {
+            return;
+        }
+    }
+
+    var index = 0;
+    
+    /*var forceOrigin = globals.forceOrigin;
+    var tileX = globals.tileX;
+    var tileY = globals.tileY;*/
+    var forceScale = globals.forceScale;
+
+    var geometryBuffer = new Float64Array(points.length);
+
+    var p = points[0], pp;
+    var p1 = [p[0], p[1], p[2]], p2;
+
+    //add ponints
+    for (i = 0, li = points.length; i < li; i++) {
+
+        /*if (forceOrigin) {
+            p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+        }*/
+
+        if (forceScale != null) {
+            pp = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+        }
+
+        geometryBuffer[index] = pp[0];
+        geometryBuffer[index+1] = pp[1];
+        geometryBuffer[index+2] = pp[2];
+        index += 3;
+
+        if ((i + 1) < li) {
+            if (dpoints) {
+                p2 = points[i+1];
+                p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
+            } else {
+                p1 = points[i+1];
+            }
+        }
+    }
+  
+    postGroupMessage({'command':'addPointGeometry', 'type': 'point-geometry', 'geometryBuffer': geometryBuffer },
+                       [geometryBuffer.buffer, indicesBuffer.buffer]);
+};
+
+export {processPointArrayPass, processPointArrayGeometry};
 
 

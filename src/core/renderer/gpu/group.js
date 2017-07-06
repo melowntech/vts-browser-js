@@ -18,11 +18,12 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.renderer = renderer;
     this.jobs = [];
     this.reduced = 0;
+    this.geometries = [];
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
     }
-    
+
     this.size = 0;
     this.polygons = 0;
 };
@@ -73,6 +74,9 @@ GpuGroup.prototype.getZbufferOffset = function() {
     return this.size;
 };
 
+GpuGroup.prototype.addGeometry = function(data) {
+    
+};
 
 GpuGroup.prototype.addLineJob = function(data) {
     var gl = this.gl;
@@ -331,15 +335,16 @@ GpuGroup.prototype.addIconJob = function(data, label) {
 
 GpuGroup.prototype.addRenderJob = function(data) {
     switch(data['type']) {
-    case 'flat-line':   this.addLineJob(data); break;
+    case 'flat-line':     this.addLineJob(data); break;
     case 'flat-tline':
     case 'flat-rline':
     case 'pixel-line':
-    case 'pixel-tline': this.addExtentedLineJob(data); break;
-    case 'line-label':  this.addLineLabelJob(data); break;
-    case 'icon':        this.addIconJob(data); break;
-    case 'label':       this.addIconJob(data, true); break;
-    case 'optimize':    this.optimaze(data); break;
+    case 'pixel-tline':    this.addExtentedLineJob(data); break;
+    case 'line-label':     this.addLineLabelJob(data); break;
+    case 'icon':           this.addIconJob(data); break;
+    case 'label':          this.addIconJob(data, true); break;
+    case 'point-geometry': this.addGeometry(data); break;
+    case 'line-geometry':  this.addGeometry(data); break;
     }
 };
 

@@ -37,7 +37,7 @@ RendererRMap.prototype.clear = function() {
 };
 
 RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2) {
-    var x, y, bx, by, i, j, li, index, rectangles, rec, t, rcount;
+    var x, y, i, li, index, rectangles, rec, t, rcount;
 
     if (this.counter != this.renderer.geoRenderCounter) {
         this.clear();

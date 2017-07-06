@@ -950,7 +950,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         gpu.setState(renderer.lineLabelState);
             
-        var stickShift = 0;
+        var stickShift = 0, pp;
 
         if (job.stick[0] != 0) {
             var s = job.stick;
@@ -959,7 +959,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             if (stickShift < s[1]) {
                 stickShift = 0;
             } else if (s[2] != 0) {
-                var pp = renderer.project2(job.center, mvp);
+                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
 
                 this.drawLineString([[pp[0], pp[1], pp[2]], [pp[0], pp[1]-stickShift, pp[2]]], s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
@@ -967,8 +967,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         }
 
         if (job.noOverlap) {
-            //var pp = renderer.project2(job.center, mvp, renderer.cameraPosition);
-            var pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+            if (!pp) {
+                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+            }
+
             var o = job.noOverlap;
 
             if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3])) {

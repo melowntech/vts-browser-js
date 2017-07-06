@@ -1,10 +1,10 @@
 
-import {vec3 as vec3_} from '../utils/matrix';
+/*import {vec3 as vec3_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
 
 //get rid of compiler mess
 var vec3 = vec3_;
-var math = math_;
+var math = math_;*/
 
 
 var MapGeodataBuilder = function(map) {
