@@ -938,13 +938,37 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             if (a < Math.cos(math.radians(job.culling))) {
                 return;
             }
-        } else if (job.visibility != 0) {
+        } else if (job.visibility) {
+
             p2 = job.center;
             p1 = renderer.cameraPosition;
             camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
             l = vec3.length(camVec);
-            if (l > job.visibility) {
-                return;
+
+            switch(job.visibility.length) {
+                case 1:
+                    if (l > job.visibility[0]) {
+                        return;
+                    }
+                    break;
+
+                case 2:
+                    l *= renderer.localViewExtentFactor;
+                    if (l < job.visibility[0] || l > job.visibility[1]) {
+                        return;
+                    }
+
+                    break;
+
+                case 4:
+                    l *= renderer.localViewExtentFactor;
+
+                    var diameter = job.visibility[0] * job.visibility[1];
+                    if (diameter < (job.visibility[2] * l) || diameter > (job.visibility[3] * l)) {
+                        return;
+                    }
+
+                    break;
             }
         }
 

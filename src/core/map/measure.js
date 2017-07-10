@@ -25,7 +25,7 @@ var MapMeasure = function(map) {
 };
 
 
-MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, nodeCoords, coordsArray) {
+MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, nodeCoords, coordsArray, useNodeOnly) {
     if (!node) {
         var result = this.getSpatialDivisionNode(coords);
         node = result[0];
@@ -36,7 +36,7 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
         lod = Math.floor(lod);
     }
 
-    if (this.config.mapIgnoreNavtiles) {
+    if (useNodeOnly || this.config.mapIgnoreNavtiles) {
         return this.getSurfaceHeightNodeOnly(null, lod + 8, storeStats, lod, null, node, nodeCoords, coordsArray);        
     }
 
@@ -404,7 +404,6 @@ MapMeasure.prototype.getSpatialDivisionNodeFromId = function(id) {
 
 MapMeasure.prototype.getSpatialDivisionNodeAndExtents2 = function(id, res, divisionNode) {
     if (!divisionNode) {
-        //debugger
         return [null, 0,0,0,0];
     }
     

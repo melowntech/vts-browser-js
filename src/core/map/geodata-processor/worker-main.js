@@ -112,7 +112,7 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
         return;
     }
 
-    if (getLayerPropertyValue(layer, 'export-geometry', feature, lod)) {
+    if (getLayerPropertyValue(layer, 'export-geometry', feature, lod) && (typeof feature['id'] !== 'undefined')) {
         if (!exportedGeometries[feature]) {
 
             switch(type) {
@@ -155,6 +155,7 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
 function processGroup(group, lod) {
     var i, li;
     var groupId = group['id'] || '';
+    globals.groupId = groupId;
 
     var bbox = group['bbox'];    
     if (!bbox) {
@@ -179,6 +180,7 @@ function processGroup(group, lod) {
     postMessage({'command':'beginGroup', 'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin});
 
     var points = group['points'] || [];
+    globals.featureType = 'point';
 
     //process points
     for (i = 0, li = points.length; i < li; i++) {
@@ -186,6 +188,7 @@ function processGroup(group, lod) {
     }
 
     var lines = group['lines'] || [];
+    globals.featureType = 'line';
 
     //process lines
     for (i = 0, li = lines.length; i < li; i++) {
@@ -193,6 +196,7 @@ function processGroup(group, lod) {
     }
 
     var polygons = group['polygons'] || [];
+    globals.featureType = 'polygon';
 
     //process polygons
     for (i = 0, li = polygons.length; i < li; i++) {
@@ -237,8 +241,6 @@ function processGeodata(data, lod) {
 function optimizeGroupMessages() {
     //loop messages
     var messages = globals.messageBuffer;
-    //var messages2 = globals.messageBuffer2;
-    //
     var j, lk, k, message2, job2, vbufferSize, vbuffer, index, buff, buff2;
 
     for (var i = 0, li = globals.messageBufferIndex; i < li; i++) {
@@ -260,7 +262,7 @@ function optimizeGroupMessages() {
                         
                     if (message2.signature == signature) {
                         message2.reduced = true;
-                        vbufferSize += message2.job['vertexBuffer'].length;                             
+                        vbufferSize += message2.job['vertexBuffer'].length;
                     }
                 }
 
@@ -277,12 +279,12 @@ function optimizeGroupMessages() {
                         for (k = 0, lk = buff.length; k < lk; k++) {
                             vbuffer[index+k] = buff[k];
                         }
-                        index+= lk;        
+                        index += lk;
                     }
                 }
 
-                job['vertexBuffer'] = vbuffer;                             
-                message.arrays = [vbuffer.buffer];                             
+                job['vertexBuffer'] = vbuffer;
+                message.arrays = [vbuffer.buffer];
                 break;
                     
             case 'pixel-line':
@@ -291,10 +293,10 @@ function optimizeGroupMessages() {
 
                 for (j = i + 1; j < li; j++) {
                     message2 = messages[j];
-                        
+
                     if (message2.signature == signature) {
                         message2.reduced = true;
-                        vbufferSize += message2.job['vertexBuffer'].length;                             
+                        vbufferSize += message2.job['vertexBuffer'].length;
                     }
                 }
 
@@ -322,11 +324,11 @@ function optimizeGroupMessages() {
                             vbuffer[index+k] = buff[k];
                             nbuffer[index+k] = buff2[k];
                         }
-                        index+= lk;        
+                        index += lk;
                     }
                 }
 
-                job['vertexBuffer'] = vbuffer;                             
+                job['vertexBuffer'] = vbuffer;
 
                 if (type == 'line-label') {
                     job['texcoordsBuffer'] = nbuffer;
@@ -334,7 +336,7 @@ function optimizeGroupMessages() {
                     job['normalBuffer'] = nbuffer;
                 }
 
-                message.arrays = [vbuffer.buffer, nbuffer.buffer];                             
+                message.arrays = [vbuffer.buffer, nbuffer.buffer];
                 break;
             }
 

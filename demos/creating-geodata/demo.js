@@ -34,14 +34,12 @@ var linePoints = [
     browser.on('map-loaded', onMapLoaded);
 })();
 
-function getHeights() {
-  //TODO: add new event map-resource-loaded
-};
 
 function onMapLoaded() {
     map = browser.map;
 
     var geodata = map.createGeodata();
+
 
     geodata.addLineString([
         [13.4836691, 49.6285568, 0],
@@ -50,46 +48,67 @@ function onMapLoaded() {
         [15.2561336, 49.0637509, 0],
         [15.8564221, 49.2444548, 0],
         [16.2429312, 49.5161402, 0]
-    ]);
+    ], 'float', null, 'some-line');
+
+/*
+    geodata.addLineStringArray([[
+        [13.4836691, 49.6285568, 0],
+        [13.8559398, 49.2926023, 0],
+        [14.3590684, 49.1136598, 0],
+        [15.2561336, 49.0637509, 0],
+        [15.8564221, 49.2444548, 0],
+        [16.2429312, 49.5161402, 0]
+    ]], 'float', null, 'some-line');
+*/
 
     geodata.addPointArray([
         [13.4836691, 49.6285568, 0],
         [16.2429312, 49.5161402, 0]
-    ]);
+    ], 'float', null, 'some-point');
 
+//    geodata.addPoint([16.2429312, 49.5161402, 0], 'float', null, 'some-line');
+//    geodata.addPoint([13.4836691, 49.6285568, 0], 'float', null, 'some-line');
 
-    var freeLayer = geodata.makeFreeLayer({
-        "layers" : {
-            "my-line" : {
-                "filter" : ["==", "#type", "line"],
-                "line": true,
-                "line-width" : 4,
-                "line-color": [255,0,255,255],                
-                "zbuffer-offset" : [-5,0,0]
-            },
+    geodata.processHeights('heightmap-by-lod', 4, (function(){
 
-            "my-points" : {
-                "filter" : ["==", "#type", "point"],
-                "point": true,
-                "point-radius" : 10,
-                "point-color": [0,0,255,255],                
-                "zbuffer-offset" : [-5,0,0]
+        var lineGeometry = geodata.extractGeometry('some-line');
+        var pointGeometry = geodata.extractGeometry('some-point');
+
+        var freeLayer = geodata.makeFreeLayer({
+            "layers" : {
+                "my-line" : {
+                    "filter" : ["==", "#type", "line"],
+                    "line": true,
+                    "line-width" : 4,
+                    "line-color": [255,0,255,255],
+                    //"export-geometry" : true,                
+                    "zbuffer-offset" : [-5,0,0]
+                },
+
+                "my-points" : {
+                    "filter" : ["==", "#type", "point"],
+                    "point": true,
+                    "point-radius" : 10,
+                    "point-color": [0,0,255,255],                
+                    "zbuffer-offset" : [-5,0,0]
+                }
             }
-        }
-    });
+        });
 
-    map.addFreeLayer('builder-test', freeLayer);
+        map.addFreeLayer('builder-test', freeLayer);
 
-    map.setView({
-        surfaces: {
-            'melown-viewfinder-world': [
-                'bing-world',
-                'bmng08-world'
-            ]
-        },
-        freeLayers: {
-            'builder-test': {}
-        }
-    });    
+        map.setView({
+            surfaces: {
+                'melown-viewfinder-world': [
+                    'bing-world',
+                    'bmng08-world'
+                ]
+            },
+            freeLayers: {
+                'builder-test': {}
+            }
+        });    
+
+    }));
 
 };

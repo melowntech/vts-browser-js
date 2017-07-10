@@ -99,7 +99,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     }
 
 
-    if (lineFlat) { //} && (texturedLine || widthByRatio)) {
+    if (lineFlat) {
         circleSides = 2;
     }
 
@@ -112,18 +112,11 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
        var elementBuffer = new Float32Array(totalPoints * (3 * 2) + totalPoints * (skipJoins ? 0 : circleSides) * 3);
     }
 
-    //debugger
-
-    //if (!lineFlat || texturedLine) {
     if (!(lineFlat && !texturedLine && !widthByRatio)) {
         var lineNormals = 3 * 4 * 2;
         var joinNormals = skipJoins ? 0 : (circleSides * 3 * 4);
         var normalBuffer = new Float32Array(totalPoints * lineNormals + totalPoints * joinNormals);
     }
-
-    //if (texturedLine && !skipJoins) {
-      //  var joinParams = new Float32Array(totalPoints);
-    //}
 
     var center = [0,0,0];
     var lineLabelStack = [];
@@ -777,8 +770,6 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
 
                     }
 
-                    //debugger
-
                 } else {
 
                     for (var j = 0; j < circleSides; j++) {
@@ -791,20 +782,12 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                             index3 += 3;
                         }
 
-                        //distance = vertexBuffer[(i >> 1) * lineVertices + ((i & 1) ? 11 : 3)];
                         if (i != (li-1)) {
                             distance = vertexBuffer[i * lineVertices + 3];
                         } else {
                             distance = vertexBuffer[(i - 1) * lineVertices + 11];
                         }
-                        //distance = vertexBuffer[((i == li) ? i - 1 : i) * lineVertices + 3];
         
-                        //if (distance == null) {
-                          //  debugger
-                        //}
-        
-                        //console.log("distance-dot("+i+"): " + distance);
-
                         //add polygon
                         vertexBuffer[index] = p1[0];
                         vertexBuffer[index+1] = p1[1];
@@ -906,8 +889,6 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
         }
     }
 
-    //debugger
-
     if (lineLabel) {
         for (i = 0, li = lineLabelStack.length; i < li; i++) {
             processLineLabel(lineLabelStack[i].points, lineLabelStack[i].points2, lineString, center, lod, style, zIndex, eventInfo);
@@ -922,10 +903,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var labelSize = getLayerPropertyValue(style, 'line-label-size', lineString, lod);
     var labelOffset = getLayerPropertyValue(style, 'line-label-offset', lineString, lod);
 
-    //console.log("label size: " + lod + "   " + labelSize);
-
     if (Math.abs(labelSize) < 0.0001) {
-    //if (labelSource == null || labelSource == "" || Math.abs(labelSize) < 0.0001) {
         return;
     }
 
@@ -991,11 +969,11 @@ var processLineStringGeometry = function(lineString) {
     var totalPoints = 0;
     var indicesBuffer = new Uint32Array(lines.length);
 
-    for (ii = 0; ii < lines.length; ii++) {
-        indicesBuffer[ii] = totalPoints;
+    for (i = 0; i < lines.length; i++) {
+        indicesBuffer[i] = totalPoints;
 
-        if (Array.isArray(lines[ii])) {
-            totalPoints += lines[ii].length;
+        if (Array.isArray(lines[i])) {
+            totalPoints += lines[i].length;
         }
     }
 
@@ -1007,18 +985,18 @@ var processLineStringGeometry = function(lineString) {
     var forceScale = globals.forceScale;
     var index = 0, p1, p2, pp, p;
 
-    for (ii = 0; ii < lines.length; ii++) {
-        if (!Array.isArray(lines[ii]) || !lines[ii].length) {
+    for (var i = 0; i < lines.length; i++) {
+        if (!Array.isArray(lines[i]) || !lines[i].length) {
             continue;
         }
         
-        var points = lines[ii];
+        var points = lines[i];
    
         p = points[0];
         p1 = [p[0], p[1], p[2]];
     
         //add lines
-        for (i = 0, li = points.length; i < li; i++) {
+        for (var j = 0, lj = points.length; j < lj; j++) {
 
             /*if (forceOrigin) {
                 pp = [p1[0] - tileX, p1[1] - tileY, p1[2]];
@@ -1033,21 +1011,22 @@ var processLineStringGeometry = function(lineString) {
             geometryBuffer[index+2] = pp[2];
             index += 3;
 
-            if (i == (li - 1)) {
+            if (j == (lj - 1)) {
                 break;
             }
     
             if (dlines) {
-                p2 = points[i+1];
+                p2 = points[j+1];
                 p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
             } else {
-                p1 = points[i+1];
+                p1 = points[j+1];
             }   
         }
     }
 
-    postGroupMessage({'command':'addLineGeometry', 'type': 'line-geometry', 'geometryBuffer': geometryBuffer, 'indicesBuffer': indicesBuffer }, 
-                       [geometryBuffer.buffer, indicesBuffer.buffer]);
+    globals.signatureCounter++;
+    postGroupMessage({'command':'addRenderJob', 'type': 'line-geometry', 'id':lineString['id'], 'geometryBuffer': geometryBuffer,
+                      'indicesBuffer': indicesBuffer }, [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));
 };
 
 

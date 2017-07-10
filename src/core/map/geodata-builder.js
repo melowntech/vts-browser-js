@@ -1,10 +1,8 @@
 
-/*import {vec3 as vec3_} from '../utils/matrix';
-import {math as math_} from '../utils/math';
+import MapGeodataGeometry_ from './geodata-geometry';
 
 //get rid of compiler mess
-var vec3 = vec3_;
-var math = math_;*/
+var MapGeodataGeometry = MapGeodataGeometry_;
 
 
 var MapGeodataBuilder = function(map) {
@@ -14,8 +12,32 @@ var MapGeodataBuilder = function(map) {
     this.bboxMin = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
     this.bboxMax = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];
 
-    this.defaultSrs = this.map.getNavigationSrs();
+    this.navSrs = this.map.getNavigationSrs();
     this.physSrs = this.map.getPhysicalSrs();
+
+    this.heightsToProcess = 0;
+    this.heightsProcessBuffer = null;
+    this.heightsLod = 8;
+    this.heightsSource = "heightmap-by-precision";
+    this.updateCallback = null;
+    this.processingHeights = false;
+    this.processHeightsCalls = [];
+};
+
+MapGeodataBuilder.prototype.addToHeightsBuffer = function(coords) {
+    this.heightsProcessBuffer = {
+        coords:  coords,
+        next : this.heightsProcessBuffer
+    };
+};
+
+MapGeodataBuilder.prototype.removeFromHeightsBuffer = function(item, lastItem) {
+    if (!lastItem) {
+        this.heightsProcessBuffer = item.next;
+        return;
+    }
+
+    lastItem.next = item.next;
 };
 
 MapGeodataBuilder.prototype.addGroup = function(id) {
@@ -30,89 +52,391 @@ MapGeodataBuilder.prototype.addGroup = function(id) {
     return this;
 };
 
-MapGeodataBuilder.prototype.addPoint = function(point, properties, id, srs) {
+MapGeodataBuilder.prototype.addPoint = function(point, heightMode, properties, id, srs, directCopy) {
     if (!this.currentGroup) {
         this.addGroup('some-group');
     }
 
-    this.currentGroup.points.push({
+    var floatHeight = (!heightMode || heightMode == "float"), coords;
+
+    var feature = {
         id : id,
-        points : [ this.physSrs.convertCoordsFrom(point, srs ? srs : this.defaultSrs) ],
         properties : properties
-    });
+    };
+
+    if (floatHeight) {
+        coords = [point[0], point[1], point[2] || 0, feature, null, null ];
+        this.addToHeightsBuffer(coords);
+
+        feature.points = [ coords ];
+        feature.floatHeights = true;
+        feature.srs = srs ? srs : this.navSrs;
+        feature.heightsToProcess = 1;
+        this.heightsToProcess++;
+    } else {
+        if (directCopy) {
+            feature.points = [ [point[0], point[1], point[2]] ];
+        } else {
+            feature.points = [ this.physSrs.convertCoordsFrom(point, srs ? srs : this.navSrs) ];
+        }
+    }
+
+    this.currentGroup.points.push(feature);
 
     return this;
 };
 
-MapGeodataBuilder.prototype.addPointArray = function(points, properties, id, srs) {
+MapGeodataBuilder.prototype.addPointArray = function(points, heightMode, properties, id, srs, directCopy) {
     if (!this.currentGroup) {
         this.addGroup('some-group');
     }
 
-    var convertedPoints = new Array(points.length);
-    srs = srs ? srs : this.defaultSrs;
+    var floatHeight = (!heightMode || heightMode == "float"), i, li, point, coords;
+    srs = srs ? srs : this.navSrs;
 
-    for (var i = 0, li = convertedPoints.length; i < li; i++) {
-        convertedPoints[i] = this.physSrs.convertCoordsFrom(points[i], srs);
-    }
-
-    this.currentGroup.points.push({
+    var feature = {
         id : id,
-        points : convertedPoints,
         properties : properties
-    });
+    };
 
-    return this;
-};
+    var featurePoints = new Array(points.length);
 
-MapGeodataBuilder.prototype.addLineString = function(linePoints, properties, id, srs) {
-    if (!this.currentGroup) {
-        this.addGroup('some-group');
-    }
+    if (floatHeight) {
+        
+        for (i = 0, li = points.length; i < li; i++) {
+            point = points[i];
+            coords = [point[0], point[1], point[2] || 0, feature, null, null ];
+            this.addToHeightsBuffer(coords);
 
-    var convertedPoints = new Array(linePoints.length);
-    srs = srs ? srs : this.defaultSrs;
-
-    for (var i = 0, li = convertedPoints.length; i < li; i++) {
-        convertedPoints[i] = this.physSrs.convertCoordsFrom(linePoints[i], srs);
-    }
-
-    this.currentGroup.lines.push({
-        id : id,
-        lines : [convertedPoints],
-        properties : properties
-    });
-
-    return this;
-};
-
-MapGeodataBuilder.prototype.addLineStringArray = function(lines, properties, id, srs) {
-    if (!this.currentGroup) {
-        this.addGroup('some-group');
-    }
-
-    srs = srs ? srs : this.defaultSrs;
-
-    var convertedLines = new Array(lines.length);
-
-    for (var i = 0, li = lines.length; i < li; i++) {
-        var subline = lines[i];
-        var convertedPoints = new Array(subline.length);
-
-        for (var j = 0, lj = convertedPoints.length; j < lj; j++) {
-            convertedPoints[j] = this.physSrs.convertCoordsFrom(subline[j], srs);
+            featurePoints[i] = coords;
         }
 
-        convertedLines[i] = convertedPoints;
+        feature.floatHeights = true;
+        feature.srs = srs;
+        feature.heightsToProcess = li;
+        this.heightsToProcess++;
+    } else {
+        if (directCopy) {
+            for (i = 0, li = points.length; i < li; i++) {
+                point = points[i];
+                featurePoints[i] = [point[0], point[1], point[2]];
+            }
+        } else {
+            for (i = 0, li = points.length; i < li; i++) {
+                featurePoints[i] = this.physSrs.convertCoordsFrom(points[i], srs);
+            }
+        }
     }
 
-    this.currentGroup.lines.push({
-        id : id,
-        lines : convertedLines,
-        properties : properties
-    });
+    feature.points = featurePoints;
+    this.currentGroup.points.push(feature);
 
     return this;
+};
+
+MapGeodataBuilder.prototype.addLineString = function(linePoints, heightMode, properties, id, srs, directCopy) {
+    if (!this.currentGroup) {
+        this.addGroup('some-group');
+    }
+
+    var floatHeight = (!heightMode || heightMode == "float"), i, li, point, coords;
+    srs = srs ? srs : this.navSrs;
+
+    var feature = {
+        id : id,
+        properties : properties
+    };
+
+    var featurePoints = new Array(linePoints.length);
+
+    if (floatHeight) {
+        
+        for (i = 0, li = linePoints.length; i < li; i++) {
+            point = linePoints[i];
+            coords = [point[0], point[1], point[2] || 0, feature, null, null ];
+            this.addToHeightsBuffer(coords);
+
+            featurePoints[i] = coords;
+        }
+
+        feature.floatHeights = true;
+        feature.srs = srs;
+        feature.heightsToProcess = li;
+        this.heightsToProcess += li;
+    } else {
+        if (directCopy) {
+            for (i = 0, li = linePoints.length; i < li; i++) {
+                point = linePoints[i];
+                featurePoints[i] = [point[0], point[1], point[2]];
+            }
+        } else {
+            for (i = 0, li = linePoints.length; i < li; i++) {
+                featurePoints[i] = this.physSrs.convertCoordsFrom(linePoints[i], srs);
+            }
+        }
+    }
+
+    feature.lines = [featurePoints];
+    this.currentGroup.lines.push(feature);
+
+    return this;
+};
+
+MapGeodataBuilder.prototype.addLineStringArray = function(lines, heightMode, properties, id, srs, directCopy) {
+    if (!this.currentGroup) {
+        this.addGroup('some-group');
+    }
+
+    var floatHeight = (!heightMode || heightMode == "float");
+    var subline, points, i, li, j, lj, point, coords;
+    srs = srs ? srs : this.navSrs;
+
+    var feature = {
+        id : id,
+        properties : properties
+    };
+
+    var featureLines = new Array(lines.length);
+
+    if (floatHeight) {
+        var totalHeights = 0;
+        
+        for (i = 0, li = lines.length; i < li; i++) {
+            subline = lines[i];
+            points = new Array(subline.length);
+
+            for (j = 0, lj = subline.length; j < lj; j++) {
+                point = subline[j];
+                coords = [point[0], point[1], point[2] || 0, feature, null, null];
+                this.addToHeightsBuffer(coords);
+                points[j] = coords;
+            }
+
+            totalHeights += lj;
+            featureLines[i] = points;
+        }
+
+        feature.floatHeights = true;
+        feature.srs = srs;
+        feature.heightsToProcess = totalHeights;
+        this.heightsToProcess += totalHeights;
+    } else {
+
+        for (i = 0, li = lines.length; i < li; i++) {
+            subline = lines[i];
+            points = new Array(subline.length);
+
+            if (directCopy) {
+                for (i = 0, li = subline.length; i < li; i++) {
+                    point = subline[i];
+                    featurePoints[i] = [point[0], point[1], point[2]];
+                }
+            } else {
+                for (i = 0, li = subline.length; i < li; i++) {
+                    featurePoints[i] = this.physSrs.convertCoordsFrom(subline[i], srs);
+                }
+            }
+
+            featureLines[i] = points;
+        }
+    }
+
+    feature.lines = featureLines;
+    this.currentGroup.lines.push(feature);
+
+    return this;
+};
+
+MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, onProcessed) {
+    if (this.heightsToProcess <= 0) {
+        if (onProcessed) {
+            onProcessed(this);
+        }
+
+        return;
+    }
+
+    if (this.processingHeights) {
+        this.processHeightsCalls.push(this.processHeights.bind(this, heightsSource, precision));
+    }
+
+    this.processingHeights = true;
+    this.heightsSource = heightsSource;
+    this.heightsLod = precision;
+
+    var item = this.heightsProcessBuffer, lastItem;
+    var p, res, nodeOnly, heightsLod, nodeOnly, coords;
+
+    switch (heightsSource) {
+        case "node-by-precision":
+            nodeOnly = true;
+        case "heightmap-by-precision":
+
+            coords = item.coords;
+
+            if (coords[3].srs) {
+                p = this.navSrs.convertCoordsFrom(coords, srs);
+            } else {
+                p = coords;
+            }
+
+            heightLod = this.map.measure.getOptimalHeightLodBySampleSize(p, precision);
+            break;
+
+        case "node-by-lod":
+            nodeOnly = true;
+        case "heightmap-by-lod":
+            heightsLod = precision;
+            break;
+    }
+
+    do {
+        coords = item.coords;
+
+        if (coords[4] == null) {
+            if (coords[3].srs) {
+                p = this.navSrs.convertCoordsFrom(coords, coords[3].srs);
+            } else {
+                p = coords;
+            }
+
+            res = this.map.measure.getSpatialDivisionNode(p);
+
+            coords[4] = res[0];
+            coords[5] = res[1];
+        }
+
+        res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
+
+        console.log(JSON.stringify(res));
+
+        if (res[1] || res[2]) { //precisin reached or not aviable
+            coords[2] += res[0]; //convet float height to fixed
+            this.removeFromHeightsBuffer(item, lastItem);
+            coords[3].heightsToProcess--;
+            this.heightsToProcess--;
+
+            if (coords[3].heightsToProcess <= 0) { //this prevents multiple conversions
+                coords[3].floatHeights = false;
+            }
+
+            p = [coords[0], coords[1], coords[2]];
+            p = this.physSrs.convertCoordsFrom(p, coords[3].srs);
+
+            coords[0] = p[0];
+            coords[1] = p[1];
+            coords[2] = p[2];
+        }
+
+        lastItem = item;
+        item = item.next;
+
+    } while(item);
+
+    if (this.heightsToProcess <= 0) {
+        if (this.updateCallback) {
+            this.updateCallback(); //remove callback
+        }
+
+        this.processingHeights = false;
+
+        if (onProcessed) {
+            onProcessed(this);
+        }
+
+        if (this.processHeightsCalls.length > 1) {
+            (this.processHeightsCalls.shift())();
+        }
+
+    } else {
+        if (!this.updateCallback) {
+            this.updateCallback = this.map.core.on("map-update", this.processHeights.bind(this, this.heightsSource, this.heightsLod, onProcessed));
+        }
+    }
+
+    //this.heightsToProcess
+};
+
+MapGeodataBuilder.prototype.extractGeometry = function(id) {
+    var feature, i, li, j, lj, points, lines,
+        vertexBuffer, indexBuffer, index, p;
+
+
+    for (var i = 0, li = this.groups.length; i < li; i++) {
+        var group = this.groups[i];
+
+        var groupPoints = group.points;
+        var groupLines = group.lines, j, lj;
+
+        //get group bbox
+        for (j = 0, lj = groupPoints.length; j < lj; j++) {
+            if (groupPoints[j].id == id) {
+                feature = groupPoints[j];
+            }
+        }
+
+        for (j = 0, lj = groupLines.length; j < lj; j++) {
+            if (groupLines[j].id == id) {
+                feature = groupLines[j];
+            }
+        }
+    }
+
+    if (feature) {
+        if (feature.points) {
+
+            points = feature.points;
+
+            if (points.length > 0) {
+                vertexBuffer = new Float64Array(points.length * 3);
+
+                for (i = 0, li = points.length; i < li; i++) {
+                    index = i * 3;
+                    p = points[i];
+                    vertexBuffer[index] = p[0];
+                    vertexBuffer[index+1] = p[1];
+                    vertexBuffer[index+2] = p[2];
+                }
+            }
+
+            return new MapGeodataGeometry(this.map, {'type': 'point-geometry', 'id':feature.id, 'geometryBuffer': vertexBuffer });
+
+        } else if (feature.lines) {
+
+            lines = feature.lines;
+
+            if (lines.length > 0) {
+                
+                var totalPoints = 0;
+
+                for (i = 0, li = lines.length; i < li; i++) {
+                    totalPoints += lines[i].length;
+                }
+
+                vertexBuffer = new Float64Array(totalPoints * 3);
+                indexBuffer = new Uint32Array(li);
+                index = 0;
+
+                for (i = 0, li = lines.length; i < li; i++) {
+
+                    var points = lines[i];
+
+                    for (j = 0, lj = points.length; j < lj; j++) {
+                        p = points[j];
+                        vertexBuffer[index] = p[0];
+                        vertexBuffer[index+1] = p[1];
+                        vertexBuffer[index+2] = p[2];
+                        index += 3;
+                    }
+                }
+            }
+
+            return new MapGeodataGeometry(this.map, {'type': 'line-geometry', 'id':feature.id, 'geometryBuffer': vertexBuffer, 'indicesBuffer': indexBuffer });
+        }
+
+        return;
+    }
+
 };
 
 MapGeodataBuilder.prototype.compileGroup = function(group, resolution) {

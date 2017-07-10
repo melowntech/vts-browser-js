@@ -43,20 +43,49 @@ var getLayerExpresionValue = function(layer, value, feature) {
 
 
 var getLayerPropertyValue = function(layer, key, feature, lod) {
-    var value = layer[key];
+    var value = getLayerPropertyValueInner(layer, key, feature, lod);
+    return validateLayerPropertyValue(layer['$$layer-id'], key, value);
+};
+
+
+var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth) {
+    var index = 0, i, li, finalValue, root, v1, v2;
+
+    if (typeof value === 'undefined') {
+        value = layer[key];
+        root = true;
+        depth = 0;
+    } else {
+        if (depth > 100) {
+            return void(0);
+        }
+    }
 
     switch(typeof value) {
     case 'string':
 
         if (value.length > 0) {
-                //is it feature property?
-            if (value.charAt(0) == '$') {
-                var finalValue = feature.properties[value.substr(1)];
-                if (finalValue != null) {
-                    return finalValue;
+            finalValue = value;
+
+            //is it feature property, variable or constant?
+            switch(value.charAt(0)) {
+                case '$': finalValue = feature.properties[value.substr(1)]; break;
+                case '@': finalValue = globals.stylesheetConstants[value.substr(1)]; break;
+                case '&': finalValue = globals.stylesheetVariables[value.substr(1)]; break;
+            }
+
+            if (typeof finalValue !== 'undefined') {
+
+                //simpleFmtCall(finalValue, (function(svalue){ getLayerPropertyValueInner(layer, key, feature, lod, svalue, depth+1); }))
+
+                return finalValue;
+            } else {
+                logError('wrong-object', layer['$$layer-id'], key, value, null, 'feature-property');
+                
+                if (root) {
+                    return getDefaultLayerPropertyValue(key);
                 } else {
-                    logError('wrong-object', layer['$$layer-id'], key, value, null, 'feature-property');
-                    getDefaultLayerPropertyValue(key);
+                    return void(0);
                 }
             }
         }
@@ -67,113 +96,294 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
 
             //is it null?
         if (value == null) {
-            return getDefaultLayerPropertyValue(key);
+            if (root) {
+                return getDefaultLayerPropertyValue(key);
+            } else {
+                return void(0);
+            }
         }
 
-            //is it array (rgb, rgba, vec2)?
+        //is it array (rgb, rgba, vec2)?
         if (Array.isArray(value)) {
 
-            if (key == 'icon-source' && globals.stylesheetBitmaps[value[0]] == null) {
-                logError('wrong-object', layer['$$layer-id'], key, value, null, 'bitmap');
-                return getDefaultLayerPropertyValue(key);
+            if (key == 'icon-source') {
+                index++;
+                if (globals.stylesheetBitmaps[value[0]] == null) {
+                    logError('wrong-object', layer['$$layer-id'], key, value, null, 'bitmap');
+
+                    if (root) {
+                        return getDefaultLayerPropertyValue(key);
+                    } else {
+                        return void(0);
+                    }
+                }
+            }
+
+            if (key != 'filter') {
+                for (i = index, li = value.length; i < li; i++) {
+                    value[i] = getLayerPropertyValueInner(layer, key, feature, lod, value[i], depth + 1);
+                }
             }
 
             return value;
         }
 
-            //debugger
+        var functionName, functionValue, functionError, finalValue;
 
-        var stops = null;
-        var lodScaledArray = null;
-
-        if (value['lod-scaled'] != null) {
-            var array = value['lod-scaled'];
-
-            if ((typeof array[1]) == 'number') {
-                return array[1] * Math.pow(2*array[2], array[0] - lod);
-            }
-
-            stops = array[1];
-            lodScaledArray = array;
-
-        } else {
-            stops = value['discrete'] || value['linear'];
+        for (functionName in value) {
+            break;
         }
 
-        var lastLod = stops[0][0];
-        var lastValue = stops[0][1];
-        var valueType = (typeof lastValue);
-        var newValue = lastValue;
-
-        var currentLod, currentValue;
-
-        for (var i = 0, li = stops.length; i <= li; i++) {
-
-            if (i == li) {
-                newValue = lastValue;
-                break;
+        if (!functionName) {
+            if (root) {
+                return getDefaultLayerPropertyValue(key);
+            } else {
+                return void(0);
             }
+        }
 
-            if (stops[i][0] > lod) {
+        functionValue = value[functionName];
 
-                if (value['discrete'] != null || lodScaledArray != null) { //no interpolation
-                    newValue = lastValue;
-                    break;
-                } else { //interpolate
+        switch (functionName) {
+            case 'if':
 
-                    currentLod = stops[i][0];
-                    currentValue = stops[i][1];
-
-                    if (currentLod == lastLod) { //end of array no interpolation needed
-                        break;
+                if (!Array.isArray(functionValue) || functionValue.length != 3) {
+                    functionError = true;
+                } else {
+                    if (getFilterResult(functionValue[0], feature, globals.featureType, globals.groupId)) {
+                        finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[1], depth + 1);
+                    } else {
+                        finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[2], depth + 1);
                     }
 
-                    switch(valueType) {
+                    if (typeof finalValue === 'undefined') {
+                        functionError = true;
+                    } else {
+                        return finalValue;
+                    }
+                }
 
-                    case 'boolean':
-                        lastValue = lastValue ? 1 : 0;
-                        currentValue = lastValue ? 1 : 0;
-                        newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+            case 'add':
+            case 'sub':
+            case 'mul':
+            case 'div':
+            case 'pow':
+            case 'atan2':
 
-                        newValue = newValue > 0.5 ? true : false;
-                        break;
+                if (!Array.isArray(functionValue) || functionValue.length != 2) {
+                    functionError = true;
+                } else {
 
-                    case 'number':
+                    v1 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
+                    v2 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[1], depth + 1);
 
-                                //debugger
-                        newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
-                        break;
+                    if (typeof v1 !== 'number' || typeof v2 !== 'number') {
+                        functionError = true;
+                    } else {
+                        switch (functionName) {
+                            case 'add':    return v1 + v2;
+                            case 'sub':    return v1 - v2;
+                            case 'mul':    return v1 * v2;
+                            case 'div':    return v1 / v2;
+                            case 'pow':    return Math.pow(v1, v2);
+                            case 'atan2':  return Math.atan2(v1, v2);
+                        }
+                    }
+                }
 
-                    case 'object':
-                        newValue = [];
+            case 'deg':
+            case 'rad':
+            case 'sgn':
+            case 'sin':
+            case 'cos':
+            case 'tan':
+            case 'asin':
+            case 'acos':
+            case 'atan':
+            case 'sqrt':
+            case 'abs':
+                functionValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue, depth + 1);
 
-                        for (var j = 0, lj= lastValue.length; j < lj; j++) {
-                            newValue[j] = lastValue[j] + (currentValue[j] - lastValue[j]) * ((lod - lastLod) / (currentLod - lastLod));
+                if (typeof functionValue !== 'number') {
+                    functionError = true;
+                } else {
+                    switch (functionName) {
+                        case 'sgn':  return functionValue < 0 ? -1 : 1;
+                        case 'sin':  return Math.sin(functionValue);
+                        case 'cos':  return Math.cos(functionValue);
+                        case 'tan':  return Math.tan(functionValue);
+                        case 'asin': return Math.asin(functionValue);
+                        case 'acos': return Math.acos(functionValue);
+                        case 'atan': return Math.atan(functionValue);
+                        case 'sqrt': return Math.sqrt(functionValue);
+                        case 'abs':  return Math.abs(functionValue);
+                        case 'deg2rad':  return (functionValue / 180) * Math.PI;
+                        case 'rad2deg':  return (functionValue / Math.PI) * 180;
+                    }
+                }
+
+                break;
+
+            case 'strlen':
+            case 'lowercase':
+            case 'uppercase':
+            case 'capitalize':
+                functionValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue, depth + 1);
+
+                if (typeof functionValue !== 'string') {
+                    functionError = true;
+                } else {
+                    switch (functionName) {
+                        case 'strlen':     return functionValue.length;
+                        case 'lowercase':  return functionValue.toLowerCase();
+                        case 'uppercase':  return functionValue.toUpperCase();
+                        case 'capitalize': return functionValue.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+                    }
+                }
+
+                break;
+
+            case 'min':
+            case 'max':
+
+                if (!Array.isArray(functionValue)) {
+                    functionError = true;
+                } else {
+
+                    finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
+
+                    for (i = index, li = value.length; i < li; i++) {
+                        value[i] = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[i], depth + 1);
+
+                        if (typeof value[i] !== 'number') {
+                            functionError = true;
+                            break;
                         }
 
+                        if (functionName == 'max') {
+                            finalValue = Math.max(finalValue, value[i]);
+                        } else {
+                            finalValue = Math.min(finalValue, value[i]);
+                        }
+                    }
+
+                    return finalValue;
+                }
+
+                break;
+
+            case 'linear':
+            case 'discrete':
+            case 'lod-scaled':
+
+                //LOD based functions
+                var stops = null;
+                var lodScaledArray = null;
+
+                if (value['lod-scaled'] != null) {
+                    var array = value['lod-scaled'];
+
+                    if ((typeof array[1]) == 'number') {
+                        return array[1] * Math.pow(2*array[2], array[0] - lod);
+                    }
+
+                    stops = array[1];
+                    lodScaledArray = array;
+
+                } else {
+                    stops = value['discrete'] || value['linear'];
+                }
+
+                var lastLod = stops[0][0];
+                var lastValue = stops[0][1];
+                var valueType = (typeof lastValue);
+                var newValue = lastValue;
+
+                var currentLod, currentValue;
+
+                for (var i = 0, li = stops.length; i <= li; i++) {
+
+                    if (i == li) {
+                        newValue = lastValue;
                         break;
                     }
 
-                    break;
+                    if (stops[i][0] > lod) {
+
+                        if (value['discrete'] != null || lodScaledArray != null) { //no interpolation
+                            newValue = lastValue;
+                            break;
+                        } else { //interpolate
+
+                            currentLod = stops[i][0];
+                            currentValue = stops[i][1];
+
+                            if (currentLod == lastLod) { //end of array no interpolation needed
+                                break;
+                            }
+
+                            switch(valueType) {
+
+                            case 'boolean':
+                                lastValue = lastValue ? 1 : 0;
+                                currentValue = lastValue ? 1 : 0;
+                                newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+
+                                newValue = newValue > 0.5 ? true : false;
+                                break;
+
+                            case 'number':
+                                newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+                                break;
+
+                            case 'object':
+                                newValue = [];
+
+                                for (var j = 0, lj= lastValue.length; j < lj; j++) {
+                                    newValue[j] = lastValue[j] + (currentValue[j] - lastValue[j]) * ((lod - lastLod) / (currentLod - lastLod));
+                                }
+
+                                break;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    lastLod = stops[i][0];
+                    lastValue = stops[i][1];
                 }
+
+                if (lodScaledArray != null) {
+                    newValue *= Math.pow(2*lodScaledArray[2], lodScaledArray[0] - lod);
+                }
+
+                return newValue;
+
+            default: 
+                functionError = true;
+                break;
+        }
+
+        if (functionError) {
+            if (root) {
+                return getDefaultLayerPropertyValue(key);
+            } else {
+                return void(0);
             }
-
-            lastLod = stops[i][0];
-            lastValue = stops[i][1];
         }
 
-        if (lodScaledArray != null) {
-            newValue *= Math.pow(2*lodScaledArray[2], lodScaledArray[0] - lod);
-        }
-
-        return newValue;
 
     case 'number':
     case 'boolean':
         return value;
     }
 
-    return getDefaultLayerPropertyValue(key);
+    if (root) {
+        return getDefaultLayerPropertyValue(key);
+    } else {
+        return void(0);
+    }
 };
 
 
@@ -269,90 +479,12 @@ var logError = function(errorType, layerId, key, value, index, subkey) {
 
 
 var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
-
     var i, li;
 
-    //check interpolator
-    if (value != null && (typeof value) == 'object' && (value['discrete'] != null || value['linear'] != null || value['lod-scaled'] != null)) {
-
-        var stops = null;
-        var lodScaled = false;
-
-        if (value['lod-scaled'] != null) {
-
-            var array = value['lod-scaled'];
-
-            if (!((typeof array) == 'object' && Array.isArray(array) && array.length >= 2)) {
-                logError('wrong-property-value', layerId, key, value, null, '[]');
-                return getDefaultLayerPropertyValue(key);
-            }
-
-            if (array[2] == null) {
-                array[2] = 1;
-            }
-
-            if (!((typeof array[0]) == 'number' && (typeof array[2]) == 'number')) {
-                logError('wrong-property-value', layerId, key, value, null, '[]');
-                return getDefaultLayerPropertyValue(key);
-            }
-
-            if ((typeof array[1]) == 'number') {
-                return value;
-            }
-
-            stops = array[1];
-            lodScaled = true;
-
-        } else {
-            stops = value['discrete'] || value['linear'];
-        }
-
-        //if stops exist then check if they are array
-        if (stops == null || !((typeof stops) == 'object' && Array.isArray(stops) && stops.length > 0)) {
-            logError('wrong-property-value', layerId, key, value, null, '[]');
-            return getDefaultLayerPropertyValue(key);
-        }
-
-
-        //validate stops values
-        if (stops != null) {
-            var stopsValueType = null;
-
-            for (i = 0, li = stops.length; i < li; i++) {
-                var stopItem = stops[i];
-
-                //is stop array[2]?
-                if(!(stopItem != null && (typeof stopItem) == 'object' && Array.isArray(stopItem) && stopItem.length != 2)) {
-
-                    //store fist stop type
-                    if (stopsValueType == null) {
-                        stopsValueType = typeof stopItem[1];
-
-                        if (lodScaled && stopsValueType != 'number') {
-                            logError('wrong-property-value[]', layerId, key, value, i, '[]');
-                            return getDefaultLayerPropertyValue(key);
-                        }
-                    }
-
-                    //check lod value and type of value
-                    if(!((typeof stopItem[0]) == 'number' && (typeof stopItem[1]) == stopsValueType)) {
-                        logError('wrong-property-value[]', layerId, key, value, i, '[]');
-                        return getDefaultLayerPropertyValue(key);
-                    }
-
-                    //check number value
-                    if (stopsValueType == 'number') {
-                        if (stopItem[1] > max || stopItem[1] < min) {
-                            logError('wrong-property-value[]', layerId, key, value, i, '[]');
-                            return getDefaultLayerPropertyValue(key);
-                        }
-                    }
-                }
-            }
-        }
-
-
-        return value;
+    //check for object
+    if (value != null && (typeof value) == 'object' && !Array.isArray(value)) {
+        logError('wrong-property-value', layerId, key, value);
+        return getDefaultLayerPropertyValue(key);
     }
 
     //console.log("validate."+layerId+"."+key+"."+value);
@@ -371,8 +503,9 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
     case 'object':
 
-            //accepted cases for null value
-        if (value === null && (key == 'line-style-texture' || key == 'icon-source' || key == 'visibility' || key == 'next-pass')) {
+        //accepted cases for null value
+        if (value === null && (key == 'line-style-texture' || key == 'icon-source' ||
+            key == 'visibility' || key == 'visibility-abs' || key == 'visibility-rel' || key == 'next-pass')) {
             return value;
         }
 
@@ -404,7 +537,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
         if (arrayLength != null) {
             if (Array.isArray(value) && value.length == arrayLength) {
 
-                    //validate array values
+                //validate array values
                 i = 0;
 
                 if (key == 'icon-source' || key == 'line-style-texture') {
@@ -513,11 +646,8 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
 
 var validateLayerPropertyValue = function(layerId, key, value) {
-    //console.log("vall:"+layerId+"."+key+"."+value);
-    //debugger;
 
     switch(key) {
-       //case "filter" :    return validateValue(layerId, key, value, "string"); break;
 
     case 'inherit' :    return validateValue(layerId, key, value, 'string');
 
@@ -579,9 +709,12 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'export-geometry': return validateValue(layerId, key, value, 'boolean');
 
     case 'visible':     return validateValue(layerId, key, value, 'boolean');
-    case 'visibility':  return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
     case 'next-pass':   return validateValue(layerId, key, value, 'object');
+
+    case 'visibility':      return validateValue(layerId, key, value, 'number', null, 0.00001, Number.MAX_VALUE);
+    case 'visibility-abs':  return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
+    case 'visibility-rel':  return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
     }
 
     return value; //custom property
@@ -651,7 +784,9 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'export-geometry': return false;
 
     case 'visible':    return true;
-    case 'visibility': return 0;
+    case 'visibility':     return null;
+    case 'visibility-abs': return null;
+    case 'visibility-rel': return null;
 
     case 'culling':    return 180;
     case 'next-pass':  return null;
@@ -708,6 +843,7 @@ function getFilterResult(filter, feature, featureType, group) {
             switch (filterValue.charAt(0)) {
             case '$': value = feature.properties[filterValue.substr(1)]; break;
             case '@': value = globals.stylesheetConstants[filterValue]; break;
+            case '&': value = globals.stylesheetVariables[filterValue]; break;
             default:
                 value = feature.properties[filterValue]; //fallback for old format
             }
@@ -747,8 +883,7 @@ function getFilterResult(filter, feature, featureType, group) {
 
 
 var processLayer = function(layerId, layerData, stylesheetLayersData) {
-    var layer = {};
-    var key;
+    var layer = {}, key, value;
 
     //copy Layer and inherit Layer if needed
     copyLayer(layerId, layer, layerData, stylesheetLayersData);
@@ -758,22 +893,44 @@ var processLayer = function(layerId, layerData, stylesheetLayersData) {
     //replace constants and validate properties
     for (key in layer) {
 
-        var value = layer[key];
+        value = layer[key];
 
         //replace constant with value
         if ((typeof value) == 'string') {
             if (value.length > 0) {
                 //is it constant?
-                if (value.charAt(0) == '@') {
-                    if (globals.stylesheetConstants[value] != null) {
-                        //replace constant with value
-                        layer[key] = globals.stylesheetConstants[value];
-                    } else {
-                        logError('wrong-object', layerId, key, value, null, 'constant');
+                switch(value.charAt(0)) {
+                    case '@':
+                        if (globals.stylesheetConstants[value] != null) {
+                            //replace constant with value
+                            layer[key] = globals.stylesheetConstants[value];
+                        } else {
+                            logError('wrong-object', layerId, key, value, null, 'constant');
 
-                        //replace constant with deafault value
-                        layer[key] = getDefaultLayerPropertyValue(key);
-                    }
+                            //replace constant with deafault value
+                            layer[key] = getDefaultLayerPropertyValue(key);
+                        }
+                        break;
+
+                    case '&':
+
+                        if (globals.stylesheetVariables[value] != null) {
+                            if (!layer['$$layer-variables']) {
+                                layer['$$layer-variables'] = {};
+                            }
+
+                            layer['$$layer-variables'][key] = value;
+
+                            //replace variable with value
+                            layer[key] = globals.stylesheetVariables[value];
+
+                        } else {
+                            logError('wrong-object', layerId, key, value, null, 'variable');
+
+                            //replace constant with deafault value
+                            layer[key] = getDefaultLayerPropertyValue(key);
+                        }
+                        break;
                 }
             }
         }
@@ -781,7 +938,7 @@ var processLayer = function(layerId, layerData, stylesheetLayersData) {
         //console.log("process."+layerId+"."+key+"."+value);
         //console.log("out1: "+JSON.stringify(layer[key]));
 
-        layer[key] = validateLayerPropertyValue(layerId, key, layer[key]);
+        //layer[key] = validateLayerPropertyValue(layerId, key, layer[key]);
 
         //console.log("out2: "+JSON.stringify(layer[key]));
     }
@@ -794,6 +951,7 @@ var processStylesheet = function(stylesheetLayersData) {
     var key;
     globals.stylesheetBitmaps = {};
     globals.stylesheetConstants = stylesheetLayersData['constants'] || {};
+    globals.stylesheetVariables = stylesheetLayersData['variables'] || {};
 
     //get bitmaps
     var bitmaps = stylesheetLayersData['bitmaps'] || {};

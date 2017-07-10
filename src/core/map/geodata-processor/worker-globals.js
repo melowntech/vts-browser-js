@@ -4,6 +4,7 @@ var globals = {
     stylesheetLayers : {},
     stylesheetBitmaps : {},
     stylesheetConstants : {},
+    stylesheetVariables : {},
     forceOrigin : false,
     forceScale : [1,1,1],
     bboxMin : [0,0,0],
@@ -20,7 +21,10 @@ var globals = {
     messageBuffer2 : new Array(65536),
     messageBufferIndex : 0,
     messageBufferSize : 65536,
-    autoLod : false
+    signatureCounter : 0,
+    autoLod : false,
+    featureType : null,
+    groupId : null
 };
 
 
@@ -108,4 +112,14 @@ function vec3AnyPerpendicular(a, b) {
 }
 
 
-export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, vec3AnyPerpendicular};
+var simpleFmtCall = (function obj(str, call) {
+    if (!str || str == '') {
+        return '';
+    }
+
+    return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
+        return call(match);
+    });
+});
+
+export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, vec3AnyPerpendicular, simpleFmtCall};
