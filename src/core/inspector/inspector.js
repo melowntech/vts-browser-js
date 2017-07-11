@@ -115,6 +115,7 @@ Inspector.prototype.onMapUpdate = function() {
         renderer.drawLineString({
             points : slines,
             size : 2.0,
+            screenSpace : true,
             color : [0,128,255,255],
             depthTest : false,
             blend : false
@@ -130,6 +131,7 @@ Inspector.prototype.onMapUpdate = function() {
             renderer.drawLineString({
                 points : slines,
                 size : 2.0,
+                screenSpace : true,
                 color : [0,255,128,255],
                 depthTest : false,
                 blend : false
@@ -146,6 +148,7 @@ Inspector.prototype.onMapUpdate = function() {
             renderer.drawLineString({
                 points : slines,
                 size : 2.0,
+                screenSpace : true,
                 color : [0,255,255,255],
                 depthTest : false,
                 blend : false
@@ -258,6 +261,7 @@ Inspector.prototype.onMapUpdate = function() {
             renderer.drawLineString({
                 points : lbuffer,
                 size : 2.0,
+                screenSpace : true,
                 color : [0,255,255,255],
                 depthTest : false,
                 blend : false
@@ -273,6 +277,7 @@ Inspector.prototype.onMapUpdate = function() {
             renderer.drawLineString({
                 points : lbuffer,
                 size : 2.0,
+                screenSpace : true,
                 color : [0,255,255,255],
                 depthTest : false,
                 blend : false

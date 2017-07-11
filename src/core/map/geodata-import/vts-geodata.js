@@ -1,11 +1,13 @@
 
-var MapGeodataImportVTSGeodata = function(builder, json) {
+var MapGeodataImportVTSGeodata = function(builder, groupIdPrefix, dontCreateGroups) {
     this.builder = builder;
     this.map = builder.map;
-    this.processJSON(json);
+    this.groupIdPrefix = groupIdPrefix || '';
+    this.dontCreateGroups = dontCreateGroups;
+    //this.processJSON(json);
 };
 
-MapGeodataBuilder.prototype.processJSON = function(json) {
+MapGeodataImportVTSGeodata.prototype.processJSON = function(json) {
     if (!json) {
         return;
     }
@@ -34,6 +36,10 @@ MapGeodataBuilder.prototype.processJSON = function(json) {
             continue;
         }
 
+        if (!this.dontCreateGroups) {
+            builder.addGroup(this.groupIdPrefix + (group['id'] || ''));
+        }
+
         var fx = (bboxMax[0] - bboxMin[0]) / resolution;
         var fy = (bboxMax[1] - bboxMin[1]) / resolution;
         var fz = (bboxMax[2] - bboxMin[2]) / resolution;
@@ -54,7 +60,7 @@ MapGeodataBuilder.prototype.processJSON = function(json) {
                     newSubpoints[j] = [bboxMin[0] + p[0] * fx, bboxMin[1] + p[1] * fy, bboxMin[2] + p[2] * fz];
                 }
 
-                builder.addPointArray(newSubpoints, 'fix' point['properties'], point['id'], null, true);
+                builder.addPointArray(newSubpoints, 'fix', point['properties'], point['id'], null, true);
             }
         }
 
@@ -80,10 +86,13 @@ MapGeodataBuilder.prototype.processJSON = function(json) {
                     }
                 }
 
-                builder.addLineStringArray(newSublines, 'fix' line['properties'], line['id'], null, true);
+                builder.addLineStringArray(newSublines, 'fix', line['properties'], line['id'], null, true);
             }
         }
     }
 
 };
+
+export default MapGeodataImportVTSGeodata;
+
 

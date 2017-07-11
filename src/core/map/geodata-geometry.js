@@ -122,9 +122,9 @@ MapGeodataGeometry.prototype.getPathPoint = function(distance, pathIndex) {
     var si = (this.indicesBuffer[pathIndex]) * 3, v = this.vertexBuffer;
     var ei = ((pathIndex >= this.indicesBuffer.length) ? this.indicesBuffer.length : this.indicesBuffer[pathIndex]) * 3;
 
-    var totalLength = 0;
+    var totalLength = 0, v = this.vertexBuffer;
 
-    for (var i = si; i < (es-3); i++) {
+    for (var i = si; i < (ei-3); i++) {
         var delta = [v[i+4] - v[i], v[i+5] - v[i+1], v[i+6] - v[i+2]];
         var length = vec3.length(delta);
 
@@ -136,7 +136,7 @@ MapGeodataGeometry.prototype.getPathPoint = function(distance, pathIndex) {
         totalLength += length;    
     }
 
-    return [v[se-3], v[se-2], v[se-1]];
+    return [v[ei-3], v[ei-2], v[ei-1]];
 };
 
 MapGeodataGeometry.prototype.getPathNED = function(distance, withoutSlope, pathIndex) {
@@ -145,9 +145,9 @@ MapGeodataGeometry.prototype.getPathNED = function(distance, withoutSlope, pathI
     var si = (this.indicesBuffer[pathIndex]) * 3, v = this.vertexBuffer;
     var ei = ((pathIndex >= this.indicesBuffer.length) ? this.indicesBuffer.length : this.indicesBuffer[pathIndex]) * 3;
 
-    var totalLength = 0, p, delta, length;
+    var totalLength = 0, p, delta, length, v = this.vertexBuffer;
 
-    for (var i = si; i < (es-3); i++) {
+    for (var i = si; i < (ei-3); i++) {
         delta = [v[i+4] - v[i], v[i+5] - v[i+1], v[i+6] - v[i+2]];
         length = vec3.length(delta);
 
@@ -161,7 +161,7 @@ MapGeodataGeometry.prototype.getPathNED = function(distance, withoutSlope, pathI
     }
 
     if (!p) {
-        p = [v[se-3], v[se-2], v[se-1]];
+        p = [v[ei-3], v[ei-2], v[ei-1]];
     }
 
     var vv = [0, 0, 0];
@@ -202,7 +202,7 @@ MapGeodataGeometry.prototype.getPathLength = function(pathIndex) {
 
     var totalLength = 0;
 
-    for (var i = si; i < (es-3); i++) {
+    for (var i = si; i < (ei-3); i++) {
         totalLength += length;    
     }
 

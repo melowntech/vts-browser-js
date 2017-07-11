@@ -49,16 +49,23 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     var pointColor = getLayerPropertyValue(style, 'point-color', pointArray, lod);
     var pointRadius = 0.5 * getLayerPropertyValue(style, 'point-radius', pointArray, lod);
 
-    var source, bufferSize, bufferSize2;
+    var source, bufferSize, bufferSize2, points, g, gl, totalPoints = 0;
     //zIndex = (zIndex !== null) ? zIndex : getLayerPropertyValue(style, "z-index", pointArray, lod);
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
+        if (Array.isArray(points) && points.length > 0) {
+            totalPoints += points.length;
+        }
+    }
 
     var icon = getLayerPropertyValue(style, 'icon', pointArray, lod);
     if (icon) {
         source = getLayerPropertyValue(style, 'icon-source', pointArray, lod);
         
         if (source) {
-            bufferSize = getCharVerticesCount() * pointsGroups.length;
-            bufferSize2 = getCharVerticesCount(true) * pointsGroups.length;
+            bufferSize = getCharVerticesCount() * totalPoints;
+            bufferSize2 = getCharVerticesCount(true) * totalPoints;
     
             var iconData = {
                 color : getLayerPropertyValue(style, 'icon-color', pointArray, lod),
@@ -94,8 +101,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             }
         }
         if (text && text != '' && Math.abs(size) > 0.0001) {
-            bufferSize = getCharVerticesCount() * text.length * pointsGroups.length;
-            bufferSize2 = getCharVerticesCount(true) * text.length * pointsGroups.length;
+            bufferSize = getCharVerticesCount() * text.length * totalPoints;
+            bufferSize2 = getCharVerticesCount(true) * text.length * totalPoints;
 
             var labelData = {
                 color : getLayerPropertyValue(style, 'label-color', pointArray, lod),
@@ -134,37 +141,34 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
     circleBuffer[circleSides] = [0, 1.0];
     
-    var totalPoints = 0;
     var center = [0,0,0];
     var forceOrigin = globals.forceOrigin;
     var bboxMin = globals.bboxMin;
     var tileX = globals.tileX;
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
-    var labelBBox;
+    var labelBBox, p, p1;
 
     var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
 
-    for (var g = 0, gl = pointsGroups.length; g < gl; g++) {
-        var points = pointsGroups[g];
+    //allocate buffers
+    if (!pointFlat) {
+        pointsVertices = circleSides * 3 * 4;
+        vertexBuffer = new Array(totalPoints * pointsVertices);
+        pointsNormals = circleSides * 3 * 4;
+        normalBuffer = new Array(totalPoints * pointsNormals);
+    } else {
+        pointsVertices = circleSides * 3 * 3;
+        vertexBuffer = new Array(totalPoints * pointsVertices);
+    }
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
         
         if (Array.isArray(points) && points.length > 0) {
-            var p = points[0];
-            var p1 = [p[0], p[1], p[2]];
-            
-            totalPoints += points.length;
-        
-            //allocate buffers
-            if (!pointFlat) {
-                pointsVertices = circleSides * 3 * 4;
-                vertexBuffer = new Array(points.length * pointsVertices);
-                pointsNormals = circleSides * 3 * 4;
-                normalBuffer = new Array(points.length * pointsNormals);
-            } else {
-                pointsVertices = circleSides * 3 * 3;
-                vertexBuffer = new Array(points.length * pointsVertices);
-            }
-        
+            p = points[0];
+            p1 = [p[0], p[1], p[2]];
+       
             //add ponints
             for (i = 0, li = points.length; i < li; i++) {
         

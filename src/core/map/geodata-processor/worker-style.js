@@ -191,8 +191,6 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                     }
                 }
 
-            case 'deg':
-            case 'rad':
             case 'sgn':
             case 'sin':
             case 'cos':
@@ -202,6 +200,9 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             case 'atan':
             case 'sqrt':
             case 'abs':
+            case 'deg2rad':
+            case 'rad2deg':
+
                 functionValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue, depth + 1);
 
                 if (typeof functionValue !== 'number') {
@@ -795,7 +796,6 @@ var getDefaultLayerPropertyValue = function(key) {
 
 
 function getFilterResult(filter, feature, featureType, group) {
-
     var result, i, li;
 
     if (!filter || !Array.isArray(filter)) {
@@ -838,7 +838,7 @@ function getFilterResult(filter, feature, featureType, group) {
     default:   
         var filterValue = filter[1];  
 
-        if (filterValue && filterValue.length > 0) {
+        if (filterValue && (typeof filterValue === 'string') && filterValue.length > 0) {
                 //is it feature property?
             switch (filterValue.charAt(0)) {
             case '$': value = feature.properties[filterValue.substr(1)]; break;

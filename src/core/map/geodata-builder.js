@@ -1,8 +1,12 @@
 
 import MapGeodataGeometry_ from './geodata-geometry';
+import MapGeodataImportGeoJSON_ from './geodata-import/geojson';
+import MapGeodataImportVTSGeodata_ from './geodata-import/vts-geodata';
 
 //get rid of compiler mess
 var MapGeodataGeometry = MapGeodataGeometry_;
+var MapGeodataImportGeoJSON = MapGeodataImportGeoJSON_;
+var MapGeodataImportVTSGeodata = MapGeodataImportVTSGeodata_;
 
 
 var MapGeodataBuilder = function(map) {
@@ -247,6 +251,16 @@ MapGeodataBuilder.prototype.addLineStringArray = function(lines, heightMode, pro
     return this;
 };
 
+MapGeodataBuilder.prototype.importVTSGeodata = function(json, groupIdPrefix, dontCreateGroups) {
+    var importer = new MapGeodataImportVTSGeodata(this, groupIdPrefix, dontCreateGroups);
+    return importer.processJSON(json);
+};
+
+MapGeodataBuilder.prototype.importGeoJson = function(json, heightMode, srs, groupIdPrefix, dontCreateGroups) {
+    var importer = new MapGeodataImportGeoJSON(this, heightMode, srs, groupIdPrefix, dontCreateGroups);
+    return importer.processJSON(json);
+};
+
 MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, onProcessed) {
     if (this.heightsToProcess <= 0) {
         if (onProcessed) {
@@ -308,7 +322,7 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
 
         res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
 
-        console.log(JSON.stringify(res));
+        //console.log(JSON.stringify(res));
 
         if (res[1] || res[2]) { //precisin reached or not aviable
             coords[2] += res[0]; //convet float height to fixed
@@ -445,6 +459,8 @@ MapGeodataBuilder.prototype.compileGroup = function(group, resolution) {
     var geodataGroup = {};
     var groupPoints = group.points, points, p, feature, finalFeature;
     var groupLines = group.lines, lines, line, i, li, j, lj, k, lk;
+
+    geodataGroup.id = group.id;
 
     //get group bbox
     for (i = 0, li = groupPoints.length; i < li; i++) {

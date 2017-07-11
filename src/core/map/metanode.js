@@ -676,32 +676,6 @@ MapMetanode.prototype.drawBBox2 = function() {
     renderer.bboxMesh2.draw(prog, 'aPosition');
 };
 
-/*
-MapMetanode.prototype.drawBBox3 = function(cameraPos) {
-    var spoints = []; 
-    //for (var i = 0, li = this.bbox2.length; i < li; i++) {
-        //var pos = this.bbox2[i];
-        //pos = ["obj", pos[0], pos[1], "fix", pos[2], 0, 0, 0, 10, 90 ];
-        
-    var bbox = this.bbox2;
-
-    for (var i = 0, li = 8*3; i < li; i+=3) {
-        var pos = ["obj", bbox[i], bbox[i+1], "fix", bbox[i+2], 0, 0, 0, 10, 90 ];
-
-        spoints.push(this.map.convert.getPositionCanvasCoords((new MapPosition(pos)), null, true));
-    }
-    
-    var renderer = this.map.renderer;
-    renderer.drawLineString([spoints[0], spoints[1], spoints[2], spoints[3], spoints[0] ], 2, [0,1,0.5,255], null, false, false, true);
-    renderer.drawLineString([spoints[4], spoints[5], spoints[6], spoints[7], spoints[4] ], 2, [0,1,0.5,255], null, false, false, true);
-
-    renderer.drawLineString([spoints[0], spoints[4]], 2, [0,1,0.5,255], null, false, false, true);
-    renderer.drawLineString([spoints[1], spoints[5]], 2, [0,1,0.5,255], null, false, false, true);
-    renderer.drawLineString([spoints[2], spoints[6]], 2, [0,1,0.5,255], null, false, false, true);
-    renderer.drawLineString([spoints[3], spoints[7]], 2, [0,1,0.5,255], null, false, false, true);
-};*/
-
-
 MapMetanode.prototype.drawPlane = function(cameraPos, tile) {
     var renderer = this.map.renderer;
     var buffer = this.map.draw.planeBuffer;

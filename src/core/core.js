@@ -469,7 +469,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.8.1';
+    return (full ? 'Core: ' : '') + '2.9.0';
 }
 
 

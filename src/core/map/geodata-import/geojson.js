@@ -1,13 +1,15 @@
 
-var MapGeodataImportGeoJSON = function(builder, json, heightMode, srs) {
+var MapGeodataImportGeoJSON = function(builder, heightMode, srs, groupIdPrefix, dontCreateGroups) {
     this.builder = builder;
     this.map = builder.map;
     this.heightMode = heightMode || 'float';
     this.srs = srs;
-    this.processJSON(json);
+    this.groupIdPrefix = groupIdPrefix || '';
+    this.dontCreateGroups = dontCreateGroups;
+    //this.processJSON(json);
 };
 
-MapGeodataBuilder.prototype.processGeometry = function(json, feature) {
+MapGeodataImportGeoJSON.prototype.processGeometry = function(json, feature) {
     var coords = geometry['coordinates'];
     if (!coords) {
         return;
@@ -42,7 +44,7 @@ MapGeodataBuilder.prototype.processGeometry = function(json, feature) {
     }
 };
 
-MapGeodataBuilder.prototype.processFeature = function(json) {
+MapGeodataImportGeoJSON.prototype.processFeature = function(json) {
     var geometry = json['geometry'];
 
     if (geometry) {
@@ -50,7 +52,7 @@ MapGeodataBuilder.prototype.processFeature = function(json) {
     }
 };
 
-MapGeodataBuilder.prototype.processCollection = function(json) {
+MapGeodataImportGeoJSON.prototype.processCollection = function(json) {
     var features = json['features'];
 
     if (features) {
@@ -62,7 +64,7 @@ MapGeodataBuilder.prototype.processCollection = function(json) {
     }
 };
 
-MapGeodataBuilder.prototype.processJSON = function(json) {
+MapGeodataImportGeoJSON.prototype.processJSON = function(json) {
     if (!json) {
         return;
     }
@@ -71,11 +73,19 @@ MapGeodataBuilder.prototype.processJSON = function(json) {
 
         switch (json['type']) {
             case 'FeatureCollection':
-                this.builder.addGroup();
+
+                if (!this.dontCreateGroups) {
+                    this.builder.addGroup(this.groupIdPrefix != '' ? this.groupIdPrefix : null);
+                }
+
                 this.processCollection(json);
                 break;
             case 'Feature':
-                this.builder.addGroup();
+
+                if (!this.dontCreateGroups) {
+                    this.builder.addGroup(this.groupIdPrefix != '' ? this.groupIdPrefix : null);
+                }
+
                 this.processFeature(json);
                 break;
         }
@@ -85,7 +95,9 @@ MapGeodataBuilder.prototype.processJSON = function(json) {
         for (var key in json) {
             var item = json[key];
 
-            this.builder.addGroup(key);
+            if (!this.dontCreateGroups) {
+                this.builder.addGroup(this.groupIdPrefix + key);
+            }
 
             switch (json['type']) {
                 case 'FeatureCollection':
@@ -99,4 +111,6 @@ MapGeodataBuilder.prototype.processJSON = function(json) {
     }
 
 };
+
+export default MapGeodataImportGeoJSON;
 

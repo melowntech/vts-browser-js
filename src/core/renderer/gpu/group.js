@@ -325,7 +325,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
         job.noOverlap = data['noOverlap'];
     }
 
-    if (!Array.isArray(job.visibility)) {
+    if (job.visibility != null && !Array.isArray(job.visibility)) {
         job.visibility = [job.visibility];
     }
 
