@@ -52,9 +52,9 @@ MapGeodataGeometry.prototype.getRelationToCanvasPoint = function(index, screenX,
         case 1: 
 
             //get point
-            p = [v[i], v[i+1], v[i+2]];
+            var p = [v[i], v[i+1], v[i+2]];
 
-            cp = [p[0] - c[0], p[0] - c[0],]
+            var cp = [p[0] - c[0], p[0] - c[0],]
 
             //distance = vec3.coss(ray.direction, point - ray.origin).magnitude;
             vec3.cross(cv, cp, r)
@@ -68,8 +68,8 @@ MapGeodataGeometry.prototype.getRelationToCanvasPoint = function(index, screenX,
         case 2: 
 
             //line points
-            p1 = [v[i], v[i+1], v[i+2]];
-            p2 = [v[i+3], v[i+4], v[i+5]]; 
+            var p1 = [v[i], v[i+1], v[i+2]];
+            var p2 = [v[i+3], v[i+4], v[i+5]]; 
 
             //distance = http://geomalgorithms.com/a07-_distance.html
 
@@ -112,25 +112,25 @@ MapGeodataGeometry.prototype.getPathElement = function(index, pathIndex) {
         return null;
     }
 
-    var i = (this.indicesBuffer[pathIndex] + index) * 3, v = this.vertexBuffer;
+    var i = (this.indicesBuffer[pathIndex || 0] + index) * 3, v = this.vertexBuffer;
     return [[v[i], v[i+1], v[i+2]],  [v[i+3], v[i+4], v[i+5]]];
 };
 
 MapGeodataGeometry.prototype.getPathPoint = function(distance, pathIndex) {
     pathIndex = pathIndex || 0;
 
-    var si = (this.indicesBuffer[pathIndex]) * 3, v = this.vertexBuffer;
-    var ei = ((pathIndex >= this.indicesBuffer.length) ? this.indicesBuffer.length : this.indicesBuffer[pathIndex]) * 3;
+    var si = (this.indicesBuffer[pathIndex]) * 3;
+    var ei = ((pathIndex + 1) >= this.indicesBuffer.length) ? this.vertexBuffer.length : (this.indicesBuffer[pathIndex] * 3);
 
-    var totalLength = 0, v = this.vertexBuffer;
+    var totalLength = 0, p, delta, length, v = this.vertexBuffer;
 
-    for (var i = si; i < (ei-3); i++) {
-        var delta = [v[i+4] - v[i], v[i+5] - v[i+1], v[i+6] - v[i+2]];
-        var length = vec3.length(delta);
+    for (var i = si; i < (ei-3); i+=3) {
+        delta = [v[i+3] - v[i], v[i+4] - v[i+1], v[i+5] - v[i+2]];
+        length = vec3.length(delta);
 
         if (totalLength + length > distance) {
-            var factor = (totalLength + length) / distance;
-            return [v[i] + d[0] * factor, v[i+1] + d[1] * factor, v[i+2] + d[2] * factor];
+            var factor =  (distance - totalLength) / length;
+            return [v[i] + delta[0] * factor, v[i+1] + delta[1] * factor, v[i+2] + delta[2] * factor];
         }
 
         totalLength += length;    
@@ -142,13 +142,13 @@ MapGeodataGeometry.prototype.getPathPoint = function(distance, pathIndex) {
 MapGeodataGeometry.prototype.getPathNED = function(distance, withoutSlope, pathIndex) {
     pathIndex = pathIndex || 0;
 
-    var si = (this.indicesBuffer[pathIndex]) * 3, v = this.vertexBuffer;
-    var ei = ((pathIndex >= this.indicesBuffer.length) ? this.indicesBuffer.length : this.indicesBuffer[pathIndex]) * 3;
+    var si = (this.indicesBuffer[pathIndex]) * 3;
+    var ei = ((pathIndex + 1) >= this.indicesBuffer.length) ? this.vertexBuffer.length : (this.indicesBuffer[pathIndex] * 3);
 
     var totalLength = 0, p, delta, length, v = this.vertexBuffer;
 
-    for (var i = si; i < (ei-3); i++) {
-        delta = [v[i+4] - v[i], v[i+5] - v[i+1], v[i+6] - v[i+2]];
+    for (var i = si; i < (ei-5); i+=3) {
+        delta = [v[i+3] - v[i], v[i+4] - v[i+1], v[i+5] - v[i+2]];
         length = vec3.length(delta);
 
         if (totalLength + length > distance) {
@@ -197,19 +197,22 @@ MapGeodataGeometry.prototype.getPathNED = function(distance, withoutSlope, pathI
 MapGeodataGeometry.prototype.getPathLength = function(pathIndex) {
     pathIndex = pathIndex || 0;
 
-    var si = (this.indicesBuffer[pathIndex]) * 3, v = this.vertexBuffer;
-    var ei = ((pathIndex >= this.indicesBuffer.length) ? this.indicesBuffer.length : this.indicesBuffer[pathIndex]) * 3;
+    var si = (this.indicesBuffer[pathIndex]) * 3;
+    var ei = ((pathIndex + 1) >= this.indicesBuffer.length) ? this.vertexBuffer.length : (this.indicesBuffer[pathIndex] * 3);
 
-    var totalLength = 0;
+    var totalLength = 0, delta, length, v = this.vertexBuffer;
 
-    for (var i = si; i < (ei-3); i++) {
-        totalLength += length;    
+    for (var i = si; i < (ei-5); i+=3) {
+        delta = [v[i+3] - v[i], v[i+4] - v[i+1], v[i+5] - v[i+2]];
+        length = vec3.length(delta);
+
+        totalLength += length;
     }
 
     return totalLength;
 };
 
-MapGeodataGeometry.prototype.getPathsCount = function(distance) {
+MapGeodataGeometry.prototype.getPathsCount = function() {
     if (this.type != 2) {
         return 0;
     }
