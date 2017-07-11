@@ -31,8 +31,9 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
         return;
     }
 
-    //debugger
-    var visibility = getLayerPropertyValue(style, 'visibility', pointArray, lod);
+    var visibility = getLayerPropertyValue(style, 'visibility-rel', pointArray, lod) || 
+                     getLayerPropertyValue(style, 'visibility-abs', pointArray, lod) ||
+                     getLayerPropertyValue(style, 'visibility', pointArray, lod);
     var culling = getLayerPropertyValue(style, 'culling', pointArray, lod);
     var hoverEvent = getLayerPropertyValue(style, 'hover-event', pointArray, lod);
     var clickEvent = getLayerPropertyValue(style, 'click-event', pointArray, lod);
@@ -48,16 +49,23 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     var pointColor = getLayerPropertyValue(style, 'point-color', pointArray, lod);
     var pointRadius = 0.5 * getLayerPropertyValue(style, 'point-radius', pointArray, lod);
 
-    var source, bufferSize, bufferSize2;
+    var source, bufferSize, bufferSize2, points, g, gl, totalPoints = 0;
     //zIndex = (zIndex !== null) ? zIndex : getLayerPropertyValue(style, "z-index", pointArray, lod);
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
+        if (Array.isArray(points) && points.length > 0) {
+            totalPoints += points.length;
+        }
+    }
 
     var icon = getLayerPropertyValue(style, 'icon', pointArray, lod);
     if (icon) {
         source = getLayerPropertyValue(style, 'icon-source', pointArray, lod);
         
         if (source) {
-            bufferSize = getCharVerticesCount() * pointsGroups.length;
-            bufferSize2 = getCharVerticesCount(true) * pointsGroups.length;
+            bufferSize = getCharVerticesCount() * totalPoints;
+            bufferSize2 = getCharVerticesCount(true) * totalPoints;
     
             var iconData = {
                 color : getLayerPropertyValue(style, 'icon-color', pointArray, lod),
@@ -93,8 +101,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             }
         }
         if (text && text != '' && Math.abs(size) > 0.0001) {
-            bufferSize = getCharVerticesCount() * text.length * pointsGroups.length;
-            bufferSize2 = getCharVerticesCount(true) * text.length * pointsGroups.length;
+            bufferSize = getCharVerticesCount() * text.length * totalPoints;
+            bufferSize2 = getCharVerticesCount(true) * text.length * totalPoints;
 
             var labelData = {
                 color : getLayerPropertyValue(style, 'label-color', pointArray, lod),
@@ -133,37 +141,34 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
     circleBuffer[circleSides] = [0, 1.0];
     
-    var totalPoints = 0;
     var center = [0,0,0];
     var forceOrigin = globals.forceOrigin;
     var bboxMin = globals.bboxMin;
     var tileX = globals.tileX;
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
-    var labelBBox;
+    var labelBBox, p, p1;
 
     var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
 
-    for (var g = 0, gl = pointsGroups.length; g < gl; g++) {
-        var points = pointsGroups[g];
+    //allocate buffers
+    if (!pointFlat) {
+        pointsVertices = circleSides * 3 * 4;
+        vertexBuffer = new Array(totalPoints * pointsVertices);
+        pointsNormals = circleSides * 3 * 4;
+        normalBuffer = new Array(totalPoints * pointsNormals);
+    } else {
+        pointsVertices = circleSides * 3 * 3;
+        vertexBuffer = new Array(totalPoints * pointsVertices);
+    }
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
         
         if (Array.isArray(points) && points.length > 0) {
-            var p = points[0];
-            var p1 = [p[0], p[1], p[2]];
-            
-            totalPoints += points.length;
-        
-            //allocate buffers
-            if (!pointFlat) {
-                pointsVertices = circleSides * 3 * 4;
-                vertexBuffer = new Array(points.length * pointsVertices);
-                pointsNormals = circleSides * 3 * 4;
-                normalBuffer = new Array(points.length * pointsNormals);
-            } else {
-                pointsVertices = circleSides * 3 * 3;
-                vertexBuffer = new Array(points.length * pointsVertices);
-            }
-        
+            p = points[0];
+            p1 = [p[0], p[1], p[2]];
+       
             //add ponints
             for (i = 0, li = points.length; i < li; i++) {
         
@@ -269,6 +274,9 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
+    globals.signatureCounter++;
+    var signature = (""+globals.signatureCounter);
+
     if (point) {
         if (pointFlat) {
             postGroupMessage({'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
@@ -276,7 +284,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
                 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer]);
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer], signature);
         } else {
             postGroupMessage({'command':'addRenderJob', 'type': 'pixel-line', 'vertexBuffer': vertexBuffer,
                 'normalBuffer': normalBuffer, 'color':pointColor, 'z-index':zIndex,
@@ -284,11 +292,14 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
                 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, normalBuffer.buffer]);
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, normalBuffer.buffer], signature);
         }
     }
 
     if (icon && iconData.vertexBuffer.length > 0) {
+        globals.signatureCounter++;
+        signature = (""+globals.signatureCounter);
+
         postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
             'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
             'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
@@ -296,10 +307,13 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
-            'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer]);
+            'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer], signature);
     }
 
     if (label && labelData.vertexBuffer.length > 0) {
+        globals.signatureCounter++;
+        signature = (""+globals.signatureCounter);
+
         if (labelData.noOverlap) {
             var margin = labelData.noOverlapMargin;
             var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1]];
@@ -312,7 +326,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
-            'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer]);
+            'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);
     }
 
 };
@@ -562,18 +576,20 @@ var processPointArrayGeometry = function(pointArray) {
         geometryBuffer[index+2] = pp[2];
         index += 3;
 
-        if ((i + 1) < li) {
-            if (dpoints) {
-                p2 = points[i+1];
-                p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-            } else {
-                p1 = points[i+1];
-            }
+        if (i >= (li - 1)) {
+            break;
+        }
+
+        if (dpoints) {
+            p2 = points[i+1];
+            p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
+        } else {
+            p1 = points[i+1];
         }
     }
   
-    postGroupMessage({'command':'addPointGeometry', 'type': 'point-geometry', 'geometryBuffer': geometryBuffer },
-                       [geometryBuffer.buffer, indicesBuffer.buffer]);
+    postGroupMessage({'command':'addRenderJob', 'type': 'point-geometry', 'id':lineString['id'], 'geometryBuffer': geometryBuffer },
+                      [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));
 };
 
 export {processPointArrayPass, processPointArrayGeometry};

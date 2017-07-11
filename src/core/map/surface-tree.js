@@ -173,7 +173,6 @@ MapSurfaceTree.prototype.draw = function() {
 
 
 MapSurfaceTree.prototype.updateNodeHeightExtents = function(tile, node) {
-    //debugger
     
     if (!node.heightReady && node.metatile.useVersion < 4) {
         var parent = tile.parent;

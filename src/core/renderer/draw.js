@@ -189,31 +189,60 @@ RendererDraw.prototype.drawBall2 = function(position, size, shader, nfactor, dir
 };
 
 
-RendererDraw.prototype.drawLineString = function(points, size, color, depthOffset, depthTest, transparent, writeDepth, useState) {
+RendererDraw.prototype.drawLineString = function(points, screenSpace, size, color, depthOffset, depthTest, transparent, writeDepth, useState) {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
     var index = 0, p, i;
 
     var totalPoints = points.length; 
-    
+   
     if (totalPoints > 32) {
         for (i = 0; i < totalPoints; i += 31) {
             p = points.slice(i, i + 32); 
-            this.drawLineString(p, size, color, depthOffset, depthTest, transparent, writeDepth, useState);
+            this.drawLineString(p, screenSpace, size, color, depthOffset, depthTest, transparent, writeDepth, useState);
         }
         return;
     }
 
     var plineBuffer = renderer.plineBuffer;
 
-    //fill points
-    for (i = 0; i < totalPoints; i++) {
-        p = points[i];
-        plineBuffer[index] = p[0];
-        plineBuffer[index+1] = p[1];
-        plineBuffer[index+2] = p[2] || 0;
-        index += 3;
+
+    if (screenSpace) { 
+
+        //fill points
+        for (i = 0; i < totalPoints; i++) {
+            p = points[i];
+            plineBuffer[index] = p[0];
+            plineBuffer[index+1] = p[1];
+            plineBuffer[index+2] = p[2] || 0;
+            index += 3;
+        }
+
+    } else { //covert points from physical space
+
+        var mvp = renderer.camera.getMvpMatrix();
+        var curSize = renderer.curSize;
+        var cameraPos = renderer.cameraPosition;
+
+        for (i = 0; i < totalPoints; i++) {
+            p = points[i];
+            p = mat4.multiplyVec4(mvp, [point[0] - cameraPos[0], point[1] - cameraPos[1], point[2] - cameraPos[2], 1 ]); 
+
+            //project point coords to screen
+            if (p[3] != 0) {
+                //x and y are in screen pixels
+                plineBuffer[index] = ((p[0]/p[3])+1.0)*0.5*curSize[0];
+                plineBuffer[index+1] = (-(p[1]/p[3])+1.0)*0.5*curSize[1]; 
+                plineBuffer[index+2] = p[2]/p[3]; //depth in meters
+            } else {
+                plineBuffer[index] = 0;
+                plineBuffer[index+1] = 0;
+                plineBuffer[index+2] = 0;
+            }
+
+            index += 3;
+        }
     }
 
     if (useState !== true) {
@@ -938,13 +967,37 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             if (a < Math.cos(math.radians(job.culling))) {
                 return;
             }
-        } else if (job.visibility != 0) {
+        } else if (job.visibility) {
+
             p2 = job.center;
             p1 = renderer.cameraPosition;
             camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
             l = vec3.length(camVec);
-            if (l > job.visibility) {
-                return;
+
+            switch(job.visibility.length) {
+                case 1:
+                    if (l > job.visibility[0]) {
+                        return;
+                    }
+                    break;
+
+                case 2:
+                    l *= renderer.localViewExtentFactor;
+                    if (l < job.visibility[0] || l > job.visibility[1]) {
+                        return;
+                    }
+
+                    break;
+
+                case 4:
+                    l *= renderer.localViewExtentFactor;
+
+                    var diameter = job.visibility[0] * job.visibility[1];
+                    if (diameter < (job.visibility[2] * l) || diameter > (job.visibility[3] * l)) {
+                        return;
+                    }
+
+                    break;
             }
         }
 
@@ -962,7 +1015,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
 
-                this.drawLineString([[pp[0], pp[1], pp[2]], [pp[0], pp[1]-stickShift, pp[2]]], s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
+                this.drawLineString([[pp[0], pp[1], pp[2]], [pp[0], pp[1]-stickShift, pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
             }
         }
 
@@ -979,7 +1032,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             if (renderer.drawLabelBoxes) {
                 this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
-                                     [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], 1, [255, 0, 0, 255], null, true, null, null, null);
+                                     [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
             }
         }
 

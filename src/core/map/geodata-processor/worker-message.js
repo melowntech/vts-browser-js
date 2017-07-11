@@ -6,6 +6,7 @@ var globals = globals_;
 
 
 function postGroupMessage(message, arrays, signature) {
+
     if (globals.groupOptimize) {
         if (globals.messageBufferIndex >= globals.messageBufferSize) { //resize buffer
             var oldBuffer = globals.messageBuffer; 

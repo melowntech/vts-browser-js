@@ -344,6 +344,7 @@ RendererInterface.prototype.drawLineString = function(options) {
     var color = options['color'] || [255,255,255,255];
     var depthOffset = (options['depthOffset'] != null) ? options['depthOffset'] : null;
     var size = options['size'] || 2;
+    var screenSpace = (options['screenSpace'] != null) ? options['screenSpace'] : true;
     var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
     var blend = (options['blend'] != null) ? options['blend'] : false;
     var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
@@ -353,7 +354,7 @@ RendererInterface.prototype.drawLineString = function(options) {
     color[2] *= 1.0/255;
     color[3] *= 1.0/255;
 
-    this.renderer.draw.drawLineString(points, size, color, depthOffset, depthTest, blend, writeDepth, useState);
+    this.renderer.draw.drawLineString(points, screenSpace, size, color, depthOffset, depthTest, blend, writeDepth, useState);
     return this;    
 };
 

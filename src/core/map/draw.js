@@ -179,6 +179,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
     renderer.distanceFactor = 1 / Math.max(1,Math.log(camera.distance) / Math.log(1.04));
     renderer.tiltFactor = (Math.abs(renderer.cameraOrientation[1]/-90));
+    renderer.localViewExtentFactor = 2 * Math.tan(math.radians(map.position.getFov()*0.5));
 
     this.degradeHorizonFactor = 200.0 * this.config.mapDegradeHorizonParams[0];
     this.degradeHorizonTiltFactor = 0.5*(1.0+Math.cos(math.radians(Math.min(180,Math.abs(renderer.cameraOrientation[1]*2*3)))));

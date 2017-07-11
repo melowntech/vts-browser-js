@@ -148,6 +148,10 @@ GpuTexture.prototype.load = function(path, onLoaded, onError, direct) {
 
         if (onLoaded) {
             onLoaded();
+        } else {
+            if (this.core.map && this.core.map.markDirty) {
+                this.core.map.markDirty();
+            }
         }
 
     }).bind(this), (function () {

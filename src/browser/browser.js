@@ -267,6 +267,8 @@ Browser.prototype.initConfig = function() {
         controlZoom : true,
         controlSpace : true,
         controlSearch : true,
+        controlSearchSrs : null,
+        controlSearchUrl : null,
         controlMeasure : false,
         controlLink : false,
         controlScale : true,
@@ -341,6 +343,8 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'controlLayers':        this.config.controlLayers = utils.validateBool(value, false); this.updateUI(key);    break;
     case 'controlSpace':         this.config.controlSpace = utils.validateBool(value, false); this.updateUI(key);     break;
     case 'controlSearch':        this.config.controlSearch = utils.validateBool(value, false); this.updateUI(key);    break;
+    case 'controlSearchUrl':     this.config.controlSearchUrl = value;    break;
+    case 'controlSearchSrs':     this.config.controlSearchSrs = value;    break;
     case 'controlLink':          this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
     case 'controlLogo':          this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
     case 'controlFullscreen':    this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key); break;
@@ -431,6 +435,8 @@ Browser.prototype.getConfigParam = function(key) {
     case 'controlLoading':       return this.config.controlLoading;
     case 'controlSearchElement': return this.config.controlSearchElement;
     case 'controlSearchValue':   return this.config.controlSearchValue;
+    case 'controlSearchUrl':     return this.config.controlSearchUrl;
+    case 'controlSearchSrs':     return this.config.controlSearchSrs;
     case 'minViewExtent':        return this.config.minViewExtent;
     case 'maxViewExtent':        return this.config.maxViewExtent;
     case 'rotate':               return this.config.autoRotate;

@@ -47,7 +47,7 @@ UIControlLoading.prototype.hide = function() {
     this.hiding = Date.now();
     
     var search = this.ui.config.controlSearch;
-    if (search) { //enable search for melown2015 reference frame only
+    if (search && !this.ui.browser.config.controlSearchUrl) { //enable search for melown2015 reference frame only
         var map = this.ui.browser.getMap();
         if (map) {
             //search = (map.getReferenceFrame()["id"] == "melown2015");

@@ -36,6 +36,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.hitmapCounter = 0;
     this.geoRenderCounter = 0;
     this.geoHitmapCounter = 0;
+    this.geometries = {};
     this.clearStencilPasses = [];
     this.onResizeCall = onResize;
     //this.math = Math;
@@ -105,6 +106,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.cameraViewExtent = 1;
     this.distanceFactor = 1;
     this.tiltFactor = 1;
+    this.localViewExtentFactor = 1;
     this.cameraVector = [0,0,0];
     this.labelVector = [0,0,0];
             

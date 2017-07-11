@@ -18,7 +18,7 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.renderer = renderer;
     this.jobs = [];
     this.reduced = 0;
-    this.geometries = [];
+    this.geometries = {};
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
@@ -62,6 +62,20 @@ GpuGroup.prototype.kill = function() {
             break;
         }
     }
+
+    //remove geometries
+    for (var key in this.geometries) {
+        var geometries = this.geometries[key];
+        var globalGeometry = this.renderer.geometries[key];
+        this.geometries[key] = null;
+
+        //remove geometry from glbal stack
+        for (i = 0, li = geometries.length; i < li; i++) {
+            if (geometries[i] == globalGeometry) {
+                this.renderer.geometries[key] = null;
+            }
+        }
+    }
 };
 
 
@@ -75,7 +89,15 @@ GpuGroup.prototype.getZbufferOffset = function() {
 };
 
 GpuGroup.prototype.addGeometry = function(data) {
-    
+    var id = data['id'];
+
+    if (!this.geometries[id]) {
+        this.geometries[id] = [data];
+    } else {
+        this.geometries[id].push(data);
+    }
+
+    this.renderer.geometries[id] = data;
 };
 
 GpuGroup.prototype.addLineJob = function(data) {
@@ -301,6 +323,10 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     } else {
         job.texture = this.renderer.font.texture;
         job.noOverlap = data['noOverlap'];
+    }
+
+    if (job.visibility != null && !Array.isArray(job.visibility)) {
+        job.visibility = [job.visibility];
     }
 
     //create vertex buffer

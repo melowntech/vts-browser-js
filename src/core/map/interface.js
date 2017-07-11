@@ -412,4 +412,8 @@ MapInterface.prototype.createGeodata = function() {
     return new MapGeodataBuilder(this.map);
 };
 
+MapInterface.prototype.getGeodataGeometry = function(id) {
+    return this.map.renderer.geometries[id];
+};
+
 export default MapInterface;

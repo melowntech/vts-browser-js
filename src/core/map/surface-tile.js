@@ -72,10 +72,6 @@ var MapSurfaceTile = function(map, parent, id) {
     this.metaresources = this.map.resourcesTree.findAgregatedNode(id, 5, true); //link to meta resource tree
     this.boundresources = this.map.resourcesTree.findAgregatedNode(id, 8, true); //link to meta resource tree
     
-    /*if (!this.resources) {
-        debugger;
-    }*/
-
     this.children = [null, null, null, null];
 };
 

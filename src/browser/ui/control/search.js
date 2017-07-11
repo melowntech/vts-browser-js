@@ -161,7 +161,8 @@ UIControlSearch.prototype.onSelectItem = function(index) {
     var physicalSrs = map.getSrsInfo(physicalSrsId);
 
     var proj4 = this.browser.getProj4();
-    var coords = proj4(navigationSrs['srsDef'], this.coordsSrs, pos.getCoords());
+    var srs = this.browser.config.controlSearchSrs || this.coordsSrs;
+    var coords = proj4(navigationSrs['srsDef'], srs, pos.getCoords());
 
     pos = map.convertPositionHeightMode(pos, "float", true);
 
@@ -170,7 +171,7 @@ UIControlSearch.prototype.onSelectItem = function(index) {
         var coords = [item['lon'], item['lat']];
         
         //conver coords from location srs to map navigation srs         
-        coords = proj4(this.coordsSrs, navigationSrs['srsDef'], coords);
+        coords = proj4(srs, navigationSrs['srsDef'], coords);
         coords[2] = 0;
 
         pos.setCoords(coords);
@@ -194,13 +195,13 @@ UIControlSearch.prototype.onSelectItem = function(index) {
             var points = item.polygon;
 
             //convert point to physical coords
-            var cameraPosition = proj4(this.coordsSrs, physicalSrs['srsDef'], coords);
+            var cameraPosition = proj4(srs, physicalSrs['srsDef'], coords);
             var cameraVector = [-cameraPosition[0], -cameraPosition[1], -cameraPosition[2]];
             vec3.normalize(cameraVector);
 
             for (var i = 0, li = points.length; i < li; i++) {
                 //convert point to physical coords
-                coords = proj4(this.coordsSrs, physicalSrs['srsDef'], [points[i][0], points[i][1], 0]);
+                coords = proj4(srs, physicalSrs['srsDef'], [points[i][0], points[i][1], 0]);
 
                 var ab = cameraVector;
                 var av = [coords[0] - cameraPosition[0], coords[1] - cameraPosition[1], coords[2] - cameraPosition[2]];
@@ -296,7 +297,7 @@ UIControlSearch.prototype.onListLoaded = function(counter, data) {
         var navigationSrs = map.getSrsInfo(navigationSrsId);
 
         var proj4 = this.browser.getProj4();
-        var coords = proj4(navigationSrs['srsDef'], this.coordsSrs, pos.getCoords());
+        var coords = proj4(navigationSrs['srsDef'], this.browser.config.controlSearchSrs || this.coordsSrs, pos.getCoords());
 
         data = filterSearch(data, coords[0], coords[1]);
         this.updateList(data);
@@ -366,7 +367,7 @@ UIControlSearch.prototype.onChange = function() {
         this.hideList();        
     }    
     
-    var url = this.processTemplate(this.urlTemplate, { 'value' : value });
+    var url = this.processTemplate(this.browser.config.controlSearchUrl || this.urlTemplate, { 'value' : value });
     //console.log(url);
     this.searchCounter++;
     this.itemIndex = -1;

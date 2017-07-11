@@ -47,7 +47,6 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function() {
     }
     
     if (vsurfaceCount > 1) {
-        //debugger;
         
         var glues = [];
     
@@ -103,8 +102,6 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function() {
             }
         }
     
-        //debugger;
-    
         //sort list alphabetically
         do {
             var sorted = true;
@@ -131,11 +128,7 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function() {
             }
             
         } while(!sorted);
-    
-        //debugger;
-    
-        //return;
-    
+   
         var lastIndex = vsurfaceCount - 1;
     
         //convert list to surface sequence
