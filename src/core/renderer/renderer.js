@@ -286,6 +286,9 @@ Renderer.prototype.getScreenRay = function(screenX, screenY) {
     var invProjection = mat4.create();
     invProjection = mat4.inverse(this.camera.getProjectionMatrix());
 
+    //console.log("--" + JSON.stringify(rayClipCoords));
+    //console.log("----" + JSON.stringify(invProjection));
+
     var rayEye = [0,0,0,0];
     mat4.multiplyVec4(invProjection, rayClipCoords, rayEye); //inverse (projectionmatrix) * rayClipCoords;
     rayEye[2] = -1.0;

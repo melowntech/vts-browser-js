@@ -60,6 +60,7 @@ var Core = function(element, config, coreInterface) {
         mapGridSurrogatez : false, 
         mapXhrImageLoad : false,
         mapStoreLoadStats : false,
+        mapRefreshCycles : 3,
         mapDegradeHorizon : false,
         mapDegradeHorizonParams : [1, 1500, 97500, 3500], //[1, 3000, 15000, 7000],
         mapFog : true,
@@ -469,7 +470,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.9.0';
+    return (full ? 'Core: ' : '') + '2.9.1';
 }
 
 

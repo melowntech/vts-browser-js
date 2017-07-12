@@ -11,6 +11,7 @@ var MapGeodataGeometry = function(map, data) {
     this.map = map;
     this.data = data;
     this.camera = map.camera;
+    this.renderer = map.renderer;
 
     switch (data.type) {
         case 'point-geometry':   
@@ -46,7 +47,13 @@ MapGeodataGeometry.prototype.getRelationToCanvasPoint = function(index, screenX,
     var a, b, c, d, e, D, sc, tc, u, v, w;
 
     c1 = this.camera.position;
-    cv = this.camera.vector;
+    //cv = this.camera.vector;
+
+    this.renderer.camera.dirty = true; //
+
+    cv = this.renderer.getScreenRay(screenX, screenY);
+
+    //console.log(JSON.stringify(c1) + "  " + JSON.stringify(cv));
 
     switch(this.type) {
         case 1: 
