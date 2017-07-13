@@ -346,6 +346,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'controlSearchUrl':     this.config.controlSearchUrl = value;    break;
     case 'controlSearchSrs':     this.config.controlSearchSrs = value;    break;
     case 'controlLink':          this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
+    case 'controlMeasure':       this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
     case 'controlLogo':          this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
     case 'controlFullscreen':    this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key); break;
     case 'controlCredits':       this.config.controlCredits = utils.validateBool(value, true); this.updateUI(key);    break;
@@ -429,6 +430,7 @@ Browser.prototype.getConfigParam = function(key) {
     case 'controlSpace':         return this.config.controlSpace;
     case 'controlSearch':        return this.config.controlSearch;
     case 'controlLink':          return this.config.controlLink;
+    case 'controlMeasure':       return this.config.controlMeasure;
     case 'controlLogo':          return this.config.controlLogo;
     case 'controlFullscreen':    return this.config.controlFullscreen;
     case 'controlCredits':       return this.config.controlCredits;

@@ -1088,14 +1088,14 @@ Map.prototype.update = function() {
         this.dirty = true;
     }
 
-    var dirty = this.dirty, result;
+    var dirty = (this.dirty || this.dirtyCountdown > 0), result;
     this.stats.begin(dirty);
 
     this.loader.update();
 
     this.processProcessingTasks();
 
-    if (this.dirty || this.dirtyCountdown > 0) {
+    if (dirty) {
         if (this.dirty) {
             this.dirtyCountdown = this.config.mapRefreshCycles;
         } else {

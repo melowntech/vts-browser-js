@@ -177,6 +177,14 @@ MapInterface.prototype.convertCoords = function(sourceSrs, destinationSrs, coord
     return srs2.convertCoordsFrom(coords, srs);
 };
 
+MapInterface.prototype.convertCoordsFromNavToPublic = function(pos, mode, lod) {
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    return this.map.convert.getPositionPublicCoords((new MapPosition(p)), lod);
+};
+
+MapInterface.prototype.convertCoordsFromPhysToPublic = function(pos) {
+    return this.convertCoords(coords, 'physical', 'public');
+};
 
 MapInterface.prototype.convertCoordsFromNavToPhys = function(pos, mode, lod) {
     var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
@@ -228,8 +236,8 @@ MapInterface.prototype.getSurfaceHeight = function(coords, precision) {
 };
 
 
-MapInterface.prototype.getDistance = function(coords, coords2, includingHeight) {
-    return this.map.measure.getDistancet(coords, coords2, includingHeight);
+MapInterface.prototype.getDistance = function(coords, coords2, includingHeights) {
+    return this.map.measure.getDistance(coords, coords2, includingHeights);
 };
 
 

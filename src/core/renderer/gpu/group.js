@@ -40,6 +40,7 @@ GpuGroup.prototype.kill = function() {
             break;
 
         case 'flat-tline':
+        case 'flat-rline':
         case 'pixel-line':
         case 'pixel-tline':
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);

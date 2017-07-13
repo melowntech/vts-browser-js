@@ -1021,6 +1021,7 @@ MapSurfaceTree.prototype.traceHeightTile = function(tile, priority, nodeReadyOnl
     }
 
     if (!tile.isMetanodeReady(this, 0) || nodeReadyOnly) {
+        this.params.waitingForNode = true;
         return;
     }
 

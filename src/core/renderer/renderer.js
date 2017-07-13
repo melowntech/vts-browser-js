@@ -275,6 +275,8 @@ Renderer.prototype.getScreenRay = function(screenX, screenY) {
         return [0,0,1.0];
     }
 
+    this.camera.dirty = true; //???? why is projection matrix distored so I have to refresh
+
     //conver screen coords
     var x = (2.0 * screenX) / this.curSize[0] - 1.0;
     var y = 1.0 - (2.0 * screenY) / this.curSize[1];

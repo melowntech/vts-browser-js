@@ -49,8 +49,6 @@ MapGeodataGeometry.prototype.getRelationToCanvasPoint = function(index, screenX,
     c1 = this.camera.position;
     //cv = this.camera.vector;
 
-    this.renderer.camera.dirty = true; //
-
     cv = this.renderer.getScreenRay(screenX, screenY);
 
     //console.log(JSON.stringify(c1) + "  " + JSON.stringify(cv));
@@ -201,6 +199,34 @@ MapGeodataGeometry.prototype.getPathNED = function(distance, withoutSlope, pathI
     };    
 };
 
+
+MapGeodataGeometry.prototype.getPathLengthToElement = function(index, pathIndex) {
+    pathIndex = pathIndex || 0;
+
+    var si = (this.indicesBuffer[pathIndex]) * 3;
+    var ei = ((pathIndex + 1) >= this.indicesBuffer.length) ? this.vertexBuffer.length : (this.indicesBuffer[pathIndex] * 3);
+
+    var totalLength = 0, delta, length, v = this.vertexBuffer, elementIndex = 0;
+
+    for (var i = si; i < (ei-5); i+=3) {
+        delta = [v[i+3] - v[i], v[i+4] - v[i+1], v[i+5] - v[i+2]];
+        length = vec3.length(delta);
+
+        if (index == elementIndex) {
+            return {
+                'lengthToElement' : totalLength,
+                'elementLengh' : length
+            }
+        }
+
+        elementIndex++
+        totalLength += length;
+    }
+
+    return totalLength;
+};
+
+
 MapGeodataGeometry.prototype.getPathLength = function(pathIndex) {
     pathIndex = pathIndex || 0;
 
@@ -218,6 +244,7 @@ MapGeodataGeometry.prototype.getPathLength = function(pathIndex) {
 
     return totalLength;
 };
+
 
 MapGeodataGeometry.prototype.getPathsCount = function() {
     if (this.type != 2) {
