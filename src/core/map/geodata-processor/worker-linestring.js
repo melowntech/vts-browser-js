@@ -68,7 +68,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
         skipJoins = (!lineFlat && lineWidth < 2.1);        
     }
 
-    var ii, i, li, p2, v, vv, l, n, nn, p1, p, elementIndex, elemetBase = 0;
+    var ii, i, li, p2, v, vv, l, n, nn, p1, p, elementIndex, elemetBase = 1;
 
     //console.log("lod: " + lod + "  width: " + lineWidth);
     //skipJoins = true;
