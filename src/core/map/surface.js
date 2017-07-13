@@ -332,6 +332,8 @@ MapSurface.prototype.setStyle = function(style) {
     this.style = style;
     this.styleChanged = true;
     this.geodataCounter++;
+
+    //this.map.setStylesheetData(id); //force update
     
     this.map.markDirty();
 };

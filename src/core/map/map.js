@@ -512,27 +512,7 @@ Map.prototype.setView = function(view, forceRefresh) {
     this.surfaceSequence.generateSurfaceSequence();
     this.surfaceSequence.generateBoundLayerSequence();
 
-    var freeLayers = this.currentView.freeLayers;
-    this.freeLayerSequence = [];
-
-    for (var key in freeLayers) {
-        var freeLayer = this.getFreeLayer(key);
-        
-        if (freeLayer) {
-            
-            freeLayer.zFactor = freeLayers[key]['depthOffset'];
-            
-            this.freeLayerSequence.push(freeLayer);
-            
-            if (freeLayers[key]['style']) {
-                freeLayer.setStyle(freeLayers[key]['style']);
-            } else {
-                freeLayer.setStyle(freeLayer.originalStyle);
-            }
-            
-            //TODO: generate bound layer seqence for      
-        }
-    }
+    this.refreshFreelayesInView();
 
     this.markDirty();
 };
@@ -573,12 +553,14 @@ Map.prototype.getStylesheetData = function(id) {
 Map.prototype.setStylesheetData = function(id, data) {
     var stylesheet = this.getStylesheet(id);
     
-    if (stylesheet) {
-        stylesheet.data = data;
-    }
+    //if (stylesheet) {
+      //  stylesheet.data = data;
+    //}
 
     if (stylesheet) {
-        stylesheet.setData(data);
+        if (data) {
+            stylesheet.setData(data);
+        }
 
         for (var key in this.freeLayers) {
             var freeLayer = this.getFreeLayer(key);
@@ -604,10 +586,35 @@ Map.prototype.getView = function() {
 };
 
 
+Map.prototype.refreshFreelayesInView = function() {
+    var freeLayers = this.currentView.freeLayers;
+    this.freeLayerSequence = [];
+
+    for (var key in freeLayers) {
+        var freeLayer = this.getFreeLayer(key);
+        
+        if (freeLayer) {
+            
+            freeLayer.zFactor = freeLayers[key]['depthOffset'];
+            
+            this.freeLayerSequence.push(freeLayer);
+            
+            if (freeLayers[key]['style']) {
+                freeLayer.setStyle(freeLayers[key]['style']);
+            } else {
+                freeLayer.setStyle(freeLayer.originalStyle);
+            }
+            
+            //TODO: generate bound layer seqence for      
+        }
+    }
+};
+
 Map.prototype.refreshView = function() {
     this.viewCounter++;
     this.surfaceSequence.generateSurfaceSequence();
     this.surfaceSequence.generateBoundLayerSequence();
+    this.refreshFreelayesInView();
     this.markDirty();
 };
 
