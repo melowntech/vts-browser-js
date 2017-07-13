@@ -118,6 +118,7 @@ var Map = function(core, mapConfig, path, config) {
     this.updateCoutner = 0;
 
     this.dirty = true;
+    this.dirtyCountdown = 0;
     this.hitMapDirty = true;
     this.geoHitMapDirty = true;
 
@@ -731,12 +732,13 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapGridMode':                   this.config.mapGridMode = utils.validateString(value, 'linear'); break;
     case 'mapPreciseBBoxTest':            this.config.mapPreciseBBoxTest = utils.validateBool(value, true); break;
     case 'mapPreciseDistanceTest':        this.config.mapPreciseDistanceTest = utils.validateBool(value, false); break;
-    case 'mapHeightfiledWhenUnloaded':    this.config.mapHeightfiledWhenUnloaded= utils.validateBool(value, false); break;
-    case 'mapForceMetatileV3':            this.config.mapForceMetatileV3= utils.validateBool(value, false); break;
+    case 'mapHeightfiledWhenUnloaded':    this.config.mapHeightfiledWhenUnloaded = utils.validateBool(value, false); break;
+    case 'mapForceMetatileV3':            this.config.mapForceMetatileV3 = utils.validateBool(value, false); break;
     case 'mapVirtualSurfaces':            this.config.mapVirtualSurfaces = utils.validateBool(value, true); break;
     case 'mapDegradeHorizon':             this.config.mapDegradeHorizon = utils.validateBool(value, true); break;
     case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], [1, 3000, 15000, 7000]); break;
     case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
+    case 'mapRefreshCycles':              this.config.mapRefreshCycles = utils.validateNumber(value, 0, Number.MAXINTEGER, 3); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
@@ -780,6 +782,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapDegradeHorizon':             return this.config.mapDegradeHorizon;
     case 'mapDegradeHorizonParams':       return this.config.mapDegradeHorizonParams;
     case 'mapGridSurrogatez':             return this.config.mapGridSurrogatez;
+    case 'mapRefreshCycles':              return this.config.mapRefreshCycles;
     case 'mario':                         return this.config.mario;
     }
 };
@@ -1085,14 +1088,20 @@ Map.prototype.update = function() {
         this.dirty = true;
     }
 
-    var dirty = this.dirty, result;
+    var dirty = (this.dirty || this.dirtyCountdown > 0), result;
     this.stats.begin(dirty);
 
     this.loader.update();
 
     this.processProcessingTasks();
 
-    if (this.dirty) {
+    if (dirty) {
+        if (this.dirty) {
+            this.dirtyCountdown = this.config.mapRefreshCycles;
+        } else {
+            this.dirtyCountdown--;
+        }
+
         this.dirty = false;
         this.bestMeshTexelSize = 0;//Number.MAX_VALUE;
         this.bestGeodataTexelSize = 0;//Number.MAX_VALUE;

@@ -323,6 +323,8 @@ Camera.prototype.update = function(zoffset) {
     // is trivial here -- negative angles, reverse order of transformations)
     //this.modelview = mat4.create();
 
+    //console.log("camera-update");
+
     if (!this.rotationByMatrix) {
         mat4.multiply(math.rotationMatrix(2, math.radians(-this.orientation[2])), math.rotationMatrix(0, math.radians(-this.orientation[1] - 90.0)), this.rotationview);
         mat4.multiply(this.rotationview, math.rotationMatrix(2, math.radians(-this.orientation[0])), this.rotationview);
@@ -336,6 +338,7 @@ Camera.prototype.update = function(zoffset) {
         this.projection = math.perspectiveMatrix(this.fov, this.aspect, this.near, this.far);
     }
 
+    /*
     mat4.set(this.projection, this.projection2); //without zoffset
 
     if (zoffset) {
@@ -345,11 +348,11 @@ Camera.prototype.update = function(zoffset) {
         m[6] *= zoffset;
         m[10] *= zoffset;
         m[15] *= zoffset;
-    } 
+    }*/
 
     //this.mvp = mat4.create();
     mat4.multiply(this.projection, this.modelview, this.mvp);
-    mat4.multiply(this.projection2, this.modelview, this.mvp2); //without zoffset
+    //mat4.multiply(this.projection2, this.modelview, this.mvp2); //without zoffset
 
     // prepare frustum planes (in normalized device coordinates)
     this.frustumPlanes[0] = [ 0, 0, 1, 1 ]; // far
@@ -363,7 +366,8 @@ Camera.prototype.update = function(zoffset) {
     // planes in homogeneous coordinates transform as p' = M^{-T} * p, where
     // M^{-T} is the transpose of inverse of M
     var mvpt = mat4.create();
-    mat4.transpose(this.mvp2, mvpt); //without zoffset
+    //mat4.transpose(this.mvp2, mvpt); //without zoffset
+    mat4.transpose(this.mvp, mvpt); //without zoffset
     for (var i = 0; i < 6; i++) {
         this.frustumPlanes[i] = mat4.multiplyVec4(mvpt, this.frustumPlanes[i]);
     }

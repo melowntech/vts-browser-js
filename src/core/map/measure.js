@@ -56,7 +56,8 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
             metanode : null,
             heightMap : null,
             heightMapExtents : null,
-            traceHeight : true
+            traceHeight : true,
+            waitingForNode : false
         };
 
         tree.traceHeight(root, params, false);
@@ -114,7 +115,8 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
             res = this.getSurfaceHeightNodeOnly(coords, lod + 8, storeStats, lod, null, node, nodeCoords, coordsArray);
 
             //console.log("lod2: " + lod + " h: " + height[0]);  
-            return [res[0], res[1], true, null, null, res[5]];
+            //return [res[0], res[1], true, null, null, res[5]];
+            return [res[0], res[1], res[2], null, null, res[5]];
         }
 
         /*
@@ -216,7 +218,8 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
             metanode : null,
             heightMap : null,
             heightMapExtents : null,
-            traceHeight : true
+            traceHeight : true,
+            waitingForNode : false
         };
 
         tree.traceHeight(root, params, true);
@@ -243,10 +246,20 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
                 height = center[2] + (center2[2] - center[2]) * factor;
                
                 //extetnts = params.extents;
-                return [height, true, true, params.extents, metanode, arrayRes];
+                //return [height, true, true, params.extents, metanode, arrayRes];
+
+                return [height, (metanode.id[0] >= Math.floor(lod)), 
+                        (!params.waitingForNode || metanode.id[0] >= Math.floor(lod)),
+                        params.extents, metanode, arrayRes];
+                                      
+
                 //console.log("lod: " + lod + " h1: " + center[2] + " h2: " + center2[2] + " h: " + height);  
             } else {
-                return [center[2], true, true, params.extents, metanode, arrayRes];
+                return [center[2], (metanode.id[0] >= Math.floor(lod)), 
+                        (!params.waitingForNode || metanode.id[0] >= Math.floor(lod)),
+                        params.extents, metanode, arrayRes];
+
+                //return [center[2], true, true, params.extents, metanode, arrayRes];
             }
         }
 
@@ -512,7 +525,7 @@ MapMeasure.prototype.getDistance = function(coords, coords2, includingHeight) {
 
         if (d > (navigationSrsInfo['a'] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
             if (includingHeight) {
-                return [Math.sqrt(r.s12*r.s12 + dz*dz), -r.az1];
+                return [Math.sqrt(r.s12*r.s12 + dz*dz), -r.azi1];
             } else {
                 return [r.s12, -r.azi1];
             }

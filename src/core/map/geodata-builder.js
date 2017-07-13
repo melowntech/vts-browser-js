@@ -289,12 +289,12 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
             coords = item.coords;
 
             if (coords[3].srs) {
-                p = this.navSrs.convertCoordsFrom(coords, srs);
+                p = this.navSrs.convertCoordsFrom(coords, coords[3].srs);
             } else {
                 p = coords;
             }
 
-            heightLod = this.map.measure.getOptimalHeightLodBySampleSize(p, precision);
+            this.heightLod = this.map.measure.getOptimalHeightLodBySampleSize(p, precision);
             break;
 
         case "node-by-lod":
@@ -318,11 +318,19 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
 
             coords[4] = res[0];
             coords[5] = res[1];
+
+            //coords[4] = p;
         }
 
         res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
+        //res = this.map.measure.getSurfaceHeight(coords[4], heightsLod, null, null, null, null, nodeOnly);
 
-        //console.log(JSON.stringify(res));
+        /*console.log(JSON.stringify(res));
+
+        if (res[1] || res[2]) { //precisin reached or not aviable
+            //res = this.map.measure.getSurfaceHeight(coords[4], heightsLod, null, null, null, null, nodeOnly);
+            res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
+        }*/
 
         if (res[1] || res[2]) { //precisin reached or not aviable
             coords[2] += res[0]; //convet float height to fixed

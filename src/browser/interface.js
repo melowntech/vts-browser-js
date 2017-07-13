@@ -15,13 +15,8 @@ var Browser = Browser_;
 var BrowserInterface = function(element, config) {
     this.browser = new Browser(element, config);
     this.core = this.browser.getCore();
-    //this.map = null;//this.core.getMap();
-    //this.ui = this.browser.ui;
-    //this.autopilot = this.browser.autopilot;
-    //this.presenter = this.browser.presenter;
     this.killed = false;
-    //this.core.on("map-loaded", (function(){ this.map = this.core.getMap(); }).bind(this));
-    //this.core.on("map-unloaded", (function(){ this.map = null; }).bind(this));    
+
 
     Object.defineProperty(this, 'map', {
         get: function() {
@@ -60,50 +55,11 @@ var BrowserInterface = function(element, config) {
 };
 
 
-/*BrowserInterface.prototype.getPresenter = function() {
-    if (this.killed) return;
-    return this.presenter;
-};
-
-
-BrowserInterface.prototype.getMap = function() {
-    if (this.killed) return;
-    return this.core.getMap();
-};
-
-
-BrowserInterface.prototype.getRenderer = function() {
-    if (this.killed) return;
-    return this.core.getRenderer();
-};
-
-
-BrowserInterface.prototype.getAutopilot = function() {
-    if (this.killed) return;
-    return this.autopilot;
-};
-
-
-BrowserInterface.prototype.getProj4 = function() {
-    if (this.killed) return;
-    return this.core.getProj4();
-};
-
-
-BrowserInterface.prototype.getUI = function() {
-    if (this.killed) return;
-    return this.ui;
-};*/
-
 
 BrowserInterface.prototype.destroy = function() {
     if (this.killed) return;
     this.core.destroy();
-    //this.map = null;
     this.browser.kill();
-    //this.ui.kill();
-    //this.ui = null;
-    //this.core = null;
     this.killed = true;
     return null;    
 };

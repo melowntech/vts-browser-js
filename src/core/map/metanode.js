@@ -105,7 +105,6 @@ MapMetanode.prototype.usedDisplaySize = function() {
     return ((this.flags & (1 << 3)) != 0);
 };
 
-
 MapMetanode.prototype.parseMetanode = function(stream) {
 
 /*
@@ -175,11 +174,19 @@ struct Metanode {
         this.bbox = new BBox(minExtents[0], minExtents[1], minExtents[2], maxExtents[0], maxExtents[1], maxExtents[2]);
     }    
 
+    //this.surrogatezHeight = 0;
+
     if (version >= 4) {
         this.minZ = streamData.getFloat32(stream.index, true); stream.index += 4;
         this.maxZ = streamData.getFloat32(stream.index, true); stream.index += 4;
         this.surrogatez = streamData.getFloat32(stream.index, true); stream.index += 4;
+
+        //if (!(this.minZ > this.maxZ || this.surrogatez == Number.NEGATIVE_INFINITY)) {
+          //  this.surrogatezHeight = this.surrogatez; //have to converted to nav srs height
+        //}
     }
+
+
 
     this.internalTextureCount = streamData.getUint8(stream.index, true); stream.index += 1;
 

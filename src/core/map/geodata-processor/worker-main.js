@@ -239,6 +239,7 @@ function processGeodata(data, lod) {
 }
 
 function optimizeGroupMessages() {
+    //debugger;
     //loop messages
     var messages = globals.messageBuffer;
     var j, lk, k, message2, job2, vbufferSize, vbuffer, index, buff, buff2;
@@ -289,6 +290,8 @@ function optimizeGroupMessages() {
                     
             case 'pixel-line':
             case 'line-label':
+            case 'flat-rline':
+
                 vbufferSize = job['vertexBuffer'].length;
 
                 for (j = i + 1; j < li; j++) {

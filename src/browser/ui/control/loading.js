@@ -37,6 +37,7 @@ UIControlLoading.prototype.show = function() {
     this.ui.setControlVisible('space', false);
     this.ui.setControlVisible('search', false);
     this.ui.setControlVisible('link', false);
+    this.ui.setControlVisible('measure', false);
     this.ui.setControlVisible('fullscreen', false);
     this.ui.setControlVisible('credits', false);
     this.ui.setControlVisible('loading', true);
@@ -68,6 +69,7 @@ UIControlLoading.prototype.hide = function() {
     this.ui.setControlVisible('space', this.ui.config.controlSpace);
     this.ui.setControlVisible('search', search);
     this.ui.setControlVisible('link', this.ui.config.controlLink);
+    this.ui.setControlVisible('measure', this.ui.config.controlMeasure);
     this.ui.setControlVisible('fullscreen', this.ui.config.controlFullscreen);
     this.ui.setControlVisible('credits', this.ui.config.controlCredits);
     this.ui.setControlVisible('loading', false);
