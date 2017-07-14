@@ -1161,7 +1161,7 @@ Map.prototype.update = function() {
             if (result[1] && result[0] != null) {
                 p = result[0][1];
                 this.core.callListener('geo-feature-hover', {'feature': result[0][0], 'canvas-coords':renderer.project2(result[0][1], renderer.camera.mvp, camPos),
-                    'physical-coords':[p[0] + camPos[0], p[1] + camPos[1], p[2] + camPos[2]], 'state': this.hoverEvent[3], 'element': result[3]}, true);
+                    'physical-coords':[p[0] + camPos[0], p[1] + camPos[1], p[2] + camPos[2]], 'state': this.hoverEvent[3], 'element': result[3]});
             }
 
             //is it persistent event?

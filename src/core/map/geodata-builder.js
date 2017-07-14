@@ -21,6 +21,9 @@ var MapGeodataBuilder = function(map) {
 
     this.heightsToProcess = 0;
     this.heightsProcessBuffer = null;
+    this.heightsProcessBufferFirst = null;
+    this.heightsProcessBufferLast = null;
+
     this.heightsLod = 8;
     this.heightsSource = "heightmap-by-precision";
     this.updateCallback = null;
@@ -28,6 +31,7 @@ var MapGeodataBuilder = function(map) {
     this.processHeightsCalls = [];
 };
 
+/*
 MapGeodataBuilder.prototype.addToHeightsBuffer = function(coords) {
     this.heightsProcessBuffer = {
         coords:  coords,
@@ -43,6 +47,61 @@ MapGeodataBuilder.prototype.removeFromHeightsBuffer = function(item, lastItem) {
 
     lastItem.next = item.next;
 };
+*/
+
+MapGeodataBuilder.prototype.addToHeightsBuffer = function(coords) {
+
+    var item = { coords: coords, prev: null, next: this.heightsProcessBufferFirst };
+
+    if (this.heightsProcessBufferFirst != null) {
+        this.heightsProcessBufferFirst.prev = item;
+    }
+
+    //add item as first in list
+    this.heightsProcessBufferFirst = item;
+
+    if (this.heightsProcessBufferLast == null) {
+        this.heightsProcessBufferLast = item;
+    }
+};
+
+
+MapGeodataBuilder.prototype.removeFromHeightsBuffer = function(item) {
+    var hit = false;
+
+    if (item == this.heightsProcessBufferFirst) {
+        this.heightsProcessBufferFirst = item.next;
+        hit = true;
+
+        if (this.heightsProcessBufferFirst != null) {
+            this.heightsProcessBufferFirst.prev = null;
+        }
+    }
+
+    if (item == this.heightsProcessBufferLast) {
+        this.heightsProcessBufferLast = item.prev;
+        hit = true;
+
+        if (this.heightsProcessBufferLast != null) {
+            this.heightsProcessBufferLast.next = null;
+        }
+    }
+
+    if (!hit) {
+        if (!item.prev) {
+            //debugger;
+        } else {
+            item.prev.next = item.next;
+        }
+        
+        if (!item.next) {
+            //debugger;
+        } else {
+            item.next.prev = item.prev;
+        }
+    }
+};
+
 
 MapGeodataBuilder.prototype.addGroup = function(id) {
     this.groups.push({
@@ -278,7 +337,8 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
     this.heightsSource = heightsSource;
     this.heightsLod = precision;
 
-    var item = this.heightsProcessBuffer, lastItem;
+    var item = this.heightsProcessBufferFirst, lastItem;
+    //var item = this.heightsProcessBuffer, lastItem;
     var p, res, nodeOnly, heightsLod, nodeOnly, coords;
 
     switch (heightsSource) {
@@ -294,7 +354,7 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
                 p = coords;
             }
 
-            this.heightLod = this.map.measure.getOptimalHeightLodBySampleSize(p, precision);
+            heightsLod = this.map.measure.getOptimalHeightLodBySampleSize(p, precision);
             break;
 
         case "node-by-lod":
@@ -325,14 +385,17 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
         res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
         //res = this.map.measure.getSurfaceHeight(coords[4], heightsLod, null, null, null, null, nodeOnly);
 
-        /*console.log(JSON.stringify(res));
+        //console.log(JSON.stringify(res));
 
-        if (res[1] || res[2]) { //precisin reached or not aviable
+        //if (res[1] || res[2]) { //precisin reached or not aviable
             //res = this.map.measure.getSurfaceHeight(coords[4], heightsLod, null, null, null, null, nodeOnly);
-            res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
-        }*/
+            //res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
+        //}
 
-        if (res[1] || res[2]) { //precisin reached or not aviable
+        if (res[1] || res[2]) { //precision reached or not aviable
+
+            //console.log(JSON.stringify(res));
+
             coords[2] += res[0]; //convet float height to fixed
             this.removeFromHeightsBuffer(item, lastItem);
             coords[3].heightsToProcess--;
@@ -343,6 +406,9 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
             }
 
             p = [coords[0], coords[1], coords[2]];
+
+            //console.log(JSON.stringify(p) + "  srs  " + coords[3].srs);
+
             p = this.physSrs.convertCoordsFrom(p, coords[3].srs);
 
             coords[0] = p[0];

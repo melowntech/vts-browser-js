@@ -41,6 +41,19 @@ MapGeodataGeometry.prototype.getElement = function(index) {
     }
 };
 
+MapGeodataGeometry.prototype.getElements = function(pathIndex) {
+    switch(this.type) {
+        case 1: return this.vertexBuffer.length / 3; //point
+        case 2:  //line
+            
+            pathIndex = pathIndex || 0;
+            var si = (this.indicesBuffer[pathIndex]) * 3;
+            var ei = ((pathIndex + 1) >= this.indicesBuffer.length) ? this.vertexBuffer.length : (this.indicesBuffer[pathIndex] * 3);
+
+            return Math.max(0, ((ei - si) / 3) - 1);
+    }
+};
+
 MapGeodataGeometry.prototype.getRelationToCanvasPoint = function(index, screenX, screenY) {
     var v = this.vertexBuffer, i = index * 3;
     var c1, c2, cv, p, r = [0,0,0];

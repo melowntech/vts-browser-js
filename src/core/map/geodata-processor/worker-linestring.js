@@ -504,7 +504,7 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
                 if (lineFlat) {
 
                     if (advancedHit) {
-                        elementIndex = elemetBase + i;
+                        elementIndex = elemetBase + ((i != (li-1)) ? i : (i -1));
 
                         elementBuffer[index3] = elementIndex;
                         elementBuffer[index3+1] = elementIndex;
@@ -772,21 +772,19 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
 
                 } else {
 
+                    var segmentIndex = (i != (li-1)) ? i : (i - 1);
+
                     for (var j = 0; j < circleSides; j++) {
            
                         if (advancedHit) {
-                            elementIndex = elemetBase + i;
+                            elementIndex = elemetBase + segmentIndex;
                             elementBuffer[index3] = elementIndex;
                             elementBuffer[index3+1] = elementIndex;
                             elementBuffer[index3+2] = elementIndex;
                             index3 += 3;
                         }
 
-                        if (i != (li-1)) {
-                            distance = vertexBuffer[i * lineVertices + 3];
-                        } else {
-                            distance = vertexBuffer[(i - 1) * lineVertices + 11];
-                        }
+                        distance = vertexBuffer[segmentIndex * lineVertices + 3];
         
                         //add polygon
                         vertexBuffer[index] = p1[0];
