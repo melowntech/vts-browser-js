@@ -69,7 +69,7 @@ function onMapLoaded() {
     //this function is needed only when 'float' heights are used
     //in case you use data with 'fix' height only then you can
     //skip this function and call makeFreeLayer directly
-    geodata.processHeights('heightmap-by-lod', 4, onHeightProcessed);
+    geodata.processHeights('heightmap-by-precision', 62, onHeightProcessed);
 }
 
 function onHeightProcessed() {
