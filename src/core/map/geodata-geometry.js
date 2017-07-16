@@ -30,7 +30,7 @@ var MapGeodataGeometry = function(map, data) {
 };
 
 MapGeodataGeometry.prototype.getType = function() {
-    swithc(this.data.type) {
+    switch(this.data.type) {
         case 1: return 'point';
         case 2: return 'line';
         case 3: return 'polygon';
