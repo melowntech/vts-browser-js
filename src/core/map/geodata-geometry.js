@@ -29,8 +29,12 @@ var MapGeodataGeometry = function(map, data) {
     }
 };
 
-MapGeodataGeometry.prototype.getType = function(id) {
-    return this.data.type;
+MapGeodataGeometry.prototype.getType = function() {
+    swithc(this.data.type) {
+        case 1: return 'point';
+        case 2: return 'line';
+        case 3: return 'polygon';
+    }
 };
 
 MapGeodataGeometry.prototype.getElement = function(index) {
@@ -38,6 +42,19 @@ MapGeodataGeometry.prototype.getElement = function(index) {
     switch(this.type) {
         case 1: return [v[i], v[i+1], v[i+2]]; //point
         case 2: return [[v[i], v[i+1], v[i+2]],  [v[i+3], v[i+4], v[i+5]]]; //line
+    }
+};
+
+MapGeodataGeometry.prototype.getElements = function(pathIndex) {
+    switch(this.type) {
+        case 1: return this.vertexBuffer.length / 3; //point
+        case 2:  //line
+            
+            pathIndex = pathIndex || 0;
+            var si = (this.indicesBuffer[pathIndex]) * 3;
+            var ei = ((pathIndex + 1) >= this.indicesBuffer.length) ? this.vertexBuffer.length : (this.indicesBuffer[pathIndex] * 3);
+
+            return Math.max(0, ((ei - si) / 3) - 1);
     }
 };
 

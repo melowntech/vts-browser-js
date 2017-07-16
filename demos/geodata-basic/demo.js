@@ -69,7 +69,7 @@ function onMapLoaded() {
     //this function is needed only when 'float' heights are used
     //in case you use data with 'fix' height only then you can
     //skip this function and call makeFreeLayer directly
-    geodata.processHeights('heightmap-by-lod', 4, onHeightProcessed);
+    geodata.processHeights('heightmap-by-precision', 62, onHeightProcessed);
 }
 
 function onHeightProcessed() {
@@ -119,19 +119,11 @@ function onHeightProcessed() {
 
     var freeLayer = geodata.makeFreeLayer(style);
 
-    map.addFreeLayer('geodata-test', freeLayer);
+    map.addFreeLayer('geodatatest', freeLayer);
 
-    map.setView({
-        surfaces: {
-            'melown-viewfinder-world': [
-                'bing-world',
-                'bmng08-world'
-            ]
-        },
-        freeLayers: {
-            'geodata-test': {}
-        }
-    });    
+    var view = map.getView();
+    view.freeLayers.geodatatest = {};
+    map.setView(view);
 
 }
 

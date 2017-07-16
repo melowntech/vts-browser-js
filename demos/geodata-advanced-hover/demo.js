@@ -4,6 +4,10 @@ var map = null;
 var geodata = null;
 var lineGeometry = null;
 var demoTexture = null;
+var hovering = false;
+var usedMouseCoords = [0,0];
+var lineSegment = 0;
+var distanceDiv = null;
 
 (function startDemo() {
     // create map in the html div with id 'map-div'
@@ -24,11 +28,29 @@ var demoTexture = null;
         return;
     }
 
+    var panel = browser.ui.addControl('distance-panel',
+        '<div id="distance-div" class="distance-div">' +
+            '123 Km' +
+        '</div>');
+
+    //get destinations-div element
+    //do not use document.getElementById,
+    //because element ids are changed to unique ids
+    distanceDiv = panel.getElement('distance-div');
+
     renderer = browser.renderer;
+
+    //add mouse down callback
+    browser.ui.getMapElement().on('mousemove', onMouseMove);
+    browser.ui.getMapElement().on('mouseleave', onMouseLeave);
 
     //callback once is map config loaded
     browser.on('map-loaded', onMapLoaded);
-    browser.on('tick', onTick);
+    //browser.on('tick', onTick);
+
+    browser.on('geo-feature-enter', onFeatureEnter);
+    browser.on('geo-feature-leave', onFeatureLeave);
+    browser.on('geo-feature-hover', onFeatureHover);
 
     loadTexture();
 })();
@@ -107,7 +129,19 @@ function onHeightProcessed() {
                 "line": true,
                 "line-width" : 4,
                 "line-color": [255,0,255,255],
-                "zbuffer-offset" : [-5,0,0]
+                "zbuffer-offset" : [-5,0,0],
+                "z-index" : -1
+            },
+
+            "violet-line-surrounding" : {
+                "filter" : ["==", "#type", "line"],
+                "line": true,
+                "line-width" : 40,
+                "line-color": [25,0,25,100],
+                "zbuffer-offset" : [-5,0,0],
+                "hover-event" : true,
+                "advanced-hit" : true
+
             },
 
             "violet-points" : {
@@ -129,12 +163,63 @@ function onHeightProcessed() {
     map.setView(view);   
 }
 
+function onMouseLeave(event) {
+    if (map) {
+        var coords = event.getMouseCoords();
+        map.hover(coords[0], coords[1], false);
+    }
+};
+
+function onMouseMove(event) {
+    if (map) {
+        var coords = event.getMouseCoords();
+        usedMouseCoords = coords;
+        map.hover(coords[0], coords[1], true);
+    }
+}
+
+function onFeatureEnter() {
+    hovering = true;
+}
+
+function onFeatureLeave() {
+    hovering = false;
+    distanceDiv.setStyle("display", "none");
+    map.redraw();
+}
+
+function onFeatureHover(event) {
+//    hovering = true;
+    lineSegment = event.element;
+    processPointPosition();
+}
+
+function processPointPosition() {
+    if (lineGeometry) { 
+        var res = lineGeometry.getRelationToCanvasPoint(lineSegment, usedMouseCoords[0], usedMouseCoords[1]);
+        var lineSegmentInfo = lineGeometry.getPathLengthToElement(lineSegment);
+
+        pathDistance = lineSegmentInfo.lengthToElement + (lineSegmentInfo.elementLengh * vts.math.clamp(res.distance, 0, 1)); 
+        map.redraw();
+
+        
+        //console.log(JSON.stringify(res));
+    }
+}
 
 function onCustomRender() {
-    if (demoTexture && lineGeometry) { //check whether texture is loaded
+    if (demoTexture && lineGeometry && hovering) { //check whether texture is loaded
 
         var p = lineGeometry.getPathPoint(pathDistance);
         p = map.convertCoordsFromPhysToCanvas(p);
+
+        distanceDiv.setStyle("display", "block");
+
+        var rect = distanceDiv.getRect();
+
+        distanceDiv.setStyle("left", (p[0]-(rect.width*0.5)-2) + "px");
+        distanceDiv.setStyle("top", (p[1]-50) + "px");
+        distanceDiv.setHtml((pathDistance*0.001).toFixed(2) + " Km");
 
         //draw point image at the last line point
         renderer.drawImage({
@@ -145,9 +230,10 @@ function onCustomRender() {
             depthTest : false,
             blend : true
             });
-    }    
+    }
 }
 
+/*
 function onTick() {
     if (demoTexture && lineGeometry) { //check whether texture is loaded
 
@@ -157,4 +243,4 @@ function onTick() {
         map.redraw();
     }
 }
-
+*/

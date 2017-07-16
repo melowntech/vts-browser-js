@@ -182,9 +182,11 @@ MapInterface.prototype.convertCoordsFromNavToPublic = function(pos, mode, lod) {
     return this.map.convert.getPositionPublicCoords((new MapPosition(p)), lod);
 };
 
+
 MapInterface.prototype.convertCoordsFromPhysToPublic = function(pos) {
-    return this.convertCoords(coords, 'physical', 'public');
+    return this.map.convert.convertCoords(pos, 'physical', 'public');
 };
+
 
 MapInterface.prototype.convertCoordsFromNavToPhys = function(pos, mode, lod) {
     var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];

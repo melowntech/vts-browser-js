@@ -1089,9 +1089,11 @@ Map.prototype.update = function() {
     this.drawFog = this.config.mapFog;
 
     var rect = this.renderer.div.getBoundingClientRect();
+    var renderer = this.renderer, p;
+    var camPos = renderer.cameraPosition;
 
-    if (this.renderer.curSize[0] != rect.width || this.renderer.curSize[1] != rect.height) {
-        this.renderer.onResize();
+    if (renderer.curSize[0] != rect.width || renderer.curSize[1] != rect.height) {
+        renderer.onResize();
         this.dirty = true;
     }
 
@@ -1134,11 +1136,6 @@ Map.prototype.update = function() {
         if (this.hoverEvent != null) {
             result = this.hitTestGeoLayers(this.hoverEvent[0], this.hoverEvent[1], 'hover');
 
-            if (result[1] && result[0] != null) {
-                this.core.callListener('geo-feature-hover', {'feature': result[0][0], 'canvas-coords':this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
-                    'camera-coords':result[0][1], 'state': this.hoverEvent[3], 'element': result[3]}, true);
-            }
-
             var relatedEvents = result[2];
 
             if (relatedEvents != null) {
@@ -1147,16 +1144,24 @@ Map.prototype.update = function() {
 
                     switch(event[0]) {
                     case 'enter':
-                        this.core.callListener('geo-feature-enter', {'feature': event[1][0], 'canvas-coords':this.renderer.project2(event[1][1], this.camera.getMvpMatrix()),
-                            'camera-coords':event[1][1], 'state': this.hoverEvent[3], 'element': result[3] }, true);
+                        p = event[1][1];
+                        this.core.callListener('geo-feature-enter', {'feature': event[1][0], 'canvas-coords':renderer.project2(event[1][1], renderer.camera.mvp, camPos),
+                            'physical-coords':[p[0] + camPos[0], p[1] + camPos[1], p[2] + camPos[2]], 'state': this.hoverEvent[3], 'element': result[3] });
                         break;
 
                     case 'leave':
-                        this.core.callListener('geo-feature-leave', {'feature':event[1][0], 'canvas-coords':this.renderer.project2(event[1][1], this.camera.getMvpMatrix()),
-                            'camera-coords':event[1][1], 'state': this.hoverEvent[3], 'element': result[3] }, true);
+                        p = event[1][1];
+                        this.core.callListener('geo-feature-leave', {'feature':event[1][0], 'canvas-coords':renderer.project2(event[1][1], renderer.camera.mvp, camPos),
+                            'physical-coords':[p[0] + camPos[0], p[1] + camPos[1], p[2] + camPos[2]], 'state': this.hoverEvent[3], 'element': result[3] });
                         break;
                     }
                 }
+            }
+
+            if (result[1] && result[0] != null) {
+                p = result[0][1];
+                this.core.callListener('geo-feature-hover', {'feature': result[0][0], 'canvas-coords':renderer.project2(result[0][1], renderer.camera.mvp, camPos),
+                    'physical-coords':[p[0] + camPos[0], p[1] + camPos[1], p[2] + camPos[2]], 'state': this.hoverEvent[3], 'element': result[3]});
             }
 
             //is it persistent event?
@@ -1169,8 +1174,9 @@ Map.prototype.update = function() {
             result = this.hitTestGeoLayers(this.clickEvent[0], this.clickEvent[1], 'click');
 
             if (result[1] && result[0] != null) {
-                this.core.callListener('geo-feature-click', {'feature': result[0][0], 'canvas-coords':this.renderer.project2(result[0][1], this.camera.getMvpMatrix()),
-                    'camera-coords':result[0][1], 'state': this.clickEvent[2], 'element': result[3] }, true);
+                p = result[0][1];
+                this.core.callListener('geo-feature-click', {'feature': result[0][0], 'canvas-coords':renderer.project2(result[0][1], renderer.camera.mvp, camPos),
+                    'physical-coords':[p[0] + camPos[0], p[1] + camPos[1], p[2] + camPos[2]], 'state': this.clickEvent[2], 'element': result[3] });
             }
 
             this.clickEvent = null;

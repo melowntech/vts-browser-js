@@ -77,6 +77,9 @@ UIEvent.prototype.getMouseCoords = function(absolute) {
     case 'mousedown':
     case 'mouseup':
     case 'mousemove':
+    case 'mouseenter':
+    case 'mouseover':
+    case 'mouseleave':
     case 'click':
     case 'dblclick':
     case 'dragstart':
