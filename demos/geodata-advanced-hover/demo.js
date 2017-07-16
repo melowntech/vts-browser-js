@@ -156,19 +156,11 @@ function onHeightProcessed() {
 
     var freeLayer = geodata.makeFreeLayer(style);
 
-    map.addFreeLayer('geodata-test', freeLayer);
+    map.addFreeLayer('geodatatest', freeLayer);
 
-    map.setView({
-        surfaces: {
-            'melown-viewfinder-world': [
-                'bing-world',
-                'bmng08-world'
-            ]
-        },
-        freeLayers: {
-            'geodata-test': {}
-        }
-    });    
+    var view = map.getView();
+    view.freeLayers.geodatatest = {};
+    map.setView(view);   
 }
 
 function onMouseLeave(event) {

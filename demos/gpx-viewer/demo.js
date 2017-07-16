@@ -18,8 +18,8 @@ var pathLength = 0, pathDistance = 0;
     // view parameter is described in documentation 
     // https://github.com/Melown/vts-browser-js/wiki/VTS-Browser-Map-API#definition-of-view
     browser = vts.browser('map-div', {
-        map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json',
-        position : [ 'obj', 15.096869, 49.3843590, 'float', 0.00, 2.70, -77.86, 0.00, 692772.54, 55.00 ]
+        map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-Map-4/mapConfig.json',
+        position : [ 'obj', 2.3514992,48.8566101, 'float', 0.00, 0.00, -60.00, 0.00, 21255.06, 55.00 ]
     });
 
     //check whether browser is supported
@@ -324,7 +324,7 @@ function onHeightProcessed() {
         },
 
         "layers" : {
-            "violet-line" : {
+            "track-line" : {
                 "filter" : ["==", "#type", "line"],
                 "line": true,
                 "line-width" : 4,
@@ -333,7 +333,7 @@ function onHeightProcessed() {
                 "z-index" : -1
             },
 
-            "violet-line-surrounding" : {
+            "track-shadow" : {
                 "filter" : ["==", "#type", "line"],
                 "line": true,
                 "line-width" : 20,
@@ -342,14 +342,6 @@ function onHeightProcessed() {
                 "hover-event" : true,
                 "advanced-hit" : true
 
-            },
-
-            "violet-points" : {
-                "filter" : ["==", "#id", "some-points"],
-                "point": true,
-                "point-radius" : 12,
-                "point-color": [255,0,255,255],              
-                "zbuffer-offset" : [-5,0,0]
             },
 
             "way-points" : {
@@ -364,18 +356,11 @@ function onHeightProcessed() {
     };
 
     var freeLayer = geodata.makeFreeLayer(style);
-    map.addFreeLayer('gpx-geodata', freeLayer);
-    map.setView({
-        surfaces: {
-            'melown-viewfinder-world': [
-                'bmng08-world',
-                'bing-world'
-            ]
-        },
-        freeLayers: {
-            'gpx-geodata': {}
-        }
-    });    
+    map.addFreeLayer('gpxgeodata', freeLayer);
+
+    var view = map.getView();
+    view.freeLayers.gpxgeodata = {};
+    map.setView(view);
 }
 
 // move map position to the center of gemetru and adjust

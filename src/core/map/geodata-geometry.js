@@ -29,8 +29,12 @@ var MapGeodataGeometry = function(map, data) {
     }
 };
 
-MapGeodataGeometry.prototype.getType = function(id) {
-    return this.data.type;
+MapGeodataGeometry.prototype.getType = function() {
+    swithc(this.data.type) {
+        case 1: return 'point';
+        case 2: return 'line';
+        case 3: return 'polygon';
+    }
 };
 
 MapGeodataGeometry.prototype.getElement = function(index) {
