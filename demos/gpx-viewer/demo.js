@@ -1,4 +1,4 @@
-var browser, renderer, map;
+var browser, renderer, map, lastMessage = "";
 var geodata, lineGeometry = null;
 var demoTexture = null;
 var usedMouseCoords = [0,0];
@@ -73,7 +73,7 @@ var pathLength = 0, pathDistance = 0;
     canvas.on('dragover', onDragover);
     canvas.on('drop', onDrop);
     canvasCtx = canvas.getElement().getContext("2d");
-    drawCanvasMessage('Drop GPX file here')
+    drawCanvasMessage('Drop a GPX file here')
 
     //callback once is map config loaded
     browser.on('map-loaded', onMapLoaded);
@@ -499,7 +499,12 @@ function setProfilePointer(p) {
 //redraw track profile when browser window is resized
 function onResize() {
     refereshCanvasDimensions();
-    drawPathProfile(lineGeometry);
+
+    if (lastMessage) {
+        drawCanvasMessage(lastMessage);
+    } else {
+        drawPathProfile(lineGeometry);
+    }
 }
 
 //sets canvas size accoding to HTML element size
@@ -517,6 +522,7 @@ function refereshCanvasDimensions() {
 
 //display status message in the canvas
 function drawCanvasMessage(message) {
+    lastMessage = message;
     var dim = refereshCanvasDimensions();
     canvasCtx.clearRect(0, 0, dim[0], dim[1]);
     canvasCtx.font="30px Arial, 'Helvetica Neue', Helvetica, sans-serif";
@@ -530,6 +536,7 @@ function drawPathProfile(geometry) {
         return;
     }
 
+    lastMessage = null; //prevent message rendering
     var totalElements = geometry.getElements();
 
     if (!totalElements) {
