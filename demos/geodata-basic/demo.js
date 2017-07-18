@@ -117,10 +117,14 @@ function onHeightProcessed() {
         }
     };
 
+    //make free layer
     var freeLayer = geodata.makeFreeLayer(style);
 
+    //add free layer to the map
     map.addFreeLayer('geodatatest', freeLayer);
 
+    //add free layer to the list of free layers
+    //which will be rendered on the map
     var view = map.getView();
     view.freeLayers.geodatatest = {};
     map.setView(view);
