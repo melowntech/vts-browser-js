@@ -65,6 +65,7 @@ var pathLength = 0, pathDistance = 0;
     mapElement.on('mouseleave', onMouseLeave);
     mapElement.on('dragover', onDragover);
     mapElement.on('drop', onDrop);
+    mapElement.on('resize', onResize, window);
 
     //add mouse events to canvas element
     canvas = profilePanel.getElement('profile-canvas');
@@ -72,7 +73,7 @@ var pathLength = 0, pathDistance = 0;
     canvas.on('dragover', onDragover);
     canvas.on('drop', onDrop);
     canvasCtx = canvas.getElement().getContext("2d");
-    drawCanvasMessage('Drop GPX file there')
+    drawCanvasMessage('Drop GPX file here')
 
     //callback once is map config loaded
     browser.on('map-loaded', onMapLoaded);
@@ -100,7 +101,7 @@ function onMapLoaded() {
     map.moveRenderSlotAfter('after-map-render', 'custom-render');
 }
 
-// preved default browser behaviour for droping files
+// prevent default browser behaviour for droping files
 function onDragover(event) {
     var e = event.event;
     e.stopPropagation();
@@ -114,6 +115,7 @@ function onDrop(event) {
         return;
     }
 
+    // prevent default browser behaviour for droping files
     var e = event.event;
     e.stopPropagation();
     e.preventDefault();
@@ -129,6 +131,7 @@ function onDrop(event) {
             loadGPX(data); 
         };
 
+        //remove old layyer and hide pointers
         map.removeFreeLayer('gpx-geodata');
         distancePointer.setStyle("display", "none");
         heightPointer.setStyle("display", "none");
@@ -159,12 +162,16 @@ function loadGPX(data) {
     }
 
     var coords, heightMode, i, li, j, lj, points, name, properties;
+
+    //crete geodaata
     geodata = map.createGeodata();
 
     //process way points
     var wayPoints = gpx.getElementsByTagName('wpt');
 
     if (wayPoints.length) {
+        //create new group
+        //all waypoints will be stored in this group
         geodata.addGroup('waypoints');
 
         for (i = 0, li = wayPoints.length; i < li; i++) {
@@ -195,6 +202,8 @@ function loadGPX(data) {
     var routes = gpx.getElementsByTagName('rte');
 
     if (routes.length) {
+        //create new group
+        //all routes  will be stored in this group
         geodata.addGroup('routes');
 
         for (i = 0, li = routes.length; i < li; i++) {
@@ -204,6 +213,7 @@ function loadGPX(data) {
 
             points = new Array(routePoints.length);
 
+            //add route points with their names
             for (j = 0, lj = routePoints.length; j < lj; j++) {
                 var routePoint = routePoints[j]; 
                 coords = [routePoint.getAttribute('lon'), routePoint.getAttribute('lat'), 0];
@@ -227,6 +237,7 @@ function loadGPX(data) {
                 points[j] = coords;
             }
 
+            // add route line
             if (routePoints.length) {
                 properties = {};
 
@@ -244,12 +255,15 @@ function loadGPX(data) {
     var tracks = gpx.getElementsByTagName('trk');
 
     if (tracks.length) {
+        //create new group
+        //all waypoints will be stored in this group
         geodata.addGroup('tracks');
 
         for (i = 0, li = tracks.length; i < li; i++) {
             var track = tracks[i];
             var trackSegments = track.getElementsByTagName('trkseg');
 
+            // get total trak points
             var totalPoints = 0, trackPoints, index = 0;
 
             for (j = 0, lj = trackSegments.length; j < lj; j++) {
@@ -263,6 +277,7 @@ function loadGPX(data) {
 
                 trackPoints = trackSegments[j].getElementsByTagName('trkpt');
 
+                //add track points with their names
                 for (var k = 0, lk = trackPoints.length; k < lk; k++) {
                     var trackPoint = trackPoints[k]; 
                     coords = [trackPoint.getAttribute('lon'), trackPoint.getAttribute('lat'), 0];
@@ -288,6 +303,7 @@ function loadGPX(data) {
                 }
             }
 
+            //add track line
             if (points.length) {
                 properties = {};
 
@@ -310,10 +326,16 @@ function loadGPX(data) {
 //when are heights converted then we can create free layer
 // and dispaly that layer on the map
 function onHeightProcessed() {
+    //extrack gemteru with id == 'some-path'
     lineGeometry = geodata.extractGeometry('some-path');
+    
+    //center map postion to track gemetery
     centerPositonToGeometry(lineGeometry);
+
+    //draw track profile
     drawPathProfile(lineGeometry);
   
+    //style used for displaying geodata
     var style = {
         'constants': {
             '@icon-marker': ['icons', 6, 8, 18, 18]
@@ -355,9 +377,14 @@ function onHeightProcessed() {
         }
     };
 
+    //make free layer
     var freeLayer = geodata.makeFreeLayer(style);
+
+    //add free layer to the map
     map.addFreeLayer('gpxgeodata', freeLayer);
 
+    //add free layer to the list of free layers
+    //which will be rendered on the map
     var view = map.getView();
     view.freeLayers.gpxgeodata = {};
     map.setView(view);
@@ -451,7 +478,7 @@ function centerPositonToGeometry(geometry) {
     map.setPosition(pos);
 }
 
-
+//set heigth profile pointer accoring to current track position
 function setProfilePointer(p) {
     var rect = canvas.getRect();
     var x = (pathDistance / pathLength) * rect.width;
@@ -469,7 +496,13 @@ function setProfilePointer(p) {
     heightPointer2.setStyle('top', (rect.top) + 'px');
 }
 
+//redraw track profile when browser window is resized
+function onResize() {
+    refereshCanvasDimensions();
+    drawPathProfile(lineGeometry);
+}
 
+//sets canvas size accoding to HTML element size
 function refereshCanvasDimensions() {
     var rect = canvas.getRect();
     var canvasElement = canvas.getElement();
@@ -482,7 +515,7 @@ function refereshCanvasDimensions() {
     return [rect.width, rect.height];
 }
 
-
+//display status message in the canvas
 function drawCanvasMessage(message) {
     var dim = refereshCanvasDimensions();
     canvasCtx.clearRect(0, 0, dim[0], dim[1]);
@@ -491,9 +524,13 @@ function drawCanvasMessage(message) {
     canvasCtx.fillText(message, dim[0]*0.5 - canvasCtx.measureText(message).width*0.5, 70);
 }
 
-
+//process track geometry and display track profile
 function drawPathProfile(geometry) {
-    var totalElements = lineGeometry.getElements();
+    if (!geometry) {
+        return;
+    }
+
+    var totalElements = geometry.getElements();
 
     if (!totalElements) {
         return;
@@ -508,8 +545,9 @@ function drawPathProfile(geometry) {
 
     var totalLength = 0;
 
+    //get track point heights and length between track points
     for (var i = 0, li = totalElements; i < li; i++) {
-        var l = lineGeometry.getElement(i);
+        var l = geometry.getElement(i);
         var p = map.convertCoordsFromPhysToPublic(l[0]);
         trackHeights[i] = p[2];
 
@@ -525,6 +563,7 @@ function drawPathProfile(geometry) {
         }
     }
 
+    //draw track profile
     var dim = refereshCanvasDimensions();
     var lx = dim[0], ly = dim[1];
 
@@ -551,42 +590,55 @@ function drawPathProfile(geometry) {
     grd.addColorStop(0,"rgba(252,186,136,0.3)");
     grd.addColorStop(1,"rgba(94,45,18,0.3)");
 
-    // Fill with gradient
+    // Fill profile with gradient
     canvasCtx.fillStyle = grd;
     canvasCtx.fill();
 
+    //draw profile outline
     canvasCtx.strokeStyle = "rgba(50,50,50,0.7)";
     canvasCtx.stroke();
 }
-
-
-function onMouseLeave(event) {
-    if (map) {
-        var coords = event.getMouseCoords();
-        map.hover(coords[0], coords[1], false);
-    }
-};
 
 
 function onMouseMove(event) {
     if (map) {
         var coords = event.getMouseCoords();
         usedMouseCoords = coords;
+        //set map to hover cusor over provided coordinates permanently
         map.hover(coords[0], coords[1], true);
     }
 }
+
+
+function onMouseLeave(event) {
+    if (map) {
+        var coords = event.getMouseCoords();
+        //stop cursor hovering
+        map.hover(coords[0], coords[1], false);
+    }
+};
+
 
 function onFeatureHover(event) {
     lineSegment = event.element;
 
     if (lineGeometry) { 
+        //get distance of cursor on the line segment
         var res = lineGeometry.getRelationToCanvasPoint(lineSegment, usedMouseCoords[0], usedMouseCoords[1]);
+
+        //get path length to line segment and length of the segment itself
         var lineSegmentInfo = lineGeometry.getPathLengthToElement(lineSegment);
 
+        //compute path distance to point where cursor is hovering over the track
         pathDistance = lineSegmentInfo.lengthToElement + (lineSegmentInfo.elementLengh * vts.math.clamp(res.distance, 0, 1)); 
+
+        //get point coodinates
         linePoint = lineGeometry.getPathPoint(pathDistance);
 
+        //refresh pointer in height profile
         setProfilePointer(linePoint);
+
+        //force redraw map (we have to redraw track point)
         map.redraw();
     }
 }
@@ -596,11 +648,17 @@ function onCanvasHover(event) {
         var coords = event.getMouseCoords();
         usedMouseCoords = coords;
 
+        //compute new path distance from cursor position in canvas
         var rect = canvas.getRect();
         pathDistance = ((coords[0] - rect.left) / canvas.getElement().width) * pathLength;
+
+        //get point coodinates
         linePoint = lineGeometry.getPathPoint(pathDistance);
 
+        //refresh pointer in height profile
         setProfilePointer(linePoint);
+
+        //force redraw map (we have to redraw track point)
         map.redraw();
     }
 }
@@ -608,11 +666,12 @@ function onCanvasHover(event) {
 function onCustomRender() {
     if (demoTexture && lineGeometry && linePoint) { //check whether texture is loaded
 
+        //get canvas postion of the track point
         var p = map.convertCoordsFromPhysToCanvas(linePoint);
-        distancePointer.setStyle("display", "block");
 
+        //display distance pointer in the track point coordiantes
         var rect = distancePointer.getRect();
-
+        distancePointer.setStyle("display", "block");
         distancePointer.setStyle("left", (p[0]-(rect.width*0.5)) + "px");
         distancePointer.setStyle("top", (p[1]-50) + "px");
         distancePointer.setHtml((pathDistance*0.001).toFixed(2) + " Km");

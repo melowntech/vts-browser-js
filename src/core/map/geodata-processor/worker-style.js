@@ -226,6 +226,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 break;
 
             case 'strlen':
+            case 'str2num':
             case 'lowercase':
             case 'uppercase':
             case 'capitalize':
@@ -236,6 +237,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 } else {
                     switch (functionName) {
                         case 'strlen':     return functionValue.length;
+                        case 'str2num':    return parseFloat(functionValue);
                         case 'lowercase':  return functionValue.toLowerCase();
                         case 'uppercase':  return functionValue.toUpperCase();
                         case 'capitalize': return functionValue.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
