@@ -250,7 +250,7 @@ function optimizeGroupMessages() {
         var type = job['type'];
         var signature = message.signature;
         
-        if (!message['hitable'] && !message.reduced &&  //!message["culling"] &&
+        if (!job['hitable'] && !message.reduced &&  //!job["culling"] &&
             !(type == 'icon' || type == 'label' ||
               type == 'line-geometry' || type == 'point-geometry')) {
             
