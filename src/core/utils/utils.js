@@ -151,6 +151,21 @@ utils.stringifyFunction = (function(fn) {
     return '(' + fn + ').call(self);';
 });
 
+utils.loadText = function(path, onLoaded, onError, withCredentials, xhrParams) {
+    utils.loadJSON(path, onLoaded, onError, true, withCredentials, xhrParams);
+};
+
+utils.loadXML = function(path, onLoaded, onError, withCredentials, xhrParams) {
+    var onLoaded2 = (function(data){
+        var parser = new DOMParser();
+        data = parser.parseFromString(data, 'text/xml');
+        if (onLoaded) {
+            onLoaded(data);
+        }
+    });
+
+    utils.loadJSON(path, onLoaded2, onError, true, withCredentials, xhrParams);
+};
 
 utils.loadJSON = function(path, onLoaded, onError, skipParse, withCredentials, xhrParams) {
     var xhr = new XMLHttpRequest();

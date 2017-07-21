@@ -52,7 +52,11 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
     var index = 0, i, li, finalValue, root, v1, v2;
 
     if (typeof value === 'undefined') {
-        value = layer[key];
+        if (layer[key]) {
+            value = JSON.parse(JSON.stringify(layer[key])); //make copy
+        } else {
+            value = layer[key];
+        }
         root = true;
         depth = 0;
     } else {
