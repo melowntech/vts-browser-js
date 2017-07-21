@@ -143,9 +143,6 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         };
     }
 
-//DEGUG REMOVE!!!
-this.stats.dbgCounter = 0;
-
     var projected = this.isProjected;
 
     switch (this.config.mapGridMode) {

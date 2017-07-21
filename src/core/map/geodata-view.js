@@ -163,7 +163,6 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
     if (!this.ready && !doNotLoad) {
         if (this.geodata.isReady(doNotLoad, priority, doNotCheckGpu) && this.geodataProcessor.isReady()) {
             this.killedByCache = false;
-
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));
             this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile);
             this.geodataProcessor.busy = true;
@@ -221,7 +220,6 @@ MapGeodataView.prototype.draw = function(cameraPos) {
             this.statsCoutner = this.stats.counter;
             this.stats.gpuRenderUsed += this.size;
         }
-
     }
     return this.ready;
 };
