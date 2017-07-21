@@ -106,16 +106,16 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
     //allocate buffers
     var lineVertices = ((texturedLine || (widthByRatio)) || !lineFlat ? 4 : 3) * 3 * 2;
     var joinVertices = skipJoins ? 0 : (circleSides * ((texturedLine || (widthByRatio)) || !lineFlat? 4 : 3) * 3);
-    var vertexBuffer = new Float32Array(totalPoints * lineVertices + totalPoints * joinVertices);
+    var vertexBuffer = new Float32Array((totalPoints-1) * lineVertices + totalPoints * joinVertices);
 
     if (advancedHit) {
-       var elementBuffer = new Float32Array(totalPoints * (3 * 2) + totalPoints * (skipJoins ? 0 : circleSides) * 3);
+       var elementBuffer = new Float32Array((totalPoints-1) * (3 * 2) + totalPoints * (skipJoins ? 0 : circleSides) * 3);
     }
 
     if (!(lineFlat && !texturedLine && !widthByRatio)) {
         var lineNormals = 3 * 4 * 2;
         var joinNormals = skipJoins ? 0 : (circleSides * 3 * 4);
-        var normalBuffer = new Float32Array(totalPoints * lineNormals + totalPoints * joinNormals);
+        var normalBuffer = new Float32Array((totalPoints-1) * lineNormals + totalPoints * joinNormals);
     }
 
     var center = [0,0,0];

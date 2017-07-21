@@ -413,6 +413,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         }
     }
 
+    if (!program || !program.isReady()) {
+        return;
+    }
+
     renderer.gpu.useProgram(program, attributes, gpuMask);
 
     if (texture) {

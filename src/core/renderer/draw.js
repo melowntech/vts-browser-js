@@ -765,7 +765,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case 'flat-line':
         gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
 
-        prog = advancedHitPass ? renderer.progELine : renderer.progLine;
+        prog = advancedHitPass ? job.program2 : job.program;
 
         gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : ['aPosition']);
 
@@ -806,6 +806,9 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                     screenPixelSize2 = [ screenPixelSize[0] * renderer.curSize[1], screenPixelSize[1] * renderer.curSize[1]];
                 }
                 prog = advancedHitPass ? this.renderer.progELine3 : this.renderer.progLine3;
+                if (!prog.isReady()) {
+                    return;
+                }
             }
         }
 
@@ -902,7 +905,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         texture = hitmapRender ? renderer.whiteTexture : renderer.font.texture;
 
-        prog = renderer.progText;
+        prog = job.program; //renderer.progText;
 
         gpu.bindTexture(texture);
 
@@ -968,6 +971,9 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         ll = l * renderer.localViewExtentFactor;
 
                         var diameter = job.visibility[0] * job.visibility[1];
+
+                        //dinfo = [l, ll, diameter, (job.visibility[2] * ll), (job.visibility[3] * ll)];
+
                         if (diameter < (job.visibility[2] * ll) || diameter > (job.visibility[3] * ll)) {
                             return;
                         }
@@ -1059,7 +1065,16 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
         }
 
-        prog = renderer.progIcon;
+        /*if (dinfo) { //debug only
+            if (!pp) {
+                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+            }
+
+            var stmp = "" + dinfo[0].toFixed(0) + " " + dinfo[1].toFixed(0) + " " + dinfo[2].toFixed(0) + " " + dinfo[3].toFixed(0) + " " + dinfo[4].toFixed(0);
+            this.drawText(Math.round(pp[0]-this.getTextSize(10,stmp)*0.5), Math.round(pp[1]), 10, stmp, [1,1,1,1], 0);
+        }*/
+
+        prog = job.program; //renderer.progIcon;
 
         gpu.bindTexture(texture);
 

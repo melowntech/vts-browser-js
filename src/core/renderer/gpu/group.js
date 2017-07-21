@@ -110,7 +110,7 @@ GpuGroup.prototype.addLineJob = function(data) {
 
     var job = {};
     job.type = 'flat-line';
-    job.program = data['program'];
+    job.program = this.renderer.progLine;
     job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
     job.zIndex = data['z-index'] + 256;
     job.clickEvent = data['click-event'];
@@ -128,6 +128,18 @@ GpuGroup.prototype.addLineJob = function(data) {
     job.reduced = false;
     job.ready = true;
 
+    if (!job.program.isReady()) {
+        return;
+    }
+
+    if (job.advancedHit) {
+        job.program2 = this.renderer.progELine;
+
+        if (!job.program2.isReady()) {
+            return;
+        }
+    }
+
     //create vertex buffer
     job.vertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
@@ -136,6 +148,8 @@ GpuGroup.prototype.addLineJob = function(data) {
     job.vertexPositionBuffer.numItems = vertices.length / 3;
 
     if (job.advancedHit) {
+        job.program = this.renderer.progLine;
+
         var elements = data['elementBuffer'];
 
         job.vertexElementBuffer = gl.createBuffer();
@@ -148,7 +162,7 @@ GpuGroup.prototype.addLineJob = function(data) {
     this.jobs.push(job);
 
     this.size += vertices.length * 4;
-    this.polygons += vertices.length / 3;
+    this.polygons += vertices.length / (3 * 3);
 };
 
 
@@ -162,7 +176,6 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 
     var job = {};
     job.type = data['type'];
-    job.program = data['program'];
     job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
     job.zIndex = data['z-index'] + 256;
     job.clickEvent = data['click-event'];
@@ -181,6 +194,30 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     job.reduced = false;
     job.ready = true;
 
+    switch(job.type) {
+    case 'flat-tline':   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
+    case 'flat-rline':   job.program = this.renderer.progRLine;  break;
+    case 'pixel-line':   job.program = this.renderer.progLine3;  break;
+    case 'pixel-tline':  job.program = (background[3] != 0) ? this.renderer.progTPBLine : this.renderer.progTPLine; break;
+    }
+
+    if (!job.program.isReady()) {
+        return;
+    }
+
+    if (job.advancedHit) {
+        switch(job.type) {
+        case 'flat-tline':   job.program2 = this.renderer.progETLine;  break;
+        case 'flat-rline':   job.program2 = this.renderer.progERLine;  break;
+        case 'pixel-line':   job.program2 = this.renderer.progELine3;  break;
+        case 'pixel-tline':  job.program2 = this.renderer.progETPLine; break;
+        }
+
+        if (!job.program2.isReady()) {
+            return;
+        }
+    }
+
     if (data['texture'] != null) {
         var texture = data['texture'];
         var bitmap = texture[0];
@@ -193,21 +230,6 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
         }
     }
 
-    switch(job.type) {
-    case 'flat-tline':   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
-    case 'flat-rline':   job.program = this.renderer.progRLine;  break;
-    case 'pixel-line':   job.program = this.renderer.progLine3;  break;
-    case 'pixel-tline':  job.program = (background[3] != 0) ? this.renderer.progTPBLine : this.renderer.progTPLine; break;
-    }
-
-    if (job.advancedHit) {
-        switch(job.type) {
-        case 'flat-tline':   job.program2 = this.renderer.progETLine;  break;
-        case 'flat-rline':   job.program2 = this.renderer.progERLine;  break;
-        case 'pixel-line':   job.program2 = this.renderer.progELine3;  break;
-        case 'pixel-tline':  job.program2 = this.renderer.progETPLine; break;
-        }
-    }
 
     //create vertex buffer
     job.vertexPositionBuffer = gl.createBuffer();
@@ -236,7 +258,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     this.jobs.push(job);
 
     this.size += vertices.length * 4 + normals.length * 4;
-    this.polygons += vertices.length / 4;
+    this.polygons += vertices.length / (4 * 3);
 };
 
 
@@ -250,7 +272,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 
     var job = {};
     job.type = 'line-label';
-    job.program = data['program'];
+    job.program = this.renderer.progText;
     job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
     job.zIndex = data['z-index'] + 256;
     job.clickEvent = data['click-event'];
@@ -265,6 +287,10 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+
+    if (!job.program.isReady()) {
+        return;
+    }
 
     //create vertex buffer
     job.vertexPositionBuffer = gl.createBuffer();
@@ -283,7 +309,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     this.jobs.push(job);
 
     this.size += vertices.length * 4 + texcoords.length * 4;
-    this.polygons += vertices.length / 4;
+    this.polygons += vertices.length / (4 * 3);
 };
 
 
@@ -299,7 +325,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
 
     var job = {};
     job.type = label ? 'label' : 'icon';
-    job.program = data['program'];
+    job.program = this.renderer.progIcon;
     job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
     job.zIndex = data['z-index'] + 256;
     job.visibility = data['visibility'];
@@ -317,6 +343,10 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+
+    if (!job.program.isReady()) {
+        return;
+    }
 
     if (label !== true) {
         var icon = data['icon'];
@@ -356,7 +386,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     this.size += job.vertexPositionBuffer.numItems * 4 +
                   job.vertexOriginBuffer.numItems * 4 +
                   job.vertexTexcoordBuffer.numItems * 4;
-    this.polygons += job.vertexPositionBuffer.numItems / 4;
+    this.polygons += job.vertexPositionBuffer.numItems / (4 * 3);
 };
 
 

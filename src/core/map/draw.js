@@ -143,6 +143,9 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         };
     }
 
+//DEGUG REMOVE!!!
+this.stats.dbgCounter = 0;
+
     var projected = this.isProjected;
 
     switch (this.config.mapGridMode) {
@@ -424,7 +427,8 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     }
 
     //draw skydome before geodata
-    if (this.drawChannel != 1 && !projected && debug.drawFog && map.referenceFrame.id == 'melown2015') {    
+    if (this.drawChannel != 1 && !projected && debug.drawFog && map.referenceFrame.id == 'melown2015' &&
+        renderer.progAtmo.isReady() && renderer.progAtmo2.isReady()) {    
 
         var navigationSrsInfo = map.getNavigationSrs().getSrsInfo();
         var earthRadius =  navigationSrsInfo['a'];

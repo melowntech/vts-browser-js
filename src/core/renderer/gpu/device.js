@@ -1,6 +1,7 @@
 
 
-var GpuDevice = function(div, size, keepFrameBuffer, antialias) {
+var GpuDevice = function(renderer, div, size, keepFrameBuffer, antialias) {
+    this.renderer = renderer;
     this.div = div;
     this.canvas =  null;
     this.curSize = size;

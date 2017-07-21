@@ -8,6 +8,7 @@ var GpuProgram = function(gpu, vertex, fragment) {
     this.uniformLocationCache = [];
     this.attributeLocationCache = [];
     this.m = new Float32Array(16);
+    this.ready = false;
     this.createProgram(vertex, fragment);
 };
 
@@ -31,7 +32,9 @@ GpuProgram.prototype.createShader = function(source, vertexShader) {
     gl.compileShader(shader);
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+        var info = gl.getShaderInfoLog(shader);
+        console.log('An error occurred compiling the shaders: ' + info);
+        this.gpu.renderer.core.callListener('renderer-shader-error', { 'where':'compilation', 'info' : info });
         return null;
     }
 
@@ -46,18 +49,24 @@ GpuProgram.prototype.createProgram = function(vertex, fragment) {
     var vertexShader = this.createShader(vertex, true);
     var fragmentShader = this.createShader(fragment, false);
 
+    if (!vertexShader ||  !fragmentShader) {
+        return;
+    }
+
     var program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
 
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        alert('Unable to initialize the shader program.');
+        console.log('Unable to initialize the shader program.');
+        this.gpu.renderer.core.callListener('renderer-shader-error', { 'where':'linking' });
     }
 
     gl.useProgram(program);
 
     this.program = program;
+    this.ready = true;
 };
 
 
@@ -71,6 +80,9 @@ GpuProgram.prototype.setSampler = function(name, index) {
     }
 };
 
+GpuProgram.prototype.isReady = function(name, index) {
+    return this.ready;
+};
 
 GpuProgram.prototype.setMat4 = function(name, m, zoffset) {
     var gl = this.gl;

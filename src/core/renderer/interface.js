@@ -225,6 +225,10 @@ RendererInterface.prototype.drawMesh = function(options) {
         }
     }
 
+    if (!shader || !shader.isReady()) {
+        return;
+    }
+
     var attributes = [vertexAttr];
     if (uvAttr){
         attributes.push(uvAttr);        

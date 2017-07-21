@@ -126,16 +126,21 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
         break;
 
     case 'allProcessed':
-        this.map.markDirty();
-        this.gpuCacheItem = this.map.gpuCache.insert(this.killGeodataView.bind(this, true), this.size);
-
-        this.stats.gpuGeodata += this.size;
-        this.stats.graphsFluxGeodata[0][0]++;
-        this.stats.graphsFluxGeodata[0][1] += this.size;
-            //console.log("geodata: " + this.size + " total: " + this.stats.gpuGeodata);
-
         this.geodataProcessor.busy = false;
-        this.ready = true;
+
+        if (task) {
+            this.map.markDirty();
+            this.gpuCacheItem = this.map.gpuCache.insert(this.killGeodataView.bind(this, true), this.size);
+
+            this.stats.gpuGeodata += this.size;
+            this.stats.graphsFluxGeodata[0][0]++;
+            this.stats.graphsFluxGeodata[0][1] += this.size;
+            this.ready = true;
+        } else {
+            this.map.markDirty();
+            this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
+        }
+
         break;
 
     case 'ready':
@@ -158,6 +163,7 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
     if (!this.ready && !doNotLoad) {
         if (this.geodata.isReady(doNotLoad, priority, doNotCheckGpu) && this.geodataProcessor.isReady()) {
             this.killedByCache = false;
+
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));
             this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile);
             this.geodataProcessor.busy = true;
@@ -190,7 +196,6 @@ MapGeodataView.prototype.getWorldMatrix = function(bbox, geoPos, matrix) {
     return m;
 };
 
-
 MapGeodataView.prototype.draw = function(cameraPos) {
     if (this.ready) {
         var renderer = this.renderer;
@@ -216,7 +221,7 @@ MapGeodataView.prototype.draw = function(cameraPos) {
             this.statsCoutner = this.stats.counter;
             this.stats.gpuRenderUsed += this.size;
         }
-        
+
     }
     return this.ready;
 };

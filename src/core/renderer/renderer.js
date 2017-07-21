@@ -58,7 +58,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.cameraVector = [0,1,0];
     //this.texelSizeLimit = this.core.mapConfig.texelSize * texelSizeFactor;
 
-    this.gpu = new GpuDevice(div, this.curSize, this.config.rendererAllowScreenshots, this.config.rendererAntialiasing);
+    this.gpu = new GpuDevice(this, div, this.curSize, this.config.rendererAllowScreenshots, this.config.rendererAntialiasing);
     this.camera = new Camera(this, 45, 2, 1200000.0);
 
     //reduce garbage collection
