@@ -142,10 +142,15 @@ var Map = function(core, mapConfig, path, config) {
 Map.prototype.kill = function() {
     this.killed = true;
     
-    this.tree.kill();
+    if (this.tree) {
+        this.tree.kill();
+    }
 
     for (var key in this.freeLayers) {
-        this.getFreeLayer(key).tree.kill();
+        var layer = this.freeLayers[key];
+        if (layer && layer.tree) {
+            layer.tree.kill();
+        }
     }
 
     this.gpuCache.clear();
