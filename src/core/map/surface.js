@@ -320,6 +320,10 @@ MapSurface.prototype.setStyle = function(style) {
 
     if (typeof id !== 'object') {
         id = this.processUrl(id, '');
+    } else {
+        id = JSON.stringify(id);
+        id = utils.getHash(id);
+        id = "#obj#" + id.toString(16); 
     }
     
     this.stylesheet = this.map.getStylesheet(id);

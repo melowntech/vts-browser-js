@@ -151,6 +151,21 @@ utils.stringifyFunction = (function(fn) {
     return '(' + fn + ').call(self);';
 });
 
+utils.getHash = function(str) {
+    if (!str || str.length === 0) {
+        return 0;    
+    }
+
+    var hash = 0, c;
+    for (var i = 0, li = str.length; i < li; i++) {
+        c   = str.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + c;
+        hash |= 0; // Convert to 32bit integer
+    }
+
+    return hash;
+};
+
 utils.loadText = function(path, onLoaded, onError, withCredentials, xhrParams) {
     utils.loadJSON(path, onLoaded, onError, true, withCredentials, xhrParams);
 };

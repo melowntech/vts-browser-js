@@ -75,7 +75,7 @@ GpuFont.prototype.generate = function(font, size) {
     this.size = size;
     this.font = font;
 
-    var codes = [], i, li;
+    var codes = [0x20], i, li;
 
     for (i = 33; i < 191; i++) {
         codes.push(i);
@@ -85,12 +85,19 @@ GpuFont.prototype.generate = function(font, size) {
         codes.push(i);
     }
 
-    codes = codes.concat(0x20, 0x2026, 0x2018, 0x2019, 0x201a, 0x201b, 0x201c, 0x201d, 0x201e, 0x2032, 0x2033, 0x203c);
+    //for (i = 689; i < 4509; i++) { //azbuka. greek, ...
+      //  codes.push(i);
+    //}
+
+    codes = codes.concat(0x2026, 0x2018, 0x2019, 0x201a, 0x201b, 0x201c, 0x201d, 0x201e, 0x2032, 0x2033, 0x203c);
+
+    var clx3 = Math.round(ctx.measureText('ee').width), clx2, c, clx;
 
     for (i = 0, li = codes.length; i < li; i++) {
-        var c = String.fromCharCode(codes[i]);
-        var clx2 = Math.round(ctx.measureText(c).width);
-        var clx = clx2 + ctx.lineWidth;
+        c = String.fromCharCode(codes[i]);
+        clx2 = Math.round(ctx.measureText('e' + c+'e').width);
+        clx2 = (clx2 - clx3);
+        clx = clx2 + ctx.lineWidth;
 
         if (x + clx2 + space >= textureLX) {
             x = space;
@@ -110,7 +117,7 @@ GpuFont.prototype.generate = function(font, size) {
             step : (clx-2)
         };
 
-        x += clx + space;
+        x += clx2 + space;
     }
 
     this.image = ctx.getImageData(0, 0, textureLX, textureLY);
@@ -126,6 +133,20 @@ GpuFont.prototype.generate = function(font, size) {
 // Returns GPU RAM used, in bytes.
 GpuFont.prototype.size = function(){ return this.size; };
 
+
+GpuFont.prototype.load = function(path) {
+    // load image
+    // get image bytes
+
+    // load header
+    // uint8 version
+
+    // uintx glyph id or range 
+             //x bit glyph 1 bit range on not
+
+    // 4 x unit8 x-10bit,y-10bit,lx-6bit,plane-2bit,reserved-4bit
+    // n x uint8 ly
+};
 
 export default GpuFont;
 
