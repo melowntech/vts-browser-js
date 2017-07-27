@@ -29,7 +29,7 @@ MapGeodataImportGeoJSON.prototype.processGeometry = function(geometry, feature) 
             break;
 
         case 'MultiLineString':
-            this.builder.addLineString(coords, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs);
+            this.builder.addLineStringArray(coords, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs);
             break;
 
         case 'GeometryCollection':
