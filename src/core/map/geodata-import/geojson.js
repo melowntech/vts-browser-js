@@ -9,7 +9,7 @@ var MapGeodataImportGeoJSON = function(builder, heightMode, srs, groupIdPrefix, 
     //this.processJSON(json);
 };
 
-MapGeodataImportGeoJSON.prototype.processGeometry = function(json, feature) {
+MapGeodataImportGeoJSON.prototype.processGeometry = function(geometry, feature) {
     var coords = geometry['coordinates'];
     if (!coords) {
         return;
@@ -55,7 +55,7 @@ MapGeodataImportGeoJSON.prototype.processFeature = function(json) {
 MapGeodataImportGeoJSON.prototype.processCollection = function(json) {
     var features = json['features'];
 
-    if (features) {
+    if (!features) {
         return;
     }
 

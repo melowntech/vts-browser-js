@@ -12,7 +12,7 @@ MapGeodataImportVTSGeodata.prototype.processJSON = function(json) {
         return;
     }
 
-    var groups = json['groups'], i, li, j, lj, p;
+    var groups = json['groups'], i, li, j, lj, k, lk, p;
     var builder = this.builder, newPoints, points;
 
     if (!groups) {
@@ -50,14 +50,14 @@ MapGeodataImportVTSGeodata.prototype.processJSON = function(json) {
 
             points = pointsFeatures['points']
 
-            for (j = 0, lj = points.length; j < lj; j++) {
-                var point = points[j];
+            for (j = 0, lj = pointsFeatures.length; j < lj; j++) {
+                var point = pointsFeatures[j];
                 var subpoints = point['points'];
                 var newSubpoints = new Array(subpoints.length);
 
                 for (k = 0, lk = subpoints.length; k < lk; k++) {
                     p = subpoints[k];
-                    newSubpoints[j] = [bboxMin[0] + p[0] * fx, bboxMin[1] + p[1] * fy, bboxMin[2] + p[2] * fz];
+                    newSubpoints[k] = [bboxMin[0] + p[0] * fx, bboxMin[1] + p[1] * fy, bboxMin[2] + p[2] * fz];
                 }
 
                 builder.addPointArray(newSubpoints, 'fix', point['properties'], point['id'], null, true);
@@ -70,10 +70,10 @@ MapGeodataImportVTSGeodata.prototype.processJSON = function(json) {
             
             var lines = linesFeatures['lines'];
 
-            for (j = 0, lj = lines.length; j < lj; j++) {
-                var line = lines[j];
+            for (j = 0, lj = linesFeatures.length; j < lj; j++) {
+                var line = linesFeatures[j];
                 var sublines = line['lines'];
-                var newSublines = new Array(lines.length);
+                var newSublines = new Array(sublines.length);
 
                 for (k = 0, lk = sublines.length; k < lk; k++) {
 
@@ -84,6 +84,8 @@ MapGeodataImportVTSGeodata.prototype.processJSON = function(json) {
                         p = points[l];
                         newPoints[l] = [bboxMin[0] + p[0] * fx, bboxMin[1] + p[1] * fy, bboxMin[2] + p[2] * fz];
                     }
+
+                    newSublines[k] = newPoints;
                 }
 
                 builder.addLineStringArray(newSublines, 'fix', line['properties'], line['id'], null, true);
