@@ -55,7 +55,7 @@ var pathLength = 0, pathDistance = 0;
                 '<canvas id="profile-canvas" class="profile-canvas">' +
                 '</canvas>' + 
                 '<div id="profile-link" class="profile-link">' +
-                    'or you can try this <a href="#" onclick="loadExampleTrack()">example track</a>' +
+                    'or you can try this <a id="profile-link-a" href="#">example track</a>' +
                 '</div>' + 
             '</div>' + 
         '</div>');
@@ -79,6 +79,11 @@ var pathLength = 0, pathDistance = 0;
     drawCanvasMessage('Drop a GPX file here')
 
     profileLink = profilePanel.getElement('profile-link');
+    profileLink.on('dragover', onDragover);
+    profileLink.on('drop', onDrop);
+    
+    //add click event to the link
+    profilePanel.getElement('profile-link-a').on('click', loadExampleTrack);
 
     //callback once is map config loaded
     browser.on('map-loaded', onMapLoaded);
@@ -157,7 +162,7 @@ function loadExampleTrack() {
     profileLink.setStyle("display", "none");
 
     drawCanvasMessage('Loading ...')
-    vts.utils.loadXML('test01.gpx', onloaded, null, true);
+    vts.utils.loadXML('./test01.gpx', onloaded);
 }
 
 function getElementChildValue(element, name) {
