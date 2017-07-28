@@ -6,7 +6,7 @@ var linePoint, lineSegment = 0;
 var distancePointer, heightPointer, heightPointer2;
 var trackHeights = [], trackLengths = [];
 var trackMinHeight, trackMaxHeight;
-var canvas, canvasCtx;
+var canvas, canvasCtx, profileLink;
 var pathLength = 0, pathDistance = 0;
 
 (function startDemo() {
@@ -19,7 +19,7 @@ var pathLength = 0, pathDistance = 0;
     // https://github.com/Melown/vts-browser-js/wiki/VTS-Browser-Map-API#definition-of-view
     browser = vts.browser('map-div', {
         map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-Map-4/mapConfig.json',
-        position : [ 'obj', 2.3514992,48.8566101, 'float', 0.00, 0.00, -60.00, 0.00, 21255.06, 55.00 ]
+        position : [ 'obj', 16.402434, 48.079867, 'float', 0.00, 9.60, -90.00, 0.00, 2595540.94, 55.00 ]
     });
 
     //check whether browser is supported
@@ -54,6 +54,9 @@ var pathLength = 0, pathDistance = 0;
             '<div id="profile-canvas-holder" class="profile-canvas-holder">' +
                 '<canvas id="profile-canvas" class="profile-canvas">' +
                 '</canvas>' + 
+                '<div id="profile-link" class="profile-link">' +
+                    'or you can try this <a href="#" onclick="loadExampleTrack()">example track</a>' +
+                '</div>' + 
             '</div>' + 
         '</div>');
 
@@ -74,6 +77,8 @@ var pathLength = 0, pathDistance = 0;
     canvas.on('drop', onDrop);
     canvasCtx = canvas.getElement().getContext("2d");
     drawCanvasMessage('Drop a GPX file here')
+
+    profileLink = profilePanel.getElement('profile-link');
 
     //callback once is map config loaded
     browser.on('map-loaded', onMapLoaded);
@@ -136,11 +141,23 @@ function onDrop(event) {
         distancePointer.setStyle("display", "none");
         heightPointer.setStyle("display", "none");
         heightPointer2.setStyle("display", "none");
+        profileLink.setStyle("display", "none");
         lineGeometry = null;
 
         drawCanvasMessage('Loading ...')
         reader.readAsText(files[i], 'text/plain');            
     }
+}
+
+function loadExampleTrack() {
+    var onloaded = function (data) { 
+        loadGPX(data); 
+    };
+
+    profileLink.setStyle("display", "none");
+
+    drawCanvasMessage('Loading ...')
+    vts.utils.loadXML('test01.gpx', onloaded, null, true);
 }
 
 function getElementChildValue(element, name) {
@@ -152,7 +169,7 @@ function getElementChildValue(element, name) {
     }
 
     return null;
-};
+}
 
 function loadGPX(data) {
     var gpx = data.getElementsByTagName('gpx')[0];
@@ -363,6 +380,7 @@ function onHeightProcessed() {
                 "zbuffer-offset" : [-5,0,0],
                 "hover-event" : true,
                 "advanced-hit" : true
+
             },
 
             "way-points" : {
@@ -526,7 +544,7 @@ function drawCanvasMessage(message) {
     canvasCtx.clearRect(0, 0, dim[0], dim[1]);
     canvasCtx.font="30px Arial, 'Helvetica Neue', Helvetica, sans-serif";
     canvasCtx.fillStyle = "rgba(0,0,0,1)";
-    canvasCtx.fillText(message, dim[0]*0.5 - canvasCtx.measureText(message).width*0.5, 70);
+    canvasCtx.fillText(message, dim[0]*0.5 - canvasCtx.measureText(message).width*0.5, 60);
 }
 
 //process track geometry and display track profile
