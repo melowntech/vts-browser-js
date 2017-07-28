@@ -363,7 +363,6 @@ function onHeightProcessed() {
                 "zbuffer-offset" : [-5,0,0],
                 "hover-event" : true,
                 "advanced-hit" : true
-
             },
 
             "way-points" : {

@@ -290,13 +290,13 @@ MapGeodataBuilder.prototype.addLineStringArray = function(lines, heightMode, pro
             points = new Array(subline.length);
 
             if (directCopy) {
-                for (i = 0, li = subline.length; i < li; i++) {
-                    point = subline[i];
-                    featurePoints[i] = [point[0], point[1], point[2]];
+                for (j = 0, lj = subline.length; j < lj; j++) {
+                    point = subline[j];
+                    points[j] = [point[0], point[1], point[2]];
                 }
             } else {
-                for (i = 0, li = subline.length; i < li; i++) {
-                    featurePoints[i] = this.physSrs.convertCoordsFrom(subline[i], srs);
+                for (j = 0, lj = subline.length; j < lj; j++) {
+                    points[j] = this.physSrs.convertCoordsFrom(subline[j], srs);
                 }
             }
 
