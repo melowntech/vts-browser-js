@@ -14,6 +14,7 @@ var ControlModeMapObserver = function(browser) {
     this.coordsDeltas = [];
     this.orientationDeltas = [];
     this.viewExtentDeltas = [];
+    this.northResetAnimation = false;
 
     this['drag'] = this.drag;
     this['wheel'] = this.wheel;
@@ -128,6 +129,28 @@ ControlModeMapObserver.prototype.wheel = function(event) {
         if (pos.getViewMode() != 'obj') {
             return;
         }
+
+        //if (this.config.navigationMode != 'azimuthal2' &&
+          //  this.config.navigationMode != 'free')  {
+
+            /*
+            var coords = pos.getCoords();
+            if (Math.abs(coords[1]) < 75) {
+                var distance = (pos.getViewExtent()*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
+
+                //reduce azimuth when you are far off the planet
+                var rf = map.getReferenceFrame();
+                var srs = map.getSrsInfo(rf['navigationSrs']);
+                
+                if (srs['a']) {
+                    if (distance > (srs['a']*0.5)) {
+                        this.northResetAnimation = true;
+                    }
+                }
+            }
+            */
+
+        //}
         
         this.viewExtentDeltas.push(factor);
         this.reduceFloatingHeight(0.8);
@@ -242,11 +265,25 @@ ControlModeMapObserver.prototype.tick = function() {
         return;
     }
 
+
     var pos = map.getPosition(), delta, deltas;
     var update = false, azimuth, correction, i;
     var inertia = this.config.inertia; //[0.83, 0.9, 0.7]; 
     //var inertia = [0.95, 0.8, 0.8]; 
     //var inertia = [0, 0, 0]; 
+
+    /*if (this.northResetAnimation) {
+        var o = pos.getOrientation();
+        o[0] *= 0.85;
+        pos.setOrientation(o);
+
+        if (Math.abs(o[0]) < 0.1) {
+            this.config.navigationMode = 'azimuthal';
+            this.northResetAnimation = false;        
+        }
+
+        update = true;
+    }*/
 
     //process coords deltas
     if (this.coordsDeltas.length > 0) {
@@ -258,20 +295,12 @@ ControlModeMapObserver.prototype.tick = function() {
         for (i = 0; i < deltas.length; i++) {
             delta = deltas[i];
 
-            //var coords2 = [delta[4], delta[5]];
-            
             azimuth = delta[3];
-            azimuth += 0;//map.getAzimuthCorrection(coords2, coords);
             azimuth = math.radians(azimuth);
 
-            //console.log("correction: " + map.getAzimuthCorrection(coords2, coords) + " coords2: " + JSON.stringify(coords2) + " coords: " + JSON.stringify(coords));
             forward[0] += Math.sin(azimuth) * delta[2];  
             forward[1] += Math.cos(azimuth) * delta[2];
 
-            /*
-            forward[0] += delta[0] * delta[2];  
-            forward[1] += delta[1] * delta[2];
-            */
             delta[2] *= inertia[0];
 
             //remove zero deltas
@@ -284,67 +313,18 @@ ControlModeMapObserver.prototype.tick = function() {
         var distance = Math.sqrt(forward[0]*forward[0] + forward[1]*forward[1]);
         azimuth = math.degrees(Math.atan2(forward[0], forward[1]));
     
-        //console.log("tick: " + azimuth + " " + distance);
+        if (!this.isNavigationSRSProjected()) {
+            if (!this.northResetAnimation && this.config.navigationMode == 'azimuthal' && (Math.abs(coords[1]) > 75 || Math.abs(pos.getOrientation()[0]) > 1))  {
+                this.config.navigationMode = 'azimuthal2';
+            }
+        }
 
         //apply final azimuth and distance
-        if (this.config.navigationMode == 'free') { 
-            correction = pos.getOrientation()[0];
-            pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance);
-            correction = pos.getOrientation()[0] - correction;
-        } else { // "azimuthal" 
-
-            correction = pos.getOrientation()[0];
-            //pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, true);
-            
-            
-            //var correctionFactor = Math.min(5, Math.max(0, Math.abs(coords[1]) - 75)) / 5;
-            
-            //pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, (Math.abs(coords[1]) < 70));
-            pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, (Math.abs(coords[1]) < 75) ? 0 : 1);
-            //pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, correctionFactor);
-
-            correction = pos.getOrientation()[0] - correction;
-
-            //if (Math.abs(coords[1]) < 70) {
-
-/*
-            var orientation = pos.getOrientation();
-            //orientation[0] *= 0.5  + 0.5 * (Math.max(0, orientation[1] - 70) / 30);
-            //pos.setOrientation(orientation);
-            
-            if (Math.abs(coords[1]) < 70) {
-                if (!event.draggingState["dragging"]) {
-                    orientation[0] *= 0.5;
-                    pos.setOrientation(orientation);
-                }
-            }
-            
-*/
-
-            /*
-            var correction = 0; //HACK
-
-            var coords = pos.getCoords();
-            
-            var rf = map.getReferenceFrame();
-            var srs = map.getSrsInfo(rf["navigationSrs"]);
-            
-            fx = math.degrees((forward[0] / (srs["a"] * 2) * Math.PI) * Math.PI * 2) * 0.25;             
-            fy = math.degrees((forward[1] / (srs["b"] * 2) * Math.PI) * Math.PI * 2) * 0.25;
-            
-            coords[0] += fx;    
-            coords[1] += fy;
-            
-            if (Math.abs(coords[1]) < 80) { || Math.abs(pos.getOrientation()[0]) < 1) {
-                //coords[0] %= 180;
-                //coords[1] %= 90;
-                pos.setCoords(coords);
-            } else {
-                pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance, true);
-            }*/
-        }
+        correction = pos.getOrientation()[0];
+        pos = map.movePositionCoordsTo(pos, (this.isNavigationSRSProjected() ? -1 : 1) * azimuth, distance,
+                                            (!(this.config.navigationMode == 'free' || this.config.navigationMode == 'azimuthal2')) ? 0 : 1);
+        correction = pos.getOrientation()[0] - correction;
         
-        //console.log("correction2: " + correction);
 
         for (i = 0; i < deltas.length; i++) {
             delta = deltas[i];
@@ -441,21 +421,13 @@ function constrainMapPosition(browser, pos) {
         var rf = map.getReferenceFrame();
         var srs = map.getSrsInfo(rf['navigationSrs']);
         
-        
         if (srs['a']) {
             var factor = Math.min(distance / (srs['a']*0.5), 1.0);
             var maxTilt = 20 + ((-90) - 20) * factor; 
             var minTilt = -90; 
             
             o = pos.getOrientation();
-            
-            if (o[1] > maxTilt) {
-                o[1] = maxTilt;
-            }
-    
-            if (o[1] < minTilt) {
-                o[1] = minTilt;
-            }
+            o[1] = math.clamp(o[1], minTilt, maxTilt);
     
             pos.setOrientation(o);
         }
