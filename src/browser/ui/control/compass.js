@@ -97,6 +97,10 @@ UIControlCompass.prototype.onDoubleClick = function(event) {
     pos.setOrientation(orientation);
 
     map.setPosition(pos);
+
+    if (this.browser.config.navigationMode == 'azimuthal2')  {
+        this.browser.config.navigationMode = 'azimuthal';
+    }
     
     dom.stopPropagation(event);    
 };
