@@ -94,7 +94,7 @@ RendererDraw.prototype.drawTBall = function(position, size, shader, texture, siz
 };
 
 
-RendererDraw.prototype.drawBall = function(position, size, shader, params, params2, params3, normals) {
+RendererDraw.prototype.drawBall = function(position, size, shader, params, params2, params3, color, color2, normals) {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
@@ -140,6 +140,14 @@ RendererDraw.prototype.drawBall = function(position, size, shader, params, param
 
     if (params2) {
         shader.setVec4('uParams3', params3);
+    }
+
+    if (color) {
+        shader.setVec4('uFogColor', color);
+    }
+
+    if (color2) {
+        shader.setVec4('uFogColor2', color2);
     }
 
     renderer.atmoMesh.draw(shader, 'aPosition', null /*"aTexCoord"*/);

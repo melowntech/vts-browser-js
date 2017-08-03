@@ -459,6 +459,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         case 'fog':
                 //program.setFloat("uFogDensity", draw.fogDensity);
             program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
+            program.setVec4('uFogColor', draw.atmoColor);
             break;
 
         case 'internal-nofog':
@@ -471,6 +472,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                 //program.setFloat("uFogDensity", draw.fogDensity);
             program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
             program.setVec4('uTransform', texture.getTransform());
+            program.setVec4('uFogColor', draw.atmoColor);
             break;
 
         case 'external-nofog':

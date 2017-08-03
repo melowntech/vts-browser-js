@@ -1341,6 +1341,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
     prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/15, node.gridStep2 * factor]);
     prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
     prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
+    prog.setVec4('uFogColor', draw.atmoColor);
 
     renderer.gpu.bindTexture(renderer.heightmapTexture);
     

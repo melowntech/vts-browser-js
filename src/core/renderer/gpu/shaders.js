@@ -379,12 +379,12 @@ GpuShaders.atmoFragmentShader = 'precision mediump float;\n'+
     'uniform vec4 uParams2;\n'+       //[radius, atmoSize, 0 ,0]
     'varying vec4 vPosition;\n'+
     'varying vec3 vNormal;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
-    'const vec4 fogColor2 = vec4(72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ //= vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor2;\n'+ //= vec4(72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'float l = dot(normalize(vNormal),-uParams2.xyz);\n'+
         'l = (1.0-pow(abs(l),uParams.x));\n'+
-        'vec4 c = vec4(mix(fogColor2.xyz, fogColor.xyz, l), l);\n'+
+        'vec4 c = vec4(mix(uFogColor2.xyz, uFogColor.xyz, l), l);\n'+
         'gl_FragColor = c;\n'+
     '}';
 
@@ -396,7 +396,7 @@ GpuShaders.atmoFragmentShader2 = 'precision mediump float;\n'+
     'uniform vec3 uPos;\n'+
     'varying vec4 vPosition;\n'+
     'varying vec3 vNormal;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ //= vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec3 ldir = normalize(-vPosition.xyz);\n'+
         'vec3 diff = uPos;\n'+
@@ -408,7 +408,7 @@ GpuShaders.atmoFragmentShader2 = 'precision mediump float;\n'+
         'if (discr > 0.0) {}\n'+
 
         '}\n'+
-        'gl_FragColor = fogColor;\n'+
+        'gl_FragColor = uFogColor;\n'+
     '}';
 
 
@@ -468,15 +468,15 @@ GpuShaders.atmoVertexShader3 =
 GpuShaders.atmoFragmentShader3 = 'precision mediump float;\n'+
     'varying vec2 vTexcoords;\n'+
     'uniform vec4 uParams3;\n'+       //[treshold, mutiplier, 0,0]
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
-    'const vec4 fogColor2 = vec4(72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor2;\n'+ // = vec4(72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0);\n'+
     'const vec4 fogColor3 = vec4(0.0/255.0, 0.0/255.0, 0.0/255.0, 1.0);\n'+
 
     'void main() {\n'+
         'float l = vTexcoords.y;\n'+
         'if (l > uParams3.z){ discard; } else {\n'+
             'float l2 = clamp((l*l)*0.9+0.1, 0.0, 1.5);\n'+
-            'gl_FragColor = vec4(mix(fogColor2.xyz, fogColor.xyz, l2), l);\n'+
+            'gl_FragColor = vec4(mix(uFogColor2.xyz, uFogColor.xyz, l2), l);\n'+
         
             'if (l > uParams3.x){ gl_FragColor.xyz = mix(gl_FragColor.xyz, fogColor3.xyz, (l-uParams3.x)*uParams3.y); }\n'+
         '}'+
@@ -519,10 +519,10 @@ GpuShaders.heightmapFragmentShader = 'precision mediump float;\n'+
     'varying vec2 vTexCoord1;\n'+
     'varying vec2 vTexCoord2;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec4 gridColor = mix(texture2D(uSampler, vTexCoord1), texture2D(uSampler, vTexCoord2), uGridBlend);\n'+
-        'gl_FragColor = mix(fogColor, gridColor, vFogFactor);\n'+
+        'gl_FragColor = mix(uFogColor, gridColor, vFogFactor);\n'+
     '}';
 
 
@@ -561,7 +561,6 @@ GpuShaders.heightmapDepthFragmentShader = 'precision mediump float;\n'+
     'varying vec2 vTexCoord1;\n'+
     'varying vec2 vTexCoord2;\n'+
     'varying float vDepth;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'gl_FragColor = fract(vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vDepth) + (-0.5/255.0);\n'+
     '}';
@@ -613,10 +612,10 @@ GpuShaders.planeFragmentShader = 'precision mediump float;\n'+
     'uniform vec4 uParams2;\n'+    //[uGridStep1, uGridStep2, uGridBlend, 0]
     'varying vec2 vTexCoord;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec4 c = mix(texture2D(uSampler, vTexCoord), texture2D(uSampler, vTexCoord*8.0), uParams2[2]);\n'+
-        'gl_FragColor = mix(fogColor, c, vFogFactor);\n'+
+        'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
     '}';
 
 
@@ -669,11 +668,11 @@ GpuShaders.planeFragment2Shader = 'precision mediump float;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec2 vTexCoord2;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'if (length(uParams4.xy - vTexCoord2.xy) > uParams4.z){ discard; }'+ 
         'vec4 c = mix(texture2D(uSampler, vTexCoord), texture2D(uSampler, vTexCoord*8.0), uParams2[2]);\n'+
-        'gl_FragColor = mix(fogColor, c, vFogFactor);\n'+
+        'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
     '}';
 
 GpuShaders.planeVertex3Shader =
@@ -753,9 +752,9 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
     'uniform sampler2D uSampler;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
-        'gl_FragColor = mix(fogColor, texture2D(uSampler, vTexCoord), vFogFactor);\n'+
+        'gl_FragColor = mix(uFogColor, texture2D(uSampler, vTexCoord), vFogFactor);\n'+
     '}';
 
 
@@ -782,10 +781,10 @@ GpuShaders.tile2FragmentShader = 'precision mediump float;\n'+
     'uniform float uAlpha;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec4 c = texture2D(uSampler, vTexCoord);\n'+
-        'gl_FragColor = mix(fogColor, c, vFogFactor);\n'+
+        'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
         'gl_FragColor[3] = c.w * uAlpha;\n'+
     '}';
 
@@ -796,11 +795,11 @@ GpuShaders.tile3FragmentShader = 'precision mediump float;\n'+
     'uniform float uAlpha;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec4 c = texture2D(uSampler, vTexCoord);\n'+
         'vec4 c2 = texture2D(uSampler2, vTexCoord);\n'+
-        'gl_FragColor = mix(fogColor, c, vFogFactor);\n'+
+        'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
         'gl_FragColor[3] = c.w * uAlpha * c2.x;\n'+
     '}';
 
@@ -821,9 +820,9 @@ GpuShaders.fogTileVertexShader =
 
 GpuShaders.fogTileFragmentShader = 'precision mediump float;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
-        'gl_FragColor = vec4(fogColor.xyz, 1.0-vFogFactor);\n'+
+        'gl_FragColor = vec4(uFogColor.xyz, 1.0-vFogFactor);\n'+
     '}';
 
 
@@ -857,7 +856,7 @@ GpuShaders.tileTShadedFragmentShader = 'precision mediump float;\n'+
     'varying vec3 vNormal;\n'+
     'uniform mat4 uMaterial;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec3 ldir = normalize(-vPosition.xyz);\n'+
         'vec3 normal = normalize(vNormal);\n'+
@@ -867,7 +866,7 @@ GpuShaders.tileTShadedFragmentShader = 'precision mediump float;\n'+
         'float diffW = min(1.0, max(dot(normal, ldir), 0.0));\n'+
         'vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n'+
         'vec4 tcolor = texture2D(uSampler, vTexCoord);\n'+
-        'gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor); gl_FragColor.w *= uMaterial[3][1];\n'+
+        'gl_FragColor = mix(uFogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor); gl_FragColor.w *= uMaterial[3][1];\n'+
     '}';
 
 
@@ -877,7 +876,7 @@ GpuShaders.tileShadedFragmentShader = 'precision mediump float;\n'+
     'varying vec3 vNormal;\n'+
     'uniform mat4 uMaterial;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec3 ldir = normalize(-vPosition.xyz);\n'+
         'vec3 normal = normalize(vNormal);\n'+
@@ -886,7 +885,7 @@ GpuShaders.tileShadedFragmentShader = 'precision mediump float;\n'+
         'float specW = min(1.0,pow(max(dot(refDir, eyeDir), 0.0), uMaterial[3][0]));\n'+
         'float diffW = min(1.0,max(dot(normal, ldir), 0.0));\n'+
         'vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n'+
-        'gl_FragColor = mix(fogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);  gl_FragColor.w = uMaterial[3][1];\n'+
+        'gl_FragColor = mix(uFogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);  gl_FragColor.w = uMaterial[3][1];\n'+
     '}';
 
 //flat shade tile mesh
@@ -952,7 +951,8 @@ GpuShaders.tileWireframeFragmentShader = 'precision mediump float;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec3 vBarycentric;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    //'const vec4 uFogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'float edgeFactor(){\n'+
         '#ifdef GL_OES_standard_derivatives\n'+
             'vec3 d = fwidth(vBarycentric);\n'+
@@ -964,7 +964,7 @@ GpuShaders.tileWireframeFragmentShader = 'precision mediump float;\n'+
         '#endif\n'+
     '}\n'+
     'void main() {\n'+
-        'gl_FragColor = mix(fogColor, vec4( mix(vec3(0.0), texture2D(uSampler, vTexCoord).rgb, edgeFactor()) , 1.0), vFogFactor);\n'+
+        'gl_FragColor = mix(uFogColor, vec4( mix(vec3(0.0), texture2D(uSampler, vTexCoord).rgb, edgeFactor()) , 1.0), vFogFactor);\n'+
     '}';
 
 
@@ -974,7 +974,7 @@ GpuShaders.tileWireframe2FragmentShader = 'precision mediump float;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec3 vBarycentric;\n'+
     'varying float vFogFactor;\n'+
-    'const vec4 fogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'float edgeFactor(){\n'+
         '#ifdef GL_OES_standard_derivatives\n'+
             'vec3 d = fwidth(vBarycentric);\n'+
