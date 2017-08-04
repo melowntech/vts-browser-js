@@ -162,6 +162,16 @@ UIControlSearch.prototype.onSelectItem = function(index) {
 
     var proj4 = this.browser.getProj4();
     var srs = this.browser.config.controlSearchSrs || this.coordsSrs;
+
+    if (srs.indexOf('+proj=') == -1) { //no proj4 string
+        srs = map.getSrsInfo(srs);
+        if (srs && srs['srsDef']) {
+            srs = srs['srsDef'];
+        } else {
+            srs = this.coordsSrs;            
+        }
+    }
+
     var coords = proj4(navigationSrs['srsDef'], srs, pos.getCoords());
 
     pos = map.convertPositionHeightMode(pos, "float", true);
@@ -299,7 +309,12 @@ UIControlSearch.prototype.onListLoaded = function(counter, data) {
         var proj4 = this.browser.getProj4();
         var coords = proj4(navigationSrs['srsDef'], this.browser.config.controlSearchSrs || this.coordsSrs, pos.getCoords());
 
-        data = filterSearch(data, coords[0], coords[1]);
+        if (this.browser.config.controlSearchFilter) {
+            data = filterSearch(data, coords[0], coords[1]);
+        } else {
+            data = nofilterSearch(data, coords[0], coords[1]);
+        }
+
         this.updateList(data);
     }
 };

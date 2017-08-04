@@ -269,6 +269,7 @@ Browser.prototype.initConfig = function() {
         controlSearch : true,
         controlSearchSrs : null,
         controlSearchUrl : null,
+        controlSearchFilter : true,
         controlMeasure : false,
         controlLink : false,
         controlScale : true,
@@ -345,6 +346,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'controlSearch':        this.config.controlSearch = utils.validateBool(value, false); this.updateUI(key);    break;
     case 'controlSearchUrl':     this.config.controlSearchUrl = value;    break;
     case 'controlSearchSrs':     this.config.controlSearchSrs = value;    break;
+    case 'controlSearchFilter':  this.config.controlSearchFilter = utils.validateBool(value, true);  break;
     case 'controlLink':          this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
     case 'controlMeasure':       this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
     case 'controlLogo':          this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
@@ -439,6 +441,7 @@ Browser.prototype.getConfigParam = function(key) {
     case 'controlSearchValue':   return this.config.controlSearchValue;
     case 'controlSearchUrl':     return this.config.controlSearchUrl;
     case 'controlSearchSrs':     return this.config.controlSearchSrs;
+    case 'controlSearchFilter':  return this.config.controlSearchFilter;
     case 'minViewExtent':        return this.config.minViewExtent;
     case 'maxViewExtent':        return this.config.maxViewExtent;
     case 'rotate':               return this.config.autoRotate;
