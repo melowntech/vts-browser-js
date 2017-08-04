@@ -435,6 +435,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
         var navigationSrsInfo = map.getNavigationSrs().getSrsInfo();
         var earthRadius =  navigationSrsInfo['a'];
+        var earthRadius2 =  navigationSrsInfo['b'];
         var atmoSize = this.atmoHeight;
         
         var cameraPosToEarthCenter = [0,0,0,0];
@@ -455,7 +456,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
         gpu.setState(this.drawAtmoState);
         renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
-                                 earthRadius + 3000, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, this.atmoColor, this.atmoColor2, true);// this.cameraHeight > atmoSize ? 1 : -1);
+                                 earthRadius + 3000, earthRadius2 + 3000, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, this.atmoColor, this.atmoColor2, true);// this.cameraHeight > atmoSize ? 1 : -1);
         
         var safetyFactor = 2.0; 
         params = [safetyFactor, safetyFactor * ((earthRadius + atmoSize) / earthRadius), 0.25, safetyFactor* ((earthRadius + atmoSize) / earthRadius)];
@@ -479,7 +480,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
         gpu.setState(this.drawAuraState);
         renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
-                                 earthRadius + atmoSize, renderer.progAtmo, params,  params2, params3, this.atmoColor, this.atmoColor2);// this.camera.height > atmoSize ? 1 : -1);
+                                 earthRadius + atmoSize, earthRadius2 + atmoSize, renderer.progAtmo, params,  params2, params3, this.atmoColor, this.atmoColor2);// this.camera.height > atmoSize ? 1 : -1);
 
         gpu.setState(this.drawTileState);
     }

@@ -94,7 +94,7 @@ RendererDraw.prototype.drawTBall = function(position, size, shader, texture, siz
 };
 
 
-RendererDraw.prototype.drawBall = function(position, size, shader, params, params2, params3, color, color2, normals) {
+RendererDraw.prototype.drawBall = function(position, size, size2, shader, params, params2, params3, color, color2, normals) {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
@@ -105,7 +105,9 @@ RendererDraw.prototype.drawBall = function(position, size, shader, params, param
     var pos = [position[0], position[1], position[2] ];
 
     var domeMat = mat4.create();
-    mat4.multiply(math.translationMatrix(pos[0], pos[1], pos[2]), math.scaleMatrixf(size != null ? size : 1.5), domeMat);
+    size = size || 1.5;
+    size2 = size2 || 1.5;
+    mat4.multiply(math.translationMatrix(pos[0], pos[1], pos[2]), math.scaleMatrix(size, size, size2), domeMat);
 
     var mv = mat4.create();
     mat4.multiply(renderer.camera.getModelviewMatrix(), domeMat, mv);
