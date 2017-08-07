@@ -11,6 +11,7 @@ var vec3 = vec3_;
 var math = math_;
 var utils = utils_;
 var filterSearch = filterSearch_;
+var nofilterSearch = filterSearch_;
 
 var UIControlSearch = function(ui, visible) {
     this.ui = ui;

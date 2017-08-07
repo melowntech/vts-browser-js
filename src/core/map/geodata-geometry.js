@@ -60,7 +60,7 @@ MapGeodataGeometry.prototype.getElements = function(pathIndex) {
 
 MapGeodataGeometry.prototype.getRelationToCanvasPoint = function(index, screenX, screenY) {
     var v = this.vertexBuffer, i = index * 3;
-    var c1, c2, cv, p, r = [0,0,0];
+    var c1, cv, p, r = [0,0,0];
     var a, b, c, d, e, D, sc, tc, u, v, w;
 
     c1 = this.camera.position;
@@ -144,7 +144,7 @@ MapGeodataGeometry.prototype.getPathPoint = function(distance, pathIndex) {
     var si = (this.indicesBuffer[pathIndex]) * 3;
     var ei = ((pathIndex + 1) >= this.indicesBuffer.length) ? this.vertexBuffer.length : (this.indicesBuffer[pathIndex] * 3);
 
-    var totalLength = 0, p, delta, length, v = this.vertexBuffer;
+    var totalLength = 0, delta, length, v = this.vertexBuffer;
 
     for (var i = si; i < (ei-3); i+=3) {
         delta = [v[i+3] - v[i], v[i+4] - v[i+1], v[i+5] - v[i+2]];

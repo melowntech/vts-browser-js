@@ -274,4 +274,4 @@ function geoSearch = ( { lat,lon,zoom,lang } ) => {
 } 
 */              
 
-export {filterSearch};
+export {filterSearch, nofilterSearch};
