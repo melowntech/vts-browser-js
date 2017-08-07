@@ -57,6 +57,11 @@ var MapDraw = function(map) {
     this.gridGlues = false;
     this.gridSkipped = false;
 
+    this.atmoColor = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
+    this.atmoColor2 = [72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0];
+    this.atmoHeight = 50000;
+    this.atmoHeightFactor = this.atmoHeight / 50000;
+
     this.fogDensity = 0;
     this.zFactor = 0;
     //this.zFactor2 = 0.000012;
@@ -424,12 +429,14 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     }
 
     //draw skydome before geodata
-    if (this.drawChannel != 1 && !projected && debug.drawFog && map.referenceFrame.id == 'melown2015' &&
+    if (this.drawChannel != 1 && !projected && debug.drawFog &&
+        (map.referenceFrame.id == 'melown2015' || map.referenceFrame.id == 'mars-qsc') &&
         renderer.progAtmo.isReady() && renderer.progAtmo2.isReady()) {    
 
         var navigationSrsInfo = map.getNavigationSrs().getSrsInfo();
         var earthRadius =  navigationSrsInfo['a'];
-        var atmoSize = 50000;
+        var earthRadius2 =  navigationSrsInfo['b'];
+        var atmoSize = this.atmoHeight;
         
         var cameraPosToEarthCenter = [0,0,0,0];
         vec3.normalize(camera.position, cameraPosToEarthCenter);
@@ -449,7 +456,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
         gpu.setState(this.drawAtmoState);
         renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
-                                  earthRadius, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, true);// this.cameraHeight > atmoSize ? 1 : -1);
+                                 earthRadius + 3000, earthRadius2 + 3000, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, this.atmoColor, this.atmoColor2, true);// this.cameraHeight > atmoSize ? 1 : -1);
         
         var safetyFactor = 2.0; 
         params = [safetyFactor, safetyFactor * ((earthRadius + atmoSize) / earthRadius), 0.25, safetyFactor* ((earthRadius + atmoSize) / earthRadius)];
@@ -459,11 +466,12 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         
         var t1 = 1.4, t2 = 1.6; //previous value t1=1.1
 
-        if (camera.height > 45000) { //don render ground color in aura
-            t1 = 1.4, t2 = 1.8;
+        if (camera.height > 45000*this.atmoHeightFactor) { //don render ground color in aura
+            //t1 = 1.4, t2 = 1.8;
+            t1 = 1.4, t2 = 2.8;
             params3 = [t2,1.0,t2,0];
         } else {
-            if (camera.height < 5000) { 
+            if (camera.height < 5000*this.atmoHeightFactor) { 
                 t1 = 1.05, t2 = 1.12;
             }
             
@@ -472,7 +480,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
         gpu.setState(this.drawAuraState);
         renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
-                                  earthRadius + atmoSize, renderer.progAtmo, params,  params2, params3);// this.camera.height > atmoSize ? 1 : -1);
+                                 earthRadius + atmoSize, earthRadius2 + atmoSize, renderer.progAtmo, params,  params2, params3, this.atmoColor, this.atmoColor2);// this.camera.height > atmoSize ? 1 : -1);
 
         gpu.setState(this.drawTileState);
     }
@@ -664,7 +672,7 @@ MapDraw.prototype.updateFogDensity = function() {
     var cameraVisibility = this.camera.getFar();
     
     var tiltFactor = (Math.max(5,-orientation[1])/90);
-    var density = Math.log(0.05) / ((cameraVisibility * Math.max(1,this.camera.height*0.0001))* tiltFactor);
+    var density = Math.log(0.05) / ((cameraVisibility * this.atmoHeightFactor * Math.max(1,this.camera.height*0.0001))* tiltFactor);
     density *= (5.0) / (Math.min(50000, Math.max(this.camera.distance, 1000)) /5000);
 
     if (!this.debug.drawFog) {

@@ -134,6 +134,29 @@ var Map = function(core, mapConfig, path, config) {
     this.draw = new MapDraw(this);
     this.draw.setupDetailDegradation();
 
+    switch(this.referenceFrame.id) {
+        case 'melown2015':
+            this.draw.atmoColor = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
+            this.draw.atmoColor2 = [72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0];
+            this.draw.atmoHeight = 50000;
+            break;
+
+        case 'mars-qsc':
+            this.draw.atmoColor = [255.0/255.0, 187.0/255.0, 157.0/255.0, 1.0];
+            this.draw.atmoColor2 = [255.0/255.0, 155.0/255.0, 113.0/255.0, 0.1];
+            this.draw.atmoHeight = 25000;
+
+            // this.draw.atmoColor = [223.0/255.0, 200.0/255.0, 190.0/255.0, 1.0];
+            // this.draw.atmoColor2 = [255.0/255.0, 155.0/255.0, 113.0/255.0, 1.0];
+
+            // this.draw.atmoColor = [201.0/255.0, 149.0/255.0, 65.0/255.0, 1.0];
+            // this.draw.atmoColor2 = [201.0/255.0, 149.0/255.0, 65.0/255.0, 0.1];
+            break;
+    }
+
+
+    this.draw.atmoHeightFactor = this.draw.atmoHeight / 50000;
+
     this.renderSlots = new MapRenderSlots(this);
     this.renderSlots.addRenderSlot('map', this.drawMap.bind(this), true);
 };

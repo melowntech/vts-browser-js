@@ -41,6 +41,7 @@ UIControlLoading.prototype.show = function() {
     this.ui.setControlVisible('fullscreen', false);
     this.ui.setControlVisible('credits', false);
     this.ui.setControlVisible('loading', true);
+    this.time = Date.now();
 };
 
 
@@ -116,6 +117,7 @@ UIControlLoading.prototype.update = function() {
     //console.log("drawnTiles: " + stats["drawnTiles"] + "  geodata: " + stats["drawnGeodataTiles"]);
 
     if ((stats['surfaces'] == 0 && stats['freeLayers'] == 0) ||  //nothing to load 
+        ((timer - this.time) > 7000) || //loading takes too long
         (stats['downloading'] == 0 && stats['lastDownload'] > 0 && (timer - stats['lastDownload']) > 1000) || //or everything loaded
         (stats['bestMeshTexelSize'] != 0 && stats['bestMeshTexelSize'] <= (stats['texelSizeFit'] * 3) || //or resolution is good enough
         (stats['loadMode'] == 'fit' || stats['loadMode'] == 'fitonly') && (stats['drawnTiles'] - stats['drawnGeodataTiles']) > 1) ) { //or at leas some tiles are loaded

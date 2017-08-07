@@ -67,9 +67,6 @@ MapGeodataImportVTSGeodata.prototype.processJSON = function(json) {
         //import group lines
         var linesFeatures = group['lines'];
         if (linesFeatures) {
-            
-            var lines = linesFeatures['lines'];
-
             for (j = 0, lj = linesFeatures.length; j < lj; j++) {
                 var line = linesFeatures[j];
                 var sublines = line['lines'];

@@ -110,6 +110,41 @@ function reshakeHits(hits) {
     } while (!done);
 }
 
+function nofilterSearch(data, lon, lat) {
+    var rtrn = [];
+    var hits = data;
+    var hasLocation = lat && lon;
+    var rtrnHit, hit;
+
+    //Cycle each hit and reduce uts size
+    for (var i = 0; i < hits.length; i++) {
+        hit = hits[i];
+
+        rtrnHit = { 
+            lat: +hit.lat, 
+            lon: +hit.lon,  
+            title: hit.display_name,
+            rank: hit.importance || 1,
+            country: '', 
+            region: '',
+            state: '',
+            cc: '',
+            type: '', 
+            bounds: hit.boundingbox,
+            polygon : [],
+            bbox : hit.boundingbox
+        }
+
+        // Calculate distance
+        if (hasLocation) {
+            rtrnHit.distance = getDistance(lon, lat, rtrnHit.lon, rtrnHit.lat);
+        }
+
+        rtrn.push(rtrnHit);
+    }
+
+    return rtrn;
+}
 
 // Return Promise, that resolves nice deduplicated results from 
 // Nominatim (on particular keyword)
@@ -239,4 +274,4 @@ function geoSearch = ( { lat,lon,zoom,lang } ) => {
 } 
 */              
 
-export {filterSearch};
+export {filterSearch, nofilterSearch};
