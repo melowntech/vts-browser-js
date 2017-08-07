@@ -154,12 +154,12 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     //allocate buffers
     if (!pointFlat) {
         pointsVertices = circleSides * 3 * 4;
-        vertexBuffer = new Array(totalPoints * pointsVertices);
+        vertexBuffer = new Float32Array(totalPoints * pointsVertices);
         pointsNormals = circleSides * 3 * 4;
-        normalBuffer = new Array(totalPoints * pointsNormals);
+        normalBuffer = new Float32Array(totalPoints * pointsNormals);
     } else {
         pointsVertices = circleSides * 3 * 3;
-        vertexBuffer = new Array(totalPoints * pointsVertices);
+        vertexBuffer = new Float32Array(totalPoints * pointsVertices);
     }
 
     for (g = 0, gl = pointsGroups.length; g < gl; g++) {

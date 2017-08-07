@@ -672,9 +672,8 @@ MapDraw.prototype.updateFogDensity = function() {
     var cameraVisibility = this.camera.getFar();
     
     var tiltFactor = (Math.max(5,-orientation[1])/90);
-    var density = Math.log(0.05) / ((cameraVisibility * Math.max(1,this.camera.height*0.0001))* tiltFactor);
+    var density = Math.log(0.05) / ((cameraVisibility * this.atmoHeightFactor * Math.max(1,this.camera.height*0.0001))* tiltFactor);
     density *= (5.0) / (Math.min(50000, Math.max(this.camera.distance, 1000)) /5000);
-    density /= this.atmoHeightFactor;
 
     if (!this.debug.drawFog) {
         density = 0;

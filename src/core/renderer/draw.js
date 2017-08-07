@@ -1039,8 +1039,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                     break;
             }
         }
-
-        gpu.setState(renderer.lineLabelState);
             
         var stickShift = 0, pp;
 
