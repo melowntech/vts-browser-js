@@ -1,7 +1,7 @@
 
 import Dom_ from '../../utility/dom';
 import {utils as utils_} from '../../../core/utils/utils';
-import {filterSearch as filterSearch_} from './search-filter';
+import {filterSearch as filterSearch_, nofilterSearch as nofilterSearch_} from './search-filter';
 import {vec3 as vec3_} from '../../../core/utils/matrix';
 import {math as math_} from '../../../core/utils/math';
 
@@ -11,7 +11,7 @@ var vec3 = vec3_;
 var math = math_;
 var utils = utils_;
 var filterSearch = filterSearch_;
-var nofilterSearch = filterSearch_;
+var nofilterSearch = nofilterSearch_;
 
 var UIControlSearch = function(ui, visible) {
     this.ui = ui;
@@ -146,6 +146,16 @@ UIControlSearch.prototype.updateList = function(json) {
     }
 };
 
+UIControlSearch.prototype.solveSRS = function(srs) {
+    if (srs.indexOf('+proj=') == -1) { //no proj4 string
+        srs = map.getSrsInfo(srs);
+        if (srs && srs['srsDef']) {
+            srs = srs['srsDef'];
+        } else {
+            srs = this.coordsSrs;            
+        }
+    }
+};
 
 UIControlSearch.prototype.onSelectItem = function(index) {
     var map = this.browser.getMap();
@@ -163,15 +173,7 @@ UIControlSearch.prototype.onSelectItem = function(index) {
 
     var proj4 = this.browser.getProj4();
     var srs = this.browser.config.controlSearchSrs || this.coordsSrs;
-
-    if (srs.indexOf('+proj=') == -1) { //no proj4 string
-        srs = map.getSrsInfo(srs);
-        if (srs && srs['srsDef']) {
-            srs = srs['srsDef'];
-        } else {
-            srs = this.coordsSrs;            
-        }
-    }
+    srs = this.solveSRS(srs);
 
     var coords = proj4(navigationSrs['srsDef'], srs, pos.getCoords());
 
@@ -308,7 +310,10 @@ UIControlSearch.prototype.onListLoaded = function(counter, data) {
         var navigationSrs = map.getSrsInfo(navigationSrsId);
 
         var proj4 = this.browser.getProj4();
-        var coords = proj4(navigationSrs['srsDef'], this.browser.config.controlSearchSrs || this.coordsSrs, pos.getCoords());
+        var srs = this.browser.config.controlSearchSrs || this.coordsSrs;
+        srs = this.solveSRS(srs);
+
+        var coords = proj4(navigationSrs['srsDef'], srs, pos.getCoords());
 
         if (this.browser.config.controlSearchFilter) {
             data = filterSearch(data, coords[0], coords[1]);
