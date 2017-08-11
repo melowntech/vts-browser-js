@@ -155,6 +155,8 @@ UIControlSearch.prototype.solveSRS = function(srs) {
             srs = this.coordsSrs;            
         }
     }
+
+    return srs;
 };
 
 UIControlSearch.prototype.onSelectItem = function(index) {
