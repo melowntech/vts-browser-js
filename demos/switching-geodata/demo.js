@@ -46,8 +46,8 @@ function onSwitchView() {
             browser.map.setView({
                 surfaces: {
                     'melown-viewfinder-world': [
-                        'bing-world',
-                        'bmng08-world'
+                        'bmng08-world',
+                        'bing-world'
                     ]
                 },
                 freeLayers: {}
@@ -57,8 +57,8 @@ function onSwitchView() {
             browser.map.setView({
                 surfaces: {
                     'melown-viewfinder-world': [
-                        'bing-world',
-                        'bmng08-world'
+                        'bmng08-world',
+                        'bing-world'
                     ]
                 },
                 freeLayers: {
