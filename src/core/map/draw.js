@@ -60,7 +60,8 @@ var MapDraw = function(map) {
     this.atmoColor = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
     this.atmoColor2 = [72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0];
     this.atmoHeight = 50000;
-    this.atmoHeightFactor = this.atmoHeight / 50000;
+    this.atmoHeightFactor = 1; //this.atmoHeight / 50000;
+    this.atmoDensity = 1; //this.atmoHeight / 50000;
 
     this.fogDensity = 0;
     this.zFactor = 0;
@@ -456,7 +457,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
         gpu.setState(this.drawAtmoState);
         renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
-                                 earthRadius + 3000, earthRadius2 + 3000, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, this.atmoColor, this.atmoColor2, true);// this.cameraHeight > atmoSize ? 1 : -1);
+                                 earthRadius + 3000, earthRadius2 + 3000, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, this.atmoColor3, this.atmoColor2, true);// this.cameraHeight > atmoSize ? 1 : -1);
         
         var safetyFactor = 2.0; 
         params = [safetyFactor, safetyFactor * ((earthRadius + atmoSize) / earthRadius), 0.25, safetyFactor* ((earthRadius + atmoSize) / earthRadius)];
@@ -672,7 +673,7 @@ MapDraw.prototype.updateFogDensity = function() {
     var cameraVisibility = this.camera.getFar();
     
     var tiltFactor = (Math.max(5,-orientation[1])/90);
-    var density = Math.log(0.05) / ((cameraVisibility * this.atmoHeightFactor * Math.max(1,this.camera.height*0.0001))* tiltFactor);
+    var density = Math.log(0.05) / ((this.atmoDensity * cameraVisibility * this.atmoHeightFactor * Math.max(1,this.camera.height*0.0001))* tiltFactor);
     density *= (5.0) / (Math.min(50000, Math.max(this.camera.distance, 1000)) /5000);
 
     if (!this.debug.drawFog) {

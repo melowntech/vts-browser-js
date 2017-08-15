@@ -384,8 +384,8 @@ GpuShaders.atmoFragmentShader = 'precision mediump float;\n'+
     'void main() {\n'+
         'float l = dot(normalize(vNormal),-uParams2.xyz);\n'+
         'l = (1.0-pow(abs(l),uParams.x));\n'+
-        'vec4 c = vec4(mix(uFogColor2.xyz, uFogColor.xyz, l), l);\n'+
-        'gl_FragColor = c;\n'+
+        'vec4 c = mix(uFogColor2, uFogColor, l);\n'+
+        'gl_FragColor = vec4(c.xyz, c.w*l);\n'+
     '}';
 
 
@@ -476,7 +476,8 @@ GpuShaders.atmoFragmentShader3 = 'precision mediump float;\n'+
         'float l = vTexcoords.y;\n'+
         'if (l > uParams3.z){ discard; } else {\n'+
             'float l2 = clamp((l*l)*0.9+0.1, 0.0, 1.5);\n'+
-            'gl_FragColor = vec4(mix(uFogColor2.xyz, uFogColor.xyz, l2), l);\n'+
+            'vec4 c = mix(uFogColor2, uFogColor, l2);\n'+
+            'gl_FragColor = vec4(c.xyz, c.w*l);\n'+
         
             'if (l > uParams3.x){ gl_FragColor.xyz = mix(gl_FragColor.xyz, fogColor3.xyz, (l-uParams3.x)*uParams3.y); }\n'+
         '}'+

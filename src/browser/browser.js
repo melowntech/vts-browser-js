@@ -262,7 +262,7 @@ Browser.prototype.initConfig = function() {
         positionInUrl : false,
         positionUrlHistory : false,
         constrainCamera : true,
-        navigationMode : 'free',
+        navigationMode : 'azimuthal',
         controlCompass : true,
         controlZoom : true,
         controlSpace : true,
