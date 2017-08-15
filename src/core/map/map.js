@@ -138,13 +138,16 @@ var Map = function(core, mapConfig, path, config) {
         case 'melown2015':
             this.draw.atmoColor = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
             this.draw.atmoColor2 = [72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0];
+            this.draw.atmoColor3 = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
             this.draw.atmoHeight = 50000;
             break;
 
         case 'mars-qsc':
             this.draw.atmoColor = [255.0/255.0, 187.0/255.0, 157.0/255.0, 1.0];
-            this.draw.atmoColor2 = [255.0/255.0, 155.0/255.0, 113.0/255.0, 0.1];
+            this.draw.atmoColor2 = [255.0/255.0, 155.0/255.0, 113.0/255.0, 1.0];
+            this.draw.atmoColor3 = [255.0/255.0, 187.0/255.0, 157.0/255.0, 0.5];
             this.draw.atmoHeight = 25000;
+            this.draw.atmoDensity = 1.0 / 0.25;
 
             // this.draw.atmoColor = [223.0/255.0, 200.0/255.0, 190.0/255.0, 1.0];
             // this.draw.atmoColor2 = [255.0/255.0, 155.0/255.0, 113.0/255.0, 1.0];
