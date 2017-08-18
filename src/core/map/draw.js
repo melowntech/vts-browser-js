@@ -446,14 +446,15 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         var orientation = pos.getOrientation();
         var tiltFactor = (Math.max(5,-orientation[1])/90);
 
-        var heightFactor = 1-Math.max(0,Math.min(1.0, camera.height / (atmoSize*(10+20*tiltFactor))));
-        heightFactor = heightFactor * heightFactor;
+        var cameraHeight = Math.max(atmoSize * 0.1, camera.geocentDistance - earthRadius);
+        var heightFactor = 1-math.clamp(Math.max(atmoSize * 0.1, camera.geocentDistance - earthRadius) / (atmoSize*(10)), 0, 1);
 
         var params = [Math.max(2,heightFactor*128),0,0,0], params2, params3;
         
-        if (camera.height > earthRadius*2) { //prevent foggy earth from larger distance
+        /*
+        if (cameraHeight > earthRadius*2) { //prevent foggy earth from larger distance
             params[0] = 2-Math.min(1.0, (camera.height - earthRadius*2) / (earthRadius*2));
-        }
+        }*/
 
         gpu.setState(this.drawAtmoState);
         renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
@@ -467,12 +468,12 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         
         var t1 = 1.4, t2 = 1.6; //previous value t1=1.1
 
-        if (camera.height > 45000*this.atmoHeightFactor) { //don render ground color in aura
+        if (cameraHeight > 45000*this.atmoHeightFactor) { //don render ground color in aura
             //t1 = 1.4, t2 = 1.8;
             t1 = 1.4, t2 = 2.8;
             params3 = [t2,1.0,t2,0];
         } else {
-            if (camera.height < 5000*this.atmoHeightFactor) { 
+            if (cameraHeight < 5000*this.atmoHeightFactor) { 
                 t1 = 1.05, t2 = 1.12;
             }
             

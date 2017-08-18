@@ -414,7 +414,8 @@ function constrainMapPosition(browser, pos) {
     var viewExtent = math.clamp(pos.getViewExtent(), minVE, maxVE); 
     pos.setViewExtent(viewExtent);
 
-    var distance = (pos.getViewExtent()*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
+    var distance = (viewExtent*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
+    var hmaxOffset = 0;
 
     //reduce tilt when you are far off the planet
     if (pos.getViewMode() == 'obj') {
@@ -422,10 +423,28 @@ function constrainMapPosition(browser, pos) {
         var srs = map.getSrsInfo(rf['navigationSrs']);
         
         if (srs['a']) {
-            var factor = Math.min(distance / (srs['a']*0.5), 1.0);
-            var maxTilt = 20 + ((-90) - 20) * factor; 
-            var minTilt = -90; 
-            
+
+            var a1 = Math.asin(srs['a'] / (distance + srs['a'])); //get angle to horion
+            //console.log('a1: ' + math.degrees(a1));
+
+            var factor = Math.tan(math.radians(pos.getFov()*0.5)) / Math.tan(a1);
+            var viewFactor = factor;
+
+            //console.log('factor: ' + factor);
+
+            var threshold = browser.config.tiltConstrainThreshold;
+            var maxTilt, minTilt = -90; 
+
+            if (!(threshold[0] > threshold[1] || threshold[0] == threshold[1])) {
+                factor = math.clamp(factor, threshold[0], threshold[1]);
+                factor = ((factor - threshold[0]) / (threshold[1] - threshold[0]));
+                maxTilt = 20 + ((-90) - 20) * (factor); 
+            } else {
+                maxTilt = 20; 
+            }
+
+            //console.log('maxTilt: ' + maxTilt);
+
             o = pos.getOrientation();
             o[1] = math.clamp(o[1], minTilt, maxTilt);
     
@@ -442,6 +461,7 @@ function constrainMapPosition(browser, pos) {
     //var hmax = Math.max(Math.min(4000,cameraConstrainDistance), (distance * Math.tan(math.radians(3.0))));
     //var hmax = Math.max(Math.min(4000,cameraConstrainDistance), (distance * Math.tan(math.radians(3.0))));
     var hmax = Math.max(cameraConstrainDistance, (distance * Math.tan(math.radians(3.0))));
+
     var cameraHeight = camPos[2]; //this.cameraHeight() - this.cameraHeightOffset - this.cameraHeightOffset2;
 
     if (cameraHeight < hmax) {
@@ -465,7 +485,7 @@ function constrainMapPosition(browser, pos) {
 
         });//.bind(this);
 
-        o[1] = getFinalOrientation(-90, Math.min(-1, o[1]), 0);
+        o[1] = getFinalOrientation(-90, Math.min(20, o[1]), 0);
         pos.setOrientation(o);
     }
 
