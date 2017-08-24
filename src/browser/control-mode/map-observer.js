@@ -94,7 +94,7 @@ ControlModeMapObserver.prototype.drag = function(event) {
     } else if (((touches <= 1 && event.getDragButton('right')) || event.getDragButton('middle') || modifierKey) 
                && this.config.rotationAllowed) { //rotate
                    
-        sensitivity = this.config.sensitivity[1] * this.retinaFactor;
+        sensitivity = this.config.sensitivity[1] * this.retinaFactor * (pos.getViewMode() != 'obj' ? 0.5 : 1);
         this.orientationDeltas.push([delta[0] * sensitivity,
             -delta[1] * sensitivity, 0]);
         this.browser.callListener('map-position-rotated', {});
@@ -127,6 +127,23 @@ ControlModeMapObserver.prototype.wheel = function(event) {
         map.setPosition(pos);
     } else {
         if (pos.getViewMode() != 'obj') {
+            var coords = pos.getCoords();
+
+            var cameraInfo = map.getCameraInfo();
+            var vector = cameraInfo.vector;
+            var height = cameraInfo.height;
+            var speed = Math.max(100, height) * (this.browser.controlMode.shiftKey ? 0.00025 : 0.0025) * (delta > 0 ? 1 : -1);
+
+            coords = map.convertCoordsFromNavToPhys(coords, 'float');
+
+            coords[0] += vector[0] * speed;
+            coords[1] += vector[1] * speed;
+            coords[2] += vector[2] * speed;
+
+            coords = map.convertCoordsFromPhysToNav(coords, 'float');
+
+            pos.setCoords(coords);
+            map.setPosition(pos);
             return;
         }
 
@@ -450,43 +467,43 @@ function constrainMapPosition(browser, pos) {
     
             pos.setOrientation(o);
         }
-    }
 
-    //do not allow camera under terrain
-    var camPos = map.getPositionCameraCoords(pos, 'float');
-    //var cameraConstrainDistance = 1;
-    var cameraConstrainDistance = (minVE*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
-    cameraConstrainDistance *= 0.5; //divice by 2 to alow 45deg tilt in maximum zoom
-    
-    //var hmax = Math.max(Math.min(4000,cameraConstrainDistance), (distance * Math.tan(math.radians(3.0))));
-    //var hmax = Math.max(Math.min(4000,cameraConstrainDistance), (distance * Math.tan(math.radians(3.0))));
-    var hmax = Math.max(cameraConstrainDistance, (distance * Math.tan(math.radians(3.0))));
+        //do not allow camera under terrain
+        var camPos = map.getPositionCameraCoords(pos, 'float');
+        //var cameraConstrainDistance = 1;
+        var cameraConstrainDistance = (minVE*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
+        cameraConstrainDistance *= 0.5; //divice by 2 to alow 45deg tilt in maximum zoom
+        
+        //var hmax = Math.max(Math.min(4000,cameraConstrainDistance), (distance * Math.tan(math.radians(3.0))));
+        //var hmax = Math.max(Math.min(4000,cameraConstrainDistance), (distance * Math.tan(math.radians(3.0))));
+        var hmax = Math.max(cameraConstrainDistance, (distance * Math.tan(math.radians(3.0))));
 
-    var cameraHeight = camPos[2]; //this.cameraHeight() - this.cameraHeightOffset - this.cameraHeightOffset2;
+        var cameraHeight = camPos[2]; //this.cameraHeight() - this.cameraHeightOffset - this.cameraHeightOffset2;
 
-    if (cameraHeight < hmax) {
-        o = pos.getOrientation();
+        if (cameraHeight < hmax) {
+            o = pos.getOrientation();
 
-        var getFinalOrientation = (function(start, end, level) {
-            var value = (start + end) * 0.5;
+            var getFinalOrientation = (function(start, end, level) {
+                var value = (start + end) * 0.5;
 
-            if (level > 20) {
-                return value;
-            } else {
-                o[1] = value;
-                pos.setOrientation(o);
-
-                if (map.getPositionCameraCoords(pos, 'float')[2] < hmax) {
-                    return getFinalOrientation(start, value, level+1);
+                if (level > 20) {
+                    return value;
                 } else {
-                    return getFinalOrientation(value, end, level+1);
+                    o[1] = value;
+                    pos.setOrientation(o);
+
+                    if (map.getPositionCameraCoords(pos, 'float')[2] < hmax) {
+                        return getFinalOrientation(start, value, level+1);
+                    } else {
+                        return getFinalOrientation(value, end, level+1);
+                    }
                 }
-            }
 
-        });//.bind(this);
+            });//.bind(this);
 
-        o[1] = getFinalOrientation(-90, Math.min(20, o[1]), 0);
-        pos.setOrientation(o);
+            o[1] = getFinalOrientation(-90, Math.min(20, o[1]), 0);
+            pos.setOrientation(o);
+        }
     }
 
     return pos;

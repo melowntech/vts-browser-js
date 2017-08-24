@@ -170,7 +170,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                     var pos = map.getPosition();
                     // eslint-disable-next-line
                     console.log('pos-before: ' + JSON.stringify(pos.pos));
-                    map.convertPositionViewMode(pos, (pos.getViewMode() == 'obj') ? 'subj' : 'obj');
+                    map.convert.convertPositionViewMode(pos, (pos.getViewMode() == 'obj') ? 'subj' : 'obj');
                     // eslint-disable-next-line
                     console.log('new mode: ' + pos.getViewMode());
                     // eslint-disable-next-line

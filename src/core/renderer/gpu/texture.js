@@ -90,6 +90,12 @@ GpuTexture.prototype.createFromData = function(lx, ly, data, filter, repeat) {
 GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
     var gl = this.gl;
 
+    //utils.isPowerOfTwo = (function(value) {
+    //utils.nearestPowerOfTwo = (function(value) {
+    var width = image.naturalWidth;
+    var height = image.naturalHeight;
+    var data = image;
+
     this.texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
@@ -121,8 +127,20 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
         break;
     }
 
+    //resize image to nearest power of two
+    if ((this.repeat || mipmaps) && (!utils.isPowerOfTwo(width) || !utils.isPowerOfTwo(height))) {
+        width = utils.nearestPowerOfTwo(width);
+        height = utils.nearestPowerOfTwo(height);
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var context = canvas.getContext('2d');
+        context.drawImage(image, 0, 0, width, height); 
+        data = canvas;
+    }
+
     if (this.gpu.noTextures !== true) {
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
         if (mipmaps) {
             gl.generateMipmap(gl.TEXTURE_2D);
@@ -131,9 +149,9 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
 
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    this.width = image.naturalWidth;
-    this.height = image.naturalHeight;
-    this.size = image.naturalWidth * image.naturalHeight * 4;
+    this.width = width;
+    this.height = height;
+    this.size = width * height * 4;
     this.loaded = true;
 };
 
