@@ -176,7 +176,17 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                     // eslint-disable-next-line
                     console.log('pos-after: ' + JSON.stringify(pos.pos));
                     map.setPosition(pos);
-                    /*this.core.saveScreenshot(pos);*/ break;  //key Q pressed
+                    /*this.core.saveScreenshot(pos);*/
+
+                    if (this.altDown && pos.getViewMode() != 'obj') {
+                        map.camera.near = 0.1;
+                    } else {
+                        map.camera.near = 2;
+                    }
+
+                    inspector.preventDefault(event); break;  //key D pressed
+
+                    break;  //key Q pressed
 
                 case 80:
                 case 112:

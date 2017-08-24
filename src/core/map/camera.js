@@ -18,6 +18,7 @@ var MapCamera = function(map) {
     this.height = 0;
     this.terrainHeight = 0;
     this.lastTerrainHeight = 0;
+    this.near = 2;
 };
 
 
@@ -92,7 +93,7 @@ MapCamera.prototype.update = function() {
     //set near and far of camera by distance of orbit
     var factor = Math.max(this.height, this.distance) / 600000;
 
-    var near = Math.max(2, 2 * (factor * 20));
+    var near = Math.max(this.near, this.near * (factor * 20));
     factor = Math.max(1.0, factor);
     var far = 600000 * (factor * 10);
 
