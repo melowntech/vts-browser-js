@@ -465,20 +465,18 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         var factor = (1 / (earthRadius) ) * safetyFactor;  
         params2 = [camera.position[0] * factor, camera.position[1] * factor, camera.position[2] * factor, 1];
         
-        
-        var t1 = 1.4, t2 = 1.6; //previous value t1=1.1
+        var distance = (pos.getViewExtent()*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
+        var a1 = (earthRadius / (distance + earthRadius)); //get angle to horion
 
-        if (cameraHeight > 45000*this.atmoHeightFactor) { //don render ground color in aura
-            //t1 = 1.4, t2 = 1.8;
-            t1 = 1.4, t2 = 2.8;
-            params3 = [t2,1.0,t2,0];
-        } else {
-            if (cameraHeight < 5000*this.atmoHeightFactor) { 
-                t1 = 1.05, t2 = 1.12;
-            }
-            
-            params3 = [t1,5.2 / (t2-t1),t2,0];
-        } 
+        //var n2 = 10.05;
+        var n2 = 5.00;
+
+        var t1 = math.mix(4.4, 1.01, a1);
+        var t2 = math.mix(n2, 1.05, a1); // * 1.0176;
+
+        params3 = [t1, 1 ,t2,0];
+
+        //console.log("a1: " + a1 + " t2: " + t2);
 
         gpu.setState(this.drawAuraState);
         renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
