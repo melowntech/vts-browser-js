@@ -170,13 +170,23 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                     var pos = map.getPosition();
                     // eslint-disable-next-line
                     console.log('pos-before: ' + JSON.stringify(pos.pos));
-                    map.convertPositionViewMode(pos, (pos.getViewMode() == 'obj') ? 'subj' : 'obj');
+                    map.convert.convertPositionViewMode(pos, (pos.getViewMode() == 'obj') ? 'subj' : 'obj');
                     // eslint-disable-next-line
                     console.log('new mode: ' + pos.getViewMode());
                     // eslint-disable-next-line
                     console.log('pos-after: ' + JSON.stringify(pos.pos));
                     map.setPosition(pos);
-                    /*this.core.saveScreenshot(pos);*/ break;  //key Q pressed
+                    /*this.core.saveScreenshot(pos);*/
+
+                    if (this.altDown && pos.getViewMode() != 'obj') {
+                        map.camera.near = 0.1;
+                    } else {
+                        map.camera.near = 2;
+                    }
+
+                    inspector.preventDefault(event); break;  //key D pressed
+
+                    break;  //key Q pressed
 
                 case 80:
                 case 112:

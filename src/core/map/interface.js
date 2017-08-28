@@ -193,6 +193,9 @@ MapInterface.prototype.convertCoordsFromNavToPhys = function(pos, mode, lod) {
     return this.map.convert.getPositionPhysCoords((new MapPosition(p)), lod);
 };
 
+MapInterface.prototype.convertCoordsFromPhysToNav = function(pos, mode, lod) {
+    return this.map.convert.convertCoordsFromPhysToNav(pos, mode, lod);
+};
 
 MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos, mode, lod) {
     var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
@@ -262,7 +265,8 @@ MapInterface.prototype.getCameraInfo = function() {
         'rotationMatrix' : camera.camera.rotationview.slice(),
         'position' : this.map.camera.position.slice(),
         'vector' : this.map.camera.vector.slice(),
-        'distance' : this.map.camera.distance
+        'distance' : this.map.camera.distance,
+        'height' : this.map.camera.height
     };
 };
 

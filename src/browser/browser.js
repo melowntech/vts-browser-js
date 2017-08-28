@@ -279,6 +279,7 @@ Browser.prototype.initConfig = function() {
         controlLoading : true,
         searchElement : null,
         searchValue : null,
+        tiltConstrainThreshold : [0.5,1],
         minViewExtent : 75,
         maxViewExtent : Number.MAXINTEGER,
         autoRotate : 0,
@@ -329,36 +330,37 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
         }
         break;
 
-    case 'panAllowed':           this.config.panAllowed = utils.validateBool(value, true);           break;
-    case 'rotationAllowed':      this.config.rotationAllowed = utils.validateBool(value, true);      break;
-    case 'zoomAllowed':          this.config.zoomAllowed = utils.validateBool(value, true);          break;
-    case 'jumpAllowed':          this.config.jumpAllowed = utils.validateBool(value, false);         break;
-    case 'constrainCamera':      this.config.constrainCamera = utils.validateBool(value, true);      break;
-    case 'navigationMode':       this.config.navigationMode = value;                                        break;
-    case 'positionInUrl':        this.config.positionInUrl = utils.validateBool(value, false);       break;
-    case 'positionUrlHistory':   this.config.positionUrlHistory = utils.validateBool(value, false);  break;
-    case 'controlCompass':       this.config.controlCompass = utils.validateBool(value, true); this.updateUI(key);    break;
-    case 'controlZoom':          this.config.controlZoom = utils.validateBool(value, true); this.updateUI(key);       break;
-    case 'controlMeasure':       this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
-    case 'controlScale':         this.config.controlScale = utils.validateBool(value, true); this.updateUI(key);      break;
-    case 'controlLayers':        this.config.controlLayers = utils.validateBool(value, false); this.updateUI(key);    break;
-    case 'controlSpace':         this.config.controlSpace = utils.validateBool(value, false); this.updateUI(key);     break;
-    case 'controlSearch':        this.config.controlSearch = utils.validateBool(value, false); this.updateUI(key);    break;
-    case 'controlSearchUrl':     this.config.controlSearchUrl = value;    break;
-    case 'controlSearchSrs':     this.config.controlSearchSrs = value;    break;
-    case 'controlSearchFilter':  this.config.controlSearchFilter = utils.validateBool(value, true);  break;
-    case 'controlSearchElement': this.config.controlSearchElement = value; this.updateUI(key);  break;
-    case 'controlSearchValue':   this.config.controlSearchValue = /*utils.validateString(*/value/*, null)*/; this.updateUI(key); break;
-    case 'controlLink':          this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
-    case 'controlMeasure':       this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
-    case 'controlLogo':          this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
-    case 'controlFullscreen':    this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key); break;
-    case 'controlCredits':       this.config.controlCredits = utils.validateBool(value, true); this.updateUI(key);    break;
-    case 'controlLoading':       this.config.controlLoading = utils.validateBool(value, true); this.updateUI(key);    break;
-    case 'minViewExtent':        this.config.minViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, 100); break;
-    case 'maxViewExtent':        this.config.maxViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, Number.MAXINTEGER); break;
-    case 'sensitivity':          this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
-    case 'inertia':              this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
+    case 'panAllowed':             this.config.panAllowed = utils.validateBool(value, true);           break;
+    case 'rotationAllowed':        this.config.rotationAllowed = utils.validateBool(value, true);      break;
+    case 'zoomAllowed':            this.config.zoomAllowed = utils.validateBool(value, true);          break;
+    case 'jumpAllowed':            this.config.jumpAllowed = utils.validateBool(value, false);         break;
+    case 'constrainCamera':        this.config.constrainCamera = utils.validateBool(value, true);      break;
+    case 'navigationMode':         this.config.navigationMode = value;                                        break;
+    case 'positionInUrl':          this.config.positionInUrl = utils.validateBool(value, false);       break;
+    case 'positionUrlHistory':     this.config.positionUrlHistory = utils.validateBool(value, false);  break;
+    case 'controlCompass':         this.config.controlCompass = utils.validateBool(value, true); this.updateUI(key);    break;
+    case 'controlZoom':            this.config.controlZoom = utils.validateBool(value, true); this.updateUI(key);       break;
+    case 'controlMeasure':         this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
+    case 'controlScale':           this.config.controlScale = utils.validateBool(value, true); this.updateUI(key);      break;
+    case 'controlLayers':          this.config.controlLayers = utils.validateBool(value, false); this.updateUI(key);    break;
+    case 'controlSpace':           this.config.controlSpace = utils.validateBool(value, false); this.updateUI(key);     break;
+    case 'controlSearch':          this.config.controlSearch = utils.validateBool(value, false); this.updateUI(key);    break;
+    case 'controlSearchUrl':       this.config.controlSearchUrl = value;    break;
+    case 'controlSearchSrs':       this.config.controlSearchSrs = value;    break;
+    case 'controlSearchFilter':    this.config.controlSearchFilter = utils.validateBool(value, true);  break;
+    case 'controlSearchElement':   this.config.controlSearchElement = value; this.updateUI(key);  break;
+    case 'controlSearchValue':     this.config.controlSearchValue = /*utils.validateString(*/value/*, null)*/; this.updateUI(key); break;
+    case 'controlLink':            this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
+    case 'controlMeasure':         this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
+    case 'controlLogo':            this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
+    case 'controlFullscreen':      this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key); break;
+    case 'controlCredits':         this.config.controlCredits = utils.validateBool(value, true); this.updateUI(key);    break;
+    case 'controlLoading':         this.config.controlLoading = utils.validateBool(value, true); this.updateUI(key);    break;
+    case 'minViewExtent':          this.config.minViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, 100); break;
+    case 'maxViewExtent':          this.config.maxViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, Number.MAXINTEGER); break;
+    case 'sensitivity':            this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
+    case 'inertia':                this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
+    case 'tiltConstrainThreshold': this.config.tiltConstrainThreshold = utils.validateNumberArray(value, 2, [0.5,1], [-Number.MAXINTEGER, -Number.MAXINTEGER], [Number.MAXINTEGER, Number.MAXINTEGER]); break;
     case 'rotate':             
         this.config.autoRotate = utils.validateNumber(value, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, 0);
         if (map && this.autopilot) {

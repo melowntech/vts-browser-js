@@ -272,5 +272,17 @@ MapConvert.prototype.getPositionCanvasCoords = function(position, lod, physical)
     return this.map.renderer.project2(worldPos, this.map.camera.getMvpMatrix());
 };
 
+MapConvert.prototype.convertCoordsFromPhysToNav = function(coords, mode, lod) {
+    coords = this.convertCoords(coords, 'physical', 'navigation');
+
+    if (mode == 'float') {
+        lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(coords, 10, this.config.mapNavSamplesPerViewExtent);
+        var surfaceHeight = this.measure.getSurfaceHeight(coords, lod);
+        coords[2] -= surfaceHeight[0]; 
+    }
+
+    return coords;
+};
+
 
 export default MapConvert;

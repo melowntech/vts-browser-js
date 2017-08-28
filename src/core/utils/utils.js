@@ -151,6 +151,17 @@ utils.stringifyFunction = (function(fn) {
     return '(' + fn + ').call(self);';
 });
 
+
+utils.isPowerOfTwo = (function(value) {
+    return (value & (value - 1)) === 0 && value !== 0;
+});
+
+
+utils.nearestPowerOfTwo = (function(value) {
+    return Math.pow(2, Math.round(Math.log(value) / Math.LN2));
+});   
+
+
 utils.getHash = function(str) {
     if (!str || str.length === 0) {
         return 0;    
