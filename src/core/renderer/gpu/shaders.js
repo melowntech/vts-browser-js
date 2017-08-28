@@ -39,6 +39,36 @@ GpuShaders.lineFragmentShader = 'precision mediump float;\n'+ //line
         'gl_FragColor = uColor;\n'+
     '}';
 
+
+//line with wireframe for debugging
+GpuShaders.lineWireframeVertexShader =
+    'attribute vec3 aPosition;\n'+
+    'attribute vec3 aBarycentric;\n'+
+    'varying vec3 vBarycentric;\n'+
+    'uniform mat4 uMVP;\n'+
+    'void main(){ \n'+
+        'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+        'vBarycentric = aBarycentric;\n'+
+    '}';
+
+GpuShaders.lineWireframeFragmentShader = 'precision mediump float;\n'+ 
+    '#extension GL_OES_standard_derivatives : enable\n'+
+    'uniform vec4 uColor;\n'+
+    'varying vec3 vBarycentric;\n'+
+    'float edgeFactor(){\n'+
+        '#ifdef GL_OES_standard_derivatives\n'+
+            'vec3 d = fwidth(vBarycentric);\n'+
+            'vec3 a3 = smoothstep(vec3(0.0), d*1.0, vBarycentric);\n'+
+            'return min(min(a3.x, a3.y), a3.z);\n'+
+        '#else\n'+
+            'float a = min(min(vBarycentric.x, vBarycentric.y), vBarycentric.z);\n'+
+            'return a > 0.1 ? 1.0 : smoothstep(0.0,1.0,a*10.0);\n'+
+        '#endif\n'+
+    '}\n'+
+    'void main() {\n'+
+        'gl_FragColor = vec4( mix(vec3(0.0), uColor.rgb, edgeFactor()) , uColor.a);\n'+
+    '}';
+
 GpuShaders.elineVertexShader = //line elements
     'attribute vec3 aPosition;\n'+
     'attribute float aElement;\n'+

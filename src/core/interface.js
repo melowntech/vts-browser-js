@@ -1,5 +1,6 @@
 
 import Proj4 from 'proj4';
+import earcut from 'earcut';
 import {Core as Core_} from './core';
 //import {CoreInterface as CoreInterface_} from './interface';
 
@@ -30,6 +31,13 @@ var CoreInterface = function(element, config) {
         get: function() {
             if (!this.core) { return null; }
             return proj4;
+        }
+    });
+
+    Object.defineProperty(this, 'earcut', {
+        get: function() {
+            if (!this.core) { return null; }
+            return earcut;
         }
     });
 };
