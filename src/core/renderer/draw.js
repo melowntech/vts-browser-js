@@ -781,7 +781,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : ['aPosition']);
         //gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : ['aPosition', 'aBarycentric']);
 
-
         prog.setVec4('uColor', color);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
 
@@ -803,7 +802,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gl.bindBuffer(gl.ARRAY_BUFFER, gpu.barycentricBuffer);
         gl.vertexAttribPointer(barycentericAttribute, gpu.barycentricBuffer.itemSize, gl.FLOAT, false, 0, 0);
         */
-
+        
         //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 

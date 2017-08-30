@@ -302,57 +302,67 @@ MapGeodataBuilder.prototype.addPolygon = function(shape, holes, middle, heightMo
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
 
-    var flatShape = shape, flatHoles = holes, i, li, j, lj, hole, coords;
+    var flatShape = shape, flatHoles = holes, i, li, j, lj, k, lk, l, hole, coords, proj, holesIndices, vertices;
 
     //convert shape and holes to flat space
     if (srs.indexOf('+proj=longlat') != -1) {
-        var proj = this.map.proj4(srs, '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs');
-
-        flatShape = new Array(shape.length*3);
-        j = 0;
-
-        for (i = 0, li = shape.length; i < li; i++) {
-            coords = proj.forward(shape[i]);
-            flatShape[j] = coords[0]; 
-            flatShape[j+1] = coords[1]; 
-            flatShape[j+2] = coords[2]; 
-            j+=3;
-        }
-
-        flatHoles = new Array(holes.length);
-
-        for (i = 0, li = holes.length; i < li; i++) {
-            hole = holes[i];
-
-            var flatHole = new Array(hole.length);
-            flatHoles[i] = flatHole;
-
-            for (j = 0, lj = hole.length; j < lj; j++) {
-                flatHole[j] = proj.forward(hole[j]);
-            }
-        }
+        proj = this.map.proj4(srs, '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs');
     }
 
-    var surface = vts.earcut(flatShape, null, 3);
-    var borders = new Array(shape.length);
+    var totalPoints = shape.length*3;
 
-    for (i = 0, li = borders.length; i < li; i++) {
-        borders[i] = i;
+    for (i = 0, li = holes.length; i < li; i++) {
+        totalPoints += holes[i].length*3;
     }
 
-    borders = [borders];
-
+    flatShape = new Array(totalPoints);
+    vertices = new Array(totalPoints);
     j = 0;
 
+    var borders = new Array(holes.length + 1);
+    var border = new Array(shape.length);
+    borders[0] = border;
+
     for (i = 0, li = shape.length; i < li; i++) {
+        border[i] = i;
         coords = shape[i];
+        vertices[j] = coords[0]; 
+        vertices[j+1] = coords[1]; 
+        vertices[j+2] = coords[2]; 
+        coords = proj ? proj.forward(shape[i]) : shape[i];
         flatShape[j] = coords[0]; 
         flatShape[j+1] = coords[1]; 
         flatShape[j+2] = coords[2]; 
         j+=3;
     }
 
-    var vertices = flatShape; //todo: add holes
+    flatHoles = new Array(holes.length);
+    holesIndices = new Array(holes.length);
+
+    for (i = 0, li = holes.length; i < li; i++) {
+        hole = holes[i];
+        holesIndices[i] = Math.round(j/3);
+
+        border = new Array(hole.length);
+        borders[i + 1] = border;
+
+        l = Math.floor(j /3);
+
+        for (k = 0, lk = hole.length; k < lk; k++) {
+            coords = hole[k];
+            vertices[j] = coords[0]; 
+            vertices[j+1] = coords[1]; 
+            vertices[j+2] = coords[2]; 
+            coords = proj ? proj.forward(hole[k]) : hole[k];
+            flatShape[j] = coords[0]; 
+            flatShape[j+1] = coords[1]; 
+            flatShape[j+2] = coords[2]; 
+            j+=3;
+            border[k] = l++;
+        }
+    }
+
+    var surface = vts.earcut(flatShape, holesIndices, 3);
 
     this.addPolygonRAW(vertices, surface, borders, middle, heightMode, properties, id, srs);
 
@@ -403,7 +413,6 @@ MapGeodataBuilder.prototype.addPolygonRAW = function(vertices, surface, borders,
     }
 
     var featureSurface = surface.slice();
-
     var featureBorders = new Array(borders.length);
 
     for (i = 0, li = borders.length; i < li; i++) {
@@ -810,8 +819,8 @@ MapGeodataBuilder.prototype.compileGroup = function(group, resolution) {
             surface : feature.surface.slice()
         };
 
-        var finalBorders = new Array(feature.borders);
         borders = feature.borders;
+        var finalBorders = new Array(borders.length);
 
         for (j = 0, lj = finalBorders.length; j < lj; j++) {
             finalBorders[j] = borders[j].slice();
