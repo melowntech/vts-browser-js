@@ -170,6 +170,7 @@ RendererInterface.prototype.drawMesh = function(options) {
     var vertexAttr = options['vertex'] || 'aPosition';
     var uvAttr = options['uv'] || 'aTexCoord';
     var uv2Attr = options['normal'] || 'aNormal';
+    var depthOffset = (options['depthOffset'] != null) ? options['depthOffset'] : null;
 
     var shaderVariables = options['shaderVariables'];
     var shader = options['shader'] || 'textured';
@@ -254,7 +255,11 @@ RendererInterface.prototype.drawMesh = function(options) {
                 shader.setMat3(key, item[1]);
                 break;
             case 'mat4':
-                shader.setMat4(key, item[1]);
+                if (depthOffset && key == 'uProj') {
+                    shader.setMat4(key, item[1], renderer.getZoffsetFactor(depthOffset));
+                } else {
+                    shader.setMat4(key, item[1]);
+                }
                 break;
             case 'vec2':
                 shader.setVec2(key, item[1]);
