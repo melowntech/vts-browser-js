@@ -27,11 +27,6 @@ var carModel = null;
 
     //callback once is map config loaded
     browser.on('map-loaded', onMapLoaded);
-
-    //load models
-    //ModelOBJ is the separate modelObj.js library
-    carModel = new ModelOBJ(renderer, { path:'./models/car-alpine/alpine.obj' });    
-    houseModel = new ModelOBJ(renderer, { path:'./models/modern-house/house.obj' });    
 })();
 
 
@@ -41,6 +36,11 @@ function onMapLoaded() {
     map = browser.map;    
     map.addRenderSlot('custom-models', onDrawModels, true);
     map.moveRenderSlotAfter('after-map-render', 'custom-models');
+
+    //load models
+    //ModelOBJ is the separate modelObj.js library
+    carModel = new ModelOBJ(map, renderer, { path:'./models/car-alpine/alpine.obj' });    
+    houseModel = new ModelOBJ(map, renderer, { path:'./models/modern-house/house.obj' });    
 }
 
 
