@@ -1,6 +1,6 @@
 
-var ModelOBJ = function(renderer, params) {
-    if (!renderer || !params || !params.path) {
+var ModelOBJ = function(map, renderer, params) {
+    if (!map || !renderer || !params || !params.path) {
         return;
     }
 
@@ -10,6 +10,7 @@ var ModelOBJ = function(renderer, params) {
     this.onLoaded = params.onLoaded;
 
     this.meshes = [];
+    this.map = map;
     this.renderer = renderer;
     this.materials = {};
     this.textures = {};
@@ -429,19 +430,19 @@ ModelOBJ.prototype.draw = function(params) {
         depthOnly = params.depthOnly || false;
 
     //get camera transformations matrices
-    var cameInfo = map.getCameraInfo();
+    var cameInfo = this.map.getCameraInfo();
 
     //get local space matrix
     //this matrix makes mesh
     //perpendiculal to the ground
     //and oriteted to the north
-    var spaceMatrix = map.getNED(coords);
+    var spaceMatrix = this.map.getNED(coords);
 
     //we have coords in navigation coodinates,
     //so we need to convert them to camera space.
     //you can imagine camera space as physical space
     //but reative to the camera coordinates
-    coords = map.convertCoordsFromNavToCameraSpace(coords, heightMode);
+    coords = this.map.convertCoordsFromNavToCameraSpace(coords, heightMode);
 
     var translateMatrix = vts.math.translationMatrix(coords[0], coords[1], coords[2]);
     var scaleMatrix = vts.math.scaleMatrix(scale[0], scale[1], scale[2]);
