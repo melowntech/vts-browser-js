@@ -432,7 +432,7 @@ function constrainMapPosition(browser, pos) {
     pos.setViewExtent(viewExtent);
 
     var distance = (viewExtent*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
-    var hmaxOffset = 0;
+    //var hmaxOffset = 0;
 
     //reduce tilt when you are far off the planet
     if (pos.getViewMode() == 'obj') {
@@ -445,7 +445,7 @@ function constrainMapPosition(browser, pos) {
             //console.log('a1: ' + math.degrees(a1));
 
             var factor = Math.tan(math.radians(pos.getFov()*0.5)) / Math.tan(a1);
-            var viewFactor = factor;
+            //var viewFactor = factor;
 
             //console.log('factor: ' + factor);
 

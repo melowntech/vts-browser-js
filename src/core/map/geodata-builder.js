@@ -302,7 +302,7 @@ MapGeodataBuilder.prototype.addPolygon = function(shape, holes, middle, heightMo
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
 
-    var flatShape = shape, flatHoles = holes, i, li, j, lj, k, lk, l, hole, coords, proj, holesIndices, vertices;
+    var flatShape = shape, flatHoles = holes, i, li, j, k, lk, l, hole, coords, proj, holesIndices, vertices;
 
     //convert shape and holes to flat space
     if (srs.indexOf('+proj=longlat') != -1) {
