@@ -76,8 +76,8 @@ math.orthographicMatrix = function(vsize, aspect, near, far) {
 
 math.rotationMatrix = function(axis, angle) {
     var ca = Math.cos(angle), sa = Math.sin(angle);
-    var m;
 
+    /*    var m;
     switch (axis) {
     case 0:
         m = [
@@ -89,7 +89,7 @@ math.rotationMatrix = function(axis, angle) {
     case 1:
         m = [
             ca, 0,-sa, 0,
-            0, 1,  0, 0,
+            0, 1,  0,  0,
             sa, 0, ca, 0,
             0, 0,  0, 1 ];
         break;
@@ -101,21 +101,47 @@ math.rotationMatrix = function(axis, angle) {
             0,  0,  0, 1 ];
         break;
     }
-
     mat4.transpose(m);
-    return m;
+    return m; */
+
+    switch (axis) {
+    case 0:
+        return [
+            1,   0,   0,  0,
+            0,  ca,  sa,  0,
+            0, -sa,  ca,  0,
+            0,   0,   0,  1 ];
+    case 1:
+        return [
+             ca,  0,  sa,  0,
+              0,  1,   0,  0,
+            -sa,  0,  ca,  0,
+              0,  0,   0,  1 ];
+    default:
+        return [
+             ca, sa,  0,  0,
+            -sa, ca,  0,  0,
+              0,  0,  1,  0,
+              0,  0,  0,  1 ];
+    }
+
 };
 
 
 math.scaleMatrix = function(sx, sy, sz) {
-    var m = [
+    /*var m = [
         sx,  0,  0, 0,
         0, sy,  0, 0,
         0,  0, sz, 0,
         0,  0,  0, 1 ];
 
     mat4.transpose(m);
-    return m;
+    return m;*/
+    return [
+        sx,   0,   0,   0,
+        0,   sy,   0,   0,
+        0,    0,  sz,   0,
+        0,    0,   0,   1 ];
 };
 
 
@@ -125,6 +151,7 @@ math.scaleMatrixf = function(s) {
 
 
 math.translationMatrix = function(tx, ty, tz) {
+    /*
     var m = [
         1, 0, 0, tx,
         0, 1, 0, ty,
@@ -132,7 +159,13 @@ math.translationMatrix = function(tx, ty, tz) {
         0, 0, 0, 1 ];
 
     mat4.transpose(m);
-    return m;
+    */
+
+    return [
+        1,   0,  0,  0,
+        0,   1,  0,  0,
+        0,   0,  1,  0,
+        tx, ty, tz,  1 ];
 };
 
 

@@ -31,23 +31,6 @@ var MapGeodataBuilder = function(map) {
     this.processHeightsCalls = [];
 };
 
-/*
-MapGeodataBuilder.prototype.addToHeightsBuffer = function(coords) {
-    this.heightsProcessBuffer = {
-        coords:  coords,
-        next : this.heightsProcessBuffer
-    };
-};
-
-MapGeodataBuilder.prototype.removeFromHeightsBuffer = function(item, lastItem) {
-    if (!lastItem) {
-        this.heightsProcessBuffer = item.next;
-        return;
-    }
-
-    lastItem.next = item.next;
-};
-*/
 
 MapGeodataBuilder.prototype.addToHeightsBuffer = function(coords) {
 
@@ -107,6 +90,7 @@ MapGeodataBuilder.prototype.addGroup = function(id) {
     this.groups.push({
         points: [],
         lines: [],
+        polygons: [],
         id: id
     });
 
@@ -148,6 +132,7 @@ MapGeodataBuilder.prototype.addPoint = function(point, heightMode, properties, i
 
     return this;
 };
+
 
 MapGeodataBuilder.prototype.addPointArray = function(points, heightMode, properties, id, srs, directCopy) {
     if (!this.currentGroup) {
@@ -197,6 +182,7 @@ MapGeodataBuilder.prototype.addPointArray = function(points, heightMode, propert
     return this;
 };
 
+
 MapGeodataBuilder.prototype.addLineString = function(linePoints, heightMode, properties, id, srs, directCopy) {
     if (!this.currentGroup) {
         this.addGroup('some-group');
@@ -244,6 +230,7 @@ MapGeodataBuilder.prototype.addLineString = function(linePoints, heightMode, pro
 
     return this;
 };
+
 
 MapGeodataBuilder.prototype.addLineStringArray = function(lines, heightMode, properties, id, srs, directCopy) {
     if (!this.currentGroup) {
@@ -310,15 +297,148 @@ MapGeodataBuilder.prototype.addLineStringArray = function(lines, heightMode, pro
     return this;
 };
 
+
+MapGeodataBuilder.prototype.addPolygon = function(shape, holes, middle, heightMode, properties, id, srs) {
+    srs = srs ? srs : this.navSrs.srsProj4;
+    holes = holes || [];
+
+    var flatShape = shape, flatHoles = holes, i, li, j, k, lk, l, hole, coords, proj, holesIndices, vertices;
+
+    //convert shape and holes to flat space
+    if (srs.indexOf('+proj=longlat') != -1) {
+        proj = this.map.proj4(srs, '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs');
+    }
+
+    var totalPoints = shape.length*3;
+
+    for (i = 0, li = holes.length; i < li; i++) {
+        totalPoints += holes[i].length*3;
+    }
+
+    flatShape = new Array(totalPoints);
+    vertices = new Array(totalPoints);
+    j = 0;
+
+    var borders = new Array(holes.length + 1);
+    var border = new Array(shape.length);
+    borders[0] = border;
+
+    for (i = 0, li = shape.length; i < li; i++) {
+        border[i] = i;
+        coords = shape[i];
+        vertices[j] = coords[0]; 
+        vertices[j+1] = coords[1]; 
+        vertices[j+2] = coords[2]; 
+        coords = proj ? proj.forward(shape[i]) : shape[i];
+        flatShape[j] = coords[0]; 
+        flatShape[j+1] = coords[1]; 
+        flatShape[j+2] = coords[2]; 
+        j+=3;
+    }
+
+    flatHoles = new Array(holes.length);
+    holesIndices = new Array(holes.length);
+
+    for (i = 0, li = holes.length; i < li; i++) {
+        hole = holes[i];
+        holesIndices[i] = Math.round(j/3);
+
+        border = new Array(hole.length);
+        borders[i + 1] = border;
+
+        l = Math.floor(j /3);
+
+        for (k = 0, lk = hole.length; k < lk; k++) {
+            coords = hole[k];
+            vertices[j] = coords[0]; 
+            vertices[j+1] = coords[1]; 
+            vertices[j+2] = coords[2]; 
+            coords = proj ? proj.forward(hole[k]) : hole[k];
+            flatShape[j] = coords[0]; 
+            flatShape[j+1] = coords[1]; 
+            flatShape[j+2] = coords[2]; 
+            j+=3;
+            border[k] = l++;
+        }
+    }
+
+    var surface = vts.earcut(flatShape, holesIndices, 3);
+
+    this.addPolygonRAW(vertices, surface, borders, middle, heightMode, properties, id, srs);
+
+    return this;
+};
+
+MapGeodataBuilder.prototype.addTerrainPolygon = function(shape, holes, middle, density, heightMode, properties, id, srs) {
+};
+
+MapGeodataBuilder.prototype.addPolygonRAW = function(vertices, surface, borders, middle, heightMode, properties, id, srs, directCopy) {
+    if (!this.currentGroup) {
+        this.addGroup('some-group');
+    }
+
+    var floatHeight = (!heightMode || heightMode == "float");
+    var i, li, j = 0, coords;
+    srs = srs ? srs : this.navSrs;
+
+    var feature = {
+        id : id,
+        properties : properties
+    };
+
+    var featureVertices = new Array(Math.round(vertices.length/3));
+
+    if (floatHeight) {
+        for (i = 0, li = vertices.length; i < li; i+=3) {
+            coords = [vertices[i], vertices[i+1], vertices[i+2], feature, null, null];
+            this.addToHeightsBuffer(coords);
+            featureVertices[j++] = coords;
+        }
+
+        feature.floatHeights = true;
+        feature.srs = srs;
+        feature.heightsToProcess = featureVertices.length;
+        this.heightsToProcess += featureVertices.length;
+    } else {
+
+        for (i = 0, li = vertices.length; i < li; i++) {
+            coords = [vertices[i], vertices[i+1], vertices[i+2]];
+
+            if (directCopy) {
+                featureVertices[j++] = coords;
+            } else {
+                featureVertices[j++] = this.physSrs.convertCoordsFrom(coords, srs);
+            }
+        }
+    }
+
+    var featureSurface = surface.slice();
+    var featureBorders = new Array(borders.length);
+
+    for (i = 0, li = borders.length; i < li; i++) {
+        featureBorders[i] = borders[i].slice();
+    }
+
+    feature.vertices = featureVertices;
+    feature.surface = featureSurface;
+    feature.borders = featureBorders;
+    this.currentGroup.polygons.push(feature);
+
+    return this;
+};
+
+
 MapGeodataBuilder.prototype.importVTSGeodata = function(json, groupIdPrefix, dontCreateGroups) {
     var importer = new MapGeodataImportVTSGeodata(this, groupIdPrefix, dontCreateGroups);
     return importer.processJSON(json);
 };
 
+
 MapGeodataBuilder.prototype.importGeoJson = function(json, heightMode, srs, groupIdPrefix, dontCreateGroups) {
     var importer = new MapGeodataImportGeoJSON(this, heightMode, srs, groupIdPrefix, dontCreateGroups);
     return importer.processJSON(json);
 };
+
 
 MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, onProcessed) {
     if (this.heightsToProcess <= 0) {
@@ -527,12 +647,14 @@ MapGeodataBuilder.prototype.extractGeometry = function(id) {
 
 };
 
+
 MapGeodataBuilder.prototype.compileGroup = function(group, resolution) {
     var bboxMin = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
     var bboxMax = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];
     var geodataGroup = {};
     var groupPoints = group.points, points, p, feature, finalFeature;
     var groupLines = group.lines, lines, line, i, li, j, lj, k, lk;
+    var groupPolygons = group.polygons, borders;
 
     geodataGroup.id = group.id;
 
@@ -570,6 +692,22 @@ MapGeodataBuilder.prototype.compileGroup = function(group, resolution) {
                 if (p[1] < bboxMin[1]) { bboxMin[1] = p[1]; }
                 if (p[2] < bboxMin[2]) { bboxMin[2] = p[2]; }
             }
+        }
+    }
+
+    for (i = 0, li = groupPolygons.length; i < li; i++) {
+        points = groupPolygons[i].vertices;
+
+        for (j = 0, lj = points.length; j < lj; j++) {
+            p = points[j];
+
+            if (p[0] > bboxMax[0]) { bboxMax[0] = p[0]; }
+            if (p[1] > bboxMax[1]) { bboxMax[1] = p[1]; }
+            if (p[2] > bboxMax[2]) { bboxMax[2] = p[2]; }
+
+            if (p[0] < bboxMin[0]) { bboxMin[0] = p[0]; }
+            if (p[1] < bboxMin[1]) { bboxMin[1] = p[1]; }
+            if (p[2] < bboxMin[2]) { bboxMin[2] = p[2]; }
         }
     }
 
@@ -659,6 +797,48 @@ MapGeodataBuilder.prototype.compileGroup = function(group, resolution) {
         geodataGroup.lines[i] = finalFeature;
     }
 
+
+    geodataGroup.polygons = new Array(groupPolygons.length);
+
+    for (i = 0, li = groupPolygons.length; i < li; i++) {
+        feature = groupPolygons[i]; 
+        points = feature.vertices;
+
+        var finalVertices = new Array(points.length);
+        k = 0;
+
+        for (j = 0, lj = points.length; j < lj; j++) {
+            p = points[j];
+            finalVertices[k++] = Math.round((p[0] - bboxMin[0]) * bboxScaleFactor[0]);
+            finalVertices[k++] = Math.round((p[1] - bboxMin[1]) * bboxScaleFactor[1]);
+            finalVertices[k++] = Math.round((p[2] - bboxMin[2]) * bboxScaleFactor[2]);
+        }
+
+        finalFeature = {
+            vertices : finalVertices,
+            surface : feature.surface.slice()
+        };
+
+        borders = feature.borders;
+        var finalBorders = new Array(borders.length);
+
+        for (j = 0, lj = finalBorders.length; j < lj; j++) {
+            finalBorders[j] = borders[j].slice();
+        }
+
+        finalFeature.borders = finalBorders;
+
+        if (feature.id) {
+            finalFeature.id = feature.id;
+        }
+
+        if (feature.properties) {
+            finalFeature.properties = feature.properties;
+        }
+
+        geodataGroup.polygons[i] = finalFeature;
+    }
+
     geodataGroup.bbox = [ bboxMin, bboxMax ];
 
     if (bboxMax[0] > this.bboxMax[0]) { this.bboxMax[0] = bboxMax[0]; }
@@ -671,6 +851,7 @@ MapGeodataBuilder.prototype.compileGroup = function(group, resolution) {
 
     return geodataGroup;
 };
+
 
 MapGeodataBuilder.prototype.makeGeodata = function(resolution) {
     this.bboxMin = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
@@ -687,6 +868,7 @@ MapGeodataBuilder.prototype.makeGeodata = function(resolution) {
 
     return geodata;
 };
+
 
 MapGeodataBuilder.prototype.makeFreeLayer = function(style, resolution) {
     var geodata = this.makeGeodata(resolution);

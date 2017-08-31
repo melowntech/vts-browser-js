@@ -146,16 +146,17 @@ var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventI
                 points = new Array(pointsCount);
             }
             for (var i = 0; i < pointsCount; i++) {
-                var offs = 3 * border[i];
-                points[i] = [vertices[offs++], vertices[offs++], vertices[offs]];
+                var offset = 3 * border[i];
+                points[i] = [vertices[offset], vertices[offset+1], vertices[offset+2]];
                 if (processLines && i == 0) {
                     points[pointsCount] = points[0];
                 }
             }
-            feature['points'] = points;
             if(processLines) {
+                feature['lines'] = [points];
                 processLineStringPass(feature, lod, style, zIndex, eventInfo);
             } else {
+                feature['points'] = points;
                 processPointArrayPass(feature, lod, style, zIndex, eventInfo);
             }
         }

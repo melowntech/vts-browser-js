@@ -1,6 +1,6 @@
 {
   "name": "vts-browser-js",
-  "version": "2.10.10",
+  "version": "2.11.3",
   "description": "JavaScript WebGL 3D maps rendering engine",
   "main": "src/browser/index.js",
   "scripts": {
@@ -55,6 +55,7 @@
     "worker-loader": "^0.8.0"
   },
   "dependencies": {
+    "earcut":  "^2.1.0",
     "geographiclib": "^1.47.0",
     "npm-git-install": "^0.3.0"
   },

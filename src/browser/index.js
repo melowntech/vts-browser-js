@@ -1,5 +1,6 @@
 
 import Proj4 from 'proj4';
+import earcut from 'earcut';
 import {getCoreVersion as getCoreVersion_, checkSupport as checkSupport_} from '../core/core';
 import {vec2 as vec2_, vec3 as vec3_, vec4 as vec4_, mat3 as mat3_, mat4 as mat4_} from '../core/utils/matrix';
 import {utils as utils_} from '../core/utils/utils';
@@ -26,4 +27,4 @@ function getBrowserVersion() {
     return '' + getCoreVersion();
 }
 
-export {vec2,vec3,vec4,mat3,mat4,math,utils,getCoreVersion,checkSupport,browser,getBrowserVersion,proj4,platform};
+export {vec2,vec3,vec4,mat3,mat4,math,utils,getCoreVersion,checkSupport,browser,getBrowserVersion,proj4,earcut,platform};

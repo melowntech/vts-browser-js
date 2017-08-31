@@ -443,10 +443,10 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         vec3.normalize(camera.position, cameraPosToEarthCenter);
 
         var pos = map.getPosition();
-        var orientation = pos.getOrientation();
-        var tiltFactor = (Math.max(5,-orientation[1])/90);
+        //var orientation = pos.getOrientation();
+        //var tiltFactor = (Math.max(5,-orientation[1])/90);
 
-        var cameraHeight = Math.max(atmoSize * 0.1, camera.geocentDistance - earthRadius);
+        //var cameraHeight = Math.max(atmoSize * 0.1, camera.geocentDistance - earthRadius);
         var heightFactor = 1-math.clamp(Math.max(atmoSize * 0.1, camera.geocentDistance - earthRadius) / (atmoSize*(10)), 0, 1);
 
         var params = [Math.max(2,heightFactor*128),0,0,0], params2, params3;
