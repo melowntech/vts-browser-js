@@ -272,6 +272,7 @@ Browser.prototype.initConfig = function() {
         controlSearchFilter : true,
         controlMeasure : false,
         controlLink : false,
+        controlGithub : false,
         controlScale : true,
         controlLayers : false,
         controlCredits : true,
@@ -351,6 +352,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'controlSearchElement':   this.config.controlSearchElement = value; this.updateUI(key);  break;
     case 'controlSearchValue':     this.config.controlSearchValue = /*utils.validateString(*/value/*, null)*/; this.updateUI(key); break;
     case 'controlLink':            this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
+    case 'controlGithub':          this.config.controlGithub = utils.validateBool(value, false); this.updateUI(key);    break;
     case 'controlMeasure':         this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
     case 'controlLogo':            this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
     case 'controlFullscreen':      this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key); break;
@@ -434,6 +436,7 @@ Browser.prototype.getConfigParam = function(key) {
     case 'controlSpace':         return this.config.controlSpace;
     case 'controlSearch':        return this.config.controlSearch;
     case 'controlLink':          return this.config.controlLink;
+    case 'controlGithub':        return this.config.controlGithub;
     case 'controlMeasure':       return this.config.controlMeasure;
     case 'controlLogo':          return this.config.controlLogo;
     case 'controlFullscreen':    return this.config.controlFullscreen;

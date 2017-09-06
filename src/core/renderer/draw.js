@@ -775,11 +775,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case 'flat-line':
         gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
 
-        prog = advancedHitPass ? job.program2 : job.program;
-        //prog = advancedHitPass ? job.program2 : renderer.progLineWireframe;
+        var debugWires = false;
 
-        gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : ['aPosition']);
-        //gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : ['aPosition', 'aBarycentric']);
+        prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
+        gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
 
         prog.setVec4('uColor', color);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
@@ -796,12 +795,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             gl.vertexAttribPointer(vertexElementAttribute, job.vertexElementBuffer.itemSize, gl.FLOAT, false, 0, 0);
         }
 
-        //debug only 
-        /*
-        var barycentericAttribute = prog.getAttribute('aBarycentric');
-        gl.bindBuffer(gl.ARRAY_BUFFER, gpu.barycentricBuffer);
-        gl.vertexAttribPointer(barycentericAttribute, gpu.barycentricBuffer.itemSize, gl.FLOAT, false, 0, 0);
-        */
+        if (debugWires) {
+            var barycentericAttribute = prog.getAttribute('aBarycentric');
+            gl.bindBuffer(gl.ARRAY_BUFFER, gpu.barycentricBuffer);
+            gl.vertexAttribPointer(barycentericAttribute, gpu.barycentricBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        }
         
         //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
