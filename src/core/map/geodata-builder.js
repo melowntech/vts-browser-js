@@ -3,12 +3,15 @@ import MapGeodataGeometry_ from './geodata-geometry';
 import MapGeodataImportGeoJSON_ from './geodata-import/geojson';
 import MapGeodataImportVTSGeodata_ from './geodata-import/vts-geodata';
 import GeographicLib_ from 'geographiclib';
+import {vec3 as vec3_, mat4 as mat4_,} from '../utils/matrix';
 
 //get rid of compiler mess
 var MapGeodataGeometry = MapGeodataGeometry_;
 var MapGeodataImportGeoJSON = MapGeodataImportGeoJSON_;
 var MapGeodataImportVTSGeodata = MapGeodataImportVTSGeodata_;
 var GeographicLib = GeographicLib_;
+var vec3 = vec3_;
+var mat4 = mat4_;
 
 
 var MapGeodataBuilder = function(map) {
@@ -447,12 +450,48 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
         proj = this.map.proj4(srs, '+proj=geocent +datum=WGS84 +units=m +no_defs');
     }
 
-    var center = this.getPolygonCenter(shape, projected, proj), north, east;
+    var c = document.getElementById("dbg-canvas");
+    var ctx = c.getContext("2d");
+    var sx = 300;
+    var fx = 300 / 7500000;
+
+    var center = this.getPolygonCenter(shape, projected, proj), north, east, dir;
+
+    this.addPoint(center, 'fix', {}, 'aaa');
+
+//    var ned = this.map.measure.getNewNED(center, true);
+    var ned = this.map.measure.getNewNED(center);
+
+    dir = ned.direction;
+    north = ned.north;
+    east = ned.east;
+
+    var center2 = proj.forward(center);
+
+    coords = proj.forward(center);
+    var coords2 = [coords[0]+1000000*east[0], coords[1]+1000000*east[1], coords[2]+1000000*east[2]];
+
+    this.addLineString([coords, coords2], 'fix', {}, 'line', null, true);
+    var coords2 = [coords[0]+1000000*dir[0], coords[1]+1000000*dir[1], coords[2]+1000000*dir[2]];
+
+    this.addLineString([coords, coords2], 'fix', {}, 'line', null, true);
+    var coords2 = [coords[0]+1000000*north[0], coords[1]+1000000*north[1], coords[2]+1000000*north[2]];
+
+
+    this.addLineString([coords, coords2], 'fix', {}, 'line', null, true);
+    //ned = this.map.measure.getNewNED(center, true);
 
     if (!projected) {
-        var ned = this.map.measure.getNED(center);
-        north = ned.north;
-        east = ned.east;
+        var pos = this.map.getPosition();
+        pos.setCoords(center);
+        pos.setOrientation([0,0,-90]);
+        var ret = this.map.measure.getPositionCameraInfo(pos, false, false);
+        ned = ret.rotMatrix;
+
+        mat4.inverse(ned);
+        dir = [ned[2], ned[6], ned[10]];
+        north = [ned[1], ned[5], ned[9]];
+        east = [ned[0], ned[4], ned[8]];
     }
 
     var totalPoints = shape.length*3;
@@ -478,11 +517,20 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
 
         if (proj) {
             coords = proj.forward(shape[i]);
+            //coords[0] -= center2[0];
+            //coords[1] -= center2[1];
+            //coords[2] -= center2[2];
             coords[0] = east[0] * coords[0] + east[1] * coords[1] + east[2] * coords[2];
-            coords[1] = north[0] * coords[0] + north[1] * coords[1] + north[2] * coords[2];
+            coords[1] = dir[0] * coords[0] + dir[1] * coords[1] + dir[2] * coords[2];
             coords[2] = 0;
         } else {
             coords = shape[i];
+        }
+
+        if (i ==0) {
+            ctx.moveTo(coords[0]*fx+sx,coords[1]*fx+sx);
+        } else {
+            ctx.lineTo(coords[0]*fx+sx,coords[1]*fx+sx);
         }
 
         flatShape[j] = coords[0]; 
@@ -512,11 +560,18 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
             if (proj) {
                 coords = proj.forward(hole[k]);
                 coords[0] = east[0] * coords[0] + east[1] * coords[1] + east[2] * coords[2];
-                coords[1] = north[0] * coords[0] + north[1] * coords[1] + north[2] * coords[2];
+                coords[1] = dir[0] * coords[0] + dir[1] * coords[1] + dir[2] * coords[2];
                 coords[2] = 0;
             } else {
                 coords = hole[k];
             }
+
+            if (k ==0) {
+                ctx.moveTo(coords[0]*fx+sx,coords[1]*fx+sx);
+            } else {
+                ctx.lineTo(coords[0]*fx+sx,coords[1]*fx+sx);
+            }
+
 
             flatShape[j] = coords[0]; 
             flatShape[j+1] = coords[1]; 
@@ -525,6 +580,10 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
             border[k] = l++;
         }
     }
+
+    ctx.strokeStyle = "#ff0000";
+    ctx.stroke();
+
 
     var surface = vts.earcut(flatShape, holesIndices, 3);
 
@@ -558,9 +617,9 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
 
-    var flatShape = shape, flatHoles = holes, i, li, j, k, lk, l, hole, coords, proj, holesIndices, vertices;
-    var projected = true, dx, dy, dd, maxDistance = 0, maxDistanceCoords, flatCenter, trueHolesCount = holes.length;
-    var density = 20;
+    var flatShape = shape, flatHoles = holes, i, li, j, lj, k, lk, l, hole, coords, proj, holesIndices, vertices;
+    var projected = true, dx, dy, dz, dd, maxDistance = 0, maxDistanceCoords, flatCenter, trueHolesCount = holes.length;
+    var density = 19;
 
     //convert shape and holes to flat space
     if (srs.indexOf('+proj=longlat') != -1) {
@@ -568,13 +627,26 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
         proj = this.map.proj4(srs, '+proj=geocent +datum=WGS84 +units=m +no_defs');
     }
 
-    var center = this.getPolygonCenter(shape, projected, proj), north, east;
+    var center = this.getPolygonCenter(shape, projected, proj), north, east, dir;
 
     if (!projected) {
-        var ned = this.map.measure.getNED(center);
-        north = ned.north;
-        east = ned.east;
+        var pos = this.map.getPosition();
+        pos.setCoords(center);
+        pos.setOrientation([0,0,-90]);
+        var ret = this.map.measure.getPositionCameraInfo(pos, false, false);
+        var ned = ret.rotMatrix;
+
+        mat4.inverse(ned);
+        dir = [ned[2], ned[6], ned[10]];
+        north = [ned[1], ned[5], ned[9]];
+        east = [ned[0], ned[4], ned[8]];
     }
+
+
+    var center2 = proj.forward(center);
+    center2[0] = east[0] * center2[0] + east[1] * center2[1] + east[2] * center2[2];
+    center2[1] = dir[0] * center2[0] + dir[1] * center2[1] + dir[2] * center2[2];
+    center2[2] = 0;
 
     var totalPoints = shape.length*3;
 
@@ -608,14 +680,14 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
         if (proj) {
             coords = proj.forward(shape[i]);
             coords[0] = east[0] * coords[0] + east[1] * coords[1] + east[2] * coords[2];
-            coords[1] = north[0] * coords[0] + north[1] * coords[1] + north[2] * coords[2];
+            coords[1] = dir[0] * coords[0] + dir[1] * coords[1] + dir[2] * coords[2];
             coords[2] = 0;
         } else {
             coords = shape[i];
         }
 
-        dx = coords[0] - center[0];
-        dy = coords[1] - center[1];
+        dx = coords[0] - center2[0];
+        dy = coords[1] - center2[1];
         dd = dx * dx + dy * dy;
         if (dd > maxDistance) {
             maxDistance = dd;
@@ -651,7 +723,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
             if (proj) {
                 coords = proj.forward(hole[k]);
                 coords[0] = east[0] * coords[0] + east[1] * coords[1] + east[2] * coords[2];
-                coords[1] = north[0] * coords[0] + north[1] * coords[1] + north[2] * coords[2];
+                coords[1] = dir[0] * coords[0] + dir[1] * coords[1] + dir[2] * coords[2];
                 coords[2] = 0;
             } else {
                 coords = hole[k];
@@ -670,10 +742,10 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
     var surface = vts.earcut(flatShape, holesIndices, 3);
 
-    
-    var maxFaceLength = maxDistance / density;
+    var maxFaceLength = Math.sqrt(maxDistance) / density;
     var v1, v2, v3, p1, p2, p3, p4, p5, p6, jj;
 
+    /*
     for (k = 0; k < 5; k++) {
 
         var vertices2 = new Array(vertices.length * 2);
@@ -749,47 +821,222 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     //this.addPolygonRAW(vertices, surface, borders, middle, heightMode, properties, id, srs);
 
     return this;
+    */
+
+    //this.addPolygonRAW(vertices, surface, borders, middle, heightMode, properties, id, srs);
+    //return this;
+
+    //copy bordes
+    var borders2 = new Array(borders.length); 
+    for (i = 0, li = borders.length; i < li; i++) {
+        borders2[i] = borders[i].slice();
+    }
+
+    var sbuffer = new Array(65536*3);
+    var sbuffer2 = new Array(65536*3);
+    var sbuffer3 = new Array(65536*3);
+
+    var sbufferIndex = 0, l1, l2, l3, vv1, vv2, vv3;
+    var sbufferIndex2 = 0, i1, i2, i3;
+    var sbufferIndex3 = 0;
 
     var vbuffer = new Array(65536*3);
-    var sbuffer = new Array(65536*3);
 
-    var subdivideFace = (function(){
+    //copy vertices
+    for (i = 0, li = vertices.length; i < li; i +=3) { 
+        vbuffer[i] = vertices[i];
+        vbuffer[i+1] = vertices[i+1];
+        vbuffer[i+2] = vertices[i+2];
+    }
 
-        //if (level)
+    var m = Math.round(li / 3);
 
-        //find edges 1-3
-            //store edge location
-            //add vertices to edge buffer
 
-        //add face vertices + edge index to tmp buffer
+    for (i = 0, li = surface.length; i < li; i +=3) { 
 
-        //start inifinite loop
+        v1 = surface[i];
+        v2 = surface[i+1];
+        v3 = surface[i+2];
+        sbufferIndex = 3;
 
-            //loop tmp buffer
+        sbuffer[0] = [v1, edge1];
+        sbuffer[1] = [v2, edge2];
+        sbuffer[2] = [v3, edge3];
 
-                //measure length
-                //if lenght ok
-                    //copy to final buffer
-                //else
-                    //subdivide 
-                    //copy to tmp buffer
-                    //if edge is present subdivide edge  [[v1,[v2, v4]],[v2,v3]] 
+        //find face edges in borders
+        var edge1, edge2, edge3;
+        for (j = 0, lj = borders.length; j < lj; j++) { 
+            border = borders[j];
 
-            //if tmp buffer empty break initite loop
+            for (k = 0, lk = border.length - 1; k < lk; k++) {
+                if ((v1 == border[k] && v2 == border[k+1]) || (v1 == border[k+1] && v2 == border[k])) {
+                    border[k] = [border[k]];
+                    edge1 = border[k];
+                }
 
-        //goto start of inifinite loop
+                if ((v2 == border[k] && v3 == border[k+1]) || (v2 == border[k+1] && v3 == border[k])) {
+                    border[k] = [border[k]];
+                    edge2 = border[k];
+                }
 
-    });
+                if ((v3 == border[k] && v1 == border[k+1]) || (v1 == border[j+1] && v3 == border[k])) {
+                    border[k] = [border[k]];
+                    edge3 = border[k];
+                }
+            }
+        }
+
+
+        //loop until subdivision is finished
+        do {
+
+            for (j = 0, lj = sbufferIndex; j < lj; j+=3) {
+                //face indices
+                vv1 = sbuffer[j][0];
+                vv2 = sbuffer[j+1][0];
+                vv3 = sbuffer[j+2][0];
+                //face edges
+                edge1 = sbuffer[j][1];
+                edge2 = sbuffer[j+1][1];
+                edge3 = sbuffer[j+2][1];
+
+                //get face vertices
+                p1 = [vbuffer[vv1*3], vbuffer[vv1*3+1], vbuffer[vv1*3+2]];
+                p2 = [vbuffer[vv2*3], vbuffer[vv2*3+1], vbuffer[vv2*3+2]];
+                p3 = [vbuffer[vv3*3], vbuffer[vv3*3+1], vbuffer[vv3*3+2]];
+
+                //covert coords to geocent
+                p1 = proj.forward(p1);
+                p2 = proj.forward(p2);
+                p3 = proj.forward(p3);
+
+                //get face edges lengths
+                l1 = vec3.length([p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2]]);
+                l2 = vec3.length([p2[0] - p3[0], p2[1] - p3[1], p2[2] - p3[2]]);
+                l3 = vec3.length([p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]]);
+
+                //get max length
+                l = Math.max(l1,l2,l3);
+
+                //console.log('ll:' + l);
+
+                //is length below threshold
+                if (l < maxFaceLength) {  
+                    //add to final buffer
+                    sbuffer3[sbufferIndex3] = vv1;
+                    sbuffer3[sbufferIndex3+1] = vv2;
+                    sbuffer3[sbufferIndex3+2] = vv3;
+                    sbufferIndex3 += 3;
+                } else {
+
+                    //crete new vertices in the midle of edges
+                    p4 = [(p1[0]+p2[0])*0.5, (p1[1]+p2[1])*0.5, (p1[2]+p2[2])*0.5];
+                    p5 = [(p2[0]+p3[0])*0.5, (p2[1]+p3[1])*0.5, (p2[2]+p3[2])*0.5];
+                    p6 = [(p3[0]+p1[0])*0.5, (p3[1]+p1[1])*0.5, (p3[2]+p1[2])*0.5];
+
+                    //convert coords back to long lat
+                    p4 = proj.inverse(p4); p4[2] = (vertices[v1*3+2]+vertices[v2*3+2])*0.5;
+                    p5 = proj.inverse(p5); p5[2] = (vertices[v2*3+2]+vertices[v3*3+2])*0.5;
+                    p6 = proj.inverse(p6); p6[2] = (vertices[v3*3+2]+vertices[v1*3+2])*0.5;
+
+                    var mm = m * 3;
+
+                    //add new vertices to the buffer
+                    vbuffer[mm] = p4[0];
+                    vbuffer[mm+1] = p4[1];
+                    vbuffer[mm+2] = p4[2];
+
+                    vbuffer[mm+3] = p5[0];
+                    vbuffer[mm+4] = p5[1];
+                    vbuffer[mm+5] = p5[2];
+
+                    vbuffer[mm+6] = p6[0];
+                    vbuffer[mm+7] = p6[1];
+                    vbuffer[mm+8] = p6[2];
+
+                    //create new edges
+                    if (edge1) {
+                        edge1[0] = [[edge1[0]], [k]];
+                        edge1 = edge1[0];
+                    }
+
+                    if (edge2) {
+                        edge2[0] = [[edge2[0]], [k+1]];
+                        edge2 = edge2[0];
+                    }
+
+                    if (edge3) {
+                        edge3[0] = [[edge3[0]], [k+2]];
+                        edge3 = edge3[0];
+                    }
+
+                    l = sbufferIndex2;
+
+                    //store new faces with edges
+                    sbuffer2[l] = [vv1, edge1 ? edge1[0] : null];
+                    sbuffer2[l+1] = [m, null];
+                    sbuffer2[l+2] = [m + 2, edge3 ? edge3[1] : null];
+
+                    sbuffer2[l+3] = [m, edge1 ? edge1[1] : null];
+                    sbuffer2[l+4] = [vv2, edge2 ? edge2[0] : null];
+                    sbuffer2[l+5] = [m + 1, null];
+
+                    sbuffer2[l+6] = [m + 2, null];
+                    sbuffer2[l+7] = [m + 1, edge2 ? edge2[1] : null];
+                    sbuffer2[l+8] = [vv3, edge3 ? edge3[0] : null];
+
+                    sbuffer2[l+9] = [m + 2, null];
+                    sbuffer2[l+10] = [m, null];
+                    sbuffer2[l+11] = [m + 1, null];
+
+                    m += 3;
+                    sbufferIndex2 += 12;
+                }
+            }
+
+            var tmp = sbuffer;
+            sbuffer = sbuffer2;
+            sbuffer2 = tmp;
+            sbufferIndex = sbufferIndex2;
+            sbufferIndex2 = 0;
+
+            //if (sbufferIndex3 > 1000) {
+                //break;
+            //}
+
+            //maxFaceLength = Number.POSITIVE_INFINITY;
+
+        } while(sbufferIndex > 0);
+    }
+
 
     //loop faces
         //call subdivide face
 
+    var ebuffer = new Array(65536*3);
+
     //unroll edges
+    for (i = 0, li = borders2.length; i < li; i++) {
+        var border2 = borders2[i];
+    }
 
-   // for (i = 0, li = borders.length; i < li; i++) {
+    surface = new Array(sbufferIndex);
 
-    //}
+    for (i = 0, li = sbufferIndex3; i < li; i+=3) {
+        surface[i] = sbuffer3[i];
+        surface[i+1] = sbuffer3[i+1];
+        surface[i+2] = sbuffer3[i+2];
+    }
 
+    vertices = new Array(m * 3);
+
+    for (i = 0, li = m*3; i < li; i+=3) {
+        vertices[i] = vbuffer[i];
+        vertices[i+1] = vbuffer[i+1];
+        vertices[i+2] = vbuffer[i+2];
+    }
+
+    this.addPolygonRAW(vertices, surface, borders, middle, heightMode, properties, id, srs);
 };
 
 
