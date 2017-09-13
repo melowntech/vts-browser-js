@@ -827,7 +827,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     //return this;
 
     //copy bordes
-    var borders2 = new Array(borders.length); 
+    var borders2 = new Array(borders.length), border2; 
     for (i = 0, li = borders.length; i < li; i++) {
         borders2[i] = borders[i].slice();
     }
@@ -852,6 +852,8 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     var m = Math.round(li / 3);
 
 
+    var lastMaxFaceLength = maxFaceLength;
+
     for (i = 0, li = surface.length; i < li; i +=3) { 
 
         v1 = surface[i];
@@ -859,33 +861,39 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
         v3 = surface[i+2];
         sbufferIndex = 3;
 
-        sbuffer[0] = [v1, edge1];
-        sbuffer[1] = [v2, edge2];
-        sbuffer[2] = [v3, edge3];
-
         //find face edges in borders
-        var edge1, edge2, edge3;
+        var edge1 = null, edge2 = null, edge3 = null;
+        //var edge1, edge2, edge3;
         for (j = 0, lj = borders.length; j < lj; j++) { 
             border = borders[j];
+            border2 = borders2[j];
 
-            for (k = 0, lk = border.length - 1; k < lk; k++) {
-                if ((v1 == border[k] && v2 == border[k+1]) || (v1 == border[k+1] && v2 == border[k])) {
-                    border[k] = [border[k]];
-                    edge1 = border[k];
+            for (k = 0, lk = border.length; k < lk; k++) {
+                var k2 = (k < border.length - 1) ? k + 1 : 0;
+
+                if ((v1 == border[k] && v2 == border[k2]) || (v1 == border[k2] && v2 == border[k])) {
+                    border2[k] = [border[k]];
+                    edge1 = border2[k];
                 }
 
-                if ((v2 == border[k] && v3 == border[k+1]) || (v2 == border[k+1] && v3 == border[k])) {
-                    border[k] = [border[k]];
-                    edge2 = border[k];
+                if ((v2 == border[k] && v3 == border[k2]) || (v2 == border[k2] && v3 == border[k])) {
+                    border2[k] = [border[k]];
+                    edge2 = border2[k];
                 }
 
-                if ((v3 == border[k] && v1 == border[k+1]) || (v1 == border[j+1] && v3 == border[k])) {
-                    border[k] = [border[k]];
-                    edge3 = border[k];
+                if ((v3 == border[k] && v1 == border[k2]) || (v1 == border[k2] && v3 == border[k])) {
+                    border2[k] = [border[k]];
+                    edge3 = border2[k];
                 }
             }
         }
 
+        sbuffer[0] = [v1, edge1];
+        sbuffer[1] = [v2, edge2];
+        sbuffer[2] = [v3, edge3];
+
+        var depth = 0;
+        //maxFaceLength = Number.POSITIVE_INFINITY;
 
         //loop until subdivision is finished
         do {
@@ -899,6 +907,10 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                 edge1 = sbuffer[j][1];
                 edge2 = sbuffer[j+1][1];
                 edge3 = sbuffer[j+2][1];
+
+                /*console.log('v1: ' + vv1 + ' v2:' + vv2 + ' v3:' + vv3);
+                console.log('e1: ' + (Array.isArray(edge1) ? 'a' : '') + edge1 + ' e2:' + (Array.isArray(edge2) ? 'a' : '') + edge2 + ' e3:' + (Array.isArray(edge3) ? 'a' : '') + edge3);
+                */
 
                 //get face vertices
                 p1 = [vbuffer[vv1*3], vbuffer[vv1*3+1], vbuffer[vv1*3+2]];
@@ -941,56 +953,166 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
                     var mm = m * 3;
 
-                    //add new vertices to the buffer
-                    vbuffer[mm] = p4[0];
-                    vbuffer[mm+1] = p4[1];
-                    vbuffer[mm+2] = p4[2];
+                    if (false) {
 
-                    vbuffer[mm+3] = p5[0];
-                    vbuffer[mm+4] = p5[1];
-                    vbuffer[mm+5] = p5[2];
+                        //add new vertices to the buffer
+                        vbuffer[mm] = p4[0];
+                        vbuffer[mm+1] = p4[1];
+                        vbuffer[mm+2] = p4[2];
 
-                    vbuffer[mm+6] = p6[0];
-                    vbuffer[mm+7] = p6[1];
-                    vbuffer[mm+8] = p6[2];
+                        vbuffer[mm+3] = p5[0];
+                        vbuffer[mm+4] = p5[1];
+                        vbuffer[mm+5] = p5[2];
 
-                    //create new edges
-                    if (edge1) {
-                        edge1[0] = [[edge1[0]], [k]];
-                        edge1 = edge1[0];
+                        vbuffer[mm+6] = p6[0];
+                        vbuffer[mm+7] = p6[1];
+                        vbuffer[mm+8] = p6[2];
+
+                        //create new edges
+                        if (edge1) {
+                            edge1[0] = [[edge1[0]], [k]];
+                            edge1 = edge1[0];
+                        }
+
+                        if (edge2) {
+                            edge2[0] = [[edge2[0]], [k+1]];
+                            edge2 = edge2[0];
+                        }
+
+                        if (edge3) {
+                            edge3[0] = [[edge3[0]], [k+2]];
+                            edge3 = edge3[0];
+                        }
+
+                        l = sbufferIndex2;
+
+                        //store new faces with edges
+                        sbuffer2[l] = [vv1, edge1 ? edge1[0] : null];
+                        sbuffer2[l+1] = [m, null];
+                        sbuffer2[l+2] = [m + 2, edge3 ? edge3[1] : null];
+
+                        sbuffer2[l+3] = [m, edge1 ? edge1[1] : null];
+                        sbuffer2[l+4] = [vv2, edge2 ? edge2[0] : null];
+                        sbuffer2[l+5] = [m + 1, null];
+
+                        sbuffer2[l+6] = [m + 2, null];
+                        sbuffer2[l+7] = [m + 1, edge2 ? edge2[1] : null];
+                        sbuffer2[l+8] = [vv3, edge3 ? edge3[0] : null];
+
+                        sbuffer2[l+9] = [m + 2, null];
+                        sbuffer2[l+10] = [m, null];
+                        sbuffer2[l+11] = [m + 1, null];
+
+                        m += 3;
+                        sbufferIndex2 += 12;
+                    } else {
+
+                        if (l1 == l) {
+                            console.log('l1');
+
+                            //add new vertices to the buffer
+                            vbuffer[mm] = p4[0];
+                            vbuffer[mm+1] = p4[1];
+                            vbuffer[mm+2] = p4[2];
+
+                            //create new edges
+                            if (edge1) {
+                                edge1[0] = [[edge1[0]], [-m]];
+                                edge1 = edge1[0];
+                            }
+
+                            l = sbufferIndex2;
+
+                            //store new faces with edges
+                            sbuffer2[l] = [vv1, edge1 ? edge1[0] : null];
+                            sbuffer2[l+1] = [m, null];
+                            sbuffer2[l+2] = [vv3, edge3 ? edge3 : null];
+                            /*console.log('-v1: ' + sbuffer2[l][0] + ' v2:' + sbuffer2[l+1][0] + ' v3:' + sbuffer2[l+2][0]);
+                            console.log('p1: ' + (Array.isArray(sbuffer2[l][1]) ? 'a' : '') + sbuffer2[l][1] + 
+                                       ' p2:' + (Array.isArray(sbuffer2[l+1][1]) ? 'a' : '') + sbuffer2[l+1][1] +
+                                       ' p3:' + (Array.isArray(sbuffer2[l+2][1]) ? 'a' : '') + sbuffer2[l+2][1]);*/
+
+
+                            sbuffer2[l+3] = [m, edge1 ? edge1[1] : null];
+                            sbuffer2[l+4] = [vv2, edge2 ? edge2 : null];
+                            sbuffer2[l+5] = [vv3, null];
+                            /*console.log('-v1: ' + sbuffer2[l+3][0] + ' v2:' + sbuffer2[l+4][0] + ' v3:' + sbuffer2[l+5][0]);
+                            console.log('p4: ' + (Array.isArray(sbuffer2[l+3][1]) ? 'a' : '') + sbuffer2[l+3][1] + 
+                                       ' p5:' + (Array.isArray(sbuffer2[l+4][1]) ? 'a' : '') + sbuffer2[l+4][1] +
+                                       ' p6:' + (Array.isArray(sbuffer2[l+5][1]) ? 'a' : '') + sbuffer2[l+5][1]);*/
+
+                        } else if (l2 == l) {
+                            console.log('l2');
+
+                            //add new vertices to the buffer
+                            vbuffer[mm] = p5[0];
+                            vbuffer[mm+1] = p5[1];
+                            vbuffer[mm+2] = p5[2];
+
+                            //create new edges
+                            if (edge2) {
+                                edge2[0] = [[edge2[0]], [-m]];
+                                edge2 = edge2[0];
+                            }
+
+                            l = sbufferIndex2;
+
+                            //store new faces with edges
+                            sbuffer2[l] = [vv1, edge1 ? edge1 : null];
+                            sbuffer2[l+1] = [vv2, edge2 ? edge2[0] : null];
+                            sbuffer2[l+2] = [m, null];
+                            /*console.log('-v1: ' + sbuffer2[l][0] + ' v2:' + sbuffer2[l+1][0] + ' v3:' + sbuffer2[l+2][0]);
+                            console.log('p1: ' + (Array.isArray(sbuffer2[l][1]) ? 'a' : '') + sbuffer2[l][1] + 
+                                       ' p2:' + (Array.isArray(sbuffer2[l+1][1]) ? 'a' : '') + sbuffer2[l+1][1] +
+                                       ' p3:' + (Array.isArray(sbuffer2[l+2][1]) ? 'a' : '') + sbuffer2[l+2][1]);*/
+
+                            sbuffer2[l+3] = [m, edge2 ? edge2[1] : null];
+                            sbuffer2[l+4] = [vv3, edge3 ? edge3 : null];
+                            sbuffer2[l+5] = [vv1, null];
+                            /*console.log('-v1: ' + sbuffer2[l+3][0] + ' v2:' + sbuffer2[l+4][0] + ' v3:' + sbuffer2[l+5][0]);
+                            console.log('p4: ' + (Array.isArray(sbuffer2[l+3][1]) ? 'a' : '') + sbuffer2[l+3][1] + 
+                                       ' p5:' + (Array.isArray(sbuffer2[l+4][1]) ? 'a' : '') + sbuffer2[l+4][1] +
+                                       ' p6:' + (Array.isArray(sbuffer2[l+5][1]) ? 'a' : '') + sbuffer2[l+5][1]);*/
+
+                        } else if (l3 == l) {
+                            console.log('l3');
+
+                            //add new vertices to the buffer
+                            vbuffer[mm] = p6[0];
+                            vbuffer[mm+1] = p6[1];
+                            vbuffer[mm+2] = p6[2];
+
+                            //create new edges
+                            if (edge3) {
+                                edge3[0] = [[edge3[0]], [-m]];
+                                edge3 = edge3[0];
+                            }
+
+                            l = sbufferIndex2;
+
+                            //store new faces with edges
+                            sbuffer2[l] = [vv1, edge1 ? edge1 : null];
+                            sbuffer2[l+1] = [vv2, null];
+                            sbuffer2[l+2] = [m, edge3 ? edge3[1] : null];
+                            /*console.log('-v1: ' + sbuffer2[l][0] + ' v2:' + sbuffer2[l+1][0] + ' v3:' + sbuffer2[l+2][0]);
+                            console.log('p1: ' + (Array.isArray(sbuffer2[l][1]) ? 'a' : '') + sbuffer2[l][1] + 
+                                       ' p2:' + (Array.isArray(sbuffer2[l+1][1]) ? 'a' : '') + sbuffer2[l+1][1] +
+                                       ' p3:' + (Array.isArray(sbuffer2[l+2][1]) ? 'a' : '') + sbuffer2[l+2][1]);*/
+
+                            sbuffer2[l+3] = [m, null]; 
+                            sbuffer2[l+4] =  [vv2, edge2 ? edge2 : null]; 
+                            sbuffer2[l+5] = [vv3, edge3 ? edge3[0] : null];
+                            /*console.log('-v1: ' + sbuffer2[l+3][0] + ' v2:' + sbuffer2[l+4][0] + ' v3:' + sbuffer2[l+5][0]);
+                            console.log('p4: ' + (Array.isArray(sbuffer2[l+3][1]) ? 'a' : '') + sbuffer2[l+3][1] + 
+                                       ' p5:' + (Array.isArray(sbuffer2[l+4][1]) ? 'a' : '') + sbuffer2[l+4][1] +
+                                       ' p6:' + (Array.isArray(sbuffer2[l+5][1]) ? 'a' : '') + sbuffer2[l+5][1]);*/
+
+                        }
+    
+                        m += 1;
+                        sbufferIndex2 += 6;
                     }
 
-                    if (edge2) {
-                        edge2[0] = [[edge2[0]], [k+1]];
-                        edge2 = edge2[0];
-                    }
-
-                    if (edge3) {
-                        edge3[0] = [[edge3[0]], [k+2]];
-                        edge3 = edge3[0];
-                    }
-
-                    l = sbufferIndex2;
-
-                    //store new faces with edges
-                    sbuffer2[l] = [vv1, edge1 ? edge1[0] : null];
-                    sbuffer2[l+1] = [m, null];
-                    sbuffer2[l+2] = [m + 2, edge3 ? edge3[1] : null];
-
-                    sbuffer2[l+3] = [m, edge1 ? edge1[1] : null];
-                    sbuffer2[l+4] = [vv2, edge2 ? edge2[0] : null];
-                    sbuffer2[l+5] = [m + 1, null];
-
-                    sbuffer2[l+6] = [m + 2, null];
-                    sbuffer2[l+7] = [m + 1, edge2 ? edge2[1] : null];
-                    sbuffer2[l+8] = [vv3, edge3 ? edge3[0] : null];
-
-                    sbuffer2[l+9] = [m + 2, null];
-                    sbuffer2[l+10] = [m, null];
-                    sbuffer2[l+11] = [m + 1, null];
-
-                    m += 3;
-                    sbufferIndex2 += 12;
                 }
             }
 
@@ -1004,20 +1126,43 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                 //break;
             //}
 
-            //maxFaceLength = Number.POSITIVE_INFINITY;
+            depth++;
+
+            if (depth == 2) {
+                //maxFaceLength = Number.POSITIVE_INFINITY;
+            }
+
 
         } while(sbufferIndex > 0);
+
+        maxFaceLength = lastMaxFaceLength;
+
     }
 
 
     //loop faces
         //call subdivide face
 
-    var ebuffer = new Array(65536*3);
+    var ebuffer = new Array(65536*3), ebufferIndex = 0;
+
+    var unrollBorder = (function(borderArray) {
+        for (var o = 0, lo = borderArray.length; o < lo; o++) {
+            if (Array.isArray(borderArray[o])) {
+                unrollBorder(borderArray[o]);
+            } else {
+                ebuffer[ebufferIndex] = borderArray[o];
+                ebufferIndex++;
+            }
+        }
+    });
+
+    var lastEbufferIndex = 0;
 
     //unroll edges
     for (i = 0, li = borders2.length; i < li; i++) {
-        var border2 = borders2[i];
+        unrollBorder(borders2[i]);
+        borders2[i] = ebuffer.slice(lastEbufferIndex, ebufferIndex);
+        lastEbufferIndex = ebufferIndex;
     }
 
     surface = new Array(sbufferIndex);
@@ -1029,14 +1174,17 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     }
 
     vertices = new Array(m * 3);
+    j = 0;
 
     for (i = 0, li = m*3; i < li; i+=3) {
         vertices[i] = vbuffer[i];
         vertices[i+1] = vbuffer[i+1];
         vertices[i+2] = vbuffer[i+2];
+        //this.addPoint([vertices[i], vertices[i+1], vertices[i+2]], 'fix', {name:(''+j)}, 'aaa');
+        j++;
     }
 
-    this.addPolygonRAW(vertices, surface, borders, middle, heightMode, properties, id, srs);
+    this.addPolygonRAW(vertices, surface, borders2, middle, heightMode, properties, id, srs);
 };
 
 

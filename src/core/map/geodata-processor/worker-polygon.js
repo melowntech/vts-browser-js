@@ -136,27 +136,47 @@ var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventI
     var feature = createEmptyFeatureFromPolygon(polygon);
     var bordersCount = borders.length;
     for (var j = 0; j < bordersCount; j++) {
-        var border = borders[j];
+        var border = borders[j], offset;
         var pointsCount = border.length;
+        var pointsCount2 = 0;
         if (pointsCount > 0) {
-            var points;
+            var points, i;
             if (processLines) {
                 points = new Array(pointsCount + 1);
             } else {
                 points = new Array(pointsCount);
             }
-            for (var i = 0; i < pointsCount; i++) {
-                var offset = 3 * border[i];
+            for (i = 0; i < pointsCount; i++) {
+                if (border[i] >= 0) {
+                    offset = 3 * border[i];
+                    pointsCount2++; // count vertices with positive index
+                } else {
+                    offset = 3 * (-border[i]);
+                }
                 points[i] = [vertices[offset], vertices[offset+1], vertices[offset+2]];
                 if (processLines && i == 0) {
                     points[pointsCount] = points[0];
                 }
             }
+
+            var points2 = new Array(pointsCount2);
+            var i2 = 0;
+            //debugger
+
+            //create array of points only for vertices with positive value
+            for (i = 0; i < pointsCount; i++) {
+                if (border[i] >= 0) {
+                    offset = 3 * border[i];
+                    points2[i2] = [vertices[offset], vertices[offset+1], vertices[offset+2]];
+                    i2++;
+                }
+            }
+
             if(processLines) {
                 feature['lines'] = [points];
                 processLineStringPass(feature, lod, style, zIndex, eventInfo);
             } else {
-                feature['points'] = points;
+                feature['points'] = points2;
                 processPointArrayPass(feature, lod, style, zIndex, eventInfo);
             }
         }
