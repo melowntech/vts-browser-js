@@ -168,6 +168,18 @@ ControlModeMapObserver.prototype.wheel = function(event) {
             */
 
         //}
+
+        var viewExtent = pos.getViewExtent();
+
+        if (viewExtent < 75) { factor = 1 + (factor - 1) * 0.7; }
+        if (viewExtent < 65) { factor = 1 + (factor - 1) * 0.7; }
+        if (viewExtent < 55) { factor = 1 + (factor - 1) * 0.7; }
+        if (viewExtent < 45) { factor = 1 + (factor - 1) * 0.7; }
+        if (viewExtent < 35) { factor = 1 + (factor - 1) * 0.7; }
+        if (viewExtent < 25) { factor = 1 + (factor - 1) * 0.7; }
+        if (viewExtent < 15) { factor = 1 + (factor - 1) * 0.7; }
+        if (viewExtent < 10) { factor = 1 + (factor - 1) * 0.7; }
+        if (viewExtent < 5) { factor = 1 + (factor - 1) * 0.7; }
         
         this.viewExtentDeltas.push(factor);
         this.reduceFloatingHeight(0.8);

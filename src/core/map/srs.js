@@ -128,7 +128,7 @@ MapSrs.prototype.getOriginalHeight = function(coords) {
 
 MapSrs.prototype.getFinalHeight = function(coords) {
     var height = coords[2] || 0;
-    height += this.getGeoidGridDelta(coords);
+    height -= this.getGeoidGridDelta(coords);
     height *= this.getVerticalAdjustmentFactor(coords);
     return height;
 };
@@ -263,7 +263,7 @@ MapSrs.prototype.convertCoordsTo = function(coords, srs, skipVerticalAdjust) {
 
     var coords2 = proj.forward(coords);
 
-    if (!skipVerticalAdjust && stringSrs) {
+    if (!skipVerticalAdjust && !stringSrs) {
         coords2[2] = srs.getFinalHeight(coords2);
     }
 

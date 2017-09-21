@@ -58,7 +58,7 @@ var Core = function(element, config, coreInterface) {
         mapGeodataLoadMode : 'fit', //"fitonly"
         mapGridMode : 'linear', //"flat"
         mapGridSurrogatez : false, 
-        mapXhrImageLoad : false,
+        mapXhrImageLoad : true,
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,
         mapDegradeHorizon : false,
@@ -470,7 +470,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.11.4';
+    return (full ? 'Core: ' : '') + '2.11.5';
 }
 
 
