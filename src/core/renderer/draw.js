@@ -775,7 +775,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case 'flat-line':
         gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
 
-        var debugWires = true;
+        var debugWires = false;
 
         prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
         gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);

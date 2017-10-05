@@ -22,7 +22,7 @@ var MapDrawTiles = function(map, draw) {
 };
 
 
-MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, checkGpu) {
+MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu) {
     /*if (!(tile.id[0] == 14 &&
         tile.id[1] == 4450 &&
         tile.id[2] == 2749)) {
@@ -82,9 +82,9 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
 
 
             if (!tile.surface.geodata) {
-                return this.drawMeshTile(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, checkGpu);
+                return this.drawMeshTile(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu);
             } else {
-                return this.drawGeodataTile(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, checkGpu);
+                return this.drawGeodataTile(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu);
             }
         } else {
             return true;
@@ -100,7 +100,7 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
 };
 
 
-MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, checkGpu) {
+MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu) {
     var path;
 
     if (!tile.surfaceMesh) {
@@ -117,7 +117,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
     var channel = draw.drawChannel;
     var ret = false;
 
-    if (tile.drawCommands[channel].length > 0 && this.draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, checkGpu)) {
+    if (tile.drawCommands[channel].length > 0 && this.draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, doNotCheckGpu)) {
         if (!preventRedener) {
             draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority);
             this.map.applyCredits(tile);
@@ -417,7 +417,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             
         }
 
-        if (draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, checkGpu)) {
+        if (draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, doNotCheckGpu)) {
             if (!preventRedener) {
                 draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority);
                 this.map.applyCredits(tile);
@@ -453,7 +453,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
 };
 
 
-MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, checkGpu) {
+MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu) {
     if (tile.id[0] <= 1) {
         return true;
     }
@@ -498,7 +498,7 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
         tile.geodataCounter = tile.surface.geodataCounter;
     }
 
-    if (tile.drawCommands[channel].length > 0 && this.draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, checkGpu)) {
+    if (tile.drawCommands[channel].length > 0 && this.draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, doNotCheckGpu)) {
         if (!preventRedener) {
             this.draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority);
             this.map.applyCredits(tile);
@@ -959,11 +959,16 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
 
             if (submeshes[i].internalUVs) {
                 var texture = tile.surfaceTextures[i];
-
-                if (texture && texture.gpuTexture) {
-                    text = '[' + i + ']: ' + texture.gpuTexture.width + ' x ' + texture.gpuTexture.height;
-                    this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*7*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
+                if (texture) {
+                    var gpuTexture = texture.getGpuTexture();
+                    if (gpuTexture) {
+                        text = '[' + i + ']: ' + gpuTexture.width + ' x ' + gpuTexture.height;
+                        this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*4*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
+                    }
                 }
+            } else {
+                text = '[' + i + ']: 256 x 256';
+                this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*4*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
             }
         }
     }

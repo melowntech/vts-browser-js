@@ -281,7 +281,7 @@ Browser.prototype.initConfig = function() {
         searchElement : null,
         searchValue : null,
         tiltConstrainThreshold : [0.5,1],
-        minViewExtent : 5, //75,
+        minViewExtent : 20, //75,
         maxViewExtent : Number.MAXINTEGER,
         autoRotate : 0,
         autoPan : [0,0]

@@ -169,8 +169,8 @@ ControlModeMapObserver.prototype.wheel = function(event) {
 
         //}
 
+        /*
         var viewExtent = pos.getViewExtent();
-
         if (viewExtent < 75) { factor = 1 + (factor - 1) * 0.7; }
         if (viewExtent < 65) { factor = 1 + (factor - 1) * 0.7; }
         if (viewExtent < 55) { factor = 1 + (factor - 1) * 0.7; }
@@ -180,6 +180,7 @@ ControlModeMapObserver.prototype.wheel = function(event) {
         if (viewExtent < 15) { factor = 1 + (factor - 1) * 0.7; }
         if (viewExtent < 10) { factor = 1 + (factor - 1) * 0.7; }
         if (viewExtent < 5) { factor = 1 + (factor - 1) * 0.7; }
+        */
         
         this.viewExtentDeltas.push(factor);
         this.reduceFloatingHeight(0.8);
@@ -462,11 +463,13 @@ function constrainMapPosition(browser, pos) {
             //console.log('factor: ' + factor);
 
             var threshold = browser.config.tiltConstrainThreshold;
+            var thresholdMin = threshold[0];// * 0.5;
+            var thresholdMax = threshold[1];// * 0.5;
             var maxTilt, minTilt = -90; 
 
-            if (!(threshold[0] > threshold[1] || threshold[0] == threshold[1])) {
-                factor = math.clamp(factor, threshold[0], threshold[1]);
-                factor = ((factor - threshold[0]) / (threshold[1] - threshold[0]));
+            if (!(thresholdMin > thresholdMax || thresholdMin == thresholdMax)) {
+                factor = math.clamp(factor, thresholdMin, thresholdMax);
+                factor = ((factor - thresholdMin) / (thresholdMax - thresholdMin));
                 maxTilt = 20 + ((-90) - 20) * (factor); 
             } else {
                 maxTilt = 20; 

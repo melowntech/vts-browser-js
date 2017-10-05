@@ -885,7 +885,7 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
                 } else {
                     screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / 256) * (256 / node.displaySize);
 
-                    pixelSize = this.getPixelSize3(node, screenPixelSize, 1);
+                    pixelSize = this.getPixelSize3(node, screenPixelSize);
                 }
             } else {
                 
@@ -899,7 +899,7 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
                     pixelSize = this.getPixelSize(node.bbox, screenPixelSize, p, p, true);
                 } else {
                     if (preciseDistance) {
-                        pixelSize = this.getPixelSize3(node, screenPixelSize, 1);
+                        pixelSize = this.getPixelSize3(node, screenPixelSize);
                     } else {
                         pixelSize = this.getPixelSize(node.bbox, screenPixelSize, cameraPos, cameraPos, true);
                     }

@@ -25,8 +25,8 @@ var Core = function(element, config, coreInterface) {
     this.killed = false;
     this.config = {
         map : null,
-        mapCache : 900,
-        mapGPUCache : 500, //old value 360
+        mapCache : 900, //old value 900
+        mapGPUCache : 600, //old value 500, 360
         mapMetatileCache : 60,
         mapTexelSizeFit : 1.1,
         mapMaxHiresLodLevels : 2,
@@ -470,7 +470,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.11.5';
+    return (full ? 'Core: ' : '') + '2.11.8';
 }
 
 
