@@ -91,7 +91,7 @@ function vec3Cross(a, b, c) {
 }
 
 
-function vec3AnyPerpendicular(a, b) {
+/*function vec3AnyPerpendicular(a, b) {
     b || (b = a);
     var c = a[0],
         d = a[1],
@@ -109,10 +109,10 @@ function vec3AnyPerpendicular(a, b) {
     }
 
     return b;
-}
+}*/
 
 
-var simpleFmtCall = (function obj(str, call) {
+/*var simpleFmtCall = (function obj(str, call) {
     if (!str || str == '') {
         return '';
     }
@@ -120,6 +120,6 @@ var simpleFmtCall = (function obj(str, call) {
     return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
         return call(match);
     });
-});
+});*/
 
-export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, vec3AnyPerpendicular, simpleFmtCall};
+export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, /*vec3AnyPerpendicular, simpleFmtCall*/};

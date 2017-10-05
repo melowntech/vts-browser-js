@@ -218,7 +218,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     this.ndcToScreenPixel = this.renderer.curSize[0] * 0.5;
     this.updateFogDensity();
     this.updateGridFactors();
-    this.maxGpuUsed = map.gpuCache.getMaxCost() * 0.9; 
+    this.maxGpuUsed = Math.max(32*102*1204, map.gpuCache.getMaxCost() - 32*102*1204); 
     //this.cameraCenter = this.position.getCoords();
     this.stats.renderBuild = 0;
     this.drawTileCounter = 0;
@@ -519,10 +519,47 @@ MapDraw.prototype.drawGeodataHitmap = function() {
     this.map.geoHitMapDirty = false;
 };
 
+MapDraw.prototype.getDrawCommandsGpuSize = function(commands) {
+    var gpuNeeded = 0;
+    
+    for (var i = 0, li = commands.length; i < li; i++) {
+        var command = commands[i];
+        
+        switch (command.type) {
+        case 'submesh':
+               
+            var mesh = command.mesh; 
+            var texture = command.texture; 
 
-MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad, checkGpu) {
+            if (mesh) {
+                gpuNeeded += mesh.gpuSize;
+            }
+
+            if (texture) {
+                gpuNeeded += texture.getGpuSize();
+            }
+                
+            break;
+
+        case 'geodata':
+                
+            var geodataView = command.geodataView; 
+                
+            if (geodataView) {
+                gpuNeeded += geodataView.size;
+            }
+                
+            break;
+        }
+    }
+    
+    return gpuNeeded;
+};
+
+
+MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad, doNotCheckGpu) {
     var ready = true;
-    checkGpu = checkGpu ? false : true;
+    var checkGpu = doNotCheckGpu ? true : false;
     
     for (var i = 0, li = commands.length; i < li; i++) {
         var command = commands[i];

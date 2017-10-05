@@ -62,6 +62,7 @@ var MapStats = function(map) {
     this.loadErrorCount = 0;
     this.loadFirst = 0;
     this.loadLast = 0;
+    this.gpuNeeded = 0;
 
     this.heightClass = 0;
     this.heightLod = 0;
@@ -103,6 +104,7 @@ MapStats.prototype.begin = function(dirty) {
         this.drawCalls = 0;        
         this.drawnFaces = 0;
         this.gpuRenderUsed = 0;
+        this.gpuNeeded = 0;
         this.usedNodes = 0;    
         this.processedNodes = 0;    
         this.processedMetatiles = 0;    

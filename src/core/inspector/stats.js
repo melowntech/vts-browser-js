@@ -102,6 +102,7 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
             'FPS: ' + Math.round(stats.fps) + '<br/>' +
             'Render time: ' + Math.round(stats.renderTime*1000) + '<br/>' +
             ' - resources: ' + Math.round(stats.gpuRenderUsed/(1024*1024)) + 'MB<br/>' +
+            ' - topdown: ' + Math.round(stats.gpuNeeded/(1024*1024)) + 'MB<br/>' +
             //" - resources: " + (stats.gpuRenderUsed) + " --- " + (stats.gpuRenderUsed / stats.drawnTiles) + "<br/>" +
             'GPU Cache: ' + Math.round(stats.gpuUsed/(1024*1024)) + 'MB<br/>' +
             ' - textures: ' + Math.round(stats.gpuTextures/(1024*1024)) + 'MB<br/>' +

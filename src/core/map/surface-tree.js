@@ -249,12 +249,14 @@ MapSurfaceTree.prototype.drawSurface = function() {
     var drawBufferIndex = 0;
     var processBufferIndex = 0;
     var newProcessBufferIndex = 0;
+    var gpuNeeded = 0;
+    //var gpuMax = this.map.draw.maxGpuUsed; 
     
     processBuffer[0] = tile;
     processBufferIndex = 1;
 
     /*    
-    if (this.mapstats.gpuRenderUsed >= this.map.maxGpuUsed) {
+    if (this.mapstats.gpuRenderUsed >= this.map.draw.maxGpuUsed) {
         return false;
     }*/
     
@@ -314,14 +316,16 @@ MapSurfaceTree.prototype.drawSurface = function() {
                 if ((n.id[0] == 2 && n.id[1] == 3 && n.id[2] == 1)) {
                     n = n;
                 }*/
-                
-                
-                if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit) {
+              
+                if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit /*|| gpuNeeded > gpuMax*/) {
+                    gpuNeeded += draw.getDrawCommandsGpuSize(tile.drawCommands[draw.drawChannel] || tile.lastRenderState.drawCommands[draw.drawChannel]);
+
                     tile.drawCounter = draw.drawCounter;
                     drawBuffer[drawBufferIndex] = tile;
                     drawBufferIndex++;
                     
                 } else { //go deeper
+                    gpuNeeded += draw.getDrawCommandsGpuSize(tile.drawCommands[draw.drawChannel] || tile.lastRenderState.drawCommands[draw.drawChannel]);
 
                     var childrenCount = 0;
                     var readyCount = 0;
@@ -347,8 +351,14 @@ MapSurfaceTree.prototype.drawSurface = function() {
                                     more2++;
                                }*/
 
+                                var factor = 1;
+
+                                //if (gpuNeeded > gpuMax * 0.75) {
+                                  //  factor = (gpuMax * 0.25) / Math.max(0.0001, gpuMax - gpuNeeded);
+                                //}
+
                                 this.updateNodeHeightExtents(child, child.metanode);
-                                child.updateTexelSize();
+                                child.updateTexelSize(factor);
                                 
                                 var priority = child.id[0] * typeFactor * child.distance;
                                 
@@ -361,7 +371,7 @@ MapSurfaceTree.prototype.drawSurface = function() {
                                 } else {
 
                                     //are draw buffers ready? preventRender=true, preventLoad=false
-                                    if (drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false)) {
+                                    if (drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false, true)) {
                                         readyCount++;
                                         //child.updateTexelSize();
                                         childrenBuffer.push(child);
@@ -377,7 +387,7 @@ MapSurfaceTree.prototype.drawSurface = function() {
                         more -= more3;
                     }*/
         
-                    if (childrenCount > 0 && childrenCount == readyCount && childrenCount != more3) {
+                    if (/*!(gpuNeeded > gpuMax) &&*/ childrenCount > 0 && childrenCount == readyCount && childrenCount != more3) {
                         //sort childern by distance
     
                         do {
@@ -406,6 +416,8 @@ MapSurfaceTree.prototype.drawSurface = function() {
                             
                         }
                     } else {
+                        //gpuNeeded += draw.getDrawCommandsGpuSize(tile.drawCommands[draw.drawChannel] || tile.lastRenderState.drawCommands[draw.drawChannel]);
+
                         tile.drawCounter = draw.drawCounter;
                         drawBuffer[drawBufferIndex] = tile;
                         drawBufferIndex++;
@@ -414,19 +426,11 @@ MapSurfaceTree.prototype.drawSurface = function() {
                 }
             }
         }
-        
+
         var tmp = processBuffer;
         processBuffer = newProcessBuffer;
         newProcessBuffer = tmp;
         processBufferIndex = newProcessBufferIndex;
-
-        //if (tile) {
-          //  console.log("texel: "+ (best / 1) + "   " + JSON.stringify(tile.id));
-        //}
-        
-        if (best != 0) {
-            best2 = best;
-        }
 
     } while(processBufferIndex > 0);
     
@@ -437,6 +441,7 @@ MapSurfaceTree.prototype.drawSurface = function() {
     map.stats.usedNodes = usedNodes;    
     map.stats.processedNodes = pocessedNodes;    
     map.stats.processedMetatiles = pocessedMetatiles;    
+    map.stats.gpuNeeded = gpuNeeded;    
     
     //console.log("texel: "+ this.map.bestMeshTexelSize);
     //console.log("more: "+ more + "more2: " + more2);
@@ -989,7 +994,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
             tile.drawGrid(cameraPos); 
         } else if (!item[1]) {
-            drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false, checkGpu);
+            drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false /*, checkGpu*/);
         }
     }
 };

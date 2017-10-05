@@ -27,6 +27,7 @@ var MapSubtexture = function(map, path, heightMap, tile, internal) {
     this.checkType = null;
     this.checkValue = null;
     this.fastHeaderCheck = false;
+    this.gpuSize = 0;
     this.fileSize = 0;
     this.cacheItem = null; //store killImage
     this.gpuCacheItem = null; //store killGpuTexture
@@ -114,7 +115,7 @@ MapSubtexture.prototype.killGpuTexture = function(killedByCache) {
 
 
 MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, texture) {
-    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
+    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.draw.maxGpuUsed);
     doNotLoad = doNotLoad || doNotUseGpu;
     
     if (this.neverReady) {
@@ -192,7 +193,7 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
             }
         } else {
             if (!this.gpuTexture) {
-                if (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed) {
+                if (this.map.stats.gpuRenderUsed >= this.map.draw.maxGpuUsed) {
                     return false;
                 }
                 
@@ -463,6 +464,7 @@ MapSubtexture.prototype.buildGpuTexture = function () {
     this.stats.graphsFluxTexture[0][1] += this.gpuTexture.size;
 
     this.gpuCacheItem = this.map.gpuCache.insert(this.killGpuTexture.bind(this, true), this.gpuTexture.size);
+    this.gpuSize = this.gpuTexture.size;
 };
 
 

@@ -20,6 +20,7 @@ var MapMesh = function(map, url, tile) {
 
     this.bbox = new BBox();
     this.size = 0;
+    this.gpuSize = 0;
     this.fileSize = 0;
     this.faces = 0;
 
@@ -98,7 +99,7 @@ MapMesh.prototype.killGpuSubmeshes = function(killedByCache) {
 
 
 MapMesh.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
-    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
+    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.draw.maxGpuUsed);
     doNotLoad = doNotLoad || doNotUseGpu;
     
     //if (doNotUseGpu) {
@@ -119,7 +120,7 @@ MapMesh.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
         }
 
         if (this.gpuSubmeshes.length == 0) {
-            if (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed) {
+            if (this.map.stats.gpuRenderUsed >= this.map.draw.maxGpuUsed) {
                 return false;
             }
 
@@ -322,6 +323,7 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
     this.stats.graphsFluxMesh[0][1] += size;
 
     this.gpuCacheItem = this.map.gpuCache.insert(this.killGpuSubmeshes.bind(this, true), size);
+    this.gpuSize = size;
 
     //console.log("build: " + this.stats.counter + "   " + this.mapLoaderUrl);
 };

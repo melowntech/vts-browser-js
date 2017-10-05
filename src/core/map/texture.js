@@ -100,7 +100,7 @@ MapTexture.prototype.setBoundTexture = function(tile, layer) {
 
 
 MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
-    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
+    var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.draw.maxGpuUsed);
     doNotLoad = doNotLoad || doNotUseGpu;
 /*   
    if (this.mapLoaderUrl == "https://ecn.t3.tiles.virtualearth.net/tiles/a1202310323212333.jpeg?g=5549") {
@@ -242,6 +242,7 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
         maskState = this.maskTexture.isReady(doNotLoad, priority, doNotCheckGpu, this);
     }
     
+
     return this.mainTexture.isReady(doNotLoad, priority, doNotCheckGpu, this) && maskState;
 };
 
@@ -319,6 +320,9 @@ MapTexture.prototype.getGpuMaskTexture = function() {
     return null;
 };
 
+MapTexture.prototype.getGpuSize = function() {
+    return (this.mainTexture ? this.mainTexture.gpuSize : 0) + (this.maskTexture ? this.maskTexture.gpuSize : 0);
+};
 
 MapTexture.prototype.getImageData = function() {
     return this.mainTexture.imageData;
