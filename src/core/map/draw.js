@@ -520,7 +520,7 @@ MapDraw.prototype.drawGeodataHitmap = function() {
 };
 
 MapDraw.prototype.getDrawCommandsGpuSize = function(commands) {
-    var gpuNeeded = 0, checkGpu = false;
+    var gpuNeeded = 0;
     
     for (var i = 0, li = commands.length; i < li; i++) {
         var command = commands[i];

@@ -184,7 +184,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                         map.camera.near = 2;
                     }
 
-                    inspector.preventDefault(event); break;  //key D pressed
+                    inspector.preventDefault(event);
 
                     break;  //key Q pressed
 

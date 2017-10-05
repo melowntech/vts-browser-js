@@ -2,14 +2,14 @@
 import MapGeodataGeometry_ from './geodata-geometry';
 import MapGeodataImportGeoJSON_ from './geodata-import/geojson';
 import MapGeodataImportVTSGeodata_ from './geodata-import/vts-geodata';
-import GeographicLib_ from 'geographiclib';
+//import GeographicLib_ from 'geographiclib';
 import {vec3 as vec3_, mat4 as mat4_,} from '../utils/matrix';
 
 //get rid of compiler mess
 var MapGeodataGeometry = MapGeodataGeometry_;
 var MapGeodataImportGeoJSON = MapGeodataImportGeoJSON_;
 var MapGeodataImportVTSGeodata = MapGeodataImportVTSGeodata_;
-var GeographicLib = GeographicLib_;
+//var GeographicLib = GeographicLib_;
 var vec3 = vec3_;
 var mat4 = mat4_;
 
@@ -466,7 +466,7 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
     north = ned.north;
     east = ned.east;
 
-    var center2 = proj.forward(center);
+    //var center2 = proj.forward(center);
 
     coords = proj.forward(center);
     var coords2 = [coords[0]+1000000*east[0], coords[1]+1000000*east[1], coords[2]+1000000*east[2]];
@@ -618,7 +618,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     holes = holes || [];
 
     var flatShape = shape, flatHoles = holes, i, li, j, lj, k, lk, l, hole, coords, proj, holesIndices, vertices;
-    var projected = true, dx, dy, dz, dd, maxDistance = 0, maxDistanceCoords, flatCenter, trueHolesCount = holes.length;
+    var projected = true, dx, dy, dd, maxDistance = 0, maxDistanceCoords, flatCenter, trueHolesCount = holes.length;
     var density = 19;
 
     //convert shape and holes to flat space
@@ -743,7 +743,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     var surface = vts.earcut(flatShape, holesIndices, 3);
 
     var maxFaceLength = Math.sqrt(maxDistance) / density;
-    var v1, v2, v3, p1, p2, p3, p4, p5, p6, jj;
+    var v1, v2, v3, p1, p2, p3, p4, p5, p6;
 
     /*
     for (k = 0; k < 5; k++) {
@@ -837,7 +837,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     var sbuffer3 = new Array(65536*3);
 
     var sbufferIndex = 0, l1, l2, l3, vv1, vv2, vv3;
-    var sbufferIndex2 = 0, i1, i2, i3;
+    var sbufferIndex2 = 0;//, i1, i2, i3;
     var sbufferIndex3 = 0;
 
     var vbuffer = new Array(65536*3);
@@ -953,7 +953,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
                     var mm = m * 3;
 
-                    if (false) {
+                    /*if (false) {
 
                         //add new vertices to the buffer
                         vbuffer[mm] = p4[0];
@@ -1005,7 +1005,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
                         m += 3;
                         sbufferIndex2 += 12;
-                    } else {
+                    } else {*/
 
                         if (l1 == l) {
                             console.log('l1');
@@ -1111,7 +1111,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     
                         m += 1;
                         sbufferIndex2 += 6;
-                    }
+                    //}
 
                 }
             }
@@ -1128,9 +1128,9 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
             depth++;
 
-            if (depth == 2) {
+            //if (depth == 2) {
                 //maxFaceLength = Number.POSITIVE_INFINITY;
-            }
+            //}
 
 
         } while(sbufferIndex > 0);

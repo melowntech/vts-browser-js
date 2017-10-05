@@ -250,7 +250,7 @@ MapSurfaceTree.prototype.drawSurface = function() {
     var processBufferIndex = 0;
     var newProcessBufferIndex = 0;
     var gpuNeeded = 0;
-    var gpuMax = this.map.draw.maxGpuUsed; 
+    //var gpuMax = this.map.draw.maxGpuUsed; 
     
     processBuffer[0] = tile;
     processBufferIndex = 1;
