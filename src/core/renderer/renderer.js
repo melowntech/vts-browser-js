@@ -44,6 +44,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.drawLabelBoxes = false;
 
 
+    this.geodataSelection = [];
     this.hoverFeatureCounter = 0;
     this.hoverFeatureList = [];
 

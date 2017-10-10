@@ -430,4 +430,15 @@ MapInterface.prototype.getGeodataGeometry = function(id) {
     return this.map.renderer.geometries[id];
 };
 
+MapInterface.prototype.setGeodataSelection = function(selection) {
+    this.map.renderer.geodataSelection = selection;
+    this.map.markDirty();
+    return this;
+};
+
+MapInterface.prototype.getGeodataSelection = function() {
+    return this.map.renderer.geodataSelection;
+};
+
+
 export default MapInterface;

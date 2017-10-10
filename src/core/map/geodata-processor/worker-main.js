@@ -84,15 +84,24 @@ function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, e
                 continue;
             }
 
-            var hoverLayerId = getLayerPropertyValue(mylayer, 'hover-layer', feature, lod);
-            var hoverlayer = (hoverLayerId != '') ? getLayer(hoverLayerId, type, featureIndex) : null;
+            var selectedLayerId = getLayerPropertyValue(mylayer, 'selected-layer', feature, lod);
+            var selectedLayer = (selectedLayerId != '') ? getLayer(selectedLayerId, type, featureIndex) : null;
+            var lastHitState = globals.hitState;
 
-            if (hoverlayer != null) {
-                var lastHitState = globals.hitState;
+            if (selectedLayer != null) {
+                globals.hitState = 3;
+                processLayerFeaturePass(type, feature, lod, selectedLayer, zIndex, eventInfo);
+                globals.hitState = lastHitState;
+            }
+
+            var hoverLayerId = getLayerPropertyValue(mylayer, 'hover-layer', feature, lod);
+            var hoverLayer = (hoverLayerId != '') ? getLayer(hoverLayerId, type, featureIndex) : null;
+
+            if (hoverLayer != null) {
                 globals.hitState = 1;
                 processLayerFeaturePass(type, feature, lod, mylayer, zIndex, eventInfo);
                 globals.hitState = 2;
-                processLayerFeaturePass(type, feature, lod, hoverlayer, zIndex, eventInfo);
+                processLayerFeaturePass(type, feature, lod, hoverLayer, zIndex, eventInfo);
                 globals.hitState = lastHitState;
             } else {
                 //globals.hitState = 0;
@@ -134,16 +143,25 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
 
     var eventInfo = feature.properties;
 
-    var hoverLayerId = getLayerPropertyValue(layer, 'hover-layer', feature, lod);
-    var hoverlayer = (hoverLayerId != '') ? getLayer(hoverLayerId, type, featureIndex) : null;
+    var selectedLayerId = getLayerPropertyValue(layer, 'selected-layer', feature, lod);
+    var selectedLayer = (selectedLayerId != '') ? getLayer(selectedLayerId, type, featureIndex) : null;
 
-    if (hoverlayer != null) {
+    if (selectedLayer != null) {
+        globals.hitState = 3;
+        processLayerFeaturePass(type, feature, lod, selectedLayer, zIndex, eventInfo);
+        processLayerFeatureMultipass(type, feature, lod, selectedLayer, featureIndex, eventInfo);
+    }
+
+    var hoverLayerId = getLayerPropertyValue(layer, 'hover-layer', feature, lod);
+    var hoverLayer = (hoverLayerId != '') ? getLayer(hoverLayerId, type, featureIndex) : null;
+
+    if (hoverLayer != null) {
         globals.hitState = 1;
         processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo);
         processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, eventInfo);
         globals.hitState = 2;
-        processLayerFeaturePass(type, feature, lod, hoverlayer, zIndex, eventInfo);
-        processLayerFeatureMultipass(type, feature, lod, hoverlayer, featureIndex, eventInfo);
+        processLayerFeaturePass(type, feature, lod, hoverLayer, zIndex, eventInfo);
+        processLayerFeatureMultipass(type, feature, lod, hoverLayer, featureIndex, eventInfo);
     } else {
         globals.hitState = 0;
         processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo);

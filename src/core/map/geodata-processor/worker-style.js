@@ -706,13 +706,14 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAX_VALUE);
 
-    case 'hover-event':  return validateValue(layerId, key, value, 'boolean');
-    case 'hover-layer':  return validateValue(layerId, key, value, 'string');
-    case 'enter-event':  return validateValue(layerId, key, value, 'boolean');
-    case 'leave-event':  return validateValue(layerId, key, value, 'boolean');
-    case 'click-event':  return validateValue(layerId, key, value, 'boolean');
-    case 'draw-event':   return validateValue(layerId, key, value, 'boolean');
-    case 'advanced-hit': return validateValue(layerId, key, value, 'boolean');
+    case 'selected-layer':  return validateValue(layerId, key, value, 'string');
+    case 'hover-event':     return validateValue(layerId, key, value, 'boolean');
+    case 'hover-layer':     return validateValue(layerId, key, value, 'string');
+    case 'enter-event':     return validateValue(layerId, key, value, 'boolean');
+    case 'leave-event':     return validateValue(layerId, key, value, 'boolean');
+    case 'click-event':     return validateValue(layerId, key, value, 'boolean');
+    case 'draw-event':      return validateValue(layerId, key, value, 'boolean');
+    case 'advanced-hit':    return validateValue(layerId, key, value, 'boolean');
     case 'export-geometry': return validateValue(layerId, key, value, 'boolean');
 
     case 'visible':     return validateValue(layerId, key, value, 'boolean');
@@ -781,16 +782,17 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'z-index':        return 0;
     case 'zbuffer-offset': return [0,0,0];
 
-    case 'hover-event':  return false;
-    case 'hover-layer':  return '';
-    case 'enter-event':  return false;
-    case 'leave-event':  return false;
-    case 'click-event':  return false;
-    case 'draw-event':   return false;
-    case 'advanced-hit': return false;
+    case 'selected-layer':  return '';
+    case 'hover-event':     return false;
+    case 'hover-layer':     return '';
+    case 'enter-event':     return false;
+    case 'leave-event':     return false;
+    case 'click-event':     return false;
+    case 'draw-event':      return false;
+    case 'advanced-hit':    return false;
     case 'export-geometry': return false;
 
-    case 'visible':    return true;
+    case 'visible':        return true;
     case 'visibility':     return null;
     case 'visibility-abs': return null;
     case 'visibility-rel': return null;
