@@ -25,13 +25,15 @@ var statusDiv = null;
 
     var panel = browser.ui.addControl('status-panel',
         '<div id="status-div">' +
-            'Selected: Nothing' +
+            '<div id="selected-status">Selectes: Nothing</>' +
+            '<div id="hover-status">Hovering over: Nothing</>' +
         '</div>');
 
     //get status-div element
     //do not use document.getElementById,
     //because element ids are changed to unique ids
-    statusDiv = panel.getElement('status-div');
+    selectedStatusDiv = panel.getElement('selected-status');
+    hoverStatusDiv = panel.getElement('hover-status');
 
     renderer = browser.renderer;
 
@@ -113,24 +115,47 @@ function onHeightProcessed() {
                 "line-width" : 4,
                 "line-color": [0,0,255,255],
                 "zbuffer-offset" : [-5,0,0],
+                "z-index" : -1
             },
 
-            "line-shadow" : {
+            "line-base-outline" : {
+                "filter" : ["skip"],
                 "line": true,
                 "line-width" : 40,
                 "line-color": [0,0,0,100],
                 "zbuffer-offset" : [-5,0,0],
-                "selected-layer" : "line-glow",  //this style layer will be used when feature is selected
+                "hover-event" : true,  //we enable generating hover events 
                 "click-event" : true   //we enable generating click events 
             },
 
-            "line-glow" : {
-                "filter" : ["skip"],
-                "line": true,
-                "line-width" : 40,
+            "line-hover-outline" : {
+                "inherit" : "line-base-outline",
+                "line-width" : 48,
+                "line-color": [255,0,255,100]
+            },
+
+            "line-base" : {
+                "filter" : null,
+                "inherit" : "line-base-outline",
+                "selected-layer" : "line-selected",  //this style layer will be used when feature is selected
+                "selected-hover-layer" : "line-selected-hover",  //this style layer will be used when feature is selected
+                "hover-layer" : "line-hover",  //this style layer will be used when feature is hovered
+            },
+
+            "line-hover" : {
+                "inherit" : "line-base-outline",
+                "next-pass" : [[1,"line-hover-outline"]]
+            },
+
+            "line-selected" : {
+                "inherit" : "line-base-outline",
+                "line-color": [255,255,255,100]
+            },
+
+            "line-selected-hover" : {
+                "inherit" : "line-base-outline",
                 "line-color": [255,255,255,100],
-                "zbuffer-offset" : [-5,0,0],
-                "click-event" : true   //we enable generating click events 
+                "next-pass" : [[1,"line-hover-outline"]]
             }
 
         }
@@ -179,19 +204,17 @@ function onFeatureEnter(event) {
 
 function onFeatureHover(event) {
     //update status box when feature is hovered
-    //statusDiv.setHtml('Hovering over: ' + event.feature['#id'] + '<br/><br/>' +
-      //                'Feature properties are: ' + JSON.stringify(event.feature) );
+    hoverStatusDiv.setHtml('Hovering over:' + event.feature['#id']);
 }
 
 function onFeatureLeave(event) {
     //update status box when feature no longer hovered
-    //statusDiv.setHtml('Nothing hovered');
+    hoverStatusDiv.setHtml('Hovering over: nothing');
 }
 
 function onFeatureClick(event) {
     //update status box when feature no longer hovered
-    statusDiv.setHtml('Selected: ' + event.feature['#id']);
-
+    selectedStatusDiv.setHtml('Selected: ' + event.feature['#id']);
     map.setGeodataSelection([event.feature['#id']]);
 }
 

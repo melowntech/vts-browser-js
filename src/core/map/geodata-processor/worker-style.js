@@ -706,6 +706,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAX_VALUE);
 
+    case 'selected-hover-layer':  return validateValue(layerId, key, value, 'string');
     case 'selected-layer':  return validateValue(layerId, key, value, 'string');
     case 'hover-event':     return validateValue(layerId, key, value, 'boolean');
     case 'hover-layer':     return validateValue(layerId, key, value, 'string');
@@ -782,6 +783,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'z-index':        return 0;
     case 'zbuffer-offset': return [0,0,0];
 
+    case 'selected-hover-layer':  return '';
     case 'selected-layer':  return '';
     case 'hover-event':     return false;
     case 'hover-layer':     return '';
