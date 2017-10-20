@@ -1174,7 +1174,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
         }
 
-        if (job.stick[0] != 0) {
+        if (job.stick[0] != 0 && s[2] != 0) {
             this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
         }
 
