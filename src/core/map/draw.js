@@ -457,8 +457,8 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         }*/
 
         gpu.setState(this.drawAtmoState);
-        renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
-                                 earthRadius + 3000, earthRadius2 + 3000, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, this.atmoColor3, this.atmoColor2, true);// this.cameraHeight > atmoSize ? 1 : -1);
+        //renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
+          //                       earthRadius + 3000, earthRadius2 + 3000, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, this.atmoColor3, this.atmoColor2, true);// this.cameraHeight > atmoSize ? 1 : -1);
         
         var safetyFactor = 2.0; 
         params = [safetyFactor, safetyFactor * ((earthRadius + atmoSize) / earthRadius), 0.25, safetyFactor* ((earthRadius + atmoSize) / earthRadius)];

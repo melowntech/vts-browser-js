@@ -767,16 +767,20 @@ GpuShaders.planeVertex3Shader =
 GpuShaders.tileVertexShader =
     'attribute vec3 aPosition;\n'+
     'attribute vec2 aTexCoord;\n'+
-    'uniform mat4 uMV, uProj;\n'+
+    'uniform mat4 uMV, uMV2, uProj;\n'+
     'uniform vec4 uParams;\n'+    //[zfactor, fogDensity, 0, 0]
+    'uniform vec4 uCamVec;\n'+    
     'varying vec2 vTexCoord;\n'+
     'varying float vFogFactor;\n'+
     'void main() {\n'+
         'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
+        'vec4 worldPos = uMV2 * vec4(aPosition, 1.0);\n'+
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
-        'vFogFactor = exp(uParams[1] * camDist);\n'+
+        'vFogFactor = 1.0-exp(uParams[1] * camDist);\n'+
         'vTexCoord = aTexCoord;\n'+
+        'float l = dot(normalize(worldPos.xyz),uCamVec.xyz);\n'+
+        'vFogFactor = clamp((1.0-abs(l))*uCamVec.w + vFogFactor, 0.0, 1.0);\n'+
     '}';
 
 GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
@@ -785,7 +789,7 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
     'varying float vFogFactor;\n'+
     'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
-        'gl_FragColor = mix(uFogColor, texture2D(uSampler, vTexCoord), vFogFactor);\n'+
+        'gl_FragColor = mix(texture2D(uSampler, vTexCoord), uFogColor, vFogFactor);\n'+
     '}';
 
 
@@ -793,17 +797,21 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
 GpuShaders.tile2VertexShader =
     'attribute vec3 aPosition;\n'+
     'attribute vec2 aTexCoord2;\n'+
-    'uniform mat4 uMV, uProj;\n'+
+    'uniform mat4 uMV, uMV2, uProj;\n'+
     'uniform vec4 uParams;\n'+    //[zfactor, fogDensity, 0, 0]
+    'uniform vec4 uCamVec;\n'+    
     'uniform vec4 uTransform;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying float vFogFactor;\n'+
     'void main() {\n'+
         'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
+        'vec4 worldPos = uMV2 * vec4(aPosition, 1.0);\n'+
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
-        'vFogFactor = exp(uParams[1] * camDist);\n'+
+        'vFogFactor = 1.0-exp(uParams[1] * camDist);\n'+
         'vTexCoord = vec2(uTransform[0] * aTexCoord2[0] + uTransform[2], uTransform[1] * aTexCoord2[1] + uTransform[3]);\n'+
+        'float l = dot(normalize(worldPos.xyz),uCamVec.xyz);\n'+
+        'vFogFactor = clamp((1.0-abs(l))*uCamVec.w + vFogFactor, 0.0, 1.0);\n'+
     '}';
 
 
@@ -815,7 +823,8 @@ GpuShaders.tile2FragmentShader = 'precision mediump float;\n'+
     'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec4 c = texture2D(uSampler, vTexCoord);\n'+
-        'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
+        //'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
+        'gl_FragColor = mix(c, uFogColor, vFogFactor);\n'+
         'gl_FragColor[3] = c.w * uAlpha;\n'+
     '}';
 
@@ -830,22 +839,26 @@ GpuShaders.tile3FragmentShader = 'precision mediump float;\n'+
     'void main() {\n'+
         'vec4 c = texture2D(uSampler, vTexCoord);\n'+
         'vec4 c2 = texture2D(uSampler2, vTexCoord);\n'+
-        'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
+        'gl_FragColor = mix(c, uFogColor, vFogFactor);\n'+
         'gl_FragColor[3] = c.w * uAlpha * c2.x;\n'+
     '}';
 
 //fog only tile mesh
 GpuShaders.fogTileVertexShader =
     'attribute vec3 aPosition;\n'+
-    'uniform mat4 uMV, uProj;\n'+
+    'uniform mat4 uMV, uMV2, uProj;\n'+
 //    'uniform float uFogDensity;\n'+
     'uniform vec4 uParams;\n'+    //[zfactor, fogDensity, 0, 0]
+    'uniform vec4 uCamVec;\n'+    
     'varying float vFogFactor;\n'+
     'void main() {\n'+
         'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
+        'vec4 worldPos = uMV2 * vec4(aPosition, 1.0);\n'+
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
-        'vFogFactor = exp(uParams[1] * camDist);\n'+
+        'vFogFactor = 1.0-exp(uParams[1] * camDist);\n'+
+        'float l = dot(normalize(worldPos.xyz),uCamVec.xyz);\n'+
+        'vFogFactor = clamp((1.0-abs(l))*uCamVec.w + vFogFactor, 0.0, 1.0);\n'+
     '}';
 
 
@@ -853,7 +866,7 @@ GpuShaders.fogTileFragmentShader = 'precision mediump float;\n'+
     'varying float vFogFactor;\n'+
     'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
-        'gl_FragColor = vec4(uFogColor.xyz, 1.0-vFogFactor);\n'+
+        'gl_FragColor = vec4(uFogColor.xyz, vFogFactor);\n'+
     '}';
 
 

@@ -14,6 +14,7 @@ var MapCamera = function(map) {
     this.distance2 = 10;
     this.position = [0,0,0];
     this.vector = [0,0,1];
+    this.vector2 = [0,0,1,1];
     this.center = [0,0,0];
     this.height = 0;
     this.terrainHeight = 0;
@@ -79,14 +80,20 @@ MapCamera.prototype.update = function() {
     this.camera.setPosition([0,0,0]); //always zeros
     this.position = worldPos;
 
-    if (!map.getNavigationSrs().isProjected()) { //HACK!!!!!!!!
+    this.vector2 = [-worldPos[0], -worldPos[1], -worldPos[2], 1];
+    vec3.normalize(this.vector2);
+
+    this.mapIsProjected = map.getNavigationSrs().isProjected();
+
+    if (!this.mapIsProjected) { //HACK!!!!!!!!
         this.geocentDistance = vec3.length(this.position);
 
         var n = [0,0,0];
         vec3.normalize(this.position, n);
         this.geocentNormal = n;
+    } else {
+        this.vector2[3] = 0;
     }
-
     
     //console.log("word-pos: " + JSON.stringify(worldPos));
 

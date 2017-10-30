@@ -152,7 +152,6 @@ var simpleFmtCall = (function obj(str, call) {
             counter--;
 
             if (counter == 0) {
-                debugger;
                 str2 += call(str.substring(begin+1, i));
             }
             
