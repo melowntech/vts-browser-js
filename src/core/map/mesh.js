@@ -459,9 +459,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         switch(type) {
         case 'internal':
         case 'fog':
-                //program.setFloat("uFogDensity", draw.fogDensity);
             program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
             program.setVec4('uFogColor', draw.atmoColor);
+            
+            submesh.getWorldMatrix([0,0,0], this.mBuffer2);
+            program.setMat4('uMV2', this.mBuffer2);
+            program.setVec4('uCamVec', this.map.camera.vector2);
             break;
 
         case 'internal-nofog':
@@ -475,6 +478,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
             program.setVec4('uTransform', texture.getTransform());
             program.setVec4('uFogColor', draw.atmoColor);
+
+            submesh.getWorldMatrix([0,0,0], this.mBuffer2);
+            program.setMat4('uMV2', this.mBuffer2);
+            program.setVec4('uCamVec', this.map.camera.vector2);
             break;
 
         case 'external-nofog':
@@ -482,6 +489,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                 //program.setFloat("uFogDensity", 0);
             program.setVec4('uParams', [draw.zFactor, 0, 0, 0]);
             program.setVec4('uTransform', texture.getTransform());
+
+            submesh.getWorldMatrix([0,0,0], this.mBuffer2);
+            program.setMat4('uMV2', this.mBuffer2);
+            program.setVec4('uCamVec', [1,0,0,0]);
             break;
         }
     }

@@ -752,7 +752,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapMobileModeAutodect':         this.config.mapMobileModeAutodect = utils.validateBool(value, false); break;
     case 'mapMobileDetailDegradation':    this.config.mapMobileDetailDegradation = utils.validateNumber(value, 1, Number.MAXINTEGER, 2); break;
     case 'mapNavSamplesPerViewExtent':    this.config.mapNavSamplesPerViewExtent = utils.validateNumber(value, 0.00000000001, Number.MAXINTEGER, 4); break;
-    case 'mapFog':                        this.config.mapFog = utils.validateBool(value, false); break;
+    case 'mapFog':                        this.config.mapFog = utils.validateBool(value, false); if(this.draw){ this.draw.debug.drawFog = this.config.mapFog; } break;
     case 'mapIgnoreNavtiles':             this.config.mapIgnoreNavtiles = utils.validateBool(value, false); break;
     case 'mapAllowHires':                 this.config.mapAllowHires = utils.validateBool(value, true); break;
     case 'mapAllowLowres':                this.config.mapAllowLowres = utils.validateBool(value, true); break;

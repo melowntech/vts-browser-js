@@ -88,12 +88,13 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
     var label = getLayerPropertyValue(style, 'label', pointArray, lod);
     if (label) {
         source = getLayerPropertyValue(style, 'label-source', pointArray, lod);
-        var text = getLayerExpresionValue(style, source, pointArray);
+
+        var text = getLayerExpresionValue(style, source, pointArray, lod, source);
         var size = getLayerPropertyValue(style, 'label-size', pointArray, lod);
         
         if (source == '$name') {
             if (!areTextCharactersAvailable(text, globals.fonts['default'])) {
-                var text2 = getLayerExpresionValue(style, '$name:en', pointArray);
+                var text2 = getLayerExpresionValue(style, '$name:en', pointArray, lod, source);
                 
                 if (areTextCharactersAvailable(text2, globals.fonts['default'])) {
                     text = text2;                     

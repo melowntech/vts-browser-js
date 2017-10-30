@@ -111,15 +111,67 @@ function vec3Cross(a, b, c) {
     return b;
 }*/
 
-
-/*var simpleFmtCall = (function obj(str, call) {
+/*
+var simpleFmtCall = (function obj(str, call) {
     if (!str || str == '') {
         return '';
     }
 
-    return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
-        return call(match);
-    });
-});*/
+    //return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
 
-export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, /*vec3AnyPerpendicular, simpleFmtCall*/};
+//    return str.replace(/\{(?:[^{}]*+|(?0))*\}/g, (function(s, match) {
+    return str.replace(/\{(?:[^{}]*+|(?0))*\}/g, (function(s, match) {
+        if (match.length > 2) {
+            return call(match.substring(1, match.length - 2));
+        }
+    }));
+});
+*/
+
+var simpleFmtCall = (function obj(str, call) {
+    if (!str || str == '') {
+        return '';
+    }
+
+    var counter = 0;
+    var begin = -1;
+    var str2 = "";
+
+    for (var i = 0, li = str.length; i < li; i++) {
+        var c = str.charAt(i);
+
+        if (c == '{') {
+            if (counter == 0) {
+                begin = i;
+            }
+
+            counter++;
+        }
+
+        if (c == '}') {
+            counter--;
+
+            if (counter == 0) {
+                str2 += call(str.substring(begin+1, i));
+            }
+            
+        } else if (counter == 0) {
+            str2 += c;
+        }
+    }
+
+    return str2;
+
+    //return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
+
+//    return str.replace(/\{(?:[^{}]*+|(?0))*\}/g, (function(s, match) {
+/*    
+    return str.replace(/\{(?:[^{}]*+|(?0))*\}/g, (function(s, match) {
+        if (match.length > 2) {
+            return call(match.substring(1, match.length - 2));
+        }
+    }));*/
+});
+
+
+export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, /*vec3AnyPerpendicular,*/ simpleFmtCall};

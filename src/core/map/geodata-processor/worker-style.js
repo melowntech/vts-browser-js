@@ -1,8 +1,9 @@
 
-import {globals as globals_} from './worker-globals.js';
+import {globals as globals_, simpleFmtCall as simpleFmtCall_} from './worker-globals.js';
 
 //get rid of compiler mess
 var globals = globals_;
+var simpleFmtCall = simpleFmtCall_;
 
 
 var getLayer = function(layerId, featureType, index) {
@@ -16,7 +17,8 @@ var getLayer = function(layerId, featureType, index) {
 };
 
 
-var getLayerExpresionValue = function(layer, value, feature) {
+var getLayerExpresionValue = function(layer, value, feature, lod, key) {
+    var finalValue;
 
     switch(typeof value) {
     case 'string':
@@ -24,15 +26,65 @@ var getLayerExpresionValue = function(layer, value, feature) {
         if (value.length > 0) {
                 //is it feature property?
             switch (value.charAt(0)) {
+                case '$':
+                case '@':
 
-            case '$':
-                var finalValue = feature.properties[value.substr(1)];
-                if (typeof finalValue == 'undefined') {
-                    logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
-                }
-                        
-                return finalValue;
+                    switch (value.charAt(0)) {
+                        case '$': finalValue = feature.properties[value.substr(1)]; break;
+                        case '@': finalValue = globals.stylesheetConstants[value.substr(1)]; break;
+                    }
+
+                    if (typeof finalValue == 'undefined') {
+                        logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
+                    }
+                            
+                    return finalValue;
             }
+
+            return simpleFmtCall(value, (function(str){  
+
+                if (str.length > 0) {
+
+                    switch (str.charAt(0)) {
+                        case '$':
+                        case '@':
+
+                            switch (str.charAt(0)) {
+                                case '$': finalValue = feature.properties[str.substr(1)]; break;
+                                case '@': finalValue = globals.stylesheetConstants[str.substr(1)]; break;
+                            }
+
+                            if (typeof finalValue == 'undefined') {
+                                logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
+                            }
+
+                            return getLayerExpresionValue(layer, finalValue, feature, lod, key);
+                    }
+
+                    if (str.indexOf('{') != -1) {
+
+                        try {
+                            str = str.replace(/'/g, '"');
+                            finalValue = JSON.parse(str);
+                        } catch(e) {
+                            logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
+                            return "";
+                        }
+
+                        if (typeof finalValue == 'undefined') {
+                            logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
+                            return "";
+                        } else {
+                            return getLayerPropertyValueInner(layer, key, feature, lod, finalValue, 0);
+                        }
+
+                    } else {
+                        return str;
+                    }
+
+                }
+
+            }));
         }
 
         break;
@@ -204,6 +256,9 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             case 'atan':
             case 'sqrt':
             case 'abs':
+            case 'round':
+            case 'floor':
+            case 'ceil':
             case 'deg2rad':
             case 'rad2deg':
 
@@ -222,6 +277,9 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         case 'atan': return Math.atan(functionValue);
                         case 'sqrt': return Math.sqrt(functionValue);
                         case 'abs':  return Math.abs(functionValue);
+                        case 'round': return Math.round(functionValue);
+                        case 'floor': return Math.floor(functionValue);
+                        case 'ceil':  return Math.ceil(functionValue);
                         case 'deg2rad':  return (functionValue / 180) * Math.PI;
                         case 'rad2deg':  return (functionValue / Math.PI) * 180;
                     }
@@ -706,13 +764,15 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAX_VALUE);
 
-    case 'hover-event':  return validateValue(layerId, key, value, 'boolean');
-    case 'hover-layer':  return validateValue(layerId, key, value, 'string');
-    case 'enter-event':  return validateValue(layerId, key, value, 'boolean');
-    case 'leave-event':  return validateValue(layerId, key, value, 'boolean');
-    case 'click-event':  return validateValue(layerId, key, value, 'boolean');
-    case 'draw-event':   return validateValue(layerId, key, value, 'boolean');
-    case 'advanced-hit': return validateValue(layerId, key, value, 'boolean');
+    case 'selected-hover-layer':  return validateValue(layerId, key, value, 'string');
+    case 'selected-layer':  return validateValue(layerId, key, value, 'string');
+    case 'hover-event':     return validateValue(layerId, key, value, 'boolean');
+    case 'hover-layer':     return validateValue(layerId, key, value, 'string');
+    case 'enter-event':     return validateValue(layerId, key, value, 'boolean');
+    case 'leave-event':     return validateValue(layerId, key, value, 'boolean');
+    case 'click-event':     return validateValue(layerId, key, value, 'boolean');
+    case 'draw-event':      return validateValue(layerId, key, value, 'boolean');
+    case 'advanced-hit':    return validateValue(layerId, key, value, 'boolean');
     case 'export-geometry': return validateValue(layerId, key, value, 'boolean');
 
     case 'visible':     return validateValue(layerId, key, value, 'boolean');
@@ -781,16 +841,18 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'z-index':        return 0;
     case 'zbuffer-offset': return [0,0,0];
 
-    case 'hover-event':  return false;
-    case 'hover-layer':  return '';
-    case 'enter-event':  return false;
-    case 'leave-event':  return false;
-    case 'click-event':  return false;
-    case 'draw-event':   return false;
-    case 'advanced-hit': return false;
+    case 'selected-hover-layer':  return '';
+    case 'selected-layer':  return '';
+    case 'hover-event':     return false;
+    case 'hover-layer':     return '';
+    case 'enter-event':     return false;
+    case 'leave-event':     return false;
+    case 'click-event':     return false;
+    case 'draw-event':      return false;
+    case 'advanced-hit':    return false;
     case 'export-geometry': return false;
 
-    case 'visible':    return true;
+    case 'visible':        return true;
     case 'visibility':     return null;
     case 'visibility-abs': return null;
     case 'visibility-rel': return null;

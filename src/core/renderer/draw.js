@@ -736,29 +736,124 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         return;
     }
 
+    var state = job.state & 0xff;
+    var id = job.eventInfo['#id'];
+
+    if (id != null) {
+
+        if (job.state & (2 << 8)) { //has selection layers?
+
+            if (renderer.geodataSelection.indexOf(id) != -1) {  // is selected
+
+                if (job.state & (3 << 8)) { //has hover layers?
+
+                    if (renderer.hoverFeature && renderer.hoverFeature[0]['#id'] == id) {
+                        if (state != 3) {
+                            return;
+                        }
+                    } else {
+                        if (state != 2) {
+                            return;
+                        }
+                    }
+                }
+            } else if (job.state & (1 << 8)) { //has hover layers?
+
+                if (renderer.hoverFeature && renderer.hoverFeature[0]['#id'] == id) {
+                    if (state != 1) {
+                        return;
+                    }
+                } else {
+                    if (state != 0) {
+                        return;
+                    }
+                }
+
+            } else {
+                if (state != 0) {
+                    return;
+                }        
+            }
+        
+        } else if (job.state & (1 << 8)) { //has hover layers?
+
+            if (renderer.hoverFeature && renderer.hoverFeature[0]['#id'] == id) {
+                if (state != 1) {
+                    return;
+                }
+            } else {
+                if (state != 0) {
+                    return;
+                }
+            }
+
+        } else {
+            if (state != 0) {
+                return;
+            }        
+        }
+
+    } else {
+        if (state != 0) {
+            return;
+        }        
+    }
+
+    /*
     if (job.state != 0) {
         var id = job.eventInfo['#id'];
 
-        if (id != null && renderer.hoverFeature != null) {
-            if (job.state == 1){  // 1 = no hover state
+        if (id != null && renderer.geodataSelection.indexOf(id) != -1) {  // is selected
 
-                if (renderer.hoverFeature[0]['#id'] == id) { //are we hovering over feature?
-                    return;
+            if (id != null && renderer.hoverFeature != null) {
+                if (job.state == 3) {  // 3 = no hover state
+
+                    if (renderer.hoverFeature[0]['#id'] == id) { //are we hovering over feature?
+                        return;
+                    }
+
+                } else if (job.state == 4) { // 4 = hover state
+
+                    if (renderer.hoverFeature[0]['#id'] != id) { //are we hovering over feature?
+                        return;
+                    }
+
                 }
 
-            } else { // 2 = hover state
-
-                if (renderer.hoverFeature[0]['#id'] != id) { //are we hovering over feature?
+            } else {
+                if (job.state != 3) {
                     return;
                 }
-
             }
-        } else { //id id provided
-            if (job.state == 2) { //skip hover style
+
+        } else {
+
+            if (job.state == 3 || job.state == 4) { //do not render selected state
                 return;
             }
+
+            if (id != null && renderer.hoverFeature != null) {
+                if (job.state == 1){  // 1 = no hover state
+
+                    if (renderer.hoverFeature[0]['#id'] == id) { //are we hovering over feature?
+                        return;
+                    }
+
+                } else { // 2 = hover state
+
+                    if (renderer.hoverFeature[0]['#id'] != id) { //are we hovering over feature?
+                        return;
+                    }
+
+                }
+            } else { //id id provided
+                if (job.state == 2) { //skip hover style
+                    return;
+                }
+            }
+
         }
-    }
+    } */
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
     var screenPixelSize2, color = job.color;
@@ -1058,8 +1153,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             } else if (s[2] != 0) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
-
-                this.drawLineString([[pp[0], pp[1], pp[2]], [pp[0], pp[1]-stickShift, pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
+                pp[1] -= stickShift;
             }
         }
 
@@ -1078,6 +1172,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
                                      [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
             }
+        }
+
+        if (job.stick[0] != 0 && s[2] != 0) {
+            this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
         }
 
         /*if (dinfo) { //debug only
