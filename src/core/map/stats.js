@@ -63,6 +63,7 @@ var MapStats = function(map) {
     this.loadFirst = 0;
     this.loadLast = 0;
     this.gpuNeeded = 0;
+    this.gpuNeeded2 = 0;
 
     this.heightClass = 0;
     this.heightLod = 0;
@@ -70,6 +71,13 @@ var MapStats = function(map) {
     this.heightTerrain = 0;
     this.heightDelta = 0;
 };
+
+//Object.defineProperty(MapStats.prototype, 'gpuNeeded', {
+    //get: function() { return this.gpuNeeded2; /*console.log(""+this.gpuNeeded);*/ },
+    //set: function(value) { 
+        //this.gpuNeeded2 = value; console.log(""+this.gpuNeeded);
+    //}
+//});
 
 
 MapStats.prototype.resetGraphs = function() {

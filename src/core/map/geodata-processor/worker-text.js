@@ -12,12 +12,14 @@ var setFont = function(fontData) {
     globals_.fonts['default'] = {
         chars : fontData['chars'],
         space : fontData['space'],
-        size : fontData['size']
+        size : fontData['size'],
+        cly : fontData['cly'],
+        version : fontData['version']
     };
 };
 
 
-var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, font, vertexBuffer, texcoordsBuffer, flat) {
+var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, font, vertexBuffer, texcoordsBuffer, flat, planes) {
     var n;
 
     if (globals.geocent && !flat) {
@@ -60,6 +62,10 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             p2[0] = p1[0] + dir[0] * factorX;
             p2[1] = p1[1] + dir[1] * factorX;
             p2[2] = p1[2] + dir[2] * factorX;
+
+            if (planes) {
+                planes[fc.plane] = true;
+            }
 
             //first polygon
             vertexBuffer[index] = p1[0] - n2[0];
@@ -145,11 +151,12 @@ var getCharVerticesCount = function(origin) {
 };
 
 
-var addText = function(pos, dir, text, size, font, vertexBuffer, texcoordsBuffer, flat, index) {
+var addText = function(pos, dir, text, size, font, vertexBuffer, texcoordsBuffer, flat, index, planes) {
     var textVector = [0,1,0];
 
     var factor = size / font.size;
-    var newLineSpace = font.space * factor;
+    //var newLineSpace = font.space * factor;
+    var newLineSpace = font.cly * factor;
 
     var s = [pos[0], pos[1], pos[2]];
     var p1 = [pos[0], pos[1], pos[2]];
@@ -164,7 +171,7 @@ var addText = function(pos, dir, text, size, font, vertexBuffer, texcoordsBuffer
             continue;
         }
 
-        var shift = addChar(p1, dir, 0, char, factor, index, index, textVector, font, vertexBuffer, texcoordsBuffer, flat);
+        var shift = addChar(p1, dir, 0, char, factor, index, index, textVector, font, vertexBuffer, texcoordsBuffer, flat, planes);
 
         p1 = shift[0];
         index = shift[1];
@@ -175,7 +182,7 @@ var addText = function(pos, dir, text, size, font, vertexBuffer, texcoordsBuffer
 };
 
 
-var addTextOnPath = function(points, distance, text, size, textVector, font, verticalOffset, vertexBuffer, texcoordsBuffer, index) {
+var addTextOnPath = function(points, distance, text, size, textVector, font, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
     if (textVector == null) {
         textVector = [0,1,0];
     }
@@ -184,7 +191,8 @@ var addTextOnPath = function(points, distance, text, size, textVector, font, ver
     
     var chars = font.chars;
     var factor = size / font.size;
-    var newLineSpace = font.space * factor;
+    //var newLineSpace = font.space * factor;
+    var newLineSpace = font.cly * factor;
 
     var s = [p1[0], p1[1], p1[2]];
     p1 = [p1[0], p1[1], p1[2]];
@@ -220,7 +228,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, font, ver
 
         vec3Normalize(dir);
 
-        var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, char, factor, index, index, textVector, font, vertexBuffer, texcoordsBuffer);
+        var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, char, factor, index, index, textVector, font, vertexBuffer, texcoordsBuffer, null, planes);
 
         p1 = shift[0];
         index = shift[1];
@@ -232,7 +240,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, font, ver
 };
 
 
-var addStreetTextOnPath = function(points, text, size, font, verticalOffset, vertexBuffer, texcoordsBuffer, index) {
+var addStreetTextOnPath = function(points, text, size, font, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
     var factor = size / font.size;
     var textLength = getTextLength(text, factor, font);
     var pathLength = getPathLength(points);
@@ -247,7 +255,7 @@ var addStreetTextOnPath = function(points, text, size, font, verticalOffset, ver
 
     var textVector = getPathTextVector(points, shift, text, factor, font);
 
-    return addTextOnPath(points, shift, text, size, textVector, font, verticalOffset, vertexBuffer, texcoordsBuffer, index);
+    return addTextOnPath(points, shift, text, size, textVector, font, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes);
 };
 
 
@@ -258,7 +266,8 @@ var getFontFactor = function(size, font) {
 
 var getLineHeight = function(size, font) {
     var factor = size / font.size;
-    return font.space * factor;
+    //return font.space * factor;
+    return font.cly * factor;
 };
 
 

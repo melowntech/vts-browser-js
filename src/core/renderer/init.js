@@ -23,6 +23,10 @@ var RendererInit = function(renderer) {
     this.renderer = renderer;
     this.core = renderer.core;
     this.gpu = renderer.gpu;
+
+    renderer.font = new GpuFont(this.gpu, this.core);
+    //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font.png');
+
     this.initShaders();
     this.initHeightmap();
     this.initSkydome();
@@ -86,6 +90,7 @@ RendererInit.prototype.initShaders = function() {
     renderer.progText2 = new GpuProgram(gpu, shaders.textVertexShader2, shaders.textFragmentShader);
     renderer.progImage = new GpuProgram(gpu, shaders.imageVertexShader, shaders.imageFragmentShader);
     renderer.progIcon = new GpuProgram(gpu, shaders.iconVertexShader, shaders.textFragmentShader);
+    renderer.progIcon2 = new GpuProgram(gpu, shaders.icon2VertexShader, shaders.text2FragmentShader);
 };
 
 
@@ -302,7 +307,6 @@ RendererInit.prototype.initBBox = function() {
     var gpu = this.gpu;
     renderer.bboxMesh = new GpuBBox(gpu);
     renderer.bboxMesh2 = new GpuBBox(gpu, true);
-    renderer.font = new GpuFont(gpu, this.core);
 };
 
 
