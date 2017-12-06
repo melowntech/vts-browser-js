@@ -933,13 +933,23 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var bufferSize = getCharVerticesCount() * labelText.length * 2;
     var vertexBuffer = new Float32Array(bufferSize);
     var texcoordsBuffer = new Float32Array(bufferSize);
-
-    //debugger
+    var font = globals.fonts['default'];
+    var planes = {};
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
-    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, 0);
-    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, globals.fonts['default'], labelOffset, vertexBuffer, texcoordsBuffer, index);
+    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, font, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes);
+    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, font, labelOffset, vertexBuffer, texcoordsBuffer, index);
+
+    var planes2 = [];
+
+    for (var key in planes) {
+        planes2.push(parseInt(key));
+    }
+
+    if (!font.version) {
+        planes2 = null;        
+    }
 
     var signature = JSON.stringify({
         type: 'line-label',
@@ -950,8 +960,8 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
         'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'z-index':zIndex, 'center': center,
-        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-        'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'planes': planes2,
+        'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 
         'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
 };

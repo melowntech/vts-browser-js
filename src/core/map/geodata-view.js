@@ -25,7 +25,8 @@ var MapGeodataView = function(map, geodata, extraInfo) {
     if (!this.surface.geodataProcessor) {
         var processor = new MapGeodataProcessor(this, this.onGeodataProcessorMessage.bind(this));
         processor.sendCommand('setStylesheet', { 'data' : this.surface.stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()) } );
-        processor.sendCommand('setFont', {'chars' : this.renderer.font.chars, 'space' : this.renderer.font.space, 'size' : this.renderer.font.size});
+        processor.sendCommand('setFont', {'chars' : this.renderer.font.chars, 'space' : this.renderer.font.space, 'cly' : this.renderer.font.cly, 
+                                          'size' : this.renderer.font.size, 'version':this.renderer.font.version});
         this.surface.geodataProcessor = processor;
         this.map.geodataProcessors.push(processor);
     } else {

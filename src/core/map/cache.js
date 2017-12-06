@@ -3,6 +3,7 @@
 var MapCache = function(map, maxCost) {
     this.map = map;
     this.maxCost = (maxCost != null) ? maxCost : Number.MAX_VALUE;
+    this.skipCostCheck = false;
     this.last = null;
     this.first = null;
 
@@ -152,6 +153,10 @@ MapCache.prototype.remove = function(item) {
 
 
 MapCache.prototype.checkCost = function() {
+    if (this.skipCostCheck) {
+        return;
+    }
+
     while (this.totalCost > this.maxCost) {
 
         this.totalItems--;

@@ -320,7 +320,8 @@ MapSubtexture.prototype.onLoaded = function(killBlob) {
     }
 
     var size = this.image.naturalWidth * this.image.naturalHeight * (this.heightMap ? 3 : 3);
-    
+    this.gpuSize = this.image.naturalWidth * this.image.naturalHeight * 4;  //aproximate size 
+
     //if (!this.image.complete) {
        // size = size;
     //}

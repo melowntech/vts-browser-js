@@ -288,13 +288,19 @@ MapMesh.prototype.parseMapMesh = function (stream) {
     this.numSubmeshes = streamData.getUint16(stream.index, true); stream.index += 2;
 
     this.submeshes = [];
+    this.gpuSize = 0; 
 
     for (var i = 0, li = this.numSubmeshes; i < li; i++) {
         var submesh = new MapSubmesh(this, stream);
         if (submesh.valid) {
             this.submeshes.push(submesh); 
-            this.size += this.submeshes[i].size;
-            this.faces += this.submeshes[i].faces;
+            this.size += submesh.size;
+            this.faces += submesh.faces;
+
+            //aproximate size
+            this.gpuSize += (submesh.vertices ? submesh.vertices.length : 0) * 3 * 4 +
+                            (submesh.internalUVs ? submesh.internalUVs.length : 0) * 2 * 4 +
+                            (submesh.externalUVs ? submesh.externalUVs.length : 0) * 2 * 4;
         }
     }
     

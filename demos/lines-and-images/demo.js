@@ -79,7 +79,8 @@ function onCustomRender() {
             points : points,
             size : 2.0,
             color : [255,0,255,255],
-            depthTest : false,
+            depthTest : true,
+            depthOffset : [-0.01,0,0],
             blend : false
             });
 
@@ -90,7 +91,8 @@ function onCustomRender() {
             texture : demoTexture,
             color : [255,0,255,255],
             depth : coords[2],
-            depthTest : false,
+            depthTest : true,
+            depthOffset : [-0.01,0,0],
             blend : true
             });
 
@@ -101,7 +103,8 @@ function onCustomRender() {
             texture : demoTexture,
             color : [255,0,255,255],
             depth : coords[2],
-            depthTest : false,
+            depthTest : true,
+            depthOffset : [-0.01,0,0],
             blend : true
             });
     }    

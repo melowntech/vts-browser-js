@@ -321,7 +321,7 @@ MapTexture.prototype.getGpuMaskTexture = function() {
 };
 
 MapTexture.prototype.getGpuSize = function() {
-    return (this.mainTexture ? this.mainTexture.gpuSize : 0) + (this.maskTexture ? this.maskTexture.gpuSize : 0);
+    return (this.mainTexture ? (this.mainTexture.gpuSize ? this.mainTexture.gpuSize : 0) : 0) + (this.maskTexture ? (this.maskTexture.gpuSize ? this.maskTexture.gpuSize : 0) : 0);
 };
 
 MapTexture.prototype.getImageData = function() {

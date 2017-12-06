@@ -1008,7 +1008,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                     } else {*/
 
                         if (l1 == l) {
-                            console.log('l1');
+                            //console.log('l1');
 
                             //add new vertices to the buffer
                             vbuffer[mm] = p4[0];
@@ -1075,7 +1075,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                                        ' p6:' + (Array.isArray(sbuffer2[l+5][1]) ? 'a' : '') + sbuffer2[l+5][1]);*/
 
                         } else if (l3 == l) {
-                            console.log('l3');
+                            //console.log('l3');
 
                             //add new vertices to the buffer
                             vbuffer[mm] = p6[0];

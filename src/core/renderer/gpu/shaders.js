@@ -346,6 +346,25 @@ GpuShaders.iconVertexShader =
         'gl_Position = pos + vec4(aPosition.x*uScale.x*pos.w, (aPosition.y+uScale.w)*uScale.y*pos.w, 0.0, 0.0);\n'+
     '}';
 
+GpuShaders.icon2VertexShader =
+    'attribute vec4 aPosition;\n'+
+    'attribute vec4 aTexCoord;\n'+
+    'attribute vec3 aOrigin;\n'+
+    'uniform mat4 uMVP;\n'+
+    'uniform vec4 uScale;\n'+
+    'uniform float uPlane;\n'+
+    'varying vec2 vTexCoord;\n'+
+    //'float round(float x) { return floor(x + 0.5); }\n'+
+    'void main(){ \n'+
+        'vTexCoord = aTexCoord.xy * uScale[2];\n'+
+        'float plane = floor(aTexCoord.y/3.0);\n'+
+        'if (plane != floor(uPlane)) {\n'+
+            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+        '}else{\n'+
+            'vec4 pos = (uMVP * vec4(aOrigin, 1.0));\n'+
+            'gl_Position = pos + vec4(aPosition.x*uScale.x*pos.w, (aPosition.y+uScale.w)*uScale.y*pos.w, 0.0, 0.0);\n'+
+        '}'+
+    '}';
 
 GpuShaders.textFragmentShader = 'precision mediump float;\n'+
     'uniform sampler2D uSampler;\n'+
@@ -357,6 +376,47 @@ GpuShaders.textFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = c*uColor;\n'+
     '}';
 
+GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
+    'uniform sampler2D uSampler;\n'+
+    'uniform vec4 uColor;\n'+
+    'const vec4 uColor1 = vec4(1.0, 1.0, 1.0, 1.0);\n'+
+    'const vec4 uColor2 = vec4(0.0, 0.0, 0.0, 1.0);\n'+
+    //'const vec4 uColor3 = vec4(0.0, 0.0, 0.0, 0.0);\n'+
+    'varying vec2 vTexCoord;\n'+
+    'float round(float x) { return floor(x + 0.5); }\n'+
+    'vec4 getColor(vec2 pos, vec4 mask) {\n'+
+        'float v = dot(mask, texture2D(uSampler, pos));\n'+
+        'float a = mod(v*(255.0),16.0)/16.0;\n'+
+        'float b = floor(v*16.0)/16.0;\n'+
+        'vec4 c = mix(uColor2, uColor1, clamp(b, 0.0, 1.0) );\n'+
+        'c.w *= a;\n'+
+        'return c; }\n'+
+
+    'void main() {\n'+
+        'vec4 mask;\n'+
+        'int i=int(round(mod(floor(vTexCoord.y),3.0)));\n'+
+        'if (i == 0) mask=vec4(1.0,0.0,0.0,0.0);else\n'+
+        'if (i == 1) mask=vec4(0.0,1.0,0.0,0.0);else\n'+
+        'if (i == 2) mask=vec4(0.0,0.0,1.0,0.0);\n'+
+        //'gl_FragColor = vec4(mask.xyz,1.0);\n'+
+
+        'float shift=1.0/256.0;\n'+
+        'float shift2=shift*0.498;\n'+
+        'vec2 uv=(vTexCoord);\n'+
+        'uv.y=fract(uv.y);\n'+
+        'uv=(uv - shift2);\n'+
+        'vec4 c=getColor(uv,mask);\n'+
+        'vec4 c2=getColor(uv+vec2(shift,0.0),mask);\n'+
+        'vec4 c3=getColor(uv+vec2(0.0,shift),mask);\n'+
+        'vec4 c4=getColor(uv+vec2(shift,shift),mask);\n'+
+        'vec2 ff=fract(uv*256.0);\n'+
+        'vec4 cc1=mix(c,c2,ff.x);\n'+
+        'vec4 cc2=mix(c3,c4,ff.x);\n'+
+        'c=mix(cc1,cc2,ff.y);\n'+
+
+        //'if(c.w < 0.01){ discard; }\n'+
+        'gl_FragColor = c*uColor;\n'+
+    '}';
 
 GpuShaders.skydomeVertexShader =
     'attribute vec3 aPosition;\n'+

@@ -4,7 +4,7 @@ import {utils as utils_} from '../../utils/utils';
 //get rid of compiler mess
 var utils = utils_;
 
-var GpuTexture = function(gpu, path, core, fileSize, direct, repeat, filter) {
+var GpuTexture = function(gpu, path, core, fileSize, direct, repeat, filter, keepImage, onLoaded, onError) {
     this.gpu = gpu;
     this.gl = gpu.gl;
     this.texture = null;
@@ -22,7 +22,7 @@ var GpuTexture = function(gpu, path, core, fileSize, direct, repeat, filter) {
     this.core = core;
 
     if (path != null) {
-        this.load(path, null, null, direct);
+        this.load(path, onLoaded, onError, direct, keepImage);
     }
 };
 
@@ -155,14 +155,16 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
     this.loaded = true;
 };
 
-GpuTexture.prototype.load = function(path, onLoaded, onError, direct) {
+GpuTexture.prototype.load = function(path, onLoaded, onError, direct, keepImage) {
     this.image = utils.loadImage(path, (function () {
         if (this.core != null && this.core.killed) {
             return;
         }
 
         this.createFromImage(this.image, this.filter, this.repeat);
-        this.image = null;
+        if (!keepImage) {
+            this.image = null;
+        }
 
         if (onLoaded) {
             onLoaded();
@@ -188,6 +190,7 @@ GpuTexture.prototype.load = function(path, onLoaded, onError, direct) {
      );
 
 };
+
 
 GpuTexture.prototype.createFramebufferFromData = function(lx, ly, data) {
     var gl = this.gl;
@@ -231,6 +234,7 @@ GpuTexture.prototype.createFramebufferFromData = function(lx, ly, data) {
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
+
 
 GpuTexture.prototype.createFramebuffer = function(lx, ly) {
     if (this.texture == null){

@@ -352,8 +352,12 @@ GpuGroup.prototype.addIconJob = function(data, label) {
         var icon = data['icon'];
         job.texture = this.renderer.getBitmap(icon['url'], icon['filter'] || 'linear', icon['tiled'] || false);
     } else {
+        job.planes = data['planes'];
         job.texture = this.renderer.font.texture;
         job.noOverlap = data['noOverlap'];
+        if (job.planes) {
+            job.program = this.renderer.progIcon2;
+        }
     }
 
     if (job.visibility != null && !Array.isArray(job.visibility)) {

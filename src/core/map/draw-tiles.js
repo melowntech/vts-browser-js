@@ -126,7 +126,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         return true;
     } else if (tile.lastRenderState){
 
-        if (tile.surfaceMesh.isReady(true, priority)) {
+        if (tile.surfaceMesh.isReady(true, priority, doNotCheckGpu)) {
             if (tile.drawCommands[channel].length > 0) {
                 if (!preventRedener) {
                     draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
@@ -154,7 +154,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         
     } 
 
-    if (tile.surfaceMesh.isReady(preventLoad, priority) && !preventLoad) {
+    if (tile.surfaceMesh.isReady(preventLoad, priority, doNotCheckGpu) && !preventLoad) {
         var submeshes = tile.surfaceMesh.submeshes;
 
         /*if (tile.id[0] == 14 &&
@@ -509,7 +509,7 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
 /*    
      else if (tile.lastRenderState){
 
-        if (tile.surfaceGeodata.isReady(true, priority) {
+        if (tile.surfaceGeodata.isReady(true, priority, doNotCheckGpu) {
             if (tile.drawCommands[channel].length > 0) {
                 if (!preventRedener) {
                     this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
@@ -527,7 +527,7 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
 */
 
     if (!tile.surfaceGeodataView) {
-        if (tile.surfaceGeodata.isReady(preventLoad, priority) && !preventLoad) {
+        if (tile.surfaceGeodata.isReady(preventLoad, priority, doNotCheckGpu) && !preventLoad) {
             tile.surfaceGeodataView = new MapGeodataView(this.map, tile.surfaceGeodata, {tile:tile, surface:tile.surface});
         }
     }

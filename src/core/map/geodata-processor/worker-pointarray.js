@@ -324,7 +324,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer,
             'color':labelData.color, 'z-index':zIndex, 'visibility': visibility, 'culling': culling, 
             'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
-            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'planes':labelData.planes,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
             'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);
@@ -458,6 +458,8 @@ var processLabel = function(point, labelData) {
     var index2 = labelData.index2;
     var lastIndex = index;
     var text = '' + labelData.text;
+    var font = globals.fonts['default'];
+    var planes = {};
 
     //split by new line
     var lines = text.match(/[^\r\n]+/g);
@@ -470,7 +472,7 @@ var processLabel = function(point, labelData) {
 
         // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, globals.fonts['default']), globals.fonts['default']);
+            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, font), font);
 
             if (line.length == splitIndex) {
                 lines2.push(line);
@@ -486,20 +488,22 @@ var processLabel = function(point, labelData) {
 
     var x = 0;
     var y = 0;
-    var lineHeight = getLineHeight(labelData.size, globals.fonts['default']);
+    var lineHeight = getLineHeight(labelData.size, font);
     var maxWidth = 0;
     var lineWidths = [];
 
     //get max width
     for (i = 0, li = lines2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, globals.fonts['default']), globals.fonts['default']);
+        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, font), font);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
+    //console.log("line height: " + lineHeight);
+    //console.log("max width: " + maxWidth);
+
     //generate text
     for (i = 0, li = lines2.length; i < li; i++) {
-        var textWidth = lineWidths[i];//getTextLength(lines2[i], getFontFactor(labelData.size, fonts["default"]), fonts["default"]);
-        //maxWidth = Math.max(textWidth, maxWidth);
+        var textWidth = lineWidths[i];
 
         switch(labelData.align) {
         case 'left': x = 0; break;
@@ -507,7 +511,7 @@ var processLabel = function(point, labelData) {
         case 'center': x = (maxWidth - textWidth)*0.5; break;
         }
 
-        index = addText([x,y,0], [1,0,0], lines2[i], labelData.size, globals.fonts['default'], vertexBuffer, texcoordsBuffer, true, index);
+        index = addText([x,y,0], [1,0,0], lines2[i], labelData.size, font, vertexBuffer, texcoordsBuffer, true, index, planes);
         y -= lineHeight;
     }
 
@@ -531,6 +535,16 @@ var processLabel = function(point, labelData) {
         index2 += 3;
     }
 
+    labelData.planes = [];
+
+    for (var key in planes) {
+        labelData.planes.push(parseInt(key));
+    }
+
+    if (!font.version) {
+        labelData.planes = null;        
+    }
+
     labelData.index = index;
     labelData.index2 = index2;
 
@@ -551,9 +565,6 @@ var processPointArrayGeometry = function(pointArray) {
 
     var index = 0;
     
-    /*var forceOrigin = globals.forceOrigin;
-    var tileX = globals.tileX;
-    var tileY = globals.tileY;*/
     var forceScale = globals.forceScale;
 
     var geometryBuffer = new Float64Array(points.length);
@@ -563,10 +574,6 @@ var processPointArrayGeometry = function(pointArray) {
 
     //add ponints
     for (i = 0, li = points.length; i < li; i++) {
-
-        /*if (forceOrigin) {
-            p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
-        }*/
 
         if (forceScale != null) {
             pp = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
