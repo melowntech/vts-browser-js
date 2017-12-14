@@ -153,6 +153,7 @@ GpuFont.prototype.load = function(path) {
     // load image
     this.texture = new GpuTexture(this.gpu, path, this.core, null, null, null, 'nearest', true, this.onLoaded.bind(this), this.onError.bind(this));
     //this.texture = new GpuTexture(this.gpu, path, this.core, null, null, null, null, true, this.onLoaded.bind(this), this.onError.bind(this));
+    this.texture[0] = this.texture;
 };
 
 
@@ -188,6 +189,8 @@ GpuFont.prototype.readChar = function(char, data, index, fx, fy, cly, textureLX)
             break;
     }
 
+    //console.log('load:'+plane);
+
     this.chars[char] = {
         u1 : (x ) * fx,
         v1 : (y * fy) + plane,
@@ -205,11 +208,11 @@ GpuFont.prototype.onLoaded = function() {
 
     var canvas = document.createElement('canvas');
     canvas.width = image.naturalWidth;
-    canvas.height = 30;
+    canvas.height = image.naturalHeight;
     var ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight); 
     
-    var data2 = ctx.getImageData(0,0,image.naturalWidth,30).data;
+    var data2 = ctx.getImageData(0,0,image.naturalWidth,image.naturalHeight).data;
 
     var data = new Array(data2.length), i, li, j = 0;
 
@@ -235,7 +238,7 @@ GpuFont.prototype.onLoaded = function() {
         // 4 x unit8 x-11bit,y-11bit,clx-6bit,plane-4bit
 
     this.chars = [];
-    this.textures = [];
+    this.textures = [this.texture];
     this.images = [];
     this.version = data[0];
     this.size = data[1];
@@ -281,6 +284,37 @@ GpuFont.prototype.onLoaded = function() {
 
 GpuFont.prototype.onError = function() {
 
+};
+
+GpuFont.prototype.onFileLoaded = function() {
+    this.core.markDirty();
+};
+
+GpuFont.prototype.onFileLoadError = function() {
+};
+
+GpuFont.prototype.areTexturesReady = function(files) {
+    var ready = true;
+    for (var i = 0, li = files.length; i < li; i++) {
+        var index = files[i];//Math.round( (planes[i] - (planes[i] % 3)) );
+
+        if (!this.textures[index]) {
+            this.textures[index] = new GpuTexture(this.gpu, this.path + (index+1), this.core, null, null, null, 'nearest', true, this.onFileLoaded.bind(this), this.onFileLoadError.bind(this));
+            ready = false;
+        } else {
+            ready = (ready || this.textures[index].loaded);
+        }
+    }
+
+    return ready;
+};
+
+GpuFont.prototype.getTexture = function(file) {
+    if (!this.textures[file]) {
+        debugger;
+    }
+
+    return this.textures[file];
 };
 
 export default GpuFont;

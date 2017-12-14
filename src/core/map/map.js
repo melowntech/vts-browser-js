@@ -77,6 +77,7 @@ var Map = function(core, mapConfig, path, config) {
     this.currentViewString = '';
     this.namedViews = [];
     this.viewCounter = 0;
+    this.srsReady = false;
 
     this.freeLayerSequence = [];
     this.freeLayersHaveGeodata = false;
@@ -709,6 +710,13 @@ Map.prototype.setPosition = function(pos) {
 };
 
 
+Map.prototype.isReferenceFrameReady = function() {
+    return this.referenceFrame.model.physicalSrs.isReady() &&
+           this.referenceFrame.model.publicSrs.isReady() &&
+           this.referenceFrame.model.navigationSrs.isReady();
+};
+
+
 Map.prototype.getPhysicalSrs = function() {
     return this.referenceFrame.model.physicalSrs;
 };
@@ -752,7 +760,8 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapMobileModeAutodect':         this.config.mapMobileModeAutodect = utils.validateBool(value, false); break;
     case 'mapMobileDetailDegradation':    this.config.mapMobileDetailDegradation = utils.validateNumber(value, 1, Number.MAXINTEGER, 2); break;
     case 'mapNavSamplesPerViewExtent':    this.config.mapNavSamplesPerViewExtent = utils.validateNumber(value, 0.00000000001, Number.MAXINTEGER, 4); break;
-    case 'mapFog':                        this.config.mapFog = utils.validateBool(value, false); if(this.draw){ this.draw.debug.drawFog = this.config.mapFog; } break;
+    case 'mapFog':                        this.config.mapFog = utils.validateBool(value, false); if(this.draw){ this.draw.debug.drawFog = this.config.mapFog; this.dirty = true; } break;
+    case 'mapFlatshade':                  this.config.mapFlatshade = utils.validateBool(value, false); if(this.draw){ this.draw.debug.drawWireframe = this.config.mapFlatshade ? 3 : 0; this.dirty = true; } break;
     case 'mapIgnoreNavtiles':             this.config.mapIgnoreNavtiles = utils.validateBool(value, false); break;
     case 'mapAllowHires':                 this.config.mapAllowHires = utils.validateBool(value, true); break;
     case 'mapAllowLowres':                this.config.mapAllowLowres = utils.validateBool(value, true); break;
@@ -797,6 +806,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapMobileDetailDegradation':    return this.config.mapMobileDetailDegradation;
     case 'mapNavSamplesPerViewExtent':    return this.config.mapNavSamplesPerViewExtent;
     case 'mapFog':                        return this.config.mapFog;
+    case 'mapFlatshade':                  return this.config.mapFlatshade;
     case 'mapIgnoreNavtiles':             return this.config.mapIgnoreNavtiles;
     case 'mapAllowHires':                 return this.config.mapAllowHires;
     case 'mapAllowLowres':                return this.config.mapAllowLowres;

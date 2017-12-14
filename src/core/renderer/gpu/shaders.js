@@ -352,13 +352,13 @@ GpuShaders.icon2VertexShader =
     'attribute vec3 aOrigin;\n'+
     'uniform mat4 uMVP;\n'+
     'uniform vec4 uScale;\n'+
-    'uniform float uPlane;\n'+
+    'uniform float uFile;\n'+
     'varying vec2 vTexCoord;\n'+
     //'float round(float x) { return floor(x + 0.5); }\n'+
     'void main(){ \n'+
         'vTexCoord = aTexCoord.xy * uScale[2];\n'+
-        'float plane = floor(aTexCoord.y/3.0);\n'+
-        'if (plane != floor(uPlane)) {\n'+
+        'float file = floor(aTexCoord.y/3.0);\n'+
+        'if (file != floor(uFile)) {\n'+
             'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
         '}else{\n'+
             'vec4 pos = (uMVP * vec4(aOrigin, 1.0));\n'+
@@ -379,6 +379,7 @@ GpuShaders.textFragmentShader = 'precision mediump float;\n'+
 GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
     'uniform sampler2D uSampler;\n'+
     'uniform vec4 uColor;\n'+
+    'uniform vec2 uSize;\n'+
     'const vec4 uColor1 = vec4(1.0, 1.0, 1.0, 1.0);\n'+
     'const vec4 uColor2 = vec4(0.0, 0.0, 0.0, 1.0);\n'+
     //'const vec4 uColor3 = vec4(0.0, 0.0, 0.0, 0.0);\n'+
@@ -400,7 +401,7 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
         'if (i == 2) mask=vec4(0.0,0.0,1.0,0.0);\n'+
         //'gl_FragColor = vec4(mask.xyz,1.0);\n'+
 
-        'float shift=1.0/256.0;\n'+
+        'float shift=uSize[0];\n'+ // 1.0/256.0;\n'+
         'float shift2=shift*0.498;\n'+
         'vec2 uv=(vTexCoord);\n'+
         'uv.y=fract(uv.y);\n'+
@@ -409,7 +410,7 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
         'vec4 c2=getColor(uv+vec2(shift,0.0),mask);\n'+
         'vec4 c3=getColor(uv+vec2(0.0,shift),mask);\n'+
         'vec4 c4=getColor(uv+vec2(shift,shift),mask);\n'+
-        'vec2 ff=fract(uv*256.0);\n'+
+        'vec2 ff=fract(uv*uSize[1]);\n'+ // 256.0);\n'+
         'vec4 cc1=mix(c,c2,ff.x);\n'+
         'vec4 cc2=mix(c3,c4,ff.x);\n'+
         'c=mix(cc1,cc2,ff.y);\n'+

@@ -169,7 +169,6 @@ Core.prototype.loadMap = function(path) {
             this.config.view = null;
         }
     
-        this.callListener('map-loaded', { 'browserOptions':this.map.browserOptions});
     }).bind(this);
 
     var onMapConfigLoaded = (function(data) {
@@ -363,6 +362,11 @@ Core.prototype.removeListener = function(id) {
     }
 };
 
+Core.prototype.markDirty = function() {
+    if (this.map != null) {
+        this.map.markDirty();
+    }
+};
 
 Core.prototype.onUpdate = function() {
     if (this.killed) {
@@ -370,6 +374,11 @@ Core.prototype.onUpdate = function() {
     }
 
     if (this.map != null) {
+        if (!this.map.srsReady && this.map.isReferenceFrameReady()) {
+            this.map.srsReady = true;
+            this.callListener('map-loaded', { 'browserOptions':this.map.browserOptions});
+        }
+
         this.map.update();
     }
 
@@ -470,7 +479,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.12.5';
+    return (full ? 'Core: ' : '') + '2.12.6';
 }
 
 

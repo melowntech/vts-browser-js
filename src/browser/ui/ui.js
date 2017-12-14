@@ -50,6 +50,13 @@ var UI = function(browser, element) {
     this.killed = false;
     this.init();
     this.instanceId = utils.instanceCounter++;
+
+    Object.defineProperty(this, 'dom', {
+        get: function() {
+            if (this.killed) return;
+            return dom;
+        }
+    });    
 };
 
 

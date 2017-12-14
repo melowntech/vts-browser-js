@@ -351,12 +351,17 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     if (label !== true) {
         var icon = data['icon'];
         job.texture = this.renderer.getBitmap(icon['url'], icon['filter'] || 'linear', icon['tiled'] || false);
+        job.files = [];
     } else {
-        job.planes = data['planes'];
+        job.files = data['files'] || [];
+        job.font = this.renderer.font;
         job.texture = this.renderer.font.texture;
+        job.data = [1.0/job.texture.width, job.texture.width];
         job.noOverlap = data['noOverlap'];
-        if (job.planes) {
+        if (job.font.version) {
             job.program = this.renderer.progIcon2;
+        } else {
+            job.files = [];
         }
     }
 

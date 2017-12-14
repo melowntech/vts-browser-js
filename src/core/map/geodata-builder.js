@@ -22,6 +22,7 @@ var MapGeodataBuilder = function(map) {
     this.bboxMax = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];
 
     this.navSrs = this.map.getNavigationSrs();
+    //this.navSrs = this.map.getPublicSrs();
     this.physSrs = this.map.getPhysicalSrs();
 
     this.heightsToProcess = 0;
@@ -1451,7 +1452,6 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
         }
     }
 
-    //this.heightsToProcess
 };
 
 MapGeodataBuilder.prototype.extractGeometry = function(id) {

@@ -121,7 +121,7 @@ MapSrs.prototype.isProjected = function() {
 MapSrs.prototype.getOriginalHeight = function(coords) {
     var height = coords[2] || 0;
     height /= this.getVerticalAdjustmentFactor(coords);
-    height -= this.getGeoidGridDelta(coords);
+    height += this.getGeoidGridDelta(coords);
     return height;
 };
 
