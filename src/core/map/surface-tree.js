@@ -1044,7 +1044,13 @@ MapSurfaceTree.prototype.traceHeightTile = function(tile, priority, nodeReadyOnl
     
     if (res) { //we need to go deeper
         var childIndex = this.traceHeightChild(tile, this.params);
-        this.traceHeightTile(tile.children[childIndex], 0, false, heightFunction);
+        var child = tile.children[childIndex];
+        
+        if (!child) {
+            this.params.finalNode = true;
+        }
+
+        this.traceHeightTile(child, 0, false, heightFunction);
     }
 };
 
@@ -1106,6 +1112,8 @@ MapSurfaceTree.prototype.traceHeightTileByMap = function(tile, params) {
     }
 
     if (node.hasNavtile()) {
+        params.bestHeightMap = tile.id[0];
+
         if (!tile.heightMap) {
             //if (!preventLoad) {
                 //if (!tile.surface || tile.surface.virtual) {
@@ -1121,7 +1129,7 @@ MapSurfaceTree.prototype.traceHeightTileByMap = function(tile, params) {
             tile.heightMap = tile.resources.getTexture(path, true);
             //}
         } else {
-            if (tile.heightMap.isReady()) {
+            if (tile.heightMap.isReady(null, null, true)) {
                 params.parent = {
                     metanode : params.metanode,
                     heightMap : params.heightMap,

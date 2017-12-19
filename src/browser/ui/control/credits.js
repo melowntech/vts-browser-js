@@ -32,19 +32,30 @@ UIControlCredits.prototype.getCreditsString = function(array, separator, full) {
     }        
     
     if (plain && plain.length > 30 && li > 1 && !full) {
-        li = 1;
-        more = true; 
+        for (i = 0; i < li; i++) {
+            creditInfo = map.getCreditInfo(array[i]);
+            if (creditInfo['html'].trim() != '') {
+                li = i + 1;
+                break;
+            }
+        }
+
+        if (li < array.length) {
+            more = true; 
+        } else {
+            li = array.length;
+        }
     }
 
     for (i = 0; i < li; i++) {
         creditInfo = map.getCreditInfo(array[i]);
        
-        if (creditInfo['html']) {
+        if (creditInfo['html'] && creditInfo['html'].trim() != '') {
             html += creditInfo['html'];
-        }
 
-        if (i + 1 < li) {
-            html += separator;        
+            if (i + 1 < li) {
+                html += separator;        
+            }
         }
     }
     
@@ -63,24 +74,28 @@ UIControlCredits.prototype.update = function() {
     
     if (credits['imagery'].length > 0) {
         res = this.getCreditsString(credits['imagery'], ', ');
-        html += '<div class="vts-credits-supercell">';
-        html += '<div class="vts-credits-cell">Imagery: ' + res[0] + '</div>';
-        html += res[1] ? '<div class="vts-credits-cell-button" id="vts-credits-imagery-more">and others</div>' : '';
-        html += '<div class="vts-credits-separator"></div>';
-        html += '</div>';
-        html2 = '<div class="vts-credits-list">';
-        html2 += this.getCreditsString(credits['imagery'], '<br/>', true)[0] + '</div>';
+        if (res[0] != '') {
+            html += '<div class="vts-credits-supercell">';
+            html += '<div class="vts-credits-cell">Imagery: ' + res[0] + '</div>';
+            html += res[1] ? '<div class="vts-credits-cell-button" id="vts-credits-imagery-more">and others</div>' : '';
+            html += '<div class="vts-credits-separator"></div>';
+            html += '</div>';
+            html2 = '<div class="vts-credits-list">';
+            html2 += this.getCreditsString(credits['imagery'], '<br/>', true)[0] + '</div>';
+        }
     }
     
     if (credits['mapdata'].length > 0) {
         res = this.getCreditsString(credits['mapdata'], ', ');
-        html += '<div class="vts-credits-supercell">';
-        html += '<div class="vts-credits-cell">Map Data: ' + res[0] + '</div>';
-        html += res[1] ? '<div class="vts-credits-cell-button" id="vts-credits-mapdata-more">and others</div>' : '';
-        html += '<div class="vts-credits-separator"></div>';
-        html += '</div>';
-        html3 = '<div class="vts-credits-list">';
-        html3 += this.getCreditsString(credits['mapdata'], '<br/>', true)[0] + '</div>';
+        if (res[0] != '') {
+            html += '<div class="vts-credits-supercell">';
+            html += '<div class="vts-credits-cell">Map Data: ' + res[0] + '</div>';
+            html += res[1] ? '<div class="vts-credits-cell-button" id="vts-credits-mapdata-more">and others</div>' : '';
+            html += '<div class="vts-credits-separator"></div>';
+            html += '</div>';
+            html3 = '<div class="vts-credits-list">';
+            html3 += this.getCreditsString(credits['mapdata'], '<br/>', true)[0] + '</div>';
+        }
     }
 
     html += '<div class="vts-credits-supercell">';

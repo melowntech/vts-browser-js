@@ -57,14 +57,16 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
             heightMap : null,
             heightMapExtents : null,
             traceHeight : true,
-            waitingForNode : false
+            waitingForNode : false,
+            finalNode : false,
+            bestHeightMap : 999
         };
 
         tree.traceHeight(root, params, false);
 
         var metanode = params.metanode, i, li, height;
 
-        if (params.heightMap != null) {
+        if (params.heightMap) {
             if (storeStats) {
                 var stats = this.map.stats;
                 stats.heightClass = 2;
@@ -81,7 +83,7 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
                 height2 = this.getHeightmapValue(nodeCoords, metanode, params);  
                 var factor = lod - Math.floor(lod);
                 height = height1 + (height2 - height1) * factor;
-                
+
                 if (coordsArray) {
                     arrayRes = new Array(coordsArray.length);
                     
@@ -111,11 +113,12 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
 
             return [height, res, true, null, null, arrayRes];
 
-        } else if (metanode != null /*&& metanode.id[0] == lod && !metanode.hasNavtile()*/){
+        } else if (metanode /*&& metanode.id[0] == lod && !metanode.hasNavtile()*/){
             res = this.getSurfaceHeightNodeOnly(coords, lod + 8, storeStats, lod, null, node, nodeCoords, coordsArray);
 
             //console.log("lod2: " + lod + " h: " + height[0]);  
             //return [res[0], res[1], true, null, null, res[5]];
+
             return [res[0], res[1], res[2], null, null, res[5]];
         }
 
@@ -125,9 +128,6 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
             return [height, metanode.id[0] >= lod, true];
         }*/
     }
-
-    //coords
-    //console.log("lod3: " + lod + " h: 0");  
 
     return [0, false, false, null, null, null];
 };
@@ -219,7 +219,9 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
             heightMap : null,
             heightMapExtents : null,
             traceHeight : true,
-            waitingForNode : false
+            waitingForNode : false,
+            finalNode : false,
+            bestHeightMap : 999
         };
 
         tree.traceHeight(root, params, true);
@@ -248,15 +250,15 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
                 //extetnts = params.extents;
                 //return [height, true, true, params.extents, metanode, arrayRes];
 
-                return [height, (metanode.id[0] >= Math.floor(lod)), 
-                        (!params.waitingForNode || metanode.id[0] >= Math.floor(lod)),
+                return [height, (metanode.id[0] >= Math.floor(lod) || params.finalNode), 
+                        (!params.waitingForNode || metanode.id[0] >= Math.floor(lod) || params.finalNode),
                         params.extents, metanode, arrayRes];
                                       
 
                 //console.log("lod: " + lod + " h1: " + center[2] + " h2: " + center2[2] + " h: " + height);  
             } else {
-                return [center[2], (metanode.id[0] >= Math.floor(lod)), 
-                        (!params.waitingForNode || metanode.id[0] >= Math.floor(lod)),
+                return [center[2], (metanode.id[0] >= Math.floor(lod) || params.finalNode), 
+                        (!params.waitingForNode || metanode.id[0] >= Math.floor(lod) || params.finalNode),
                         params.extents, metanode, arrayRes];
 
                 //return [center[2], true, true, params.extents, metanode, arrayRes];

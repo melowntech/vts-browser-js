@@ -26,6 +26,8 @@ var RendererInit = function(renderer) {
 
     renderer.font = new GpuFont(this.gpu, this.core);
     //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font.png');
+    //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font22.png');
+    //renderer.font = new GpuFont(this.gpu, this.core, null, null, './allinone.fnt');
 
     this.initShaders();
     this.initHeightmap();

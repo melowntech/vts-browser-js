@@ -177,9 +177,16 @@ MapInterface.prototype.convertCoords = function(sourceSrs, destinationSrs, coord
     return srs2.convertCoordsFrom(coords, srs);
 };
 
+
 MapInterface.prototype.convertCoordsFromNavToPublic = function(pos, mode, lod) {
-    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 45 ];
     return this.map.convert.getPositionPublicCoords((new MapPosition(p)), lod);
+};
+
+
+MapInterface.prototype.convertCoordsFromPublicToNav = function(pos, mode, lod) {
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 45 ];
+    return this.map.convert.getPositionNavCoordsFromPublic((new MapPosition(p)), lod);
 };
 
 
@@ -189,28 +196,30 @@ MapInterface.prototype.convertCoordsFromPhysToPublic = function(pos) {
 
 
 MapInterface.prototype.convertCoordsFromNavToPhys = function(pos, mode, lod) {
-    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 45 ];
     return this.map.convert.getPositionPhysCoords((new MapPosition(p)), lod);
 };
+
 
 MapInterface.prototype.convertCoordsFromPhysToNav = function(pos, mode, lod) {
     return this.map.convert.convertCoordsFromPhysToNav(pos, mode, lod);
 };
 
+
 MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos, mode, lod) {
-    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 45 ];
     return this.map.convert.getPositionCanvasCoords((new MapPosition(p)), lod);
 };
 
 
 MapInterface.prototype.convertCoordsFromPhysToCanvas = function(pos) {
-    var p = ['obj', pos[0], pos[1], 'fix', pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], 'fix', pos[2], 0, 0, 0, 10, 45 ];
     return this.map.convert.getPositionCanvasCoords((new MapPosition(p)), null, true);
 };
 
 
 MapInterface.prototype.convertCoordsFromNavToCameraSpace = function(pos, mode, lod) {
-    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 55 ];
+    var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 45 ];
     return this.map.convert.getPositionCameraSpaceCoords((new MapPosition(p)), lod);
 };
 

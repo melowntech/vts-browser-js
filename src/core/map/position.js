@@ -160,7 +160,7 @@ MapPosition.prototype.validate = function() {
     pos[6] = (pos[6] != null) ? pos[6] : -90;
     pos[7] = (pos[7] != null) ? pos[7] : 0;
     pos[8] = (pos[8] != null) ? pos[8] : 900;
-    pos[9] = (pos[9] != null) ? pos[9] : 55;
+    pos[9] = (pos[9] != null) ? pos[9] : 45;
 
     pos[3] = (pos[3] == 'fixed') ? 'fix' : pos[3];
 };

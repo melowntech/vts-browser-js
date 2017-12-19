@@ -256,6 +256,11 @@ utils.loadJSON = function(path, onLoaded, onError, skipParse, withCredentials, x
         //xhr.setRequestHeader(xhrParams["tokenHeader"], xhrParams["token"]); //old way
         xhr.setRequestHeader('Accept', 'token/' + xhrParams['token'] + ', */*');
     }
+
+    if (xhrParams && xhrParams['charset']) {
+        xhr.overrideMimeType('text/xml; charset=' + xhrParams['charset']);
+        //xhr.setRequestHeader('Content-type', xhrParams['Content-type']);
+    }
     
     xhr.send('');
 };

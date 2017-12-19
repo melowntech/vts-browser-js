@@ -212,6 +212,18 @@ MapConvert.prototype.getPositionCameraCoords = function(position, heightMode) {
     }
 };
 
+MapConvert.prototype.getPositionNavCoordsFromPublic = function(position, lod) {
+    var coords = position.getCoords();
+
+    if (position.getHeightMode() == 'float') {
+        lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(position.getCoords(), position.getViewExtent(), this.config.mapNavSamplesPerViewExtent);
+        var surfaceHeight = this.measure.getSurfaceHeight(position.getCoords(), lod);
+        coords[2] += surfaceHeight[0]; 
+    }
+
+    return this.convertCoords(coords, 'public', 'navigation');
+};
+
 MapConvert.prototype.getPositionPublicCoords = function(position, lod) {
     var coords = position.getCoords();
 

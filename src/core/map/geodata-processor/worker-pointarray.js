@@ -324,7 +324,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer,
             'color':labelData.color, 'z-index':zIndex, 'visibility': visibility, 'culling': culling, 
             'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
-            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'planes':labelData.planes,
+            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
             'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);
@@ -535,14 +535,19 @@ var processLabel = function(point, labelData) {
         index2 += 3;
     }
 
-    labelData.planes = [];
+    labelData.files = [];
 
     for (var key in planes) {
-        labelData.planes.push(parseInt(key));
+        var plane = parseInt(key);
+        var file = Math.round((plane - (plane % 3)) / 3);
+
+        if (labelData.files.indexOf(file) == -1) {
+            labelData.files.push(file);
+        }
     }
 
     if (!font.version) {
-        labelData.planes = null;        
+        labelData.files = null;        
     }
 
     labelData.index = index;
