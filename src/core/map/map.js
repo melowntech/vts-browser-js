@@ -1111,7 +1111,12 @@ Map.prototype.update = function() {
         }
     }
 
-    if (this.div != null && this.div.style.visibility == 'hidden'){
+    if (!this.srsReady) {
+        this.loader.update();
+        return;
+    }
+
+    if (this.div && this.div.style.visibility == 'hidden'){
         //loop heartbeat
         //window.requestAnimFrame(this.update.bind(this));
         return;

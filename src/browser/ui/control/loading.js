@@ -124,6 +124,7 @@ UIControlLoading.prototype.update = function() {
         (stats['bestMeshTexelSize'] != 0 && stats['bestMeshTexelSize'] <= (stats['texelSizeFit'] * 3) || //or resolution is good enough
         (stats['loadMode'] == 'fit' || stats['loadMode'] == 'fitonly') && (stats['drawnTiles'] - stats['drawnGeodataTiles']) > 1) ) { //or at leas some tiles are loaded
         this.hide();
+        this.ui.browser.callListener('loading-screen-hidden', {});
     }
 };
 
