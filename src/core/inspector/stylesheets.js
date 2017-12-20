@@ -183,6 +183,10 @@ InspectorStylesheets.prototype.niceStyleFormat = function(data) {
         elements.push('bitmaps');
     } 
 
+    if (data['fonts']) {
+        elements.push('fonts');
+    } 
+
     if (data['layers']) {
         elements.push('layers');
     } 

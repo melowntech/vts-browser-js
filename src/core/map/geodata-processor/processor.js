@@ -2,9 +2,11 @@
 var MapGeodataProcessor = function(surface, listener) {
     this.layer = surface;
     this.map = surface.map;
+    this.renderer = this.map.renderer;
     this.killed = false;
     this.listener = listener;
     this.ready = true;
+    this.fonts = {};
 
     // eslint-disable-next-line
     var worker = require('worker-loader?inline&fallback=false!./worker-main');
@@ -81,6 +83,19 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile) {
     }
 
     this.processWorker.postMessage(message);
+};
+
+MapGeodataProcessor.prototype.setStylesheet = function(stylesheet) {
+    this.setFont('@system', this.renderer.font);
+    this.sendCommand('setStylesheet', { 'data' : stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()) } );
+};
+
+MapGeodataProcessor.prototype.setFont = function(id, font) {
+    if (!this.fonts[id]) {
+        this.fonts[id] = font;
+        this.sendCommand('setFont', {'id' : 'id', 'chars' : font.chars, 'space' : font.space, 'cly' : font.cly, 
+                                     'size' : font.size, 'version':font.version});
+    }
 };
 
 

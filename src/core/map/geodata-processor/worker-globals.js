@@ -3,6 +3,7 @@ var globals = {
     stylesheetData : {},
     stylesheetLayers : {},
     stylesheetBitmaps : {},
+    stylesheetFonts : {},
     stylesheetConstants : {},
     stylesheetVariables : {},
     forceOrigin : false,

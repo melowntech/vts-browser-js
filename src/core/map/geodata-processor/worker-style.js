@@ -1047,6 +1047,34 @@ var processStylesheet = function(stylesheetLayersData) {
     //load bitmaps
     postMessage({'command':'loadBitmaps', 'bitmaps': globals.stylesheetBitmaps});
 
+
+    //get fonts
+    var fonts = stylesheetLayersData['fonts'] || {};
+
+    //build map
+    for (key in fonts) {
+        var font = fonts[key];
+        //var skip = false;
+
+        if ((typeof font) == 'string') {
+            font = {'url':font};
+        } else if((typeof font) == 'object'){
+            if (font['url'] == null) {
+                logError('wrong-font', key);
+            }
+        } else {
+            logError('wrong-font', key);
+        }
+
+        //if (!skip) {
+        globals.stylesheetFonts[key] = font;
+        //}
+    }
+
+    //load fonts
+    postMessage({'command':'loadFonts', 'fonts': globals.stylesheetFonts});
+
+
     //get layers
     globals.stylesheetData = {
         layers : {}
