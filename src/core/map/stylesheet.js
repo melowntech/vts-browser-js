@@ -8,6 +8,7 @@ var utils = utils_;
 var MapStylesheet = function(map, id, url, freeLayer) {
     this.generateLines = true;
     this.map = map;
+    this.renderer = this.map.renderer;
     this.stats = map.stats;
     this.id  = id;
     this.url  = null;
@@ -16,10 +17,14 @@ var MapStylesheet = function(map, id, url, freeLayer) {
     this.size = 0;
     this.fileSize = 0;
     this.freeLayer = freeLayer;
+    this.fonts = {};
+    this.fontsReady = false;
     
     if (typeof url === 'object') {
         this.data = url;
+        this.fonts = this.data['fonts'] || {};
         this.loadState = 2;
+        this.map.markDirty();
     } else {
         if (this.freeLayer) {
             this.url = this.freeLayer.processUrl(url, '');
@@ -43,10 +48,25 @@ MapStylesheet.prototype.setData = function(data) {
     this.loadState = 2;
 };
 
+MapStylesheet.prototype.checkFonts = function() {
+    var ready = true;
+    for (var key in this.fonts) {
+        ready = (ready && this.renderer.getFont(this.fonts[key]).isReady());
+    }
+
+    this.fontsReady = ready;
+
+    return ready;
+};
 
 MapStylesheet.prototype.isReady = function(doNotLoad, priority) {
     if (this.loadState == 2) { //loaded
-        return true;
+        if (this.fontsReady) {
+            return true;
+        } else {
+            return this.checkFonts();
+        }
+
     } else {
         if (this.loadState == 0) { 
             if (doNotLoad) {
@@ -95,6 +115,7 @@ MapStylesheet.prototype.onLoaded = function(data) {
     }
     
     this.data = data;
+    this.fonts = data['fonts'] || {};
 
     //this.mapLoaderCallLoaded();
     this.loadState = 2;
