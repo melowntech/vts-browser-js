@@ -86,14 +86,29 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile) {
 };
 
 MapGeodataProcessor.prototype.setStylesheet = function(stylesheet) {
-    this.setFont('@system', this.renderer.font);
+    this.setFont('#system', this.renderer.font);
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()) } );
+
+    var fonts = stylesheet.fonts;
+    var fontMap = { '#system' : '#system' };
+
+    for (var key in fonts) {
+        var fontUrl = fonts[key];
+        var font = this.renderer.fonts[fontUrl];
+        fontMap[key] = fontUrl;
+
+        if (font) {
+            this.setFont(fontUrl, font);
+        }
+    }
+
+    this.sendCommand('setFontMap', { 'map' : fontMap });
 };
 
-MapGeodataProcessor.prototype.setFont = function(id, font) {
-    if (!this.fonts[id]) {
-        this.fonts[id] = font;
-        this.sendCommand('setFont', {'id' : 'id', 'chars' : font.chars, 'space' : font.space, 'cly' : font.cly, 
+MapGeodataProcessor.prototype.setFont = function(url, font) {
+    if (!this.fonts[url]) {
+        this.fonts[url] = font;
+        this.sendCommand('setFont', {'url' : url, 'chars' : font.chars, 'space' : font.space, 'cly' : font.cly, 
                                      'size' : font.size, 'version':font.version});
     }
 };

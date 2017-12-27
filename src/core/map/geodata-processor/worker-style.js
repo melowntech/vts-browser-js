@@ -804,6 +804,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'line-style-background': return [0,0,0,0];
 
     case 'line-label':        return false;
+    case 'line-label-font':   return ['#system'];
     case 'line-label-color':  return [255,255,255,255];
     case 'line-label-source': return '$name';
     case 'line-label-size':   return 1;
@@ -824,6 +825,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'icon-color':   return [255,255,255,255];
 
     case 'label':            return false;
+    case 'label-font':       return ['#system'];
     case 'label-color':      return [255,255,255,255];
     case 'label-source':     return '$name';
     case 'label-size':       return 10;

@@ -9,7 +9,9 @@ var globals = globals_,
 
 
 var setFont = function(fontData) {
-    globals_.fonts['default'] = {
+    console.log('setFont ' + fontData['url']);
+
+    globals.fontStorage[fontData['url']] = {
         chars : fontData['chars'],
         space : fontData['space'],
         size : fontData['size'],
@@ -18,6 +20,12 @@ var setFont = function(fontData) {
     };
 };
 
+var setFontMap = function(fontMap) {
+    var fonts = fontMap['map'];
+    for (var key in fonts) {
+        globals.fonts[key] = globals.fontStorage[fonts[key]];
+    }
+};
 
 var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, font, vertexBuffer, texcoordsBuffer, flat, planes) {
     var n;
@@ -439,6 +447,6 @@ var areTextCharactersAvailable = function(text, font) {
 };
 
 
-export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable, addText, addTextOnPath, setFont, getCharVerticesCount};
+export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable, addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount};
 
 

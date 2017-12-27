@@ -908,10 +908,10 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var labelText = getLayerExpresionValue(style, labelSource, lineString, lod, labelSource);
 
     if (labelSource == '$name') {
-        if (!areTextCharactersAvailable(labelText, globals.fonts['default'])) {
+        if (!areTextCharactersAvailable(labelText, globals.fonts['#system'])) {
             var labelText2 = getLayerExpresionValue(style, '$name:en', lineString, lod, labelSource);
             
-            if (areTextCharactersAvailable(labelText2, globals.fonts['default'])) {
+            if (areTextCharactersAvailable(labelText2, globals.fonts['#system'])) {
                 labelText = labelText2;                     
             }
         }

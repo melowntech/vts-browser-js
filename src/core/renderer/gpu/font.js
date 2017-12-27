@@ -318,9 +318,9 @@ GpuFont.prototype.areTexturesReady = function(files) {
 };
 
 GpuFont.prototype.getTexture = function(file) {
-    if (!this.textures[file]) {
-        debugger;
-    }
+    //if (!this.textures[file]) {
+        //debugger;
+    //}
 
     return this.textures[file];
 };

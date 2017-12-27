@@ -93,10 +93,10 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
         var size = getLayerPropertyValue(style, 'label-size', pointArray, lod);
         
         if (source == '$name') {
-            if (!areTextCharactersAvailable(text, globals.fonts['default'])) {
+            if (!areTextCharactersAvailable(text, globals.fonts['#system'])) {
                 var text2 = getLayerExpresionValue(style, '$name:en', pointArray, lod, source);
                 
-                if (areTextCharactersAvailable(text2, globals.fonts['default'])) {
+                if (areTextCharactersAvailable(text2, globals.fonts['#system'])) {
                     text = text2;                     
                 }
             }
@@ -458,7 +458,7 @@ var processLabel = function(point, labelData) {
     var index2 = labelData.index2;
     var lastIndex = index;
     var text = '' + labelData.text;
-    var font = globals.fonts['default'];
+    var font = globals.fonts['#system'];
     var planes = {};
 
     //split by new line
