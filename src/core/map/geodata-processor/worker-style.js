@@ -1038,6 +1038,7 @@ var processLayer = function(layerId, layerData, stylesheetLayersData) {
 var processStylesheet = function(stylesheetLayersData) {
     var key;
     globals.stylesheetBitmaps = {};
+    globals.stylesheetFonts = {};
     globals.stylesheetConstants = stylesheetLayersData['constants'] || {};
     globals.stylesheetVariables = stylesheetLayersData['variables'] || {};
 

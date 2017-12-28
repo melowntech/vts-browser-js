@@ -25,6 +25,7 @@ var RendererInit = function(renderer) {
     this.gpu = renderer.gpu;
 
     renderer.font = new GpuFont(this.gpu, this.core);
+    renderer.fonts['#system'] = renderer.font;
     //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font.png');
     //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font22.png');
     //renderer.font = new GpuFont(this.gpu, this.core, null, null, './allinone.fnt');
@@ -89,10 +90,10 @@ RendererInit.prototype.initShaders = function() {
 
     renderer.progPolygon = new GpuProgram(gpu, shaders.polygonVertexShader, shaders.polygonFragmentShader);
     renderer.progText = new GpuProgram(gpu, shaders.textVertexShader, shaders.textFragmentShader);
-    renderer.progText2 = new GpuProgram(gpu, shaders.textVertexShader2, shaders.textFragmentShader);
+    renderer.progText2 = new GpuProgram(gpu, shaders.text2VertexShader, shaders.text2FragmentShader); //line label
     renderer.progImage = new GpuProgram(gpu, shaders.imageVertexShader, shaders.imageFragmentShader);
-    renderer.progIcon = new GpuProgram(gpu, shaders.iconVertexShader, shaders.textFragmentShader);
-    renderer.progIcon2 = new GpuProgram(gpu, shaders.icon2VertexShader, shaders.text2FragmentShader);
+    renderer.progIcon = new GpuProgram(gpu, shaders.iconVertexShader, shaders.textFragmentShader); //label or icon
+    renderer.progIcon2 = new GpuProgram(gpu, shaders.icon2VertexShader, shaders.text2FragmentShader); //label
 };
 
 

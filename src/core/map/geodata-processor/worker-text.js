@@ -200,8 +200,8 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
 
     var p1 = points[0];
     
-    var chars = font.chars;
     var font = fonts[0];
+    var chars = font.chars;
     var factor = size / font.size;
     //var newLineSpace = font.space * factor;
     var newLineSpace = font.cly * factor;
@@ -460,7 +460,6 @@ var getFonts = function(fonts) {
 };
 
 var getFontsStorage = function(fonts) {
-    debugger
     var fontsMap = [];
     for (var i = 0, li = fonts.length; i < li; i++) {
         fontsMap.push(globals.fontsMap[fonts[i]]);

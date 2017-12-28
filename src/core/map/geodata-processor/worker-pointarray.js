@@ -93,7 +93,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
         var text = getLayerExpresionValue(style, source, pointArray, lod, source);
         var size = getLayerPropertyValue(style, 'label-size', pointArray, lod);
-        var fonts = getLayerPropertyValue(style, 'label-font', pointArray, lod);
+        var fontNames = getLayerPropertyValue(style, 'label-font', pointArray, lod);
+        var fonts = getFonts(fontNames);
         
         if (source == '$name') {
             if (!areTextCharactersAvailable(text, fonts)) {
@@ -115,8 +116,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                 stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'label-origin', pointArray, lod),
                 align : getLayerPropertyValue(style, 'label-align', pointArray, lod),
-                fonts : getFonts(fonts),
-                fontsStorage : getFontsStorage(fonts),
+                fonts : fonts,
+                fontsStorage : getFontsStorage(fontNames),
                 text : text,
                 width : getLayerPropertyValue(style, 'label-width', pointArray, lod),
                 noOverlap : getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod),

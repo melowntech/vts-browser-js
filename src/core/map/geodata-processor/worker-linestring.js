@@ -943,14 +943,19 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes);
     index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index);
 
-    var planes2 = [];
+    var files = [];
 
     for (var key in planes) {
-        planes2.push(parseInt(key));
+        var plane = parseInt(key);
+        var file = Math.round((plane - (plane % 3)) / 3);
+
+        if (files.indexOf(file) == -1) {
+            files.push(file);
+        }
     }
 
     if (!fonts[0].version) {
-        planes2 = null;        
+        files = null;        
     }
 
     var signature = JSON.stringify({
@@ -962,7 +967,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
         'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'z-index':zIndex, 'center': center,
-        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'planes': planes2,
+        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files': files,
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': fontsStorage,
         'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
