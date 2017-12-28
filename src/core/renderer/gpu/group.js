@@ -354,10 +354,12 @@ GpuGroup.prototype.addIconJob = function(data, label) {
         job.files = [];
     } else {
         job.files = data['files'] || [];
-        job.font = this.renderer.font;
-        job.texture = this.renderer.font.texture;
-        job.data = [1.0/job.texture.width, job.texture.width];
         job.noOverlap = data['noOverlap'];
+        var fonts = data['fonts'] || ['#system'];
+        job.font = this.renderer.fonts[fonts[0]];
+        job.texture = job.font.texture;
+        job.data = [1.0/job.texture.width, job.texture.width];
+
         if (job.font.version) {
             job.program = this.renderer.progIcon2;
         } else {

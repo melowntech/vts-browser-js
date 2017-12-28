@@ -11,7 +11,7 @@ var globals = globals_,
 var setFont = function(fontData) {
     console.log('setFont ' + fontData['url']);
 
-    globals.fontStorage[fontData['url']] = {
+    globals.fontsStorage[fontData['url']] = {
         chars : fontData['chars'],
         space : fontData['space'],
         size : fontData['size'],
@@ -23,12 +23,14 @@ var setFont = function(fontData) {
 var setFontMap = function(fontMap) {
     var fonts = fontMap['map'];
     for (var key in fonts) {
-        globals.fonts[key] = globals.fontStorage[fonts[key]];
+        globals.fonts[key] = globals.fontsStorage[fonts[key]];
     }
+
+    globals.fontsMap = fonts;
 };
 
-var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, font, vertexBuffer, texcoordsBuffer, flat, planes) {
-    var n;
+var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes) {
+    var n, font = fonts[0];
 
     if (globals.geocent && !flat) {
         n = [0,0,0];
@@ -159,9 +161,10 @@ var getCharVerticesCount = function(origin) {
 };
 
 
-var addText = function(pos, dir, text, size, font, vertexBuffer, texcoordsBuffer, flat, index, planes) {
+var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffer, flat, index, planes) {
     var textVector = [0,1,0];
 
+    var font = fonts[0];
     var factor = size / font.size;
     //var newLineSpace = font.space * factor;
     var newLineSpace = font.cly * factor;
@@ -179,7 +182,7 @@ var addText = function(pos, dir, text, size, font, vertexBuffer, texcoordsBuffer
             continue;
         }
 
-        var shift = addChar(p1, dir, 0, char, factor, index, index, textVector, font, vertexBuffer, texcoordsBuffer, flat, planes);
+        var shift = addChar(p1, dir, 0, char, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes);
 
         p1 = shift[0];
         index = shift[1];
@@ -190,7 +193,7 @@ var addText = function(pos, dir, text, size, font, vertexBuffer, texcoordsBuffer
 };
 
 
-var addTextOnPath = function(points, distance, text, size, textVector, font, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
+var addTextOnPath = function(points, distance, text, size, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
     if (textVector == null) {
         textVector = [0,1,0];
     }
@@ -198,6 +201,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, font, ver
     var p1 = points[0];
     
     var chars = font.chars;
+    var font = fonts[0];
     var factor = size / font.size;
     //var newLineSpace = font.space * factor;
     var newLineSpace = font.cly * factor;
@@ -236,7 +240,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, font, ver
 
         vec3Normalize(dir);
 
-        var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, char, factor, index, index, textVector, font, vertexBuffer, texcoordsBuffer, null, planes);
+        var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, char, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes);
 
         p1 = shift[0];
         index = shift[1];
@@ -248,9 +252,9 @@ var addTextOnPath = function(points, distance, text, size, textVector, font, ver
 };
 
 
-var addStreetTextOnPath = function(points, text, size, font, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
-    var factor = size / font.size;
-    var textLength = getTextLength(text, factor, font);
+var addStreetTextOnPath = function(points, text, size, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
+    var factor = size / fonts[0].size;
+    var textLength = getTextLength(text, factor, fonts);
     var pathLength = getPathLength(points);
     var shift = (pathLength -  textLength)*0.5;
     if (shift < 0) {
@@ -261,27 +265,27 @@ var addStreetTextOnPath = function(points, text, size, font, verticalOffset, ver
         return;
     }
 
-    var textVector = getPathTextVector(points, shift, text, factor, font);
+    var textVector = getPathTextVector(points, shift, text, factor, fonts);
 
-    return addTextOnPath(points, shift, text, size, textVector, font, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes);
+    return addTextOnPath(points, shift, text, size, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes);
 };
 
 
-var getFontFactor = function(size, font) {
-    return size / font.size;
+var getFontFactor = function(size, fonts) {
+    return size / fonts[0].size;
 };
 
 
-var getLineHeight = function(size, font) {
-    var factor = size / font.size;
+var getLineHeight = function(size, fonts) {
+    var factor = size / fonts[0].size;
     //return font.space * factor;
-    return font.cly * factor;
+    return fonts[0].cly * factor;
 };
 
 
-var getTextLength = function(text, factor, font) {
+var getTextLength = function(text, factor, fonts) {
     var l = 0;
-    var chars = font.chars;
+    var chars = fonts[0].chars;
 
     for (var i = 0, li = text.length; i < li; i++) {
         var char = text.charCodeAt(i);
@@ -305,9 +309,9 @@ var getTextLength = function(text, factor, font) {
 };
 
 
-var getSplitIndex = function(text, width, factor, font) {
+var getSplitIndex = function(text, width, factor, fonts) {
     var l = 0;
-    var chars = font.chars;
+    var chars = fonts[0].chars;
 
     for (var i = 0, li = text.length; i < li; i++) {
         var char = text.charCodeAt(i);
@@ -382,13 +386,13 @@ var getPathPositionAndDirection = function(points, distance) {
 };
 
 
-var getPathTextVector = function(points, shift, text, factor, font) {
+var getPathTextVector = function(points, shift, text, factor, fonts) {
     var l = 0;
     var p1 = [0,0,0];
     var dir = [1,0,0];
     var textDir = [0,0,0];
     var textStart = shift;
-    var textEnd = shift + getTextLength(text, factor, font);
+    var textEnd = shift + getTextLength(text, factor, fonts);
     var bboxMin = globals.bboxMin;
     var geocent = globals.geocent;
 
@@ -424,12 +428,12 @@ var getPathTextVector = function(points, shift, text, factor, font) {
 };
 
 
-var areTextCharactersAvailable = function(text, font) {
+var areTextCharactersAvailable = function(text, fonts) {
     if (!text || text == '') {
         return false;
     }
 
-    var chars = font.chars;
+    var chars = fonts[0].chars;
 
     for (var i = 0, li = text.length; i < li; i++) {
         var char = text.charCodeAt(i);
@@ -446,7 +450,25 @@ var areTextCharactersAvailable = function(text, font) {
     return true;
 };
 
+var getFonts = function(fonts) {
+    var fontsMap = [];
+    for (var i = 0, li = fonts.length; i < li; i++) {
+        fontsMap.push(globals.fonts[fonts[i]]);
+    }
 
-export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable, addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount};
+    return fontsMap;
+};
+
+var getFontsStorage = function(fonts) {
+    debugger
+    var fontsMap = [];
+    for (var i = 0, li = fonts.length; i < li; i++) {
+        fontsMap.push(globals.fontsMap[fonts[i]]);
+    }
+
+    return fontsMap;
+};
+
+export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable, addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount, getFonts, getFontsStorage};
 
 

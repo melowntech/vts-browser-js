@@ -574,7 +574,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             return value;
         }
 
-            //check multipasss
+        //check multipasss
         if (key == 'next-pass') {
             if (Array.isArray(value) && value.length > 0) {
 
@@ -598,7 +598,24 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
-            //check array
+        if (key == 'label-font' || key == 'line-label-font') {
+
+            if (!Array.isArray(value) || value.length < 1) {
+                logError('wrong-property-value[]', layerId, key, value, 0);
+                return getDefaultLayerPropertyValue(key);
+            } else {
+                for (i = 0, li = value.length; i < li; i++) {
+                    if (typeof value[i] != 'string' || !globals.fonts[value[i]]) {
+                        logError('wrong-property-value[]', layerId, key, value, 0);
+                        return getDefaultLayerPropertyValue(key);
+                    }
+                }
+            }
+
+            return value;
+        }
+
+        //check array
         if (arrayLength != null) {
             if (Array.isArray(value) && value.length == arrayLength) {
 
@@ -637,7 +654,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
     case 'string':
 
-            //validate line Layer enum
+        //validate line Layer enum
         if (key == 'line-style') {
             switch(value) {
             case 'solid':
@@ -659,7 +676,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
-            //validate origin enum
+        //validate origin enum
         if (key == 'label-origin' || key == 'icon-origin') {
             switch(value) {
             case 'top-left':
@@ -677,7 +694,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
-            //validate align enum
+        //validate align enum
         if (key == 'label-align') {
             switch(value) {
             case 'left':
@@ -782,6 +799,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'visibility':      return validateValue(layerId, key, value, 'number', null, 0.00001, Number.MAX_VALUE);
     case 'visibility-abs':  return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
     case 'visibility-rel':  return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
+
     }
 
     return value; //custom property
