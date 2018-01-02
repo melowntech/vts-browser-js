@@ -599,7 +599,7 @@ Map.prototype.setStylesheetData = function(id, data) {
             if (freeLayer && freeLayer.geodata && freeLayer.stylesheet == stylesheet) {
                 
                 if (freeLayer.geodataProcessor) {
-                    freeLayer.geodataProcessor.setStylesheet(freeLayer.stylesheet.data);
+                    freeLayer.geodataProcessor.setStylesheet(freeLayer.stylesheet);
                     //freeLayer.geodataProcessor.sendCommand('setStylesheet', { 'data' : freeLayer.stylesheet.data, 'geocent' : (!this.getNavigationSrs().isProjected()) });
                 }
 

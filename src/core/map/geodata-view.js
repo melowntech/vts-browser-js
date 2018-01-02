@@ -159,7 +159,7 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
     doNotLoad = doNotLoad || doNotUseGpu;
     
     //if (!this.ready && !doNotUseGpu && this.geodataProcessor.isReady()) {
-    if (!this.ready && !doNotLoad) {
+    if (!this.ready && !doNotLoad && this.surface.stylesheet.isReady()) {
         if (this.geodata.isReady(doNotLoad, priority, doNotCheckGpu) && this.geodataProcessor.isReady()) {
             this.killedByCache = false;
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));

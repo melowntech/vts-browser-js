@@ -45,7 +45,9 @@ MapStylesheet.prototype.kill = function() {
 
 MapStylesheet.prototype.setData = function(data) {
     this.data = data;
+    this.fonts = this.data['fonts'] || {};
     this.loadState = 2;
+    this.checkFonts();
 };
 
 MapStylesheet.prototype.checkFonts = function() {
