@@ -155,6 +155,10 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
         return false;
     }
 
+    //if (!(this.tile.id[0] == 10 && this.tile.id[1] == 273 && this.tile.id[2] == 180)) {
+      //  return false;
+    //}
+
     var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.draw.maxGpuUsed);
     doNotLoad = doNotLoad || doNotUseGpu;
     

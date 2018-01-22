@@ -196,11 +196,11 @@ GpuFont.prototype.readChar = function(char, data, index, fx, fy, cly, textureLX)
 
     this.chars[char] = {
         u1 : (x ) * fx,
-        v1 : (y * fy) + plane,
+        v1 : ((y-3) * fy) + plane,
         u2 : (x + clx) * fx,
-        v2 : ((y + cly) * fy) + plane,
+        v2 : (((y+2) + cly) * fy) + plane,
         lx : clx,
-        ly : cly,
+        ly : cly+5,
         step : (clx-2), 
         plane: plane
     };

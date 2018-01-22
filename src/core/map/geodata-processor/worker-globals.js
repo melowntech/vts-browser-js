@@ -17,6 +17,7 @@ var globals = {
     tileX : 0,
     tileY : 0,
     tileLod : 0,
+    tileSize : 1,
     hitState : 0,
     groupOptimize : true,
     groupOrigin : [0,0,0],

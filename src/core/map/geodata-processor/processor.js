@@ -86,6 +86,10 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile) {
     
     if (tile && tile.id) { 
         message['lod'] = tile.id[0];
+
+        if (tile.metanode) {
+            message['tileSize'] = tile.metanode.diskAngle * tile.metanode.diskDistance;
+        }
     }
 
     this.processWorker.postMessage(message);
