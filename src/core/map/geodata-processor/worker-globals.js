@@ -28,7 +28,8 @@ var globals = {
     signatureCounter : 0,
     autoLod : false,
     featureType : null,
-    groupId : null
+    groupId : null,
+    disableLog : false
 };
 
 

@@ -537,6 +537,10 @@ var copyLayer = function(layerId, layer, layerData, stylesheetLayersData) {
 
 
 var logError = function(errorType, layerId, key, value, index, subkey) {
+    if (globals.disableLog) {
+        return;
+    }
+
     if ((typeof value) == 'object') {
         value = JSON.stringify(value);
     }
@@ -969,7 +973,11 @@ function getFilterResult(filter, feature, featureType, group, layer, key, lod, d
     case 'skip': return false; 
     }
 
+    globals.disableLog = (filter[0] == 'has' || filter[0] == '!has');
+
     var value = getLayerPropertyValueInner(layer, key, feature, lod, filter[1], 0), value2;
+
+    globals.disableLog = false;
 
     switch(filter[0]) {
     case '==':
