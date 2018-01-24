@@ -320,18 +320,26 @@ GpuShaders.textVertexShader =
     '}';
 
 
-GpuShaders.textVertexShader2 =
-    'attribute vec3 aPosition;\n'+
+GpuShaders.text2VertexShader =
+    'attribute vec4 aPosition;\n'+
     'attribute vec4 aTexCoord;\n'+
     'uniform mat4 uMVP;\n'+
-    'uniform vec4 uPosition;\n'+
-    'uniform float uDepth;\n'+
+    'uniform vec4 uVec;\n'+
+    'uniform float uFile;\n'+
     'varying vec2 vTexCoord;\n'+
     'void main(){ \n'+
         'vTexCoord = aTexCoord.xy;\n'+
-        'gl_Position = uMVP*vec4(aPosition[0]+uPosition[0],-aPosition[1]+uPosition[1],uPosition[2],1.0);\n'+
+        'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
+            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+        '}else{\n'+
+            'float file = floor(aTexCoord.y/3.0);\n'+
+            'if (file != floor(uFile)) {\n'+
+                'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+            '}else{\n'+
+                'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
+            '}\n'+
+        '}\n'+
     '}';
-
 
 GpuShaders.iconVertexShader =
     'attribute vec4 aPosition;\n'+

@@ -1,14 +1,16 @@
 
 import {globals as globals_, clamp as clamp_} from './worker-globals.js';
 import {getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
-import {addText as addText_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_, getTextLength as getTextLength_,
+import {addText as addText_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_,
+        getTextLength as getTextLength_, getFonts as getFonts_, getFontsStorage as getFontsStorage_,
         areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from './worker-text.js';
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
 
 //get rid of compiler mess
 var globals = globals_, clamp = clamp_;
 var getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
-var addText = addText_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_, getTextLength = getTextLength_,
+var addText = addText_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_,
+    getTextLength = getTextLength_, getFonts = getFonts_, getFontsStorage = getFontsStorage_,
     areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
 var postGroupMessage = postGroupMessage_;
 
@@ -91,12 +93,14 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
         var text = getLayerExpresionValue(style, source, pointArray, lod, source);
         var size = getLayerPropertyValue(style, 'label-size', pointArray, lod);
+        var fontNames = getLayerPropertyValue(style, 'label-font', pointArray, lod);
+        var fonts = getFonts(fontNames);
         
         if (source == '$name') {
-            if (!areTextCharactersAvailable(text, globals.fonts['default'])) {
+            if (!areTextCharactersAvailable(text, fonts)) {
                 var text2 = getLayerExpresionValue(style, '$name:en', pointArray, lod, source);
                 
-                if (areTextCharactersAvailable(text2, globals.fonts['default'])) {
+                if (areTextCharactersAvailable(text2, fonts)) {
                     text = text2;                     
                 }
             }
@@ -112,6 +116,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
                 stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'label-origin', pointArray, lod),
                 align : getLayerPropertyValue(style, 'label-align', pointArray, lod),
+                fonts : fonts,
+                fontsStorage : getFontsStorage(fontNames),
                 text : text,
                 width : getLayerPropertyValue(style, 'label-width', pointArray, lod),
                 noOverlap : getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod),
@@ -325,7 +331,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             'color':labelData.color, 'z-index':zIndex, 'visibility': visibility, 'culling': culling, 
             'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files,
-            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
             'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);
     }
@@ -458,7 +464,7 @@ var processLabel = function(point, labelData) {
     var index2 = labelData.index2;
     var lastIndex = index;
     var text = '' + labelData.text;
-    var font = globals.fonts['default'];
+    var fonts = labelData.fonts;
     var planes = {};
 
     //split by new line
@@ -472,7 +478,7 @@ var processLabel = function(point, labelData) {
 
         // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, font), font);
+            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, fonts), fonts);
 
             if (line.length == splitIndex) {
                 lines2.push(line);
@@ -488,13 +494,13 @@ var processLabel = function(point, labelData) {
 
     var x = 0;
     var y = 0;
-    var lineHeight = getLineHeight(labelData.size, font);
+    var lineHeight = getLineHeight(labelData.size, fonts);
     var maxWidth = 0;
     var lineWidths = [];
 
     //get max width
     for (i = 0, li = lines2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, font), font);
+        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, fonts), fonts);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
@@ -511,7 +517,7 @@ var processLabel = function(point, labelData) {
         case 'center': x = (maxWidth - textWidth)*0.5; break;
         }
 
-        index = addText([x,y,0], [1,0,0], lines2[i], labelData.size, font, vertexBuffer, texcoordsBuffer, true, index, planes);
+        index = addText([x,y,0], [1,0,0], lines2[i], labelData.size, fonts, vertexBuffer, texcoordsBuffer, true, index, planes);
         y -= lineHeight;
     }
 
@@ -546,7 +552,7 @@ var processLabel = function(point, labelData) {
         }
     }
 
-    if (!font.version) {
+    if (!fonts[0].version) {
         labelData.files = null;        
     }
 

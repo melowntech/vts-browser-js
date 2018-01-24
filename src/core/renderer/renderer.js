@@ -2,6 +2,7 @@
 import {vec3 as vec3_, mat4 as mat4_} from '../utils/matrix';
 import GpuDevice_ from './gpu/device';
 import GpuTexture_ from './gpu/texture';
+import GpuFont_ from './gpu/font';
 import Camera_ from './camera';
 import RenderInit_ from './init';
 import RenderDraw_ from './draw';
@@ -11,6 +12,7 @@ import RenderRMap_ from './rmap';
 var vec3 = vec3_, mat4 = mat4_;
 var GpuDevice = GpuDevice_;
 var GpuTexture = GpuTexture_;
+var GpuFont = GpuFont_;
 var Camera = Camera_;
 var RenderInit = RenderInit_;
 var RenderDraw = RenderDraw_;
@@ -88,6 +90,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.imageProjectionMatrix = null;
 
     this.font = null;
+    this.fonts = {};
     this.fogDensity = 0;
 
     this.jobZBuffer = new Array(512);
@@ -548,12 +551,22 @@ Renderer.prototype.getBitmap = function(url, filter, tiled) {
     var id = url + '*' + filter + '*' + tiled;
 
     var texture = this.bitmaps[id];
-    if (texture == null) {
+    if (!texture) {
         texture = new GpuTexture(this.gpu, url, this.core, null, null, tiled, filter);
         this.bitmaps[id] = texture;
     }
 
     return texture;
+};
+
+Renderer.prototype.getFont = function(url) {
+    var font = this.fonts[url];
+    if (!font) {
+        font = new GpuFont(this.gpu, this.core, null, null, url);
+        this.fonts[url] = font;
+    }
+
+    return font;
 };
 
 

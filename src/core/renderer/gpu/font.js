@@ -22,6 +22,7 @@ var GpuFont = function(gpu, core, font, size, path) {
 
     this.textures = [];
     this.images = [];
+    this.ready = false;    
 
     if (path) {
         this.load(path);
@@ -143,6 +144,7 @@ GpuFont.prototype.generate = function(font, size) {
     this.texture.width = textureLX;
     this.texture.height = textureLY;
     this.texture.size = textureLX * textureLY * 4;
+    this.ready = true;    
 };
 
 // Returns GPU RAM used, in bytes.
@@ -151,6 +153,7 @@ GpuFont.prototype.size = function(){ return this.size; };
 
 GpuFont.prototype.load = function(path) {
     // load image
+    this.ready = false;    
     this.texture = new GpuTexture(this.gpu, path, this.core, null, null, null, 'nearest', true, this.onLoaded.bind(this), this.onError.bind(this));
     //this.texture = new GpuTexture(this.gpu, path, this.core, null, null, null, null, true, this.onLoaded.bind(this), this.onError.bind(this));
     this.texture[0] = this.texture;
@@ -193,11 +196,11 @@ GpuFont.prototype.readChar = function(char, data, index, fx, fy, cly, textureLX)
 
     this.chars[char] = {
         u1 : (x ) * fx,
-        v1 : (y * fy) + plane,
+        v1 : ((y-3) * fy) + plane,
         u2 : (x + clx) * fx,
-        v2 : ((y + cly) * fy) + plane,
+        v2 : (((y+2) + cly) * fy) + plane,
         lx : clx,
-        ly : cly,
+        ly : cly+5,
         step : (clx-2), 
         plane: plane
     };
@@ -279,8 +282,13 @@ GpuFont.prototype.onLoaded = function() {
         index += 4;
     }
 
+    this.ready = true;    
+    this.core.markDirty();
 };
 
+GpuFont.prototype.isReady = function() {
+    return this.ready;
+};
 
 GpuFont.prototype.onError = function() {
 
@@ -310,9 +318,9 @@ GpuFont.prototype.areTexturesReady = function(files) {
 };
 
 GpuFont.prototype.getTexture = function(file) {
-    if (!this.textures[file]) {
-        debugger;
-    }
+    //if (!this.textures[file]) {
+        //debugger;
+    //}
 
     return this.textures[file];
 };

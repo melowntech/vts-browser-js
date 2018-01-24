@@ -24,14 +24,12 @@ var MapGeodataView = function(map, geodata, extraInfo) {
 
     if (!this.surface.geodataProcessor) {
         var processor = new MapGeodataProcessor(this, this.onGeodataProcessorMessage.bind(this));
-        processor.sendCommand('setStylesheet', { 'data' : this.surface.stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()) } );
-        processor.sendCommand('setFont', {'chars' : this.renderer.font.chars, 'space' : this.renderer.font.space, 'cly' : this.renderer.font.cly, 
-                                          'size' : this.renderer.font.size, 'version':this.renderer.font.version});
+        processor.setStylesheet(this.surface.stylesheet);
         this.surface.geodataProcessor = processor;
         this.map.geodataProcessors.push(processor);
     } else {
         if (this.surface.styleChanged) {
-            this.surface.geodataProcessor.sendCommand('setStylesheet', { 'data' : this.surface.stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()) } );
+            this.surface.geodataProcessor.setStylesheet(this.surface.stylesheet);
             this.surface.styleChanged = false;
         }
     }
@@ -157,11 +155,15 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
         return false;
     }
 
+    //if (!(this.tile.id[0] == 10 && this.tile.id[1] == 273 && this.tile.id[2] == 180)) {
+      //  return false;
+    //}
+
     var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.draw.maxGpuUsed);
     doNotLoad = doNotLoad || doNotUseGpu;
     
     //if (!this.ready && !doNotUseGpu && this.geodataProcessor.isReady()) {
-    if (!this.ready && !doNotLoad) {
+    if (!this.ready && !doNotLoad && this.surface.stylesheet.isReady()) {
         if (this.geodata.isReady(doNotLoad, priority, doNotCheckGpu) && this.geodataProcessor.isReady()) {
             this.killedByCache = false;
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));

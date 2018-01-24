@@ -1,6 +1,6 @@
 
 import {globals as globals_} from './worker-globals.js';
-import {setFont as setFont_} from './worker-text.js';
+import {setFont as setFont_, setFontMap as setFontMap_,} from './worker-text.js';
 import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
         processStylesheet as processStylesheet_, getFilterResult as getFilterResult_} from './worker-style.js';
 import {processLineStringPass as processLineStringPass_, processLineStringGeometry as processLineStringGeometry_} from './worker-linestring.js';
@@ -10,6 +10,7 @@ import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
 //get rid of compiler mess
 var globals = globals_;
 var setFont = setFont_;
+var setFontMap = setFontMap_;
 var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
     processStylesheet = processStylesheet_, getFilterResult = getFilterResult_;
 var processLineStringPass = processLineStringPass_;
@@ -55,7 +56,7 @@ function processFeature(type, feature, lod, featureIndex, featureType, group) {
     //loop layers
     for (var key in globals.stylesheetLayers) {
         var layer = globals.stylesheetLayers[key];
-        var filter =  getLayerPropertyValue(layer, 'filter', feature, lod);
+        var filter =  layer['filter']; //getLayerPropertyValue(layer, 'filter', feature, lod);
 
         feature.properties = feature['properties'] || {};
 
@@ -63,7 +64,7 @@ function processFeature(type, feature, lod, featureIndex, featureType, group) {
             feature.properties['#id'] = feature['id']; 
         }
         
-        if (!filter || getFilterResult(filter, feature, featureType, group)) {
+        if (!filter || getFilterResult(filter, feature, featureType, group, layer, 'filter', lod, 0)) {
             processLayerFeature(type, feature, lod, layer, featureIndex);
         }
     }
@@ -412,8 +413,14 @@ self.onmessage = function (e) {
         postMessage({'command' : 'ready'});
         break;
 
+    case 'setFontMap':
+        setFontMap(data);
+        postMessage({'command' : 'ready'});
+        break;
+
     case 'processGeodata':
         globals.tileLod = message['lod'] || 0;
+        globals.tileSize = message['tileSize'] || 1;
         data = JSON.parse(data);            
         exportedGeometries = [];
         processGeodata(data, globals.tileLod);

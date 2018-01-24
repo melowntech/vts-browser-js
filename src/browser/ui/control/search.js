@@ -51,7 +51,7 @@ var UIControlSearch = function(ui, visible) {
 
     this.ignoreDrag = false; 
 
-    this.urlTemplate = '//n1.windyty.com/search.php?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
+    this.urlTemplate = '//eu-n1.windyty.com/search.php?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
     this.urlTemplate2 = this.urlTemplate;
     this.data = [];
     this.lastSearch = '';

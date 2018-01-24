@@ -1015,11 +1015,20 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case 'line-label':
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
-        texture = hitmapRender ? renderer.whiteTexture : renderer.font.texture;
+        var files = job.files;
+
+        if (files.length > 0) {
+            if (!job.font.areTexturesReady(files)) {
+                return;
+            }
+        } else {
+            texture = hitmapRender ? renderer.whiteTexture : job.texture;
+            if (!texture.loaded) {
+                return;
+            }
+        }
 
         prog = job.program; //renderer.progText;
-
-        gpu.bindTexture(texture);
 
         gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
         prog.setSampler('uSampler', 0);
@@ -1040,6 +1049,21 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gl.vertexAttribPointer(vertexTexcoordAttribute, job.vertexTexcoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         //draw polygons
+        if (files.length > 0) {
+
+            for (var i = 0, li = files.length; i < li; i++) {
+                prog.setFloat('uFile', files[i]);
+                prog.setVec2('uSize', job.data);
+                gpu.bindTexture(job.font.getTexture(files[i]));
+                gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+            }
+
+        } else {
+            gpu.bindTexture(texture);
+            gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+        }
+
+
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
         break;

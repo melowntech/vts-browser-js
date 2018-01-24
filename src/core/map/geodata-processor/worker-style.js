@@ -24,8 +24,17 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
     case 'string':
 
         if (value.length > 0) {
-                //is it feature property?
+            //is it feature property?
             switch (value.charAt(0)) {
+                case '#': 
+                    //debugger;
+                    switch(value) {
+                        case '#type':     finalValue = globals.featureType; break;   
+                        case '#group':    finalValue = globals.groupId;     break;
+                        case '#lod':      finalValue = globals.tileLod;  break;
+                        case '#tileSize': finalValue = globals.tileSize; break;
+                    }
+
                 case '$':
                 case '@':
 
@@ -46,6 +55,15 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                 if (str.length > 0) {
 
                     switch (str.charAt(0)) {
+                        case '#': 
+                            //debugger;
+                            switch(str) {
+                                case '#type':     finalValue = globals.featureType; break;   
+                                case '#group':    finalValue = globals.groupId;     break;
+                                case '#lod':      finalValue = globals.tileLod;  break;
+                                case '#tileSize': finalValue = globals.tileSize; break;
+                            }
+
                         case '$':
                         case '@':
 
@@ -102,13 +120,19 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
 
 var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth) {
     var index = 0, i, li, finalValue, root, v1, v2;
+    var tmpValue;
 
-    if (typeof value === 'undefined') {
+    
+    if ((typeof value) === 'undefined') {
+        /*
         if (layer[key]) {
             value = JSON.parse(JSON.stringify(layer[key])); //make copy
         } else {
             value = layer[key];
-        }
+        }*/
+
+        value = layer[key];
+
         root = true;
         depth = 0;
     } else {
@@ -128,6 +152,15 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 case '$': finalValue = feature.properties[value.substr(1)]; break;
                 case '@': finalValue = globals.stylesheetConstants[value.substr(1)]; break;
                 case '&': finalValue = globals.stylesheetVariables[value.substr(1)]; break;
+                case '#': 
+                    //debugger;
+                    switch(value) {
+                        case '#type':     finalValue = globals.featureType; break;   
+                        case '#group':    finalValue = globals.groupId;     break;
+                        case '#lod':      finalValue = globals.tileLod;  break;
+                        case '#tileSize': finalValue = globals.tileSize; break;
+                    }
+                    break;
             }
 
             if (typeof finalValue !== 'undefined') {
@@ -176,9 +209,13 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             }
 
             if (key != 'filter') {
+                tmpValue = new Array(value.length);
+
                 for (i = index, li = value.length; i < li; i++) {
-                    value[i] = getLayerPropertyValueInner(layer, key, feature, lod, value[i], depth + 1);
+                    tmpValue[i] = getLayerPropertyValueInner(layer, key, feature, lod, value[i], depth + 1);
                 }
+
+                return tmpValue;
             }
 
             return value;
@@ -206,7 +243,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 if (!Array.isArray(functionValue) || functionValue.length != 3) {
                     functionError = true;
                 } else {
-                    if (getFilterResult(functionValue[0], feature, globals.featureType, globals.groupId)) {
+                    if (getFilterResult(functionValue[0], feature, globals.featureType, globals.groupId, layer, key, lod, 0)) {
                         finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[1], depth + 1);
                     } else {
                         finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[2], depth + 1);
@@ -299,7 +336,8 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 } else {
                     switch (functionName) {
                         case 'strlen':     return functionValue.length;
-                        case 'str2num':    return parseFloat(functionValue);
+                        case 'str2num':    //debugger 
+                                           return parseFloat(functionValue);
                         case 'lowercase':  return functionValue.toLowerCase();
                         case 'uppercase':  return functionValue.toUpperCase();
                         case 'capitalize': return functionValue.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
@@ -318,17 +356,17 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                     finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
 
                     for (i = index, li = value.length; i < li; i++) {
-                        value[i] = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[i], depth + 1);
+                        tmpValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[i], depth + 1);
 
-                        if (typeof value[i] !== 'number') {
+                        if (typeof tmpValue !== 'number') {
                             functionError = true;
                             break;
                         }
 
                         if (functionName == 'max') {
-                            finalValue = Math.max(finalValue, value[i]);
+                            finalValue = Math.max(finalValue, tmpValue);
                         } else {
-                            finalValue = Math.min(finalValue, value[i]);
+                            finalValue = Math.min(finalValue, tmpValue);
                         }
                     }
 
@@ -499,6 +537,10 @@ var copyLayer = function(layerId, layer, layerData, stylesheetLayersData) {
 
 
 var logError = function(errorType, layerId, key, value, index, subkey) {
+    if (globals.disableLog) {
+        return;
+    }
+
     if ((typeof value) == 'object') {
         value = JSON.stringify(value);
     }
@@ -574,7 +616,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             return value;
         }
 
-            //check multipasss
+        //check multipasss
         if (key == 'next-pass') {
             if (Array.isArray(value) && value.length > 0) {
 
@@ -598,7 +640,24 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
-            //check array
+        if (key == 'label-font' || key == 'line-label-font') {
+
+            if (!Array.isArray(value) || value.length < 1) {
+                logError('wrong-property-value[]', layerId, key, value, 0);
+                return getDefaultLayerPropertyValue(key);
+            } else {
+                for (i = 0, li = value.length; i < li; i++) {
+                    if (typeof value[i] != 'string' || !globals.fonts[value[i]]) {
+                        logError('wrong-property-value[]', layerId, key, value, 0);
+                        return getDefaultLayerPropertyValue(key);
+                    }
+                }
+            }
+
+            return value;
+        }
+
+        //check array
         if (arrayLength != null) {
             if (Array.isArray(value) && value.length == arrayLength) {
 
@@ -637,7 +696,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
     case 'string':
 
-            //validate line Layer enum
+        //validate line Layer enum
         if (key == 'line-style') {
             switch(value) {
             case 'solid':
@@ -659,7 +718,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
-            //validate origin enum
+        //validate origin enum
         if (key == 'label-origin' || key == 'icon-origin') {
             switch(value) {
             case 'top-left':
@@ -677,7 +736,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
-            //validate align enum
+        //validate align enum
         if (key == 'label-align') {
             switch(value) {
             case 'left':
@@ -782,6 +841,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'visibility':      return validateValue(layerId, key, value, 'number', null, 0.00001, Number.MAX_VALUE);
     case 'visibility-abs':  return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
     case 'visibility-rel':  return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
+
     }
 
     return value; //custom property
@@ -804,6 +864,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'line-style-background': return [0,0,0,0];
 
     case 'line-label':        return false;
+    case 'line-label-font':   return ['#system'];
     case 'line-label-color':  return [255,255,255,255];
     case 'line-label-source': return '$name';
     case 'line-label-size':   return 1;
@@ -824,6 +885,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'icon-color':   return [255,255,255,255];
 
     case 'label':            return false;
+    case 'label-font':       return ['#system'];
     case 'label-color':      return [255,255,255,255];
     case 'label-source':     return '$name';
     case 'label-size':       return 10;
@@ -863,68 +925,83 @@ var getDefaultLayerPropertyValue = function(key) {
 };
 
 
-function getFilterResult(filter, feature, featureType, group) {
+function getFilterResult(filter, feature, featureType, group, layer, key, lod, depth) {
     var result, i, li;
 
     if (!filter || !Array.isArray(filter)) {
         return false;
     }
 
+    if (depth > 100) {
+        return false;
+    }
+
     switch(filter[0]) {
     case 'all': 
-        result = true;
         for (i = 1, li = filter.length; i < li; i++) {
-            result = result && getFilterResult(filter[i], feature, featureType, group);
+            result = getFilterResult(filter[i], feature, featureType, group, layer, key, lod, depth + 1);
+
+            if (!result) {
+                return false;
+            }
         }
            
-        return result;                         
+        return true;                         
 
     case 'any':
-        result = false;
         for (i = 1, li = filter.length; i < li; i++) {
-            result = result || getFilterResult(filter[i], feature, featureType, group);
+            result = getFilterResult(filter[i], feature, featureType, group, key, lod, depth + 1);
+
+            if (result) {
+                return true;
+            }
         }
            
-        return result;                         
+        return false;                         
 
     case 'none':
-        result = true;
         for (i = 1, li = filter.length; i < li; i++) {
-            result = result && getFilterResult(filter[i], feature, featureType, group);
+            result = getFilterResult(filter[i], feature, featureType, group, key, lod, depth + 1);
+
+            if (result) {
+                return false;
+            }
         }
            
-        return (!result);                         
+        return true;
                               
     case 'skip': return false; 
     }
 
-    var value;
+    globals.disableLog = (filter[0] == 'has' || filter[0] == '!has');
 
-    switch(filter[1]) {
-    case '#type':  value = featureType; break;   
-    case '#group': value = group;       break;
-    default:   
-        var filterValue = filter[1];  
+    var value = getLayerPropertyValueInner(layer, key, feature, lod, filter[1], 0), value2;
 
-        if (filterValue && (typeof filterValue === 'string') && filterValue.length > 0) {
-                //is it feature property?
-            switch (filterValue.charAt(0)) {
-            case '$': value = feature.properties[filterValue.substr(1)]; break;
-            case '@': value = globals.stylesheetConstants[filterValue]; break;
-            case '&': value = globals.stylesheetVariables[filterValue]; break;
-            default:
-                value = feature.properties[filterValue]; //fallback for old format
-            }
+    globals.disableLog = false;
+
+    switch(filter[0]) {
+    case '==':
+    case '!=':
+    case '>=':
+    case '<=':
+    case '>':
+    case '<':
+
+        if (typeof filter[2] == 'undefined') {
+            return false;
         }
+
+        value2 = getLayerPropertyValueInner(layer, key, feature, lod, filter[2], 0);
+        break;
     }
 
     switch(filter[0]) {
-    case '==': return (value == filter[2]);
-    case '!=': return (value != filter[2]);
-    case '>=': return (value >= filter[2]);
-    case '<=': return (value <= filter[2]);
-    case '>': return (value > filter[2]);
-    case '<': return (value < filter[2]);
+    case '==': return (value == value2);
+    case '!=': return (value != value2);
+    case '>=': return (value >= value2);
+    case '<=': return (value <= value2);
+    case '>': return (value > value2);
+    case '<': return (value < value2);
         
     case 'has': return (typeof value != 'undefined');
     case '!has': return (typeof value == 'undefined');
@@ -1018,6 +1095,7 @@ var processLayer = function(layerId, layerData, stylesheetLayersData) {
 var processStylesheet = function(stylesheetLayersData) {
     var key;
     globals.stylesheetBitmaps = {};
+    globals.stylesheetFonts = {};
     globals.stylesheetConstants = stylesheetLayersData['constants'] || {};
     globals.stylesheetVariables = stylesheetLayersData['variables'] || {};
 
@@ -1046,6 +1124,34 @@ var processStylesheet = function(stylesheetLayersData) {
 
     //load bitmaps
     postMessage({'command':'loadBitmaps', 'bitmaps': globals.stylesheetBitmaps});
+
+
+    //get fonts
+    var fonts = stylesheetLayersData['fonts'] || {};
+
+    //build map
+    for (key in fonts) {
+        var font = fonts[key];
+        //var skip = false;
+
+        if ((typeof font) == 'string') {
+            font = {'url':font};
+        } else if((typeof font) == 'object'){
+            if (font['url'] == null) {
+                logError('wrong-font', key);
+            }
+        } else {
+            logError('wrong-font', key);
+        }
+
+        //if (!skip) {
+        globals.stylesheetFonts[key] = font;
+        //}
+    }
+
+    //load fonts
+    postMessage({'command':'loadFonts', 'fonts': globals.stylesheetFonts});
+
 
     //get layers
     globals.stylesheetData = {

@@ -5,7 +5,7 @@ import {getLayerPropertyValue as getLayerPropertyValue_,
         getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
 import {addStreetTextOnPath as addStreetTextOnPath_,
         areTextCharactersAvailable as areTextCharactersAvailable_,
-        getCharVerticesCount as getCharVerticesCount_} from './worker-text.js';
+        getCharVerticesCount as getCharVerticesCount_, getFonts as getFonts_, getFontsStorage as getFontsStorage_} from './worker-text.js';
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
 
 //get rid of compiler mess
@@ -14,7 +14,7 @@ var globals = globals_, vec3Normalize = vec3Normalize_,
 var getLayerPropertyValue = getLayerPropertyValue_,
     getLayerExpresionValue = getLayerExpresionValue_;
 var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
-    getCharVerticesCount = getCharVerticesCount_;
+    getCharVerticesCount = getCharVerticesCount_, getFonts = getFonts_, getFontsStorage = getFontsStorage_;
 var postGroupMessage = postGroupMessage_;
 
 
@@ -906,12 +906,15 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     }
 
     var labelText = getLayerExpresionValue(style, labelSource, lineString, lod, labelSource);
+    var fontNames = getLayerPropertyValue(style, 'line-label-font', lineString, lod);
+    var fonts = getFonts(fontNames);
+    var fontsStorage = getFontsStorage(fontNames);
 
     if (labelSource == '$name') {
-        if (!areTextCharactersAvailable(labelText, globals.fonts['default'])) {
+        if (!areTextCharactersAvailable(labelText, fonts)) {
             var labelText2 = getLayerExpresionValue(style, '$name:en', lineString, lod, labelSource);
             
-            if (areTextCharactersAvailable(labelText2, globals.fonts['default'])) {
+            if (areTextCharactersAvailable(labelText2, fonts)) {
                 labelText = labelText2;                     
             }
         }
@@ -933,22 +936,26 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var bufferSize = getCharVerticesCount() * labelText.length * 2;
     var vertexBuffer = new Float32Array(bufferSize);
     var texcoordsBuffer = new Float32Array(bufferSize);
-    var font = globals.fonts['default'];
     var planes = {};
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
-    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, font, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes);
-    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, font, labelOffset, vertexBuffer, texcoordsBuffer, index);
+    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes);
+    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index);
 
-    var planes2 = [];
+    var files = [];
 
     for (var key in planes) {
-        planes2.push(parseInt(key));
+        var plane = parseInt(key);
+        var file = Math.round((plane - (plane % 3)) / 3);
+
+        if (files.indexOf(file) == -1) {
+            files.push(file);
+        }
     }
 
-    if (!font.version) {
-        planes2 = null;        
+    if (!fonts[0].version) {
+        files = null;        
     }
 
     var signature = JSON.stringify({
@@ -960,8 +967,8 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
         'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'z-index':zIndex, 'center': center,
-        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'planes': planes2,
-        'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 
+        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files': files,
+        'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': fontsStorage,
         'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
 };

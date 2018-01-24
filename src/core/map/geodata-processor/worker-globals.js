@@ -3,8 +3,12 @@ var globals = {
     stylesheetData : {},
     stylesheetLayers : {},
     stylesheetBitmaps : {},
+    stylesheetFonts : {},
     stylesheetConstants : {},
     stylesheetVariables : {},
+    fonts : {},
+    fontsMap : {},
+    fontsStorage : {},
     forceOrigin : false,
     forceScale : [1,1,1],
     bboxMin : [0,0,0],
@@ -13,7 +17,7 @@ var globals = {
     tileX : 0,
     tileY : 0,
     tileLod : 0,
-    fonts : {},
+    tileSize : 1,
     hitState : 0,
     groupOptimize : true,
     groupOrigin : [0,0,0],
@@ -24,7 +28,8 @@ var globals = {
     signatureCounter : 0,
     autoLod : false,
     featureType : null,
-    groupId : null
+    groupId : null,
+    disableLog : false
 };
 
 
