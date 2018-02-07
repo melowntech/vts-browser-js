@@ -161,6 +161,9 @@ utils.nearestPowerOfTwo = (function(value) {
     return Math.pow(2, Math.round(Math.log(value) / Math.LN2));
 });   
 
+utils.fitToPowerOfTwo = (function(value) {
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+});   
 
 utils.getHash = function(str) {
     if (!str || str.length === 0) {

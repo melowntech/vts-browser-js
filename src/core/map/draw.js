@@ -494,6 +494,13 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     }
 };
 
+MapDraw.prototype.drawToTexture = function(texture) {
+    this.renderer.switchToFramebuffer('texture', texture);
+    this.drawChannel = 0;
+    this.map.renderSlots.processRenderSlots();
+    this.renderer.switchToFramebuffer('base');
+};
+
 
 MapDraw.prototype.drawHitmap = function() {
     this.drawChannel = 1;

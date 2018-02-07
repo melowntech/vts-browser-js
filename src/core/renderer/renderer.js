@@ -351,7 +351,7 @@ Renderer.prototype.hitTestGeoLayers = function(screenX, screenY, secondTexture) 
 };
 
 
-Renderer.prototype.switchToFramebuffer = function(type) {
+Renderer.prototype.switchToFramebuffer = function(type, texture) {
     var gl = this.gpu.gl, size, width, height;
     
     switch(type) {
@@ -428,6 +428,29 @@ Renderer.prototype.switchToFramebuffer = function(type) {
         this.gpu.clear();
         this.camera.update();
         break;
+
+    case 'texture':
+        //set texture framebuffer
+        this.gpu.setFramebuffer(texture);
+
+        this.oldSize = [ this.curSize[0], this.curSize[1] ];
+   
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.enable(gl.DEPTH_TEST);
+
+        //clear screen
+        gl.viewport(0, 0, this.gpu.canvas.width, this.gpu.canvas.height);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+        this.curSize = [this.gpu.canvas.width, this.gpu.canvas.height];
+
+        this.gpu.clear();
+        this.camera.update();
+        this.onlyDepth = false;
+        this.onlyHitLayers = false;
+        this.onlyAdvancedHitLayers = false;
+        this.advancedPassNeeded = false;
+        break;        
     }
 };
 
@@ -468,7 +491,6 @@ Renderer.prototype.hitTest = function(screenX, screenY) {
 Renderer.prototype.getZoffsetFactor = function(params) {
     return (params[0] + params[1]*this.distanceFactor + params[2]*this.tiltFactor)*0.0001;
 };
-
 
 Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
     var gl = this.gpu.gl;
