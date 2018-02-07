@@ -18,6 +18,7 @@ import MapRenderSlots_ from './render-slots';
 import MapStats_ from './stats';
 import MapSurfaceSequence_ from './surface-sequence';
 import MapUrl_ from './url';
+import GpuTexture_ from '../renderer/gpu/texture';
 
 //get rid of compiler mess
 var vec3 = vec3_;
@@ -39,6 +40,7 @@ var MapRenderSlots = MapRenderSlots_;
 var MapStats = MapStats_;
 var MapSurfaceSequence = MapSurfaceSequence_;
 var MapUrl = MapUrl_;
+var GpuTexture = GpuTexture_;
 
 
 var Map = function(core, mapConfig, path, config) {
@@ -857,6 +859,85 @@ Map.prototype.getScreenRay = function(screenX, screenY) {
     return this.renderer.getScreenRay(screenX, screenY);
 };
 
+Map.prototype.renderToTexture = function(texture) {
+    //var renderer = this.renderer;
+    var canvas = this.renderer.gpu.canvas;
+    var w = canvas.width;
+    var h = canvas.height;
+    var w2 = utils.fitToPowerOfTwo(w);
+    var h2 = utils.fitToPowerOfTwo(h);
+
+    var data = new Uint8Array( w2 * h2 * 4 );
+
+    var texture = new GpuTexture(this.renderer.gpu);
+    texture.createFromData(w2, h2, data);
+    texture.createFramebuffer(w2, h2);
+
+    this.draw.drawToTexture(texture);
+
+    data = texture.readFramebufferPixels(0, 0, w, h);
+
+    texture.kill();
+
+    //flip vertically
+    var data2 = new Uint8Array( w * h * 4 );
+    for (var y = 0; y < h; y++) {
+        var index = y * w * 4;
+        var index2 = (h - y - 1) * w * 4; 
+
+        for (var x = 0; x < w; x++) {
+            data2[index2] = data[index];
+            data2[index2+1] = data[index+1];
+            data2[index2+2] = data[index+2];
+            data2[index2+3] = data[index+3];
+            index += 4;
+            index2 += 4;
+        }
+    }
+
+    data = data2;
+    
+    // Create a 2D canvas to store the result
+    var canvas2 = document.createElement('canvas');
+    canvas2.width = w;
+    canvas2.height = h;
+    var context = canvas2.getContext('2d');
+
+    // Copy the pixels to a 2D canvas
+    var imageData = context.createImageData(w, h);
+    imageData.data.set(data);
+    context.putImageData(imageData, 0, 0);
+  
+
+    //open image in new window
+    //window.open(canvas2.toDataURL('image/png'));
+
+        var a = document.createElement('a');
+        var dataURI= canvas2.toDataURL('image/png');
+        var byteString = atob(dataURI.split(',')[1]);
+        
+        // write the bytes of the string to an ArrayBuffer
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+      
+        var file = new Blob([ab], {type: 'png'});
+
+        var url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = 'screenshot.png';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0);     
+    
+
+    return data;
+};
 
 Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
     if (this.hitMapDirty) {

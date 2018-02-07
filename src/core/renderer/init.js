@@ -208,6 +208,7 @@ RendererInit.prototype.initTestMap = function() {
     renderer.blackTexture = new GpuTexture(gpu);
     renderer.blackTexture.createFromData(size, size, data);
 
+    /*
     var sizeX = 64;
     var sizeY = 8;
     data = new Uint8Array( sizeX * sizeY * 4 );
@@ -254,6 +255,7 @@ RendererInit.prototype.initTestMap = function() {
 
     renderer.lineTexture = new GpuTexture(gpu);
     renderer.lineTexture.createFromData(sizeX, sizeY, data, 'linear', true);
+    */
 };
 
 
@@ -274,8 +276,7 @@ RendererInit.prototype.initImage = function() {
     renderer.rectVerticesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, renderer.rectVerticesBuffer);
 
-    var vertices = [ 0, 0, 0, 1,   1, 0, 0, 1,
-        2, 0, 0, 1,   3, 0, 0, 1 ];
+    var vertices = [ 0, 0, 0, 1,   1, 0, 0, 1,   2, 0, 0, 1,   3, 0, 0, 1 ];
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     renderer.rectVerticesBuffer.itemSize = 4;

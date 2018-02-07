@@ -390,6 +390,11 @@ MapInterface.prototype.getScreenRay = function(screenX, screenY) {
 };
 
 
+MapInterface.prototype.renderToTexture = function() {
+    return this.map.renderToTexture()
+};
+
+
 MapInterface.prototype.getStats = function(switches) {
     if (switches) {
         return {
