@@ -859,7 +859,8 @@ Map.prototype.getScreenRay = function(screenX, screenY) {
     return this.renderer.getScreenRay(screenX, screenY);
 };
 
-Map.prototype.renderToTexture = function(texture) {
+
+Map.prototype.renderToImage = function(texture) {
     //var renderer = this.renderer;
     var canvas = this.renderer.gpu.canvas;
     var w = canvas.width;
@@ -895,49 +896,9 @@ Map.prototype.renderToTexture = function(texture) {
         }
     }
 
-    data = data2;
-    
-    // Create a 2D canvas to store the result
-    var canvas2 = document.createElement('canvas');
-    canvas2.width = w;
-    canvas2.height = h;
-    var context = canvas2.getContext('2d');
-
-    // Copy the pixels to a 2D canvas
-    var imageData = context.createImageData(w, h);
-    imageData.data.set(data);
-    context.putImageData(imageData, 0, 0);
-  
-
-    //open image in new window
-    //window.open(canvas2.toDataURL('image/png'));
-
-        var a = document.createElement('a');
-        var dataURI= canvas2.toDataURL('image/png');
-        var byteString = atob(dataURI.split(',')[1]);
-        
-        // write the bytes of the string to an ArrayBuffer
-        var ab = new ArrayBuffer(byteString.length);
-        var ia = new Uint8Array(ab);
-        for (var i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-      
-        var file = new Blob([ab], {type: 'png'});
-
-        var url = URL.createObjectURL(file);
-        a.href = url;
-        a.download = 'screenshot.png';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(function() {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);  
-        }, 0);     
-    
-
-    return data;
+    return { 'width': w, 'height': h, 'data': data2};
 };
+
 
 Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
     if (this.hitMapDirty) {

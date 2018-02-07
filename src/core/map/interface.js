@@ -390,8 +390,8 @@ MapInterface.prototype.getScreenRay = function(screenX, screenY) {
 };
 
 
-MapInterface.prototype.renderToTexture = function() {
-    return this.map.renderToTexture()
+MapInterface.prototype.renderToImage = function() {
+    return this.map.renderToImage();
 };
 
 
