@@ -118,10 +118,37 @@ UIControlSearch.prototype.updateList = function(json) {
         for (var i = 0, li = data.length; i < li; i++) {
             item = data[i];
 
+            var title = item['title'] + '<small>';
+
+            if (item['region'] && item['title'] != item['region']) {
+                title += ', ' + item['region'];
+            }
+
+            if (item['country'] && item['title'] != item['country'] && item['region'] != item['country']) {
+                title += (item['region'] ? ', ' : '') + item['country'];
+            }
+
+            title += '</small>';
+            
+
+            /*
+            var title = item['display'];
+            var names = title.split(',');
+
+            if (names.length > 1) {
+                title = names[0] + ', <small>' + names[1];
+
+                for (var j = 2, lj = names.length; j < lj; j++) {
+                    title += ', ' + names[j];
+                }
+                
+                title += '</small>';
+            }*/
+
             if (this.itemIndex == i) {
-                list += '<div id="vts-search-item' + i + '"'+ ' class="vts-search-listitem-selected">' + item['title'] + ' ' + (item['region'] ? item['region'] : '') + '</div>';
+                list += '<div id="vts-search-item' + i + '"'+ ' class="vts-search-listitem-selected">' + title + '</div>';
             } else {
-                list += '<div id="vts-search-item' + i + '"'+ ' class="vts-search-listitem">' + item['title'] + ' ' + (item['region'] ? item['region'] : '') + '</div>';
+                list += '<div id="vts-search-item' + i + '"'+ ' class="vts-search-listitem">' + title + '</div>';
             }
                 
         }
