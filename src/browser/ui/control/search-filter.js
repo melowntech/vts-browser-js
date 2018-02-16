@@ -240,6 +240,7 @@ function filterSearch(data, lon, lat) {
             // for US we use State as country 
             country: adr.country_code === 'us' ? region : ( adr.country && adr.country.replace(/,.*/,'')  ), 
 
+            display: hit.display_name,
             region: county || '',
             state: region || '',
             cc: adr.country_code,

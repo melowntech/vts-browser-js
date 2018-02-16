@@ -639,6 +639,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.INCR);
 
     var screenPixelSize = [1.0/renderer.curSize[0], 1.0/renderer.curSize[1]];
+    var rmap = this.rmap;
     var clearPass = 513;
     var clearPassIndex = 0;
     var clearStencilPasses = renderer.clearStencilPasses;
@@ -650,6 +651,10 @@ RendererDraw.prototype.drawGpuJobs = function() {
     if (clearStencilPasses.length > 0) {
         clearPass = clearStencilPasses[0];
         clearPassIndex++;
+    }
+
+    if (this.rmap.counter != this.renderer.geoRenderCounter) {
+        this.rmap.clear();
     }
 
     //draw job buffer and also clean buffer
@@ -691,6 +696,10 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize);
             }
         }
+
+        if (rmap.rectanglesCount > 0) {
+            rmap.processRectangles(gpu, gl, renderer, screenPixelSize);
+        }
     }
 };
 
@@ -728,10 +737,6 @@ RendererDraw.prototype.paintGL = function() {
 
 
 RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixelSize, advancedHitPass) {
-    var mvp = job.mvp, prog, texture;
-    var vertexPositionAttribute, vertexTexcoordAttribute,
-        vertexNormalAttribute, vertexOriginAttribute, vertexElementAttribute;
-
     if (!job.ready) {
         return;
     }
@@ -799,61 +804,9 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         }        
     }
 
-    /*
-    if (job.state != 0) {
-        var id = job.eventInfo['#id'];
-
-        if (id != null && renderer.geodataSelection.indexOf(id) != -1) {  // is selected
-
-            if (id != null && renderer.hoverFeature != null) {
-                if (job.state == 3) {  // 3 = no hover state
-
-                    if (renderer.hoverFeature[0]['#id'] == id) { //are we hovering over feature?
-                        return;
-                    }
-
-                } else if (job.state == 4) { // 4 = hover state
-
-                    if (renderer.hoverFeature[0]['#id'] != id) { //are we hovering over feature?
-                        return;
-                    }
-
-                }
-
-            } else {
-                if (job.state != 3) {
-                    return;
-                }
-            }
-
-        } else {
-
-            if (job.state == 3 || job.state == 4) { //do not render selected state
-                return;
-            }
-
-            if (id != null && renderer.hoverFeature != null) {
-                if (job.state == 1){  // 1 = no hover state
-
-                    if (renderer.hoverFeature[0]['#id'] == id) { //are we hovering over feature?
-                        return;
-                    }
-
-                } else { // 2 = hover state
-
-                    if (renderer.hoverFeature[0]['#id'] != id) { //are we hovering over feature?
-                        return;
-                    }
-
-                }
-            } else { //id id provided
-                if (job.state == 2) { //skip hover style
-                    return;
-                }
-            }
-
-        }
-    } */
+    var mvp = job.mvp, prog, texture;
+    var vertexPositionAttribute, vertexTexcoordAttribute,
+        vertexNormalAttribute, vertexOriginAttribute, vertexElementAttribute;
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
     var screenPixelSize2, color = job.color;
@@ -1070,7 +1023,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
     case 'icon':
     case 'label':
-        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
         var files = job.files;
 
@@ -1172,11 +1124,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                     break;
             }
         }
-            
+
+        var s = job.stick;
         var stickShift = 0, pp;
 
-        if (job.stick[0] != 0) {
-            var s = job.stick;
+        if (s[0] != 0) {
             stickShift = renderer.cameraTiltFator * s[0];
                 
             if (stickShift < s[1]) {
@@ -1193,19 +1145,28 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
             }
 
+            if (pp[2] < 0 || pp[2] > 1.0) {
+                return;
+            }
+
             var o = job.noOverlap;
 
-            if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3])) {
+            if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], pp[2], [job, stickShift, texture, files, color, pp])) {
                 return;
             }
 
             if (renderer.drawLabelBoxes) {
+                gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
                 this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
                                      [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
             }
+
+            return; //draw all labe from same z-index together
         }
 
-        if (job.stick[0] != 0 && s[2] != 0) {
+        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+
+        if (s[0] != 0 && s[2] != 0) {
             this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
         }
 
@@ -1259,6 +1220,58 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         break;
     }
+};
+
+RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSize, subjob) {
+        var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
+            files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick;
+
+        var hitmapRender = job.hitable && renderer.onlyHitLayers;
+
+        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+
+        if (s[0] != 0 && s[2] != 0) {
+            this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
+        }
+
+        var prog = job.program; //renderer.progIcon;
+
+        gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aOrigin']);
+        prog.setSampler('uSampler', 0);
+        prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+        prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == 'label' ? 1.0 : 1.0 / texture.width), stickShift*2]);
+        prog.setVec4('uColor', color);
+
+        var vertexPositionAttribute = prog.getAttribute('aPosition');
+        var vertexTexcoordAttribute = prog.getAttribute('aTexCoord');
+        var vertexOriginAttribute = prog.getAttribute('aOrigin');
+
+        //bind vetex positions
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
+        gl.vertexAttribPointer(vertexPositionAttribute, job.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        //bind vetex texcoordds
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
+        gl.vertexAttribPointer(vertexTexcoordAttribute, job.vertexTexcoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        //bind vetex origin
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexOriginBuffer);
+        gl.vertexAttribPointer(vertexOriginAttribute, job.vertexOriginBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        //draw polygons
+        if (files.length > 0) {
+
+            for (var i = 0, li = files.length; i < li; i++) {
+                prog.setFloat('uFile', files[i]);
+                prog.setVec2('uSize', job.data);
+                gpu.bindTexture(job.font.getTexture(files[i]));
+                gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+            }
+
+        } else {
+            gpu.bindTexture(texture);
+            gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+        }
 };
 
 export default RendererDraw;
