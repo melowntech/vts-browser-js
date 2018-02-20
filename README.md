@@ -5,7 +5,7 @@ developed by Melown Technologies SE (http://melown.com) in their products.
 
 ## Examples
  * [Live examples in JSFiddle](https://github.com/Melown/vts-browser-js/wiki/Examples)
- * [Intergeo presentation](https://www.melown.com/intergeo2016/)
+ * [Intergeo presentation](https://www.melown.com/intergeo2017/)
  * [Mercury](https://www.melown.com/mercury/)
 
 ## User documentation
