@@ -24,8 +24,8 @@ var RendererInit = function(renderer) {
     this.core = renderer.core;
     this.gpu = renderer.gpu;
 
-    renderer.font = new GpuFont(this.gpu, this.core);
-    renderer.fonts['#system'] = renderer.font;
+    //renderer.font = new GpuFont(this.gpu, this.core);
+    //renderer.fonts['#default'] = renderer.font;
     //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font.png');
     //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font22.png');
     //renderer.font = new GpuFont(this.gpu, this.core, null, null, './allinone.fnt');

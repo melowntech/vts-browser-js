@@ -22,7 +22,7 @@ var MapStylesheet = function(map, id, url, freeLayer) {
     
     if (typeof url === 'object') {
         this.data = url;
-        this.fonts = this.data['fonts'] || {};
+        this.setFonts(this.data);
         this.loadState = 2;
         this.map.markDirty();
     } else {
@@ -45,7 +45,7 @@ MapStylesheet.prototype.kill = function() {
 
 MapStylesheet.prototype.setData = function(data) {
     this.data = data;
-    this.fonts = this.data['fonts'] || {};
+    this.setFonts(data);
     this.loadState = 2;
     this.checkFonts();
 };
@@ -110,6 +110,10 @@ MapStylesheet.prototype.onLoadError = function() {
     //this.loadState = 2;
 };
 
+MapStylesheet.prototype.setFonts = function(data) {
+    this.fonts = data['fonts'] || {};
+    this.fonts['#default'] = this.map.core.config.mapDefaultFont;
+};
 
 MapStylesheet.prototype.onLoaded = function(data) {
     if (this.map.killed){
@@ -117,7 +121,7 @@ MapStylesheet.prototype.onLoaded = function(data) {
     }
     
     this.data = data;
-    this.fonts = data['fonts'] || {};
+    this.setFonts(data);
 
     //this.mapLoaderCallLoaded();
     this.loadState = 2;

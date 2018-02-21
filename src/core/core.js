@@ -63,6 +63,7 @@ var Core = function(element, config, coreInterface) {
         mapRefreshCycles : 3,
         mapDegradeHorizon : false,
         mapDegradeHorizonParams : [1, 1500, 97500, 3500], //[1, 3000, 15000, 7000],
+        mapDefaultFont : '../demos/fonts/basic.fnt',
         mapFog : true,
         rendererAntialiasing : true,
         rendererAllowScreenshots : false,

@@ -289,7 +289,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.ready = true;
 
     job.files = data['files'] || [];
-    var fonts = data['fonts'] || ['#system'];
+    var fonts = data['fonts'] || ['#default'];
     job.font = this.renderer.fonts[fonts[0]];
     job.texture = job.font.texture;
     job.data = [1.0/job.texture.width, job.texture.width];
@@ -367,7 +367,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     } else {
         job.files = data['files'] || [];
         job.noOverlap = data['noOverlap'];
-        var fonts = data['fonts'] || ['#system'];
+        var fonts = data['fonts'] || ['#default'];
         job.font = this.renderer.fonts[fonts[0]];
         job.texture = job.font.texture;
         job.data = [1.0/job.texture.width, job.texture.width];

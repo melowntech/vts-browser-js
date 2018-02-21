@@ -2,22 +2,32 @@
 import {globals as globals_, vec3Normalize as vec3Normalize_,
         vec3Length as vec3Length_, vec3Cross as vec3Cross_} from './worker-globals.js';
 
+import {Typr as Typr_} from './worker-font.js';
+
+
 //get rid of compiler mess
 var globals = globals_,
     vec3Normalize = vec3Normalize_, vec3Length = vec3Length_,
-    vec3Cross = vec3Cross_;
+    vec3Cross = vec3Cross_,
+    Typr = Typr_;
 
 
 var setFont = function(fontData) {
     console.log('setFont ' + fontData['url']);
+    debugger;
 
-    globals.fontsStorage[fontData['url']] = {
+    var font = Typr.parse(fontData['data']);
+
+    globals.fontsStorage[fontData['url']] = font;
+
+    /*
+    {
         chars : fontData['chars'],
         space : fontData['space'],
         size : fontData['size'],
         cly : fontData['cly'],
         version : fontData['version']
-    };
+    };*/
 };
 
 var setFontMap = function(fontMap) {
@@ -45,9 +55,11 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
     var p1 = [pos[0], pos[1], pos[2]];
     var p2 = [p1[0], p1[1], p1[2]];
 
-    var chars = font.chars;
+    //var chars = font.chars;
+    
+    var fc = font.glyphs[char];
+    char = 0; // hack
 
-    var fc = chars[char];
     var l = 0;
     var nx = textVector[0];
     var ny = textVector[1];
@@ -172,7 +184,10 @@ var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffe
     var s = [pos[0], pos[1], pos[2]];
     var p1 = [pos[0], pos[1], pos[2]];
 
-    for (var i = 0, li = text.length; i < li; i++) {
+    var glyphs = Typr.U.stringToGlyphs(font, text);
+
+    for (var i = 0, li = glyphs.length; i < li; i++) {
+        /*
         var char = text.charCodeAt(i);
 
         if (char == 10) { //new line
@@ -180,9 +195,11 @@ var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffe
             s[1] += dir[0] * newLineSpace;
             p1 = [s[0], s[1], s[2]];
             continue;
-        }
+        }*/
 
-        var shift = addChar(p1, dir, 0, char, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes);
+        var glyph = glyphs[i];
+
+        var shift = addChar(p1, dir, 0, glyph, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes);
 
         p1 = shift[0];
         index = shift[1];
@@ -210,7 +227,10 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
     p1 = [p1[0], p1[1], p1[2]];
     var l = distance;
 
-    for (var i = 0, li = text.length; i < li; i++) {
+    var glyphs = Typr.U.stringToGlyphs(font, text);
+
+    for (var i = 0, li = glyphs.length; i < li; i++) {
+        /*
         var char = text.charCodeAt(i);
 
         if (char == 10) { //new line
@@ -228,7 +248,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
         var ll = 1;
         if (fc != null) {
             ll = fc.step * factor;
-        }
+        }*/
 
         var posAndDir = getPathPositionAndDirection(points, l);
         var posAndDir2 = getPathPositionAndDirection(points, l+ll);
@@ -240,7 +260,9 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
 
         vec3Normalize(dir);
 
-        var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, char, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes);
+        var glyph = glyphs[i];
+
+        var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, glyph, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes);
 
         p1 = shift[0];
         index = shift[1];
@@ -285,10 +307,20 @@ var getLineHeight = function(size, fonts) {
 
 var getTextLength = function(text, factor, fonts) {
     var l = 0;
-    var chars = fonts[0].chars;
+    //var chars = fonts[0].chars;
+    var font = fonts[0];
 
-    for (var i = 0, li = text.length; i < li; i++) {
-        var char = text.charCodeAt(i);
+    var glyphs = Typr.U.stringToGlyphs(font, text);
+
+    for (var i = 0, li = glyphs.length; i < li; i++) {
+        var glyph = glyphs[i];
+        var fc = font.glyphs[glyph];
+
+        if (fc != null) {
+            l += fc.step * factor;
+        }
+
+        /*var char = text.charCodeAt(i);
 
         if (char == 10) { //new line
             continue;
@@ -302,7 +334,7 @@ var getTextLength = function(text, factor, fonts) {
 
         if (fc != null) {
             l += fc.step * factor;
-        }
+        }*/
     }
 
     return l;
@@ -311,6 +343,7 @@ var getTextLength = function(text, factor, fonts) {
 
 var getSplitIndex = function(text, width, factor, fonts) {
     var l = 0;
+    /*
     var chars = fonts[0].chars;
 
     for (var i = 0, li = text.length; i < li; i++) {
@@ -329,6 +362,24 @@ var getSplitIndex = function(text, width, factor, fonts) {
         }
 
         var fc = chars[char];
+
+        if (fc != null) {
+            l += fc.step * factor;
+        }
+    }*/
+
+    var font = fonts[0];
+
+    var glyphs = Typr.U.stringToGlyphs(font, text);
+
+    for (var i = 0, li = glyphs.length; i < li; i++) {
+        var glyph = glyphs[i];
+
+        if (l > width /*&& (char == 10 || char == 9 || char == 32)*/) {
+            return i;
+        }
+
+        var fc = font.glyphs[glyph];
 
         if (fc != null) {
             l += fc.step * factor;
@@ -433,7 +484,7 @@ var areTextCharactersAvailable = function(text, fonts) {
         return false;
     }
 
-    var chars = fonts[0].chars;
+    var font = fonts[0];
 
     for (var i = 0, li = text.length; i < li; i++) {
         var char = text.charCodeAt(i);
@@ -442,7 +493,7 @@ var areTextCharactersAvailable = function(text, fonts) {
             continue;
         }
 
-        if (!chars[char]) {
+        if (!Typr.U.codeToGlyph(font, char)) {
             return false;
         }
     }
