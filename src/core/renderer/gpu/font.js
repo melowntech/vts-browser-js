@@ -21,6 +21,7 @@ var GpuFont = function(gpu, core, font, size, path) {
     this.textures = [];
     this.images = [];
     this.ready = false;    
+    this.version = 1;    
 
     this.load(path);
 };
@@ -52,8 +53,9 @@ GpuFont.prototype.onError = function() {
 
 };
 
-GpuFont.prototype.onFileLoaded = function() {
+GpuFont.prototype.onFileLoaded = function(index, data) {
     this.core.markDirty();
+    this.textures[index].createFromData(256, 256, new Uint8Array(data), 'linear');
 };
 
 GpuFont.prototype.onFileLoadError = function() {
@@ -65,7 +67,8 @@ GpuFont.prototype.areTexturesReady = function(files) {
         var index = files[i];//Math.round( (planes[i] - (planes[i] % 3)) );
 
         if (!this.textures[index]) {
-            this.textures[index] = new GpuTexture(this.gpu, this.path + (index+1), this.core, null, null, null, 'linear', true, this.onFileLoaded.bind(this), this.onFileLoadError.bind(this));
+            utils.loadBinary(this.path + (index+2), this.onFileLoaded.bind(this, index), this.onFileLoadError.bind(this));
+            this.textures[index] = new GpuTexture(this.gpu, null, this.core);
             ready = false;
         } else {
             ready = (ready || this.textures[index].loaded);

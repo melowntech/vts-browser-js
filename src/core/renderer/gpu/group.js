@@ -365,6 +365,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
         job.texture = this.renderer.getBitmap(icon['url'], icon['filter'] || 'linear', icon['tiled'] || false);
         job.files = [];
     } else {
+        job.size = data['size'];
         job.files = data['files'] || [];
         job.noOverlap = data['noOverlap'];
         var fonts = data['fonts'] || ['#default'];

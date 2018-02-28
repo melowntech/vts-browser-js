@@ -327,7 +327,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
         }
 
         postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,
-            'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer,
+            'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer, 'size':labelData.size,
             'color':labelData.color, 'z-index':zIndex, 'visibility': visibility, 'culling': culling, 
             'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files,
@@ -545,7 +545,7 @@ var processLabel = function(point, labelData) {
 
     for (var key in planes) {
         var plane = parseInt(key);
-        var file = Math.round((plane - (plane % 3)) / 3);
+        var file = Math.round((plane - (plane % 4)) / 4);
 
         if (labelData.files.indexOf(file) == -1) {
             labelData.files.push(file);

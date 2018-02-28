@@ -322,7 +322,7 @@ RendererInit.prototype.initLines = function() {
     renderer.plineJoints = new GpuPixelLine3(gpu, this.core, false, 64, true, 8);
 
     renderer.stencilLineState = gpu.createState({blend:true, stencil:true, culling: false});
-    renderer.lineLabelState = gpu.createState({blend:true, culling: false});
+    renderer.lineLabelState = gpu.createState({blend:true, culling: false, zequal: true});
     renderer.stencilLineHitState = gpu.createState({blend:false, stencil:true, culling: false});
     renderer.lineLabelHitState = gpu.createState({blend:false, culling: false});
 };
