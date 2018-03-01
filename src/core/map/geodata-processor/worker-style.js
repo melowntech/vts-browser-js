@@ -930,7 +930,6 @@ var getDefaultLayerPropertyValue = function(key) {
 
 function getFilterResult(filter, feature, featureType, group, layer, key, lod, depth) {
     var result, i, li;
-    debugger;
 
     if (!filter || !Array.isArray(filter)) {
         return false;
