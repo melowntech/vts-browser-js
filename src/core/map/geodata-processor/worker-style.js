@@ -29,6 +29,7 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                 case '#': 
                     //debugger;
                     switch(value) {
+                        case '#id':       finalValue = feature.id; break;   
                         case '#type':     finalValue = globals.featureType; break;   
                         case '#group':    finalValue = globals.groupId;     break;
                         case '#lod':      finalValue = globals.tileLod;  break;
@@ -58,6 +59,7 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                         case '#': 
                             //debugger;
                             switch(str) {
+                                case '#id':       finalValue = feature.id; break;   
                                 case '#type':     finalValue = globals.featureType; break;   
                                 case '#group':    finalValue = globals.groupId;     break;
                                 case '#lod':      finalValue = globals.tileLod;  break;
@@ -155,6 +157,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 case '#': 
                     //debugger;
                     switch(value) {
+                        case '#id':       finalValue = feature.id; break;   
                         case '#type':     finalValue = globals.featureType; break;   
                         case '#group':    finalValue = globals.groupId;     break;
                         case '#lod':      finalValue = globals.tileLod;  break;
