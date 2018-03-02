@@ -1391,22 +1391,27 @@ Typr.U.stringToGlyphs = function(font, str) {
         
         for(var fi=0; fi<flist.length; fi++) {
             if(flist[fi].tag!=feat) continue;
+
             for(var ti=0; ti<flist[fi].tab.length; ti++) {
                 var tab = llist[flist[fi].tab[ti]];
                 if(tab.ltype!=1) continue;
+
                 for(var j=0; j<tab.tabs.length; j++) {
                     var ttab = tab.tabs[j];
-                    var ind = Typr._lctf.coverageIndex(ttab.coverage,gl);  if(ind==-1) continue;  
-                    if(ttab.fmt==0) gls[ci] = ind+ttab.delta;
-                    else {
+                    var ind = Typr._lctf.coverageIndex(ttab.coverage,gl);
+                    if(ind==-1) continue;  
+
+                    if(ttab.fmt==0) {
+                        gls[ci] = ind+ttab.delta;
+                    } else {
                         if (!ttab.newg) {
                             gls[ci] = gl;
                             console.log(ci, gl, "subst-error", flist[fi].tag, i, j, ' original:', str);
                         } else {
                             gls[ci] = ttab.newg[ind];
                         }
+                    }
 
-                    }   
                     //console.log(ci, gl, "subst", flist[fi].tag, i, j, ttab.newg[ind]);
                 }
             }
@@ -1417,14 +1422,19 @@ Typr.U.stringToGlyphs = function(font, str) {
     for(var ci=0; ci<gls.length; ci++) {
         var gl = gls[ci];
         var rlim = Math.min(3, gls.length-ci-1);
+
         for(var fi=0; fi<flist.length; fi++) {
-            
-            var fl = flist[fi];  if(cligs.indexOf(fl.tag)==-1) continue;
+            var fl = flist[fi];
+            if(cligs.indexOf(fl.tag)==-1) continue;
+
             for(var ti=0; ti<fl.tab.length; ti++) {
                 var tab = llist[fl.tab[ti]];
                 if(tab.ltype!=4) continue;
+
                 for(var j=0; j<tab.tabs.length; j++) {
-                    var ind = Typr._lctf.coverageIndex(tab.tabs[j].coverage, gl);  if(ind==-1) continue;  
+                    var ind = Typr._lctf.coverageIndex(tab.tabs[j].coverage, gl);
+                    if(ind==-1) continue;  
+
                     var vals = tab.tabs[j].vals[ind];
                     
                     for(var k=0; k<vals.length; k++) {

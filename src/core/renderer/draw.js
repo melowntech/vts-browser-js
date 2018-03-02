@@ -987,8 +987,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setSampler('uSampler', 0);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uVec', renderer.labelVector);
-        prog.setVec4('uColor', color);
-            //prog.setVec2("uScale", screenPixelSize);
+        //prog.setVec2("uScale", screenPixelSize);
+
+        var gamma = 2.2 * 1.4142 / 20;
+        prog.setVec4('uColor', [0,0,0,1.0]);
+        prog.setVec2('uParams', [0.25, gamma]);
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
         vertexTexcoordAttribute = prog.getAttribute('aTexCoord');
@@ -1002,6 +1005,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gl.vertexAttribPointer(vertexTexcoordAttribute, job.vertexTexcoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         //draw polygons
+        /*
         if (files.length > 0) {
 
             for (var i = 0, li = files.length; i < li; i++) {
@@ -1014,10 +1018,31 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         } else {
             gpu.bindTexture(texture);
             gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+        }*/
+
+        //draw polygons
+        for(var j = 0; j < 2; j++) {
+            if (j == 1) {
+                prog.setVec4('uColor', color);
+                prog.setVec2('uParams', [0.75, gamma]);
+            }
+
+            if (files.length > 0) {
+
+                for (var i = 0, li = files.length; i < li; i++) {
+                    prog.setFloat('uFile', files[i]);
+                    //prog.setVec2('uSize', job.data);
+                    gpu.bindTexture(job.font.getTexture(files[i]));
+                    gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+                }
+
+            } else {
+                gpu.bindTexture(texture);
+                gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+            }
         }
 
-
-        gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+        //gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
         break;
 
@@ -1186,11 +1211,14 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == 'label' ? 1.0 : 1.0 / texture.width), stickShift*2]);
 
-        var j = 0, lj = 1;
+        var j = 0, lj = 1, gamma = 0;
 
         if (prog != renderer.progIcon) {
+            gamma = 2.2 * 1.4142 / job.size;
+
             prog.setVec4('uColor', [0,0,0,1.0]);
-            prog.setVec2('uParams', [0.55, 0]);
+            //prog.setVec2('uParams', [0.55, 0]);
+            prog.setVec2('uParams', [0.25, gamma]);
             lj = 2;
         } else {
             prog.setVec4('uColor', color);
@@ -1215,7 +1243,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         //draw polygons
         for(;j<lj;j++) {
             if (j == 1) {
-                prog.setVec4('uParams', [0.75, 2.0 * 1.4142 / 64.0]);
+                prog.setVec4('uColor', color);
+                prog.setVec2('uParams', [0.75, gamma]);
             }
 
             if (files.length > 0) {

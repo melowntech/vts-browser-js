@@ -332,7 +332,7 @@ GpuShaders.text2VertexShader =
         'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
             'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
         '}else{\n'+
-            'float file = floor(aTexCoord.y/3.0);\n'+
+            'float file = floor(aTexCoord.y/4.0);\n'+
             'if (file != floor(uFile)) {\n'+
                 'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
             '}else{\n'+

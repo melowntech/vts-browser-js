@@ -947,7 +947,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     for (var key in planes) {
         var plane = parseInt(key);
-        var file = Math.round((plane - (plane % 3)) / 3);
+        var file = Math.round((plane - (plane % 4)) / 4);
 
         if (files.indexOf(file) == -1) {
             files.push(file);
