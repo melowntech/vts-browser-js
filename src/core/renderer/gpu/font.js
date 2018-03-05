@@ -71,7 +71,7 @@ GpuFont.prototype.areTexturesReady = function(files) {
             this.textures[index] = new GpuTexture(this.gpu, null, this.core);
             ready = false;
         } else {
-            ready = (ready || this.textures[index].loaded);
+            ready = (ready && this.textures[index].loaded);
         }
     }
 

@@ -19,15 +19,6 @@ var setFont = function(fontData) {
     var font = Typr.parse(fontData['data']);
 
     globals.fontsStorage[fontData['url']] = font;
-
-    /*
-    {
-        chars : fontData['chars'],
-        space : fontData['space'],
-        size : fontData['size'],
-        cly : fontData['cly'],
-        version : fontData['version']
-    };*/
 };
 
 var setFontMap = function(fontMap) {
@@ -68,18 +59,24 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
     if (char == 9 || char == 32) {  //tab or space
         fc = chars[32]; //space
 
-        if (fc != null) {
-            p1[0] += dir[0] * (fc.step) * factor;
-            p1[1] += dir[1] * (fc.step) * factor;
+        if (fc) {
+            pos[0] += dir[0] * (fc.step) * factor;
+            pos[1] += dir[1] * (fc.step) * factor;
             l = fc.lx * factor;
         }
     } else {
-        if (fc != null) {
+        if (fc) {
             var factorX = fc.lx * factor;
             var factorY = fc.ly * factor;
 
             var n2 = [n[0] * verticalShift, n[1] * verticalShift, n[2] * verticalShift];
             var n3 = [n2[0] + n[0] * factorY, n2[1] + n[1] * factorY, n2[2] + n[2] * factorY];
+
+            if (fc.shift > 0) {
+                p1[0] = p1[0] - dir[0] * fc.shift * factor;
+                p1[1] = p1[1] - dir[1] * fc.shift * factor;
+                p1[2] = p1[2] - dir[2] * fc.shift * factor;
+            }
 
             p2[0] = p1[0] + dir[0] * factorX;
             p2[1] = p1[1] + dir[1] * factorX;
@@ -156,15 +153,15 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             index2 += 24;
             //polygons += 2;
 
-            p1[0] = p1[0] + dir[0] * fc.step * factor;
-            p1[1] = p1[1] + dir[1] * fc.step * factor;
+            pos[0] = pos[0] + dir[0] * fc.step * factor;
+            pos[1] = pos[1] + dir[1] * fc.step * factor;
             l = fc.lx * factor;
         } else {
             //unknown char
         }
     }
 
-    return [p1, index, index2, l];
+    return [pos, index, index2, l];
 };
 
 
@@ -256,7 +253,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
 
         var fc = font.glyphs[glyph];
         var ll = 1;
-        if (fc != null) {
+        if (fc) {
             ll = fc.step * factor;
         }
 
@@ -324,8 +321,12 @@ var getTextLength = function(text, factor, fonts) {
         var glyph = glyphs[i];
         var fc = font.glyphs[glyph];
 
-        if (fc != null) {
-            l += fc.step * factor;
+        if (fc) {
+            if (i == (li-1)) {
+                l += fc.lx * factor;
+            } else {
+                l += fc.step * factor;
+            }
         }
 
         /*var char = text.charCodeAt(i);
@@ -382,15 +383,24 @@ var getSplitIndex = function(text, width, factor, fonts) {
 
     for (var i = 0, li = glyphs.length; i < li; i++) {
         var glyph = glyphs[i];
+        var char = text.charCodeAt(i);
 
-        if (l > width /*&& (char == 10 || char == 9 || char == 32)*/) {
+        if (l > width && (char == 10 || char == 9 || char == 32)) {
             return i;
+        }
+
+        if (char == 10) { //new line
+            continue;
         }
 
         var fc = font.glyphs[glyph];
 
-        if (fc != null) {
-            l += fc.step * factor;
+        if (fc) {
+            if (i == (li-1)) {
+                l += fc.lx * factor;
+            } else {
+                l += fc.step * factor;
+            }
         }
     }
 

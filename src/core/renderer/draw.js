@@ -1005,22 +1005,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gl.vertexAttribPointer(vertexTexcoordAttribute, job.vertexTexcoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         //draw polygons
-        /*
-        if (files.length > 0) {
-
-            for (var i = 0, li = files.length; i < li; i++) {
-                prog.setFloat('uFile', files[i]);
-                prog.setVec2('uSize', job.data);
-                gpu.bindTexture(job.font.getTexture(files[i]));
-                gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
-            }
-
-        } else {
-            gpu.bindTexture(texture);
-            gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
-        }*/
-
-        //draw polygons
         for(var j = 0; j < 2; j++) {
             if (j == 1) {
                 prog.setVec4('uColor', color);
@@ -1189,7 +1173,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             return; //draw all labe from same z-index together
         }
 
-        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
         if (s[0] != 0 && s[2] != 0) {
             this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
@@ -1272,7 +1256,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
 
-    gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+    gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
     if (s[0] != 0 && s[2] != 0) {
         this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);

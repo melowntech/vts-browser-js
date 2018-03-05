@@ -400,21 +400,18 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
         'if (i == 1) mask=vec4(0.0,1.0,0.0,0.0);else\n'+
         'if (i == 2) mask=vec4(0.0,0.0,1.0,0.0);\n'+
         'if (i == 3) mask=vec4(0.0,0.0,0.0,1.0);\n'+
-
         
         'vec2 uv=(vTexCoord);\n'+
         'uv.y=fract(uv.y);\n'+
         'vec4 c=vec4(dot(mask, texture2D(uSampler, uv)));\n'+
         //'c.w=1.0;\n'+
         
-        
         'float u_buffer = uParams[0];\n'+
         'float u_gamma = uParams[1];\n'+
-        'float alpha = smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, c.r);\n'+
-        'gl_FragColor = vec4(uColor.rgb, alpha * uColor.a);\n'+
+        'float alpha = uColor.a * smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, c.r);\n'+
 
-        //'if(c.w < 0.01){ discard; }\n'+
-        //'gl_FragColor = c*uColor;\n'+
+        'if(alpha < 0.01){ discard; }\n'+
+        'gl_FragColor = vec4(uColor.rgb, alpha);\n'+
     '}';
 
 GpuShaders.skydomeVertexShader =

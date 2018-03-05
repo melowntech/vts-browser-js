@@ -79,6 +79,12 @@ Typr._processGlyphs = function(data, index, tabs, obj) {
     var cly = data[index]; index += 1;
     var size = data[index]; index += 1;
 
+    obj.version = version;
+    obj.textureLX = textureLX;
+    obj.textureLY = textureLY;
+    obj.cly = cly;
+    obj.size = size;
+
     var glyphs = new Array(obj.maxp.numGlyphs);
     var fx = 1.0 / textureLX, fy = 1.0 / textureLY;
 
@@ -87,11 +93,6 @@ Typr._processGlyphs = function(data, index, tabs, obj) {
         index += 4;
     }
 
-    obj.version = version;
-    obj.textureLX = textureLX;
-    obj.textureLY = textureLY;
-    obj.cly = cly;
-    obj.size = size;
     obj.glyphs = glyphs;
 }
 
@@ -121,8 +122,11 @@ Typr._processGlyph = function(data, index, fx, fy, textureLX, cly, font, glyphIn
 
     //console.log('load:'+plane);
 
-    var scale = ((24.0/0.75) / font.head.unitsPerEm) * 0.75;
-    var step = Math.round(font.hmtx.aWidth[glyphIndex] * scale);
+    var scale = ((font.size/0.75) / font.head.unitsPerEm) * 0.75;
+    //var step = Math.round(font.hmtx.aWidth[glyphIndex] * scale);
+    var step = font.hmtx.aWidth[glyphIndex] * scale;
+    var shift = clx;
+    clx = Math.round(step) + shift + 3*2 +6;
 
     return {
         u1 : (x) * fx,
@@ -131,7 +135,7 @@ Typr._processGlyph = function(data, index, fx, fy, textureLX, cly, font, glyphIn
         v2 : ((y + cly) * fy) + plane,
         lx : clx,
         ly : cly,
-        //step : (clx-2), 
+        shift : shift, 
         step : (step), 
         plane: plane
     };
@@ -1366,14 +1370,16 @@ Typr.U.stringToGlyphs = function(font, str) {
     
     //console.log(gls);  return gls;
     
-    var gsub = font["GSUB"];  if(gsub==null) return gls;
+    var gsub = font["GSUB"];
+    if(gsub==null) return gls;
+
     var llist = gsub.lookupList, flist = gsub.featureList;
     
     var wsep = "\n\t\" ,.:;!?()  ،";
     var R = "آأؤإاةدذرزوٱٲٳٵٶٷڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙۀۃۄۅۆۇۈۉۊۋۍۏےۓەۮۯܐܕܖܗܘܙܞܨܪܬܯݍݙݚݛݫݬݱݳݴݸݹࡀࡆࡇࡉࡔࡧࡩࡪࢪࢫࢬࢮࢱࢲࢹૅેૉ૊૎૏ૐ૑૒૝ૡ૤૯஁ஃ஄அஉ஌எஏ஑னப஫஬";
     var L = "ꡲ્૗";
     
-    for(var ci=0; ci<gls.length; ci++) {
+    for(var ci = 0; ci < gls.length; ci++) {
         var gl = gls[ci];
         
         var slft = ci==0            || wsep.indexOf(str[ci-1])!=-1;
@@ -1389,19 +1395,19 @@ Typr.U.stringToGlyphs = function(font, str) {
         if(slft) feat = srgt ? "isol" : "init";
         else     feat = srgt ? "fina" : "medi";
         
-        for(var fi=0; fi<flist.length; fi++) {
-            if(flist[fi].tag!=feat) continue;
+        for(var fi = 0; fi < flist.length; fi++) {
+            if(flist[fi].tag != feat) continue;
 
-            for(var ti=0; ti<flist[fi].tab.length; ti++) {
+            for(var ti = 0; ti < flist[fi].tab.length; ti++) {
                 var tab = llist[flist[fi].tab[ti]];
-                if(tab.ltype!=1) continue;
+                if(tab.ltype != 1) continue;
 
-                for(var j=0; j<tab.tabs.length; j++) {
+                for(var j = 0; j < tab.tabs.length; j++) {
                     var ttab = tab.tabs[j];
                     var ind = Typr._lctf.coverageIndex(ttab.coverage,gl);
-                    if(ind==-1) continue;  
+                    if(ind == -1) continue;  
 
-                    if(ttab.fmt==0) {
+                    if(ttab.fmt == 0) {
                         gls[ci] = ind+ttab.delta;
                     } else {
                         if (!ttab.newg) {
@@ -1417,6 +1423,7 @@ Typr.U.stringToGlyphs = function(font, str) {
             }
         }
     }
+
     var cligs = ["rlig", "liga"];
     
     for(var ci=0; ci<gls.length; ci++) {

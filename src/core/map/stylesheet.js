@@ -112,7 +112,10 @@ MapStylesheet.prototype.onLoadError = function() {
 
 MapStylesheet.prototype.setFonts = function(data) {
     this.fonts = data['fonts'] || {};
-    this.fonts['#default'] = this.map.core.config.mapDefaultFont;
+    
+    if (!this.fonts['#default']) {
+        this.fonts['#default'] = this.map.core.config.mapDefaultFont;
+    }
 };
 
 MapStylesheet.prototype.onLoaded = function(data) {
