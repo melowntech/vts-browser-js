@@ -971,14 +971,19 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         var files = job.files;
 
         if (files.length > 0) {
-            if (!job.font.areTexturesReady(files)) {
-                return;
+            for (var i = 0, li = files.length; i < li; i++) {
+                var font = job.fonts[i];
+                if (font && !font.areTexturesReady(files[i])) {
+                    return;
+                }
             }
+
         } else {
-            texture = hitmapRender ? renderer.whiteTexture : job.texture;
-            if (!texture.loaded) {
+            if (!hitmapRender) {
                 return;
             }
+
+            texture = renderer.whiteTexture;
         }
 
         prog = job.program; //renderer.progText;
@@ -987,7 +992,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setSampler('uSampler', 0);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uVec', renderer.labelVector);
-        //prog.setVec2("uScale", screenPixelSize);
 
         var gamma = 2.2 * 1.4142 / 20;
         prog.setVec4('uColor', [0,0,0,1.0]);
@@ -1012,12 +1016,15 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
 
             if (files.length > 0) {
-
                 for (var i = 0, li = files.length; i < li; i++) {
-                    prog.setFloat('uFile', files[i]);
-                    //prog.setVec2('uSize', job.data);
-                    gpu.bindTexture(job.font.getTexture(files[i]));
-                    gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+                    var fontFiles = files[i];
+
+                    for (var k = 0, lk = fontFiles.length; k < lk; k++) {
+                        var file = fontFiles[k];
+                        prog.setFloat('uFile', Math.round(file+i*1000));
+                        gpu.bindTexture(job.fonts[i].getTexture(file));
+                        gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+                    }
                 }
 
             } else {
@@ -1025,8 +1032,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
             }
         }
-
-        //gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
         break;
 
@@ -1036,9 +1041,13 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         var files = job.files;
 
         if (files.length > 0) {
-            if (!job.font.areTexturesReady(files)) {
-                return;
+            for (var i = 0, li = files.length; i < li; i++) {
+                var font = job.fonts[i];
+                if (font && !font.areTexturesReady(files[i])) {
+                    return;
+                }
             }
+
         } else {
             texture = hitmapRender ? renderer.whiteTexture : job.texture;
             if (!texture.loaded) {
@@ -1199,9 +1208,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (prog != renderer.progIcon) {
             gamma = 2.2 * 1.4142 / job.size;
-
             prog.setVec4('uColor', [0,0,0,1.0]);
-            //prog.setVec2('uParams', [0.55, 0]);
             prog.setVec2('uParams', [0.25, gamma]);
             lj = 2;
         } else {
@@ -1232,12 +1239,15 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
 
             if (files.length > 0) {
-
                 for (var i = 0, li = files.length; i < li; i++) {
-                    prog.setFloat('uFile', files[i]);
-                    //prog.setVec2('uSize', job.data);
-                    gpu.bindTexture(job.font.getTexture(files[i]));
-                    gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+                    var fontFiles = files[i];
+
+                    for (var k = 0, lk = fontFiles.length; k < lk; k++) {
+                        var file = fontFiles[k];
+                        prog.setFloat('uFile', Math.round(file+i*1000));
+                        gpu.bindTexture(job.fonts[i].getTexture(file));
+                        gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+                    }
                 }
 
             } else {
@@ -1273,9 +1283,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     if (prog != renderer.progIcon) {
         gamma = 2.2 * 1.4142 / job.size;
-
         prog.setVec4('uColor', [0,0,0,1.0]);
-        //prog.setVec2('uParams', [0.55, 0]);
         prog.setVec2('uParams', [0.25, gamma]);
         lj = 2;
     } else {
@@ -1306,12 +1314,15 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         }
 
         if (files.length > 0) {
-
             for (var i = 0, li = files.length; i < li; i++) {
-                prog.setFloat('uFile', files[i]);
-                //prog.setVec2('uSize', job.data);
-                gpu.bindTexture(job.font.getTexture(files[i]));
-                gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+                var fontFiles = files[i];
+
+                for (var k = 0, lk = fontFiles.length; k < lk; k++) {
+                    var file = fontFiles[k];
+                    prog.setFloat('uFile', Math.round(file+i*1000));
+                    gpu.bindTexture(job.fonts[i].getTexture(file));
+                    gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+                }
             }
 
         } else {

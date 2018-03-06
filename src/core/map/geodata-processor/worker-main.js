@@ -371,8 +371,14 @@ function optimizeGroupMessages() {
                             var files2 = job2['files'];
 
                             for (k = 0, lk = files2.length; k < lk; k++) {
-                                if (files.indexOf(files2[k]) == -1) {
-                                    files.push(files2[k]);
+                                if (!files[k]) {
+                                    files[k] = [];
+                                }
+
+                                for (var m = 0, lm = files2[k].length; m < lm; m++) {
+                                    if (files[k].indexOf(files2[k][m]) == -1) {
+                                        files[k].push(files2[k][m]);
+                                    }
                                 }
                             }
                         }

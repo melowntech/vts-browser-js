@@ -1364,23 +1364,48 @@ Typr.U.isRTL = function(str) {
     return rtlDirCheck.test(str);
 };
 
-Typr.U.stringToGlyphs = function(font, str) {
-    var gls = [];
-    for(var i=0; i<str.length; i++) gls.push(Typr.U.codeToGlyph(font, str.charCodeAt(i)));
+Typr.U.stringToGlyphs = function(fonts, str) {
+    var gls = [], g, i, li, j, lj, gsub, font, llist, flist;
+    var gfonts = [];
+
+    for (i = 0, li = str.length; i < li; i++) {
+        for (j = 0, lj = fonts.length; j < lj; j++) {
+            font = fonts[j];
+            g = Typr.U.codeToGlyph(font, str.charCodeAt(i));
+            if (g) {
+                break;
+            }
+        }
+
+        gls.push(g);
+        gfonts.push(g ? j : 0);
+    }
+
+    font = null;
     
     //console.log(gls);  return gls;
-    
-    var gsub = font["GSUB"];
-    if(gsub==null) return gls;
-
-    var llist = gsub.lookupList, flist = gsub.featureList;
-    
+   
     var wsep = "\n\t\" ,.:;!?()  ،";
     var R = "آأؤإاةدذرزوٱٲٳٵٶٷڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙۀۃۄۅۆۇۈۉۊۋۍۏےۓەۮۯܐܕܖܗܘܙܞܨܪܬܯݍݙݚݛݫݬݱݳݴݸݹࡀࡆࡇࡉࡔࡧࡩࡪࢪࢫࢬࢮࢱࢲࢹૅેૉ૊૎૏ૐ૑૒૝ૡ૤૯஁ஃ஄அஉ஌எஏ஑னப஫஬";
     var L = "ꡲ્૗";
     
     for(var ci = 0; ci < gls.length; ci++) {
         var gl = gls[ci];
+
+        if(!gsub) {
+            continue;
+        }
+
+        if (font != gfonts[ci]) {
+            font = fonts[gfonts[ci]];
+
+            gsub = font["GSUB"];
+            if(!gsub) {
+                continue;
+            }
+
+            llist = gsub.lookupList, flist = gsub.featureList;
+        }
         
         var slft = ci==0            || wsep.indexOf(str[ci-1])!=-1;
         var srgt = ci==gls.length-1 || wsep.indexOf(str[ci+1])!=-1;
@@ -1430,6 +1455,21 @@ Typr.U.stringToGlyphs = function(font, str) {
         var gl = gls[ci];
         var rlim = Math.min(3, gls.length-ci-1);
 
+        if(!gsub) {
+            continue;
+        }
+
+        if (font != gfonts[ci]) {
+            font = fonts[gfonts[ci]];
+
+            gsub = font["GSUB"];
+            if(!gsub) {
+                continue;
+            }
+
+            llist = gsub.lookupList, flist = gsub.featureList;
+        }
+
         for(var fi=0; fi<flist.length; fi++) {
             var fl = flist[fi];
             if(cligs.indexOf(fl.tag)==-1) continue;
@@ -1462,7 +1502,7 @@ Typr.U.stringToGlyphs = function(font, str) {
         gls.reverse();
     }
 
-    return gls;
+    return [gls, gfonts];
 }
 
 Typr.U.glyphsToPath = function(font, gls) {   

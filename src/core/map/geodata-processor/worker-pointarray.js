@@ -478,7 +478,7 @@ var processLabel = function(point, labelData) {
 
         // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, fonts), fonts);
+            var splitIndex = getSplitIndex(line, labelData.width, labelData.size, fonts);
 
             if (line.length == splitIndex) {
                 lines2.push(line);
@@ -500,7 +500,7 @@ var processLabel = function(point, labelData) {
 
     //get max width
     for (i = 0, li = lines2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, fonts), fonts);
+        lineWidths[i] = getTextLength(lines2[i], labelData.size, fonts);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
@@ -544,16 +544,21 @@ var processLabel = function(point, labelData) {
     labelData.files = [];
 
     for (var key in planes) {
-        var plane = parseInt(key);
-        var file = Math.round((plane - (plane % 4)) / 4);
+        var fontIndex = parseInt(key);
+        var planes2 = planes[key];
 
-        if (labelData.files.indexOf(file) == -1) {
-            labelData.files.push(file);
+        var files = [];
+
+        for (var key2 in planes2) {
+            var plane = parseInt(key2) - (labelData.files.length*4000);
+            var file = Math.round((plane - (plane % 4)) / 4);
+            
+            if (files.indexOf(file) == -1) {
+                files.push(file);
+            }
         }
-    }
 
-    if (!fonts[0].version) {
-        labelData.files = null;        
+        labelData.files.push(files);
     }
 
     labelData.index = index;

@@ -943,19 +943,28 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes);
     index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index);
 
-    var files = [];
-
-    for (var key in planes) {
-        var plane = parseInt(key);
-        var file = Math.round((plane - (plane % 4)) / 4);
-
-        if (files.indexOf(file) == -1) {
-            files.push(file);
-        }
+    if (!index) {
+        return;
     }
 
-    if (!fonts[0].version) {
-        files = null;        
+    var labelFiles = [];
+
+    for (var key in planes) {
+        var fontIndex = parseInt(key);
+        var planes2 = planes[key];
+
+        var files = [];
+
+        for (var key2 in planes2) {
+            var plane = parseInt(key2) - (labelFiles.length*4000);
+            var file = Math.round((plane - (plane % 4)) / 4);
+
+            if (files.indexOf(file) == -1) {
+                files.push(file);
+            }
+        }
+
+        labelFiles.push(files);
     }
 
     var signature = JSON.stringify({
@@ -967,7 +976,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
         'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'z-index':zIndex, 'center': center,
-        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files': files,
+        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files': labelFiles,
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': fontsStorage,
         'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);

@@ -290,15 +290,13 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 
     job.files = data['files'] || [];
     var fonts = data['fonts'] || ['#default'];
-    job.font = this.renderer.fonts[fonts[0]];
-    job.texture = job.font.texture;
-    job.data = [1.0/job.texture.width, job.texture.width];
+    job.fonts = fonts;
 
-    if (job.font.version) {
-        job.program = this.renderer.progText2;
-    } else {
-        job.files = [];
+    for (var i = 0, li = fonts.length; i < li; i++) {
+        fonts[i] = this.renderer.fonts[fonts[i]];
     }
+
+    job.program = this.renderer.progText2;
 
     if (!job.program.isReady()) {
         return;
@@ -369,15 +367,13 @@ GpuGroup.prototype.addIconJob = function(data, label) {
         job.files = data['files'] || [];
         job.noOverlap = data['noOverlap'];
         var fonts = data['fonts'] || ['#default'];
-        job.font = this.renderer.fonts[fonts[0]];
-        job.texture = job.font.texture;
-        job.data = [1.0/job.texture.width, job.texture.width];
+        job.fonts = fonts;
 
-        if (job.font.version) {
-            job.program = this.renderer.progIcon2;
-        } else {
-            job.files = [];
+        for (var i = 0, li = fonts.length; i < li; i++) {
+            fonts[i] = this.renderer.fonts[fonts[i]];
         }
+
+        job.program = this.renderer.progIcon2;
     }
 
     if (job.visibility != null && !Array.isArray(job.visibility)) {
