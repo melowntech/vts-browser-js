@@ -1392,10 +1392,6 @@ Typr.U.stringToGlyphs = function(fonts, str) {
     for(var ci = 0; ci < gls.length; ci++) {
         var gl = gls[ci];
 
-        if(!gsub) {
-            continue;
-        }
-
         if (font != gfonts[ci]) {
             font = fonts[gfonts[ci]];
 
@@ -1405,6 +1401,10 @@ Typr.U.stringToGlyphs = function(fonts, str) {
             }
 
             llist = gsub.lookupList, flist = gsub.featureList;
+        }
+
+        if(!gsub) {
+            continue;
         }
         
         var slft = ci==0            || wsep.indexOf(str[ci-1])!=-1;

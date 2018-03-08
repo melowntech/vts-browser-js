@@ -155,7 +155,7 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
         return false;
     }
 
-    //if (!(this.tile.id[0] == 21 && this.tile.id[1] == 566283 && this.tile.id[2] == 355254)) {
+    //if (!(this.tile.id[0] == 21 && this.tile.id[1] == 566459 && this.tile.id[2] == 355240)) {
       //  return false;
     //}
 

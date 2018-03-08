@@ -262,6 +262,14 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
         var font = fonts[gfonts[i]];
 
         if (font) {
+            var factor = getFontFactor(size, font);
+
+            var ll = 0.01;
+            var fc = font.glyphs[glyph];
+            if (fc) {
+                ll = fc.step * factor;
+            }
+
             var posAndDir = getPathPositionAndDirection(points, l);
             var posAndDir2 = getPathPositionAndDirection(points, l+ll);
 
@@ -271,14 +279,6 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
                 (posAndDir2[1][2] + posAndDir[1][2])*0.5];
 
             vec3Normalize(dir);
-
-            var factor = getFontFactor(size, font);
-
-            var ll = 0.01;
-            var fc = font.glyphs[glyph];
-            if (fc) {
-                ll = fc.step * factor;
-            }
 
             var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, glyph, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes, gfonts[i]);
 
@@ -523,6 +523,15 @@ var areTextCharactersAvailable = function(text, fonts) {
         return false;
     }
 
+    var res = Typr.U.stringToGlyphs(fonts, text);
+    var glyphs = res[0];
+    var gfonts = res[1];
+
+    if (glyphs.indexOf(0) != -1) {
+        return false;
+    }
+
+    /*
     var font = fonts[0];
 
     for (var i = 0, li = text.length; i < li; i++) {
@@ -535,7 +544,7 @@ var areTextCharactersAvailable = function(text, fonts) {
         if (!Typr.U.codeToGlyph(font, char)) {
             return false;
         }
-    }
+    }*/
 
     return true;
 };
