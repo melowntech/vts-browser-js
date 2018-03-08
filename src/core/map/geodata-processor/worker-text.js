@@ -71,19 +71,20 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
 
             var n2 = [n[0] * verticalShift, n[1] * verticalShift, n[2] * verticalShift];
             var n3 = [n2[0] + n[0] * factorY, n2[1] + n[1] * factorY, n2[2] + n[2] * factorY];
-
-            if (fc.shift > 0) {
-                p1[0] = p1[0] - dir[0] * fc.shift * factor;
-                p1[1] = p1[1] - dir[1] * fc.shift * factor;
-                p1[2] = p1[2] - dir[2] * fc.shift * factor;
-            }
+            
+            p1[0] = p1[0] + dir[0] * fc.sx * factor;
+            p1[1] = p1[1] + dir[1] * fc.sx * factor;
+            p1[2] = p1[2] + dir[2] * fc.sx * factor;
+            p1[0] = p1[0] + n[0] * fc.sy * factor;
+            p1[1] = p1[1] + n[1] * fc.sy * factor;
+            p1[2] = p1[2] + n[2] * fc.sy * factor;
 
             p2[0] = p1[0] + dir[0] * factorX;
             p2[1] = p1[1] + dir[1] * factorX;
             p2[2] = p1[2] + dir[2] * factorX;
 
             var planeShift = fontIndex * 4000;
-            var plane = fc.plane +  planeShift;
+            var plane = fc.plane + planeShift;
 
             if (planes) {
                 if (!planes[fontIndex]) {

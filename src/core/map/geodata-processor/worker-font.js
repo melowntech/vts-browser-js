@@ -76,66 +76,87 @@ Typr._processGlyphs = function(data, index, tabs, obj) {
     var version = data[index]; index += 1;
     var textureLX = (data[index] << 8) | (data[index+1]); index += 2;
     var textureLY = (data[index] << 8) | (data[index+1]); index += 2;
-    var cly = data[index]; index += 1;
     var size = data[index]; index += 1;
+    var flags = data[index]; index += 1;
 
     obj.version = version;
     obj.textureLX = textureLX;
     obj.textureLY = textureLY;
-    obj.cly = cly;
     obj.size = size;
+    obj.cly = size * 1.5;
+    obj.flags = flags;
 
     var glyphs = new Array(obj.maxp.numGlyphs);
     var fx = 1.0 / textureLX, fy = 1.0 / textureLY;
+    var step = (textureLX > 256) ? 7 : 6;
 
-    for (var i = 0, li = obj.maxp.numGlyphs; i < li; i++) {
-        glyphs[i] = Typr._processGlyph(data, index, fx, fy, textureLX, cly, obj, i);
-        index += 4;
+    var filesIndicesIndex = index + obj.maxp.numGlyphs * step;
+    var filesIndicesCount = (data[filesIndicesIndex] << 8) | data[filesIndicesIndex+1];
+    var files = new Array(filesIndicesCount);
+
+    filesIndicesIndex += 2;
+
+    for (var i = 0, li = filesIndicesCount; i < li; i++) {
+        files[i] = (data[filesIndicesIndex+i*2] << 8) | data[filesIndicesIndex+i*2+1];
+    }
+
+    var fileIndex = 0;
+
+    for (i = 0, li = obj.maxp.numGlyphs; i < li; i++) {
+        if (i == files[fileIndex]) {
+            fileIndex++;
+        }
+
+        glyphs[i] = Typr._processGlyph(data, index, fx, fy, textureLX, obj, i, fileIndex);
+        index += step;
     }
 
     obj.glyphs = glyphs;
 }
 
-Typr._processGlyph = function(data, index, fx, fy, textureLX, cly, font, glyphIndex) {
+Typr._processGlyph = function(data, index, fx, fy, textureLX, font, glyphIndex, fileIndex) {
     var value = (data[index] << 24) | (data[index+1] << 16) | (data[index+2] << 8) | (data[index+3]);
-    var x, y, clx, plane;
 
-    //console.log('index: '+index + ' value: ' + value);
+    // w 6bit | h 6bit | sx sign 1bit | abs sx 6bit | sy sign 1bit | abs sy 6bit | plane 2bit 
+    var w = (value >> 22) & 63;
+    var h = (value >> 16) & 63;
+    var sx = ((value >> 9) & 63) * (((value >> 15) & 1) ? -1 : 1);
+    var sy = ((value >> 2) & 63) * (((value >> 9) & 1) ? -1 : 1);
+    var plane = (plane & 3) + (fileIndex * 4);
 
-    switch(textureLX) {
-        case 2048: // 4 x unit8 x-11bit,y-11bit,clx-6bit,plane-4bit
-            x = ((value >> 21) & 2047), y = ((value >> 10) & 2047), clx = ((value >> 4) & 63), plane = (value & 15);
-            break;
-                   
-        case 1024: // 4 x unit8 x-10bit,y-10bit,clx-6bit,plane-6bit
-            x = ((value >> 22) & 1023), y = ((value >> 12) & 1023), clx = ((value >> 6) & 63), plane = (value & 63);
-            break;
-
-        case 512:   // 4 x unit8 x-9bit,y-9bit,clx-6bit,plane-8bit
-            x = ((value >> 23) & 511), y = ((value >> 14) & 511), clx = ((value >> 8) & 63), plane = (value & 255);
-            break;
-
-        default:   // 4 x unit8 x-8bit,y-8bit,clx-6bit,plane-10bit
-            x = ((value >> 24) & 255), y = ((value >> 16) & 255), clx = ((value >> 10) & 63), plane = (value & 1023);
-            break;
-    }
-
-    //console.log('load:'+plane);
+    if (textureLX > 256) {
+        value = (data[index+4] << 16) | (data[index+5] << 8) | (data[index+6]);
+    } else {
+        value = (data[index+4] << 8) | (data[index+5]);
+    }    
 
     var scale = ((font.size/0.75) / font.head.unitsPerEm) * 0.75;
-    //var step = Math.round(font.hmtx.aWidth[glyphIndex] * scale);
-    var step = font.hmtx.aWidth[glyphIndex] * scale;
-    var shift = clx;
-    clx = Math.round(step) + shift + 3*2 +6;
+    var x, y, step = font.hmtx.aWidth[glyphIndex] * scale;
+
+    //store glyph position
+    switch (textureLX) {
+        case 2048: // x 11bit | y 11bit
+            x = ((value >> 11) & 255), y = (value & 2047); break;
+                   
+        case 1024: // x 10bit | y 10bit
+            x = ((value >> 10) & 255), y = (value & 1023); break;
+
+        case 512:  // x 9bit | y 9bit
+            x = ((value >> 9) & 255), y = (value & 511); break;
+
+        default:   // x 8bit | y 8bit
+            x = ((value >> 8) & 255), y = (value & 255); break;
+    }
 
     return {
         u1 : (x) * fx,
         v1 : (y * fy) + plane,
-        u2 : (x + clx) * fx,
-        v2 : ((y + cly) * fy) + plane,
-        lx : clx,
-        ly : cly,
-        shift : shift, 
+        u2 : (x + w) * fx,
+        v2 : ((y + h) * fy) + plane,
+        lx : w,
+        ly : h,
+        sx : sx, 
+        sy : sy, 
         step : (step), 
         plane: plane
     };
