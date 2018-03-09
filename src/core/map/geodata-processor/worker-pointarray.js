@@ -541,7 +541,13 @@ var processLabel = function(point, labelData) {
         index2 += 3;
     }
 
-    labelData.files = [];
+    
+    var fonts = labelData.fonts;
+    labelData.files = new Array(fonts.length);
+
+    for (i = 0, li= fonts.length; i < li; i++) {
+        labelData.files[i] = [];
+    }
 
     for (var key in planes) {
         var fontIndex = parseInt(key);
@@ -550,7 +556,7 @@ var processLabel = function(point, labelData) {
         var files = [];
 
         for (var key2 in planes2) {
-            var plane = parseInt(key2) - (labelData.files.length*4000);
+            var plane = parseInt(key2) - (fontIndex*4000);
             var file = Math.round((plane - (plane % 4)) / 4);
             
             if (files.indexOf(file) == -1) {
@@ -558,7 +564,7 @@ var processLabel = function(point, labelData) {
             }
         }
 
-        labelData.files.push(files);
+        labelData.files[fontIndex] = files;
     }
 
     labelData.index = index;

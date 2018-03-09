@@ -972,9 +972,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (files.length > 0) {
             for (var i = 0, li = files.length; i < li; i++) {
-                var font = job.fonts[i];
-                if (font && !font.areTexturesReady(files[i])) {
-                    return;
+                if (files[i].length > 0) {
+                    var font = job.fonts[i];
+                    if (font && !font.areTexturesReady(files[i])) {
+                        return;
+                    }
                 }
             }
 
@@ -1042,9 +1044,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (files.length > 0) {
             for (var i = 0, li = files.length; i < li; i++) {
-                var font = job.fonts[i];
-                if (font && !font.areTexturesReady(files[i])) {
-                    return;
+                if (files[i].length > 0) {
+                    var font = job.fonts[i];
+                    if (font && !font.areTexturesReady(files[i])) {
+                        return;
+                    }
                 }
             }
 

@@ -51,6 +51,10 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
     var fc = font.glyphs[char];
     char = 0; // hack
 
+    if (!fc) {
+        return [pos, index, index2, l];
+    }
+
     var l = 0;
     var nx = textVector[0];
     var ny = textVector[1];
@@ -65,7 +69,11 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             l = fc.lx * factor;
         }
     } else {
-        if (fc) {
+        if (fc.lx == 0) {
+            pos[0] = pos[0] + dir[0] * fc.step * factor;
+            pos[1] = pos[1] + dir[1] * fc.step * factor;
+            l = fc.lx * factor;
+        } else {
             var factorX = fc.lx * factor;
             var factorY = fc.ly * factor;
 
@@ -164,8 +172,6 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             pos[0] = pos[0] + dir[0] * fc.step * factor;
             pos[1] = pos[1] + dir[1] * fc.step * factor;
             l = fc.lx * factor;
-        } else {
-            //unknown char
         }
     }
 

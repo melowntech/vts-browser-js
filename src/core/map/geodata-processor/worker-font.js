@@ -121,8 +121,8 @@ Typr._processGlyph = function(data, index, fx, fy, textureLX, font, glyphIndex, 
     var w = (value >> 22) & 63;
     var h = (value >> 16) & 63;
     var sx = ((value >> 9) & 63) * (((value >> 15) & 1) ? -1 : 1);
-    var sy = ((value >> 2) & 63) * (((value >> 9) & 1) ? -1 : 1);
-    var plane = (plane & 3) + (fileIndex * 4);
+    var sy = -((value >> 2) & 63) * (((value >> 8) & 1) ? -1 : 1);
+    var plane = (value & 3) + (fileIndex * 4);
 
     if (textureLX > 256) {
         value = (data[index+4] << 16) | (data[index+5] << 8) | (data[index+6]);
@@ -136,13 +136,13 @@ Typr._processGlyph = function(data, index, fx, fy, textureLX, font, glyphIndex, 
     //store glyph position
     switch (textureLX) {
         case 2048: // x 11bit | y 11bit
-            x = ((value >> 11) & 255), y = (value & 2047); break;
+            x = ((value >> 11) & 2047), y = (value & 2047); break;
                    
         case 1024: // x 10bit | y 10bit
-            x = ((value >> 10) & 255), y = (value & 1023); break;
+            x = ((value >> 10) & 1023), y = (value & 1023); break;
 
         case 512:  // x 9bit | y 9bit
-            x = ((value >> 9) & 255), y = (value & 511); break;
+            x = ((value >> 9) & 511), y = (value & 511); break;
 
         default:   // x 8bit | y 8bit
             x = ((value >> 8) & 255), y = (value & 255); break;

@@ -947,7 +947,12 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         return;
     }
 
-    var labelFiles = [];
+    var fonts = labelData.fonts;
+    var labelFiles = new Array(fonts.length);
+
+    for (i = 0, li= fonts.length; i < li; i++) {
+        labelFiles[i] = [];
+    }
 
     for (var key in planes) {
         var fontIndex = parseInt(key);
@@ -956,7 +961,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         var files = [];
 
         for (var key2 in planes2) {
-            var plane = parseInt(key2) - (labelFiles.length*4000);
+            var plane = parseInt(key2) - (fontIndex*4000);
             var file = Math.round((plane - (plane % 4)) / 4);
 
             if (files.indexOf(file) == -1) {
@@ -964,7 +969,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
             }
         }
 
-        labelFiles.push(files);
+        labelFiles[fontIndex] = files;
     }
 
     var signature = JSON.stringify({
