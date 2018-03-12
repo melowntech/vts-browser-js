@@ -1,4 +1,10 @@
 
+import {bidi as bidi_} from './worker-bidi.js';
+
+
+//get rid of compiler mess
+var bidi = bidi_;
+
 
 var Typr = {};
 
@@ -1012,6 +1018,11 @@ Typr.U.stringToGlyphs = function(fonts, str) {
 
     var wsep = "\n\t\" ,.:;!?()  ،";
 
+    //if (str.indexOf('Chad') != -1) {
+    var bidiResult = bidi(str, -1, false);
+     //   debugger
+    //}
+
     //basic shaping
     for (i = 0, li = str.length; i < li; i++) {
         var c = str.charCodeAt(i);
@@ -1169,9 +1180,18 @@ Typr.U.stringToGlyphs = function(fonts, str) {
         }
     }
 
-    if (Typr.U.isRTL(str)) {
-        gls.reverse();
+    //if (Typr.U.isRTL(str)) {
+    //    gls.reverse();
+    //}
+
+    var indices = bidiResult.indices;
+    var gls2 = gls.slice();
+
+    for (i = 0, li = gls.length; i < li; i++) {
+        gls2[i] = gls[indices[i]];
     }
+
+    gls = gls2;
 
     return [gls, gfonts];
 }
