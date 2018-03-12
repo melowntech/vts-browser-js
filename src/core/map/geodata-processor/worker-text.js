@@ -216,6 +216,7 @@ var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffe
 
         if (font) {
             var factor = getFontFactor(size, font);
+
             var shift = addChar(p1, dir, 0, glyph, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, gfonts[i]);
 
             //var gid2 = (i<gls.length-1 && gls[i+1]!=-1)  ? gls[i+1] : 0;

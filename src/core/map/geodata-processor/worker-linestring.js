@@ -947,10 +947,10 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         return;
     }
 
-    var fonts = labelData.fonts;
+    //var fonts = labelData.fonts;
     var labelFiles = new Array(fonts.length);
 
-    for (i = 0, li= fonts.length; i < li; i++) {
+    for (var i = 0, li= fonts.length; i < li; i++) {
         labelFiles[i] = [];
     }
 

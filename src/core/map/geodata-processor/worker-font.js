@@ -24,14 +24,14 @@ Typr.parse = function(buff) {
         "hhea",
         "maxp",
         "hmtx",
-        "name",
-        "OS/2",
-        "post",
+        //"name",
+        //"OS/2",
+        //"post",
         
         //"cvt",
         //"fpgm",
-        "loca",
-        "glyf",
+        //"loca",
+        //"glyf",
         "kern",
         
         //"prep"
@@ -604,126 +604,6 @@ Typr.cmap.parse12 = function(data, offset) {
     return obj;
 }
 
-Typr.glyf = {};
-Typr.glyf.parse = function(data, offset, length, font) {
-    var obj = [];
-    for(var g=0; g<font.maxp.numGlyphs; g++) obj.push(null);
-    return obj;
-}
-
-Typr.glyf._parseGlyf = function(font, g) {
-    var bin = Typr._bin;
-    var data = font._data;
-    
-    var offset = Typr._tabOffset(data, "glyf") + font.loca[g];
-        
-    if(font.loca[g]==font.loca[g+1]) return null;
-        
-    var gl = {};
-        
-    gl.noc  = bin.readShort(data, offset);  offset+=2;      // number of contours
-    gl.xMin = bin.readShort(data, offset);  offset+=2;
-    gl.yMin = bin.readShort(data, offset);  offset+=2;
-    gl.xMax = bin.readShort(data, offset);  offset+=2;
-    gl.yMax = bin.readShort(data, offset);  offset+=2;
-    
-    if(gl.xMin>=gl.xMax || gl.yMin>=gl.yMax) return null;
-        
-    if(gl.noc>0) {
-        gl.endPts = [];
-        for(var i=0; i<gl.noc; i++) { gl.endPts.push(bin.readUshort(data,offset)); offset+=2; }
-        
-        var instructionLength = bin.readUshort(data,offset); offset+=2;
-        if((data.length-offset)<instructionLength) return null;
-        gl.instructions = bin.readBytes(data, offset, instructionLength);   offset+=instructionLength;
-        
-        var crdnum = gl.endPts[gl.noc-1]+1;
-        gl.flags = [];
-        for(var i=0; i<crdnum; i++ ) { 
-            var flag = data[offset];  offset++; 
-            gl.flags.push(flag); 
-            if((flag&8)!=0) {
-                var rep = data[offset];  offset++;
-                for(var j=0; j<rep; j++) { gl.flags.push(flag); i++; }
-            }
-        }
-        gl.xs = [];
-        for(var i=0; i<crdnum; i++) {
-            var i8=((gl.flags[i]&2)!=0), same=((gl.flags[i]&16)!=0);  
-            if(i8) { 
-                gl.xs.push(same ? data[offset] : -data[offset]);  offset++;
-            } else {
-                if(same) gl.xs.push(0);
-                else { gl.xs.push(bin.readShort(data, offset));  offset+=2; }
-            }
-        }
-        gl.ys = [];
-        for(var i=0; i<crdnum; i++) {
-            var i8=((gl.flags[i]&4)!=0), same=((gl.flags[i]&32)!=0);  
-            if(i8) {
-                gl.ys.push(same ? data[offset] : -data[offset]);  offset++;
-            } else {
-                if(same) gl.ys.push(0);
-                else { gl.ys.push(bin.readShort(data, offset));  offset+=2; }
-            }
-        }
-        var x = 0, y = 0;
-        for(var i=0; i<crdnum; i++) { x += gl.xs[i]; y += gl.ys[i];  gl.xs[i]=x;  gl.ys[i]=y; }
-        //console.log(endPtsOfContours, instructionLength, instructions, flags, xCoordinates, yCoordinates);
-    } else {
-        var ARG_1_AND_2_ARE_WORDS   = 1<<0;
-        var ARGS_ARE_XY_VALUES      = 1<<1;
-        var ROUND_XY_TO_GRID        = 1<<2;
-        var WE_HAVE_A_SCALE         = 1<<3;
-        var RESERVED                = 1<<4;
-        var MORE_COMPONENTS         = 1<<5;
-        var WE_HAVE_AN_X_AND_Y_SCALE= 1<<6;
-        var WE_HAVE_A_TWO_BY_TWO    = 1<<7;
-        var WE_HAVE_INSTRUCTIONS    = 1<<8;
-        var USE_MY_METRICS          = 1<<9;
-        var OVERLAP_COMPOUND        = 1<<10;
-        var SCALED_COMPONENT_OFFSET = 1<<11;
-        var UNSCALED_COMPONENT_OFFSET   = 1<<12;
-        
-        gl.parts = [];
-        var flags;
-        do {
-            flags = bin.readUshort(data, offset);  offset += 2;
-            var part = { m:{a:1,b:0,c:0,d:1,tx:0,ty:0}, p1:-1, p2:-1 };  gl.parts.push(part);
-            part.glyphIndex = bin.readUshort(data, offset);  offset += 2;
-            if ( flags & ARG_1_AND_2_ARE_WORDS) {
-                var arg1 = bin.readShort(data, offset);  offset += 2;
-                var arg2 = bin.readShort(data, offset);  offset += 2;
-            } else {
-                var arg1 = bin.readInt8(data, offset);  offset ++;
-                var arg2 = bin.readInt8(data, offset);  offset ++;
-            }
-            
-            if(flags & ARGS_ARE_XY_VALUES) { part.m.tx = arg1;  part.m.ty = arg2; }
-            else  {  part.p1=arg1;  part.p2=arg2;  }
-            //part.m.tx = arg1;  part.m.ty = arg2;
-            //else { throw "params are not XY values"; }
-            
-            if ( flags & WE_HAVE_A_SCALE ) {
-                part.m.a = part.m.d = bin.readF2dot14(data, offset);  offset += 2;    
-            } else if ( flags & WE_HAVE_AN_X_AND_Y_SCALE ) {
-                part.m.a = bin.readF2dot14(data, offset);  offset += 2; 
-                part.m.d = bin.readF2dot14(data, offset);  offset += 2; 
-            } else if ( flags & WE_HAVE_A_TWO_BY_TWO ) {
-                part.m.a = bin.readF2dot14(data, offset);  offset += 2; 
-                part.m.b = bin.readF2dot14(data, offset);  offset += 2; 
-                part.m.c = bin.readF2dot14(data, offset);  offset += 2; 
-                part.m.d = bin.readF2dot14(data, offset);  offset += 2; 
-            }
-        } while ( flags & MORE_COMPONENTS ) 
-        if (flags & WE_HAVE_INSTRUCTIONS){
-            var numInstr = bin.readUshort(data, offset);  offset += 2;
-            gl.instr = [];
-            for(var i=0; i<numInstr; i++) { gl.instr.push(data[offset]);  offset++; }
-        }
-    }
-    return gl;
-}
 
 
 Typr.GPOS = {};
@@ -1000,22 +880,6 @@ Typr.kern.readFormat0 = function(data, offset, map) {
 
 
 
-Typr.loca = {};
-Typr.loca.parse = function(data, offset, length, font) {
-    var bin = Typr._bin;
-    var obj = [];
-    
-    var ver = font.head.indexToLocFormat;
-    //console.log("loca", ver, length, 4*font.maxp.numGlyphs);
-    var len = font.maxp.numGlyphs+1;
-    
-    if(ver==0) for(var i=0; i<len; i++) obj.push(bin.readUshort(data, offset+(i<<1))<<1);
-    if(ver==1) for(var i=0; i<len; i++) obj.push(bin.readUint  (data, offset+(i<<2))   );
-    
-    return obj;
-}
-
-
 Typr.maxp = {};
 Typr.maxp.parse = function(data, offset, length) {
     //console.log(data.length, offset, length);
@@ -1044,177 +908,6 @@ Typr.maxp.parse = function(data, offset, length) {
         obj.maxComponentDepth     = bin.readUshort(data, offset);  offset += 2;
     }
     
-    return obj;
-}
-
-
-Typr.name = {};
-Typr.name.parse = function(data, offset, length) {
-    var bin = Typr._bin;
-    var obj = {};
-    var format = bin.readUshort(data, offset);  offset += 2;
-    var count  = bin.readUshort(data, offset);  offset += 2;
-    var stringOffset = bin.readUshort(data, offset);  offset += 2;
-    
-    //console.log(format, count);
-    
-    var offset0 = offset;
-    
-    for(var i=0; i<count; i++) {
-        var platformID = bin.readUshort(data, offset);  offset += 2;
-        var encodingID = bin.readUshort(data, offset);  offset += 2;
-        var languageID = bin.readUshort(data, offset);  offset += 2;
-        var nameID     = bin.readUshort(data, offset);  offset += 2;
-        var length     = bin.readUshort(data, offset);  offset += 2;
-        var noffset    = bin.readUshort(data, offset);  offset += 2;
-        //console.log(platformID, encodingID, languageID.toString(16), nameID, length, noffset);
-        
-        var plat = "p"+platformID;//Typr._platforms[platformID];
-        if(obj[plat]==null) obj[plat] = {};
-        
-        var names = [
-            "copyright",
-            "fontFamily",
-            "fontSubfamily",
-            "ID",
-            "fullName",
-            "version",
-            "postScriptName",
-            "trademark",
-            "manufacturer",
-            "designer",
-            "description",
-            "urlVendor",
-            "urlDesigner",
-            "licence",
-            "licenceURL",
-            "---",
-            "typoFamilyName",
-            "typoSubfamilyName",
-            "compatibleFull",
-            "sampleText",
-            "postScriptCID",
-            "wwsFamilyName",
-            "wwsSubfamilyName",
-            "lightPalette",
-            "darkPalette"
-        ];
-        var cname = names[nameID];
-        var soff = offset0 + count*12 + noffset;
-        var str;
-        if(false){}
-        else if(platformID == 0) str = bin.readUnicode(data, soff, length/2);
-        else if(platformID == 3 && encodingID == 0) str = bin.readUnicode(data, soff, length/2);
-        else if(encodingID == 0) str = bin.readASCII  (data, soff, length);
-        else if(encodingID == 1) str = bin.readUnicode(data, soff, length/2);
-        else if(encodingID == 3) str = bin.readUnicode(data, soff, length/2);
-        
-        else if(platformID == 1) { str = bin.readASCII(data, soff, length);  console.log("reading unknown MAC encoding "+encodingID+" as ASCII") }
-        else throw "unknown encoding "+encodingID + ", platformID: "+platformID;
-        
-        obj[plat][cname] = str;
-        obj[plat]._lang = languageID;
-    }
-    
-    for(var p in obj) if(obj[p]._lang==1033) return obj[p];     // United States
-    for(var p in obj) if(obj[p]._lang==   0) return obj[p];
-    
-    var tname;
-    for(var p in obj) { tname=p; break; }
-    console.log("returning name table with languageID "+ obj[tname]._lang);
-    return obj[tname];
-}
-
-
-Typr["OS/2"] = {};
-Typr["OS/2"].parse = function(data, offset, length) {
-    var bin = Typr._bin;
-    var ver = bin.readUshort(data, offset); offset += 2;
-    
-    var obj = {};
-    if     (ver==0) Typr["OS/2"].version0(data, offset, obj);
-    else if(ver==1) Typr["OS/2"].version1(data, offset, obj);
-    else if(ver==2 || ver==3 || ver==4) Typr["OS/2"].version2(data, offset, obj);
-    else if(ver==5) Typr["OS/2"].version5(data, offset, obj);
-    else throw "unknown OS/2 table version: "+ver;
-    
-    return obj;
-}
-
-Typr["OS/2"].version0 = function(data, offset, obj) {
-    var bin = Typr._bin;
-    obj.xAvgCharWidth = bin.readShort(data, offset); offset += 2;
-    obj.usWeightClass = bin.readUshort(data, offset); offset += 2;
-    obj.usWidthClass  = bin.readUshort(data, offset); offset += 2;
-    obj.fsType = bin.readUshort(data, offset); offset += 2;
-    obj.ySubscriptXSize = bin.readShort(data, offset); offset += 2;
-    obj.ySubscriptYSize = bin.readShort(data, offset); offset += 2;
-    obj.ySubscriptXOffset = bin.readShort(data, offset); offset += 2;
-    obj.ySubscriptYOffset = bin.readShort(data, offset); offset += 2; 
-    obj.ySuperscriptXSize = bin.readShort(data, offset); offset += 2; 
-    obj.ySuperscriptYSize = bin.readShort(data, offset); offset += 2; 
-    obj.ySuperscriptXOffset = bin.readShort(data, offset); offset += 2;
-    obj.ySuperscriptYOffset = bin.readShort(data, offset); offset += 2;
-    obj.yStrikeoutSize = bin.readShort(data, offset); offset += 2;
-    obj.yStrikeoutPosition = bin.readShort(data, offset); offset += 2;
-    obj.sFamilyClass = bin.readShort(data, offset); offset += 2;
-    obj.panose = bin.readBytes(data, offset, 10);  offset += 10;
-    obj.ulUnicodeRange1 = bin.readUint(data, offset);  offset += 4;
-    obj.ulUnicodeRange2 = bin.readUint(data, offset);  offset += 4;
-    obj.ulUnicodeRange3 = bin.readUint(data, offset);  offset += 4;
-    obj.ulUnicodeRange4 = bin.readUint(data, offset);  offset += 4;
-    obj.achVendID = [bin.readInt8(data, offset), bin.readInt8(data, offset+1),bin.readInt8(data, offset+2),bin.readInt8(data, offset+3)];  offset += 4;
-    obj.fsSelection  = bin.readUshort(data, offset); offset += 2;
-    obj.usFirstCharIndex = bin.readUshort(data, offset); offset += 2;
-    obj.usLastCharIndex = bin.readUshort(data, offset); offset += 2;
-    obj.sTypoAscender = bin.readShort(data, offset); offset += 2;
-    obj.sTypoDescender = bin.readShort(data, offset); offset += 2;
-    obj.sTypoLineGap = bin.readShort(data, offset); offset += 2;
-    obj.usWinAscent = bin.readUshort(data, offset); offset += 2;
-    obj.usWinDescent = bin.readUshort(data, offset); offset += 2;
-    return offset;
-}
-
-Typr["OS/2"].version1 = function(data, offset, obj) {
-    var bin = Typr._bin;
-    offset = Typr["OS/2"].version0(data, offset, obj);
-    
-    obj.ulCodePageRange1 = bin.readUint(data, offset); offset += 4;
-    obj.ulCodePageRange2 = bin.readUint(data, offset); offset += 4;
-    return offset;
-}
-
-Typr["OS/2"].version2 = function(data, offset, obj) {
-    var bin = Typr._bin;
-    offset = Typr["OS/2"].version1(data, offset, obj);
-    
-    obj.sxHeight = bin.readShort(data, offset); offset += 2;
-    obj.sCapHeight = bin.readShort(data, offset); offset += 2;
-    obj.usDefault = bin.readUshort(data, offset); offset += 2;
-    obj.usBreak = bin.readUshort(data, offset); offset += 2;
-    obj.usMaxContext = bin.readUshort(data, offset); offset += 2;
-    return offset;
-}
-
-Typr["OS/2"].version5 = function(data, offset, obj) {
-    var bin = Typr._bin;
-    offset = Typr["OS/2"].version2(data, offset, obj);
-
-    obj.usLowerOpticalPointSize = bin.readUshort(data, offset); offset += 2;
-    obj.usUpperOpticalPointSize = bin.readUshort(data, offset); offset += 2;
-    return offset;
-}
-
-Typr.post = {};
-Typr.post.parse = function(data, offset, length) {
-    var bin = Typr._bin;
-    var obj = {};
-    
-    obj.version           = bin.readFixed(data, offset);  offset+=4;
-    obj.italicAngle       = bin.readFixed(data, offset);  offset+=4;
-    obj.underlinePosition = bin.readShort(data, offset);  offset+=2;
-    obj.underlineThickness = bin.readShort(data, offset);  offset+=2;
-
     return obj;
 }
 
@@ -1256,78 +949,6 @@ Typr.U.codeToGlyph = function(font, code) {
         return 0;
     }
     else throw "unknown cmap table format "+tab.format;
-}
-
-
-Typr.U.glyphToPath = function(font, gid) {
-    var path = { cmds:[], crds:[] };
-    if(font.CFF) {
-        var state = {x:0,y:0,stack:[],nStems:0,haveWidth:false,width: font.CFF.Private ? font.CFF.Private.defaultWidthX : 0,open:false};
-        Typr.U._drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path);
-    }
-    if(font.glyf) Typr.U._drawGlyf(gid, font, path);
-    return path;
-}
-
-Typr.U._drawGlyf = function(gid, font, path) {
-    var gl = font.glyf[gid];
-    if(gl==null) gl = font.glyf[gid] = Typr.glyf._parseGlyf(font, gid);
-    if(gl!=null) {
-        if(gl.noc>-1) Typr.U._simpleGlyph(gl, path);
-        else          Typr.U._compoGlyph (gl, font, path);
-    }
-}
-
-Typr.U._simpleGlyph = function(gl, p) {
-    for(var c=0; c<gl.noc; c++) {
-        var i0 = (c==0) ? 0 : (gl.endPts[c-1] + 1);
-        var il = gl.endPts[c];
-        
-        for(var i=i0; i<=il; i++) {
-            var pr = (i==i0)?il:(i-1);
-            var nx = (i==il)?i0:(i+1);
-            var onCurve = gl.flags[i]&1;
-            var prOnCurve = gl.flags[pr]&1;
-            var nxOnCurve = gl.flags[nx]&1;
-            
-            var x = gl.xs[i], y = gl.ys[i];
-            
-            if(i==i0) { 
-                if(onCurve) {
-                    if(prOnCurve) Typr.U.P.moveTo(p, gl.xs[pr], gl.ys[pr]); 
-                    else          {  Typr.U.P.moveTo(p,x,y);  continue;  /*  will do curveTo at il  */  }
-                } else {
-                    if(prOnCurve) Typr.U.P.moveTo(p,  gl.xs[pr],       gl.ys[pr]        );
-                    else          Typr.U.P.moveTo(p, (gl.xs[pr]+x)/2, (gl.ys[pr]+y)/2   ); 
-                }
-            }
-
-            if(onCurve) {
-                if(prOnCurve) Typr.U.P.lineTo(p,x,y);
-            } else {
-                if(nxOnCurve) Typr.U.P.qcurveTo(p, x, y, gl.xs[nx], gl.ys[nx]); 
-                else          Typr.U.P.qcurveTo(p, x, y, (x+gl.xs[nx])/2, (y+gl.ys[nx])/2); 
-            }
-        }
-        Typr.U.P.closePath(p);
-    }
-}
-
-Typr.U._compoGlyph = function(gl, font, p) {
-    for(var j=0; j<gl.parts.length; j++) {
-        var path = { cmds:[], crds:[] };
-        var prt = gl.parts[j];
-        Typr.U._drawGlyf(prt.glyphIndex, font, path);
-        
-        var m = prt.m;
-        for(var i=0; i<path.crds.length; i+=2) {
-            var x = path.crds[i  ], y = path.crds[i+1];
-            p.crds.push(x*m.a + y*m.b + m.tx);
-            p.crds.push(x*m.c + y*m.d + m.ty);
-        }
-
-        for(var i=0; i<path.cmds.length; i++) p.cmds.push(path.cmds[i]);
-    }
 }
 
 
@@ -1387,7 +1008,37 @@ Typr.U.isRTL = function(str) {
 
 Typr.U.stringToGlyphs = function(fonts, str) {
     var gls = [], g, i, li, j, lj, gsub, font, llist, flist;
-    var gfonts = [];
+    var gfonts = [], codes, t, str2 = '';
+
+    var wsep = "\n\t\" ,.:;!?()  ،";
+
+    //basic shaping
+    for (i = 0, li = str.length; i < li; i++) {
+        var c = str.charCodeAt(i);
+
+        if (i < li - 2) {
+            var c2 = str.charCodeAt(i+1);
+
+            //myanmar 
+            if (wsep.indexOf(c) == -1) {
+                if (c2 == 0x103c) { //medial ra - prebase substitution
+                    //t = str[i];
+                    //str[i] = str[i+1];
+                    //str[i+1] = t;
+                    //t = c, c = c2, c2 = t;
+
+                    str2 += String.fromCharCode(c2);
+                    str2 += String.fromCharCode(c);
+                    i++;
+                    continue;
+                }
+            }    
+        }
+
+        str2 += String.fromCharCode(c);
+    }
+
+    str = str2;
 
     for (i = 0, li = str.length; i < li; i++) {
         for (j = 0, lj = fonts.length; j < lj; j++) {
@@ -1406,7 +1057,6 @@ Typr.U.stringToGlyphs = function(fonts, str) {
     
     //console.log(gls);  return gls;
    
-    var wsep = "\n\t\" ,.:;!?()  ،";
     var R = "آأؤإاةدذرزوٱٲٳٵٶٷڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙۀۃۄۅۆۇۈۉۊۋۍۏےۓەۮۯܐܕܖܗܘܙܞܨܪܬܯݍݙݚݛݫݬݱݳݴݸݹࡀࡆࡇࡉࡔࡧࡩࡪࢪࢫࢬࢮࢱࢲࢹૅેૉ૊૎૏ૐ૑૒૝ૡ૤૯஁ஃ஄அஉ஌எஏ஑னப஫஬";
     var L = "ꡲ્૗";
     
@@ -1526,82 +1176,6 @@ Typr.U.stringToGlyphs = function(fonts, str) {
     return [gls, gfonts];
 }
 
-Typr.U.glyphsToPath = function(font, gls) {   
-    //gls = gls.reverse();//gls.slice(0,12).concat(gls.slice(12).reverse());
-    
-    var tpath = {cmds:[], crds:[]};
-    var x = 0;
-    
-    for(var i=0; i<gls.length; i++) {
-        var gid = gls[i];  if(gid==-1) continue;
-        var gid2 = (i<gls.length-1 && gls[i+1]!=-1)  ? gls[i+1] : 0;
-        var path = Typr.U.glyphToPath(font, gid);
-        
-        for(var j=0; j<path.crds.length; j+=2) {
-            tpath.crds.push(path.crds[j] + x);
-            tpath.crds.push(path.crds[j+1]);
-        }
-        for(var j=0; j<path.cmds.length; j++) tpath.cmds.push(path.cmds[j]);
-        x += font.hmtx.aWidth[gid];
-        if(i<gls.length-1) x += Typr.U.getPairAdjustment(font, gid, gid2);
-    }
-    return tpath;
-}
-
-Typr.U.pathToSVG = function(path, prec) {
-    if(prec==null) prec = 5;
-    var out = [], co = 0, lmap = {"M":2,"L":2,"Q":4,"C":6};
-    for(var i=0; i<path.cmds.length; i++) {
-        var cmd = path.cmds[i], cn = co+(lmap[cmd]?lmap[cmd]:0);  
-        out.push(cmd);
-        while(co<cn) {  var c = path.crds[co++];  out.push(parseFloat(c.toFixed(prec))+(co==cn?"":" "));  }
-    }
-    return out.join("");
-}
-
-Typr.U.pathToContext = function(path, ctx, pos, scale) {
-    var c = 0, crds = path.crds;
-    
-    for(var j=0; j<path.cmds.length; j++) {
-        var cmd = path.cmds[j];
-        if (cmd=="M") {
-            ctx.moveTo((crds[c] * scale) + pos[0] , (crds[c+1] * -scale) + pos[1] );
-            c+=2;
-        } else if(cmd=="L") {
-            ctx.lineTo((crds[c] * scale) + pos[0] , (crds[c+1] * -scale) + pos[1] );
-            c+=2;
-        } else if(cmd=="C") {
-            ctx.bezierCurveTo((crds[c] * scale) + pos[0] , (crds[c+1] * -scale) + pos[1] ,
-                              (crds[c+2] * scale) + pos[0] , (crds[c+3] * -scale) + pos[1] ,
-                              (crds[c+4] * scale) + pos[0] , (crds[c+5] * -scale) + pos[1] );
-            c+=6;
-        } else if(cmd=="Q") {
-            ctx.quadraticCurveTo((crds[c] * scale) + pos[0] , (crds[c+1] * -scale) + pos[1] ,
-                                 (crds[c+2] * scale) + pos[0] , (crds[c+3] * -scale) + pos[1] );
-            c+=4;
-        } else if(cmd=="Z")  ctx.closePath();
-    }
-}
-
-
-Typr.U.P = {};
-Typr.U.P.moveTo = function(p, x, y) {
-    p.cmds.push("M");  p.crds.push(x,y);
-}
-
-Typr.U.P.lineTo = function(p, x, y) {
-    p.cmds.push("L");  p.crds.push(x,y);
-}
-
-Typr.U.P.curveTo = function(p, a,b,c,d,e,f) {
-    p.cmds.push("C");  p.crds.push(a,b,c,d,e,f);
-}
-
-Typr.U.P.qcurveTo = function(p, a,b,c,d) {
-    p.cmds.push("Q");  p.crds.push(a,b,c,d);
-}
-
-Typr.U.P.closePath = function(p) {  p.cmds.push("Z");  }
 
 export {Typr};
 
