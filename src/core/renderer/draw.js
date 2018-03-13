@@ -995,9 +995,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uVec', renderer.labelVector);
 
-        var gamma = 2.2 * 1.4142 / 20;
-        prog.setVec4('uColor', [0,0,0,1.0]);
-        prog.setVec2('uParams', [0.25, gamma]);
+        var gamma = job.outline[2] * 1.4142 / 20;
+        var gamma2 = job.outline[3] * 1.4142 / 20;
+        prog.setVec4('uColor', (hitmapRender ? color : job.color2));
+        prog.setVec2('uParams', [job.outline[0], gamma2]);
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
         vertexTexcoordAttribute = prog.getAttribute('aTexCoord');
@@ -1011,10 +1012,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gl.vertexAttribPointer(vertexTexcoordAttribute, job.vertexTexcoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         //draw polygons
-        for(var j = 0; j < 2; j++) {
+        for(var j = 0; j < (hitmapRender ? 1 : 2); j++) {
             if (j == 1) {
                 prog.setVec4('uColor', color);
-                prog.setVec2('uParams', [0.75, gamma]);
+                prog.setVec2('uParams', [job.outline[1], gamma]);
             }
 
             if (files.length > 0) {
@@ -1208,13 +1209,14 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == 'label' ? 1.0 : 1.0 / texture.width), stickShift*2]);
 
-        var j = 0, lj = 1, gamma = 0;
+        var j = 0, lj = 1, gamma = 0, gamma2 = 0;
 
         if (prog != renderer.progIcon) {
-            gamma = 2.2 * 1.4142 / job.size;
-            prog.setVec4('uColor', [0,0,0,1.0]);
-            prog.setVec2('uParams', [0.25, gamma]);
-            lj = 2;
+            gamma = job.outline[2] * 1.4142 / job.size;
+            gamma2 = job.outline[3] * 1.4142 / job.size;
+            prog.setVec4('uColor', hitmapRender ? color : job.color2);
+            prog.setVec2('uParams', [job.outline[0], gamma2]);
+            lj = hitmapRender ? 1 : 2;
         } else {
             prog.setVec4('uColor', color);
         }
@@ -1239,7 +1241,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         for(;j<lj;j++) {
             if (j == 1) {
                 prog.setVec4('uColor', color);
-                prog.setVec2('uParams', [0.75, gamma]);
+                prog.setVec2('uParams', [job.outline[1], gamma]);
             }
 
             if (files.length > 0) {
@@ -1283,13 +1285,14 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
     prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == 'label' ? 1.0 : 1.0 / texture.width), stickShift*2]);
 
-    var j = 0, lj = 1, gamma = 0;
+    var j = 0, lj = 1, gamma = 0, gamma2 = 0;
 
     if (prog != renderer.progIcon) {
-        gamma = 2.2 * 1.4142 / job.size;
-        prog.setVec4('uColor', [0,0,0,1.0]);
-        prog.setVec2('uParams', [0.25, gamma]);
-        lj = 2;
+        gamma = job.outline[2] * 1.4142 / job.size;
+        gamma2 = job.outline[3] * 1.4142 / job.size;
+        prog.setVec4('uColor', hitmapRender ? color : job.color2);
+        prog.setVec2('uParams', [job.outline[0], gamma2]);
+        lj = hitmapRender ? 1 : 2;
     } else {
         prog.setVec4('uColor', color);
     }
@@ -1314,7 +1317,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     for(;j<lj;j++) {
         if (j == 1) {
             prog.setVec4('uColor', color);
-            prog.setVec2('uParams', [0.75, gamma]);
+            prog.setVec2('uParams', [job.outline[1], gamma]);
         }
 
         if (files.length > 0) {

@@ -897,6 +897,8 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
 
 var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, center, lod, style, zIndex, eventInfo) {
     var labelColor = getLayerPropertyValue(style, 'line-label-color', lineString, lod);
+    var labelColor2 = getLayerPropertyValue(style, 'line-label-color2', lineString, lod);
+    var labelOutline = getLayerPropertyValue(style, 'line-label-outline', lineString, lod);
     var labelSource = getLayerPropertyValue(style, 'line-label-source', lineString, lod);
     var labelSize = getLayerPropertyValue(style, 'line-label-size', lineString, lod);
     var labelOffset = getLayerPropertyValue(style, 'line-label-offset', lineString, lod);
@@ -975,15 +977,18 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var signature = JSON.stringify({
         type: 'line-label',
         color : labelColor,
+        color2 : labelColor2,
+        outline : labelOutline,
+        fonts : fontNames,
         zIndex : zIndex,
         zOffset : zbufferOffset
     });
 
     postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
-        'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'z-index':zIndex, 'center': center,
-        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files': labelFiles,
-        'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': fontsStorage,
-        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
+        'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 
+        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+        'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
 };
 

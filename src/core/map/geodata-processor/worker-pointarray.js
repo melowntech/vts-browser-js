@@ -111,6 +111,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
             var labelData = {
                 color : getLayerPropertyValue(style, 'label-color', pointArray, lod),
+                color2 : getLayerPropertyValue(style, 'label-color2', pointArray, lod),
+                outline : getLayerPropertyValue(style, 'label-outline', pointArray, lod),
                 size : size,
                 offset : getLayerPropertyValue(style, 'label-offset', pointArray, lod),
                 stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
@@ -328,8 +330,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
         postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,
             'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer, 'size':labelData.size,
-            'color':labelData.color, 'z-index':zIndex, 'visibility': visibility, 'culling': culling, 
-            'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
+            'color':labelData.color, 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
+            'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,

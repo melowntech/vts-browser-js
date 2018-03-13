@@ -370,6 +370,8 @@ GpuShaders.icon2VertexShader =
             'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
         '}else{\n'+
             'vec4 pos = (uMVP * vec4(aOrigin, 1.0));\n'+
+            //'pos.x = (floor((pos.x/pos.w)*800.0+0.5)/800.0)*pos.w;\n'+
+            //'pos.y = (floor((pos.y/pos.w)*410.0+0.5)/410.0)*pos.w;\n'+
             'gl_Position = pos + vec4(aPosition.x*uScale.x*pos.w, (aPosition.y+uScale.w)*uScale.y*pos.w, 0.0, 0.0);\n'+
         '}'+
     '}';
