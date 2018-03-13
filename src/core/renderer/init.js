@@ -162,7 +162,7 @@ RendererInit.prototype.initTestMap = function() {
     var gpu = this.gpu;
 
    // create red texture
-    var size = 16, i, j, li, lj, index;
+    var size = 16, i, j, index;
     var data = new Uint8Array( size * size * 4 );
 
     for (i = 0; i < size; i++) {
@@ -207,55 +207,6 @@ RendererInit.prototype.initTestMap = function() {
 
     renderer.blackTexture = new GpuTexture(gpu);
     renderer.blackTexture.createFromData(size, size, data);
-
-    /*
-    var sizeX = 64;
-    var sizeY = 8;
-    data = new Uint8Array( sizeX * sizeY * 4 );
-
-    var chars = [
-        '............................................................',
-        '.....xxxxx.......................xxxxx......................',
-        '.....xxxxx.......................xxxxx......................',
-        '.....xxxxx.......................xxxxx......................',
-        'xxxxxxxxxxxxxxxx............xxxxxxxxxxxxxxxx................',
-        'xxxxxxxxxxxxxxxx............xxxxxxxxxxxxxxxx................',
-        '............................................................'
-    ];
-
-
-    // create red texture
-    data = new Uint8Array( sizeX * sizeY * 4 );
-
-    //clear texture
-    for (i = 0; i < sizeY; i++) {
-        for (j = 0; j < sizeX; j++) {
-            index = (i*sizeX+j)*4;
-            data[index] = 0;
-            data[index + 1] = 0;
-            data[index + 2] = 0;
-            data[index + 3] = 0;//255;
-        }
-    }
-
-    for (i = 0, li = chars.length; i < li; i++) {
-        var string = chars[i];
-
-        for (j = 0, lj = string.length; j < lj; j++) {
-            index = (i*sizeX+j)*4;
-
-            if (string.charAt(j) != '.') {
-                data[index] = 255;
-                data[index + 1] = 255;
-                data[index + 2] = 255;
-                data[index + 3] = 255;
-            }
-        }
-    }
-
-    renderer.lineTexture = new GpuTexture(gpu);
-    renderer.lineTexture.createFromData(sizeX, sizeY, data, 'linear', true);
-    */
 };
 
 

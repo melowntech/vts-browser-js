@@ -21,6 +21,7 @@ var setFont = function(fontData) {
     globals.fontsStorage[fontData['url']] = font;
 };
 
+
 var setFontMap = function(fontMap) {
     var fonts = fontMap['map'];
     for (var key in fonts) {
@@ -29,6 +30,7 @@ var setFontMap = function(fontMap) {
 
     globals.fontsMap = fonts;
 };
+
 
 var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, fontIndex) {
     var n, font = fonts[fontIndex];
@@ -83,9 +85,9 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             p1[0] = p1[0] + dir[0] * fc.sx * factor;
             p1[1] = p1[1] + dir[1] * fc.sx * factor;
             p1[2] = p1[2] + dir[2] * fc.sx * factor;
-            p1[0] = p1[0] + n[0] * fc.sy * factor;
-            p1[1] = p1[1] + n[1] * fc.sy * factor;
-            p1[2] = p1[2] + n[2] * fc.sy * factor;
+            p1[0] = p1[0] + n[0] * (fc.sy - font.size) * factor;
+            p1[1] = p1[1] + n[1] * (fc.sy - font.size) * factor;
+            p1[2] = p1[2] + n[2] * (fc.sy - font.size) * factor;
 
             p2[0] = p1[0] + dir[0] * factorX;
             p2[1] = p1[1] + dir[1] * factorX;
@@ -196,21 +198,7 @@ var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffe
     var glyphs = res[0];
     var gfonts = res[1];
 
-    //if (text == "Polska") {
-      //  debugger;
-    //}
-
     for (var i = 0, li = glyphs.length; i < li; i++) {
-        /*
-        var char = text.charCodeAt(i);
-
-        if (char == 10) { //new line
-            s[0] += -dir[1] * newLineSpace;
-            s[1] += dir[0] * newLineSpace;
-            p1 = [s[0], s[1], s[2]];
-            continue;
-        }*/
-
         var glyph = glyphs[i];
         var font = fonts[gfonts[i]];
 
@@ -225,8 +213,6 @@ var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffe
             p1 = shift[0];
             index = shift[1];
         }
-
-        //index2 = shift[2];
     }
 
     return index;
@@ -355,22 +341,6 @@ var getTextLength = function(text, size, fonts) {
                 }
             }
         }
-
-        /*var char = text.charCodeAt(i);
-
-        if (char == 10) { //new line
-            continue;
-        }
-
-        if (char == 9) {  //tab or space
-            char = 32;
-        }
-
-        var fc = chars[char];
-
-        if (fc != null) {
-            l += fc.step * factor;
-        }*/
     }
 
     return l;
@@ -379,28 +349,6 @@ var getTextLength = function(text, size, fonts) {
 
 var getSplitIndex = function(text, width, size, fonts) {
     var l = 0;
-    /*
-    for (var i = 0, li = text.length; i < li; i++) {
-        var char = text.charCodeAt(i);
-
-        if (l > width && (char == 10 || char == 9 || char == 32)) {
-            return i;
-        }
-
-        if (char == 10) { //new line
-            continue;
-        }
-
-        if (char == 9) {  //tab or space
-            char = 32;
-        }
-
-        var fc = chars[char];
-
-        if (fc != null) {
-            l += fc.step * factor;
-        }
-    }*/
 
     var res = Typr.U.stringToGlyphs(fonts, text);
     var glyphs = res[0];
@@ -539,23 +487,46 @@ var areTextCharactersAvailable = function(text, fonts) {
         return false;
     }
 
-    /*
-    var font = fonts[0];
-
-    for (var i = 0, li = text.length; i < li; i++) {
-        var char = text.charCodeAt(i);
-
-        if (char == 10 || char == 9) { //new line, tab or space
-            continue;
-        }
-
-        if (!Typr.U.codeToGlyph(font, char)) {
-            return false;
-        }
-    }*/
-
     return true;
 };
+
+
+var hasLatin = function(str) {
+    for (var i = 0, li = str.length; i < li; i++) {
+        var c = str.charCodeAt(i);
+        if ((c >= 0x41 && c <= 0x5a) || (c >= 0x61 && c <= 0x7a) ||
+            ((c >= 0xc0 && c <= 0xff) && c!= 0xd7 && c!= 0xf7) || (c >= 0x100 && c <= 0x17f)) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+
+var isCJK = function(str) {
+    for (var i = 0, li = str.length; i < li; i++) {
+        var c = str.charCodeAt(i);
+
+        if (!((c >= 0x4E00 && c <= 0x62FF) || (c >= 0x6300 && c <= 0x77FF) ||
+              (c >= 0x7800 && c <= 0x8CFF) || (c >= 0x8D00 && c <= 0x9FFF) || 
+              (c >= 0x3400 && c <= 0x4DBF) || (c >= 0x20000 && c <= 0x215FF) || 
+              (c >= 0x21600 && c <= 0x230FF) || (c >= 0x23100 && c <= 0x245FF) || 
+              (c >= 0x24600 && c <= 0x260FF) || (c >= 0x26100 && c <= 0x275FF) || 
+              (c >= 0x27600 && c <= 0x290FF) || (c >= 0x29100 && c <= 0x2A6DF) || 
+              (c >= 0x2A700 && c <= 0x2B73F) || (c >= 0x2B740 && c <= 0x2B81F) || 
+              (c >= 0x2B820 && c <= 0x2CEAF) || (c >= 0x2CEB0 && c <= 0x2EBEF) || 
+              (c >= 0xF900 && c <= 0xFAFF) || (c >= 0x3300 && c <= 0x33FF) || 
+              (c >= 0xFE30 && c <= 0xFE4F) || (c >= 0xF900 && c <= 0xFAFF) || 
+              (c >= 0x2F800 && c <= 0x2FA1F) || 
+              (c >= 0x0 && c <= 0x40) || (c >= 0xa0 && c <= 0xbf)  )) { //neutral
+            return true;
+        }
+    }
+
+    return false;
+};
+
 
 var getFonts = function(fonts) {
     var fontsMap = [];
@@ -566,6 +537,7 @@ var getFonts = function(fonts) {
     return fontsMap;
 };
 
+
 var getFontsStorage = function(fonts) {
     var fontsMap = [];
     for (var i = 0, li = fonts.length; i < li; i++) {
@@ -575,6 +547,7 @@ var getFontsStorage = function(fonts) {
     return fontsMap;
 };
 
-export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable, addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount, getFonts, getFontsStorage};
+export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable,
+        addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount, getFonts, getFontsStorage, hasLatin, isCJK};
 
 

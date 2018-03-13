@@ -1,9 +1,11 @@
 
 import {globals as globals_, simpleFmtCall as simpleFmtCall_} from './worker-globals.js';
+import {areTextCharactersAvailable as areTextCharactersAvailable_, hasLatin as hasLatin_, isCJK as isCJK_ } from './worker-text.js';
 
 //get rid of compiler mess
 var globals = globals_;
 var simpleFmtCall = simpleFmtCall_;
+var areTextCharactersAvailable = areTextCharactersAvailable_;
 
 
 var getLayer = function(layerId, featureType, index) {
@@ -332,6 +334,9 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             case 'lowercase':
             case 'uppercase':
             case 'capitalize':
+            case 'has-fonts':
+            case 'has-latin':
+            case 'is-cjk':
                 functionValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue, depth + 1);
 
                 if (typeof functionValue !== 'string') {
@@ -344,6 +349,10 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         case 'lowercase':  return functionValue.toLowerCase();
                         case 'uppercase':  return functionValue.toUpperCase();
                         case 'capitalize': return functionValue.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+                        case 'has-fonts':  return areTextCharactersAvailable(functionValue);
+                        case 'has-latin': 
+                        case 'is-cjk':
+                        //
                     }
                 }
 
