@@ -967,27 +967,26 @@ Typr.U._getGlyphClass = function(g, cd) {
 Typr.U.getPairAdjustment = function(font, g1, g2) {
     if(font.GPOS) {
         var ltab = null;
-        for(var i=0; i<font.GPOS.featureList.length; i++) {
+        for(var i = 0; i < font.GPOS.featureList.length; i++) {
             var fl = font.GPOS.featureList[i];
-            if(fl.tag=="kern")
+            if (fl.tag=="kern")
                 for(var j=0; j<fl.tab.length; j++) 
                     if(font.GPOS.lookupList[fl.tab[j]].ltype==2) ltab=font.GPOS.lookupList[fl.tab[j]];
         }
         if(ltab) {
-            var adjv = 0;
-            for(var i=0; i<ltab.tabs.length; i++) {
+            for(var i = 0; i < ltab.tabs.length; i++) {
                 var tab = ltab.tabs[i];
                 var ind = Typr._lctf.coverageIndex(tab.coverage, g1);
-                if(ind==-1) continue;
-                var adj;
-                if(tab.format==1) {
+                if (ind==-1) continue;
+                var adj = 0;
+                if (tab.format==1) {
                     var right = tab.pairsets[ind];
-                    for(var j=0; j<right.length; j++) if(right[j].gid2==g2) adj = right[j];
-                    if(adj==null) continue;
-                } else if(tab.format==2) {
+                    for (var j=0; j<right.length; j++) if (right[j].gid2==g2) adj = right[j];
+                    if (adj==null) continue;
+                } else if (tab.format==2) {
                     var c1 = Typr.U._getGlyphClass(g1, tab.classDef1);
                     var c2 = Typr.U._getGlyphClass(g2, tab.classDef2);
-                    var adj = tab.matrix[c1][c2];
+                    adj = tab.matrix[c1][c2];
                 }
                 return adj.val1[2];
             }
@@ -1014,7 +1013,7 @@ Typr.U.isRTL = function(str) {
 
 Typr.U.stringToGlyphs = function(fonts, str) {
     var gls = [], g, i, li, j, lj, gsub, font, llist, flist;
-    var gfonts = [], codes, t, str2 = '';
+    var gfonts = [], str2 = '';
 
     var wsep = "\n\t\" ,.:;!?()  ،";
 
@@ -1033,11 +1032,6 @@ Typr.U.stringToGlyphs = function(fonts, str) {
             //myanmar 
             if (wsep.indexOf(c) == -1) {
                 if (c2 == 0x103c) { //medial ra - prebase substitution
-                    //t = str[i];
-                    //str[i] = str[i+1];
-                    //str[i+1] = t;
-                    //t = c, c = c2, c2 = t;
-
                     str2 += String.fromCharCode(c2);
                     str2 += String.fromCharCode(c);
                     i++;

@@ -5,6 +5,7 @@ import {areTextCharactersAvailable as areTextCharactersAvailable_, hasLatin as h
 //get rid of compiler mess
 var globals = globals_;
 var simpleFmtCall = simpleFmtCall_;
+var hasLatin = hasLatin_, isCJK = isCJK_;
 var areTextCharactersAvailable = areTextCharactersAvailable_;
 
 
@@ -350,8 +351,8 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         case 'uppercase':  return functionValue.toUpperCase();
                         case 'capitalize': return functionValue.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
                         case 'has-fonts':  return areTextCharactersAvailable(functionValue);
-                        case 'has-latin': 
-                        case 'is-cjk':
+                        case 'has-latin':  return hasLatin(functionValue);
+                        case 'is-cjk':     return isCJK(functionValue); 
                         //
                     }
                 }

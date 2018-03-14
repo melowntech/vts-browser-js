@@ -188,10 +188,7 @@ var getCharVerticesCount = function(origin) {
 
 var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffer, flat, index, planes) {
     var textVector = [0,1,0];
-
-    var newLineSpace = getLineHeight(size, fonts);
-
-    var s = [pos[0], pos[1], pos[2]];
+    //var s = [pos[0], pos[1], pos[2]];
     var p1 = [pos[0], pos[1], pos[2]];
 
     var res = Typr.U.stringToGlyphs(fonts, text);
@@ -225,10 +222,9 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
     }
 
     var p1 = points[0];
-    
-    var newLineSpace = getLineHeight(size, fonts);
+    //var newLineSpace = getLineHeight(size, fonts);
+    //var s = [p1[0], p1[1], p1[2]];
 
-    var s = [p1[0], p1[1], p1[2]];
     p1 = [p1[0], p1[1], p1[2]];
     var l = distance;
 
@@ -237,7 +233,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
     var gfonts = res[1];
 
     for (var i = 0, li = glyphs.length; i < li; i++) {
-        /*
+        /*  
         var char = text.charCodeAt(i);
 
         if (char == 10) { //new line
@@ -481,7 +477,7 @@ var areTextCharactersAvailable = function(text, fonts) {
 
     var res = Typr.U.stringToGlyphs(fonts, text);
     var glyphs = res[0];
-    var gfonts = res[1];
+    //var gfonts = res[1];
 
     if (glyphs.indexOf(0) != -1) {
         return false;

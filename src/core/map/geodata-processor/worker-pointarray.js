@@ -1,7 +1,7 @@
 
 import {globals as globals_, clamp as clamp_} from './worker-globals.js';
 import {getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
-import {addText as addText_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_,
+import {addText as addText_, getSplitIndex as getSplitIndex_, 
         getTextLength as getTextLength_, getFonts as getFonts_, getFontsStorage as getFontsStorage_,
         areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from './worker-text.js';
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
@@ -9,7 +9,7 @@ import {postGroupMessage as postGroupMessage_} from './worker-message.js';
 //get rid of compiler mess
 var globals = globals_, clamp = clamp_;
 var getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
-var addText = addText_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_,
+var addText = addText_, getSplitIndex = getSplitIndex_, 
     getTextLength = getTextLength_, getFonts = getFonts_, getFontsStorage = getFontsStorage_,
     areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
 var postGroupMessage = postGroupMessage_;
