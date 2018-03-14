@@ -897,6 +897,8 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
 
 var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, center, lod, style, zIndex, eventInfo) {
     var labelColor = getLayerPropertyValue(style, 'line-label-color', lineString, lod);
+    var labelColor2 = getLayerPropertyValue(style, 'line-label-color2', lineString, lod);
+    var labelOutline = getLayerPropertyValue(style, 'line-label-outline', lineString, lod);
     var labelSource = getLayerPropertyValue(style, 'line-label-source', lineString, lod);
     var labelSize = getLayerPropertyValue(style, 'line-label-size', lineString, lod);
     var labelOffset = getLayerPropertyValue(style, 'line-label-offset', lineString, lod);
@@ -943,33 +945,50 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes);
     index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index);
 
-    var files = [];
-
-    for (var key in planes) {
-        var plane = parseInt(key);
-        var file = Math.round((plane - (plane % 3)) / 3);
-
-        if (files.indexOf(file) == -1) {
-            files.push(file);
-        }
+    if (!index) {
+        return;
     }
 
-    if (!fonts[0].version) {
-        files = null;        
+    //var fonts = labelData.fonts;
+    var labelFiles = new Array(fonts.length);
+
+    for (var i = 0, li= fonts.length; i < li; i++) {
+        labelFiles[i] = [];
+    }
+
+    for (var key in planes) {
+        var fontIndex = parseInt(key);
+        var planes2 = planes[key];
+
+        var files = [];
+
+        for (var key2 in planes2) {
+            var plane = parseInt(key2) - (fontIndex*4000);
+            var file = Math.round((plane - (plane % 4)) / 4);
+
+            if (files.indexOf(file) == -1) {
+                files.push(file);
+            }
+        }
+
+        labelFiles[fontIndex] = files;
     }
 
     var signature = JSON.stringify({
         type: 'line-label',
         color : labelColor,
+        color2 : labelColor2,
+        outline : labelOutline,
+        fonts : fontNames,
         zIndex : zIndex,
         zOffset : zbufferOffset
     });
 
     postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
-        'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'z-index':zIndex, 'center': center,
-        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files': files,
-        'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': fontsStorage,
-        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
+        'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 
+        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+        'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
 };
 

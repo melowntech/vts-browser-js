@@ -2,23 +2,25 @@
 import {globals as globals_, vec3Normalize as vec3Normalize_,
         vec3Length as vec3Length_, vec3Cross as vec3Cross_} from './worker-globals.js';
 
+import {Typr as Typr_} from './worker-font.js';
+
+
 //get rid of compiler mess
 var globals = globals_,
     vec3Normalize = vec3Normalize_, vec3Length = vec3Length_,
-    vec3Cross = vec3Cross_;
+    vec3Cross = vec3Cross_,
+    Typr = Typr_;
 
 
 var setFont = function(fontData) {
     console.log('setFont ' + fontData['url']);
+    debugger;
 
-    globals.fontsStorage[fontData['url']] = {
-        chars : fontData['chars'],
-        space : fontData['space'],
-        size : fontData['size'],
-        cly : fontData['cly'],
-        version : fontData['version']
-    };
+    var font = Typr.parse(fontData['data']);
+
+    globals.fontsStorage[fontData['url']] = font;
 };
+
 
 var setFontMap = function(fontMap) {
     var fonts = fontMap['map'];
@@ -29,8 +31,9 @@ var setFontMap = function(fontMap) {
     globals.fontsMap = fonts;
 };
 
-var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes) {
-    var n, font = fonts[0];
+
+var addChar = function(pos, dir, verticalShift, char, factor, index, index2, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, fontIndex) {
+    var n, font = fonts[fontIndex];
 
     if (globals.geocent && !flat) {
         n = [0,0,0];
@@ -45,9 +48,15 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
     var p1 = [pos[0], pos[1], pos[2]];
     var p2 = [p1[0], p1[1], p1[2]];
 
-    var chars = font.chars;
+    //var chars = font.chars;
+    
+    var fc = font.glyphs[char];
+    char = 0; // hack
 
-    var fc = chars[char];
+    if (!fc) {
+        return [pos, index, index2, l];
+    }
+
     var l = 0;
     var nx = textVector[0];
     var ny = textVector[1];
@@ -56,25 +65,43 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
     if (char == 9 || char == 32) {  //tab or space
         fc = chars[32]; //space
 
-        if (fc != null) {
-            p1[0] += dir[0] * (fc.step) * factor;
-            p1[1] += dir[1] * (fc.step) * factor;
+        if (fc) {
+            pos[0] += dir[0] * (fc.step) * factor;
+            pos[1] += dir[1] * (fc.step) * factor;
             l = fc.lx * factor;
         }
     } else {
-        if (fc != null) {
+        if (fc.lx == 0) {
+            pos[0] = pos[0] + dir[0] * fc.step * factor;
+            pos[1] = pos[1] + dir[1] * fc.step * factor;
+            l = fc.lx * factor;
+        } else {
             var factorX = fc.lx * factor;
             var factorY = fc.ly * factor;
 
             var n2 = [n[0] * verticalShift, n[1] * verticalShift, n[2] * verticalShift];
             var n3 = [n2[0] + n[0] * factorY, n2[1] + n[1] * factorY, n2[2] + n[2] * factorY];
+            
+            p1[0] = p1[0] + dir[0] * fc.sx * factor;
+            p1[1] = p1[1] + dir[1] * fc.sx * factor;
+            p1[2] = p1[2] + dir[2] * fc.sx * factor;
+            p1[0] = p1[0] + n[0] * (fc.sy - font.size) * factor;
+            p1[1] = p1[1] + n[1] * (fc.sy - font.size) * factor;
+            p1[2] = p1[2] + n[2] * (fc.sy - font.size) * factor;
 
             p2[0] = p1[0] + dir[0] * factorX;
             p2[1] = p1[1] + dir[1] * factorX;
             p2[2] = p1[2] + dir[2] * factorX;
 
+            var planeShift = fontIndex * 4000;
+            var plane = fc.plane + planeShift;
+
             if (planes) {
-                planes[fc.plane] = true;
+                if (!planes[fontIndex]) {
+                    planes[fontIndex] = {};
+                }
+                
+                planes[fontIndex][plane] = true;
             }
 
             //first polygon
@@ -84,7 +111,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             vertexBuffer[index+3] = nz;
 
             texcoordsBuffer[index2] = fc.u1;
-            texcoordsBuffer[index2+1] = fc.v1;
+            texcoordsBuffer[index2+1] = fc.v1 +  planeShift;
             texcoordsBuffer[index2+2] = nx;
             texcoordsBuffer[index2+3] = ny;
 
@@ -94,7 +121,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             vertexBuffer[index+7] = nz;
 
             texcoordsBuffer[index2+4] = fc.u1;
-            texcoordsBuffer[index2+5] = fc.v2;
+            texcoordsBuffer[index2+5] = fc.v2 +  planeShift;
             texcoordsBuffer[index2+6] = nx;
             texcoordsBuffer[index2+7] = ny;
 
@@ -104,7 +131,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             vertexBuffer[index+11] = nz;
 
             texcoordsBuffer[index2+8] = fc.u2;
-            texcoordsBuffer[index2+9] = fc.v1;
+            texcoordsBuffer[index2+9] = fc.v1 +  planeShift;
             texcoordsBuffer[index2+10] = nx;
             texcoordsBuffer[index2+11] = ny;
 
@@ -116,7 +143,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             vertexBuffer[index+15] = nz;
 
             texcoordsBuffer[index2+12] = fc.u1;
-            texcoordsBuffer[index2+13] = fc.v2;
+            texcoordsBuffer[index2+13] = fc.v2 +  planeShift;
             texcoordsBuffer[index2+14] = nx;
             texcoordsBuffer[index2+15] = ny;
 
@@ -126,7 +153,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             vertexBuffer[index+19] = nz;
 
             texcoordsBuffer[index2+16] = fc.u2;
-            texcoordsBuffer[index2+17] = fc.v2;
+            texcoordsBuffer[index2+17] = fc.v2 +  planeShift;
             texcoordsBuffer[index2+18] = nx;
             texcoordsBuffer[index2+19] = ny;
 
@@ -136,7 +163,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             vertexBuffer[index+23] = nz;
 
             texcoordsBuffer[index2+20] = fc.u2;
-            texcoordsBuffer[index2+21] = fc.v1;
+            texcoordsBuffer[index2+21] = fc.v1 +  planeShift;
             texcoordsBuffer[index2+22] = nx;
             texcoordsBuffer[index2+23] = ny;
 
@@ -144,15 +171,13 @@ var addChar = function(pos, dir, verticalShift, char, factor, index, index2, tex
             index2 += 24;
             //polygons += 2;
 
-            p1[0] = p1[0] + dir[0] * fc.step * factor;
-            p1[1] = p1[1] + dir[1] * fc.step * factor;
+            pos[0] = pos[0] + dir[0] * fc.step * factor;
+            pos[1] = pos[1] + dir[1] * fc.step * factor;
             l = fc.lx * factor;
-        } else {
-            //unknown char
         }
     }
 
-    return [p1, index, index2, l];
+    return [pos, index, index2, l];
 };
 
 
@@ -163,30 +188,28 @@ var getCharVerticesCount = function(origin) {
 
 var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffer, flat, index, planes) {
     var textVector = [0,1,0];
-
-    var font = fonts[0];
-    var factor = size / font.size;
-    //var newLineSpace = font.space * factor;
-    var newLineSpace = font.cly * factor;
-
-    var s = [pos[0], pos[1], pos[2]];
+    //var s = [pos[0], pos[1], pos[2]];
     var p1 = [pos[0], pos[1], pos[2]];
 
-    for (var i = 0, li = text.length; i < li; i++) {
-        var char = text.charCodeAt(i);
+    var res = Typr.U.stringToGlyphs(fonts, text);
+    var glyphs = res[0];
+    var gfonts = res[1];
 
-        if (char == 10) { //new line
-            s[0] += -dir[1] * newLineSpace;
-            s[1] += dir[0] * newLineSpace;
-            p1 = [s[0], s[1], s[2]];
-            continue;
+    for (var i = 0, li = glyphs.length; i < li; i++) {
+        var glyph = glyphs[i];
+        var font = fonts[gfonts[i]];
+
+        if (font) {
+            var factor = getFontFactor(size, font);
+
+            var shift = addChar(p1, dir, 0, glyph, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, gfonts[i]);
+
+            //var gid2 = (i<gls.length-1 && gls[i+1]!=-1)  ? gls[i+1] : 0;
+            //x += Typr.U.getPairAdjustment(font, gid, gid2);
+
+            p1 = shift[0];
+            index = shift[1];
         }
-
-        var shift = addChar(p1, dir, 0, char, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes);
-
-        p1 = shift[0];
-        index = shift[1];
-        //index2 = shift[2];
     }
 
     return index;
@@ -199,18 +222,18 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
     }
 
     var p1 = points[0];
-    
-    var font = fonts[0];
-    var chars = font.chars;
-    var factor = size / font.size;
-    //var newLineSpace = font.space * factor;
-    var newLineSpace = font.cly * factor;
+    //var newLineSpace = getLineHeight(size, fonts);
+    //var s = [p1[0], p1[1], p1[2]];
 
-    var s = [p1[0], p1[1], p1[2]];
     p1 = [p1[0], p1[1], p1[2]];
     var l = distance;
 
-    for (var i = 0, li = text.length; i < li; i++) {
+    var res = Typr.U.stringToGlyphs(fonts, text);
+    var glyphs = res[0];
+    var gfonts = res[1];
+
+    for (var i = 0, li = glyphs.length; i < li; i++) {
+        /*  
         var char = text.charCodeAt(i);
 
         if (char == 10) { //new line
@@ -223,29 +246,37 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
         if (char == 9) { //tab
             char = 32;
         }
+        */
 
-        var fc = chars[char];
-        var ll = 1;
-        if (fc != null) {
-            ll = fc.step * factor;
+        var glyph = glyphs[i];
+        var font = fonts[gfonts[i]];
+
+        if (font) {
+            var factor = getFontFactor(size, font);
+
+            var ll = 0.01;
+            var fc = font.glyphs[glyph];
+            if (fc) {
+                ll = fc.step * factor;
+            }
+
+            var posAndDir = getPathPositionAndDirection(points, l);
+            var posAndDir2 = getPathPositionAndDirection(points, l+ll);
+
+            //average dir
+            var dir = [(posAndDir2[1][0] + posAndDir[1][0])*0.5,
+                (posAndDir2[1][1] + posAndDir[1][1])*0.5,
+                (posAndDir2[1][2] + posAndDir[1][2])*0.5];
+
+            vec3Normalize(dir);
+
+            var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, glyph, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes, gfonts[i]);
+
+            p1 = shift[0];
+            index = shift[1];
+            //index2 = shift[2];
+            l += ll;
         }
-
-        var posAndDir = getPathPositionAndDirection(points, l);
-        var posAndDir2 = getPathPositionAndDirection(points, l+ll);
-
-        //average dir
-        var dir = [(posAndDir2[1][0] + posAndDir[1][0])*0.5,
-            (posAndDir2[1][1] + posAndDir[1][1])*0.5,
-            (posAndDir2[1][2] + posAndDir[1][2])*0.5];
-
-        vec3Normalize(dir);
-
-        var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, char, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes);
-
-        p1 = shift[0];
-        index = shift[1];
-        //index2 = shift[2];
-        l += ll;
     }
 
     return index;
@@ -253,8 +284,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
 
 
 var addStreetTextOnPath = function(points, text, size, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
-    var factor = size / fonts[0].size;
-    var textLength = getTextLength(text, factor, fonts);
+    var textLength = getTextLength(text, size, fonts);
     var pathLength = getPathLength(points);
     var shift = (pathLength -  textLength)*0.5;
     if (shift < 0) {
@@ -265,43 +295,47 @@ var addStreetTextOnPath = function(points, text, size, fonts, verticalOffset, ve
         return;
     }
 
-    var textVector = getPathTextVector(points, shift, text, factor, fonts);
+    var textVector = getPathTextVector(points, shift, text, size, fonts);
 
     return addTextOnPath(points, shift, text, size, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes);
 };
 
 
-var getFontFactor = function(size, fonts) {
-    return size / fonts[0].size;
+var getFontFactor = function(size, font) {
+    return font ? ((size / font.size) * 1.52) : 1;
 };
 
 
 var getLineHeight = function(size, fonts) {
-    var factor = size / fonts[0].size;
+    var factor = getFontFactor(size, fonts[0]);
     //return font.space * factor;
     return fonts[0].cly * factor;
 };
 
 
-var getTextLength = function(text, factor, fonts) {
+var getTextLength = function(text, size, fonts) {
     var l = 0;
-    var chars = fonts[0].chars;
 
-    for (var i = 0, li = text.length; i < li; i++) {
-        var char = text.charCodeAt(i);
+    var res = Typr.U.stringToGlyphs(fonts, text);
+    var glyphs = res[0];
+    var gfonts = res[1];
 
-        if (char == 10) { //new line
-            continue;
-        }
+    for (var i = 0, li = glyphs.length; i < li; i++) {
+        var glyph = glyphs[i];
+        var font = fonts[gfonts[i]];
 
-        if (char == 9) {  //tab or space
-            char = 32;
-        }
 
-        var fc = chars[char];
+        if (font) {
+            var factor = getFontFactor(size, font);
+            var fc = font.glyphs[glyph];
 
-        if (fc != null) {
-            l += fc.step * factor;
+            if (fc) {
+                if (i == (li-1)) {
+                    l += fc.lx * factor;
+                } else {
+                    l += fc.step * factor;
+                }
+            }
         }
     }
 
@@ -309,11 +343,15 @@ var getTextLength = function(text, factor, fonts) {
 };
 
 
-var getSplitIndex = function(text, width, factor, fonts) {
+var getSplitIndex = function(text, width, size, fonts) {
     var l = 0;
-    var chars = fonts[0].chars;
 
-    for (var i = 0, li = text.length; i < li; i++) {
+    var res = Typr.U.stringToGlyphs(fonts, text);
+    var glyphs = res[0];
+    var gfonts = res[1];
+
+    for (var i = 0, li = glyphs.length; i < li; i++) {
+        var glyph = glyphs[i];
         var char = text.charCodeAt(i);
 
         if (l > width && (char == 10 || char == 9 || char == 32)) {
@@ -324,14 +362,19 @@ var getSplitIndex = function(text, width, factor, fonts) {
             continue;
         }
 
-        if (char == 9) {  //tab or space
-            char = 32;
-        }
+        var font = fonts[gfonts[i]];
 
-        var fc = chars[char];
+        if (font) {
+            var factor = getFontFactor(size, font);
+            var fc = font.glyphs[glyph];
 
-        if (fc != null) {
-            l += fc.step * factor;
+            if (fc) {
+                if (i == (li-1)) {
+                    l += fc.lx * factor;
+                } else {
+                    l += fc.step * factor;
+                }
+            }
         }
     }
 
@@ -342,8 +385,7 @@ var getSplitIndex = function(text, width, factor, fonts) {
 var getPathLength = function(points) {
     var l = 0;
 
-    for (var i = 0, li = points.length-1; i < li; i++)
-    {
+    for (var i = 0, li = points.length-1; i < li; i++) {
         var p1 = points[i];
         var p2 = points[i+1];
         var dir = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
@@ -386,13 +428,13 @@ var getPathPositionAndDirection = function(points, distance) {
 };
 
 
-var getPathTextVector = function(points, shift, text, factor, fonts) {
+var getPathTextVector = function(points, shift, text, size, fonts) {
     var l = 0;
     var p1 = [0,0,0];
     var dir = [1,0,0];
     var textDir = [0,0,0];
     var textStart = shift;
-    var textEnd = shift + getTextLength(text, factor, fonts);
+    var textEnd = shift + getTextLength(text, size, fonts);
     var bboxMin = globals.bboxMin;
     var geocent = globals.geocent;
 
@@ -433,22 +475,54 @@ var areTextCharactersAvailable = function(text, fonts) {
         return false;
     }
 
-    var chars = fonts[0].chars;
+    var res = Typr.U.stringToGlyphs(fonts, text);
+    var glyphs = res[0];
+    //var gfonts = res[1];
 
-    for (var i = 0, li = text.length; i < li; i++) {
-        var char = text.charCodeAt(i);
-
-        if (char == 10 || char == 9) { //new line, tab or space
-            continue;
-        }
-
-        if (!chars[char]) {
-            return false;
-        }
+    if (glyphs.indexOf(0) != -1) {
+        return false;
     }
 
     return true;
 };
+
+
+var hasLatin = function(str) {
+    for (var i = 0, li = str.length; i < li; i++) {
+        var c = str.charCodeAt(i);
+        if ((c >= 0x41 && c <= 0x5a) || (c >= 0x61 && c <= 0x7a) ||
+            ((c >= 0xc0 && c <= 0xff) && c!= 0xd7 && c!= 0xf7) || (c >= 0x100 && c <= 0x17f)) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+
+var isCJK = function(str) {
+    for (var i = 0, li = str.length; i < li; i++) {
+        var c = str.charCodeAt(i);
+
+        if (!((c >= 0x4E00 && c <= 0x62FF) || (c >= 0x6300 && c <= 0x77FF) ||
+              (c >= 0x7800 && c <= 0x8CFF) || (c >= 0x8D00 && c <= 0x9FFF) || 
+              (c >= 0x3400 && c <= 0x4DBF) || (c >= 0x20000 && c <= 0x215FF) || 
+              (c >= 0x21600 && c <= 0x230FF) || (c >= 0x23100 && c <= 0x245FF) || 
+              (c >= 0x24600 && c <= 0x260FF) || (c >= 0x26100 && c <= 0x275FF) || 
+              (c >= 0x27600 && c <= 0x290FF) || (c >= 0x29100 && c <= 0x2A6DF) || 
+              (c >= 0x2A700 && c <= 0x2B73F) || (c >= 0x2B740 && c <= 0x2B81F) || 
+              (c >= 0x2B820 && c <= 0x2CEAF) || (c >= 0x2CEB0 && c <= 0x2EBEF) || 
+              (c >= 0xF900 && c <= 0xFAFF) || (c >= 0x3300 && c <= 0x33FF) || 
+              (c >= 0xFE30 && c <= 0xFE4F) || (c >= 0xF900 && c <= 0xFAFF) || 
+              (c >= 0x2F800 && c <= 0x2FA1F) || 
+              (c >= 0x0 && c <= 0x40) || (c >= 0xa0 && c <= 0xbf)  )) { //neutral
+            return true;
+        }
+    }
+
+    return false;
+};
+
 
 var getFonts = function(fonts) {
     var fontsMap = [];
@@ -459,6 +533,7 @@ var getFonts = function(fonts) {
     return fontsMap;
 };
 
+
 var getFontsStorage = function(fonts) {
     var fontsMap = [];
     for (var i = 0, li = fonts.length; i < li; i++) {
@@ -468,6 +543,7 @@ var getFontsStorage = function(fonts) {
     return fontsMap;
 };
 
-export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable, addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount, getFonts, getFontsStorage};
+export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable,
+        addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount, getFonts, getFontsStorage, hasLatin, isCJK};
 
 

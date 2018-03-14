@@ -1,9 +1,12 @@
 
 import {globals as globals_, simpleFmtCall as simpleFmtCall_} from './worker-globals.js';
+import {areTextCharactersAvailable as areTextCharactersAvailable_, hasLatin as hasLatin_, isCJK as isCJK_ } from './worker-text.js';
 
 //get rid of compiler mess
 var globals = globals_;
 var simpleFmtCall = simpleFmtCall_;
+var hasLatin = hasLatin_, isCJK = isCJK_;
+var areTextCharactersAvailable = areTextCharactersAvailable_;
 
 
 var getLayer = function(layerId, featureType, index) {
@@ -332,6 +335,9 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             case 'lowercase':
             case 'uppercase':
             case 'capitalize':
+            case 'has-fonts':
+            case 'has-latin':
+            case 'is-cjk':
                 functionValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue, depth + 1);
 
                 if (typeof functionValue !== 'string') {
@@ -344,6 +350,10 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         case 'lowercase':  return functionValue.toLowerCase();
                         case 'uppercase':  return functionValue.toUpperCase();
                         case 'capitalize': return functionValue.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+                        case 'has-fonts':  return areTextCharactersAvailable(functionValue);
+                        case 'has-latin':  return hasLatin(functionValue);
+                        case 'is-cjk':     return isCJK(functionValue); 
+                        //
                     }
                 }
 
@@ -790,6 +800,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'line-label':         return validateValue(layerId, key, value, 'boolean');
     case 'line-label-source':  return validateValue(layerId, key, value, 'string');
     case 'line-label-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'line-label-color2':  return validateValue(layerId, key, value, 'object', 4, 0, 255);
     case 'line-label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'line-label-offset':  return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
 
@@ -810,6 +821,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
 
     case 'label':            return validateValue(layerId, key, value, 'boolean');
     case 'label-color':      return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'label-color2':     return validateValue(layerId, key, value, 'object', 4, 0, 255);
     case 'label-source':     return validateValue(layerId, key, value, 'string');
     case 'label-size':       return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'label-offset':     return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
@@ -866,12 +878,14 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'line-style-texture':    return null;
     case 'line-style-background': return [0,0,0,0];
 
-    case 'line-label':        return false;
-    case 'line-label-font':   return ['#system'];
-    case 'line-label-color':  return [255,255,255,255];
-    case 'line-label-source': return '$name';
-    case 'line-label-size':   return 1;
-    case 'line-label-offset': return 0;
+    case 'line-label':         return false;
+    case 'line-label-font':    return ['#default'];
+    case 'line-label-color':   return [255,255,255,255];
+    case 'line-label-color2':  return [0,0,0,255];
+    case 'line-label-outline': return [0.27,0.75,2.2,2.2];
+    case 'line-label-source':  return '$name';
+    case 'line-label-size':    return 1;
+    case 'line-label-offset':  return 0;
 
     case 'point':        return false;
     case 'point-flat':   return false;
@@ -888,8 +902,10 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'icon-color':   return [255,255,255,255];
 
     case 'label':            return false;
-    case 'label-font':       return ['#system'];
+    case 'label-font':       return ['#default'];
     case 'label-color':      return [255,255,255,255];
+    case 'label-color2':     return [0,0,0,255];
+    case 'label-outline':    return [0.27,0.75,2.2,2.2];
     case 'label-source':     return '$name';
     case 'label-size':       return 10;
     case 'label-offset':     return [0,0];

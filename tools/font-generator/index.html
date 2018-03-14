@@ -1,0 +1,152 @@
+<html>
+<head>
+    <title>VTS Font Generator</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <script type="text/javascript" src="./libs/Typr.js"></script>
+    <script type="text/javascript" src="./libs/Typr.U.js"></script>
+    <script src="./index.js" type="module"></script>
+
+    <style>
+
+        .panel-controls {
+            width:calc(100% - 4px);
+            height: 30px;
+            font-family: 'Open Sans',Verdana,Arial,Tahoma,Calibri,Geneva,sans-serif;
+            padding: 10px;
+        }
+
+        .panel-right {
+            float: left;
+            margin-left:3px;
+            width: 270px;
+            height: 100%;
+        }
+
+        .panel-left {
+            float: left;
+            width: calc(100% - 302px);
+            height: calc(100% - 2px);
+            border: 1px solid #bbb;
+            background-color: eee;
+            overflow: scroll;  
+        }
+
+        #panel-list {
+            width: 250px;
+            height: 100px;
+            border: 1px solid #bbb;
+        }
+
+        #right-controls {
+            width: 250px;
+            line-height: 165%;        
+        }
+
+        #right-controls * {
+            display: inline-block;
+        }
+
+        #right-controls2 {
+            width: 250px;        
+            line-height: 165%;        
+        }
+
+        #right-controls2 * {
+            float: right;   
+        }
+
+        #panel-export-close {
+            float: right;
+            margin-top: -22px;
+            height: 21px;            
+        }
+
+        #panel-status {
+            margin-top: 10px;
+            font-size: 14px;            
+        }
+
+        #panel-progress {
+            margin-top: 10px;
+            font-size: 14px;            
+        }
+        
+        .browser {
+        }
+
+        .panel-list-item {
+            margin-bottom: 5px;            
+        }
+        
+        .panel-list-item button {
+            /*float: right;*/
+        }
+
+        .panel-list-item input {
+            width: 50px;
+        }        
+
+        #fonts {
+            width: 274px;
+            height: 200px;
+            resize: none;
+            margin-right: -25px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+    </style>
+
+</head>
+
+<body style = "padding: 0; margin: 0;">
+
+
+    <div id="panel-left" class="panel-left">
+        <canvas id="font-canvas0" class="browser" width="256" height="256" style="display: none;"></canvas>
+        <canvas id="font-canvas1" class="browser" width="256" height="256" style="display: none;"></canvas>
+        <canvas id="font-canvas2" class="browser" width="256" height="256" style="display: none;" ></canvas>
+        <canvas id="font-canvas3" class="browser" width="256" height="256" style="display: none;" ></canvas>
+        <canvas id="font-canvas4" class="browser" width="256" height="256" style="display: none;" ></canvas>
+        <canvas id="preview-canvas" class="browser" width="256" height="256" ></canvas>
+        <canvas id="preview-canvas2" class="browser" width="256" height="256" ></canvas>
+    </div>
+    
+    <div id="panel-right" class="panel-right">
+        <div class="panel-controls">
+            <form id="right-controls">
+                <h3>Drop Font File Here</h3><br/>
+                <div id="panel-font">Font: not loaded</div><br/><br/>
+
+                Stream: <input type="checkbox" name="stream" disabled checked><br/>
+                Stream Blocks Size: <input type="text" name="streamBlocks" value="256" style="width: 50px;"><br/><br/>
+
+                Font Size: <input type="text" name="fontSize" value="24" style="width: 50px;"><br/>
+                Dense pack: <input type="checkbox" name="dense" checked><br/><br/>
+
+                Font Name: <input type="text" name="fontName" value="noname" style="width: 100%;"><br/>
+
+                <br/>
+                <button id="export-button" type="button">Export</button> 
+                <button id="preview-button" type="button">Preview</button> 
+                <br/>
+
+
+                <div id="panel-status">
+                    Status: Ready
+                </div>
+                <br/>
+
+                <div id="panel-progress"></div>
+                <button id="cancel-button" type="button" style="display: none">Cancel</button> 
+
+            </form>
+            <br/>
+
+
+        </div>
+    </div>
+
+</body>
+</html>

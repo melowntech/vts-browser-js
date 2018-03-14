@@ -170,14 +170,24 @@ Autopilot.prototype.tick = function() {
 
 
 Autopilot.prototype.generateTrajectory = function(p1, p2, options) {
-    if(!this.map) return;
-    return this.map.generateTrajectory(p1, p2, options);
+    var map = this.browser.core.map;
+    if (!map) {
+        return;
+    }
+    
+    options = options || {};
+    return map.generateTrajectory(p1, p2, options);
 };
 
 
 Autopilot.prototype.generatePIHTrajectory = function(position, azimuth, distance, options) {
-    if(!this.map) return;
-    return this.map.generatePIHTrajectory(position, azimuth, distance, options);
+    var map = this.browser.core.map;
+    if (!map) {
+        return;
+    }
+    
+    options = options || {};
+    return map.generatePIHTrajectory(position, azimuth, distance, options);
 };
 
 

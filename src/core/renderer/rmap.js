@@ -45,9 +45,8 @@ RendererRMap.prototype.clear = function() {
 
 
 RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
-    var x, y, i, li, index, blockRectangles, blockRectanglesCount,
+    var x, y, i, index, blockRectangles, blockRectanglesCount,
         rectangles = this.rectangles, rectangleIndex, t;
-
 
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
