@@ -333,6 +333,7 @@ GpuShaders.text2VertexShader =
             'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
         '}else{\n'+
             'float file = floor(aTexCoord.y/4.0);\n'+
+            'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
             'if (file != floor(uFile)) {\n'+
                 'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
             '}else{\n'+
@@ -366,6 +367,7 @@ GpuShaders.icon2VertexShader =
     'void main(){ \n'+
         'vTexCoord = aTexCoord.xy * uScale[2];\n'+
         'float file = floor(aTexCoord.y/4.0);\n'+
+        'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
         'if (file != floor(uFile)) {\n'+
             'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
         '}else{\n'+
@@ -397,7 +399,7 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
 
     'void main() {\n'+
         'vec4 mask;\n'+
-        'int i=int(round(mod(floor(vTexCoord.y),4.0)));\n'+
+        'int i=int(floor(vTexCoord.y));\n'+
         'if (i == 0) mask=vec4(1.0,0.0,0.0,0.0);else\n'+
         'if (i == 1) mask=vec4(0.0,1.0,0.0,0.0);else\n'+
         'if (i == 2) mask=vec4(0.0,0.0,1.0,0.0);\n'+
