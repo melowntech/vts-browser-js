@@ -44,14 +44,15 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
 
                     switch (value.charAt(0)) {
                         case '$': finalValue = feature.properties[value.substr(1)]; break;
-                        case '@': finalValue = globals.stylesheetConstants[value.substr(1)]; break;
+                        case '@': finalValue = globals.stylesheetConstants[value]; break;
                     }
 
                     if (typeof finalValue == 'undefined') {
                         logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
                     }
-                            
-                    return finalValue;
+
+                    return getLayerExpresionValue(layer, finalValue, feature, lod, key);
+                    //return finalValue;
             }
 
             return simpleFmtCall(value, (function(str){  
@@ -74,12 +75,14 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
 
                             switch (str.charAt(0)) {
                                 case '$': finalValue = feature.properties[str.substr(1)]; break;
-                                case '@': finalValue = globals.stylesheetConstants[str.substr(1)]; break;
+                                case '@': finalValue = globals.stylesheetConstants[str]; break;
                             }
 
                             if (typeof finalValue == 'undefined') {
                                 logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
                             }
+
+                            finalValue = getLayerPropertyValueInner(layer, key, feature, lod, finalValue, 0);
 
                             return getLayerExpresionValue(layer, finalValue, feature, lod, key);
                     }
@@ -155,7 +158,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             //is it feature property, variable or constant?
             switch(value.charAt(0)) {
                 case '$': finalValue = feature.properties[value.substr(1)]; break;
-                case '@': finalValue = globals.stylesheetConstants[value.substr(1)]; break;
+                case '@': finalValue = globals.stylesheetConstants[value]; break;
                 case '&': finalValue = globals.stylesheetVariables[value.substr(1)]; break;
                 case '#': 
                     //debugger;

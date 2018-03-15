@@ -516,11 +516,11 @@ var isCJK = function(str) {
               (c >= 0xFE30 && c <= 0xFE4F) || (c >= 0xF900 && c <= 0xFAFF) || 
               (c >= 0x2F800 && c <= 0x2FA1F) || 
               (c >= 0x0 && c <= 0x40) || (c >= 0xa0 && c <= 0xbf)  )) { //neutral
-            return true;
+            return false;
         }
     }
 
-    return false;
+    return true;
 };
 
 
