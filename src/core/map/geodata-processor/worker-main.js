@@ -363,7 +363,25 @@ function optimizeGroupMessages() {
                             vbuffer[index+k] = buff[k];
                             nbuffer[index+k] = buff2[k];
                         }
+
                         index += lk;
+
+                        if (type == 'line-label') {
+                            var files = job['files'];
+                            var files2 = job2['files'];
+
+                            for (k = 0, lk = files2.length; k < lk; k++) {
+                                if (!files[k]) {
+                                    files[k] = [];
+                                }
+
+                                for (var m = 0, lm = files2[k].length; m < lm; m++) {
+                                    if (files[k].indexOf(files2[k][m]) == -1) {
+                                        files[k].push(files2[k][m]);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 

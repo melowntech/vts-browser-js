@@ -103,11 +103,11 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
         return;
     }
 
-    this.setFont('#system', this.renderer.font);
+    //this.setFont('#default', this.renderer.font);
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()) } );
 
     var fonts = stylesheet.fonts;
-    var fontMap = { '#system' : '#system' };
+    var fontMap = {}; //'#default' : '#default' };
 
     for (var key in fonts) {
         var fontUrl = fonts[key];
@@ -125,8 +125,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
 MapGeodataProcessor.prototype.setFont = function(url, font) {
     if (!this.fonts[url]) {
         this.fonts[url] = font;
-        this.sendCommand('setFont', {'url' : url, 'chars' : font.chars, 'space' : font.space, 'cly' : font.cly, 
-                                     'size' : font.size, 'version':font.version});
+        this.sendCommand('setFont', {'url' : url, 'data': font.data}, [font.data]);
     }
 };
 

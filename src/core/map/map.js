@@ -789,6 +789,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], [1, 3000, 15000, 7000]); break;
     case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
     case 'mapRefreshCycles':              this.config.mapRefreshCycles = utils.validateNumber(value, 0, Number.MAXINTEGER, 3); break;
+    case 'mapDefaultFont':                this.config.mapDefaultFont =  utils.validateString(value, ''); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
@@ -834,6 +835,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapDegradeHorizonParams':       return this.config.mapDegradeHorizonParams;
     case 'mapGridSurrogatez':             return this.config.mapGridSurrogatez;
     case 'mapRefreshCycles':              return this.config.mapRefreshCycles;
+    case 'mapDefaultFont':                return this.config.mapDefaultFont;
     case 'mario':                         return this.config.mario;
     }
 };

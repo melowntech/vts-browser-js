@@ -1,7 +1,7 @@
 
 import {globals as globals_, clamp as clamp_} from './worker-globals.js';
 import {getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
-import {addText as addText_, getSplitIndex as getSplitIndex_, getFontFactor as getFontFactor_,
+import {addText as addText_, getSplitIndex as getSplitIndex_, 
         getTextLength as getTextLength_, getFonts as getFonts_, getFontsStorage as getFontsStorage_,
         areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from './worker-text.js';
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
@@ -9,7 +9,7 @@ import {postGroupMessage as postGroupMessage_} from './worker-message.js';
 //get rid of compiler mess
 var globals = globals_, clamp = clamp_;
 var getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
-var addText = addText_, getSplitIndex = getSplitIndex_, getFontFactor = getFontFactor_,
+var addText = addText_, getSplitIndex = getSplitIndex_, 
     getTextLength = getTextLength_, getFonts = getFonts_, getFontsStorage = getFontsStorage_,
     areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
 var postGroupMessage = postGroupMessage_;
@@ -111,6 +111,8 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
 
             var labelData = {
                 color : getLayerPropertyValue(style, 'label-color', pointArray, lod),
+                color2 : getLayerPropertyValue(style, 'label-color2', pointArray, lod),
+                outline : getLayerPropertyValue(style, 'label-outline', pointArray, lod),
                 size : size,
                 offset : getLayerPropertyValue(style, 'label-offset', pointArray, lod),
                 stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
@@ -327,9 +329,9 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
         }
 
         postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,
-            'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer,
-            'color':labelData.color, 'z-index':zIndex, 'visibility': visibility, 'culling': culling, 
-            'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
+            'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer, 'size':labelData.size,
+            'color':labelData.color, 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
+            'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
@@ -478,7 +480,7 @@ var processLabel = function(point, labelData) {
 
         // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(line, labelData.width, getFontFactor(labelData.size, fonts), fonts);
+            var splitIndex = getSplitIndex(line, labelData.width, labelData.size, fonts);
 
             if (line.length == splitIndex) {
                 lines2.push(line);
@@ -500,7 +502,7 @@ var processLabel = function(point, labelData) {
 
     //get max width
     for (i = 0, li = lines2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(lines2[i], getFontFactor(labelData.size, fonts), fonts);
+        lineWidths[i] = getTextLength(lines2[i], labelData.size, fonts);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
@@ -541,19 +543,30 @@ var processLabel = function(point, labelData) {
         index2 += 3;
     }
 
-    labelData.files = [];
+    
+    var fonts = labelData.fonts;
+    labelData.files = new Array(fonts.length);
 
-    for (var key in planes) {
-        var plane = parseInt(key);
-        var file = Math.round((plane - (plane % 3)) / 3);
-
-        if (labelData.files.indexOf(file) == -1) {
-            labelData.files.push(file);
-        }
+    for (i = 0, li= fonts.length; i < li; i++) {
+        labelData.files[i] = [];
     }
 
-    if (!fonts[0].version) {
-        labelData.files = null;        
+    for (var key in planes) {
+        var fontIndex = parseInt(key);
+        var planes2 = planes[key];
+
+        var files = [];
+
+        for (var key2 in planes2) {
+            var plane = parseInt(key2) - (fontIndex*4000);
+            var file = Math.round((plane - (plane % 4)) / 4);
+            
+            if (files.indexOf(file) == -1) {
+                files.push(file);
+            }
+        }
+
+        labelData.files[fontIndex] = files;
     }
 
     labelData.index = index;

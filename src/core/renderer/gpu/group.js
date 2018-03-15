@@ -101,17 +101,20 @@ GpuGroup.prototype.addGeometry = function(data) {
     this.renderer.geometries[id] = data;
 };
 
+GpuGroup.prototype.convertColor = function(c) {
+    var f = 1.0/255;
+    return [c[0]*f, c[1]*f, c[2]*f, c[3]*f];
+};
+
 GpuGroup.prototype.addLineJob = function(data) {
     var gl = this.gl;
 
     var vertices = data['vertexBuffer'];
-    var color = data['color'];
-    var f = 1.0/255;
 
     var job = {};
     job.type = 'flat-line';
     job.program = this.renderer.progLine;
-    job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
+    job.color = this.convertColor(data['color']);
     job.zIndex = data['z-index'] + 256;
     job.clickEvent = data['click-event'];
     job.hoverEvent = data['hover-event'];
@@ -171,12 +174,10 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 
     var vertices = data['vertexBuffer'];
     var normals = data['normalBuffer'];
-    var color = data['color'];
-    var f = 1.0/255;
 
     var job = {};
     job.type = data['type'];
-    job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
+    job.color = this.convertColor(data['color']);
     job.zIndex = data['z-index'] + 256;
     job.clickEvent = data['click-event'];
     job.hoverEvent = data['hover-event'];
@@ -193,6 +194,18 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+
+    if (data['texture'] != null) {
+        var texture = data['texture'];
+        var bitmap = texture[0];
+        job.texture = [this.renderer.getBitmap(bitmap['url'], bitmap['filter'] || 'linear', bitmap['tiled'] || false),
+            texture[1], texture[2], texture[3], texture[4]];
+        var background = this.convertColor(data['background']);
+
+        if (background[3] != 0) {
+            job.background = background;
+        }
+    }
 
     switch(job.type) {
     case 'flat-tline':   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
@@ -217,19 +230,6 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
             return;
         }
     }
-
-    if (data['texture'] != null) {
-        var texture = data['texture'];
-        var bitmap = texture[0];
-        job.texture = [this.renderer.getBitmap(bitmap['url'], bitmap['filter'] || 'linear', bitmap['tiled'] || false),
-            texture[1], texture[2], texture[3], texture[4]];
-        var background = data['background'];
-
-        if (background[3] != 0) {
-            job.background = [background[0]*f, background[1]*f, background[2]*f, background[3]*f];
-        }
-    }
-
 
     //create vertex buffer
     job.vertexPositionBuffer = gl.createBuffer();
@@ -267,13 +267,13 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 
     var vertices = data['vertexBuffer'];
     var texcoords = data['texcoordsBuffer'];
-    var color = data['color'];
-    var f = 1.0/255;
 
     var job = {};
     job.type = 'line-label';
     job.program = this.renderer.progText;
-    job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
+    job.color = this.convertColor(data['color']);
+    job.color2 = this.convertColor(data['color2']);
+    job.outline = data['outline'];
     job.zIndex = data['z-index'] + 256;
     job.clickEvent = data['click-event'];
     job.hoverEvent = data['hover-event'];
@@ -289,16 +289,14 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.ready = true;
 
     job.files = data['files'] || [];
-    var fonts = data['fonts'] || ['#system'];
-    job.font = this.renderer.fonts[fonts[0]];
-    job.texture = job.font.texture;
-    job.data = [1.0/job.texture.width, job.texture.width];
+    var fonts = data['fonts'] || ['#default'];
+    job.fonts = fonts;
 
-    if (job.font.version) {
-        job.program = this.renderer.progText2;
-    } else {
-        job.files = [];
+    for (var i = 0, li = fonts.length; i < li; i++) {
+        fonts[i] = this.renderer.fonts[fonts[i]];
     }
+
+    job.program = this.renderer.progText2;
 
     if (!job.program.isReady()) {
         return;
@@ -331,14 +329,13 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     var vertices = data['vertexBuffer'];
     var texcoords = data['texcoordsBuffer'];
     var origins = data['originBuffer'];
-    var color = data['color'];
     var s = data['stick'];
     var f = 1.0/255;
 
     var job = {};
     job.type = label ? 'label' : 'icon';
     job.program = this.renderer.progIcon;
-    job.color = [color[0]*f, color[1]*f, color[2]*f, color[3]*f];
+    job.color = this.convertColor(data['color']);
     job.zIndex = data['z-index'] + 256;
     job.visibility = data['visibility'];
     job.culling = data['culling'];
@@ -365,18 +362,19 @@ GpuGroup.prototype.addIconJob = function(data, label) {
         job.texture = this.renderer.getBitmap(icon['url'], icon['filter'] || 'linear', icon['tiled'] || false);
         job.files = [];
     } else {
+        job.color2 = this.convertColor(data['color2']);
+        job.outline = data['outline'];
+        job.size = data['size'];
         job.files = data['files'] || [];
         job.noOverlap = data['noOverlap'];
-        var fonts = data['fonts'] || ['#system'];
-        job.font = this.renderer.fonts[fonts[0]];
-        job.texture = job.font.texture;
-        job.data = [1.0/job.texture.width, job.texture.width];
+        var fonts = data['fonts'] || ['#default'];
+        job.fonts = fonts;
 
-        if (job.font.version) {
-            job.program = this.renderer.progIcon2;
-        } else {
-            job.files = [];
+        for (var i = 0, li = fonts.length; i < li; i++) {
+            fonts[i] = this.renderer.fonts[fonts[i]];
         }
+
+        job.program = this.renderer.progIcon2;
     }
 
     if (job.visibility != null && !Array.isArray(job.visibility)) {
