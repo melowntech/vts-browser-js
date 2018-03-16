@@ -362,6 +362,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 102:
                 debug.drawFaceCount = !debug.drawFaceCount; break; //key F pressed
 
+            case 71:
+            case 103:
+                debug.drawGeodataOnly = !debug.drawGeodataOnly; break; //key G pressed
+
             case 68:
             case 100:
                 debug.drawDistance = !debug.drawDistance; break; //key D pressed

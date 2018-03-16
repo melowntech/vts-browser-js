@@ -47,7 +47,9 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
         if (node.hasGeometry()) {
 
             if (this.debug.drawBBoxes && !preventRedener) {
-                this.drawTileInfo(tile, node, cameraPos, tile.surfaceMesh, pixelSize);
+                if (tile.surface.geodata || !this.debug.drawGeodataOnly) {
+                    this.drawTileInfo(tile, node, cameraPos, tile.surfaceMesh, pixelSize);
+                }
             }
 
             if (this.debug.heightmapOnly && !preventRedener) {
