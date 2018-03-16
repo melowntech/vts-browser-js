@@ -62,7 +62,7 @@ function onSwitchView() {
                     ]
                 },
                 freeLayers: {
-                    'mapzen-all-v1': {}
+                    'osm-tilehosting-v1': {}
                 }
             });    
         }
