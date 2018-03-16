@@ -25,8 +25,8 @@ var statusDiv = null;
 
     var panel = browser.ui.addControl('status-panel',
         '<div id="status-div">' +
-            '<div id="selected-status">Selectes: Nothing</>' +
-            '<div id="hover-status">Hovering over: Nothing</>' +
+            '<div id="selected-status">Selected: Nothing</div>' +
+            '<div id="hover-status">Hovering over: Nothing</div>' +
         '</div>');
 
     //get status-div element
@@ -217,4 +217,5 @@ function onFeatureClick(event) {
     selectedStatusDiv.setHtml('Selected: ' + event.feature['#id']);
     map.setGeodataSelection([event.feature['#id']]);
 }
+
 
