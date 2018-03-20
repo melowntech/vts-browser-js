@@ -14,6 +14,9 @@ VTS Browser JavaScript API documentation is available in our wiki:
 
 * [VTS Browser API](https://github.com/Melown/vts-browser-js/wiki)
 
+## Prebuild libraies and demos
+In case you do not want to build libray, there is a [link](https://github.com/Melown/vts-browser-js/releasesi) where you can find latest compiled libraries with demo examples.
+
 ## Build system
 The build system uses [webpack module bundler](http://webpack.github.io/).
 Typical development cycle starts with `npm install` for installation of
