@@ -18,7 +18,7 @@ var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = are
 var postGroupMessage = postGroupMessage_;
 
 
-var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) {
+var processLineStringPass = function(lineString, lod, style, featureIndex, zIndex, eventInfo) {
     var lines = (lineString['lines'] || lineString['d-lines'])  || [];
 
     if (lines.length == 0) {
@@ -889,13 +889,13 @@ var processLineStringPass = function(lineString, lod, style, zIndex, eventInfo) 
 
     if (lineLabel) {
         for (i = 0, li = lineLabelStack.length; i < li; i++) {
-            processLineLabel(lineLabelStack[i].points, lineLabelStack[i].points2, lineString, center, lod, style, zIndex, eventInfo);
+            processLineLabel(lineLabelStack[i].points, lineLabelStack[i].points2, lineString, center, lod, style, featureIndex, zIndex, eventInfo);
         }
     }
 
 };
 
-var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, center, lod, style, zIndex, eventInfo) {
+var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, center, lod, style, featureIndex, zIndex, eventInfo) {
     var labelColor = getLayerPropertyValue(style, 'line-label-color', lineString, lod);
     var labelColor2 = getLayerPropertyValue(style, 'line-label-color2', lineString, lod);
     var labelOutline = getLayerPropertyValue(style, 'line-label-outline', lineString, lod);

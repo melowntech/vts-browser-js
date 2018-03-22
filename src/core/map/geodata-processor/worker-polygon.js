@@ -12,7 +12,7 @@ var postGroupMessage = postGroupMessage_;
 var processLineStringPass = processLineStringPass_;
 var processPointArrayPass = processPointArrayPass_;
 
-var processPolygonPass = function(polygon, lod, style, zIndex, eventInfo) {
+var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eventInfo) {
     var vertices = polygon['vertices'] || [];
     if (vertices.length == 0) {
         return;
@@ -128,7 +128,7 @@ var createEmptyFeatureFromPolygon = function(polygon) {
     return feature;
 };
 
-var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventInfo, processLines) {
+var processPolygonLines = function(polygon, vertices, lod, style, featureIndex, zIndex, eventInfo, processLines) {
     var borders = polygon['borders'] || [];
     if (borders.length == 0) {
         return;
@@ -174,10 +174,10 @@ var processPolygonLines = function(polygon, vertices, lod, style, zIndex, eventI
 
             if(processLines) {
                 feature['lines'] = [points];
-                processLineStringPass(feature, lod, style, zIndex, eventInfo);
+                processLineStringPass(feature, lod, style, featureIndex, zIndex, eventInfo);
             } else {
                 feature['points'] = points2;
-                processPointArrayPass(feature, lod, style, zIndex, eventInfo);
+                processPointArrayPass(feature, lod, style, featureIndex, zIndex, eventInfo);
             }
         }
     }

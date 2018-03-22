@@ -722,6 +722,8 @@ RendererDraw.prototype.clearJobBuffer = function() {
     }
 };
 
+var filterConstPart = 2;
+var filterDynamicPart = 2;
 
 RendererDraw.prototype.paintGL = function() {
     var renderer = this.renderer;
@@ -1161,6 +1163,12 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 pp[0] = Math.round(pp[0]);
                 pp[1] -= stickShift;
             }
+
+            var indexLimit = (Math.round(filterConstPart + (job.tiltAngle*filterDynamicPart))-1);
+
+            if (job.index > indexLimit) {
+                return;
+            } 
         }
 
         if (job.noOverlap) {

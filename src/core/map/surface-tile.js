@@ -38,6 +38,7 @@ var MapSurfaceTile = function(map, parent, id) {
     this.texelSize = 1;
     this.texelSize2 = 1;
     this.distance = 1;
+    this.tiltAngle = 1;
 
     this.metanode = null;  //[metanode, cacheItem]
     this.lastMetanode = null;
@@ -612,6 +613,7 @@ MapSurfaceTile.prototype.bboxVisible = function(id, bbox, cameraPos, node) {
             //} else { //version without perspektive
             //    var a = vec3.dot(camera.vector, node.diskNormal);
             //}
+            this.tiltAngle = a;
             
             if (distance > 150000 && a > node.diskAngle) {
                 return false;

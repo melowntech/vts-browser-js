@@ -15,7 +15,7 @@ var addText = addText_, getSplitIndex = getSplitIndex_,
 var postGroupMessage = postGroupMessage_;
 
 
-var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) {
+var processPointArrayPass = function(pointArray, lod, style, featureIndex, zIndex, eventInfo) {
     var pointsGroups = []; 
     var i, li, dpoints = false;
 
@@ -332,7 +332,7 @@ var processPointArrayPass = function(pointArray, lod, style, zIndex, eventInfo) 
             'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer, 'size':labelData.size,
             'color':labelData.color, 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
             'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
-            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files,
+            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
             'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);

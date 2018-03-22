@@ -22,7 +22,7 @@ var processPointArrayGeometry = processPointArrayGeometry_;
 var exportedGeometries = [];
 
 
-function processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo) {
+function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex, eventInfo) {
 
     switch(type) {
     case 'line-string':
@@ -31,11 +31,11 @@ function processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo) {
             processPointArrayPass(feature, lod, layer, zIndex, eventInfo);
         }
 
-        processLineStringPass(feature, lod, layer, zIndex, eventInfo);
+        processLineStringPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
         break;
 
     case 'point-array':
-        processPointArrayPass(feature, lod, layer, zIndex, eventInfo);
+        processPointArrayPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
 
             /*if (getLayerPropertyValue(layer, "line", feature, lod) ||
                 getLayerPropertyValue(layer, "line-label", feature, lod)) {
@@ -45,7 +45,7 @@ function processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo) {
         break;
             
     case 'polygon':
-        processPolygonPass(feature, lod, layer, zIndex, eventInfo);
+        processPolygonPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
         break;     
     }
 
@@ -100,21 +100,21 @@ function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, e
 
             if (selectedLayer != null) {
                 globals.hitState = flags | 2;
-                processLayerFeaturePass(type, feature, lod, selectedLayer, zIndex, eventInfo);
+                processLayerFeaturePass(type, feature, lod, selectedLayer, featureIndex, zIndex, eventInfo);
             }
 
             if (selectedHoverLayer != null) {
                 globals.hitState = flags | 3;
-                processLayerFeaturePass(type, feature, lod, selectedHoverLayer, zIndex, eventInfo);
+                processLayerFeaturePass(type, feature, lod, selectedHoverLayer, featureIndex, zIndex, eventInfo);
             }
 
             if (hoverLayer != null) {
                 globals.hitState = flags | 1;
-                processLayerFeaturePass(type, feature, lod, hoverLayer, zIndex, eventInfo);
+                processLayerFeaturePass(type, feature, lod, hoverLayer, featureIndex, zIndex, eventInfo);
             }
                 
             //globals.hitState = flags | 0;
-            processLayerFeaturePass(type, feature, lod, mylayer, zIndex, eventInfo);
+            processLayerFeaturePass(type, feature, lod, mylayer, featureIndex, zIndex, eventInfo);
 
             globals.hitState = lastHitState;
         }
@@ -166,24 +166,24 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
 
     if (selectedLayer != null) {
         globals.hitState = flags | 2;
-        processLayerFeaturePass(type, feature, lod, selectedLayer, zIndex, eventInfo);
+        processLayerFeaturePass(type, feature, lod, selectedLayer, featureIndex, zIndex, eventInfo);
         processLayerFeatureMultipass(type, feature, lod, selectedLayer, featureIndex, eventInfo);
     }
 
     if (selectedHoverLayer != null) {
         globals.hitState = flags | 3;
-        processLayerFeaturePass(type, feature, lod, selectedHoverLayer, zIndex, eventInfo);
+        processLayerFeaturePass(type, feature, lod, selectedHoverLayer, featureIndex, zIndex, eventInfo);
         processLayerFeatureMultipass(type, feature, lod, selectedHoverLayer, featureIndex, eventInfo);
     }
 
     if (hoverLayer != null) {
         globals.hitState = flags | 1;
-        processLayerFeaturePass(type, feature, lod, hoverLayer, zIndex, eventInfo);
+        processLayerFeaturePass(type, feature, lod, hoverLayer, featureIndex, zIndex, eventInfo);
         processLayerFeatureMultipass(type, feature, lod, hoverLayer, featureIndex, eventInfo);
     }
 
     globals.hitState = flags | 0;
-    processLayerFeaturePass(type, feature, lod, layer, zIndex, eventInfo);
+    processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex, eventInfo);
     processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, eventInfo);
 }
 
@@ -218,9 +218,57 @@ function processGroup(group, lod) {
     var points = group['points'] || [];
     globals.featureType = 'point';
 
-    //process points
-    for (i = 0, li = points.length; i < li; i++) {
-        processFeature('point-array', points[i], lod, i, 'point', groupId);
+    if (groupId == 'mountain_peak' && lod < 17) {
+        var hit = false;
+
+        //debugger
+
+        var point2 = [];
+
+        for (i = 0, li = points.length; i < li; i++) {
+            if (points[i]['properties']['prominence']) {
+                point2.push(points[i]);
+            }
+        }
+
+        points = point2;
+
+        do {
+
+            hit = false;
+
+            for (i = 0, li = points.length - 1; i < li; i++) {
+                var p = points[i]['properties']['prominence'];
+                var p2 = points[i+1]['properties']['prominence'];
+
+                if (p && p2) {
+
+                    if (parseFloat(p) < parseFloat(p2)) {
+                        var t = points[i];
+                        points[i] = points[i + 1];
+                        points[i + 1] = t;
+                        hit = true;
+                    }
+
+                }
+
+            }
+
+        } while(hit);
+
+        //process points
+        for (i = 0, li = Math.min(10,points.length); i < li; i++) {
+            processFeature('point-array', points[i], lod, i, 'point', groupId);
+        }
+
+
+    } else {
+
+        //process points
+        for (i = 0, li = points.length; i < li; i++) {
+            processFeature('point-array', points[i], lod, i, 'point', groupId);
+        }
+
     }
 
     var lines = group['lines'] || [];
