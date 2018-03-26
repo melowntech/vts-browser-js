@@ -15,7 +15,7 @@ The VTS Browser JS is a JavaScript WebGL rendering engine used and developed by 
 ### First steps
 
 1. Include vts-browser-js library
-```
+```html
 <link rel="stylesheet"
   type="text/css" href="https://cdn.melown.com/libs/vtsjs/browser/v2/vts-browser.min.css" />
 <script type="text/javascript"
@@ -23,12 +23,12 @@ The VTS Browser JS is a JavaScript WebGL rendering engine used and developed by 
 ```
 
 2. Declare map containing element (with id `map-div`)
-```
+```html
 <div id="map-div" style="width:100%; height:100%;"></div>
 ```
 
 3. Initiate vts browser (with example [map configuration](https://))
-```
+```html
 <script>
   var browser = vts.browser('map-div', {
     map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json'
