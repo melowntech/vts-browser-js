@@ -2,29 +2,84 @@
 
 The VTS Browser JS is a JavaScript WebGL rendering engine used and developed by Melown Technologies SE (http://melown.com) as part of their VTS 3D map streaming and rendering stack.
 
+// TODO - upgrade texts
+//      - add image
 
-## Examples
- * [Live examples in JSFiddle](https://github.com/Melown/vts-browser-js/wiki/Examples)
+## Live Demos
+
  * [Intergeo presentation](https://www.melown.com/intergeo2017/)
  * [Mercury](https://www.melown.com/mercury/)
 
-## User documentation
+## Examples
 
-VTS Browser JavaScript API documentation is available in our wiki:
+### First steps
 
-* [VTS Browser API](https://github.com/Melown/vts-browser-js/wiki)
+1. Include vts-browser-js library
+```
+<link rel="stylesheet"
+  type="text/css" href="https://cdn.melown.com/libs/vtsjs/browser/v2/vts-browser.min.css" />
+<script type="text/javascript"
+  src="https://cdn.melown.com/libs/vtsjs/browser/v2/vts-browser.min.js"></script>
+```
 
-## Prebuild libraies and demos
-In case you do not want to build libray, there is a [link](https://github.com/Melown/vts-browser-js/releases) where you can find latest compiled libraries with demo examples.
+2. Declare map containing element (with id `map-div`)
+```
+<div id="map-div" style="width:100%; height:100%;"></div>
+```
 
-## Build system
+3. Initiate vts browser (with example [map configuration](https://))
+```
+<script>
+  var browser = vts.browser('map-div', {
+    map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json'
+  });
+</script>
+ ```
+
+Wonder where to find `mapConfig.json` file? See [Map Configuration](#Map Configuration) section.
+
+### Next steps
+
+You can run many [examples in JSFiddle](https://github.com/Melown/vts-browser-js/wiki/Examples).
+
+## Get library
+
+There is several ways how to bundle vts-browser-js library into your project.
+
+### Our CDN
+
+The most easy way to link vts-browser-js library is to use the latest build (or specific version) from our CDN network.
+
+```
+<link rel="stylesheet"
+  href="https://cdn.melown.com/libs/vtsjs/browser/v2/vts-browser.min.css" />
+<script type="text/javascript"
+  src="https://cdn.melown.com/libs/vtsjs/browser/v2/vts-browser.min.js"></script>
+```
+
+### Prebuilt
+
+In case you do not want to build libray yourself or use our CDN, there is a [link](https://github.com/Melown/vts-browser-js/releases) where you can find latest compiled libraries with demo examples.
+
+### From NPM repository
+
+Vts-browser-js library is in npm js repository. To add it as dependecy to your project just add it as any npm package
+```
+npm install -S vts-browser-js
+```
+
+### Build from code
+
+And of course you can build vts-browser-js library from source code.
+
+#### Build system
 The build system uses [webpack module bundler](http://webpack.github.io/).
 Typical development cycle starts with `npm install` for installation of
 dependenices. Then you usually run `webpack-dev-server` and build with `webpack`.
 
-## Install
+##### Install
 
-Download and install all dependencies to local `node_modules` directory. 
+Download and install all dependencies to local `node_modules` directory.
 
 **NOTE:** For some dependencies, you need `git` available in your system.
 
@@ -38,29 +93,7 @@ or more advanced (if you are using new versions of NodeJS and Yarn)
 yarn install
 ```
 
-## Build
-
-```
-node_modules/.bin/webpack
-```
-The unzipped file (along with source map and CSS) is stored in `build/`
-directory. You may now start the dev server (see lower) and open browser at
-[http://localhost:8080](http://localhost:8080) to see some demos in the `demos/`
-directory.
-
-
-## Build compressed version
-
-The compressed version - it's intended to be used in in production env. You can
-include in the `<script ...></script>` tags (along with CSS) there.
-
-Compressed version is build in the `dist/` directory.
-
-```
-NODE_ENV=production node_modules/.bin/webpack
-```
-
-## Run dev server
+#### Run dev server
 
 The development server is serving local files at
 [http://localhost:8080](http://localhost:8080).
@@ -71,11 +104,45 @@ node_modules/.bin/webpack-dev-server
 
 And go to [http://localhost:8080/demos/](http://localhost:8080/demos/)
 
-## Makefile
+
+#### Build
+
+```
+node_modules/.bin/webpack
+```
+The unzipped file (along with source map and CSS) is stored in `build/`
+directory. You may now start the dev server (see lower) and open browser at
+[http://localhost:8080](http://localhost:8080) to see some demos in the `demos/`
+directory.
+
+#### Build compressed version
+
+The compressed version - it's intended to be used in in production env. You can
+include in the `<script ...></script>` tags (along with CSS) there.
+
+Compressed version is build in the `dist/` directory.
+
+```
+NODE_ENV=production node_modules/.bin/webpack
+```
+
+#### Makefile
 
 There is also `Makefile` available in the project directory. Referer `make help`
 to specific make targets. The Makefile is just wrapper around `npm run` commands
 (which are wrappers around webpack configuration).
+
+## Map Configuration
+
+
+## Documentation
+
+VTS Browser JavaScript API documentation is available in our wiki:
+
+* [VTS Browser API](https://github.com/Melown/vts-browser-js/wiki)
+
+
+
 
 ## License
 
