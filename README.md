@@ -35,11 +35,11 @@ People often ask as whether is VTS alternative to Cesium. Our answer is that VTS
 | fully open sourced back-end tools | yes | no |
 | part of the bigger photogrammetric package for the large scale mapping | yes | no |
 | advanced text rendering with almost complete coverage of the writing systems | yes | limited |
-| compact library size (gzipped and minified) | 163 KB | 577 KB + Workers |
+| compact library size (gzipped and minified) | 163&nbsp;KB | 577&nbsp;KB&nbsp;+&nbsp;Workers |
 
 
-*\[^1]: surface is for a example terrain or 3D city*
-*\[^2]: bound layer is usually aerial imagery*
+[^1]: surface is for a example terrain or 3D city
+[^2]: bound layer is usually aerial imagery
 
 ## Live Demos
 
