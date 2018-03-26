@@ -1,6 +1,10 @@
 # VTS Browser JS
 
-**The VTS Browser JS** is a JavaScript WebGL rendering engine used and developed by [Melown Technologies SE](http://melown.com) as part of their VTS 3D map streaming and rendering stack.
+**The VTS Browser JS** is a JavaScript WebGL rendering engine used and developed by [Melown Technologies SE](http://melown.com) as part of VTS 3D map streaming and rendering stack. With incredibly small footprint (about 163 kB of gziped JS code), it provides almost all features for 3D mapping you will ever want.
+
+With VTS Browser JS you are able to combine and render various geospatial data in one map. *TODO more about main advantages & features* 
+
+VTS Browser JS is (independently usable) part of [VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html): a state-of-the-art, full-stack open source platform for 3D geospatial application development. 
 
 - [Features](#features)
 - [Live Demos](#live-demos)
@@ -13,7 +17,7 @@
   - [NPM](#npm-repository)
   - [From Source code](#build-from-code)
 - [Documentation](#documentation)
-- [Roadmap](#roadmap)
+- [Roadmap](https://github.com/Melown/vts-browser-js/wiki/Roadmap)
 - [Map Configuration](#map-configuration)
 - [Licence](#licence)
 - [How to Contribute](#how-to-contribute)
@@ -22,7 +26,7 @@
 
 ## Features
 
-*TODO - features*
+- [x] *TODO - list of features*
 
 ### Comparsion to Cesium
 
@@ -120,7 +124,7 @@ The build system uses [webpack module bundler](http://webpack.github.io/).
 Typical development cycle starts with `npm install` for installation of
 dependenices. Then you usually run `webpack-dev-server` and build with `webpack`.
 
-##### Install
+#### Install
 
 Download and install all dependencies to local `node_modules` directory.
 
