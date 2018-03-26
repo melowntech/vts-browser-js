@@ -2,8 +2,6 @@
 
 **The VTS Browser JS** is a JavaScript WebGL rendering engine used and developed by [Melown Technologies SE](http://melown.com) as part of their VTS 3D map streaming and rendering stack.
 
-<p style="text-align: center;"><img width="480" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-video.gif?raw=true"></p>
-
 - [Features](#features)
 - [Live Demos](#live-demos)
 - [Get started with VTS Browser JS](#examples)
