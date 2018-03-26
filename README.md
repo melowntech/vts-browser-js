@@ -1,9 +1,8 @@
 # VTS Browser JS
 
-The VTS Browser JS is a JavaScript WebGL rendering engine used and developed by Melown Technologies SE (http://melown.com) as part of their VTS 3D map streaming and rendering stack.
+**The VTS Browser JS** is a JavaScript WebGL rendering engine used and developed by [Melown Technologies SE](http://melown.com) as part of their VTS 3D map streaming and rendering stack.
 
-// TODO - upgrade texts
-//      - add image
+
 
 ## Live Demos
 
@@ -18,7 +17,7 @@ The VTS Browser JS is a JavaScript WebGL rendering engine used and developed by 
 
 ### First steps
 
-1. Include vts-browser-js library
+1. Include The VTS Browser JS library
 ```html
 <link rel="stylesheet"
   type="text/css" href="https://cdn.melown.com/libs/vtsjs/browser/v2/vts-browser.min.css" />
@@ -48,11 +47,11 @@ You can run many [examples in JSFiddle](https://github.com/Melown/vts-browser-js
 
 ## Get the library
 
-There is several ways how to bundle vts-browser-js library into your project.
+There is several ways how to bundle The VTS Browser JS Library into your project.
 
 ### Our CDN
 
-The most easy way to link vts-browser-js library is to use the latest build (or specific version) from our CDN network.
+The most easy way to link The VTS Browser JS Library is to use the latest build (or specific version) from our CDN network.
 
 ```html
 <link rel="stylesheet"
@@ -74,7 +73,7 @@ npm install -S vts-browser-js
 
 ### Build from code
 
-And of course you can build vts-browser-js library from source code.
+And of course you can build The VTS Browser JS Library from source code.
 
 #### Build system
 The build system uses [webpack module bundler](http://webpack.github.io/).
