@@ -42,7 +42,7 @@ Wonder where to find `mapConfig.json` file? See [Map Configuration](#Map Configu
 
 You can run many [examples in JSFiddle](https://github.com/Melown/vts-browser-js/wiki/Examples).
 
-## Get library
+## Get the library
 
 There is several ways how to bundle vts-browser-js library into your project.
 
@@ -50,7 +50,7 @@ There is several ways how to bundle vts-browser-js library into your project.
 
 The most easy way to link vts-browser-js library is to use the latest build (or specific version) from our CDN network.
 
-```
+```html
 <link rel="stylesheet"
   href="https://cdn.melown.com/libs/vtsjs/browser/v2/vts-browser.min.css" />
 <script type="text/javascript"
@@ -61,7 +61,7 @@ The most easy way to link vts-browser-js library is to use the latest build (or 
 
 In case you do not want to build libray yourself or use our CDN, there is a [link](https://github.com/Melown/vts-browser-js/releases) where you can find latest compiled libraries with demo examples.
 
-### From NPM repository
+### NPM repository
 
 Vts-browser-js library is in npm js repository. To add it as dependecy to your project just add it as any npm package
 ```
