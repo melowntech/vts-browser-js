@@ -6,8 +6,14 @@
 
 - [Features](#features)
 - [Live Demos](#live-demos)
-- [Examples](#examples)
+- [Get started with VTS Browser JS](#examples)
+  - [First Steps](#first-steps)
+  - [More examples](https://github.com/Melown/vts-browser-js/wiki/Examples)
 - [Get the library](#get-the-library)
+  - [Our CDN](#our-cdn)
+  - [Prebuilt package](#prebuilt)
+  - [NPM](#npm-repository)
+  - [From Source code](#build-from-code)
 - [Documentation](#documentation)
 - [Roadmap](#roadmap)
 - [Map Configuration](#map-configuration)
@@ -27,8 +33,8 @@ People often ask as whether is VTS alternative to Cesium. Our answer is that VTS
 
 | Feature | VTS&nbsp;Browser&nbsp;JS | Cesium |
 | --- | --- | --- |
-| support for the different coordinate systems[^1] (including glues) | yes | no |
-| when the map have multiple surfaces, each surface can have its own set of bound layers[^2] (including transparent ones) | yes | no |
+| support for the different coordinate systems* (including glues) | yes | no |
+| when the map have multiple surfaces, each surface can have its own set of bound layers** (including transparent ones) | yes | no |
 | bound layers with optimized masks | yes | no |
 | out of the box support for the OSM data with custom stilling | yes | limited |
 | large ecosystem for the back-end and front-end | yes | limited |
@@ -38,8 +44,8 @@ People often ask as whether is VTS alternative to Cesium. Our answer is that VTS
 | compact library size (gzipped and minified) | 163&nbsp;KB | 577&nbsp;KB&nbsp;+&nbsp;Workers |
 
 
-[^1]: surface is for a example terrain or 3D city
-[^2]: bound layer is usually aerial imagery
+*\*) surface is for a example terrain or 3D city*
+*\*\*) bound layer is usually aerial imagery*
 
 ## Live Demos
 
