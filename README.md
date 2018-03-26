@@ -2,6 +2,8 @@
 
 **The VTS Browser JS** is a JavaScript WebGL rendering engine used and developed by [Melown Technologies SE](http://melown.com) as part of their VTS 3D map streaming and rendering stack.
 
+
+
 - [Features](#features)
 - [Live Demos](#live-demos)
 - [Examples](#examples)
@@ -14,16 +16,19 @@
 
 <img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme.jpg?raw=true">
 
+
 ## Features
+
+*TODO - features*
 
 ### Comparsion to Cesium
 
 People often ask as whether is VTS alternative to Cesium. Our answer is that VTS is excellent alternative to the Cesium. There is a list of the points which you may find interesting:
 
-| Feature | VTS Browser JS | Cesium |
+| Feature | VTS&nbsp;Browser&nbsp;JS | Cesium |
 | --- | --- | --- |
-| support for the different coordinate systems* (including glues) | yes | no |
-| when the map have multiple surfaces, each surface can have its own set of bound layers** (including transparent ones) | yes | no |
+| support for the different coordinate systems[^1] (including glues) | yes | no |
+| when the map have multiple surfaces, each surface can have its own set of bound layers[^2] (including transparent ones) | yes | no |
 | bound layers with optimized masks | yes | no |
 | out of the box support for the OSM data with custom stilling | yes | limited |
 | large ecosystem for the back-end and front-end | yes | limited |
@@ -33,8 +38,8 @@ People often ask as whether is VTS alternative to Cesium. Our answer is that VTS
 | compact library size (gzipped and minified) | 163 KB | 577 KB + Workers |
 
 
-\*) surface is for a example terrain or 3D city  
-\**) bound layer is usually aerial imagery
+*\[^1]: surface is for a example terrain or 3D city*
+*\[^2]: bound layer is usually aerial imagery*
 
 ## Live Demos
 
