@@ -7,8 +7,12 @@ The VTS Browser JS is a JavaScript WebGL rendering engine used and developed by 
 
 ## Live Demos
 
- * [Intergeo presentation](https://www.melown.com/intergeo2017/)
+3D map can rapidly enhance your web project's user experience. You can find your inspiration in following excellent use cases.
+
  * [Mercury](https://www.melown.com/mercury/)
+ * [Intergeo presentation](https://www.melown.com/intergeo2017/)
+ * [Mapy.cz](https://mapy.cz/zakladni?x=14.4125847&y=50.0517997&z=17&m3d=1&height=687&yaw=41.252&pitch=-26)(cs)
+ * [GPX Demo](https://gpx-demo.mlwn.se)
 
 ## Examples
 
