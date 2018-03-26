@@ -2,7 +2,7 @@
 
 **The VTS Browser JS** is a JavaScript WebGL rendering engine used and developed by [Melown Technologies SE](http://melown.com) as part of their VTS 3D map streaming and rendering stack.
 
-
+<img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme.jpg?raw=true">
 
 - [Features](#features)
 - [Live Demos](#live-demos)
@@ -19,9 +19,6 @@
 - [Map Configuration](#map-configuration)
 - [Licence](#licence)
 - [How to Contribute](#how-to-contribute)
-
-<img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme.jpg?raw=true">
-
 
 ## Features
 
@@ -53,7 +50,7 @@ People often ask as whether is VTS alternative to Cesium. Our answer is that VTS
 
  * [Mercury](https://www.melown.com/mercury/)
  * [Intergeo presentation](https://www.melown.com/intergeo2017/)
- * [Mapy.cz](https://mapy.cz/zakladni?x=14.4125847&y=50.0517997&z=17&m3d=1&height=687&yaw=41.252&pitch=-26)(cs)
+ * [Mapy.cz](https://mapy.cz/zakladni?x=14.4125847&y=50.0517997&z=17&m3d=1&height=687&yaw=41.252&pitch=-26) (cs)
  * [GPX Demo](https://gpx-demo.mlwn.se)
 
 ## Examples
