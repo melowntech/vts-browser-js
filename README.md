@@ -177,9 +177,19 @@ to specific make targets. The Makefile is just wrapper around `npm run` commands
 
 ## Map Configuration
 
+Map configuration contains a all information The VTS Browser JS library needs to display given map/model. Library is usually initialize with URL to mapConfig.json file which is JSON representation of Map configuration data.
+
+The question is, where you can get your own Map Configuration. Basically you have two options:
+
 ### Melown Cloud
 
+[Melown Cloud](https://www.melown.com/cloud) is a great source of custom map configurations for client application development.
+
+It is a cloud 3D map development platform operated by Melown Tech atop of VTS 3D Stack. It is a point-and-click interface to a subset of VTS functionality ideal for smaller projects and less technically savvy users.
+
 ### VTS 3D Geospatial Software stack
+
+If Melown Cloud doesn't meet your needs you can install, configure and deploy your own backend instnace of [The VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html) components. You will gain full control over your data sources, Map Configurations and integration with other geospatial services.
 
 ## Documentation
 
