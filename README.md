@@ -34,7 +34,8 @@ People often ask as whether is VTS alternative to Cesium. Our answer is that VTS
 
 | Feature | VTS&nbsp;Browser&nbsp;JS | Cesium |
 | --- | --- | --- |
-| support for the different coordinate systems* (including glues) | yes | no |
+| support for the different coordinate systems | yes | limited |
+| dynamic mixing of the tiled surfaces* (including glues) | yes | no |
 | when the map have multiple surfaces, each surface can have its own set of bound layers** (including transparent ones) | yes | no |
 | bound layers with optimized masks | yes | no |
 | out of the box support for the OSM data with custom stilling | yes | limited |
