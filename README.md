@@ -25,8 +25,34 @@ VTS Browser JS is (independently usable) part of [VTS 3D Geospatial Software Sta
 <img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme.jpg?raw=true">
 
 ## Features
+* fully open source, BSD-2
+* part of the bigger VTS package
+* industry proven technology
+* large set of ready to use data
+* runs on WebGL capable browsers
+* realistic rendering model
+* search of the map features
+* tiled, hierarchical data model
+* data are streamed only for visible parts of the map
+* optimized for web presentation
+* support for different coordinate systems
+* support for multiple surfaces*
+* each surface can have multiple bound layers**
+* support for vector layers (geodata)
+* geodata can be styled and interacted
+* surfaces, bound layers, geodata can be dynamically switched and adjusted
+* support for different writing systems (e.g. Arabic, Indic, Chinese, Japanese, ..)
+* extensive API
+* most of the UI ca be modified by CSS
+* UI can easily extended by API
+* support for rendering custom meshes, lines, polygons, icons, ..
+* OBJ models can be easily rendered
+* Support for rendering and styling GeoJSON files
+* expanding list of the examples
+* small library size 163KB (minified and gzipped)
 
-- [x] *TODO - list of features*
+*\*) surface is for a example terrain or 3D city*
+*\*\*) bound layer is usually aerial imagery*
 
 ### Comparsion to Cesium
 
