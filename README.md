@@ -22,7 +22,7 @@ VTS Browser JS is (independently usable) part of [VTS 3D Geospatial Software Sta
 - [Licence](#licence)
 - [How to Contribute](#how-to-contribute)
 
-<img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme.jpg?raw=true">
+<img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme-2.jpg?raw=true">
 
 ## Features
 * fully open source, BSD-2
