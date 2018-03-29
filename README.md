@@ -1,6 +1,6 @@
 # VTS Browser JS
 
-**The VTS Browser JS** is a JavaScript WebGL map rendering engine with small footprint (about 163 kB of gziped JS code), it provides almost all features for 3D mapping you will ever want.
+**The VTS Browser JS** is a JavaScript WebGL map rendering engine with small footprint (about 163 kB of gziped JS code). It provides almost all features for 3D mapping you will ever want.
 
 With VTS Browser JS you are able to combine and render various geospatial data in one map. Style and display height-coded geodata. Render your textured meshes or OBJ models. Or occupy it's font rendering engine with exotic writing systems.
 
