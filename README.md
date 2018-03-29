@@ -25,34 +25,25 @@ VTS Browser JS is (independently usable) part of [VTS 3D Geospatial Software Sta
 <img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme-2.jpg?raw=true">
 
 ## Features
-* fully open source, BSD-2
-* part of the bigger VTS package
-* industry proven technology
-* large set of ready to use data
-* runs on WebGL capable browsers
-* realistic rendering model
-* search of the map features
-* tiled, hierarchical data model
-* data are streamed only for visible parts of the map
-* optimized for web presentation
-* support for different coordinate systems
-* support for multiple surfaces*
-* each surface can have multiple bound layers**
-* support for vector layers (geodata)
-* geodata can be styled and interacted
-* surfaces, bound layers, geodata can be dynamically switched and adjusted
-* support for different writing systems (e.g. Arabic, Indic, Chinese, Japanese, ..)
-* extensive API
-* most of the UI ca be modified by CSS
-* UI can easily extended by API
-* support for rendering custom meshes, lines, polygons, icons, ..
-* OBJ models can be easily rendered
-* Support for rendering and styling GeoJSON files
-* expanding list of the examples
-* small library size 163KB (minified and gzipped)
-
-*\*) surface is for a example terrain or 3D city*
-*\*\*) bound layer is usually aerial imagery*
+* [x] Part of large VTS 3D Geospatial Software Stack
+* [x] Supports WebGL-capable browsers
+* [x] Realistic rendering model
+* [x] Map features search
+* [x] Tiled, hierarchical data model
+* [x] Web presentation optimalized
+* [x] Different coordinate systems
+* [x] Multiple surfaces
+* [x] Multiple bound layers on each surface
+* [x] Vector layers (geodata)
+* [x] Geodata styling and interaction
+* [x] Dynamic surfaces and layers switching
+* [x] Various writing systems (e.g. Arabic, Indic, Chinese, Japanese, ...)
+* [x] Extensive API (including UI extensions)
+* [x] Custom meshes, lines, polygons, icons, OBJ models, ...
+* [x] Rendering and styling GeoJSON files
+* [x] Small library size 163KB (minified and gzipped)
+* [x] Large set of ready to use data
+* [x] BSD-2 license
 
 ### Comparsion to Cesium
 
