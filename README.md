@@ -1,8 +1,8 @@
 # VTS Browser JS
 
-**The VTS Browser JS** is a JavaScript WebGL rendering engine used and developed by [Melown Technologies SE](http://melown.com) as part of VTS 3D map streaming and rendering stack. With incredibly small footprint (about 163 kB of gziped JS code), it provides almost all features for 3D mapping you will ever want.
+**The VTS Browser JS** is a JavaScript WebGL map rendering engine with small footprint (about 163 kB of gziped JS code), it provides almost all features for 3D mapping you will ever want.
 
-With VTS Browser JS you are able to combine and render various geospatial data in one map. *TODO more about main advantages & features* 
+With VTS Browser JS you are able to combine and render various geospatial data in one map. Style and display heightcoded geodata. Render your textured meshes or OBJ models. Or occupy it's font rendering engine with exotic writing systems.
 
 VTS Browser JS is (independently usable) part of [VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html): a state-of-the-art, full-stack open source platform for 3D geospatial application development. 
 
@@ -45,25 +45,27 @@ VTS Browser JS is (independently usable) part of [VTS 3D Geospatial Software Sta
 * [x] Large set of ready to use data
 * [x] BSD-2 license
 
-### Comparsion to Cesium
+### Comparsion to CesiumJS library
 
-People often ask as whether is VTS alternative to Cesium. Our answer is that VTS is an alternative to the Cesium. There is a list of points which you may find interesting:
+The [CesiumJS](https://cesiumjs.org) is an excelent JavaScript WebGL map rendering engine and we must acknowledge the hard work of Cesium team standing behind this library.
+
+If you asks us to compare The VTS Browser JS with The CesiumJS. There is a list of points which you may find interesting:
 
 | Feature | VTS&nbsp;Browser&nbsp;JS | Cesium |
 | --- | --- | --- |
-| support for different coordinate systems | yes | limited |
-| dynamic mixing of tiled surfaces (including glues) | yes | no |
-| when a map have multiple surfaces, each surface can have its own set of bound layers (including transparent ones) | yes | no |
-| bound layers with optimized masks | yes | no |
-| out-of-the-box support for OSM data with custom stilling | yes | limited |
-| fully open sourced back-end tools | yes | no |
-| part of the bigest photogrammetric package for the large scale mapping | yes | no |
-| advanced text rendering with almost complete coverage of writing systems | yes | limited |
-| compact-size library (gzipped and minified) | 163&nbsp;KB | 577&nbsp;KB&nbsp;+&nbsp;Workers |
+| Different [coordinate systems](http://vtsdocs.melown.com/en/latest/reference/concepts.html#reference-frame) support | yes | limited |
+| Dynamic tiled [surfaces](http://vtsdocs.melown.com/en/latest/reference/concepts.html#surface) mixing (including [glues](http://vtsdocs.melown.com/en/latest/reference/concepts.html#glue)) | yes | no |
+| Multiple surfaces and multiple bound layers support (Including transparent layers) | yes | no |
+| Bound layers with optimized [masks](http://vtsdocs.melown.com/en/latest/reference/concepts.html#mask) | yes | no |
+| Out-of-the-box OSM data support with [custom styling](https://github.com/Melown/vts-browser-js/wiki/VTS-Geodata-Format) | yes | limited |
+| Fully open sourced back-end tools | yes | no |
+| Part of the [VTS Software Stack](http://vtsdocs.melown.com/en/latest/index.html) for the large scale mapping | yes | no |
+| Text rendering engine with almost complete coverage of writing systems | yes | limited |
+| Compact-size library (gzipped and minified) | 163&nbsp;KB | 577&nbsp;KB&nbsp;+&nbsp;Workers |
 
 ## Live Demos
 
-3D map can rapidly enhance your web project's user experience. You can find your inspiration in following excellent use cases.
+3D map can rapidly enhance your web project's user experience. You can find your inspiration in following use cases.
 
  * [Mercury](https://www.melown.com/mercury/)
  * [Intergeo presentation](https://www.melown.com/intergeo2017/)
@@ -200,9 +202,9 @@ The question is, where you can get your own Map Configuration. Basically you hav
 
 ### Melown Cloud
 
-[Melown Cloud](https://www.melown.com/cloud) is a great source of custom map configurations for client application development.
+[Melown Cloud](https://www.melown.com/cloud) is a source of custom map configurations for client application development.
 
-It is a cloud 3D map development platform operated by Melown Tech atop of VTS 3D Stack. It is a point-and-click interface to a subset of VTS functionality ideal for smaller projects and less technically savvy users.
+It is a cloud 3D map development platform operated by Melown Technologies atop of VTS 3D Stack. It is a point-and-click interface to a subset of VTS functionality ideal for smaller projects and less technically savvy users.
 
 ### VTS 3D Geospatial Software stack
 
@@ -213,9 +215,6 @@ If Melown Cloud doesn't meet your needs you can install, configure and deploy yo
 VTS Browser JavaScript API documentation is available in our wiki:
 
 * [VTS Browser API](https://github.com/Melown/vts-browser-js/wiki)
-
-
-
 
 ## License
 
