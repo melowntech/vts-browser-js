@@ -722,8 +722,8 @@ RendererDraw.prototype.clearJobBuffer = function() {
     }
 };
 
-var filterConstPart = 2;
-var filterDynamicPart = 2;
+var filterConstPart = 1;
+var filterDynamicPart = 6;
 
 RendererDraw.prototype.paintGL = function() {
     var renderer = this.renderer;
@@ -1198,6 +1198,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
         if (s[0] != 0 && s[2] != 0) {
+            if (!pp) {
+                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+            }
+
             this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
         }
 
