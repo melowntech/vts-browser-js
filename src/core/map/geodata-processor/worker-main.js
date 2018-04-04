@@ -51,6 +51,103 @@ function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex
 
 }
 
+function processFeatures(type, features, lod, featureIndex, featureType, group) {
+
+    //loop layers
+    for (var key in globals.stylesheetLayers) {
+        var layer = globals.stylesheetLayers[key];
+        var filter =  layer['filter'];
+        var reduce =  layer['reduce'], i, li;
+
+        for (i = 0, li = features.length; i < li; i++) {
+            var feature = features[i];
+            feature.properties = feature['properties'] || {};
+
+            if (feature['id']) {
+                feature.properties['#id'] = feature['id']; 
+            }
+            
+            if (!filter || getFilterResult(filter, feature, featureType, group, layer, 'filter', lod, 0)) {
+                if (reduce) {
+                    featureCache[featureCacheIndex] = feature;
+                    featureCacheIndex++;
+                } else {
+                    processLayerFeature(type, feature, lod, layer, featureIndex);
+                }
+            }
+        }
+
+        if (reduce) {
+
+            var count = reduce[1];
+            var property = reduce[2];
+            //TODO: remove $ from property name
+
+            if (count > featureCacheIndex) {
+                count = featureCacheIndex;
+            }
+
+            switch (reduce[0]) {
+                case 'top':
+                case 'bottom':
+
+                    var top = (reduce[0] == 'top');
+                    var currentIndex = 0;
+                    var currentValue = top ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+                    var currentValue2 = top ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+
+                    do {
+                        finalFeatureCacheIndex2 = finalFeatureCacheIndex;
+
+                        for (i = 0, li = featureCacheIndex; i < li; i++) {
+                            feature = featureCache[i];
+
+                            var value = parseFloat(feature.properties[property]);
+
+                            if (!isNaN(value) && ((top && value >= currentValue && value < currentValue2) || (value <= currentValue && value > currentValue2)) ) {
+                                if (currentValue != value) {
+                                    finalFeatureCacheIndex = finalFeatureCacheIndex2;
+                                }
+
+                                finalFeatureCache[finalFeatureCacheIndex] = feature;
+                                finalFeatureCacheIndex++;
+                                currentValue = value;
+                            }
+                        }
+
+                        currentValue2 = currentValue;
+                        currentIndex++;
+
+                    } while(currentIndex != count);
+
+                    break;
+
+                case 'odd':
+                case 'even':
+
+                    for (i = (reduce[0] == 'odd') ? 1 : 0, li = featureCacheIndex; i < li; i+=2) {
+                        feature = featureCache[i];
+                    }
+
+                case 'every':
+
+                    for (i = 0, li = featureCacheIndex; i < li; i += count) {
+                        feature = featureCache[i];
+                    }
+
+                    break;
+            }
+
+            //process reduced features
+            for (i = 0, li = finalFeatureCacheIndex; i < li; i++) {
+                processLayerFeature(type, finalFeatureCache[i], lod, layer, featureIndex);
+            }
+
+        }
+
+    }
+}
+
 function processFeature(type, feature, lod, featureIndex, featureType, group) {
     
     //loop layers
@@ -215,9 +312,7 @@ function processGroup(group, lod) {
 
     postMessage({'command':'beginGroup', 'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin});
 
-    var points = group['points'] || [];
-    globals.featureType = 'point';
-
+    /*
     if (groupId == 'mountain_peak' && lod < 17) {
         var hit = false;
 
@@ -269,7 +364,14 @@ function processGroup(group, lod) {
             processFeature('point-array', points[i], lod, i, 'point', groupId);
         }
 
-    }
+    } */
+
+
+    //process points
+    var points = group['points'] || [];
+    globals.featureType = 'point';
+    processFeatures('point-array', points, lod, i, 'point', groupId);
+
 
     var lines = group['lines'] || [];
     globals.featureType = 'line';

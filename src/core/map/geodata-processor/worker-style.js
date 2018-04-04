@@ -869,6 +869,8 @@ var validateLayerPropertyValue = function(layerId, key, value) {
 var getDefaultLayerPropertyValue = function(key) {
     switch(key) {
     case 'filter': return null;
+    case 'reduce': return null;
+    case 'dynamic-reduce': return null;
 
     case 'inherit': return '';
 
