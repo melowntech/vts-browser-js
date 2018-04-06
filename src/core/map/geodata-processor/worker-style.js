@@ -632,6 +632,23 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             return value;
         }
 
+        //check reduce
+        if (key == 'reduce') {
+            if (Array.isArray(value) && value.length > 0 && (typeof value[0] === 'string')) {
+
+                if (value[0] != 'odd' && value != 'even') {
+                    if ((typeof value[1] !== 'number') || ((value[0] != 'top' || value != 'bottom') && (typeof value[2] !== 'string'))) {
+                        logError('wrong-property-value', layerId, key, value);
+                        return getDefaultLayerPropertyValue(key);
+                    }
+                }
+
+            } else {
+                logError('wrong-property-value', layerId, key, value);
+                return getDefaultLayerPropertyValue(key);
+            }
+        }
+
         //check multipasss
         if (key == 'next-pass') {
             if (Array.isArray(value) && value.length > 0) {
@@ -789,7 +806,8 @@ var validateLayerPropertyValue = function(layerId, key, value) {
 
     switch(key) {
 
-    case 'inherit' :    return validateValue(layerId, key, value, 'string');
+    case 'inherit' :   return validateValue(layerId, key, value, 'string');
+    case 'reduce':     return validateValue(layerId, key, value, 'object');
 
     case 'line':              return validateValue(layerId, key, value, 'boolean');
     case 'line-flat':         return validateValue(layerId, key, value, 'boolean');

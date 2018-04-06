@@ -20,6 +20,7 @@ var processLineStringGeometry = processLineStringGeometry_;
 var processPointArrayGeometry = processPointArrayGeometry_;
 
 var exportedGeometries = [];
+var featureCache = new Array(1024), featureCacheIndex = 0, finalFeatureCache = new Array(1024), finalFeatureCacheIndex = 0, finalFeatureCacheIndex2 = 0;
 
 
 function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex, eventInfo) {
@@ -51,13 +52,15 @@ function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex
 
 }
 
-function processFeatures(type, features, lod, featureIndex, featureType, group) {
+function processFeatures(type, features, lod, featureType, group) {
 
     //loop layers
     for (var key in globals.stylesheetLayers) {
         var layer = globals.stylesheetLayers[key];
         var filter =  layer['filter'];
         var reduce =  layer['reduce'], i, li;
+
+        featureCacheIndex = 0, finalFeatureCacheIndex = 0, finalFeatureCacheIndex2 = 0;
 
         for (i = 0, li = features.length; i < li; i++) {
             var feature = features[i];
@@ -72,7 +75,7 @@ function processFeatures(type, features, lod, featureIndex, featureType, group) 
                     featureCache[featureCacheIndex] = feature;
                     featureCacheIndex++;
                 } else {
-                    processLayerFeature(type, feature, lod, layer, featureIndex);
+                    processLayerFeature(type, feature, lod, layer, i);
                 }
             }
         }
@@ -81,44 +84,47 @@ function processFeatures(type, features, lod, featureIndex, featureType, group) 
 
             var count = reduce[1];
             var property = reduce[2];
-            //TODO: remove $ from property name
-
-            if (count > featureCacheIndex) {
-                count = featureCacheIndex;
-            }
 
             switch (reduce[0]) {
                 case 'top':
                 case 'bottom':
 
-                    var top = (reduce[0] == 'top');
-                    var currentIndex = 0;
-                    var currentValue = top ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
-                    var currentValue2 = top ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+                    if (typeof property === 'string' && property.charAt(0) == '$') {
+                        property = property.substr(1);
 
-                    do {
-                        finalFeatureCacheIndex2 = finalFeatureCacheIndex;
-
-                        for (i = 0, li = featureCacheIndex; i < li; i++) {
-                            feature = featureCache[i];
-
-                            var value = parseFloat(feature.properties[property]);
-
-                            if (!isNaN(value) && ((top && value >= currentValue && value < currentValue2) || (value <= currentValue && value > currentValue2)) ) {
-                                if (currentValue != value) {
-                                    finalFeatureCacheIndex = finalFeatureCacheIndex2;
-                                }
-
-                                finalFeatureCache[finalFeatureCacheIndex] = feature;
-                                finalFeatureCacheIndex++;
-                                currentValue = value;
-                            }
+                        if (count > featureCacheIndex) {
+                            count = featureCacheIndex;
                         }
 
-                        currentValue2 = currentValue;
-                        currentIndex++;
+                        var top = (reduce[0] == 'top');
+                        var currentIndex = 0;
+                        var currentValue2 = top ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 
-                    } while(currentIndex != count);
+                        do {
+                            var currentValue = top ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+                            finalFeatureCacheIndex2 = finalFeatureCacheIndex;
+
+                            for (i = 0, li = featureCacheIndex; i < li; i++) {
+                                feature = featureCache[i];
+
+                                var value = parseFloat(feature.properties[property]);
+
+                                if (!isNaN(value) && ((top && value >= currentValue && value < currentValue2) || (value <= currentValue && value > currentValue2)) ) {
+                                    if (currentValue != value) {
+                                        finalFeatureCacheIndex = finalFeatureCacheIndex2;
+                                    }
+
+                                    finalFeatureCache[finalFeatureCacheIndex] = feature;
+                                    finalFeatureCacheIndex++;
+                                    currentValue = value;
+                                }
+                            }
+
+                            currentValue2 = currentValue;
+                            currentIndex++;
+
+                        } while(currentIndex < count);
+                    }
 
                     break;
 
@@ -127,12 +133,20 @@ function processFeatures(type, features, lod, featureIndex, featureType, group) 
 
                     for (i = (reduce[0] == 'odd') ? 1 : 0, li = featureCacheIndex; i < li; i+=2) {
                         feature = featureCache[i];
+                        finalFeatureCache[finalFeatureCacheIndex] = feature;
+                        finalFeatureCacheIndex++;
                     }
 
                 case 'every':
 
+                    if (count > featureCacheIndex) {
+                        count = featureCacheIndex;
+                    }
+
                     for (i = 0, li = featureCacheIndex; i < li; i += count) {
                         feature = featureCache[i];
+                        finalFeatureCache[finalFeatureCacheIndex] = feature;
+                        finalFeatureCacheIndex++;
                     }
 
                     break;
@@ -140,7 +154,7 @@ function processFeatures(type, features, lod, featureIndex, featureType, group) 
 
             //process reduced features
             for (i = 0, li = finalFeatureCacheIndex; i < li; i++) {
-                processLayerFeature(type, finalFeatureCache[i], lod, layer, featureIndex);
+                processLayerFeature(type, finalFeatureCache[i], lod, layer, i);
             }
 
         }
@@ -148,24 +162,6 @@ function processFeatures(type, features, lod, featureIndex, featureType, group) 
     }
 }
 
-function processFeature(type, feature, lod, featureIndex, featureType, group) {
-    
-    //loop layers
-    for (var key in globals.stylesheetLayers) {
-        var layer = globals.stylesheetLayers[key];
-        var filter =  layer['filter']; //getLayerPropertyValue(layer, 'filter', feature, lod);
-
-        feature.properties = feature['properties'] || {};
-
-        if (feature['id']) {
-            feature.properties['#id'] = feature['id']; 
-        }
-        
-        if (!filter || getFilterResult(filter, feature, featureType, group, layer, 'filter', lod, 0)) {
-            processLayerFeature(type, feature, lod, layer, featureIndex);
-        }
-    }
-}
 
 function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, eventInfo) {
     var multiPass = getLayerPropertyValue(layer, 'next-pass', feature, lod);
@@ -312,82 +308,20 @@ function processGroup(group, lod) {
 
     postMessage({'command':'beginGroup', 'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin});
 
-    /*
-    if (groupId == 'mountain_peak' && lod < 17) {
-        var hit = false;
-
-        //debugger
-
-        var point2 = [];
-
-        for (i = 0, li = points.length; i < li; i++) {
-            if (points[i]['properties']['prominence']) {
-                point2.push(points[i]);
-            }
-        }
-
-        points = point2;
-
-        do {
-
-            hit = false;
-
-            for (i = 0, li = points.length - 1; i < li; i++) {
-                var p = points[i]['properties']['prominence'];
-                var p2 = points[i+1]['properties']['prominence'];
-
-                if (p && p2) {
-
-                    if (parseFloat(p) < parseFloat(p2)) {
-                        var t = points[i];
-                        points[i] = points[i + 1];
-                        points[i + 1] = t;
-                        hit = true;
-                    }
-
-                }
-
-            }
-
-        } while(hit);
-
-        //process points
-        for (i = 0, li = Math.min(10,points.length); i < li; i++) {
-            processFeature('point-array', points[i], lod, i, 'point', groupId);
-        }
-
-
-    } else {
-
-        //process points
-        for (i = 0, li = points.length; i < li; i++) {
-            processFeature('point-array', points[i], lod, i, 'point', groupId);
-        }
-
-    } */
-
-
     //process points
     var points = group['points'] || [];
     globals.featureType = 'point';
-    processFeatures('point-array', points, lod, i, 'point', groupId);
-
-
-    var lines = group['lines'] || [];
-    globals.featureType = 'line';
+    processFeatures('point-array', points, lod, 'point', groupId);
 
     //process lines
-    for (i = 0, li = lines.length; i < li; i++) {
-        processFeature('line-string', lines[i], lod, i, 'line', groupId);
-    }
-
-    var polygons = group['polygons'] || [];
-    globals.featureType = 'polygon';
+    var lines = group['lines'] || [];
+    globals.featureType = 'line';
+    processFeatures('line-string', lines, lod, 'line', groupId);
 
     //process polygons
-    for (i = 0, li = polygons.length; i < li; i++) {
-        processFeature('polygon', polygons[i], lod, i, 'polygon', groupId);
-    }
+    var polygons = group['polygons'] || [];
+    globals.featureType = 'polygon';
+    processFeatures('polygon', polygons, lod, 'polygon', groupId);
 
     if (globals.groupOptimize) {
         optimizeGroupMessages();

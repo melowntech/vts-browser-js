@@ -1167,7 +1167,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             var indexLimit = (Math.round(filterConstPart + (job.tiltAngle*filterDynamicPart))-1);
 
             if (job.index > indexLimit) {
-                return;
+                //return;
             } 
         }
 

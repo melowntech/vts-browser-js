@@ -1,11 +1,5 @@
 
 
-import {utils as utils_} from '../utils/utils';
-
-//get rid of compiler mess
-var utils = utils_;
-
-
 var InspectorInput = function(inspector) {
     this.inspector = inspector;
     this.core = inspector.core;
@@ -107,18 +101,6 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 case 100:
                     
                     inspector.enableInspector();
-                    //load image    
-                        
-                    if (!inspector.circleImage) {
-                        inspector.circleImage = utils.loadImage(
-                                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAAAAAAAD5Q7t/AAAACW9GRnMAAAAgAAAA4ACD+EAUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA/UlEQVRYw+2VPwqDMBTG3dz1Am56EnH2XLroETxGuwc3Z7cOdhY8QJpfSUBspUvStJAPPggvD973/uQligICAgL+DKViqygUV02hbaXLwJlio7gpyhNu2idzEXwwgfI8H+u6vnZdN/V9P3EuimLcCRlsiyArGcfxjWDLsmzyAGzc4aNFNDZ7/iw7AeQH4LNrh5WZYLgkJTaZCyHuVVVdkiSZ0zSdOWMzlaBFWkRrQ4A4Zk/A4wBie1MFYUMAz0wybCYAmR8FUAlzj6+2r18TgM2VAO8tOB1Cyk7mrofQ+zP0voheVjHtIBjDxjrmvCu7k1Xs/TP6ie84ICDAGR5uCYdPo0MWiAAAAABJRU5ErkJggg==',
-                                //"http://maps.google.com/mapfiles/kml/shapes/placemarkcircle.png",
-                                (function(){
-                                    this.inspector.circleTexture = this.core.getRendererInterface().createTexture({ 'source': inspector.circleImage });
-                                }).bind(this)
-                            );
-                    }
-                                            
                     this.diagnosticMode = true; hit = true; break;  //key D pressed
                 }
             }
@@ -225,49 +207,6 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 77:
                 case 109:
-                        //map.drawMaxLod = !map.drawMaxLod;
-                        
-                        //map.config.mapGeocentCulling2 = !map.config.mapGeocentCulling2;
-                        //console.log("mapGeocentCulling2: " + map.config.mapGeocentCulling2);
-                        
-                       /*
-                        var from = "+proj=merc +a=6378137 +b=6378137 +latts=0.0 +lon0=0.0 +x0=0.0 +y0=0 +k=1.0 +units=m +nadgrids=@null +wktext +nodefs";
-                        var to = "+proj=geocent +datum=WGS84 +units=m +nodefs";
-                        var coords = [-5009377.08569725, 15028131.257091751, 0];
-    
-                        var timeStart = performance.now();
-                        
-                        for (var i = 0; i < 100000; i++) {
-                            var r = map.proj4(from, to, coords);
-                        }
-                        
-                        var timeEnd = performance.now();
-                        
-                        var tt = timeEnd - timeStart;
-                        
-                        console.log("proj4 timer: " + tt + "   " + JSON.stringify(r));
-                        */
-                        /*
-                        var from2 = map.proj4("+proj=merc +a=6378137 +b=6378137 +latts=0.0 +lon0=0.0 +x0=0.0 +y0=0 +k=1.0 +units=m +nadgrids=@null +wktext +nodefs", null, null, true);
-                        var to2 = map.proj4("+proj=geocent +datum=WGS84 +units=m +nodefs", null, null, true);
-                        var coords = [-5009377.08569725, 15028131.257091751, 0];
-
-                        var timeStart = performance.now();
-                        
-                        for (var i = 0; i < 100000; i++) {
-                            var r = map.proj4(from2, to2, coords);
-                        }
-                        
-                        var timeEnd = performance.now();
-                        
-                        var tt = timeEnd - timeStart;
-                        
-                        console.log("proj4 timer2: " + tt + "   " + JSON.stringify(r));
-                        */
-
-                        //map.zFactor2 += 0.1; //0.000001;
-                        //console.log("zfactor  " + map.zFactor2 + "   zz: " + map.renderer.getZoffsetFactor([map.zFactor2, 0, 0]));
-                        
                     map.loaderSuspended = !map.loaderSuspended;            
                     // eslint-disable-next-line
                     console.log('loader state ' + map.loaderSuspended);
@@ -434,6 +373,52 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
     //console.log("key" + keyCode);
 };
 
+
+InspectorInput.prototype.setParameter = function(key, value) {
+    var map = this.core.getMap();
+    var inspector = this.inspector;
+
+    if (!map) {
+        return;
+    }
+
+    var debug = map.draw.debug;
+
+    switch(key) {
+        case 'debugBBox':
+            debug.drawBBoxes = true;
+            var has = (function(a){ return (value.indexOf(a)!=-1); });
+            if (has('L')) debug.drawLods = true;
+            if (has('P')) debug.drawPositions = true;
+            if (has('T')) debug.drawTextureSize = true;
+            if (has('F')) debug.drawFaceCount = true;
+            if (has('G')) debug.drawGeodataOnly = true;
+            if (has('D')) debug.drawDistance = true;
+            if (has('N')) debug.drawNodeInfo = true;
+            if (has('M')) debug.drawMeshBBox = true;
+            if (has('I')) debug.drawIndices = true;
+            if (has('B')) debug.drawBoundLayers = true;
+            if (has('S')) debug.drawSurfaces = true;
+            if (has('C')) debug.drawCredits = true;
+            if (has('O')) debug.drawOrder = true;
+            if (has('E')) debug.debugTextSize = 3.0;
+            break;
+        case 'debugLBox': debug.drawLabelBoxes = true; break;
+        case 'debugNoEarth': debug.drawEarth = false; break;
+        case 'debugShader': debug.drawWireframe = parseInt(value); break;
+        case 'debugHeightmap': debug.heightmapOnly = true; break;
+        case 'debugRadar':
+            inspector.enableInspector();
+            inspector.drawRadar = true;
+            inspector.radarLod = parseInt(value);
+            if (isNaN(inspector.radarLod)) {
+                inspector.radarLod = null;
+            } 
+            break;
+    }
+
+    map.markDirty();
+};
 
 export default InspectorInput;
 
