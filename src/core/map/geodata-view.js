@@ -201,7 +201,7 @@ MapGeodataView.prototype.getWorldMatrix = function(bbox, geoPos, matrix) {
 MapGeodataView.prototype.draw = function(cameraPos) {
     if (this.ready) {
         var renderer = this.renderer;
-        var tiltAngle = Math.abs(this.tile.tiltAngle);
+        var tiltAngle = this.tile ? Math.abs(this.tile.tiltAngle) : renderer.cameraTiltFator;
 
         for (var i = 0, li = this.gpuGroups.length; i < li; i++) {
             var group = this.gpuGroups[i]; 

@@ -132,7 +132,7 @@ Browser.prototype.onMapLoaded = function(event) {
     this.setConfigParams(options);
 
     if (this.config.geojson) {
-        utils.loadJSON(this.config.geojson, onGeoJsonLoaded);
+        utils.loadJSON(this.config.geojson, this.onGeoJsonLoaded.bind(this));
     }
 
     if (this.autopilot) {
@@ -238,12 +238,12 @@ Browser.prototype.onGeoJsonLoaded = function(data) {
     var geodata = map.createGeodata();
     geodata.importGeoJson(data);
     geodata.processHeights('node-by-precision', 62, (function(){
-    var freeLayer = geodata.makeFreeLayer(this.config.geojsonStyle);
+        var freeLayer = geodata.makeFreeLayer(this.config.geojsonStyle);
         map.addFreeLayer('geojson', freeLayer);
         var view = map.getView();
         view.freeLayers.geojson = {};
         map.setView(view);
-    }));
+    }).bind(this));
 };
 
 
@@ -382,8 +382,8 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'sensitivity':            this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
     case 'inertia':                this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
     case 'tiltConstrainThreshold': this.config.tiltConstrainThreshold = utils.validateNumberArray(value, 2, [0.5,1], [-Number.MAXINTEGER, -Number.MAXINTEGER], [Number.MAXINTEGER, Number.MAXINTEGER]); break;
-    case 'geojson':                this.config.geojson = value;
-    case 'geojsonStyle':           this.config.geojsonStyle = value;
+    case 'geojson':                this.config.geojson = value; break;
+    case 'geojsonStyle':           this.config.geojsonStyle =  JSON.parse(value); break;
     case 'rotate':             
         this.config.autoRotate = utils.validateNumber(value, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, 0);
         if (map && this.autopilot) {
