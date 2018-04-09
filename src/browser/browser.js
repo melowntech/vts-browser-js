@@ -132,7 +132,20 @@ Browser.prototype.onMapLoaded = function(event) {
     this.setConfigParams(options);
 
     if (this.config.geojson) {
-        utils.loadJSON(this.config.geojson, this.onGeoJsonLoaded.bind(this));
+        var data = this.config.geojson;
+
+        if (typeof data === 'string') {
+            data = data.trim();
+           
+            if (data.charAt(0) == '{') {
+                try {
+                    data = JSON.parse(view);
+                    this.onGeoJsonLoaded(data);
+                } catch(e){ }
+            } else {
+                utils.loadJSON(data, this.onGeoJsonLoaded.bind(this));
+            }
+        }
     }
 
     if (this.autopilot) {
