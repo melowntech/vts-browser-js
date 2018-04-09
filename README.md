@@ -1,14 +1,15 @@
 # VTS Browser JS
 
-**The VTS Browser JS** is a JavaScript WebGL map rendering engine with small footprint (about 163 kB of gziped JS code). It provides almost all features for 3D mapping you will ever want.
+**The VTS Browser JS** is a powerful JavaScript 3D map rendering engine with a very small footprint (about 163 kB of gziped JS code). It provides almost all features for web-based 3D mapping you will ever want.
 
-With VTS Browser JS you are able to combine and render various geospatial data in one map. Style and display height-coded geodata. Render your textured meshes or OBJ models. Or occupy it's font rendering engine with exotic writing systems.
+VTS Browser JS is independently usable part of [VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html): a state-of-the-art, full-stack open source platform for 3D geospatial application development. 
 
-VTS Browser JS is (independently usable) part of [VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html): a state-of-the-art, full-stack open source platform for 3D geospatial application development. 
+With VTS Browser JS you may combine and render diverse geospatial data in a single online map, style and display various types of geodata, render textured polygonal meshes or OBJ models, or even render topographic labels in almost any international writing system.
+
 
 - [Features](#features)
 - [Live Demos](#live-demos)
-- [Get started with VTS Browser JS](#examples)
+- [Getting Started with VTS Browser JS](#examples)
   - [First Steps](#first-steps)
   - [More examples](https://github.com/Melown/vts-browser-js/wiki/Examples)
 - [Get the library](#get-the-library)
@@ -25,49 +26,47 @@ VTS Browser JS is (independently usable) part of [VTS 3D Geospatial Software Sta
 <img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme-2-880.jpg?raw=true">
 
 ## Features
-* [x] Part of large VTS 3D Geospatial Software Stack
-* [x] Supports WebGL-capable browsers
-* [x] Realistic rendering model
-* [x] Map features search
-* [x] Tiled, hierarchical data model
-* [x] Web presentation optimalized
-* [x] Different coordinate systems
-* [x] Multiple surfaces
-* [x] Multiple bound layers on each surface
-* [x] Vector layers (geodata)
-* [x] Geodata styling and interaction
-* [x] Dynamic surfaces and layers switching
-* [x] Various writing systems (e.g. Arabic, Indic, Chinese, Japanese, ...)
-* [x] Extensive API (including UI extensions)
-* [x] Custom meshes, lines, polygons, icons, OBJ models, ...
-* [x] Rendering and styling GeoJSON files
-* [x] Small library size 163KB (minified and gzipped)
-* [x] Large set of ready to use data
-* [x] BSD-2 license
+* [x] part of a comprehensive open-source 3D geospatial software Stack
+* [x] supports all modern web browsers
+* [x] photorealistic rendering
+* [x] geocoding API support
+* [x] tiled, hierarchical data model
+* [x] optimized for web-based rendering
+* [x] supports any coordinate system
+* [x] multiple surfaces
+* [x] multiple bound layers on each surface
+* [x] vector layers (geodata)
+* [x] geodata styling and geodata interaction
+* [x] dynamic surfaces and layer switching
+* [x] international writing systems (e.g. Arabic, Devangaric, Chinese, Japanese, ...)
+* [x] extensive, yet simple API (including UI extensions)
+* [x] custom meshes, lines, polygons, icons, OBJ models, etc
+* [x] rendering and styling of GeoJSON files
+* [x] very small footprint (163KB minified and gzipped)
+* [x] large set of ready-to-use data
+* [x] open-source under BSD-2 license
 
-### Comparsion to CesiumJS library
+### Comparison to CesiumJS library
 
-The [CesiumJS](https://cesiumjs.org) is an excelent JavaScript WebGL map rendering engine and we must acknowledge the hard work of Cesium team standing behind this library.
+The open-source [CesiumJS](https://cesiumjs.org) is an excellent JavaScript 3D mapping library which is widely used and frequently compared to VTS Browser JS. The following table might help you to identify the application scenarios where VTS browserJS might be an alternative, or simply a straightforward software platform of choice for your project.  
 
-If you asks us to compare The VTS Browser JS with The CesiumJS. There is a list of points which you may find interesting:
-
-| Feature | VTS&nbsp;Browser&nbsp;JS | Cesium |
+| Feature | VTS&nbsp;Browser&nbsp;JS | CesiumJS |
 | --- | --- | --- |
 | Different [coordinate systems](http://vtsdocs.melown.com/en/latest/reference/concepts.html#reference-frame) support | yes | limited |
 | Dynamic tiled [surfaces](http://vtsdocs.melown.com/en/latest/reference/concepts.html#surface) mixing (including [glues](http://vtsdocs.melown.com/en/latest/reference/concepts.html#glue)) | yes | no |
-| Multiple surfaces and multiple bound layers support (Including transparent layers) | yes | no |
+| Multiple surfaces and multiple bound layers support (including transparent layers) | yes | no |
 | Bound layers with optimized [masks](http://vtsdocs.melown.com/en/latest/reference/concepts.html#mask) | yes | no |
 | Out-of-the-box OSM data support with [custom styling](https://github.com/Melown/vts-browser-js/wiki/VTS-Geodata-Format) | yes | limited |
 | Fully open sourced back-end tools | yes | no |
 | Part of the [VTS Software Stack](http://vtsdocs.melown.com/en/latest/index.html) for the large scale mapping | yes | no |
-| Text rendering engine with almost complete coverage of writing systems | yes | limited |
+| Text rendering engine supporting international writing systems | yes | limited |
 | Compact-size library (gzipped and minified) | 163&nbsp;KB | 577&nbsp;KB&nbsp;+&nbsp;Workers |
 
 ## Live Demos
 
-3D map can rapidly enhance your web project's user experience. You can find your inspiration in following use cases.
+These are some of the following applications with VTS browser JS.
 
- * [Mercury](https://www.melown.com/mercury/)
+ * [Planet Mercury](https://www.melown.com/mercury/)
  * [Intergeo presentation](https://www.melown.com/intergeo2017/)
  * [Mapy.cz](https://mapy.cz/zakladni?x=14.4125847&y=50.0517997&z=17&m3d=1&height=687&yaw=41.252&pitch=-26) (cs)
  * [GPX Demo](https://gpx-demo.mlwn.se)
@@ -76,7 +75,7 @@ If you asks us to compare The VTS Browser JS with The CesiumJS. There is a list 
 
 ### First steps
 
-1. Include The VTS Browser JS library
+1. Include The VTS browser JS library
 ```html
 <link rel="stylesheet"
   type="text/css" href="https://cdn.melown.com/libs/vtsjs/browser/v2/vts-browser.min.css" />
@@ -110,7 +109,7 @@ There is several ways how to bundle The VTS Browser JS Library into your project
 
 ### Our CDN
 
-The most easy way to link The VTS Browser JS Library is to use the latest build (or specific version) from our CDN network.
+The easiest way to link The VTS Browser JS Library is to use the latest build (or specific version) from Melown Technologies CDN.
 
 ```html
 <link rel="stylesheet"
@@ -132,7 +131,7 @@ npm install -S vts-browser-js
 
 ### Build from code
 
-And of course you can build The VTS Browser JS Library from source code.
+If you prefer, you may build The VTS Browser JS Library from source code.
 
 #### Build system
 The build system uses [webpack module bundler](http://webpack.github.io/).
@@ -202,13 +201,11 @@ The question is, where you can get your own Map Configuration. Basically you hav
 
 ### Melown Cloud
 
-[Melown Cloud](https://www.melown.com/cloud) is a source of custom map configurations for client application development.
-
-It is a cloud 3D map development platform operated by Melown Technologies atop of VTS 3D Stack. It is a point-and-click interface to a subset of VTS functionality ideal for smaller projects and less technically savvy users.
+[Melown Cloud](https://www.melown.com/cloud) is point-and-click interface to a subset of VTS technology, operated by Melown Tecchnologies. Conveniently, Melown Cloud may be also used as a source of custom map configurations for VTS browser JS application development.
 
 ### VTS 3D Geospatial Software stack
 
-If Melown Cloud doesn't meet your needs you can install, configure and deploy your own backend instnace of [The VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html) components. You will gain full control over your data sources, Map Configurations and integration with other geospatial services.
+VTS Browser JS forms part of the [VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html). Running the full stack gives you complete control over your map resources, provides you with powerful data fusion capabilities and allows for closed networks or other types of off-grid deployment.
 
 ## Documentation
 
