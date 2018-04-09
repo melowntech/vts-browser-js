@@ -57,14 +57,14 @@ The open-source [CesiumJS](https://cesiumjs.org) is an excellent JavaScript 3D m
 | Multiple surfaces and multiple bound layers support (including transparent layers) | yes | no |
 | Bound layers with optimized [masks](http://vtsdocs.melown.com/en/latest/reference/concepts.html#mask) | yes | no |
 | Out-of-the-box OSM data support with [custom styling](https://github.com/Melown/vts-browser-js/wiki/VTS-Geodata-Format) | yes | limited |
-| Fully open sourced back-end tools | yes | no |
-| Part of the [VTS Software Stack](http://vtsdocs.melown.com/en/latest/index.html) for the large scale mapping | yes | no |
-| Text rendering engine supporting international writing systems | yes | limited |
+| Open-source backend components | yes | no |
+| Backend data-fusion capabilities | yes | no |
+| Support for international writing systems | yes | limited |
 | Compact-size library (gzipped and minified) | 163&nbsp;KB | 577&nbsp;KB&nbsp;+&nbsp;Workers |
 
 ## Live Demos
 
-These are some of the following applications with VTS browser JS.
+These are some of the applications built with VTS browser JS:
 
  * [Planet Mercury](https://www.melown.com/mercury/)
  * [Intergeo presentation](https://www.melown.com/intergeo2017/)
