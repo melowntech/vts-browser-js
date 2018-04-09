@@ -1,6 +1,6 @@
 # VTS Browser JS
 
-**The VTS Browser JS** is a powerful JavaScript 3D map rendering engine with a very small footprint (about 163 kB of gziped JS code). It provides almost all features for web-based 3D mapping you will ever want.
+**VTS Browser JS** is a powerful JavaScript 3D map rendering engine with a very small footprint (about 163 kB of gziped JS code). It provides almost all features for web-based 3D mapping you will ever want.
 
 VTS Browser JS is independently usable part of [VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html): a state-of-the-art, full-stack open source platform for 3D geospatial application development. 
 
@@ -48,7 +48,7 @@ With VTS Browser JS you may combine and render diverse geospatial data in a sing
 
 ### Comparison to CesiumJS library
 
-The open-source [CesiumJS](https://cesiumjs.org) is an excellent JavaScript 3D mapping library which is widely used and frequently compared to VTS Browser JS. The following table might help you to identify the application scenarios where VTS browserJS might be an alternative, or simply a straightforward software platform of choice for your project.  
+The open-source [CesiumJS](https://cesiumjs.org) is an excellent JavaScript 3D mapping library which is widely used and frequently compared to VTS Browser JS. The following table might help you to identify the application scenarios where VTS Browser JS may be an alternative, or simply a straightforward software platform of choice for your project.  
 
 | Feature | VTS&nbsp;Browser&nbsp;JS | CesiumJS |
 | --- | --- | --- |
