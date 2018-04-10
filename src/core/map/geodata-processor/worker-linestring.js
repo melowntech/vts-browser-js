@@ -3,7 +3,7 @@ import {globals as globals_, vec3Normalize as vec3Normalize_,
         vec3Cross as vec3Cross_} from './worker-globals.js';
 import {getLayerPropertyValue as getLayerPropertyValue_,
         getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
-import {addStreetTextOnPath as addStreetTextOnPath_,
+import {addStreetTextOnPath as addStreetTextOnPath_, getTextGlyphs as getTextGlyphs_,
         areTextCharactersAvailable as areTextCharactersAvailable_,
         getCharVerticesCount as getCharVerticesCount_, getFonts as getFonts_, getFontsStorage as getFontsStorage_} from './worker-text.js';
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
@@ -15,7 +15,7 @@ var getLayerPropertyValue = getLayerPropertyValue_,
     getLayerExpresionValue = getLayerExpresionValue_;
 var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
     getCharVerticesCount = getCharVerticesCount_, getFonts = getFonts_, getFontsStorage = getFontsStorage_;
-var postGroupMessage = postGroupMessage_;
+var postGroupMessage = postGroupMessage_, getTextGlyphs = getTextGlyphs_;
 
 
 var processLineStringPass = function(lineString, lod, style, featureIndex, zIndex, eventInfo) {
@@ -908,16 +908,21 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     }
 
     var labelText = getLayerExpresionValue(style, labelSource, lineString, lod, labelSource);
+    labelText = labelText ? labelText.replace('\r\n', '\n').replace('\r', '\n') : '';
     var fontNames = getLayerPropertyValue(style, 'line-label-font', lineString, lod);
     var fonts = getFonts(fontNames);
     var fontsStorage = getFontsStorage(fontNames);
+    var glyphsRes = getTextGlyphs(labelText, fonts);
 
     if (labelSource == '$name') {
-        if (!areTextCharactersAvailable(labelText, fonts)) {
+        if (!areTextCharactersAvailable(labelText, fonts, glyphsRes)) {
             var labelText2 = getLayerExpresionValue(style, '$name:en', lineString, lod, labelSource);
+            labelText2 = labelText2 ? labelText2.replace('\r\n', '\n').replace('\r', '\n') : '';
+            var glyphsRes2 = getTextGlyphs(labelText, fonts);
             
-            if (areTextCharactersAvailable(labelText2, fonts)) {
+            if (areTextCharactersAvailable(labelText2, fonts, glyphsRes2)) {
                 labelText = labelText2;                     
+                glyphsRes = glyphsRes2;
             }
         }
     }
@@ -942,8 +947,8 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
-    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes);
-    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index);
+    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes);
+    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index, null, glyphsRes);
 
     if (!index) {
         return;

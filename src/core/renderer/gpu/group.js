@@ -352,6 +352,15 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+    job.reduce = data['reduce'];
+
+    if (job.reduce) {
+        switch(job.reduce[0]) {
+            case 'tilt':      job.reduce[0] = 1; break;
+            case 'tilt-cos':  job.reduce[0] = 2; break;
+            case 'tilt-cos2': job.reduce[0] = 3; break;
+        }
+    }
 
     if (!job.program.isReady()) {
         return;

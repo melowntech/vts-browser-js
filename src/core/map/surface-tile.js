@@ -605,11 +605,11 @@ MapSurfaceTile.prototype.bboxVisible = function(id, bbox, cameraPos, node) {
             //if (true) {  //version with perspektive
             var p2 = node.diskPos;
             var p1 = camera.position;
-            var camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
-            var distance = vec3.normalize4(camVec) * camera.distanceFactor;
+            var rayVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+            var distance = vec3.normalize4(rayVec) * camera.distanceFactor;
                 //vec3.normalize(camVec);
                 
-            var a = vec3.dot(camVec, node.diskNormal);
+            var a = vec3.dot(rayVec, node.diskNormal);
             //} else { //version without perspektive
             //    var a = vec3.dot(camera.vector, node.diskNormal);
             //}

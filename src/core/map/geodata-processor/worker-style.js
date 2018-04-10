@@ -205,7 +205,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
         if (Array.isArray(value)) {
 
             if (key == 'icon-source') {
-                index++;
+                //index++;
                 if (globals.stylesheetBitmaps[value[0]] == null) {
                     logError('wrong-object', layer['$$layer-id'], key, value, null, 'bitmap');
 
@@ -627,19 +627,26 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
     case 'object':
 
         //accepted cases for null value
-        if (value === null && (key == 'line-style-texture' || key == 'icon-source' ||
+        if (value === null && (key == 'line-style-texture' || key == 'icon-source' || 'dynamic-reduce' || 'reduce' ||
             key == 'visibility' || key == 'visibility-abs' || key == 'visibility-rel' || key == 'next-pass')) {
             return value;
         }
 
         //check reduce
-        if (key == 'reduce') {
+        if (key == 'reduce' || key == 'dynamic-reduce') {
             if (Array.isArray(value) && value.length > 0 && (typeof value[0] === 'string')) {
 
-                if (value[0] != 'odd' && value != 'even') {
-                    if ((typeof value[1] !== 'number') || ((value[0] != 'top' || value != 'bottom') && (typeof value[2] !== 'string'))) {
+                if (key == 'dynamic-reduce') {
+                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2') && (typeof value[1] === 'number') && (typeof value[2] === 'number'))) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
+                    }
+                } else {
+                    if (value[0] != 'odd' && value != 'even') {
+                        if ((typeof value[1] !== 'number') || ((value[0] != 'top' || value != 'bottom') && (typeof value[2] !== 'string'))) {
+                            logError('wrong-property-value', layerId, key, value);
+                            return getDefaultLayerPropertyValue(key);
+                        }
                     }
                 }
 
@@ -806,8 +813,9 @@ var validateLayerPropertyValue = function(layerId, key, value) {
 
     switch(key) {
 
-    case 'inherit' :   return validateValue(layerId, key, value, 'string');
-    case 'reduce':     return validateValue(layerId, key, value, 'object');
+    case 'inherit' :        return validateValue(layerId, key, value, 'string');
+    case 'reduce':          return validateValue(layerId, key, value, 'object');
+    case 'dynamic-reduce':  return validateValue(layerId, key, value, 'object');
 
     case 'line':              return validateValue(layerId, key, value, 'boolean');
     case 'line-flat':         return validateValue(layerId, key, value, 'boolean');
@@ -886,11 +894,10 @@ var validateLayerPropertyValue = function(layerId, key, value) {
 
 var getDefaultLayerPropertyValue = function(key) {
     switch(key) {
-    case 'filter': return null;
-    case 'reduce': return null;
-    case 'dynamic-reduce': return null;
-
-    case 'inherit': return '';
+    case 'inherit':          return '';
+    case 'filter':           return null;
+    case 'reduce':           return null;
+    case 'dynamic-reduce':   return null;
 
     case 'line':             return false;
     case 'line-flat':        return false;

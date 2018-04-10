@@ -722,8 +722,6 @@ RendererDraw.prototype.clearJobBuffer = function() {
     }
 };
 
-var filterConstPart = 1;
-var filterDynamicPart = 6;
 
 RendererDraw.prototype.paintGL = function() {
     var renderer = this.renderer;
@@ -1043,6 +1041,22 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case 'icon':
     case 'label':
 
+        if (job.reduce) {
+            var a = job.tiltAngle;
+
+            if (job.reduce[0] == 1) {
+                a = 1.0 - (Math.acos(a) * (1.0/(Math.PI*0.5)));
+            } else if (job.reduce[0] == 3) {
+                a = (Math.cos(Math.acos(a) * 2) + 1.0) * 0.5;
+            }
+
+            var indexLimit = (Math.round(job.reduce[1] + (a*job.reduce[2]))-1);
+
+            if (job.index > indexLimit) {
+                return;
+            } 
+        }
+
         var files = job.files;
 
         if (files.length > 0) {
@@ -1163,12 +1177,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 pp[0] = Math.round(pp[0]);
                 pp[1] -= stickShift;
             }
-
-            var indexLimit = (Math.round(filterConstPart + (job.tiltAngle*filterDynamicPart))-1);
-
-            if (job.index > indexLimit) {
-                //return;
-            } 
         }
 
         if (job.noOverlap) {

@@ -1,7 +1,7 @@
 
 import {globals as globals_, clamp as clamp_} from './worker-globals.js';
 import {getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
-import {addText as addText_, getSplitIndex as getSplitIndex_, 
+import {addText as addText_, getSplitIndex as getSplitIndex_, getTextGlyphs as getTextGlyphs_,
         getTextLength as getTextLength_, getFonts as getFonts_, getFontsStorage as getFontsStorage_,
         areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from './worker-text.js';
 import {postGroupMessage as postGroupMessage_} from './worker-message.js';
@@ -9,7 +9,7 @@ import {postGroupMessage as postGroupMessage_} from './worker-message.js';
 //get rid of compiler mess
 var globals = globals_, clamp = clamp_;
 var getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = getLayerExpresionValue_;
-var addText = addText_, getSplitIndex = getSplitIndex_, 
+var addText = addText_, getSplitIndex = getSplitIndex_, getTextGlyphs = getTextGlyphs_,
     getTextLength = getTextLength_, getFonts = getFonts_, getFontsStorage = getFontsStorage_,
     areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
 var postGroupMessage = postGroupMessage_;
@@ -74,6 +74,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 scale : getLayerPropertyValue(style, 'icon-scale', pointArray, lod),
                 offset : getLayerPropertyValue(style, 'icon-offset', pointArray, lod),
                 stick : getLayerPropertyValue(style, 'icon-stick', pointArray, lod),
+                reduce : getLayerPropertyValue(style, 'dynamic-reduce', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'icon-origin', pointArray, lod),
                 source : getLayerPropertyValue(style, 'icon-source', pointArray, lod),
                 vertexBuffer : new Float32Array(bufferSize),
@@ -92,16 +93,21 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         source = getLayerPropertyValue(style, 'label-source', pointArray, lod);
 
         var text = getLayerExpresionValue(style, source, pointArray, lod, source);
+        text = text ? text.replace('\r\n', '\n').replace('\r', '\n') : '';
         var size = getLayerPropertyValue(style, 'label-size', pointArray, lod);
         var fontNames = getLayerPropertyValue(style, 'label-font', pointArray, lod);
         var fonts = getFonts(fontNames);
+        var glyphsRes = getTextGlyphs(text, fonts);
         
         if (source == '$name') {
-            if (!areTextCharactersAvailable(text, fonts)) {
+            if (!areTextCharactersAvailable(text, fonts, glyphsRes)) {
                 var text2 = getLayerExpresionValue(style, '$name:en', pointArray, lod, source);
+                text2 = text2 ? text2.replace('\r\n', '\n').replace('\r', '\n') : '';
+                var glyphsRes2 = getTextGlyphs(text2, fonts);
                 
                 if (areTextCharactersAvailable(text2, fonts)) {
                     text = text2;                     
+                    glyphsRes = glyphsRes2;
                 }
             }
         }
@@ -113,6 +119,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 color : getLayerPropertyValue(style, 'label-color', pointArray, lod),
                 color2 : getLayerPropertyValue(style, 'label-color2', pointArray, lod),
                 outline : getLayerPropertyValue(style, 'label-outline', pointArray, lod),
+                reduce : getLayerPropertyValue(style, 'dynamic-reduce', pointArray, lod),
                 size : size,
                 offset : getLayerPropertyValue(style, 'label-offset', pointArray, lod),
                 stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
@@ -128,7 +135,8 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 originBuffer : new Float32Array(bufferSize2),
                 texcoordsBuffer : new Float32Array(bufferSize),
                 index : 0,
-                index2 : 0
+                index2 : 0,
+                glyphsRes : glyphsRes
             };
         } else {
             label = false;
@@ -315,7 +323,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
             'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer], signature);
     }
 
@@ -334,7 +342,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
-            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
+            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit, 'reduce': labelData.reduce,  
             'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);
     }
 
@@ -467,28 +475,56 @@ var processLabel = function(point, labelData) {
     var lastIndex = index;
     var text = '' + labelData.text;
     var fonts = labelData.fonts;
-    var planes = {};
+    var planes = {}, i, li;
+    var glyphsRes = labelData.glyphsRes;
 
     //split by new line
-    var lines = text.match(/[^\r\n]+/g);
-    var lines2 = [];
+    //var lines = text.match(/[^\r\n]+/g);
+    //var lines = [];
+    //var lines2 = [];
+    var linesGlyphsRes = [];
+    var linesGlyphsRes2 = [];
+
+    //split text to lines
+    do {
+        //var res = text.indexOf('\n');
+        var res = glyphsRes[2].indexOf(10); //search /n
+
+        if (res != -1) {
+            //lines.push(text.substring(0,res));
+            linesGlyphsRes.push([glyphsRes[0].slice(0,res), glyphsRes[1].slice(0,res), glyphsRes[2].slice(0,res)]);
+            //text = text.substring(res+1);
+            glyphsRes = [glyphsRes[0].slice(res+1), glyphsRes[1].slice(res+1), glyphsRes[2].slice(res+1)];
+        } else {
+            //lines.push(text);
+            linesGlyphsRes.push(glyphsRes);
+        }
+
+    } while (res != -1);
 
     //split lines by width
-    for (var i = 0, li = lines.length; i < li; i++) {
+    for (var i = 0, li = linesGlyphsRes.length; i < li; i++) {
 
-        var line = lines[i];
+        //var line = lines[i];
+        var glyphsRes = linesGlyphsRes[i];
 
         // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(line, labelData.width, labelData.size, fonts);
+            var splitIndex = getSplitIndex(null /*line*/, labelData.width, labelData.size, fonts, glyphsRes);
+            var codes = glyphsRes[2];
 
-            if (line.length == splitIndex) {
-                lines2.push(line);
+            //if (line.length == splitIndex) {
+            if (codes.length == splitIndex) {
+                //lines2.push(line);
+                linesGlyphsRes2.push(glyphsRes);
                 break;
             }
 
-            lines2.push(line.substring(0,splitIndex));
-            line = line.substring(splitIndex+1);
+            //lines2.push(line.substring(0,splitIndex));
+            linesGlyphsRes2.push([glyphsRes[0].slice(0,splitIndex), glyphsRes[1].slice(0,splitIndex), glyphsRes[2].slice(0,splitIndex)]);
+
+            //line = line.substring(splitIndex+1);
+            glyphsRes = [glyphsRes[0].slice(splitIndex+1), glyphsRes[1].slice(splitIndex+1), glyphsRes[2].slice(splitIndex+1)];
 
         } while(true);
 
@@ -501,8 +537,8 @@ var processLabel = function(point, labelData) {
     var lineWidths = [];
 
     //get max width
-    for (i = 0, li = lines2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(lines2[i], labelData.size, fonts);
+    for (i = 0, li = linesGlyphsRes2.length; i < li; i++) {
+        lineWidths[i] = getTextLength(null /*lines2[i]*/, labelData.size, fonts, linesGlyphsRes2[i]);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
@@ -510,7 +546,7 @@ var processLabel = function(point, labelData) {
     //console.log("max width: " + maxWidth);
 
     //generate text
-    for (i = 0, li = lines2.length; i < li; i++) {
+    for (i = 0, li = linesGlyphsRes2.length; i < li; i++) {
         var textWidth = lineWidths[i];
 
         switch(labelData.align) {
@@ -519,7 +555,7 @@ var processLabel = function(point, labelData) {
         case 'center': x = (maxWidth - textWidth)*0.5; break;
         }
 
-        index = addText([x,y,0], [1,0,0], lines2[i], labelData.size, fonts, vertexBuffer, texcoordsBuffer, true, index, planes);
+        index = addText([x,y,0], [1,0,0], null /*lines2[i]*/, labelData.size, fonts, vertexBuffer, texcoordsBuffer, true, index, planes, linesGlyphsRes2[i]);
         y -= lineHeight;
     }
 
