@@ -293,7 +293,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
         }
     
         if (writeDepth === false) {
-            gl.depthMask(false); 
+            gl.depthMask(true); 
         }
     
         gl.enable(gl.CULL_FACE);
