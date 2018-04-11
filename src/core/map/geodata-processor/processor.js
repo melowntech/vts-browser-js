@@ -5,6 +5,7 @@ var MapGeodataProcessor = function(surface, listener) {
     this.renderer = this.map.renderer;
     this.killed = false;
     this.listener = listener;
+    this.busy = false;
     this.ready = true;
     this.waitingForStylesheet = false;
     this.stylesheet = null;
@@ -43,7 +44,7 @@ MapGeodataProcessor.prototype.isReady = function() {
         this.waitingForStylesheet = !(this.stylesheet.isReady());
     }
 
-    return (this.ready || this.killed) && !this.waitingForStylesheet;
+    return ((this.ready && !this.busy) || this.killed) && !this.waitingForStylesheet;
 };
 
 
@@ -62,6 +63,8 @@ MapGeodataProcessor.prototype.onMessage = function(message) {
     if (command == 'ready') {
         this.ready = true;
         //console.log("ready");
+    } else if (command == 'styleDone') {
+        this.busy = false;
     }
 
     if (this.listener != null) {
@@ -102,6 +105,8 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
         this.waitingForStylesheet = true;
         return;
     }
+
+    this.busy = true;
 
     //this.setFont('#default', this.renderer.font);
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()) } );

@@ -198,13 +198,19 @@ MapGeodataView.prototype.getWorldMatrix = function(bbox, geoPos, matrix) {
     return m;
 };
 
+
 MapGeodataView.prototype.draw = function(cameraPos) {
     if (this.ready) {
+
         var renderer = this.renderer;
         var tiltAngle = this.tile ? Math.abs(this.tile.tiltAngle) : renderer.cameraTiltFator;
 
         for (var i = 0, li = this.gpuGroups.length; i < li; i++) {
             var group = this.gpuGroups[i]; 
+
+            if (!group.jobs.length) {
+                continue; //TODO: remove empty groups
+            }
 
             var mvp = mat4.create();
             var mv = mat4.create();

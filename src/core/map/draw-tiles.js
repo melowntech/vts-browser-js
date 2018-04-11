@@ -31,13 +31,6 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
     }*/
 
     if (this.stats.gpuRenderUsed >= this.draw.maxGpuUsed) {
-       /*
-        if (tile.surface) {
-            if (!tile.surface.geodata) {
-                tile = tile;
-            }
-        }*/
-
         return false;
     }
 
