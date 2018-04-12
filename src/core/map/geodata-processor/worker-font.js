@@ -1012,8 +1012,8 @@ Typr.U.isRTL = function(str) {
 };
 
 Typr.U.stringToGlyphs = function(fonts, str) {
-    var gls = [], g, i, li, j, lj, gsub, font, llist, flist;
-    var gfonts = [], str2 = '';
+    var gls = [], g, i, li, j, lj, c, c2, gsub, font, llist, flist;
+    var gfonts = [], codes = [], str2 = '';
 
     var wsep = "\n\t\" ,.:;!?()  ،";
 
@@ -1024,10 +1024,10 @@ Typr.U.stringToGlyphs = function(fonts, str) {
 
     //basic shaping
     for (i = 0, li = str.length; i < li; i++) {
-        var c = str.charCodeAt(i);
+        c = str.charCodeAt(i);
 
         if (i < li - 2) {
-            var c2 = str.charCodeAt(i+1);
+            c2 = str.charCodeAt(i+1);
 
             //myanmar 
             if (wsep.indexOf(c) == -1) {
@@ -1046,9 +1046,11 @@ Typr.U.stringToGlyphs = function(fonts, str) {
     str = str2;
 
     for (i = 0, li = str.length; i < li; i++) {
+        c = str.charCodeAt(i);
+
         for (j = 0, lj = fonts.length; j < lj; j++) {
             font = fonts[j];
-            g = Typr.U.codeToGlyph(font, str.charCodeAt(i));
+            g = Typr.U.codeToGlyph(font, c);
             if (g) {
                 break;
             }
@@ -1056,6 +1058,7 @@ Typr.U.stringToGlyphs = function(fonts, str) {
 
         gls.push(g);
         gfonts.push(g ? j : 0);
+        codes.push(c);
     }
 
     font = null;
@@ -1180,14 +1183,17 @@ Typr.U.stringToGlyphs = function(fonts, str) {
 
     var indices = bidiResult.indices;
     var gls2 = gls.slice();
+    var codes2 = gls.slice();
 
     for (i = 0, li = gls.length; i < li; i++) {
-        gls2[i] = gls[indices[i]];
+        c = indices[i];
+        gls2[i] = gls[c];
+        codes2[i] = codes[c];
     }
 
-    gls = gls2;
+    //gls = gls2;
 
-    return [gls, gfonts];
+    return [gls2, gfonts, codes2];
 }
 
 

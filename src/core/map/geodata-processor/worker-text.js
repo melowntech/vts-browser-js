@@ -186,12 +186,12 @@ var getCharVerticesCount = function(origin) {
 };
 
 
-var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffer, flat, index, planes) {
+var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffer, flat, index, planes, glyphsRes) {
     var textVector = [0,1,0];
     //var s = [pos[0], pos[1], pos[2]];
     var p1 = [pos[0], pos[1], pos[2]];
 
-    var res = Typr.U.stringToGlyphs(fonts, text);
+    var res = glyphsRes ? glyphsRes : Typr.U.stringToGlyphs(fonts, text);
     var glyphs = res[0];
     var gfonts = res[1];
 
@@ -216,7 +216,7 @@ var addText = function(pos, dir, text, size, fonts, vertexBuffer, texcoordsBuffe
 };
 
 
-var addTextOnPath = function(points, distance, text, size, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
+var addTextOnPath = function(points, distance, text, size, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes) {
     if (textVector == null) {
         textVector = [0,1,0];
     }
@@ -228,7 +228,7 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
     p1 = [p1[0], p1[1], p1[2]];
     var l = distance;
 
-    var res = Typr.U.stringToGlyphs(fonts, text);
+    var res = glyphsRes ? glyphsRes : Typr.U.stringToGlyphs(fonts, text);
     var glyphs = res[0];
     var gfonts = res[1];
 
@@ -283,8 +283,8 @@ var addTextOnPath = function(points, distance, text, size, textVector, fonts, ve
 };
 
 
-var addStreetTextOnPath = function(points, text, size, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes) {
-    var textLength = getTextLength(text, size, fonts);
+var addStreetTextOnPath = function(points, text, size, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes) {
+    var textLength = getTextLength(text, size, fonts, glyphsRes);
     var pathLength = getPathLength(points);
     var shift = (pathLength -  textLength)*0.5;
     if (shift < 0) {
@@ -295,9 +295,9 @@ var addStreetTextOnPath = function(points, text, size, fonts, verticalOffset, ve
         return;
     }
 
-    var textVector = getPathTextVector(points, shift, text, size, fonts);
+    var textVector = getPathTextVector(points, shift, text, size, fonts, glyphsRes);
 
-    return addTextOnPath(points, shift, text, size, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes);
+    return addTextOnPath(points, shift, text, size, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes);
 };
 
 
@@ -313,17 +313,16 @@ var getLineHeight = function(size, fonts) {
 };
 
 
-var getTextLength = function(text, size, fonts) {
+var getTextLength = function(text, size, fonts, glyphsRes) {
     var l = 0;
 
-    var res = Typr.U.stringToGlyphs(fonts, text);
+    var res = glyphsRes ? glyphsRes : Typr.U.stringToGlyphs(fonts, text);
     var glyphs = res[0];
     var gfonts = res[1];
 
     for (var i = 0, li = glyphs.length; i < li; i++) {
         var glyph = glyphs[i];
         var font = fonts[gfonts[i]];
-
 
         if (font) {
             var factor = getFontFactor(size, font);
@@ -343,16 +342,17 @@ var getTextLength = function(text, size, fonts) {
 };
 
 
-var getSplitIndex = function(text, width, size, fonts) {
+var getSplitIndex = function(text, width, size, fonts, glyphsRes) {
     var l = 0;
 
-    var res = Typr.U.stringToGlyphs(fonts, text);
+    var res = glyphsRes ? glyphsRes : Typr.U.stringToGlyphs(fonts, text);
     var glyphs = res[0];
     var gfonts = res[1];
+    var codes = res[2];
 
     for (var i = 0, li = glyphs.length; i < li; i++) {
         var glyph = glyphs[i];
-        var char = text.charCodeAt(i);
+        var char = codes[i];//text.charCodeAt(i);
 
         if (l > width && (char == 10 || char == 9 || char == 32)) {
             return i;
@@ -428,13 +428,13 @@ var getPathPositionAndDirection = function(points, distance) {
 };
 
 
-var getPathTextVector = function(points, shift, text, size, fonts) {
+var getPathTextVector = function(points, shift, text, size, fonts, glyphsRes) {
     var l = 0;
     var p1 = [0,0,0];
     var dir = [1,0,0];
     var textDir = [0,0,0];
     var textStart = shift;
-    var textEnd = shift + getTextLength(text, size, fonts);
+    var textEnd = shift + getTextLength(text, size, fonts, glyphsRes);
     var bboxMin = globals.bboxMin;
     var geocent = globals.geocent;
 
@@ -470,12 +470,12 @@ var getPathTextVector = function(points, shift, text, size, fonts) {
 };
 
 
-var areTextCharactersAvailable = function(text, fonts) {
+var areTextCharactersAvailable = function(text, fonts, glyphsRes) {
     if (!text || text == '') {
         return false;
     }
 
-    var res = Typr.U.stringToGlyphs(fonts, text);
+    var res = glyphsRes ? glyphsRes : Typr.U.stringToGlyphs(fonts, text);
     var glyphs = res[0];
     //var gfonts = res[1];
 
@@ -543,7 +543,13 @@ var getFontsStorage = function(fonts) {
     return fontsMap;
 };
 
+
+var getTextGlyphs = function(text, fonts) {
+    return Typr.U.stringToGlyphs(fonts, text);
+};
+
+
 export {addStreetTextOnPath, getTextLength, getLineHeight, getFontFactor, getSplitIndex, areTextCharactersAvailable,
-        addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount, getFonts, getFontsStorage, hasLatin, isCJK};
+        addText, addTextOnPath, setFont, setFontMap, getCharVerticesCount, getFonts, getFontsStorage, hasLatin, isCJK, getTextGlyphs};
 
 

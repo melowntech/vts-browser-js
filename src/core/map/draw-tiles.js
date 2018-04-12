@@ -31,13 +31,6 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
     }*/
 
     if (this.stats.gpuRenderUsed >= this.draw.maxGpuUsed) {
-       /*
-        if (tile.surface) {
-            if (!tile.surface.geodata) {
-                tile = tile;
-            }
-        }*/
-
         return false;
     }
 
@@ -47,7 +40,9 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
         if (node.hasGeometry()) {
 
             if (this.debug.drawBBoxes && !preventRedener) {
-                this.drawTileInfo(tile, node, cameraPos, tile.surfaceMesh, pixelSize);
+                if (tile.surface.geodata || !this.debug.drawGeodataOnly) {
+                    this.drawTileInfo(tile, node, cameraPos, tile.surfaceMesh, pixelSize);
+                }
             }
 
             if (this.debug.heightmapOnly && !preventRedener) {
@@ -841,7 +836,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
 
     //draw lods
     if (debug.drawLods) {
-        text = '' + tile.id[0];
+        text = '' + tile.id[0] + ' ta:' + Math.abs(tile.tiltAngle).toFixed(3);
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-4*factor), 4*factor, text, [1,0,0,1], pos[2]);
     }
 

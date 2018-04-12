@@ -134,7 +134,7 @@ Autopilot.prototype.tick = function() {
     
     if (this.autoPan != 0) {
         pos = map.getPosition();
-        pos = map.movePositionCoordsTo(pos, this.autoPanAzimuth, map.getPositionViewExtent(pos)*(this.autoPan*0.01)*timeFactor, 0);
+        pos = map.movePositionCoordsTo(pos, this.autoPanAzimuth, pos.getViewExtent()*(this.autoPan*0.01)*timeFactor, 0);
         map.setPosition(pos);
     }
 

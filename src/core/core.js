@@ -74,7 +74,6 @@ var Core = function(element, config, coreInterface) {
     };
 
     this.configStorage = {}; 
-    this.setConfigParams(config);
     this.element = element;
     this.coreInterface = coreInterface;
     //this.options = options;
@@ -85,6 +84,7 @@ var Core = function(element, config, coreInterface) {
     this.tokenIFrame = null;
     this.xhrParams = {};
     this.inspector = (Inspector != null) ? (new Inspector(this)) : null;
+    this.setConfigParams(config);
 
     this.map = null;
     this.mapInterface = null;
@@ -438,6 +438,13 @@ Core.prototype.setConfigParam = function(key, value) {
         if (key.indexOf('renderer') == 0) {
             this.setRendererConfigParam(key, value);
         }
+
+        if (key.indexOf('debug') == 0) {
+            this.configStorage[key] = value;
+            if (this.getMap() != null) {
+                this.inspector.setParameter(key, value);
+            }
+        }
     }
 };
 
@@ -481,7 +488,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.14.4';
+    return (full ? 'Core: ' : '') + '2.14.5';
 }
 
 

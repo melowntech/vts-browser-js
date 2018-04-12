@@ -352,6 +352,15 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+    job.reduce = data['reduce'];
+
+    if (job.reduce) {
+        switch(job.reduce[0]) {
+            case 'tilt':      job.reduce[0] = 1; break;
+            case 'tilt-cos':  job.reduce[0] = 2; break;
+            case 'tilt-cos2': job.reduce[0] = 3; break;
+        }
+    }
 
     if (!job.program.isReady()) {
         return;
@@ -366,6 +375,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
         job.outline = data['outline'];
         job.size = data['size'];
         job.files = data['files'] || [];
+        job.index = data['index'] || 0;
         job.noOverlap = data['noOverlap'];
         var fonts = data['fonts'] || ['#default'];
         job.fonts = fonts;
@@ -427,7 +437,7 @@ GpuGroup.prototype.addRenderJob = function(data) {
 };
 
 
-GpuGroup.prototype.draw = function(mv, mvp, applyOrigin) {
+GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle) {
     if (this.id != null) {
         if (this.renderer.layerGroupVisible[this.id] === false) {
             return;
@@ -481,6 +491,7 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin) {
 
         job.mv = mv;
         job.mvp = mvp;
+        job.tiltAngle = tiltAngle;
 
         var zIndex = job.zIndex;
         jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;

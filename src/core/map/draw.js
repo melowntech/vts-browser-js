@@ -37,6 +37,7 @@ var MapDraw = function(map) {
         drawFaceCount : false,
         drawDistance : false,
         drawMaxLod : false,
+        drawGeodataOnly : false,
         drawTextureSize : false,
         drawNodeInfo : false,
         drawLayers : true,

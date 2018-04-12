@@ -293,7 +293,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
         }
     
         if (writeDepth === false) {
-            gl.depthMask(false); 
+            gl.depthMask(true); 
         }
     
         gl.enable(gl.CULL_FACE);
@@ -1041,6 +1041,22 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case 'icon':
     case 'label':
 
+        if (job.reduce) {
+            var a = job.tiltAngle;
+
+            if (job.reduce[0] == 1) {
+                a = 1.0 - (Math.acos(a) * (1.0/(Math.PI*0.5)));
+            } else if (job.reduce[0] == 3) {
+                a = (Math.cos(Math.acos(a) * 2) + 1.0) * 0.5;
+            }
+
+            var indexLimit = (Math.round(job.reduce[1] + (a*job.reduce[2]))-1);
+
+            if (job.index > indexLimit) {
+                return;
+            } 
+        }
+
         var files = job.files;
 
         if (files.length > 0) {
@@ -1190,6 +1206,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
         if (s[0] != 0 && s[2] != 0) {
+            if (!pp) {
+                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+            }
+
             this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
         }
 

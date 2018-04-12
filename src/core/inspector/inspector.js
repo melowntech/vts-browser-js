@@ -1,6 +1,7 @@
 
 import {mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
+import {utils as utils_} from '../utils/utils';
 import InspectorInput_ from './input';
 import InspectorStats_ from './stats';
 import InspectorGraphs_ from './graphs';
@@ -11,6 +12,7 @@ import InspectorStylesheets_ from './stylesheets';
 //get rid of compiler mess
 var mat4 = mat4_;
 var math = math_;
+var utils = utils_;
 var InspectorInput = InspectorInput_;
 var InspectorStats = InspectorStats_;
 var InspectorGraphs = InspectorGraphs_;
@@ -51,11 +53,26 @@ Inspector.prototype.enableInspector = function() {
         this.replay.init();
         this.stylesheets.init();
 
+        //load image    
+        if (!this.circleImage) {
+            this.circleImage = utils.loadImage(
+                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAAAAAAAD5Q7t/AAAACW9GRnMAAAAgAAAA4ACD+EAUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA/UlEQVRYw+2VPwqDMBTG3dz1Am56EnH2XLroETxGuwc3Z7cOdhY8QJpfSUBspUvStJAPPggvD973/uQligICAgL+DKViqygUV02hbaXLwJlio7gpyhNu2idzEXwwgfI8H+u6vnZdN/V9P3EuimLcCRlsiyArGcfxjWDLsmzyAGzc4aNFNDZ7/iw7AeQH4LNrh5WZYLgkJTaZCyHuVVVdkiSZ0zSdOWMzlaBFWkRrQ4A4Zk/A4wBie1MFYUMAz0wybCYAmR8FUAlzj6+2r18TgM2VAO8tOB1Cyk7mrofQ+zP0voheVjHtIBjDxjrmvCu7k1Xs/TP6ie84ICDAGR5uCYdPo0MWiAAAAABJRU5ErkJggg==',
+                    //"http://maps.google.com/mapfiles/kml/shapes/placemarkcircle.png",
+                    (function(){
+                        this.circleTexture = this.core.getRendererInterface().createTexture({ 'source': this.circleImage });
+                    }).bind(this)
+                );
+        }
+
         this.core.on('map-update', this.onMapUpdate.bind(this));
         this.enabled = true;
     }
 };
 
+
+Inspector.prototype.setParameter = function(key, value) {
+    this.input.setParameter(key, value);
+};
 
 Inspector.prototype.addStyle = function(string) {
     var style = document.createElement('style');

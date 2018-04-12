@@ -131,6 +131,23 @@ Browser.prototype.onMapLoaded = function(event) {
     
     this.setConfigParams(options);
 
+    if (this.config.geojson || this.config.geodata) {
+        var data = this.config.geojson || this.config.geodata;
+
+        if (typeof data === 'string') {
+            data = data.trim();
+           
+            if (data.charAt(0) == '{') {
+                try {
+                    data = JSON.parse(data);
+                    this.onGeoJsonLoaded(data);
+                } catch(e){ }
+            } else {
+                utils.loadJSON(data, this.onGeoJsonLoaded.bind(this));
+            }
+        }
+    }
+
     if (this.autopilot) {
         this.autopilot.setAutorotate(this.config.autoRotate);
         this.autopilot.setAutopan(this.config.autoPan[0], this.config.autoPan[1]);
@@ -229,6 +246,28 @@ Browser.prototype.onMapUpdate = function() {
 };
 
 
+Browser.prototype.onGeoJsonLoaded = function(data) {
+    var map = this.getMap();
+    var geodata = map.createGeodata();
+
+    var addFreeLayer = (function(){
+        var freeLayer = geodata.makeFreeLayer(this.config.geojsonStyle);
+        map.addFreeLayer('geojson', freeLayer);
+        var view = map.getView();
+        view.freeLayers.geojson = {};
+        map.setView(view);
+    }).bind(this)
+
+    if (this.config.geodata) {
+        geodata.importVTSGeodata(data);
+        addFreeLayer();
+    } else {
+        geodata.importGeoJson(data);
+        geodata.processHeights('node-by-precision', 62, addFreeLayer);
+    }
+};
+
+
 Browser.prototype.onTick = function() {
     if (this.killed) {
         return;
@@ -280,6 +319,7 @@ Browser.prototype.initConfig = function() {
         controlLoading : true,
         searchElement : null,
         searchValue : null,
+        geojson : null,
         tiltConstrainThreshold : [0.5,1],
         minViewExtent : 20, //75,
         maxViewExtent : Number.MAXINTEGER,
@@ -363,6 +403,9 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'sensitivity':            this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
     case 'inertia':                this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
     case 'tiltConstrainThreshold': this.config.tiltConstrainThreshold = utils.validateNumberArray(value, 2, [0.5,1], [-Number.MAXINTEGER, -Number.MAXINTEGER], [Number.MAXINTEGER, Number.MAXINTEGER]); break;
+    case 'geodata':                this.config.geodata = value; break;
+    case 'geojson':                this.config.geojson = value; break;
+    case 'geojsonStyle':           this.config.geojsonStyle =  JSON.parse(value); break;
     case 'rotate':             
         this.config.autoRotate = utils.validateNumber(value, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, 0);
         if (map && this.autopilot) {
@@ -391,6 +434,11 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
         if (key.indexOf('renderer') == 0 && this.getRenderer()) {
             this.getRenderer().setConfigParam(key, value);
         }
+
+        if (key.indexOf('debug') == 0 && this.core) {
+            this.core.setConfigParam(key, value);
+        }
+
     }
 };
 
