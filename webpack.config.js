@@ -35,6 +35,34 @@ if (PROD) {
 plugins.push(
     new ExtractTextPlugin({
       filename: 'vts-browser' + (PROD ? '.min' : '') + '.css'
+    }),
+    new webpack.DefinePlugin({
+      'VTS_MATERIAL_DEPTH':           1,
+      'VTS_MATERIAL_FLAT':            2,
+      'VTS_MATERIAL_FOG':             3,
+      'VTS_MATERIAL_INTERNAL' :       4,
+      'VTS_MATERIAL_INTERNAL_NOFOG':  5,
+      'VTS_MATERIAL_EXTERNAL' :       6,
+      'VTS_MATERIAL_EXTERNAL_NOFOG':  7,
+
+      'VTS_DRAWCOMMAND_STATE' :       1,
+      'VTS_DRAWCOMMAND_SUBMESH' :     2,
+      'VTS_DRAWCOMMAND_GEODATA' :     3,
+
+      'VTS_TEXTURECHECK_MEATATILE' :  1,
+      'VTS_TEXTURECHECK_TYPE' :       2,
+      'VTS_TEXTURECHECK_CODE' :       3,
+      'VTS_TEXTURECHECK_SIZE' :       4,
+
+      'VTS_JOB_FLAT_LINE' :           1,
+      'VTS_JOB_FLAT_RLINE' :          2,
+      'VTS_JOB_FLAT_TLINE' :          3,
+      'VTS_JOB_PIXEL_LINE' :          4,
+      'VTS_JOB_PIXEL_TLINE' :         5,
+      'VTS_JOB_LINE_LABEL' :          6,
+      'VTS_JOB_ICON' :                7,
+      'VTS_JOB_LABEL' :               8,
+
     })
 );
 

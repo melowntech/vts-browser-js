@@ -534,7 +534,7 @@ MapDraw.prototype.getDrawCommandsGpuSize = function(commands) {
         var command = commands[i];
         
         switch (command.type) {
-        case 'submesh':
+        case VTS_DRAWCOMMAND_SUBMESH:
                
             var mesh = command.mesh; 
             var texture = command.texture; 
@@ -549,7 +549,7 @@ MapDraw.prototype.getDrawCommandsGpuSize = function(commands) {
                 
             break;
 
-        case 'geodata':
+        case VTS_DRAWCOMMAND_GEODATA:
                 
             var geodataView = command.geodataView; 
                 
@@ -573,7 +573,7 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
         var command = commands[i];
         
         switch (command.type) {
-        case 'submesh':
+        case VTS_DRAWCOMMAND_SUBMESH:
                 
             var mesh = command.mesh; 
             var texture = command.texture; 
@@ -587,7 +587,7 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
                 
             break;
 
-        case 'geodata':
+        case VTS_DRAWCOMMAND_GEODATA:
                 
             var geodataView = command.geodataView; 
                 
@@ -612,11 +612,11 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
         var command = commands[i];
         
         switch (command.type) {
-        case 'state':
+        case VTS_DRAWCOMMAND_STATE:
             this.renderer.gpu.setState(command.state);
             break;
 
-        case 'submesh':
+        case VTS_DRAWCOMMAND_SUBMESH:
             var mesh = command.mesh; 
             var texture = command.texture;
 
@@ -633,9 +633,9 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                     var material = command.material;
                     switch (material) {
                             //case "fog":
-                    case 'external':
-                    case 'internal':
-                        material = 'flat';
+                    case VTS_MATERIAL_EXTERNAL:
+                    case VTS_MATERIAL_INTERNAL:
+                        material = VTS_MATERIAL_FLAT;
                         break; 
                     }
                     mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha);
@@ -650,7 +650,7 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                 
             break;
                 
-        case 'geodata':
+        case VTS_DRAWCOMMAND_GEODATA:
                 
             var geodataView = command.geodataView; 
                 

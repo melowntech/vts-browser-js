@@ -820,7 +820,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     }
 
     switch(job.type) {
-    case 'flat-line':
+    case VTS_JOB_FLAT_LINE:
         gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
 
         var debugWires = (gpu === 0); //just generate false value to avoid compiler warnings;
@@ -854,10 +854,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         break;
 
-    case 'flat-rline':
-    case 'flat-tline':
-    case 'pixel-line':
-    case 'pixel-tline':
+    case VTS_JOB_FLAT_RLINE:
+    case VTS_JOB_FLAT_TLINE:
+    case VTS_JOB_PIXEL_LINE:
+    case VTS_JOB_PIXEL_TLINE:
         gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
             
         prog = advancedHitPass ? job.program2 : job.program;
@@ -866,7 +866,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         screenPixelSize2 = screenPixelSize;
 
         if (hitmapRender) {
-            if (job.type == 'pixel-tline') {
+            if (job.type == VTS_JOB_PIXEL_TLINE) {
                 if (job.widthByRatio) {
                     screenPixelSize2 = [ screenPixelSize[0] * renderer.curSize[1], screenPixelSize[1] * renderer.curSize[1]];
                 }
@@ -877,15 +877,15 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
         }
 
-        if (job.type != 'pixel-line') {
+        if (job.type != VTS_JOB_PIXEL_LINE) {
 
-            if (job.type == 'flat-rline') {
+            if (job.type == VTS_JOB_FLAT_RLINE) {
                 textureParams = [0, 0, 0, job.widthByRatio ? renderer.cameraViewExtent : 1];
             } else {
                 if (hitmapRender) {
                     texture = renderer.whiteTexture;
 
-                    if (job.type == 'flat-tline' || job.type == 'flat-rline') {
+                    if (job.type == VTS_JOB_FLAT_TLINE || job.type == VTS_JOB_FLAT_RLINE) {
                         textureParams = [0, 0, 0, job.widthByRatio ? renderer.cameraViewExtent : 1];
                     }
 
@@ -898,7 +898,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                     texture = t[0];
                     textureParams = [0, t[1]/t[0].height, (t[1]+t[2])/t[0].height, job.widthByRatio ? renderer.cameraViewExtent : 1];
 
-                    if (job.type == 'flat-tline' || job.type == 'flat-rline') {
+                    if (job.type == VTS_JOB_FLAT_TLINE || job.type == VTS_JOB_FLAT_RLINE) {
                         if (job.widthByRatio) {
                             textureParams[0] = 1/(renderer.cameraViewExtent2*job.lineWidth)/(texture.width/t[2]);
                         } else {
@@ -935,7 +935,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setVec2('uScale', screenPixelSize2);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
 
-        if (job.type != 'pixel-line') {
+        if (job.type != VTS_JOB_PIXEL_LINE) {
             if (job.background != null) {
                 prog.setVec4('uColor2', hitmapRender ? [0,0,0,0] : job.background);
             }
@@ -965,7 +965,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         break;
 
-    case 'line-label':
+    case VTS_JOB_LINE_LABEL:
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
         var files = job.files;
@@ -1038,8 +1038,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         break;
 
-    case 'icon':
-    case 'label':
+    case VTS_JOB_ICON:
+    case VTS_JOB_LABEL:
 
         if (job.reduce) {
             var a = job.tiltAngle;
@@ -1227,7 +1227,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aOrigin']);
         prog.setSampler('uSampler', 0);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
-        prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == 'label' ? 1.0 : 1.0 / texture.width), stickShift*2]);
+        prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == VTS_JOB_LABEL ? 1.0 : 1.0 / texture.width), stickShift*2]);
 
         var j = 0, lj = 1, gamma = 0, gamma2 = 0;
 
@@ -1303,7 +1303,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aOrigin']);
     prog.setSampler('uSampler', 0);
     prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
-    prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == 'label' ? 1.0 : 1.0 / texture.width), stickShift*2]);
+    prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == VTS_JOB_LABEL ? 1.0 : 1.0 / texture.width), stickShift*2]);
 
     var j = 0, lj = 1, gamma = 0, gamma2 = 0;
 

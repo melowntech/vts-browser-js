@@ -34,28 +34,28 @@ GpuGroup.prototype.kill = function() {
         var job = this.jobs[i]; 
 
         switch(job.type) {
-        case 'flat-line':
+        case VTS_JOB_FLAT_LINE:
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
             if (job.vertexElementBuffer) this.gl.deleteBuffer(job.vertexElementBuffer);
             break;
 
-        case 'flat-tline':
-        case 'flat-rline':
-        case 'pixel-line':
-        case 'pixel-tline':
+        case VTS_JOB_FLAT_TLINE:
+        case VTS_JOB_FLAT_RLINE:
+        case VTS_JOB_PIXEL_LINE:
+        case VTS_JOB_PIXEL_TLINE:
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
             if (job.vertexNormalBuffer) this.gl.deleteBuffer(job.vertexNormalBuffer);
             if (job.vertexElementBuffer) this.gl.deleteBuffer(job.vertexElementBuffer);
             break;
 
-        case 'line-label':
+        case VTS_JOB_LINE_LABEL:
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
             if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
             if (job.vertexElementBuffer) this.gl.deleteBuffer(job.vertexElementBuffer);
             break;
 
-        case 'icon':
-        case 'label':
+        case VTS_JOB_ICON:
+        case VTS_JOB_LABEL:
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
             if (job.vertexTexcoordBuffer) this.gl.deleteBuffer(job.vertexTexcoordBuffer);
             if (job.vertexOriginBuffer) this.gl.deleteBuffer(job.vertexOriginBuffer);
@@ -112,7 +112,7 @@ GpuGroup.prototype.addLineJob = function(data) {
     var vertices = data['vertexBuffer'];
 
     var job = {};
-    job.type = 'flat-line';
+    job.type = VTS_JOB_FLAT_LINE;
     job.program = this.renderer.progLine;
     job.color = this.convertColor(data['color']);
     job.zIndex = data['z-index'] + 256;
@@ -177,6 +177,14 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 
     var job = {};
     job.type = data['type'];
+
+    switch(data['type']) {
+    case 'flat-tline':  job.type = VTS_JOB_FLAT_TLINE;  break;
+    case 'flat-rline':  job.type = VTS_JOB_FLAT_RLINE;  break;
+    case 'pixel-line':  job.type = VTS_JOB_PIXEL_LINE;  break;
+    case 'pixel-tline': job.type = VTS_JOB_PIXEL_TLINE; break;
+    }
+
     job.color = this.convertColor(data['color']);
     job.zIndex = data['z-index'] + 256;
     job.clickEvent = data['click-event'];
@@ -208,10 +216,10 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     }
 
     switch(job.type) {
-    case 'flat-tline':   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
-    case 'flat-rline':   job.program = this.renderer.progRLine;  break;
-    case 'pixel-line':   job.program = this.renderer.progLine3;  break;
-    case 'pixel-tline':  job.program = (background[3] != 0) ? this.renderer.progTPBLine : this.renderer.progTPLine; break;
+    case VTS_JOB_FLAT_TLINE:   job.program = (background[3] != 0) ? this.renderer.progTBLine : this.renderer.progTLine;  break;
+    case VTS_JOB_FLAT_RLINE:   job.program = this.renderer.progRLine;  break;
+    case VTS_JOB_PIXEL_LINE:   job.program = this.renderer.progLine3;  break;
+    case VTS_JOB_PIXEL_TLINE:  job.program = (background[3] != 0) ? this.renderer.progTPBLine : this.renderer.progTPLine; break;
     }
 
     if (!job.program.isReady()) {
@@ -220,10 +228,10 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 
     if (job.advancedHit) {
         switch(job.type) {
-        case 'flat-tline':   job.program2 = this.renderer.progETLine;  break;
-        case 'flat-rline':   job.program2 = this.renderer.progERLine;  break;
-        case 'pixel-line':   job.program2 = this.renderer.progELine3;  break;
-        case 'pixel-tline':  job.program2 = this.renderer.progETPLine; break;
+        case VTS_JOB_FLAT_TLINE:   job.program2 = this.renderer.progETLine;  break;
+        case VTS_JOB_FLAT_RLINE:   job.program2 = this.renderer.progERLine;  break;
+        case VTS_JOB_PIXEL_LINE:   job.program2 = this.renderer.progELine3;  break;
+        case VTS_JOB_PIXEL_TLINE:  job.program2 = this.renderer.progETPLine; break;
         }
 
         if (!job.program2.isReady()) {
@@ -269,7 +277,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     var texcoords = data['texcoordsBuffer'];
 
     var job = {};
-    job.type = 'line-label';
+    job.type = VTS_JOB_LINE_LABEL;
     job.program = this.renderer.progText;
     job.color = this.convertColor(data['color']);
     job.color2 = this.convertColor(data['color2']);
@@ -333,7 +341,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     var f = 1.0/255;
 
     var job = {};
-    job.type = label ? 'label' : 'icon';
+    job.type = label ? VTS_JOB_LABEL : VTS_JOB_ICON;
     job.program = this.renderer.progIcon;
     job.color = this.convertColor(data['color']);
     job.zIndex = data['z-index'] + 256;
@@ -476,7 +484,7 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle) {
     for (var i = 0, li = this.jobs.length; i < li; i++) {
         var job = this.jobs[i];
 
-        if ((job.type == 'icon' || job.type == 'label') && job.visibility > 0) {
+        if ((job.type == VTS_JOB_ICON || job.type == VTS_JOB_LABEL) && job.visibility > 0) {
             var center = job.center;
             if (vec3.length([center[0]-cameraPos[0],
                 center[1]-cameraPos[1],

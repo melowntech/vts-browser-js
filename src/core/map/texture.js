@@ -41,9 +41,9 @@ var MapTexture = function(map, path, heightMap, extraBound, extraInfo, tile, int
         if (layer.availability) {
             this.checkType = layer.availability.type;
             switch (this.checkType) {
-            case 'negative-type': this.checkValue = layer.availability.mime; break;
-            case 'negative-code': this.checkValue = layer.availability.codes; break;
-            case 'negative-size': this.checkValue = layer.availability.size; break;
+            case VTS_TEXTURECHECK_TYPE: this.checkValue = layer.availability.mime; break;
+            case VTS_TEXTURECHECK_CODE: this.checkValue = layer.availability.codes; break;
+            case VTS_TEXTURECHECK_SIZE: this.checkValue = layer.availability.size; break;
             }
         }       
     }
@@ -155,7 +155,7 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
     }*/
 
     switch (this.checkType) {
-    case 'metatile':
+    case VTS_TEXTURECHECK_MEATATILE:
 
         if (this.checkStatus != 2) {
             if (this.checkStatus == 0) {
@@ -255,7 +255,7 @@ MapTexture.prototype.isMaskPosible = function() {
         }
     }
 
-    if (texture.checkType == 'metatile') {
+    if (texture.checkType == VTS_TEXTURECHECK_MEATATILE) {
         return true;
     } else {
         return false;
@@ -271,7 +271,7 @@ MapTexture.prototype.isMaskInfoReady = function() {
         }
     }
 
-    if (texture.checkType == 'metatile') {
+    if (texture.checkType == VTS_TEXTURECHECK_MEATATILE) {
         if (this.maskTexture || texture.checkStatus == 2 || texture.checkStatus ==  -1) {
             return true;
         }
