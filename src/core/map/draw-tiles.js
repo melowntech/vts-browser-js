@@ -61,26 +61,43 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
                     this.stats.drawnGeodataTiles++;
                 }
             }
+
+            var count = 0;
            
-            if (tile.resetDrawCommands) {
-                tile.drawCommands = [[], [], []];
-                tile.updateBounds = true;
-        
-                if (tile.bounds) {
-                    for (var key in tile.bounds) {
-                        tile.bounds[key].viewCoutner = 0; 
+            do {
+
+                if (tile.resetDrawCommands) {
+                    tile.drawCommands = [[], [], []];
+                    tile.updateBounds = true;
+            
+                    if (tile.bounds) {
+                        for (var key in tile.bounds) {
+                            tile.bounds[key].viewCoutner = 0; 
+                        }
                     }
+                    
+                    tile.resetDrawCommands = false;
                 }
-                
-                tile.resetDrawCommands = false;
-            }
 
+                var ret;
 
-            if (!tile.surface.geodata) {
-                return this.drawMeshTile(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu);
-            } else {
-                return this.drawGeodataTile(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu);
-            }
+                if (!tile.surface.geodata) {
+                    ret = this.drawMeshTile(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu);
+                } else {
+                    ret = this.drawGeodataTile(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu);
+                }
+
+                //if (count > 0) console.log('loop: ' + count);
+
+                count++;
+
+                if (count > 10) {
+                    break; //prevent infinite loop
+                }
+
+            } while(tile.resetDrawCommands);
+
+            return ret;
         } else {
             return true;
         }
@@ -95,13 +112,13 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
 };
 
 
+
 MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu) {
     var path;
 
     if (!tile.surfaceMesh) {
         if (tile.resourceSurface.virtual) {
             return true;
-            //debugger;
         }
         
         path = tile.resourceSurface.getMeshUrl(tile.id);
@@ -138,15 +155,14 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         }
     }
     
-    if (tile.drawCommands[channel].length > 0) { //this is new but probably harmless
-        //return false;
-        
+    if (tile.drawCommands[channel].length > 0) { 
         if (this.config.mapHeightfiledWhenUnloaded && !preventRedener) {
             //node.drawPlane(cameraPos, tile);
             tile.drawGrid(cameraPos);
-            ret = true;
+            return false;
+        } else {
+            return false;
         }
-        
     } 
 
     if (tile.surfaceMesh.isReady(preventLoad, priority, doNotCheckGpu) && !preventLoad) {
@@ -412,7 +428,16 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             
         }
 
+        if (tile.resetDrawCommands) {
+            return false;
+        }
+
         if (draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, doNotCheckGpu)) {
+
+            if (tile.resetDrawCommands) {
+                return false;
+            }
+
             if (!preventRedener) {
                 draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority);
                 this.map.applyCredits(tile);
@@ -430,7 +455,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             if (this.config.mapHeightfiledWhenUnloaded && !preventRedener) {
                 //node.drawPlane(cameraPos, tile);
                 tile.drawGrid(cameraPos);
-                ret = true;
+                ret = !(tile.drawCommands[channel].length > 0);
             }
         }
         
@@ -439,7 +464,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         if (this.config.mapHeightfiledWhenUnloaded && !preventRedener) {
             //node.drawPlane(cameraPos, tile);
             tile.drawGrid(cameraPos);
-            ret = true;
+            ret = !(tile.drawCommands[channel].length > 0);
         }
         
     }
@@ -875,7 +900,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
 
     //draw order
     if (debug.drawOrder) {
-        text = '' + this.drawTileCounter;
+        text = '' + this.drawTileCounter + ' cmds: ' + (tile.drawCommands[0].length);
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
     }
 
