@@ -79,7 +79,13 @@ MapBoundLayer.prototype.parseJson = function(json) {
 
     if (this.availability) {
         var p = json['availability'];
-        this.availability.type = p['type'];
+
+        switch(p['type']) {
+            case 'negative-type': this.availability.type = VTS_TEXTURECHECK_TYPE; break;
+            case 'negative-code': this.availability.type = VTS_TEXTURECHECK_CODE; break;
+            case 'negative-size': this.availability.type = VTS_TEXTURECHECK_SIZE; break;
+        }
+
         this.availability.mime = p['mime'];
         this.availability.codes = p['codes'];
         this.availability.size = p['size'];
@@ -88,7 +94,7 @@ MapBoundLayer.prototype.parseJson = function(json) {
 
     if (this.metaUrl && this.maskUrl) {
         this.availability = {
-            type : 'metatile'
+            type : VTS_TEXTURECHECK_MEATATILE
         };
     }
 

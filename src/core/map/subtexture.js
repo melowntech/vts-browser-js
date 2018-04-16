@@ -123,20 +123,20 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
     }
 
     switch (texture.checkType) {
-    case 'negative-type':
-    case 'negative-code':
-    case 'negative-size':
+    case VTS_TEXTURECHECK_TYPE:
+    case VTS_TEXTURECHECK_CODE:
+    case VTS_TEXTURECHECK_SIZE:
         
         if (this.checkStatus != 2) {
             this.checkType = texture.checkType;
             this.checkValue = texture.checkValue;
 
             if (this.checkStatus == 0) {
-                this.scheduleHeadRequest(priority, (this.checkType == 'negative-size'));
+                this.scheduleHeadRequest(priority, (this.checkType == VTS_TEXTURECHECK_SIZE));
             } else if (this.checkStatus == 3) { //loadError
                 if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
                         performance.now() > this.loadErrorTime + this.map.config.mapLoadErrorRetryTime) {
-                    this.scheduleHeadRequest(priority, (this.checkType == 'negative-size'));
+                    this.scheduleHeadRequest(priority, (this.checkType == VTS_TEXTURECHECK_SIZE));
                 }
             } else if (this.checkStatus == -1) {
             
@@ -292,7 +292,7 @@ MapSubtexture.prototype.onLoadError = function(killBlob) {
 
 
 MapSubtexture.prototype.onBinaryLoaded = function(data) {
-    if (this.fastHeaderCheck && this.checkType && this.checkType != 'metatile') {
+    if (this.fastHeaderCheck && this.checkType && this.checkType != VTS_TEXTURECHECK_MEATATILE) {
         this.onHeadLoaded(null, data, null /*status*/);
         
         if (this.checkStatus == -1) {
@@ -394,7 +394,7 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
     if (this.map.config.mapXhrImageLoad && this.fastHeaderCheck) {
 
         switch (this.checkType) {
-        case 'negative-size':
+        case VTS_TEXTURECHECK_SIZE:
             if (data) {
                 if (data.size == this.checkValue) {
                     this.checkStatus = -1;
@@ -402,7 +402,7 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
             }
             break;
                 
-        case 'negative-type':
+        case VTS_TEXTURECHECK_TYPE:
             if (data) {
                 if (data.type == this.checkValue) {
                     this.checkStatus = -1;
@@ -410,7 +410,7 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
             }
             break;
                 
-        case 'negative-code':
+        case VTS_TEXTURECHECK_CODE:
             if (status) {
                 if (this.checkValue.indexOf(status) != -1) {
                     this.checkStatus = -1;
@@ -422,7 +422,7 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
     } else {
 
         switch (this.checkType) {
-        case 'negative-size':
+        case VTS_TEXTURECHECK_SIZE:
             if (data) {
                 if (data.byteLength == this.checkValue) {
                     this.checkStatus = -1;
@@ -430,7 +430,7 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
             }
             break;
                 
-        case 'negative-type':
+        case VTS_TEXTURECHECK_TYPE:
             if (data) {
                 //if (!data.indexOf) {
                   //  data = data;
@@ -442,7 +442,7 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
             }
             break;
                 
-        case 'negative-code':
+        case VTS_TEXTURECHECK_CODE:
             if (status) {
                 if (this.checkValue.indexOf(status) != -1) {
                     this.checkStatus = -1;

@@ -357,10 +357,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var drawWireframe = draw.debug.drawWireframe;
     var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
 
-    if (type == 'depth') {
+    if (type == VTS_MATERIAL_DEPTH) {
         program = renderer.progDepthTile;
         //texcoordsAttr = "aTexCoord";
-    } else if (type == 'flat') {
+    } else if (type == VTS_MATERIAL_FLAT) {
         program = renderer.progFlatShadeTile;
     } else {
         if (drawWireframe > 0) {
@@ -370,21 +370,21 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             case 1:
     
                 switch(type) {
-                case 'internal':
-                case 'internal-nofog':
+                case VTS_MATERIAL_INTERNAL:
+                case VTS_MATERIAL_INTERNAL_NOFOG:
                     program = renderer.progWireframeTile;
                     texcoordsAttr = 'aTexCoord';
                     attributes.push('aTexCoord');
                     break;
     
-                case 'external':
-                case 'external-nofog':
+                case VTS_MATERIAL_EXTERNAL:
+                case VTS_MATERIAL_EXTERNAL_NOFOG:
                     program = renderer.progWireframeTile3;
                     texcoords2Attr = 'aTexCoord2';
                     attributes.push('aTexCoord2');
                     break;
     
-                case 'fog':
+                case VTS_MATERIAL_FOG:
                     return;
                 }
     
@@ -392,15 +392,15 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             }
         } else {
             switch(type) {
-            case 'internal':
-            case 'internal-nofog':
+            case VTS_MATERIAL_INTERNAL:
+            case VTS_MATERIAL_INTERNAL_NOFOG:
                 program = renderer.progTile;
                 texcoordsAttr = 'aTexCoord';
                 attributes.push('aTexCoord');
                 break;
     
-            case 'external':
-            case 'external-nofog':
+            case VTS_MATERIAL_EXTERNAL:
+            case VTS_MATERIAL_EXTERNAL_NOFOG:
                 program = renderer.progTile2;
                     
                 if (texture) {
@@ -410,11 +410,11 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                     }
                 } 
                     
-                texcoords2Attr = 'aTexCoord2';
+                texcoords2Attr = 'aTexCoord2';  
                 attributes.push('aTexCoord2');
                 break;
     
-            case 'fog':
+            case VTS_MATERIAL_FOG:
                 program = renderer.progFogTile;
                 break;
             }
@@ -445,7 +445,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         } else {
             return;
         }
-    } else if (type != 'fog' && type != 'depth' && type != 'flat') {
+    } else if (type != VTS_MATERIAL_FOG && type != VTS_MATERIAL_DEPTH && type != VTS_MATERIAL_FLAT) {
         return;
     }
 
@@ -463,8 +463,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
     if (drawWireframe == 0) {
         switch(type) {
-        case 'internal':
-        case 'fog':
+        case VTS_MATERIAL_INTERNAL:
+        case VTS_MATERIAL_FOG:
             program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
             program.setVec4('uFogColor', draw.atmoColor);
             
@@ -473,12 +473,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             program.setVec4('uCamVec', this.map.camera.vector2);
             break;
 
-        case 'internal-nofog':
+        case VTS_MATERIAL_INTERNAL_NOFOG:
                 //program.setFloat("uFogDensity", 0);
             program.setVec4('uParams', [draw.zFactor, 0, 0, 0]);
             break;
 
-        case 'external':
+        case VTS_MATERIAL_EXTERNAL:
             program.setFloat('uAlpha', 1);
                 //program.setFloat("uFogDensity", draw.fogDensity);
             program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
@@ -490,7 +490,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             program.setVec4('uCamVec', this.map.camera.vector2);
             break;
 
-        case 'external-nofog':
+        case VTS_MATERIAL_EXTERNAL_NOFOG:
             program.setFloat('uAlpha', alpha);
                 //program.setFloat("uFogDensity", 0);
             program.setVec4('uParams', [draw.zFactor, 0, 0, 0]);
