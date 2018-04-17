@@ -109,7 +109,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
     this.busy = true;
 
     //this.setFont('#default', this.renderer.font);
-    this.sendCommand('setStylesheet', { 'data' : stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()) } );
+    this.sendCommand('setStylesheet', { 'data' : stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()), 'metric': this.config } );
 
     var fonts = stylesheet.fonts;
     var fontMap = {}; //'#default' : '#default' };

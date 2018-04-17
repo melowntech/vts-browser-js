@@ -66,6 +66,7 @@ var Core = function(element, config, coreInterface) {
         mapDefaultFont : '//cdn.melown.com/libs/vtsjs/fonts/noto-basic/1.0.0/noto.fnt',
         //mapDefaultFont : '../fonts/basic.fnt',
         mapFog : true,
+        mapMetricUnits : ((window.navigator.userLanguage || window.navigator.language).indexOf('en-') != 0),
         rendererAntialiasing : true,
         rendererAllowScreenshots : false,
         inspector : true, 
@@ -488,7 +489,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.14.8';
+    return (full ? 'Core: ' : '') + '2.14.9';
 }
 
 

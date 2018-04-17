@@ -2,7 +2,8 @@
 import {globals as globals_} from './worker-globals.js';
 import {setFont as setFont_, setFontMap as setFontMap_,} from './worker-text.js';
 import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
-        processStylesheet as processStylesheet_, getFilterResult as getFilterResult_} from './worker-style.js';
+        processStylesheet as processStylesheet_, getFilterResult as getFilterResult_,
+        getLayerPropertyValueInner as getLayerPropertyValueInner_} from './worker-style.js';
 import {processLineStringPass as processLineStringPass_, processLineStringGeometry as processLineStringGeometry_} from './worker-linestring.js';
 import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_} from './worker-pointarray.js';
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
@@ -20,6 +21,7 @@ var processPolygonPass = processPolygonPass_;
 var processLineStringGeometry = processLineStringGeometry_;
 var processPointArrayGeometry = processPointArrayGeometry_;
 var postGroupMessage = postGroupMessage_, optimizeGroupMessages = optimizeGroupMessages_;
+var getLayerPropertyValueInner = getLayerPropertyValueInner_;
 
 var exportedGeometries = [];
 var featureCache = new Array(1024), featureCacheIndex = 0, finalFeatureCache = new Array(1024), finalFeatureCacheIndex = 0, finalFeatureCacheIndex2 = 0;
@@ -91,14 +93,18 @@ function processFeatures(type, features, lod, featureType, group) {
                 case 'top':
                 case 'bottom':
 
-                    if (typeof property === 'string' && property.charAt(0) == '$') {
-                        property = property.substr(1);
+                    if ((typeof property === 'string' && property.charAt(0) == '$') || (typeof property === 'object')) {
+                        var complexProperty = (typeof property === 'object');
+
+                        if (!complexProperty) {
+                            property = property.substr(1);
+                        }
 
                         if (count > featureCacheIndex) {
                             count = featureCacheIndex;
                         }
 
-                        var top = (reduce[0] == 'top');
+                        var top = (reduce[0] == 'top'), value;
                         var currentIndex = 0;
                         var currentValue2 = top ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 
@@ -109,7 +115,16 @@ function processFeatures(type, features, lod, featureType, group) {
                             for (i = 0, li = featureCacheIndex; i < li; i++) {
                                 feature = featureCache[i];
 
-                                var value = parseFloat(feature.properties[property]);
+                                if (!currentIndex) {
+                                    if (!complexProperty) {
+                                        value = parseFloat(feature.properties[property]);
+                                    } else {
+                                        value = getLayerPropertyValueInner(layer, null, feature, lod, property, 0);
+                                    }
+                                    feature.tmp = value;
+                                } else {
+                                    value = feature.tmp;
+                                }
 
                                 if (!isNaN(value) && ((top && value >= currentValue && value < currentValue2) || (value <= currentValue && value > currentValue2)) ) {
                                     if (currentValue != value) {
@@ -373,6 +388,7 @@ self.onmessage = function (e) {
     case 'setStylesheet':
         if (data) {
             globals.geocent = data['geocent'] || false;
+            globals.metricUnits = data['metric'] || true;
             processStylesheet(data['data']);
         }
         postMessage({'command' : 'ready'});

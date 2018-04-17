@@ -19,6 +19,7 @@ var globals = {
     tileLod : 0,
     tileSize : 1,
     hitState : 0,
+    metricUnits : true,
     groupOptimize : true,
     groupOrigin : [0,0,0],
     messageBuffer : new Array(65536),
