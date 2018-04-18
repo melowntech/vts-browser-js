@@ -1042,19 +1042,29 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_LABEL:
 
         if (job.reduce) {
-            var a = job.tiltAngle;
+            var a;
 
-            if (job.reduce[0] == 1) {
-                a = 1.0 - (Math.acos(a) * (1.0/(Math.PI*0.5)));
-            } else if (job.reduce[0] == 3) {
-                a = (Math.cos(Math.acos(a) * 2) + 1.0) * 0.5;
+            if (job.reduce[0] == 4) {
+                a = Math.max(job.reduce[1], Math.floor(job.reduce[2] / Math.max(1, renderer.drawnGeodataTiles)));
+
+                if (job.index > a) {
+                    return;
+                } 
+            } else {
+                a = job.tiltAngle;
+
+                if (job.reduce[0] == 1) {
+                    a = 1.0 - (Math.acos(a) * (1.0/(Math.PI*0.5)));
+                } else if (job.reduce[0] == 3) {
+                    a = (Math.cos(Math.acos(a) * 2) + 1.0) * 0.5;
+                }
+
+                var indexLimit = (Math.round(job.reduce[1] + (a*job.reduce[2]))-1);
+
+                if (job.index > indexLimit) {
+                    return;
+                } 
             }
-
-            var indexLimit = (Math.round(job.reduce[1] + (a*job.reduce[2]))-1);
-
-            if (job.index > indexLimit) {
-                return;
-            } 
         }
 
         var files = job.files;

@@ -327,6 +327,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 (replay.drawLoaded && replay.loaded)) {
                     
                 if (this.freeLayersHaveGeodata && this.drawChannel == 0) {
+                    this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTiles;
                     this.renderer.draw.drawGpuJobs();
                 }
             }
@@ -489,6 +490,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     if (debug.drawEarth) {
         if (!skipFreeLayers) {
             if (map.freeLayersHaveGeodata && this.drawChannel == 0) {
+                this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTiles;
                 renderer.draw.drawGpuJobs();
             }
         }
