@@ -387,8 +387,8 @@ self.onmessage = function (e) {
 
     case 'setStylesheet':
         if (data) {
-            globals.geocent = data['geocent'] || false;
-            globals.metricUnits = data['metric'] || true;
+            globals.geocent = data['geocent'];
+            globals.metricUnits = data['metric'];
             processStylesheet(data['data']);
         }
         postMessage({'command' : 'ready'});

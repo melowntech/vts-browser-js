@@ -17,8 +17,10 @@ var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
 
 
 RendererRMap.prototype.clear = function() {
-    this.lx = Math.floor(this.renderer.curSize[0] * this.blockSizeFactor) + 1;
-    this.ly = Math.floor(this.renderer.curSize[1] * this.blockSizeFactor) + 1;
+    this.slx = this.renderer.curSize[0];
+    this.sly = this.renderer.curSize[1];
+    this.lx = Math.floor(this.slx * this.blockSizeFactor) + 1;
+    this.ly = Math.floor(this.sly * this.blockSizeFactor) + 1;
 
     var totalNeeded = this.ly * this.lx;
     
@@ -50,6 +52,10 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
 
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
+
+    if (x1 < 0 || x2 > this.slx || y1 < 0 || y2 > this.sly) {
+        return false;
+    }
 
     var xx1 = Math.floor(x1 * this.blockSizeFactor);
     var yy1 = Math.floor(y1 * this.blockSizeFactor);
