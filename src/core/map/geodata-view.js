@@ -220,7 +220,7 @@ MapGeodataView.prototype.draw = function(cameraPos) {
             var proj = renderer.camera.getProjectionMatrix();
             mat4.multiply(proj, mv, mvp);
             
-            group.draw(mv, mvp, null, tiltAngle);
+            group.draw(mv, mvp, null, tiltAngle, this.tile.texelSize);
 
             this.stats.drawnFaces += group.polygons;
             this.stats.drawCalls += group.jobs.length;

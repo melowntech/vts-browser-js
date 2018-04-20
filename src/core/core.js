@@ -22,6 +22,7 @@ var platform = platform_;
 
 
 var Core = function(element, config, coreInterface) {
+    var lang = navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage);
     this.killed = false;
     this.config = {
         map : null,
@@ -66,7 +67,7 @@ var Core = function(element, config, coreInterface) {
         mapDefaultFont : '//cdn.melown.com/libs/vtsjs/fonts/noto-basic/1.0.0/noto.fnt',
         //mapDefaultFont : '../fonts/basic.fnt',
         mapFog : true,
-        mapMetricUnits : ((window.navigator.userLanguage || window.navigator.language).indexOf('en-') != 0),
+        mapMetricUnits : !(lang == 'en' || lang.indexOf('en-') == 0),
         rendererAntialiasing : true,
         rendererAllowScreenshots : false,
         inspector : true, 

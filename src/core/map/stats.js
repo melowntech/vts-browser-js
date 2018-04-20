@@ -5,6 +5,7 @@ var MapStats = function(map) {
     this.inspector = map.core.inspector;
     this.drawnTiles = 0;
     this.drawnGeodataTiles = 0;
+    this.drawnGeodataTilesFactor = 0;
     this.drawnFaces = 0;
     this.drawCalls = 0;    
     this.usedNodes = 0;    
@@ -109,6 +110,7 @@ MapStats.prototype.begin = function(dirty) {
     if (dirty) {
         this.drawnTiles = 0;
         this.drawnGeodataTiles = 0;
+        this.drawnGeodataTilesFactor = 0;
         this.drawCalls = 0;        
         this.drawnFaces = 0;
         this.gpuRenderUsed = 0;

@@ -1044,12 +1044,24 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         if (job.reduce) {
             var a;
 
-            if (job.reduce[0] == 4) {
-                a = Math.max(job.reduce[1], Math.floor(job.reduce[2] / Math.max(1, renderer.drawnGeodataTiles)));
+            if (job.reduce[0] > 4) {
+                
+                if (job.reduce[0] == 4) {
+                    a = Math.max(job.reduce[1], Math.floor(job.reduce[2] / Math.max(1, renderer.drawnGeodataTiles)));
 
-                if (job.index > a) {
-                    return;
-                } 
+                    if (job.index > a) {
+                        return;
+                    } 
+                } else {
+                    a = job.texelSize * job.tiltAngle; 
+                    a = Math.max(job.reduce[1], Math.round(job.reduce[2] * (a / Math.max(1, this.renderer.drawnGeodataTilesFactor))));
+                    this.renderer.drawnGeodataTilesFactor
+
+                    if (job.index >= a) {
+                        return;
+                    } 
+                }
+
             } else {
                 a = job.tiltAngle;
 

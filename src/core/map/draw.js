@@ -328,6 +328,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                     
                 if (this.freeLayersHaveGeodata && this.drawChannel == 0) {
                     this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTiles;
+                    this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                     this.renderer.draw.drawGpuJobs();
                 }
             }
@@ -491,6 +492,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         if (!skipFreeLayers) {
             if (map.freeLayersHaveGeodata && this.drawChannel == 0) {
                 this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTiles;
+                this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                 renderer.draw.drawGpuJobs();
             }
         }

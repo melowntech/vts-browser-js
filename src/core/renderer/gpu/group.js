@@ -364,10 +364,11 @@ GpuGroup.prototype.addIconJob = function(data, label) {
 
     if (job.reduce) {
         switch(job.reduce[0]) {
-            case 'tilt':      job.reduce[0] = 1; break;
-            case 'tilt-cos':  job.reduce[0] = 2; break;
-            case 'tilt-cos2': job.reduce[0] = 3; break;
-            case 'scr-count': job.reduce[0] = 4; break;
+            case 'tilt':       job.reduce[0] = 1; break;
+            case 'tilt-cos':   job.reduce[0] = 2; break;
+            case 'tilt-cos2':  job.reduce[0] = 3; break;
+            case 'scr-count':  job.reduce[0] = 4; break;
+            case 'scr-count2': job.reduce[0] = 5; break;
         }
     }
 
@@ -446,7 +447,7 @@ GpuGroup.prototype.addRenderJob = function(data) {
 };
 
 
-GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle) {
+GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     if (this.id != null) {
         if (this.renderer.layerGroupVisible[this.id] === false) {
             return;
@@ -501,6 +502,7 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle) {
         job.mv = mv;
         job.mvp = mvp;
         job.tiltAngle = tiltAngle;
+        job.texelSize = texelSize;
 
         var zIndex = job.zIndex;
         jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
