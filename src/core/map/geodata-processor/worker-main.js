@@ -93,6 +93,14 @@ function processFeatures(type, features, lod, featureType, group) {
                 case 'top':
                 case 'bottom':
 
+                    if (typeof property === 'string' && property.charAt(0) == '@') {
+                        property = globals.stylesheetConstants[property];
+
+                        if (typeof property === 'undefined') {
+                            break;
+                        }
+                    }
+
                     if ((typeof property === 'string' && property.charAt(0) == '$') || (typeof property === 'object')) {
                         var complexProperty = (typeof property === 'object');
 

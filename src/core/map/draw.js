@@ -76,6 +76,8 @@ var MapDraw = function(map) {
     this.log8 = Math.log(8);
     this.log2 = Math.log(2);
 
+    this.geodataTilesPerLayer = 0;
+
     this.drawCounter = 0;
     this.drawChannel = 0;
     this.drawChannelNames = ['base', 'hit'];
@@ -327,7 +329,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 (replay.drawLoaded && replay.loaded)) {
                     
                 if (this.freeLayersHaveGeodata && this.drawChannel == 0) {
-                    this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTiles;
+                    this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
                     this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                     this.renderer.draw.drawGpuJobs();
                 }
@@ -491,7 +493,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     if (debug.drawEarth) {
         if (!skipFreeLayers) {
             if (map.freeLayersHaveGeodata && this.drawChannel == 0) {
-                this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTiles;
+                this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
                 this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                 renderer.draw.drawGpuJobs();
             }

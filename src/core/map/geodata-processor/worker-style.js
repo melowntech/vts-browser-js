@@ -640,7 +640,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             if (Array.isArray(value) && value.length > 0 && (typeof value[0] === 'string')) {
 
                 if (key == 'dynamic-reduce') {
-                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2') &&
+                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' || value[0] == 'scr-count3') &&
                         (typeof value[1] === 'number') && (typeof value[2] === 'number'))) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
@@ -863,6 +863,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'label-stick':      return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'label-width':      return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'label-no-overlap': return validateValue(layerId, key, value, 'boolean');
+    case 'label-no-overlap-factor': return validateValue(layerId, key, value, 'number', 1, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'label-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
 
     case 'polygon':         return validateValue(layerId, key, value, 'boolean');
@@ -948,6 +949,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'label-stick':      return [0,0,0,255,255,255,255];
     case 'label-width':      return 200;
     case 'label-no-overlap': return true;
+    case 'label-no-overlap-factor': return 1;
     case 'label-no-overlap-margin': return [5,5];
        
     case 'polygon':        return false;
@@ -972,8 +974,8 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'visibility-abs': return null;
     case 'visibility-rel': return null;
 
-    case 'culling':    return 180;
-    case 'next-pass':  return null;
+    case 'culling':         return 180;
+    case 'next-pass':       return null;
     }
 };
 

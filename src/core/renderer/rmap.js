@@ -53,9 +53,9 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
 
-    if (x1 < 0 || x2 > this.slx || y1 < 0 || y2 > this.sly) {
-        return false;
-    }
+    //if (x1 < 0 || x2 > this.slx || y1 < 0 || y2 > this.sly) {
+      //  return false;
+    //}
 
     var xx1 = Math.floor(x1 * this.blockSizeFactor);
     var yy1 = Math.floor(y1 * this.blockSizeFactor);

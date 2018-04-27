@@ -131,6 +131,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 width : getLayerPropertyValue(style, 'label-width', pointArray, lod),
                 noOverlap : getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod),
                 noOverlapMargin : getLayerPropertyValue(style, 'label-no-overlap-margin', pointArray, lod),
+                noOverlapFactor : getLayerPropertyValue(style, 'label-no-overlap-factor', pointArray, lod),
                 vertexBuffer : new Float32Array(bufferSize),
                 originBuffer : new Float32Array(bufferSize2),
                 texcoordsBuffer : new Float32Array(bufferSize),
@@ -333,7 +334,8 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
         if (labelData.noOverlap) {
             var margin = labelData.noOverlapMargin;
-            var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1]];
+            var factor = labelData.noOverlapFactor;
+            var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1], 1.0 / ((factor != 0) ? factor : 1)];
         }
 
         postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,

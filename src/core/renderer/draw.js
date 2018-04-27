@@ -1049,13 +1049,12 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 if (job.reduce[0] == 4) {
                     a = Math.max(job.reduce[1], Math.floor(job.reduce[2] / Math.max(1, renderer.drawnGeodataTiles)));
 
-                    if (job.index > a) {
+                    if (job.index >= a) {
                         return;
                     } 
                 } else {
-                    a = job.texelSize * job.tiltAngle; 
+                    a = Math.pow(job.texelSize * job.tiltAngle, VTS_TILE_COUNT_FACTOR); 
                     a = Math.max(job.reduce[1], Math.round(job.reduce[2] * (a / Math.max(0.00001, this.renderer.drawnGeodataTilesFactor))));
-                    this.renderer.drawnGeodataTilesFactor
 
                     if (job.index >= a) {
                         return;
@@ -1201,7 +1200,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
         }
 
-        if (job.noOverlap) {
+        if (job.noOverlap) { 
             if (!pp) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
             }
@@ -1212,7 +1211,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             var o = job.noOverlap;
 
-            if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], pp[2], [job, stickShift, texture, files, color, pp])) {
+            if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], (pp[2]*1000000)*o[4], [job, stickShift, texture, files, color, pp])) {
                 return;
             }
 
