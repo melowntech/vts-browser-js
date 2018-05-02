@@ -95,10 +95,15 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
     this.jobZBuffer = new Array(512);
     this.jobZBufferSize = new Array(512);
+
+    this.jobZBuffer2 = new Array(512);
+    this.jobZBuffer2Size = new Array(512);
     
     for (var i = 0, li = this.jobZBuffer.length; i < li; i++) {
         this.jobZBuffer[i] = [];
         this.jobZBufferSize[i] = 0;
+        this.jobZBuffer2[i] = {};
+        this.jobZBuffer2Size[i] = 0;
     }
     
     this.layerGroupVisible = [];

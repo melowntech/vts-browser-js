@@ -293,6 +293,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.center = data['center'];
     job.lod = data['lod'];
     job.zbufferOffset = data['zbuffer-offset'];
+    job.hysteresis = data['hysteresis'],
     job.reduced = false;
     job.ready = true;
 
@@ -331,7 +332,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 };
 
 
-GpuGroup.prototype.addIconJob = function(data, label) {
+GpuGroup.prototype.addIconJob = function(data, label, tile) {
     var gl = this.gl;
 
     var vertices = data['vertexBuffer'];
@@ -340,7 +341,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     var s = data['stick'];
     var f = 1.0/255;
 
-    var job = {};
+    var job = { tile: tile };
     job.type = label ? VTS_JOB_LABEL : VTS_JOB_ICON;
     job.program = this.renderer.progIcon;
     job.color = this.convertColor(data['color']);
@@ -432,7 +433,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
 };
 
 
-GpuGroup.prototype.addRenderJob = function(data) {
+GpuGroup.prototype.addRenderJob = function(data, tile) {
     switch(data['type']) {
     case 'flat-line':     this.addLineJob(data); break;
     case 'flat-tline':
@@ -441,7 +442,7 @@ GpuGroup.prototype.addRenderJob = function(data) {
     case 'pixel-tline':    this.addExtentedLineJob(data); break;
     case 'line-label':     this.addLineLabelJob(data); break;
     case 'icon':           this.addIconJob(data); break;
-    case 'label':          this.addIconJob(data, true); break;
+    case 'label':          this.addIconJob(data, true, tile); break;
     case 'point-geometry': this.addGeometry(data); break;
     case 'line-geometry':  this.addGeometry(data); break;
     }
@@ -483,6 +484,7 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     var jobZBufferSize = this.renderer.jobZBufferSize;
 
     var onlyHitable = this.renderer.onlyHitLayers;
+    var timer = Date.now();
 
     for (var i = 0, li = this.jobs.length; i < li; i++) {
         var job = this.jobs[i];
@@ -506,8 +508,27 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
         job.texelSize = texelSize;
 
         var zIndex = job.zIndex;
-        jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
-        jobZBufferSize[zIndex]++;
+
+        if (job.hysteresis && jod.id) {
+            var job2 = jobZBuffer2[zIndex][jod.id];
+            if (!job2) {
+                if (job == job2) {
+                    job.timer = timer;
+                } else {
+                    if ((job2.timer + job2.hysteresis) < timer) {
+                        job.timer = timer;
+                        jobZBuffer2[zIndex][jod.id] = job;
+                        jobZBuffer2Size[zIndex]++;
+                    }
+                }
+            } else {
+                job.timer = timer;
+                jobZBuffer2[zIndex][jod.id] = job;
+                jobZBuffer2Size[zIndex]++;
+            }
+        } else {
+            jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
+        }
     }
 };
 

@@ -883,13 +883,14 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'advanced-hit':    return validateValue(layerId, key, value, 'boolean');
     case 'export-geometry': return validateValue(layerId, key, value, 'boolean');
 
-    case 'visible':     return validateValue(layerId, key, value, 'boolean');
-    case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
-    case 'next-pass':   return validateValue(layerId, key, value, 'object');
-
+    case 'visible':         return validateValue(layerId, key, value, 'boolean');
     case 'visibility':      return validateValue(layerId, key, value, 'number', null, 0.00001, Number.MAX_VALUE);
     case 'visibility-abs':  return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
     case 'visibility-rel':  return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
+
+    case 'hysteresis':  return validateValue(layerId, key, value, 'number', 0, 0, Number.MAX_VALUE);
+    case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
+    case 'next-pass':   return validateValue(layerId, key, value, 'object');
 
     }
 
@@ -974,6 +975,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'visibility-abs': return null;
     case 'visibility-rel': return null;
 
+    case 'hysteresis':      return 0;
     case 'culling':         return 180;
     case 'next-pass':       return null;
     }

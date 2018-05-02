@@ -645,6 +645,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var clearStencilPasses = renderer.clearStencilPasses;
     var jobZBuffer = renderer.jobZBuffer;
     var jobZBufferSize = renderer.jobZBufferSize;
+    var jobZBuffer2 = renderer.jobZBuffer2;
+    var jobZBuffer2Size = renderer.jobZBuffer2Size;
     var onlyHitLayers = renderer.onlyHitLayers;
     var onlyAdvancedHitLayers = renderer.onlyAdvancedHitLayers;
 
@@ -657,10 +659,13 @@ RendererDraw.prototype.drawGpuJobs = function() {
         this.rmap.clear();
     }
 
+    var timer = Date.now();
+
     //draw job buffer and also clean buffer
     for (var i = 0, li = jobZBuffer.length; i < li; i++) {
-        var j, lj = jobZBufferSize[i];
+        var j, lj = jobZBufferSize[i], lj2 = jobZBuffer2Size[i];
         var buffer = jobZBuffer[i];
+        var buffer2 = jobZBuffer2[i];
 
         if (lj > 0 && i >= clearPass) {
             gl.clear(gl.STENCIL_BUFFER_BIT);
@@ -692,6 +697,17 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 }
             }
         } else {
+            if (lj2) {
+
+                for (var key in buffe2) {
+                    var job = buffe2[key];
+
+                    this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize);
+
+                }
+                
+            }
+
             for (j = 0; j < lj; j++) {
                 this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize);
             }
@@ -740,6 +756,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     if (!job.ready) {
         return;
     }
+
+    //if (!(job.tile.id[0] == 14 && job.tile.id[1] == 4383 && job.tile.id[2] == 2863)) {
+      //  return;
+    //}
 
     var state = job.state & 0xff;
     var id = job.eventInfo['#id'];

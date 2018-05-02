@@ -14,7 +14,7 @@ var carModel = null;
     // https://github.com/Melown/vts-browser-js/wiki/VTS-Browser-Map-API#definition-of-view
     browser = vts.browser('map-div', {
         map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json',
-        position : [ 'obj', 15.3775623,50.675077, 'float',0.00,-231.22,-25.55,0.00,101.83,55.00 ],
+        position : [ 'obj', 15.3775623,50.675077, 'float', 0.00, -231.22, -25.55, 0.00, 101.83, 45.00],
         minViewExtent: 50 //allow camera little bit closer
     });
 

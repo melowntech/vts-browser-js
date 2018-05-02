@@ -98,7 +98,7 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
         if (task) {
             if (this.currentGpuGroup) {
                 var t = performance.now();
-                this.currentGpuGroup.addRenderJob(message);
+                this.currentGpuGroup.addRenderJob(message, this.tile);
                 this.stats.renderBuild += performance.now() - t; 
             } //else {
                     //message = message;

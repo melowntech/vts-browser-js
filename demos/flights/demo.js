@@ -9,7 +9,7 @@ var list = null;
     // https://github.com/Melown/vts-browser-js/wiki/VTS-Browser-Map-API#position
     browser = vts.browser('map-div', {
         map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json',
-        position : [ 'obj', 84.93164,28.351981, 'fix', 2728.74, -109.06, -27.28, 0.00, 38255.68, 55.00 ]
+        position : [ 'obj', 84.93164,28.351981, 'fix', 2728.74, -109.06, -27.28, 0.00, 38255.68, 45.00 ]
     });
 
     //check whether browser is supported
