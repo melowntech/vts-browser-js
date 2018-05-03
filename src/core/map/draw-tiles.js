@@ -192,13 +192,19 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
 
         var specificity = 0;
         var i, li, j, lj, k, lk, surface;
+
+        surface = tile.resourceSurface;
+
+        if (!surface) {
+            surface = tile.surface;
+        }
         
-        if (tile.surface.glue) {
-            var surfaces = tile.surface.id; 
+        if (surface.glue) {
+            var surfaces = surface.id; 
             for (i = 0, li = surfaces.length; i < li; i++) {
-                surface = this.map.getSurface(surfaces[i]);
-                if (surface) {
-                    specificity = Math.max(specificity, surface.specificity);
+                var surface2 = this.map.getSurface(surfaces[i]);
+                if (surface2) {
+                    specificity = Math.max(specificity, surface2.specificity);
                 }
             }
 
@@ -208,13 +214,14 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             }
 
         } else {
-            specificity = tile.surface.specificity;
+            specificity = surface.specificity;
 
             //set credits
             for (k = 0, lk = node.credits.length; k < lk; k++) {
                 tile.imageryCredits[node.credits[k]] = specificity;  
             }
         }
+
 
         for (i = 0, li = submeshes.length; i < li; i++) {
             var submesh = submeshes[i];
