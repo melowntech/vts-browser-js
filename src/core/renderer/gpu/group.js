@@ -293,7 +293,6 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.center = data['center'];
     job.lod = data['lod'];
     job.zbufferOffset = data['zbuffer-offset'];
-    job.hysteresis = data['hysteresis'],
     job.reduced = false;
     job.ready = true;
 
@@ -359,6 +358,8 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.stick = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f];
     job.lod = data['lod'];
     job.zbufferOffset = data['zbuffer-offset'];
+    job.hysteresis = data['hysteresis'];
+    job.id = job.eventInfo ? job.eventInfo['osm_id'] : null;
     job.reduced = false;
     job.ready = true;
     job.reduce = data['reduce'];
@@ -456,12 +457,15 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
         }
     }
 
+    var renderer = this.renderer;
+    var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
+
     if (applyOrigin) {
-        var origin;
         var mvp2 = mat4.create();
         var mv2 = mat4.create();
         var pos = this.renderer.position;
 
+        /*
         var transform = this.renderer.layerGroupTransform[this.id];
 
         if (transform != null) {
@@ -469,21 +473,24 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
             origin = [origin[0] - pos[0], origin[1] - pos[1], origin[2]];
             mat4.multiply(math.translationMatrix(origin[0], origin[1], origin[2]), transform[0], mv2);
             mat4.multiply(mv, mv2, mv2);
-        } else {
-            origin = [this.origin[0] - pos[0], this.origin[1] - pos[1], this.origin[2]];
+        } else {*/
+            var origin = this.origin;
+            origin = [origin[0] - pos[0], origin[1] - pos[1], origin[2]];
             mat4.multiply(mv, math.translationMatrix(origin[0], origin[1], origin[2]), mv2);
-        }
+        /*}*/
 
         mat4.multiply(mvp, mv2, mvp2);
         mv = mv2;
         mvp = mvp2;
     }
 
-    var cameraPos = this.renderer.cameraPosition;
-    var jobZBuffer = this.renderer.jobZBuffer;
-    var jobZBufferSize = this.renderer.jobZBufferSize;
+    var cameraPos = renderer.cameraPosition;
+    var jobZBuffer = renderer.jobZBuffer;
+    var jobZBufferSize = renderer.jobZBufferSize;
+    var jobZBuffer2 = renderer.jobZBuffer2;
+    var jobZBuffer2Size = renderer.jobZBuffer2Size;
 
-    var onlyHitable = this.renderer.onlyHitLayers;
+    var onlyHitable = renderer.onlyHitLayers;
     var timer = Date.now();
 
     for (var i = 0, li = this.jobs.length; i < li; i++) {
@@ -504,30 +511,32 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
         job.mv = mv;
         job.mvp = mvp;
+        job.renderCounter = renderCounter;
         job.tiltAngle = tiltAngle;
         job.texelSize = texelSize;
 
         var zIndex = job.zIndex;
 
-        if (job.hysteresis && jod.id) {
-            var job2 = jobZBuffer2[zIndex][jod.id];
-            if (!job2) {
+        if (job.hysteresis && job.id) {
+            var job2 = jobZBuffer2[zIndex][job.id];
+            if (job2) {
                 if (job == job2) {
                     job.timer = timer;
                 } else {
                     if ((job2.timer + job2.hysteresis) < timer) {
                         job.timer = timer;
-                        jobZBuffer2[zIndex][jod.id] = job;
-                        jobZBuffer2Size[zIndex]++;
+                        jobZBuffer2[zIndex][job.id] = job;
+                        //jobZBuffer2Size[zIndex]++;
                     }
                 }
             } else {
                 job.timer = timer;
-                jobZBuffer2[zIndex][jod.id] = job;
+                jobZBuffer2[zIndex][job.id] = job;
                 jobZBuffer2Size[zIndex]++;
             }
         } else {
             jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
+            jobZBufferSize[zIndex]++;
         }
     }
 };

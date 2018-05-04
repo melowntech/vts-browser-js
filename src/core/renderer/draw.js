@@ -649,6 +649,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var jobZBuffer2Size = renderer.jobZBuffer2Size;
     var onlyHitLayers = renderer.onlyHitLayers;
     var onlyAdvancedHitLayers = renderer.onlyAdvancedHitLayers;
+    var geoRenderCounter = renderer.geoRenderCounter;
 
     if (clearStencilPasses.length > 0) {
         clearPass = clearStencilPasses[0];
@@ -699,13 +700,51 @@ RendererDraw.prototype.drawGpuJobs = function() {
         } else {
             if (lj2) {
 
-                for (var key in buffe2) {
-                    var job = buffe2[key];
+                for (var key in buffer2) {
+                    var job = buffer2[key];
 
-                    this.drawGpuJob(gpu, gl, renderer, buffer[j], screenPixelSize);
+                    // update job matricies
+                    if (job.renderCounter[0][0] !== geoRenderCounter && job.renderCounter[0][0] !== null) { 
+                        var renderCounter = job.renderCounter[0];
 
+                        /*
+                        var mvp2 = mat4.create();
+                        var mv2 = mat4.create();
+                        var mv = renderCounter[1];
+                        var mvp = renderCounter[2];
+                        var pos = renderer.position;
+                        var origin = renderCounter[3];
+
+                        origin = [origin[0] - pos[0], origin[1] - pos[1], origin[2]];
+                        mat4.multiply(mv, math.translationMatrix(origin[0], origin[1], origin[2]), mv2);
+                        mat4.multiply(mvp, mv2, mvp2);
+                        */
+
+                        var mvp = mat4.create();
+                        var mv = mat4.create();
+                        var group = renderCounter[3];
+                        var bbox = group.bbox;
+                        var geoPos = renderer.cameraPosition;
+                    
+                        var m = math.translationMatrix(bbox.min[0] - geoPos[0], bbox.min[1] - geoPos[1], bbox.min[2] - geoPos[2]);
+
+                        //mat4.multiply(renderer.camera.getModelviewMatrix(), this.getWorldMatrix(group.bbox, cameraPos), mv);
+                        mat4.multiply(renderer.camera.getModelviewMatrix(), m, mv);
+
+                        var proj = renderer.camera.getProjectionMatrix();
+                        mat4.multiply(proj, mv, mvp);
+
+                        job.mv = mv;
+                        job.mvp = mvp;
+                    }
+
+                    if ((job.timer + job.hysteresis) < timer) {
+                        delete buffer2[key];
+                        jobZBuffer2Size[i]--;
+                    } else {
+                        this.drawGpuJob(gpu, gl, renderer, job, screenPixelSize);
+                    }
                 }
-                
             }
 
             for (j = 0; j < lj; j++) {
