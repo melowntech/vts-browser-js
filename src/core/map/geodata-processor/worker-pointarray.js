@@ -335,8 +335,18 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
         if (labelData.noOverlap) {
             var margin = labelData.noOverlapMargin;
-            var factor = labelData.noOverlapFactor;
-            var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1], 1.0 / ((factor != 0) ? factor : 1)];
+            var factorType = null, factorValue = null;
+
+            if (labelData.noOverlapFactor !== null) {
+                switch(labelData.noOverlapFactor[0]) {
+                    case 'direct':      factorType = VTS_NO_OVERLAP_DIRECT;      break;
+                    case 'div-by-dist': factorType = VTS_NO_OVERLAP_DIV_BY_DIST; break;
+                }
+
+                factorValue = labelData.noOverlapFactor[1];
+            }
+
+            var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1], factorType, factorValue];
         }
 
         postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,

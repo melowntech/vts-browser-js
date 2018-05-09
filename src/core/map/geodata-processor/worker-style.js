@@ -175,6 +175,10 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                     break;
             }
 
+            if (typeof finalValue !== 'undefined' && value.charAt(0) == '@') {
+                finalValue = getLayerPropertyValueInner(layer, key, feature, lod, finalValue, depth+1);
+            }
+
             if (typeof finalValue !== 'undefined') {
 
                 //simpleFmtCall(finalValue, (function(svalue){ getLayerPropertyValueInner(layer, key, feature, lod, svalue, depth+1); }))
@@ -618,7 +622,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
     //check value type
     if ((typeof value) != type) {
         //check for exceptions
-        if (!(value === null && (key == 'icon-source' || key == 'visibility'))) {
+        if (!(value === null && (key == 'icon-source' || key == 'visibility' || key == 'label-no-overlap-factor'))) {
             logError('wrong-property-value', layerId, key, value);
             return getDefaultLayerPropertyValue(key);
         }
@@ -631,12 +635,12 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
         //accepted cases for null value
         if (value === null && (key == 'line-style-texture' || key == 'icon-source' || 'dynamic-reduce' || 'reduce' ||
-            key == 'visibility' || key == 'visibility-abs' || key == 'visibility-rel' || key == 'next-pass')) {
+            key == 'hysteresis' || key == 'visibility' || key == 'visibility-abs' || key == 'visibility-rel' || key == 'next-pass')) {
             return value;
         }
 
         //check reduce
-        if (key == 'reduce' || key == 'dynamic-reduce') {
+        if (key == 'reduce' || key == 'dynamic-reduce' || key == 'label-no-overlap-factor') {
             if (Array.isArray(value) && value.length > 0 && (typeof value[0] === 'string')) {
 
                 if (key == 'dynamic-reduce') {
@@ -645,12 +649,17 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
                     }
-                } else {
+                } else if (key == 'reduce') {
                     if (value[0] != 'odd' && value != 'even') {
                         if ((typeof value[1] !== 'number') || ((value[0] != 'top' || value != 'bottom') && (typeof value[2] !== 'string'))) {
                             logError('wrong-property-value', layerId, key, value);
                             return getDefaultLayerPropertyValue(key);
                         }
+                    }
+                } else if (key == 'label-no-overlap-factor') {
+                    if (!(value[0] == 'direct' || value[0] == 'div-by-dist')) {
+                        logError('wrong-property-value', layerId, key, value);
+                        return getDefaultLayerPropertyValue(key);
                     }
                 }
 
@@ -863,7 +872,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'label-stick':      return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'label-width':      return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'label-no-overlap': return validateValue(layerId, key, value, 'boolean');
-    case 'label-no-overlap-factor': return validateValue(layerId, key, value, 'number', 1, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'label-no-overlap-factor': return validateValue(layerId, key, value, 'object');
     case 'label-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
 
     case 'polygon':         return validateValue(layerId, key, value, 'boolean');
@@ -888,7 +897,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'visibility-abs':  return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
     case 'visibility-rel':  return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
 
-    case 'hysteresis':  return validateValue(layerId, key, value, 'number', 0, 0, Number.MAX_VALUE);
+    case 'hysteresis':  return validateValue(layerId, key, value, 'object', 2, 0, Number.MAX_VALUE);
     case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
     case 'next-pass':   return validateValue(layerId, key, value, 'object');
 
@@ -950,7 +959,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'label-stick':      return [0,0,0,255,255,255,255];
     case 'label-width':      return 200;
     case 'label-no-overlap': return true;
-    case 'label-no-overlap-factor': return 1;
+    case 'label-no-overlap-factor': return null;
     case 'label-no-overlap-margin': return [5,5];
        
     case 'polygon':        return false;
@@ -975,7 +984,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'visibility-abs': return null;
     case 'visibility-rel': return null;
 
-    case 'hysteresis':      return 0;
+    case 'hysteresis':      return null;
     case 'culling':         return 180;
     case 'next-pass':       return null;
     }

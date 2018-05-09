@@ -26,7 +26,7 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
 
     this.size = 0;
     this.polygons = 0;
-};
+};7
 
 //destructor
 GpuGroup.prototype.kill = function() {
@@ -517,27 +517,19 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
         var zIndex = job.zIndex;
 
+        /*
         if (job.hysteresis && job.id) {
             var job2 = jobZBuffer2[zIndex][job.id];
-            if (job2) {
-                if (job == job2) {
-                    job.timer = timer;
-                } else {
-                    if ((job2.timer + job2.hysteresis) < timer) {
-                        job.timer = timer;
-                        jobZBuffer2[zIndex][job.id] = job;
-                        //jobZBuffer2Size[zIndex]++;
-                    }
-                }
-            } else {
-                job.timer = timer;
+            if (!job2) {
+                job.timerShow = 0;
+                job.timerHide = 0;
                 jobZBuffer2[zIndex][job.id] = job;
                 jobZBuffer2Size[zIndex]++;
             }
-        } else {
+        } else {*/
             jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
             jobZBufferSize[zIndex]++;
-        }
+        /*}*/
     }
 };
 

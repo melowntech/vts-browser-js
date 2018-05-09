@@ -165,6 +165,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     var camInfo = camera.update();
     this.renderer.dirty = true;
     this.renderer.drawFog = this.debug.drawFog;
+    this.renderer.frameTime = this.stats.frameTime;
 
     this.renderer.hoverFeatureCounter = 0;
     this.renderer.hoverFeatureList = map.hoverFeatureList;

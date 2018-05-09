@@ -63,7 +63,11 @@ plugins.push(
       'VTS_JOB_ICON' :                7,
       'VTS_JOB_LABEL' :               8,
 
-      'VTS_TILE_COUNT_FACTOR' :       0.5
+      'VTS_TILE_COUNT_FACTOR' :       0.5,
+
+      'VTS_NO_OVERLAP_DIRECT' :       0,
+      'VTS_NO_OVERLAP_DIV_BY_DIST' :  1
+
     })
 );
 
