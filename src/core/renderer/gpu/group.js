@@ -359,7 +359,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.lod = data['lod'];
     job.zbufferOffset = data['zbuffer-offset'];
     job.hysteresis = data['hysteresis'];
-    job.id = job.eventInfo ? job.eventInfo['osm_id'] : null;
+    job.id = job.hysteresis ? job.hysteresis[2] : null;
     job.reduced = false;
     job.ready = true;
     job.reduce = data['reduce'];
@@ -491,7 +491,6 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     var jobZBuffer2Size = renderer.jobZBuffer2Size;
 
     var onlyHitable = renderer.onlyHitLayers;
-    var timer = Date.now();
 
     for (var i = 0, li = this.jobs.length; i < li; i++) {
         var job = this.jobs[i];
@@ -517,19 +516,8 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
         var zIndex = job.zIndex;
 
-        /*
-        if (job.hysteresis && job.id) {
-            var job2 = jobZBuffer2[zIndex][job.id];
-            if (!job2) {
-                job.timerShow = 0;
-                job.timerHide = 0;
-                jobZBuffer2[zIndex][job.id] = job;
-                jobZBuffer2Size[zIndex]++;
-            }
-        } else {*/
-            jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
-            jobZBufferSize[zIndex]++;
-        /*}*/
+        jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
+        jobZBufferSize[zIndex]++;
     }
 };
 

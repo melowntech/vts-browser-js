@@ -591,6 +591,8 @@ Map.prototype.setStylesheetData = function(id, data) {
       //  stylesheet.data = data;
     //}
 
+    this.renderer.draw.clearJobHBuffer();
+
     if (stylesheet) {
         if (data) {
             stylesheet.setData(data);
@@ -1012,6 +1014,10 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
         var id = (res[1]) + (res[2]<<8);
 		
         var feature = this.hoverFeatureList[id];
+
+        if (!feature) {
+            return [null, false, [], elementIndex];
+        }
 
         if (feature[6]) { //advanced hit feature?
             res = this.renderer.hitTestGeoLayers(screenX, screenY, true);

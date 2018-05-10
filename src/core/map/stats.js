@@ -21,6 +21,7 @@ var MapStats = function(map) {
     this.renderTimeBegin = 0;
     this.renderBuild = 0;
     this.lastRenderTime = 0;
+    this.lastFrameTime = 0;
     this.renderedLods = new Array(32);
     this.debugIds = {};
 
@@ -132,6 +133,14 @@ MapStats.prototype.begin = function(dirty) {
     this.statsCycle++;
 
     this.renderTimeBegin = performance.now();
+
+    if (dirty) {
+        if (this.lastFrameTime) {
+            this.frameTime = this.renderTimeBegin - this.lastFrameTime;
+        }
+
+        this.lastFrameTime = this.renderTimeBegin;
+    }
 };
 
 
@@ -139,8 +148,8 @@ MapStats.prototype.end = function(dirty) {
     var timer = performance.now();
 
     var renderTime = timer - this.renderTimeBegin;
-    var frameTime = timer - this.frameTime;
-    this.frameTime = timer;
+    //var frameTime = timer - this.frameTime;
+    //this.frameTime = timer;
     if (dirty) { 
         this.renderTimeTmp += renderTime;
         this.lastRenderTime = renderTime;
@@ -155,7 +164,7 @@ MapStats.prototype.end = function(dirty) {
         this.graphsCreateMeshTimes[i] = 0;
         this.graphsCreateGpuMeshTimes[i] = 0;
         this.graphsCreateTextureTimes[i] = 0;
-        this.graphsFrameTimes[i] = frameTime;
+        this.graphsFrameTimes[i] = this.frameTime;
         this.graphsCpuMemoryUsed[i] = this.map.resourcesCache.totalCost;
         this.graphsCpuMemoryMetatiles[i] = this.map.metatileCache.totalCost;
         this.graphsGpuMemoryTextures[i] = this.gpuTextures;

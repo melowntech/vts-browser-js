@@ -183,7 +183,11 @@ RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPix
         var subjob = rectangles[i+5];
 
         if (subjob) {
-            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob);
+            if (subjob[0].hysteresis) {
+                renderer.jobHBuffer[subjob[0].id] = subjob[0];
+            } else {
+                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob);
+            }
         }
     }
 

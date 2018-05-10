@@ -175,8 +175,12 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                     break;
             }
 
-            if (typeof finalValue !== 'undefined' && value.charAt(0) == '@') {
-                finalValue = getLayerPropertyValueInner(layer, key, feature, lod, finalValue, depth+1);
+            if (typeof finalValue === 'string') {
+                finalValue = getLayerExpresionValue(layer, value, feature, lod, key);
+            } else {
+                if (typeof finalValue !== 'undefined' && value.charAt(0) == '@') {
+                    finalValue = getLayerPropertyValueInner(layer, key, feature, lod, finalValue, depth+1);
+                }
             }
 
             if (typeof finalValue !== 'undefined') {
@@ -897,7 +901,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'visibility-abs':  return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
     case 'visibility-rel':  return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
 
-    case 'hysteresis':  return validateValue(layerId, key, value, 'object', 2, 0, Number.MAX_VALUE);
+    case 'hysteresis':  return validateValue(layerId, key, value, 'object');
     case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
     case 'next-pass':   return validateValue(layerId, key, value, 'object');
 

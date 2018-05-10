@@ -38,6 +38,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.hitmapCounter = 0;
     this.geoRenderCounter = 0;
     this.geoHitmapCounter = 0;
+    this.frameTime = 0;
     this.geometries = {};
     this.clearStencilPasses = [];
     this.onResizeCall = onResize;
@@ -99,6 +100,9 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.jobZBuffer2 = new Array(512);
     this.jobZBuffer2Size = new Array(512);
     
+    this.jobHBuffer = {};
+    this.jobHBufferSize = 0;
+
     for (var i = 0, li = this.jobZBuffer.length; i < li; i++) {
         this.jobZBuffer[i] = [];
         this.jobZBufferSize[i] = 0;
