@@ -139,6 +139,7 @@ var Map = function(core, mapConfig, path, config) {
 
     switch(this.referenceFrame.id) {
         case 'melown2015':
+        case 'earth-qsc':
             this.draw.atmoColor = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
             this.draw.atmoColor2 = [72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0];
             this.draw.atmoColor3 = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];

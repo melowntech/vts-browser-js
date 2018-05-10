@@ -437,7 +437,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
     //draw skydome before geodata
     if (this.drawChannel != 1 && !projected && debug.drawFog &&
-        (map.referenceFrame.id == 'melown2015' || map.referenceFrame.id == 'mars-qsc') &&
+        (map.referenceFrame.id == 'melown2015' || map.referenceFrame.id == 'mars-qsc' || map.referenceFrame.id == 'earth-qsc') &&
         renderer.progAtmo.isReady() && renderer.progAtmo2.isReady()) {    
 
         var navigationSrsInfo = map.getNavigationSrs().getSrsInfo();
