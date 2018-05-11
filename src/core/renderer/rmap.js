@@ -19,6 +19,15 @@ var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
 RendererRMap.prototype.clear = function() {
     this.slx = this.renderer.curSize[0];
     this.sly = this.renderer.curSize[1];
+
+    //reduce by credits
+    this.sly = Math.max(1, this.sly - 35);
+    
+    //compass size
+    this.clx = 135;
+    this.cly = (150 - 35);
+
+
     this.lx = Math.floor(this.slx * this.blockSizeFactor) + 1;
     this.ly = Math.floor(this.sly * this.blockSizeFactor) + 1;
 
@@ -53,9 +62,16 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
 
-    //if (x1 < 0 || x2 > this.slx || y1 < 0 || y2 > this.sly) {
-      //  return false;
-    //}
+    
+    //screen including credits
+    if (x1 < 0 || x2 > this.slx || y1 < 0 || y2 > this.sly) {
+        return false;
+    }
+
+    //compass
+    if (x1 < this.clx && x2 > 0 && y1 <= this.sly && y2 > (this.sly -this.cly)) {
+        return false;
+    }
 
     var xx1 = Math.floor(x1 * this.blockSizeFactor);
     var yy1 = Math.floor(y1 * this.blockSizeFactor);

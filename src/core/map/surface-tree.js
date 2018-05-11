@@ -684,6 +684,11 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
     
     var lodShift = 4;//this.freeLayerSurface ? 1 : 1;
     var typeFactor = 2000;//this.freeLayerSurface ? 1 : 1;
+
+    if (this.freeLayerSurface) {
+        lodShift = 0;//this.freeLayerSurface ? 1 : 1;
+        typeFactor = 0.1;//this.freeLayerSurface ? 1 : 1;
+    }
     
     var draw = map.draw;
     var drawTiles = draw.drawTiles;

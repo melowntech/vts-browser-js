@@ -721,6 +721,16 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         buffer2[job.id] = job;
                         jobZBuffer2Size[i]++;
                         forceUpdate = true;
+                    } else {
+                        if (job.tile && job2.tile && job.tile.id[0] != job2.tile.id[0]) {
+                        //if (job != job2) {
+                            buffer2[job.id] = job;
+                            job.draw = true;
+
+                            job2.timerShow = 0;
+                            job2.timerHide = 0;
+                            job2.draw = false;
+                        } 
                     }
                 }
             }
@@ -1468,7 +1478,8 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     }
 
     var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
-        files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick;
+        files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
+        o = job.noOverlap;
 
     if (job.hysteresis && job.id) {
         if (job.culling != 180) {
@@ -1485,13 +1496,29 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                 return;
             }
         }
+
+        if (o) {
+            var x1 = pp[0]+o[0], y1 = pp[1]+o[1], 
+                x2 = pp[0]+o[2], y2 = pp[1]+o[3];
+
+            var rmap = renderer.rmap;
+
+            //screen including credits
+            if (x1 < 0 || x2 > rmap.slx || y1 < 0 || y2 > rmap.sly) {
+                return false;
+            }
+
+            //compass
+            if (x1 < rmap.clx && x2 > 0 && y1 <= rmap.sly && y2 > (rmap.sly - rmap.cly)) {
+                return false;
+            }
+        }
+
     }
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
 
     if (renderer.drawLabelBoxes) {
-        var o = job.noOverlap;
-
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
         this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
                              [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
