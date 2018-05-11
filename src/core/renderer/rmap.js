@@ -251,7 +251,7 @@ RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPix
             if (subjob[0].hysteresis) {
                 renderer.jobHBuffer[subjob[0].id] = subjob[0];
             } else {
-                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob);
+                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
             }
         }
     }
