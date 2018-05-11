@@ -2,7 +2,7 @@
 
 var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.renderer = renderer;
-    this.maxBlockRectangles = maxBlockRectangles || 50;
+    this.maxBlockRectangles = maxBlockRectangles || 500;
     this.blockSize = blockSize;
     this.blockSizeFactor = 1/blockSize;
     this.blocks = [];
@@ -61,6 +61,20 @@ RendererRMap.prototype.clear = function() {
 };
 
 
+RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjob) {
+        var rectangles2 = this.rectangles2;
+        var rectangles2Count = this.rectangles2Count;
+
+        rectangles2[rectangles2Count] = x1;
+        rectangles2[rectangles2Count+1] = y1;
+        rectangles2[rectangles2Count+2] = x2;
+        rectangles2[rectangles2Count+3] = y2;
+        rectangles2[rectangles2Count+4] = z;
+        rectangles2[rectangles2Count+5] = subjob;
+        this.rectangles2Count += 6;
+};
+
+
 RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
         rectangles = this.rectangles, rectangleIndex, t;
@@ -114,45 +128,17 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
                     y1 < rectangles[rectangleIndex + 3] && y2 > rectangles[rectangleIndex + 1]) {
 
                     if (z > rectangles[rectangleIndex + 4]) {
-                        //return false;
-                        exit = true;
-                        break;
+                        return false;
                     }
 
                     removeList[rectangleIndex] = true;
                 }
             }
 
-            if (exit) {
-                break;
-            }
-
             if ((blockRectanglesCount + 1) >= this.maxBlockRectangles) {
-                //return false;
-                exit = true;
-                break;
+                return false;
             }
         }
-
-        if (exit) {
-            break;
-        }
-    }
-
-    //store removed rectangle for second pass
-    if (exit) {
-        var rectangles2 = this.rectangles2;
-        var rectangles2Count = this.rectangles2Count;
-
-        rectangles2[rectangles2Count] = x1;
-        rectangles2[rectangles2Count+1] = y1;
-        rectangles2[rectangles2Count+2] = x2;
-        rectangles2[rectangles2Count+3] = y2;
-        rectangles2[rectangles2Count+4] = z;
-        rectangles2[rectangles2Count+5] = subjob;
-        this.rectangles2Count += 6;
-
-        return false;
     }
 
     //remove rectangles

@@ -607,7 +607,7 @@ RendererDraw.prototype.getTextSize = function(size, text) {
         case 12:
         case 14:
         case 27: //:
-        case 28: //;
+        case 28: //;7
         case 64: //'
         case 73: //i
         case 76: //l
@@ -663,9 +663,11 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
     var forceUpdate = false;
 
-    renderer.jobHBuffer = {};
+    if (!renderer.onlyHitLayers) {
+        renderer.jobHBuffer = {};
+    }
 
-    var ret, frameTime = renderer.frameTime;
+    var ret, frameTime = renderer.frameTime, sortHbuffer = false;
 
     //console.log("" + frameTime);
 
@@ -725,13 +727,19 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         if (job.tile && job2.tile && job.tile.id[0] != job2.tile.id[0]) {
                         //if (job != job2) {
                             buffer2[job.id] = job;
-                            job.draw = true;
+                            job.timerShow = job2.timerShow;
+                            job.timerHide = job2.timerHide;
+                            job.draw = job2.draw;
 
                             job2.timerShow = 0;
                             job2.timerHide = 0;
                             job2.draw = false;
                         } 
                     }
+
+                    //if (job.hysteresis[3] === true) {
+                        sortHbuffer = true;
+                    //}
                 }
             }
         }
@@ -784,8 +792,9 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
                 var draw = job.draw, fade = null;
 
+                //if (true) {
                 if (job.hysteresis[3] === true) {
-
+ 
                     if (draw) {
                         if (job.timerHide != 0) {
                             fade = job.timerHide / (job.hysteresis[1]+1);
@@ -1378,6 +1387,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             job.lastSubJob = [job, stickShift, texture, files, color, pp];
 
             if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], depth, job.lastSubJob)) {
+                renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], depth, job.lastSubJob);
                 return;
             }
 
