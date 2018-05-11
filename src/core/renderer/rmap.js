@@ -97,6 +97,7 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     var lx = (xx2 - xx1) + 1;
     var ly = (yy2 - yy1) + 1;
     var removeList = {};
+    var exit = false;
 
     //test collision
     for (y = 0; y < ly; y++) {
@@ -113,17 +114,45 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
                     y1 < rectangles[rectangleIndex + 3] && y2 > rectangles[rectangleIndex + 1]) {
 
                     if (z > rectangles[rectangleIndex + 4]) {
-                        return false;
+                        //return false;
+                        exit = true;
+                        break;
                     }
 
                     removeList[rectangleIndex] = true;
                 }
             }
 
+            if (exit) {
+                break;
+            }
+
             if ((blockRectanglesCount + 1) >= this.maxBlockRectangles) {
-                return false;
+                //return false;
+                exit = true;
+                break;
             }
         }
+
+        if (exit) {
+            break;
+        }
+    }
+
+    //store removed rectangle for second pass
+    if (exit) {
+        var rectangles2 = this.rectangles2;
+        var rectangles2Count = this.rectangles2Count;
+
+        rectangles2[rectangles2Count] = x1;
+        rectangles2[rectangles2Count+1] = y1;
+        rectangles2[rectangles2Count+2] = x2;
+        rectangles2[rectangles2Count+3] = y2;
+        rectangles2[rectangles2Count+4] = z;
+        rectangles2[rectangles2Count+5] = subjob;
+        this.rectangles2Count += 6;
+
+        return false;
     }
 
     //remove rectangles
@@ -217,10 +246,10 @@ RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPix
     // second pass
     // add removed rectangles
     for (var i = 0, li = this.rectangles2Count; i < li; i+=6) {
-        var x1 = rectangles2[i] = x1,
-            y1 = rectangles2[i+1] = y1,
-            x2 = rectangles2[i+2] = x2,
-            y2 = rectangles2[i+3] = y2,
+        var x1 = rectangles2[i],
+            y1 = rectangles2[i+1],
+            x2 = rectangles2[i+2],
+            y2 = rectangles2[i+3],
             z = rectangles2[i+4],
             subjob = rectangles2[i+5];
 

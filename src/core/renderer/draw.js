@@ -782,7 +782,26 @@ RendererDraw.prototype.drawGpuJobs = function() {
                     job.timerShow = 0;
                 }
 
-                if (job.draw) {
+                var draw = job.draw, fade = null;
+
+                if (job.hysteresis[3] === true) {
+
+                    if (draw) {
+                        if (job.timerHide != 0) {
+                            fade = job.timerHide / (job.hysteresis[1]+1);
+                            fade = 1.0 - Math.min(1.0, fade);
+                        }
+                    } else {
+                        if (job.timerShow != 0) {
+                            fade = job.timerShow / (job.hysteresis[0]+1);
+                            fade = Math.min(1.0, fade);
+                            draw = true;
+                        }
+                    }
+                }
+
+
+                if (draw) {
                     // update job matricies
                     if (job.renderCounter[0][0] !== geoRenderCounter && job.renderCounter[0][0] !== null) { 
                         var renderCounter = job.renderCounter[0];
@@ -803,7 +822,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         job.mvp = mvp;
                     }                    
 
-                    this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob);
+                    this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
                 }
             }
         }
@@ -1472,7 +1491,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     return;
 };
 
-RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSize, subjob) {
+RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSize, subjob, fade) {
     if (!subjob) {
         return;
     }
@@ -1526,8 +1545,18 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
+    var j = 0, lj = 1, gamma = 0, gamma2 = 0, color2 = job.color2;
+
+    if (fade !== null) {
+        color = [color[0], color[1], color[2], color[3] * fade];
+
+        if (color2) {
+            color2 = [color2[0], color2[1], color2[2], color2[3] * fade];
+        }
+    }
+
     if (s[0] != 0 && s[2] != 0) {
-        this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
+        this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
     }
 
     var prog = job.program; //renderer.progIcon;
@@ -1537,12 +1566,10 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
     prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == VTS_JOB_LABEL ? 1.0 : 1.0 / texture.width), stickShift*2]);
 
-    var j = 0, lj = 1, gamma = 0, gamma2 = 0;
-
     if (prog != renderer.progIcon) {
         gamma = job.outline[2] * 1.4142 / job.size;
         gamma2 = job.outline[3] * 1.4142 / job.size;
-        prog.setVec4('uColor', hitmapRender ? color : job.color2);
+        prog.setVec4('uColor', hitmapRender ? color : color2);
         prog.setVec2('uParams', [job.outline[0], gamma2]);
         lj = hitmapRender ? 1 : 2;
     } else {
