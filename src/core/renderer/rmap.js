@@ -13,6 +13,8 @@ var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.counter = 0;
     this.rectangles = null;
     this.rectanglesCount = 0;
+    this.rectangles2 = null;
+    this.rectangles2Count = 0;
 };
 
 
@@ -35,6 +37,10 @@ RendererRMap.prototype.clear = function() {
     
     if (!this.rectangles) {
         this.rectangles = new Array(totalNeeded * this.maxBlockRectangles * 6); //preallocate empty rectangles
+    }
+
+    if (!this.rectangles2) {
+        this.rectangles2 = new Array(totalNeeded * this.maxBlockRectangles * 6); //preallocate empty rectangles
     }
 
     if (this.rectanglesCount > 0 || this.allocatedBlocks != totalNeeded) {
@@ -154,7 +160,19 @@ RendererRMap.prototype.removeRectangle = function(rectangleIndex) {
     y1 = rectangles[rectangleIndex+1];
     x2 = rectangles[rectangleIndex+2];
     y2 = rectangles[rectangleIndex+3];
-    
+
+    //store removed rectangels for second pass
+    var rectangles2 = this.rectangles2;
+    var rectangles2Count = this.rectangles2Count;
+
+    rectangles2[rectangles2Count] = x1;
+    rectangles2[rectangles2Count+1] = y1;
+    rectangles2[rectangles2Count+2] = x2;
+    rectangles2[rectangles2Count+3] = y2;
+    rectangles2[rectangles2Count+4] = rectangles[rectangleIndex+4];
+    rectangles2[rectangles2Count+5] = rectangles[rectangleIndex+5];
+    this.rectangles2Count += 6;
+
     //remove subjob
     rectangles[rectangleIndex+5] = null;
 
@@ -193,9 +211,25 @@ RendererRMap.prototype.removeRectangle = function(rectangleIndex) {
 
 RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPixelSize) {
     var rectangles = this.rectangles;
+    var rectangles2 = this.rectangles2;
     var draw = renderer.draw;
 
-    for (var i = 0, li = this.rectanglesCount; i < li; i+=6) {
+    // second pass
+    // add removed rectangles
+    for (var i = 0, li = this.rectangles2Count; i < li; i+=6) {
+        var x1 = rectangles2[i] = x1,
+            y1 = rectangles2[i+1] = y1,
+            x2 = rectangles2[i+2] = x2,
+            y2 = rectangles2[i+3] = y2,
+            z = rectangles2[i+4],
+            subjob = rectangles2[i+5];
+
+        this.addRectangle(x1, y1, x2, y2, z, subjob);
+    }
+
+    this.rectangles2Count = 0;
+
+    for (i = 0, li = this.rectanglesCount; i < li; i+=6) {
         var subjob = rectangles[i+5];
 
         if (subjob) {
