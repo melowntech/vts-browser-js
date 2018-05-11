@@ -1543,6 +1543,17 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             }
         }
 
+        if (s[0] != 0) {
+            stickShift = renderer.cameraTiltFator * s[0];
+                
+            if (stickShift < s[1]) {
+                stickShift = 0;
+            } else if (s[2] != 0) {
+                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp[0] = Math.round(pp[0]);
+                pp[1] -= stickShift;
+            }
+        }
     }
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
