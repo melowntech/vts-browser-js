@@ -403,12 +403,15 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 break;
 
             case 'linear':
+            case 'linear2':
             case 'discrete':
+            case 'discrete2':
             case 'lod-scaled':
 
                 //LOD based functions
                 var stops = null;
                 var lodScaledArray = null;
+                var functionValue = lod;
 
                 if (value['lod-scaled'] != null) {
                     var array = value['lod-scaled'];
@@ -420,6 +423,10 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                     stops = array[1];
                     lodScaledArray = array;
 
+                } if (value['discrete2'] != null || value['linear2'] != null) {
+                    var array = value['discrete2'] || value['linear2'];
+                    stops = array[1];
+                    functionValue = getLayerPropertyValueInner(layer, key, feature, lod, array[0], depth + 1);
                 } else {
                     stops = value['discrete'] || value['linear'];
                 }
@@ -438,7 +445,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         break;
                     }
 
-                    if (stops[i][0] > lod) {
+                    if (stops[i][0] > functionValue) {
 
                         if (value['discrete'] != null || lodScaledArray != null) { //no interpolation
                             newValue = lastValue;
@@ -457,20 +464,20 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                             case 'boolean':
                                 lastValue = lastValue ? 1 : 0;
                                 currentValue = lastValue ? 1 : 0;
-                                newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+                                newValue = lastValue + (currentValue - lastValue) * ((functionValue - lastLod) / (currentLod - lastLod));
 
                                 newValue = newValue > 0.5 ? true : false;
                                 break;
 
                             case 'number':
-                                newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+                                newValue = lastValue + (currentValue - lastValue) * ((functionValue - lastLod) / (currentLod - lastLod));
                                 break;
 
                             case 'object':
                                 newValue = [];
 
                                 for (var j = 0, lj= lastValue.length; j < lj; j++) {
-                                    newValue[j] = lastValue[j] + (currentValue[j] - lastValue[j]) * ((lod - lastLod) / (currentLod - lastLod));
+                                    newValue[j] = lastValue[j] + (currentValue[j] - lastValue[j]) * ((functionValue - lastLod) / (currentLod - lastLod));
                                 }
 
                                 break;
@@ -485,7 +492,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 }
 
                 if (lodScaledArray != null) {
-                    newValue *= Math.pow(2*lodScaledArray[2], lodScaledArray[0] - lod);
+                    newValue *= Math.pow(2*lodScaledArray[2], lodScaledArray[0] - functionValue);
                 }
 
                 return newValue;
