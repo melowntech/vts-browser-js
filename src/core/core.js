@@ -67,6 +67,7 @@ var Core = function(element, config, coreInterface) {
         mapDefaultFont : '//cdn.melown.com/libs/vtsjs/fonts/noto-basic/1.0.0/noto.fnt',
         //mapDefaultFont : '../fonts/basic.fnt',
         mapFog : true,
+        mapNoTextures: false,
         mapMetricUnits : !(lang == 'en' || lang.indexOf('en-') == 0),
         rendererAntialiasing : true,
         rendererAllowScreenshots : false,

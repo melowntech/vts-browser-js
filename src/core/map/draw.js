@@ -544,7 +544,7 @@ MapDraw.prototype.getDrawCommandsGpuSize = function(commands) {
         case VTS_DRAWCOMMAND_SUBMESH:
                
             var mesh = command.mesh; 
-            var texture = command.texture; 
+            var texture = this.config.mapNoTextures ? 0 : command.texture; 
 
             if (mesh) {
                 gpuNeeded += mesh.gpuSize;
@@ -586,7 +586,7 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
             var texture = command.texture; 
                 
             var meshReady = (mesh && mesh.isReady(doNotLoad, priority, checkGpu));
-            var textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
+            var textureReady = this.config.mapNoTextures ? true : (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
                 
             if (!(meshReady && textureReady) ) {
                 ready = false;   
@@ -627,8 +627,14 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
             var mesh = command.mesh; 
             var texture = command.texture;
 
-            var meshReady = (mesh && mesh.isReady(doNotLoad, priority));
-            var textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority)));
+            var meshReady = (mesh && mesh.isReady(doNotLoad, priority)), textureReady;
+
+            if (this.config.mapNoTextures) {
+                textureReady = true;
+                texture = null;
+            } else {
+                textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority)));
+            }
                 
             if (meshReady && textureReady) {
                     //debug bbox

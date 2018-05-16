@@ -793,6 +793,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapRefreshCycles':              this.config.mapRefreshCycles = utils.validateNumber(value, 0, Number.MAXINTEGER, 3); break;
     case 'mapDefaultFont':                this.config.mapDefaultFont =  utils.validateString(value, ''); break;
     case 'mapMetricUnits':                this.config.mapMetricUnits = utils.validateBool(value, true); break;
+    case 'mapNoTextures':                 this.config.mapNoTextures = this.config.mapDisableCulling = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
@@ -840,6 +841,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapRefreshCycles':              return this.config.mapRefreshCycles;
     case 'mapDefaultFont':                return this.config.mapDefaultFont;
     case 'mapMetricUnits':                return this.config.mapMetricUnits;
+    case 'mapNoTextures':                 return this.config.mapNoTextures;
     case 'mario':                         return this.config.mario;
     }
 };
