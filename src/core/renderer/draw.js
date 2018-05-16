@@ -650,7 +650,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var onlyHitLayers = renderer.onlyHitLayers;
     var onlyAdvancedHitLayers = renderer.onlyAdvancedHitLayers;
     var geoRenderCounter = renderer.geoRenderCounter;
-    var job, key;
+    var job, key, hitmapRender = renderer.onlyHitLayers;
 
     if (clearStencilPasses.length > 0) {
         clearPass = clearStencilPasses[0];
@@ -663,9 +663,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
     var forceUpdate = false;
 
-    if (!renderer.onlyHitLayers) {
-        renderer.jobHBuffer = {};
-    }
+    renderer.jobHBuffer = {};
 
     var ret, frameTime = renderer.frameTime, sortHbuffer = false;
 
@@ -713,7 +711,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 job = buffer[j];
                 this.drawGpuJob(gpu, gl, renderer, job, screenPixelSize);
 
-                if (job.hysteresis && job.id) {
+                if (!hitmapRender && job.hysteresis && job.id) {
                     var job2 = buffer2[job.id];
 
                     if (!job2) {
@@ -756,44 +754,45 @@ RendererDraw.prototype.drawGpuJobs = function() {
             for (key in buffer2) {
                 job = hbuffer[key];
 
-                if (job) {
-                    
-                    if (!job.draw) {
-                        job.timerShow += frameTime;
+                if (!hitmapRender) {
+                    if (job) {
+                        
+                        if (!job.draw) {
+                            job.timerShow += frameTime;
 
-                        if (job.timerShow > (job.hysteresis[0])) {
-                            job.draw = true;
-                            job.timerShow = 0;
-                        } else {
-                            forceUpdate = true;
+                            if (job.timerShow > (job.hysteresis[0])) {
+                                job.draw = true;
+                                job.timerShow = 0;
+                            } else {
+                                forceUpdate = true;
+                            }
                         }
-                    }
 
-                    job.timerHide = 0;
+                        job.timerHide = 0;
 
-                } else {
-                    job = buffer2[key];
+                    } else {
+                        job = buffer2[key];
 
-                    if (job.draw) {
-                        job.timerHide += frameTime;
+                        if (job.draw) {
+                            job.timerHide += frameTime;
 
-                        if (job.timerHide > (job.hysteresis[1])) {
-                            delete buffer2[key];
-                            jobZBuffer2Size[i]--;
-                            job.draw = false;
-                            job.timerHide = 0;
-                        } else {
-                            forceUpdate = true;
+                            if (job.timerHide > (job.hysteresis[1])) {
+                                delete buffer2[key];
+                                jobZBuffer2Size[i]--;
+                                job.draw = false;
+                                job.timerHide = 0;
+                            } else {
+                                forceUpdate = true;
+                            }
                         }
-                    }
 
-                    job.timerShow = 0;
+                        job.timerShow = 0;
+                    }
                 }
 
                 var draw = job.draw, fade = null;
 
-                //if (true) {
-                if (job.hysteresis[3] === true) {
+                if (!hitmapRender && job.hysteresis[3] === true) {
  
                     if (draw) {
                         if (job.timerHide != 0) {
@@ -1528,7 +1527,15 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
         if (o) {
             var x1 = pp[0]+o[0], y1 = pp[1]+o[1], 
-                x2 = pp[0]+o[2], y2 = pp[1]+o[3];
+                x2 = pp[0]+o[2], y2 = pp[1]+o[3]+stickShift;
+
+            if (s[0] != 0) {
+                stickShift = renderer.cameraTiltFator * s[0];
+                    
+                if (stickShift < s[1]) {
+                    stickShift = 0;
+                }
+            }
 
             var rmap = renderer.rmap;
 
@@ -1539,6 +1546,11 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
             //compass
             if (x1 < rmap.clx && x2 > 0 && y1 <= rmap.sly && y2 > (rmap.sly - rmap.cly)) {
+                return false;
+            }
+
+            //serach bar
+            if (x1 < rmap.blx && x2 > 0 && y1 <= rmap.bly && y2 > 0) {
                 return false;
             }
         }
@@ -1554,6 +1566,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                 pp[1] -= stickShift;
             }
         }
+
     }
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;

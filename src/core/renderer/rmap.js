@@ -29,6 +29,10 @@ RendererRMap.prototype.clear = function() {
     this.clx = 135;
     this.cly = (150 - 35);
 
+    //search bar size
+    this.blx = 245;
+    this.bly = 45;
+
 
     this.lx = Math.floor(this.slx * this.blockSizeFactor) + 1;
     this.ly = Math.floor(this.sly * this.blockSizeFactor) + 1;
@@ -82,14 +86,20 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
 
+    var y3 = y2 + subjob[1]; //add stick shift
     
     //screen including credits
-    if (x1 < 0 || x2 > this.slx || y1 < 0 || y2 > this.sly) {
+    if (x1 < 0 || x2 > this.slx || y1 < 0 || y3 > this.sly) {
         return false;
     }
 
     //compass
-    if (x1 < this.clx && x2 > 0 && y1 <= this.sly && y2 > (this.sly -this.cly)) {
+    if (x1 < this.clx && x2 > 0 && y1 <= this.sly && y3 > (this.sly -this.cly)) {
+        return false;
+    }
+
+    //search bar
+    if (x1 < this.blx && x2 > 0 && y1 <= this.bly && y3 > 0) {
         return false;
     }
 

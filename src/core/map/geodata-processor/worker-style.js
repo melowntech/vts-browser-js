@@ -447,7 +447,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
 
                     if (stops[i][0] > functionValue) {
 
-                        if (value['discrete'] != null || lodScaledArray != null) { //no interpolation
+                        if (value['discrete'] != null || value['discrete2'] != null || lodScaledArray != null) { //no interpolation
                             newValue = lastValue;
                             break;
                         } else { //interpolate
