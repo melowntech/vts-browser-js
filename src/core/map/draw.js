@@ -710,6 +710,20 @@ MapDraw.prototype.drawMonoliticGeodata = function(surface) {
         }
         
         if (surface.monoGeodataView.isReady()) {
+            var mapdataCredits = this.map.visibleCredits.mapdata
+
+            for (var i = 0, li = surface.credits.length; i < li; i++) {
+                var key = surface.credits[i]
+                var value = 10; //fixed specificity
+                var value2 = mapdataCredits[key];
+
+                if (value2) {
+                    mapdataCredits[key] = value > value2 ? value : value2;
+                } else {
+                    mapdataCredits[key] = value;
+                }
+            }
+
             surface.monoGeodataView.draw(this.camera.position);
         }
     }
