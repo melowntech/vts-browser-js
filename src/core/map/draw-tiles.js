@@ -58,6 +58,18 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
                 this.stats.drawnTiles++;
 
                 if (tile.surface.geodata) {
+
+                    var pp = this.renderer.project2(
+                        [(node.bbox2[12] + node.bbox2[15] + node.bbox2[18] + node.bbox2[21])*0.25 - cameraPos[0],
+                         (node.bbox2[13] + node.bbox2[16] + node.bbox2[19] + node.bbox2[22])*0.25 - cameraPos[1],
+                         (node.bbox2[14] + node.bbox2[17] + node.bbox2[20] + node.bbox2[23])*0.25 - cameraPos[2]],
+                         this.camera.getMvpMatrix());
+
+                    if (!(pp[0] < 0 || pp[1] < 0 || pp[0] > this.renderer.curSize[0] || pp[1] > this.renderer.curSize[1])) {
+                        this.stats.drawnGeodataTilesPerLayer++;
+                        this.stats.drawnGeodataTilesFactor += Math.pow(Math.abs(tile.tiltAngle * tile.texelSize), VTS_TILE_COUNT_FACTOR);
+                    }
+
                     this.stats.drawnGeodataTiles++;
                 }
             }
@@ -180,13 +192,19 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
 
         var specificity = 0;
         var i, li, j, lj, k, lk, surface;
+
+        surface = tile.resourceSurface;
+
+        if (!surface) {
+            surface = tile.surface;
+        }
         
-        if (tile.surface.glue) {
-            var surfaces = tile.surface.id; 
+        if (surface.glue) {
+            var surfaces = surface.id; 
             for (i = 0, li = surfaces.length; i < li; i++) {
-                surface = this.map.getSurface(surfaces[i]);
-                if (surface) {
-                    specificity = Math.max(specificity, surface.specificity);
+                var surface2 = this.map.getSurface(surfaces[i]);
+                if (surface2) {
+                    specificity = Math.max(specificity, surface2.specificity);
                 }
             }
 
@@ -196,13 +214,14 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             }
 
         } else {
-            specificity = tile.surface.specificity;
+            specificity = surface.specificity;
 
             //set credits
             for (k = 0, lk = node.credits.length; k < lk; k++) {
                 tile.imageryCredits[node.credits[k]] = specificity;  
             }
         }
+
 
         for (i = 0, li = submeshes.length; i < li; i++) {
             var submesh = submeshes[i];
@@ -861,7 +880,9 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
 
     //draw lods
     if (debug.drawLods) {
-        text = '' + tile.id[0]; // + ' ta:' + Math.abs(tile.tiltAngle).toFixed(3);
+        //text = '' + tile.id[0]; // + ' ta:' + Math.abs(tile.tiltAngle).toFixed(3);
+        text = '' + tile.id[0] + ' c:' + (50*(Math.pow(Math.abs(tile.tiltAngle * tile.texelSize), VTS_TILE_COUNT_FACTOR) / Math.max(0.00001, this.renderer.drawnGeodataTilesFactor))).toFixed(3) + 
+               ' l:' + Math.pow(Math.abs(tile.tiltAngle * tile.texelSize), VTS_TILE_COUNT_FACTOR).toFixed(3) + ' g:' + this.renderer.drawnGeodataTilesFactor.toFixed(3);
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-4*factor), 4*factor, text, [1,0,0,1], pos[2]);
     }
 

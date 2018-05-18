@@ -2,276 +2,104 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="Melown SE - VTS Browser JS examples">
-    <meta name="author" content="jachym">
 
     <title>VTS Browser Examples</title>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <style type="text/css">
+      
+      body {
+        font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+      }
 
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+      h1 {
+        font-size: 28px;
+      }
 
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+      h4 {
+        margin-top: 20px;
+        margin-bottom: -10px;
+        font-size: 14px;
+      }
 
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+      a {
+        color: #0366d6;
+      }
+
+      p {
+        font-size: 14px;
+      }
+
+    </style>
 
   </head>
 
   <body>
 
-    <div class="container">
-    <div class="jumbotron" style="padding-top: 0px; padding-bottom: 0px; background-color: white;">
+    <div style="width:800px;margin: auto;">
 
-      <div>
-        <h1>VTS Browser Demos</h1>
-      </div>
-    </div><!-- /.jumbotron -->
+      <h1>VTS Browser Demos</h1>
 
-     <div class="container">
-     <div class="row">
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Basic example</h4>
-            </div>
-            <div class="panel-body" style="min-height: 125px;">
-              <p>Basic example which shows how to display the map in the webpage.</p>
-              <p><a class="btn btn-default" href="./basic/" role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Flights</h4>
-            </div>
-            <div class="panel-body" style="min-height: 125px;">
-              <p>Example showing how to fly between locations using browser's
-              autopilot capabilities.</p>
-              <p><a class="btn btn-default" href="./flights/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>        
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Switching bound layers</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>Layer switcher example, showing how to change bound layer on the
-              surface.</p>
-              <p><a class="btn btn-default" href="./switching-bound-layers/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Switching surfaces</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>This example demonstrates how to show or hide surfaces on the map.</p>
-              <p><a class="btn btn-default" href="./switching-surfaces/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Switching geodata</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>This example demonstrates how to show or hide geodata on the map.</p>
-              <p><a class="btn btn-default" href="./switching-geodata/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Lines and images</h4>
-            </div>
-            <div class="panel-body" style="min-height: 125px;">
-              <p>Example showing how to add line and point features on the surface
-              with map browser capabilities.</p>
-              <p><a class="btn btn-default" href="./lines-and-images/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Hit surface</h4>
-            </div>
-            <div class="panel-body" style="min-height: 125px;">
-              <p>In this example, user can mark point on surface using mouse click.</p>
-              <p><a class="btn btn-default" href="./hit-surface/" role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-       </div>
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Meshes</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>In this demo we demonstrate, how to place custom polygon meshes
-              (with texture) on the terain surface.</p>
-              <p><a class="btn btn-default" href="./meshes/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Meshes - hit</h4>
-            </div>
-            <div class="panel-body" style="min-height: 125px;">
-              <p>In this demo demonstrates, how to implemnt hit test
-                 for custom polygon meshes. </p>
-              <p><a class="btn btn-default" href="./meshes-hit-test/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Meshes - OBJ Import</h4>
-            </div>
-            <div class="panel-body" style="min-height: 125px;">
-              <p>Example showing how to import OBJ files and display them in the map.</p>
-              <p><a class="btn btn-default" href="./meshes-obj-import/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./basic/" target="blank">Basic example</a></h4>
+      <p>Basic example which shows how to display the map in the webpage.</p>
 
-        <div class="col-md-4">
-          <div iclass="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Geodata - Basic</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>Example showing how to create geodata with styled features.</p>
-              <p><a class="btn btn-default" href="./geodata-basic/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./flights/" target="blank">Flights</a></h4>
+      <p>Example showing how to fly between locations using browser's autopilot capabilities.</p>
 
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Geodata - Import GeoJSON</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>This example demonstrates how to import GeoJSON data.</p>
-              <p><a class="btn btn-default" href="./geodata-geojson-import/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./switching-bound-layers/" target="blank">Switching bound layers</a></h4>
+      <p>Layer switcher example, showing how to change bound layer on the surface.</p>
 
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Geodata - Import GeoJSON from URL</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>This example demonstrates how to import GeoJSON data from the file.</p>
-              <p><a class="btn btn-default" href="./geodata-geojson-import-from-url/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./switching-surfaces/" target="blank">Switching surfaces</a></h4>
+      <p>This example demonstrates how to show or hide surfaces on the map.</a></p>
 
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Geodata with dynamic render</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>Example showing how to combine geodata with dynamically rendered features.</p>
-              <p><a class="btn btn-default" href="./geodata-with-dynamic-render/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./switching-geodata/" target="blank">Switching geodata</a></h4>
+      <p>This example demonstrates how to show or hide geodata on the map.</a></p>
 
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Geodata - Hover events</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>Example showing how to work with hover events.</p>
-              <p><a class="btn btn-default" href="./geodata-hover-events/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./lines-and-images/" target="blank">Lines and images</a></h4>
+      <p>Example showing how to add line and point features on the surface with map browser capabilities.</p>
 
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Geodata - Advanced hover events</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>Example showing how to work with advanced hover events.</p>
-              <p><a class="btn btn-default" href="./geodata-advanced-hover/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./hit-surface/" target="blank">Hit surface</a></h4>
+      <p>In this example, user can mark point on surface using mouse click.</p>
 
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">GPX Viewer</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>Simple application for displaying GPX files.</p>
-              <p><a class="btn btn-default" href="./gpx-viewer/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./meshes/" target="blank">Meshes</a></h4>
+      <p>In this demo we demonstrate, how to place custom polygon meshes (with texture) on the terain surface.</p>
 
-        <div class="col-md-4">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Core</h4>
-            </div>
-            <div class="panel-body"  style="min-height: 125px;">
-              <p>Basic map example using only VTS Core library.</p>
-              <p><a class="btn btn-default" href="./core/"
-                role="button">View demo &raquo;</a></p>
-            </div>
-          </div>
-        </div>
+      <h4 class="panel-title"><a href="./meshes-hit-test/" target="blank">Meshes - hit</a></h4>
+      <p>In this demo demonstrates, how to implemnt hit test for custom polygon meshes. </p>
 
-     </div><!-- /row -->
+      <h4 class="panel-title"><a href="./meshes-obj-import/" target="blank">Meshes - OBJ Import</a></h4>
+      <p>Example showing how to import OBJ files and display them in the map.</p>
+
+      <h4 class="panel-title"><a href="./geodata-basic/" target="blank">Geodata - Basic</a></h4>
+      <p>Example showing how to create geodata with styled features.</p>
+
+      <h4 class="panel-title"><a href="./geodata-geojson-import/" target="blank">Geodata - Import GeoJSON</a></h4>
+      <p>This example demonstrates how to import GeoJSON data.</p>
+
+      <h4 class="panel-title"><a href="./geodata-geojson-import-from-url/" target="blank">Geodata - Import GeoJSON from URL</a></h4>
+      <p>This example demonstrates how to import GeoJSON data from the file.</p>
+
+      <h4 class="panel-title"><a href="./geodata-with-dynamic-render/" target="blank">Geodata with dynamic render</a></h4>
+      <p>Example showing how to combine geodata with dynamically rendered features.</p>
+
+      <h4 class="panel-title"><a href="./geodata-hover-events/" target="blank">Geodata - Hover events</a></h4>
+      <p>Example showing how to work with hover events.</p>
+
+      <h4 class="panel-title"><a href="./geodata-click-events/" target="blank">Geodata - Click events</a></h4>
+      <p>Example showing how to work with click events.</p>
+
+      <h4 class="panel-title"><a href="./geodata-click-and-hover-events/" target="blank">Geodata - Click and hover events</a></h4>
+      <p>Example showing how to combine click and hover events.</p>
+
+      <h4 class="panel-title"><a href="./geodata-advanced-hover/" target="blank">Geodata - Advanced hover events</a></h4>
+      <p>Example showing how to work with advanced hover events.</p>
+
+      <h4 class="panel-title"><a href="./gpx-viewer/" target="blank">GPX Viewer</a></h4>
+      <p>Simple application for displaying GPX files.</p>
+
+      <h4 class="panel-title"><a href="./core/" target="blank">Core</a></h4>
+      <p>Basic map example using only VTS Core library.</p>
+
     </div>
 
-     <footer class="footer">
-      <div class="container">
-        <p class="text-muted"></p>
-      </div>
-    </footer>
-    </div>
   <body>
 </html>

@@ -26,7 +26,7 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
 
     this.size = 0;
     this.polygons = 0;
-};
+};7
 
 //destructor
 GpuGroup.prototype.kill = function() {
@@ -331,7 +331,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 };
 
 
-GpuGroup.prototype.addIconJob = function(data, label) {
+GpuGroup.prototype.addIconJob = function(data, label, tile) {
     var gl = this.gl;
 
     var vertices = data['vertexBuffer'];
@@ -340,7 +340,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     var s = data['stick'];
     var f = 1.0/255;
 
-    var job = {};
+    var job = { tile: tile };
     job.type = label ? VTS_JOB_LABEL : VTS_JOB_ICON;
     job.program = this.renderer.progIcon;
     job.color = this.convertColor(data['color']);
@@ -358,15 +358,20 @@ GpuGroup.prototype.addIconJob = function(data, label) {
     job.stick = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f];
     job.lod = data['lod'];
     job.zbufferOffset = data['zbuffer-offset'];
+    job.hysteresis = data['hysteresis'];
+    job.id = job.hysteresis ? job.hysteresis[2] : null;
     job.reduced = false;
     job.ready = true;
     job.reduce = data['reduce'];
 
     if (job.reduce) {
         switch(job.reduce[0]) {
-            case 'tilt':      job.reduce[0] = 1; break;
-            case 'tilt-cos':  job.reduce[0] = 2; break;
-            case 'tilt-cos2': job.reduce[0] = 3; break;
+            case 'tilt':       job.reduce[0] = 1; break;
+            case 'tilt-cos':   job.reduce[0] = 2; break;
+            case 'tilt-cos2':  job.reduce[0] = 3; break;
+            case 'scr-count':  job.reduce[0] = 4; break;
+            case 'scr-count2': job.reduce[0] = 5; break;
+            case 'scr-count3': job.reduce[0] = 6; break;
         }
     }
 
@@ -429,7 +434,7 @@ GpuGroup.prototype.addIconJob = function(data, label) {
 };
 
 
-GpuGroup.prototype.addRenderJob = function(data) {
+GpuGroup.prototype.addRenderJob = function(data, tile) {
     switch(data['type']) {
     case 'flat-line':     this.addLineJob(data); break;
     case 'flat-tline':
@@ -438,26 +443,29 @@ GpuGroup.prototype.addRenderJob = function(data) {
     case 'pixel-tline':    this.addExtentedLineJob(data); break;
     case 'line-label':     this.addLineLabelJob(data); break;
     case 'icon':           this.addIconJob(data); break;
-    case 'label':          this.addIconJob(data, true); break;
+    case 'label':          this.addIconJob(data, true, tile); break;
     case 'point-geometry': this.addGeometry(data); break;
     case 'line-geometry':  this.addGeometry(data); break;
     }
 };
 
 
-GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle) {
+GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     if (this.id != null) {
         if (this.renderer.layerGroupVisible[this.id] === false) {
             return;
         }
     }
 
+    var renderer = this.renderer;
+    var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
+
     if (applyOrigin) {
-        var origin;
         var mvp2 = mat4.create();
         var mv2 = mat4.create();
         var pos = this.renderer.position;
 
+        /*
         var transform = this.renderer.layerGroupTransform[this.id];
 
         if (transform != null) {
@@ -465,21 +473,24 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle) {
             origin = [origin[0] - pos[0], origin[1] - pos[1], origin[2]];
             mat4.multiply(math.translationMatrix(origin[0], origin[1], origin[2]), transform[0], mv2);
             mat4.multiply(mv, mv2, mv2);
-        } else {
-            origin = [this.origin[0] - pos[0], this.origin[1] - pos[1], this.origin[2]];
+        } else {*/
+            var origin = this.origin;
+            origin = [origin[0] - pos[0], origin[1] - pos[1], origin[2]];
             mat4.multiply(mv, math.translationMatrix(origin[0], origin[1], origin[2]), mv2);
-        }
+        /*}*/
 
         mat4.multiply(mvp, mv2, mvp2);
         mv = mv2;
         mvp = mvp2;
     }
 
-    var cameraPos = this.renderer.cameraPosition;
-    var jobZBuffer = this.renderer.jobZBuffer;
-    var jobZBufferSize = this.renderer.jobZBufferSize;
+    var cameraPos = renderer.cameraPosition;
+    var jobZBuffer = renderer.jobZBuffer;
+    var jobZBufferSize = renderer.jobZBufferSize;
+    var jobZBuffer2 = renderer.jobZBuffer2;
+    var jobZBuffer2Size = renderer.jobZBuffer2Size;
 
-    var onlyHitable = this.renderer.onlyHitLayers;
+    var onlyHitable = renderer.onlyHitLayers;
 
     for (var i = 0, li = this.jobs.length; i < li; i++) {
         var job = this.jobs[i];
@@ -499,9 +510,12 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle) {
 
         job.mv = mv;
         job.mvp = mvp;
+        job.renderCounter = renderCounter;
         job.tiltAngle = tiltAngle;
+        job.texelSize = texelSize;
 
         var zIndex = job.zIndex;
+
         jobZBuffer[zIndex][jobZBufferSize[zIndex]] = job;
         jobZBufferSize[zIndex]++;
     }

@@ -113,10 +113,6 @@ UIControlLoading.prototype.update = function() {
     }
 
     var stats = map.getStats();
-    
-    //"bestMeshTexelSize" : this.map.bestMeshTexelSize,
-    //"bestGeodataTexelSize" : this.map.bestGeodataTexelSize, 
-    //console.log("drawnTiles: " + stats["drawnTiles"] + "  geodata: " + stats["drawnGeodataTiles"]);
 
     if ((stats['surfaces'] == 0 && stats['freeLayers'] == 0) ||  //nothing to load 
         ((timer - this.time) > 7000) || //loading takes too long

@@ -2,7 +2,7 @@
 
 var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.renderer = renderer;
-    this.maxBlockRectangles = maxBlockRectangles || 50;
+    this.maxBlockRectangles = maxBlockRectangles || 500;
     this.blockSize = blockSize;
     this.blockSizeFactor = 1/blockSize;
     this.blocks = [];
@@ -13,17 +13,38 @@ var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.counter = 0;
     this.rectangles = null;
     this.rectanglesCount = 0;
+    this.rectangles2 = null;
+    this.rectangles2Count = 0;
 };
 
 
 RendererRMap.prototype.clear = function() {
-    this.lx = Math.floor(this.renderer.curSize[0] * this.blockSizeFactor) + 1;
-    this.ly = Math.floor(this.renderer.curSize[1] * this.blockSizeFactor) + 1;
+    this.slx = this.renderer.curSize[0];
+    this.sly = this.renderer.curSize[1];
+
+    //reduce by credits
+    this.sly = Math.max(1, this.sly - 35);
+    
+    //compass size
+    this.clx = 135;
+    this.cly = (150 - 35);
+
+    //search bar size
+    this.blx = 245;
+    this.bly = 45;
+
+
+    this.lx = Math.floor(this.slx * this.blockSizeFactor) + 1;
+    this.ly = Math.floor(this.sly * this.blockSizeFactor) + 1;
 
     var totalNeeded = this.ly * this.lx;
     
     if (!this.rectangles) {
         this.rectangles = new Array(totalNeeded * this.maxBlockRectangles * 6); //preallocate empty rectangles
+    }
+
+    if (!this.rectangles2) {
+        this.rectangles2 = new Array(totalNeeded * this.maxBlockRectangles * 6); //preallocate empty rectangles
     }
 
     if (this.rectanglesCount > 0 || this.allocatedBlocks != totalNeeded) {
@@ -44,12 +65,43 @@ RendererRMap.prototype.clear = function() {
 };
 
 
+RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjob) {
+        var rectangles2 = this.rectangles2;
+        var rectangles2Count = this.rectangles2Count;
+
+        rectangles2[rectangles2Count] = x1;
+        rectangles2[rectangles2Count+1] = y1;
+        rectangles2[rectangles2Count+2] = x2;
+        rectangles2[rectangles2Count+3] = y2;
+        rectangles2[rectangles2Count+4] = z;
+        rectangles2[rectangles2Count+5] = subjob;
+        this.rectangles2Count += 6;
+};
+
+
 RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
         rectangles = this.rectangles, rectangleIndex, t;
 
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
+
+    var y3 = y2 + subjob[1]; //add stick shift
+    
+    //screen including credits
+    if (x1 < 0 || x2 > this.slx || y1 < 0 || y3 > this.sly) {
+        return false;
+    }
+
+    //compass
+    if (x1 < this.clx && x2 > 0 && y1 <= this.sly && y3 > (this.sly -this.cly)) {
+        return false;
+    }
+
+    //search bar
+    if (x1 < this.blx && x2 > 0 && y1 <= this.bly && y3 > 0) {
+        return false;
+    }
 
     var xx1 = Math.floor(x1 * this.blockSizeFactor);
     var yy1 = Math.floor(y1 * this.blockSizeFactor);
@@ -69,6 +121,7 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     var lx = (xx2 - xx1) + 1;
     var ly = (yy2 - yy1) + 1;
     var removeList = {};
+    var exit = false;
 
     //test collision
     for (y = 0; y < ly; y++) {
@@ -132,7 +185,19 @@ RendererRMap.prototype.removeRectangle = function(rectangleIndex) {
     y1 = rectangles[rectangleIndex+1];
     x2 = rectangles[rectangleIndex+2];
     y2 = rectangles[rectangleIndex+3];
-    
+
+    //store removed rectangels for second pass
+    var rectangles2 = this.rectangles2;
+    var rectangles2Count = this.rectangles2Count;
+
+    rectangles2[rectangles2Count] = x1;
+    rectangles2[rectangles2Count+1] = y1;
+    rectangles2[rectangles2Count+2] = x2;
+    rectangles2[rectangles2Count+3] = y2;
+    rectangles2[rectangles2Count+4] = rectangles[rectangleIndex+4];
+    rectangles2[rectangles2Count+5] = rectangles[rectangleIndex+5];
+    this.rectangles2Count += 6;
+
     //remove subjob
     rectangles[rectangleIndex+5] = null;
 
@@ -171,13 +236,33 @@ RendererRMap.prototype.removeRectangle = function(rectangleIndex) {
 
 RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPixelSize) {
     var rectangles = this.rectangles;
+    var rectangles2 = this.rectangles2;
     var draw = renderer.draw;
 
-    for (var i = 0, li = this.rectanglesCount; i < li; i+=6) {
+    // second pass
+    // add removed rectangles
+    for (var i = 0, li = this.rectangles2Count; i < li; i+=6) {
+        var x1 = rectangles2[i],
+            y1 = rectangles2[i+1],
+            x2 = rectangles2[i+2],
+            y2 = rectangles2[i+3],
+            z = rectangles2[i+4],
+            subjob = rectangles2[i+5];
+
+        this.addRectangle(x1, y1, x2, y2, z, subjob);
+    }
+
+    this.rectangles2Count = 0;
+
+    for (i = 0, li = this.rectanglesCount; i < li; i+=6) {
         var subjob = rectangles[i+5];
 
         if (subjob) {
-            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob);
+            if (subjob[0].hysteresis) {
+                renderer.jobHBuffer[subjob[0].id] = subjob[0];
+            } else {
+                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
+            }
         }
     }
 

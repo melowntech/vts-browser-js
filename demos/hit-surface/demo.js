@@ -15,7 +15,7 @@ var clickCoords = null;
     // https://github.com/Melown/vts-browser-js/wiki/VTS-Browser-Map-API#definition-of-view
     browser = vts.browser('map-div', {
         map: 'https://cdn.melown.com/mario/store/melown2015/map-config/melown/VTS-Tutorial-map/mapConfig.json',
-        position : [ 'obj', 15.096869389048662, 49.38435909591623, 'float', 0.00, 0.00, -90.00, 0.00, 1587848.47, 55.00 ],
+        position : [ 'obj', 15.096869389048662, 49.38435909591623, 'float', 0.00, 0.00, -90.00, 0.00, 1587848.47, 45.00 ],
     });
 
     //check whether browser is supported

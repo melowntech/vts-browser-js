@@ -98,7 +98,7 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
         if (task) {
             if (this.currentGpuGroup) {
                 var t = performance.now();
-                this.currentGpuGroup.addRenderJob(message);
+                this.currentGpuGroup.addRenderJob(message, this.tile);
                 this.stats.renderBuild += performance.now() - t; 
             } //else {
                     //message = message;
@@ -220,7 +220,7 @@ MapGeodataView.prototype.draw = function(cameraPos) {
             var proj = renderer.camera.getProjectionMatrix();
             mat4.multiply(proj, mv, mvp);
             
-            group.draw(mv, mvp, null, tiltAngle);
+            group.draw(mv, mvp, null, tiltAngle, (this.tile ? this.tile.texelSize : 1));
 
             this.stats.drawnFaces += group.polygons;
             this.stats.drawCalls += group.jobs.length;

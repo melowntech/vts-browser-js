@@ -32,11 +32,12 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                 case '#': 
                     //debugger;
                     switch(value) {
-                        case '#id':       finalValue = feature.id; break;   
+                        case '#id':       finalValue = feature.id;          break;   
                         case '#type':     finalValue = globals.featureType; break;   
                         case '#group':    finalValue = globals.groupId;     break;
-                        case '#lod':      finalValue = globals.tileLod;  break;
-                        case '#tileSize': finalValue = globals.tileSize; break;
+                        case '#lod':      finalValue = globals.tileLod;     break;
+                        case '#tileSize': finalValue = globals.tileSize;    break;
+                        case '#metric':   finalValue = globals.metricUnits; break;
                     }
 
                 case '$':
@@ -63,11 +64,12 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                         case '#': 
                             //debugger;
                             switch(str) {
-                                case '#id':       finalValue = feature.id; break;   
+                                case '#id':       finalValue = feature.id;          break;   
                                 case '#type':     finalValue = globals.featureType; break;   
                                 case '#group':    finalValue = globals.groupId;     break;
-                                case '#lod':      finalValue = globals.tileLod;  break;
-                                case '#tileSize': finalValue = globals.tileSize; break;
+                                case '#lod':      finalValue = globals.tileLod;     break;
+                                case '#tileSize': finalValue = globals.tileSize;    break;
+                                case '#metric':   finalValue = globals.metricUnits; break;
                             }
 
                         case '$':
@@ -163,13 +165,22 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 case '#': 
                     //debugger;
                     switch(value) {
-                        case '#id':       finalValue = feature.id; break;   
+                        case '#id':       finalValue = feature.id;          break;   
                         case '#type':     finalValue = globals.featureType; break;   
                         case '#group':    finalValue = globals.groupId;     break;
-                        case '#lod':      finalValue = globals.tileLod;  break;
-                        case '#tileSize': finalValue = globals.tileSize; break;
+                        case '#lod':      finalValue = globals.tileLod;     break;
+                        case '#tileSize': finalValue = globals.tileSize;    break;
+                        case '#metric':   finalValue = globals.metricUnits; break;
                     }
                     break;
+            }
+
+            if (typeof finalValue === 'string') {
+                finalValue = getLayerExpresionValue(layer, value, feature, lod, key);
+            } else {
+                if (typeof finalValue !== 'undefined' && value.charAt(0) == '@') {
+                    finalValue = getLayerPropertyValueInner(layer, key, feature, lod, finalValue, depth+1);
+                }
             }
 
             if (typeof finalValue !== 'undefined') {
@@ -392,12 +403,15 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 break;
 
             case 'linear':
+            case 'linear2':
             case 'discrete':
+            case 'discrete2':
             case 'lod-scaled':
 
                 //LOD based functions
                 var stops = null;
                 var lodScaledArray = null;
+                var functionValue = lod;
 
                 if (value['lod-scaled'] != null) {
                     var array = value['lod-scaled'];
@@ -409,6 +423,10 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                     stops = array[1];
                     lodScaledArray = array;
 
+                } if (value['discrete2'] != null || value['linear2'] != null) {
+                    var array = value['discrete2'] || value['linear2'];
+                    stops = array[1];
+                    functionValue = getLayerPropertyValueInner(layer, key, feature, lod, array[0], depth + 1);
                 } else {
                     stops = value['discrete'] || value['linear'];
                 }
@@ -427,9 +445,9 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         break;
                     }
 
-                    if (stops[i][0] > lod) {
+                    if (stops[i][0] > functionValue) {
 
-                        if (value['discrete'] != null || lodScaledArray != null) { //no interpolation
+                        if (value['discrete'] != null || value['discrete2'] != null || lodScaledArray != null) { //no interpolation
                             newValue = lastValue;
                             break;
                         } else { //interpolate
@@ -446,20 +464,20 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                             case 'boolean':
                                 lastValue = lastValue ? 1 : 0;
                                 currentValue = lastValue ? 1 : 0;
-                                newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+                                newValue = lastValue + (currentValue - lastValue) * ((functionValue - lastLod) / (currentLod - lastLod));
 
                                 newValue = newValue > 0.5 ? true : false;
                                 break;
 
                             case 'number':
-                                newValue = lastValue + (currentValue - lastValue) * ((lod - lastLod) / (currentLod - lastLod));
+                                newValue = lastValue + (currentValue - lastValue) * ((functionValue - lastLod) / (currentLod - lastLod));
                                 break;
 
                             case 'object':
                                 newValue = [];
 
                                 for (var j = 0, lj= lastValue.length; j < lj; j++) {
-                                    newValue[j] = lastValue[j] + (currentValue[j] - lastValue[j]) * ((lod - lastLod) / (currentLod - lastLod));
+                                    newValue[j] = lastValue[j] + (currentValue[j] - lastValue[j]) * ((functionValue - lastLod) / (currentLod - lastLod));
                                 }
 
                                 break;
@@ -474,7 +492,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 }
 
                 if (lodScaledArray != null) {
-                    newValue *= Math.pow(2*lodScaledArray[2], lodScaledArray[0] - lod);
+                    newValue *= Math.pow(2*lodScaledArray[2], lodScaledArray[0] - functionValue);
                 }
 
                 return newValue;
@@ -615,7 +633,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
     //check value type
     if ((typeof value) != type) {
         //check for exceptions
-        if (!(value === null && (key == 'icon-source' || key == 'visibility'))) {
+        if (!(value === null && (key == 'icon-source' || key == 'visibility' || key == 'label-no-overlap-factor'))) {
             logError('wrong-property-value', layerId, key, value);
             return getDefaultLayerPropertyValue(key);
         }
@@ -628,25 +646,31 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
         //accepted cases for null value
         if (value === null && (key == 'line-style-texture' || key == 'icon-source' || 'dynamic-reduce' || 'reduce' ||
-            key == 'visibility' || key == 'visibility-abs' || key == 'visibility-rel' || key == 'next-pass')) {
+            key == 'hysteresis' || key == 'visibility' || key == 'visibility-abs' || key == 'visibility-rel' || key == 'next-pass')) {
             return value;
         }
 
         //check reduce
-        if (key == 'reduce' || key == 'dynamic-reduce') {
+        if (key == 'reduce' || key == 'dynamic-reduce' || key == 'label-no-overlap-factor') {
             if (Array.isArray(value) && value.length > 0 && (typeof value[0] === 'string')) {
 
                 if (key == 'dynamic-reduce') {
-                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2') && (typeof value[1] === 'number') && (typeof value[2] === 'number'))) {
+                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' || value[0] == 'scr-count3') &&
+                        (typeof value[1] === 'number') && (typeof value[2] === 'number'))) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
                     }
-                } else {
+                } else if (key == 'reduce') {
                     if (value[0] != 'odd' && value != 'even') {
                         if ((typeof value[1] !== 'number') || ((value[0] != 'top' || value != 'bottom') && (typeof value[2] !== 'string'))) {
                             logError('wrong-property-value', layerId, key, value);
                             return getDefaultLayerPropertyValue(key);
                         }
+                    }
+                } else if (key == 'label-no-overlap-factor') {
+                    if (!(value[0] == 'direct' || value[0] == 'div-by-dist')) {
+                        logError('wrong-property-value', layerId, key, value);
+                        return getDefaultLayerPropertyValue(key);
                     }
                 }
 
@@ -859,6 +883,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'label-stick':      return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'label-width':      return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'label-no-overlap': return validateValue(layerId, key, value, 'boolean');
+    case 'label-no-overlap-factor': return validateValue(layerId, key, value, 'object');
     case 'label-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
 
     case 'polygon':         return validateValue(layerId, key, value, 'boolean');
@@ -878,13 +903,14 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'advanced-hit':    return validateValue(layerId, key, value, 'boolean');
     case 'export-geometry': return validateValue(layerId, key, value, 'boolean');
 
-    case 'visible':     return validateValue(layerId, key, value, 'boolean');
-    case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
-    case 'next-pass':   return validateValue(layerId, key, value, 'object');
-
+    case 'visible':         return validateValue(layerId, key, value, 'boolean');
     case 'visibility':      return validateValue(layerId, key, value, 'number', null, 0.00001, Number.MAX_VALUE);
     case 'visibility-abs':  return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
     case 'visibility-rel':  return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
+
+    case 'hysteresis':  return validateValue(layerId, key, value, 'object');
+    case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
+    case 'next-pass':   return validateValue(layerId, key, value, 'object');
 
     }
 
@@ -944,6 +970,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'label-stick':      return [0,0,0,255,255,255,255];
     case 'label-width':      return 200;
     case 'label-no-overlap': return true;
+    case 'label-no-overlap-factor': return null;
     case 'label-no-overlap-margin': return [5,5];
        
     case 'polygon':        return false;
@@ -968,8 +995,9 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'visibility-abs': return null;
     case 'visibility-rel': return null;
 
-    case 'culling':    return 180;
-    case 'next-pass':  return null;
+    case 'hysteresis':      return null;
+    case 'culling':         return 180;
+    case 'next-pass':       return null;
     }
 };
 
@@ -1222,4 +1250,4 @@ var processStylesheet = function(stylesheetLayersData) {
 };
 
 
-export {getFilterResult, processStylesheet, getLayer, getLayerPropertyValue, getLayerExpresionValue};
+export {getFilterResult, processStylesheet, getLayer, getLayerPropertyValue, getLayerExpresionValue, getLayerPropertyValueInner};

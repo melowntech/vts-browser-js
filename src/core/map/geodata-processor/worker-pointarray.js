@@ -128,9 +128,11 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 fonts : fonts,
                 fontsStorage : getFontsStorage(fontNames),
                 text : text,
+                hysteresis : getLayerPropertyValue(style, 'hysteresis', pointArray, lod),
                 width : getLayerPropertyValue(style, 'label-width', pointArray, lod),
                 noOverlap : getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod),
                 noOverlapMargin : getLayerPropertyValue(style, 'label-no-overlap-margin', pointArray, lod),
+                noOverlapFactor : getLayerPropertyValue(style, 'label-no-overlap-factor', pointArray, lod),
                 vertexBuffer : new Float32Array(bufferSize),
                 originBuffer : new Float32Array(bufferSize2),
                 texcoordsBuffer : new Float32Array(bufferSize),
@@ -333,7 +335,18 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
         if (labelData.noOverlap) {
             var margin = labelData.noOverlapMargin;
-            var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1]];
+            var factorType = null, factorValue = null;
+
+            if (labelData.noOverlapFactor !== null) {
+                switch(labelData.noOverlapFactor[0]) {
+                    case 'direct':      factorType = VTS_NO_OVERLAP_DIRECT;      break;
+                    case 'div-by-dist': factorType = VTS_NO_OVERLAP_DIV_BY_DIST; break;
+                }
+
+                factorValue = labelData.noOverlapFactor[1];
+            }
+
+            var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1], factorType, factorValue];
         }
 
         postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,
@@ -341,7 +354,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             'color':labelData.color, 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
             'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
             'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
-            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
+            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage, 'hysteresis': labelData.hysteresis,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit, 'reduce': labelData.reduce,  
             'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);
     }

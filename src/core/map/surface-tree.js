@@ -684,6 +684,11 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
     
     var lodShift = 4;//this.freeLayerSurface ? 1 : 1;
     var typeFactor = 2000;//this.freeLayerSurface ? 1 : 1;
+
+    if (this.freeLayerSurface) {
+        lodShift = 0;//this.freeLayerSurface ? 1 : 1;
+        typeFactor = 0.1;//this.freeLayerSurface ? 1 : 1;
+    }
     
     var draw = map.draw;
     var drawTiles = draw.drawTiles;
@@ -744,6 +749,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
                     if (parent.drawCounter != draw.drawCounter) { //make sure that grid tile is rendered only one time
                         parent.drawCounter = draw.drawCounter;
+                        
                         drawBuffer[drawBufferIndex] = [parent, true]; //draw grid
                         drawBufferIndex++;
                     }
@@ -801,6 +807,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
                                     if (drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, (depth > 0), checkGpu)) {
                                         tile.childrenReadyCount++;
                                         child.drawCounter = draw.drawCounter;
+                                        
                                         drawBuffer[drawBufferIndex] = [child, false];
                                         drawBufferIndex++;
                                     } else {
@@ -817,6 +824,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
                     } else {
                         tile.drawCounter = draw.drawCounter;
+
                         drawBuffer[drawBufferIndex] = [tile, false];
                         drawBufferIndex++;
                     }
@@ -878,6 +886,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
                         if (drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, true, checkGpu)) {
                             tile.drawCounter = draw.drawCounter;
+
                             drawBuffer[drawBufferIndex] = [tile, false];
                             drawBufferIndex++;
 
@@ -943,6 +952,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
 
                 if (parent.drawCounter != draw.drawCounter) { //make sure that grid tile is rendered only one time
                     parent.drawCounter = draw.drawCounter;
+
                     drawBuffer[drawBufferIndex] = [parent, true]; //draw grid
                     drawBufferIndex++;
                 }

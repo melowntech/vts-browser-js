@@ -38,6 +38,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.hitmapCounter = 0;
     this.geoRenderCounter = 0;
     this.geoHitmapCounter = 0;
+    this.frameTime = 0;
     this.geometries = {};
     this.clearStencilPasses = [];
     this.onResizeCall = onResize;
@@ -95,10 +96,18 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
     this.jobZBuffer = new Array(512);
     this.jobZBufferSize = new Array(512);
+
+    this.jobZBuffer2 = new Array(512);
+    this.jobZBuffer2Size = new Array(512);
     
+    this.jobHBuffer = {};
+    this.jobHBufferSize = 0;
+
     for (var i = 0, li = this.jobZBuffer.length; i < li; i++) {
         this.jobZBuffer[i] = [];
         this.jobZBufferSize[i] = 0;
+        this.jobZBuffer2[i] = {};
+        this.jobZBuffer2Size[i] = 0;
     }
     
     this.layerGroupVisible = [];
@@ -113,7 +122,9 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.localViewExtentFactor = 1;
     this.cameraVector = [0,0,0];
     this.labelVector = [0,0,0];
-            
+    this.drawnGeodataTiles = 0;
+    this.drawnGeodataTilesFactor = 0;
+
     //hack for vts maps
     //this.vtsHack = true;
     //this.vtsHack = false;

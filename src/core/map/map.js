@@ -139,6 +139,7 @@ var Map = function(core, mapConfig, path, config) {
 
     switch(this.referenceFrame.id) {
         case 'melown2015':
+        case 'earth-qsc':
             this.draw.atmoColor = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
             this.draw.atmoColor2 = [72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0];
             this.draw.atmoColor3 = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
@@ -591,6 +592,8 @@ Map.prototype.setStylesheetData = function(id, data) {
       //  stylesheet.data = data;
     //}
 
+    this.renderer.draw.clearJobHBuffer();
+
     if (stylesheet) {
         if (data) {
             stylesheet.setData(data);
@@ -602,7 +605,6 @@ Map.prototype.setStylesheetData = function(id, data) {
                 
                 if (freeLayer.geodataProcessor) {
                     freeLayer.geodataProcessor.setStylesheet(freeLayer.stylesheet);
-                    //freeLayer.geodataProcessor.sendCommand('setStylesheet', { 'data' : freeLayer.stylesheet.data, 'geocent' : (!this.getNavigationSrs().isProjected()) });
                 }
 
                 freeLayer.geodataCounter++;
@@ -790,6 +792,8 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
     case 'mapRefreshCycles':              this.config.mapRefreshCycles = utils.validateNumber(value, 0, Number.MAXINTEGER, 3); break;
     case 'mapDefaultFont':                this.config.mapDefaultFont =  utils.validateString(value, ''); break;
+    case 'mapMetricUnits':                this.config.mapMetricUnits = utils.validateBool(value, true); break;
+    case 'mapNoTextures':                 this.config.mapNoTextures = this.config.mapDisableCulling = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
@@ -836,6 +840,8 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapGridSurrogatez':             return this.config.mapGridSurrogatez;
     case 'mapRefreshCycles':              return this.config.mapRefreshCycles;
     case 'mapDefaultFont':                return this.config.mapDefaultFont;
+    case 'mapMetricUnits':                return this.config.mapMetricUnits;
+    case 'mapNoTextures':                 return this.config.mapNoTextures;
     case 'mario':                         return this.config.mario;
     }
 };
@@ -1011,6 +1017,10 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
         var id = (res[1]) + (res[2]<<8);
 		
         var feature = this.hoverFeatureList[id];
+
+        if (!feature) {
+            return [null, false, [], elementIndex];
+        }
 
         if (feature[6]) { //advanced hit feature?
             res = this.renderer.hitTestGeoLayers(screenX, screenY, true);

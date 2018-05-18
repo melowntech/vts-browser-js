@@ -76,6 +76,8 @@ var MapDraw = function(map) {
     this.log8 = Math.log(8);
     this.log2 = Math.log(2);
 
+    this.geodataTilesPerLayer = 0;
+
     this.drawCounter = 0;
     this.drawChannel = 0;
     this.drawChannelNames = ['base', 'hit'];
@@ -163,6 +165,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     var camInfo = camera.update();
     this.renderer.dirty = true;
     this.renderer.drawFog = this.debug.drawFog;
+    this.renderer.frameTime = this.stats.frameTime;
 
     this.renderer.hoverFeatureCounter = 0;
     this.renderer.hoverFeatureList = map.hoverFeatureList;
@@ -327,6 +330,8 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 (replay.drawLoaded && replay.loaded)) {
                     
                 if (this.freeLayersHaveGeodata && this.drawChannel == 0) {
+                    this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
+                    this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                     this.renderer.draw.drawGpuJobs();
                 }
             }
@@ -432,7 +437,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
     //draw skydome before geodata
     if (this.drawChannel != 1 && !projected && debug.drawFog &&
-        (map.referenceFrame.id == 'melown2015' || map.referenceFrame.id == 'mars-qsc') &&
+        (map.referenceFrame.id == 'melown2015' || map.referenceFrame.id == 'mars-qsc' || map.referenceFrame.id == 'earth-qsc') &&
         renderer.progAtmo.isReady() && renderer.progAtmo2.isReady()) {    
 
         var navigationSrsInfo = map.getNavigationSrs().getSrsInfo();
@@ -489,6 +494,8 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     if (debug.drawEarth) {
         if (!skipFreeLayers) {
             if (map.freeLayersHaveGeodata && this.drawChannel == 0) {
+                this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
+                this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                 renderer.draw.drawGpuJobs();
             }
         }
@@ -537,7 +544,7 @@ MapDraw.prototype.getDrawCommandsGpuSize = function(commands) {
         case VTS_DRAWCOMMAND_SUBMESH:
                
             var mesh = command.mesh; 
-            var texture = command.texture; 
+            var texture = this.config.mapNoTextures ? 0 : command.texture; 
 
             if (mesh) {
                 gpuNeeded += mesh.gpuSize;
@@ -579,7 +586,7 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
             var texture = command.texture; 
                 
             var meshReady = (mesh && mesh.isReady(doNotLoad, priority, checkGpu));
-            var textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
+            var textureReady = this.config.mapNoTextures ? true : (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
                 
             if (!(meshReady && textureReady) ) {
                 ready = false;   
@@ -620,8 +627,14 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
             var mesh = command.mesh; 
             var texture = command.texture;
 
-            var meshReady = (mesh && mesh.isReady(doNotLoad, priority));
-            var textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority)));
+            var meshReady = (mesh && mesh.isReady(doNotLoad, priority)), textureReady;
+
+            if (this.config.mapNoTextures) {
+                textureReady = true;
+                texture = null;
+            } else {
+                textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority)));
+            }
                 
             if (meshReady && textureReady) {
                     //debug bbox
@@ -697,6 +710,20 @@ MapDraw.prototype.drawMonoliticGeodata = function(surface) {
         }
         
         if (surface.monoGeodataView.isReady()) {
+            var mapdataCredits = this.map.visibleCredits.mapdata
+
+            for (var i = 0, li = surface.credits.length; i < li; i++) {
+                var key = surface.credits[i]
+                var value = 10; //fixed specificity
+                var value2 = mapdataCredits[key];
+
+                if (value2) {
+                    mapdataCredits[key] = value > value2 ? value : value2;
+                } else {
+                    mapdataCredits[key] = value;
+                }
+            }
+
             surface.monoGeodataView.draw(this.camera.position);
         }
     }

@@ -65,9 +65,9 @@ ModelOBJ.prototype.materialLoaded = function(data) {
         switch(segments[0]) {
             case 'newmtl':
                 material = {
-                    Ka : null,
-                    Kd : null,
-                    Ks : null,
+                    Ka : [0,0,0],
+                    Kd : [0,0,0],
+                    Ks : [0,0,0],
                     map_Kd : null,
                     Ns : 90,
                     d : 1.0,
