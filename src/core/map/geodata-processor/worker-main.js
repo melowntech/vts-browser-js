@@ -3,7 +3,7 @@ import {globals as globals_} from './worker-globals.js';
 import {setFont as setFont_, setFontMap as setFontMap_,} from './worker-text.js';
 import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
         processStylesheet as processStylesheet_, getFilterResult as getFilterResult_,
-        getLayerPropertyValueInner as getLayerPropertyValueInner_} from './worker-style.js';
+        getLayerPropertyValueInner as getLayerPropertyValueInner_, makeFasterFilter as makeFasterFilter_} from './worker-style.js';
 import {processLineStringPass as processLineStringPass_, processLineStringGeometry as processLineStringGeometry_} from './worker-linestring.js';
 import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_} from './worker-pointarray.js';
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
@@ -12,7 +12,7 @@ import {postGroupMessage as postGroupMessage_, optimizeGroupMessages as optimize
 //get rid of compiler mess
 var globals = globals_;
 var setFont = setFont_;
-var setFontMap = setFontMap_;
+var setFontMap = setFontMap_, makeFasterFilter = makeFasterFilter_;
 var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
     processStylesheet = processStylesheet_, getFilterResult = getFilterResult_;
 var processLineStringPass = processLineStringPass_;
@@ -41,12 +41,6 @@ function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex
 
     case 'point-array':
         processPointArrayPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
-
-            /*if (getLayerPropertyValue(layer, "line", feature, lod) ||
-                getLayerPropertyValue(layer, "line-label", feature, lod)) {
-                processLineStringPass(feature, lod, layer, zIndex, eventInfo);
-            }*/
-
         break;
             
     case 'polygon':
@@ -64,6 +58,14 @@ function processFeatures(type, features, lod, featureType, group) {
         var filter =  layer['filter'];
         var reduce =  layer['reduce'], i, li;
 
+        if (filter) {
+            filter = layer['#filter'];
+            if (!filter) {
+                layer['#filter'] = makeFasterFilter(layer['filter']);
+                filter = layer['#filter'];
+            }
+        }
+
         featureCacheIndex = 0, finalFeatureCacheIndex = 0, finalFeatureCacheIndex2 = 0;
 
         for (i = 0, li = features.length; i < li; i++) {
@@ -74,7 +76,7 @@ function processFeatures(type, features, lod, featureType, group) {
                 feature.properties['#id'] = feature['id']; 
             }
             
-            if (!filter || getFilterResult(filter, feature, featureType, group, layer, 'filter', lod, 0)) {
+            if (!filter || getFilterResult(filter, feature, featureType, group, layer, 'filter', lod, 0, true)) {
                 if (reduce) {
                     featureCache[featureCacheIndex] = feature;
                     featureCacheIndex++;
@@ -197,9 +199,8 @@ function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, e
         for (var i = 0, li = multiPass.length; i < li; i++) {
             var zIndex = multiPass[i][0];
             mylayer = getLayer(multiPass[i][1], type, featureIndex);
-            var visible = getLayerPropertyValue(mylayer, 'visible', feature, lod);
-
-            if (!visible) {
+            
+            if (!getLayerPropertyValue(mylayer, 'visible', feature, lod)) {
                 continue;
             }
 
@@ -241,13 +242,11 @@ function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, e
 
 
 function processLayerFeature(type, feature, lod, layer, featureIndex) {
-    //var layer = getLayer(feature["style"], type, featureIndex);
-    var visible = getLayerPropertyValue(layer, 'visible', feature, lod);
-    var zIndex = getLayerPropertyValue(layer, 'z-index', feature, lod);
-
-    if (!visible) {
+    if (!getLayerPropertyValue(layer, 'visible', feature, lod)) {
         return;
     }
+
+    var zIndex = getLayerPropertyValue(layer, 'z-index', feature, lod);
 
     if (getLayerPropertyValue(layer, 'export-geometry', feature, lod) && (typeof feature['id'] !== 'undefined')) {
         if (!exportedGeometries[feature]) {
