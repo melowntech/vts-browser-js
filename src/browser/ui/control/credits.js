@@ -99,7 +99,7 @@ UIControlCredits.prototype.update = function() {
     }
 
     html += '<div class="vts-credits-supercell">';
-    html += '<div class="vts-credits-cell">Powered by <a class="vts-logo" href="https://melown.com" target="blank">MELOWN</a></div>';
+    html += '<div class="vts-credits-cell">Powered by <a class="vts-logo" href="https://www.melown.com/products/vts/" target="blank">VTS 3D Geospatial Software Stack</a></div>';
     html += '<div class="vts-credits-separator"></div>';
     html += '</div>';
 

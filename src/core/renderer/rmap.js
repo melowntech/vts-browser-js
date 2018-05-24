@@ -23,7 +23,7 @@ RendererRMap.prototype.clear = function() {
     this.sly = this.renderer.curSize[1];
 
     //reduce by credits
-    this.sly = Math.max(1, this.sly - 35);
+    this.sly = Math.max(1, this.sly - 55);
     
     //compass size
     this.clx = 135;

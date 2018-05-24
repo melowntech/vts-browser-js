@@ -1170,6 +1170,14 @@ function makeFasterFilter(filter) {
         result[3] = filter[2];
         result[4] = isSimpleValue(filter[2]);
         break;
+
+    case 'in':
+    case '!in':
+
+        for (i = 2, li = filter.length; i < li; i++) {
+            result[i+1] = filter[i];
+        } 
+
     }
 
     return result;

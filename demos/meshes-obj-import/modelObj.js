@@ -48,8 +48,13 @@ ModelOBJ.prototype.loadTexture = function(path) {
 
 ModelOBJ.prototype.checkStatus = function() {
     this.ready = (this.downloading <= 0);
-    if (this.ready && this.onLoaded) {
-        this.onLoaded();
+
+    if (this.ready) {
+        this.map.redraw();
+
+        if (this.onLoaded) {
+            this.onLoaded();
+        }
     }
 };
 
