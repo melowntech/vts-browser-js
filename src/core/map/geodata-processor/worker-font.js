@@ -74,7 +74,60 @@ Typr.parse = function(buff) {
     obj._tabs = tabs;
 
     Typr._processGlyphs(data, tablesOffset, tabs, obj);
-    
+
+    //get tables
+    var gsub = obj['GSUB'];
+    if (gsub) {
+        var llist = gsub.lookupList, flist = gsub.featureList;
+
+        obj.gsubIsolTable = [];
+        obj.gsubInitTable = [];
+        obj.gsubFinaTable = [];
+        obj.gsubMediTable = [];
+
+        obj.gsubRligLigaTable = [];
+
+        for(var fi = 0; fi < flist.length; fi++) {
+            var tag = flist[fi].tag;
+
+            switch (tag) {
+                case 'isol':
+                case 'init':
+                case 'fina':
+                case 'medi':
+
+                    for(var ti = 0; ti < flist[fi].tab.length; ti++) {
+                        var tab = llist[flist[fi].tab[ti]];
+                        
+                        if(tab.ltype == 1) {
+                            switch (tag) {
+                                case 'isol': obj.gsubIsolTable.push(tab.tabs); break;
+                                case 'init': obj.gsubInitTable.push(tab.tabs); break;
+                                case 'fina': obj.gsubFinaTable.push(tab.tabs); break;
+                                case 'medi': obj.gsubMediTable.push(tab.tabs); break;
+                            }
+                        }
+                    }
+
+                    break;
+
+                case 'rlig':
+                case 'liga':
+
+                    for(var ti = 0; ti < flist[fi].tab.length; ti++) {
+                        var tab = llist[flist[fi].tab[ti]];
+                        
+                        if(tab.ltype == 4) {
+                            obj.gsubRligLigaTable.push(tab.tabs);
+                        }
+                    }
+
+                    break;
+            }
+
+        }
+    }
+   
     return obj;
 }
 
@@ -399,10 +452,42 @@ Typr._lctf.readCoverage = function(data, offset) {
     //console.log("parsing coverage", offset-4, format, count);
     if(cvg.fmt==1) cvg.tab = bin.readUshorts(data, offset, count); 
     if(cvg.fmt==2) cvg.tab = bin.readUshorts(data, offset, count*3);
+
+    //get min,max
+
+    var min = Number.POSITIVE_INFINITY, max = 0;
+    var tab = cvg.tab;
+
+    if(cvg.fmt==1) {
+
+        for(var i=0; i<tab.length; i++) {
+            var v = tab[i];
+            if (v > max) max = v;
+            if (v < min) min = v;
+        }
+    }
+
+    if(cvg.fmt==2) {
+        for(var i=0; i<tab.length; i+=3) {
+            var start = tab[i], end = tab[i+1];
+            if (start > max) max = start;
+            if (start < min) min = start;
+            if (end > max) max = end;
+            if (end < min) min = end;
+        }
+    }
+
+    cvg.min = min;
+    cvg.max = max;
+
     return cvg;
 }
 
 Typr._lctf.coverageIndex = function(cvg, val) {
+    if (val < cvg.min || val > cvg.max) {
+        return -1;
+    }
+
     var tab = cvg.tab;
     if(cvg.fmt==1) return tab.indexOf(val);
     
@@ -1003,50 +1088,89 @@ Typr.U.getPairAdjustment = function(font, g1, g2) {
     return 0;
 }
 
+/*
 Typr.U.isRTL = function(str) {           
     var weakChars       = '\u0000-\u0040\u005B-\u0060\u007B-\u00BF\u00D7\u00F7\u02B9-\u02FF\u2000-\u2BFF\u2010-\u2029\u202C\u202F-\u2BFF',
         rtlChars        = '\u0591-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC',
         rtlDirCheck     = new RegExp('^['+weakChars+']*['+rtlChars+']');
 
     return rtlDirCheck.test(str);
-};
+};*/
+
+// var wsep = "\n\t\" ,.:;!?()  ،";
+//Typr.U.WSepTable = [9, 10, 32, 33, 34, 40, 41, 44, 46, 58, 59, 63, 1548]
+
+//var L = "ꡲ્૗";
+//Typr.U.LTable = [ 2765, 2775, 43122 ]
+
+//var R = "آأؤإاةدذرزوٱٲٳٵٶٷڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙۀۃۄۅۆۇۈۉۊۋۍۏےۓەۮۯܐܕܖܗܘܙܞܨܪܬܯݍݙݚݛݫݬݱݳݴݸݹࡀࡆࡇࡉࡔࡧࡩࡪࢪࢫࢬࢮࢱࢲࢹૅેૉ૊૎૏ૐ૑૒૝ૡ૤૯஁ஃ஄அஉ஌எஏ஑னப஫஬";
+Typr.U.RTable = [
+    1570, 1571, 1572, 1573, 1575, 1577, 1583, 1584, 1585, 1586,
+    1608, 1649, 1650, 1651, 1653, 1654, 1655, 1672, 1673, 1674,
+    1675, 1676, 1677, 1678, 1679, 1680, 1681, 1682, 1683, 1684,
+    1685, 1686, 1687, 1688, 1689, 1728, 1731, 1732, 1733, 1734,
+    1735, 1736, 1737, 1738, 1739, 1741, 1743, 1746, 1747, 1749,
+    1774, 1775, 1808, 1813, 1814, 1815, 1816, 1817, 1822, 1832,
+    1834, 1836, 1839, 1869, 1881, 1882, 1883, 1899, 1900, 1905,
+    1907, 1908, 1912, 1913, 2112, 2118, 2119, 2121, 2132, 2151,
+    2153, 2154, 2218, 2219, 2220, 2222, 2225, 2226, 2233, 2757,
+    2759, 2761, 2762, 2766, 2767, 2768, 2769, 2770, 2781, 2785,
+    2788, 2799, 2945, 2947, 2948, 2949, 2953, 2956, 2958, 2959,
+    2961, 2985, 2986, 2987, 2988 ];
+
 
 Typr.U.stringToGlyphs = function(fonts, str) {
-    var gls = [], g, i, li, j, lj, c, c2, gsub, font, llist, flist;
-    var gfonts = [], codes = [], str2 = '';
+    var gls = [], g, i, li, j, lj, k, ti, c, c2, gsub, font, llist, flist, t, gsubTable;
+    var gl, gfonts = [], codes = [], scodes = [], scodesType = [], str2 = '';
 
-    var wsep = "\n\t\" ,.:;!?()  ،";
-
-    //if (str.indexOf('Chad') != -1) {
     var bidiResult = bidi(str, -1, false);
-     //   debugger
-    //}
+
+    var rtable = Typr.U.RTable;
+
+   for (i = 0, li = str.length; i < li; i++) {
+        c = str.charCodeAt(i);
+        scodes.push(c);
+        scodesType.push(0);
+
+        //types wsep = 1, L = 2, R = 3
+
+        if (c == 2765 || c == 2775 || c == 43122) { // L
+            scodesType[i] = 2;
+        } else if (c == 1548) { // wsep
+            scodesType[i] = 1;
+        } else if (c <= 63) { // wsep
+            if (c == 9 || c == 10 || c == 32 || c == 33 || c == 34 || c == 40 || c == 41 || c == 44 || c == 46 || c == 58 || c == 59 || c == 63) {
+                scodesType[i] = 1;
+            }
+        } else if (c >= 1570 && c <= 2988) { // R
+            if (rtable.indexOf(c) != -1) {
+                scodesType[i] = 3;
+            }
+        }
+    }
 
     //basic shaping
     for (i = 0, li = str.length; i < li; i++) {
-        c = str.charCodeAt(i);
+        c = scodes[i];
 
-        if (i < li - 2) {
-            c2 = str.charCodeAt(i+1);
+        if (scodesType[i] != 1) { //not wsep
+            if (i < li - 2) {
+                c2 = scodes[i+1];
 
-            //myanmar 
-            if (wsep.indexOf(c) == -1) {
+                //myanmar 
                 if (c2 == 0x103c) { //medial ra - prebase substitution
-                    str2 += String.fromCharCode(c2);
-                    str2 += String.fromCharCode(c);
+                    scodes[i] = c2;
+                    scodes[i+1] = c;
                     i++;
                     continue;
                 }
-            }    
+            }
         }
-
-        str2 += String.fromCharCode(c);
     }
 
-    str = str2;
-
+    //get glyphs and fonts for codes
     for (i = 0, li = str.length; i < li; i++) {
-        c = str.charCodeAt(i);
+        c = scodes[i];
 
         for (j = 0, lj = fonts.length; j < lj; j++) {
             font = fonts[j];
@@ -1058,56 +1182,48 @@ Typr.U.stringToGlyphs = function(fonts, str) {
 
         gls.push(g);
         gfonts.push(g ? j : 0);
-        codes.push(c);
     }
 
+    codes = scodes;
     font = null;
     
-    //console.log(gls);  return gls;
-   
-    var R = "آأؤإاةدذرزوٱٲٳٵٶٷڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙۀۃۄۅۆۇۈۉۊۋۍۏےۓەۮۯܐܕܖܗܘܙܞܨܪܬܯݍݙݚݛݫݬݱݳݴݸݹࡀࡆࡇࡉࡔࡧࡩࡪࢪࢫࢬࢮࢱࢲࢹૅેૉ૊૎૏ૐ૑૒૝ૡ૤૯஁ஃ஄அஉ஌எஏ஑னப஫஬";
-    var L = "ꡲ્૗";
     
     for(var ci = 0; ci < gls.length; ci++) {
-        var gl = gls[ci];
+        gl = gls[ci];
 
         if (font != gfonts[ci]) {
             font = fonts[gfonts[ci]];
-
-            gsub = font["GSUB"];
-            if(!gsub) {
-                continue;
-            }
-
-            llist = gsub.lookupList, flist = gsub.featureList;
+            gsub = font['GSUB'];
         }
 
         if(!gsub) {
             continue;
         }
-        
-        var slft = ci==0            || wsep.indexOf(str[ci-1])!=-1;
-        var srgt = ci==gls.length-1 || wsep.indexOf(str[ci+1])!=-1;
-        
-        if(!slft && R.indexOf(str[ci-1])!=-1) slft=true;
-        if(!srgt && R.indexOf(str[ci  ])!=-1) srgt=true;
-        
-        if(!srgt && L.indexOf(str[ci+1])!=-1) srgt=true;
-        if(!slft && L.indexOf(str[ci  ])!=-1) slft=true;
-        
-        var feat = null;
-        if(slft) feat = srgt ? "isol" : "init";
-        else     feat = srgt ? "fina" : "medi";
-        
-        for(var fi = 0; fi < flist.length; fi++) {
-            if(flist[fi].tag != feat) continue;
 
-            for(var ti = 0; ti < flist[fi].tab.length; ti++) {
-                var tab = llist[flist[fi].tab[ti]];
-                if(tab.ltype != 1) continue;
+        var t1 = scodesType[ci-1], t2 = scodesType[ci], t3 = scodesType[ci+1];
 
-                for(var j = 0; j < tab.tabs.length; j++) {
-                    var ttab = tab.tabs[j];
+        var slft = (ci==0) || (t1 == 1);
+        var srgt = (ci==gls.length-1) || (t3 == 1);
+        
+        if(!slft && (t1 == 3)) slft=true;
+        if(!srgt && (t2 == 3)) srgt=true;
+        
+        if(!srgt && (t3 == 2)) srgt=true;
+        if(!slft && (t2 == 2)) slft=true;
+        
+        gsubTable = null;
+        if (slft) {
+            gsubTable = srgt ? font.gsubIsolTable : font.gsubInitTable;        
+        } else {
+            gsubTable = srgt ? font.gsubFinaTable : font.gsubMediTable;            
+        }
+        
+        if (gsubTable) {
+            for(ti = 0; ti < gsubTable.length; ti++) {
+                var tab = gsubTable[ti];
+
+                for(j = 0; j < tab.length; j++) {
+                    var ttab = tab[j];
                     var ind = Typr._lctf.coverageIndex(ttab.coverage,gl);
                     if(ind == -1) continue;  
 
@@ -1116,54 +1232,46 @@ Typr.U.stringToGlyphs = function(fonts, str) {
                     } else {
                         if (!ttab.newg) {
                             gls[ci] = gl;
-                            console.log(ci, gl, "subst-error", flist[fi].tag, i, j, ' original:', str);
+                            console.log(ci, gl, 'subst-error', ' original:', str);
                         } else {
                             gls[ci] = ttab.newg[ind];
                         }
                     }
-
-                    //console.log(ci, gl, "subst", flist[fi].tag, i, j, ttab.newg[ind]);
                 }
             }
         }
     }
 
-    var cligs = ["rlig", "liga"];
+    font = null;
     
     for(var ci=0; ci<gls.length; ci++) {
-        var gl = gls[ci];
-        var rlim = Math.min(3, gls.length-ci-1);
+        gl = gls[ci];
+
+        if (font != gfonts[ci]) {
+            font = fonts[gfonts[ci]];
+            gsub = font['GSUB'];
+        }
 
         if(!gsub) {
             continue;
         }
 
-        if (font != gfonts[ci]) {
-            font = fonts[gfonts[ci]];
+        gsubTable = font.gsubRligLigaTable;
 
-            gsub = font["GSUB"];
-            if(!gsub) {
-                continue;
-            }
+        if (gsubTable) {
+            var rlim = Math.min(3, gls.length-ci-1);
 
-            llist = gsub.lookupList, flist = gsub.featureList;
-        }
+            for(ti = 0; ti < gsubTable.length; ti++) {
+                var tab = gsubTable[ti];
 
-        for(var fi=0; fi<flist.length; fi++) {
-            var fl = flist[fi];
-            if(cligs.indexOf(fl.tag)==-1) continue;
-
-            for(var ti=0; ti<fl.tab.length; ti++) {
-                var tab = llist[fl.tab[ti]];
-                if(tab.ltype!=4) continue;
-
-                for(var j=0; j<tab.tabs.length; j++) {
-                    var ind = Typr._lctf.coverageIndex(tab.tabs[j].coverage, gl);
+                for(j = 0; j < tab.length; j++) {
+                    var ttab = tab[j];
+                    var ind = Typr._lctf.coverageIndex(ttab.coverage, gl);
                     if(ind==-1) continue;  
 
-                    var vals = tab.tabs[j].vals[ind];
+                    var vals = ttab.vals[ind];
                     
-                    for(var k=0; k<vals.length; k++) {
+                    for(k=0; k<vals.length; k++) {
                         var lig = vals[k], rl = lig.chain.length;  if(rl>rlim) continue;
                         var good = true;
                         for(var l=0; l<rl; l++) if(lig.chain[l]!=gls[ci+(1+l)]) good=false;
@@ -1177,10 +1285,6 @@ Typr.U.stringToGlyphs = function(fonts, str) {
         }
     }
 
-    //if (Typr.U.isRTL(str)) {
-    //    gls.reverse();
-    //}
-
     var indices = bidiResult.indices;
     var gls2 = gls.slice();
     var codes2 = gls.slice();
@@ -1190,8 +1294,6 @@ Typr.U.stringToGlyphs = function(fonts, str) {
         gls2[i] = gls[c];
         codes2[i] = codes[c];
     }
-
-    //gls = gls2;
 
     return [gls2, gfonts, codes2];
 }

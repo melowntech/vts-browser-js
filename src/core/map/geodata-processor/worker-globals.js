@@ -139,11 +139,18 @@ var simpleFmtCall = (function obj(str, call) {
         return '';
     }
 
+    var i = str.indexOf('{'), li, str2;
+
+    if (i == -1) {
+        return str;
+    } else {
+        str2 = i > 0 ? str.substring(0, i) : '';
+    }
+
     var counter = 0;
     var begin = -1;
-    var str2 = "";
 
-    for (var i = 0, li = str.length; i < li; i++) {
+    for (li = str.length; i < li; i++) {
         var c = str.charAt(i);
 
         if (c == '{') {
@@ -152,9 +159,7 @@ var simpleFmtCall = (function obj(str, call) {
             }
 
             counter++;
-        }
-
-        if (c == '}') {
+        } else if (c == '}') {
             counter--;
 
             if (counter == 0) {
