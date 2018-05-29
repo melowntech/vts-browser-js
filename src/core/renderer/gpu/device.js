@@ -1,6 +1,6 @@
 
 
-var GpuDevice = function(renderer, div, size, keepFrameBuffer, antialias) {
+var GpuDevice = function(renderer, div, size, keepFrameBuffer, antialias, aniso) {
     this.renderer = renderer;
     this.div = div;
     this.canvas =  null;
@@ -18,50 +18,78 @@ var GpuDevice = function(renderer, div, size, keepFrameBuffer, antialias) {
 
     this.keepFrameBuffer = (keepFrameBuffer == null) ? false : keepFrameBuffer;
     this.antialias = antialias ? true : false;
+    this.anisoLevel = aniso;
 };
 
 
 GpuDevice.prototype.init = function() {
-    this.canvas = document.createElement('canvas');
+    var canvas = document.createElement('canvas');
 
-    if (this.canvas == null) {
+    if (canvas == null) {
         //canvas not supported
         return;
     }
 
-    this.canvas.width = this.curSize[0];
-    this.canvas.height = this.curSize[1];
-    this.canvas.style.display = 'block';
+    this.canvas = canvas;
 
-    if (this.canvas.getContext == null) {
+    canvas.width = this.curSize[0];
+    canvas.height = this.curSize[1];
+    canvas.style.display = 'block';
+
+    if (canvas.getContext == null) {
         //canvas not supported
         return;
     }
+
+    var gl;
 
     try {
-        this.gl = this.canvas.getContext('webgl', {preserveDrawingBuffer: this.keepFrameBuffer, antialias: this.antialias, stencil: true}) || this.canvas.getContext('experimental-webgl', {preserveDrawingBuffer: this.keepFrameBuffer});
+        gl = canvas.getContext('webgl', {preserveDrawingBuffer: this.keepFrameBuffer, antialias: this.antialias, stencil: true}) || canvas.getContext('experimental-webgl', {preserveDrawingBuffer: this.keepFrameBuffer});
     } catch(e) {
         //webgl not supported
     }
 
-    if (!this.gl) {
+    if (!gl) {
         //webgl not supported
         return;
     }
 
-    this.gl.getExtension('OES_standard_derivatives');
+    this.gl = gl;
 
-    this.div.appendChild(this.canvas);
+    gl.getExtension('OES_standard_derivatives');
 
-    this.gl.viewportWidth = this.canvas.width;
-    this.gl.viewportHeight = this.canvas.height;
+    this.anisoExt = (
+      gl.getExtension('EXT_texture_filter_anisotropic') ||
+      gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+      gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
+    );
 
-    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    this.gl.enable(this.gl.DEPTH_TEST);
+    if (this.anisoExt) {
+        this.maxAniso = gl.getParameter(this.anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+
+        if (this.anisoLevel) {
+            if (this.anisoLevel == -1) {
+                this.anisoLevel = this.maxAniso;
+            } else {
+                this.anisoLevel = Math.min(this.anisoLevel, this.maxAniso);
+            }
+        }
+    } else {
+        this.maxAniso = 0;
+        this.anisoLevel = 0;
+    }
+
+    this.div.appendChild(canvas);
+
+    gl.viewportWidth = canvas.width;
+    gl.viewportHeight = canvas.height;
+
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.enable(gl.DEPTH_TEST);
 
     //clear screen
-    this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 };
 
 
@@ -74,15 +102,16 @@ GpuDevice.prototype.kill = function() {
 
 GpuDevice.prototype.resize = function(size, skipCanvas) {
     this.curSize = size;
+    var canvas = this.canvas, gl = this.gl;
 
-    if (this.canvas != null && skipCanvas !== true) {
-        this.canvas.width = this.curSize[0];
-        this.canvas.height = this.curSize[1];
+    if (canvas != null && skipCanvas !== true) {
+        canvas.width = this.curSize[0];
+        canvas.height = this.curSize[1];
     }
 
-    if (this.gl != null) {
-        this.gl.viewportWidth = this.canvas.width;
-        this.gl.viewportHeight = this.canvas.height;
+    if (gl != null) {
+        gl.viewportWidth = canvas.width;
+        gl.viewportHeight = canvas.height;
     }
 };
 

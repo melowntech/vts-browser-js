@@ -42,8 +42,12 @@ plugins.push(
       'VTS_MATERIAL_FOG':             3,
       'VTS_MATERIAL_INTERNAL' :       4,
       'VTS_MATERIAL_INTERNAL_NOFOG':  5,
-      'VTS_MATERIAL_EXTERNAL' :       6,
+      'VTS_MATERIAL_EXTERNAL':        6,
       'VTS_MATERIAL_EXTERNAL_NOFOG':  7,
+
+      'VTS_PIPELINE_BASIC':           0,
+      'VTS_PIPELINE_HMAP':            1,
+      'VTS_PIPELINE_PROCEDURAL':      2,
 
       'VTS_DRAWCOMMAND_STATE' :       1,
       'VTS_DRAWCOMMAND_SUBMESH' :     2,

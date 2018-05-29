@@ -656,7 +656,16 @@ GpuShaders.heightmapDepthFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = fract(vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vDepth) + (-0.5/255.0);\n'+
     '}';
 
-    
+GpuShaders.quadPoint = 
+    'vec3 quadPoint(int i1, int i2, int i3, float t, float t2) {\n'+
+        'float p1x = uPoints[i1], p1y = uPoints[i1+1], p1z = uPoints[i1+2];\n'+
+        'float p3x = uPoints[i3], p3y = uPoints[i3+1], p3z = uPoints[i3+2];\n'+
+        'float p2x = 2.0*uPoints[i2]-p1x*0.5-p3x*0.5;\n'+
+        'float p2y = 2.0*uPoints[i2+1]-p1y*0.5-p3y*0.5;\n'+
+        'float p2z = 2.0*uPoints[i2+2]-p1z*0.5-p3z*0.5;\n'+
+        'return vec3(t2*t2*p1x+2.0*t2*t*p2x+t*t*p3x, t2*t2*p1y+2.0*t2*t*p2y+t*t*p3y, t2*t2*p1z+2.0*t2*t*p2z+t*t*p3z); }\n';
+
+   
 GpuShaders.planeVertexShader =
     'attribute vec3 aPosition;\n'+
     'attribute vec2 aTexCoord;\n'+
@@ -666,14 +675,7 @@ GpuShaders.planeVertexShader =
     'uniform float uPoints[9*3];\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec2 vTexCoord2;\n'+
-    'varying float vFogFactor;\n'+
-    'vec3 quadPoint(int i1, int i2, int i3, float t, float t2) {\n'+
-        'float p1x = uPoints[i1], p1y = uPoints[i1+1], p1z = uPoints[i1+2];\n'+
-        'float p3x = uPoints[i3], p3y = uPoints[i3+1], p3z = uPoints[i3+2];\n'+
-        'float p2x = 2.0*uPoints[i2]-p1x*0.5-p3x*0.5;\n'+
-        'float p2y = 2.0*uPoints[i2+1]-p1y*0.5-p3y*0.5;\n'+
-        'float p2z = 2.0*uPoints[i2+2]-p1z*0.5-p3z*0.5;\n'+
-        'return vec3(t2*t2*p1x+2.0*t2*t*p2x+t*t*p3x, t2*t2*p1y+2.0*t2*t*p2y+t*t*p3y, t2*t2*p1z+2.0*t2*t*p2z+t*t*p3z); }\n'+
+    'varying float vFogFactor;\n'+ GpuShaders.quadPoint +
     'void main() {\n'+
         'vec3 indices = aPosition;\n'+
         'float t = aPosition.y * uParams[2];\n'+  //vertical index
@@ -719,14 +721,7 @@ GpuShaders.planeVertex2Shader =
     'uniform float uPoints[9*3];\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec2 vTexCoord2;\n'+
-    'varying float vFogFactor;\n'+
-    'vec3 quadPoint(int i1, int i2, int i3, float t, float t2) {\n'+
-        'float p1x = uPoints[i1], p1y = uPoints[i1+1], p1z = uPoints[i1+2];\n'+
-        'float p3x = uPoints[i3], p3y = uPoints[i3+1], p3z = uPoints[i3+2];\n'+
-        'float p2x = 2.0*uPoints[i2]-p1x*0.5-p3x*0.5;\n'+
-        'float p2y = 2.0*uPoints[i2+1]-p1y*0.5-p3y*0.5;\n'+
-        'float p2z = 2.0*uPoints[i2+2]-p1z*0.5-p3z*0.5;\n'+
-        'return vec3(t2*t2*p1x+2.0*t2*t*p2x+t*t*p3x, t2*t2*p1y+2.0*t2*t*p2y+t*t*p3y, t2*t2*p1z+2.0*t2*t*p2z+t*t*p3z); }\n'+
+    'varying float vFogFactor;\n'+ GpuShaders.quadPoint +
     'void main() {\n'+
         'vec3 indices = aPosition;\n'+
         'float t = aPosition.y * uParams[2];\n'+  //vertical index
@@ -777,14 +772,7 @@ GpuShaders.planeVertex3Shader =
     'uniform float uHeights[9];\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec2 vTexCoord2;\n'+
-    'varying float vFogFactor;\n'+
-    'vec3 quadPoint(int i1, int i2, int i3, float t, float t2) {\n'+
-        'float p1x = uPoints[i1], p1y = uPoints[i1+1], p1z = uPoints[i1+2];\n'+
-        'float p3x = uPoints[i3], p3y = uPoints[i3+1], p3z = uPoints[i3+2];\n'+
-        'float p2x = 2.0*uPoints[i2]-p1x*0.5-p3x*0.5;\n'+
-        'float p2y = 2.0*uPoints[i2+1]-p1y*0.5-p3y*0.5;\n'+
-        'float p2z = 2.0*uPoints[i2+2]-p1z*0.5-p3z*0.5;\n'+
-        'return vec3(t2*t2*p1x+2.0*t2*t*p2x+t*t*p3x, t2*t2*p1y+2.0*t2*t*p2y+t*t*p3y, t2*t2*p1z+2.0*t2*t*p2z+t*t*p3z); }\n'+
+    'varying float vFogFactor;\n'+ GpuShaders.quadPoint + 
     'float linearHeight(float x, float y) {\n'+
         'int ix = int(x);\n'+
         'int iy = int(y);\n'+

@@ -610,7 +610,7 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
 };
 
 
-MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, doNotLoad) {
+MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, doNotLoad, tile) {
     if (commands.length > 0) {
         this.drawTileCounter++;
     }
@@ -625,7 +625,7 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
 
         case VTS_DRAWCOMMAND_SUBMESH:
             var mesh = command.mesh; 
-            var texture = command.texture;
+            var texture = command.texture, hmap;
 
             var meshReady = (mesh && mesh.isReady(doNotLoad, priority)), textureReady;
 
@@ -633,7 +633,17 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                 textureReady = true;
                 texture = null;
             } else {
-                textureReady = (!texture  || (texture && texture.isReady(doNotLoad, priority)));
+                textureReady = (!texture || (texture && texture.isReady(doNotLoad, priority)));
+            }
+
+            var pipeline = command.pipeline;
+
+            if (pipeline) {
+                //hmap = command.hmap;
+                //textureReady = (textureReady && (hmap && hmap.isReady(doNotLoad, priority)));
+
+                tile.drawHmapTile(cameraPos, null, null, pipeline);
+                return;
             }
                 
             if (meshReady && textureReady) {
@@ -656,9 +666,6 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                     mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha);
                 }
 
-            } else {
-                //i = i;
-                //this should not happen
             }
                 
             break;

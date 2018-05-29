@@ -116,7 +116,7 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
     } else {
         if (!preventRedener && tile.lastRenderState) {
             var channel = this.draw.drawChannel;
-            this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+            this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
             this.map.applyCredits(tile);
             return true;
         }
@@ -143,7 +143,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
 
     if (tile.drawCommands[channel].length > 0 && this.draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, doNotCheckGpu)) {
         if (!preventRedener) {
-            draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority);
+            draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority, null, tile);
             this.map.applyCredits(tile);
         }
         tile.lastRenderState = null;
@@ -153,14 +153,14 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         if (tile.surfaceMesh.isReady(true, priority, doNotCheckGpu)) {
             if (tile.drawCommands[channel].length > 0) {
                 if (!preventRedener) {
-                    draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+                    draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
                     this.map.applyCredits(tile);
                 }
                 return true;
             }
         } else {
             if (!preventRedener) {
-                draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+                draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
                 this.map.applyCredits(tile);
             }
             ret = true;
@@ -447,6 +447,18 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             
         }
 
+        if (surface.pipeline > VTS_PIPELINE_BASIC) {
+            for (j = 0; j < 2; j++) {
+                var commands = tile.drawCommands[j];
+                for (i = 0, li = commands.length; i < li; i++) {
+                    if (commands[i].type == VTS_DRAWCOMMAND_SUBMESH) {
+                        commands[i].pipeline = surface.pipeline;
+                        commands[i].hmap = tile.resourceSurface.getTextureUrl(tile.id);
+                    }
+                }
+            }
+        }
+
         if (tile.resetDrawCommands) {
             return false;
         }
@@ -458,7 +470,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             }
 
             if (!preventRedener) {
-                draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority);
+                draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority, null, tile);
                 this.map.applyCredits(tile);
             }
             
@@ -466,7 +478,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             ret = true;
         } else if (tile.lastRenderState) {
             if (!preventRedener) {
-                draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+                draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
                 this.map.applyCredits(tile);
             }
             ret = true;
@@ -539,7 +551,7 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
 
     if (tile.drawCommands[channel].length > 0 && this.draw.areDrawCommandsReady(tile.drawCommands[channel], priority, preventLoad, doNotCheckGpu)) {
         if (!preventRedener) {
-            this.draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority);
+            this.draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority, null, tile);
             this.map.applyCredits(tile);
         }
         tile.lastRenderState = null;
@@ -551,14 +563,14 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
         if (tile.surfaceGeodata.isReady(true, priority, doNotCheckGpu) {
             if (tile.drawCommands[channel].length > 0) {
                 if (!preventRedener) {
-                    this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+                    this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
                     this.applyCredits(tile);
                 }
                 return;
             }
         } else {
             if (!preventRedener) {
-                this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true);
+                this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
                 this.applyCredits(tile);
             }
         }

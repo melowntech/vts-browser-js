@@ -69,6 +69,7 @@ var Core = function(element, config, coreInterface) {
         mapFog : true,
         mapNoTextures: false,
         mapMetricUnits : !(lang == 'en' || lang.indexOf('en-') == 0),
+        rendererAnisotropic : 0,
         rendererAntialiasing : true,
         rendererAllowScreenshots : false,
         inspector : true, 
@@ -471,6 +472,7 @@ Core.prototype.getConfigParam = function(key) {
 
 Core.prototype.setRendererConfigParam = function(key, value) {
     switch (key) {
+    case 'rendererAnisotropic':        this.config.rendererAnisotropic = utils.validateNumber(value, -1, 2048, 0); break;
     case 'rendererAntialiasing':       this.config.rendererAntialiasing = utils.validateBool(value, true); break;
     case 'rendererAllowScreenshots':   this.config.rendererAllowScreenshots = utils.validateBool(value, false); break;
     }
@@ -479,6 +481,7 @@ Core.prototype.setRendererConfigParam = function(key, value) {
 
 Core.prototype.getRendererConfigParam = function(key) {
     switch (key) {
+    case 'rendererAnisotropic':        return this.config.rendererAnisotropic;
     case 'rendererAntialiasing':       return this.config.rendererAntialiasing;
     case 'rendererAllowScreenshots':   return this.config.rendererAllowScreenshots;
     }

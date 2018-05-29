@@ -1354,6 +1354,239 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
 }; 
 
 
+MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipeline) {
+    if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
+        return;
+    }
+    
+    if (!this.metanode) {
+        return;
+    }
+
+    var map = this.map, node, ll, ur, res;
+
+    if (divNode) {
+        node = divNode[0]; 
+        ll = divNode[1][0];
+        ur = divNode[1][1];
+    } else {
+        res = map.measure.getSpatialDivisionNodeAndExtents(this.id);
+        node = res[0]; 
+        ll = res[1][0];
+        ur = res[1][1];
+    }
+   
+    var middle = [(ur[0] + ll[0])* 0.5, (ur[1] + ll[1])* 0.5];
+    var hasPoles = map.referenceFrame.hasPoles;
+    angle = angle || this.metanode.diskAngle2;
+    
+    if ((hasPoles && !node.isPole) &&  Math.acos(angle) > Math.PI*0.1) {
+        angle = Math.cos(Math.acos(angle) * 0.5); 
+        
+        this.drawHmapTile(cameraPos, [node, [ [ll[0], ll[1]],  [middle[0], middle[1]] ] ], angle);
+        this.drawHmapTile(cameraPos, [node, [ [middle[0], ll[1]],  [ur[0], middle[1]] ] ], angle);
+
+        this.drawHmapTile(cameraPos, [node, [ [ll[0], middle[1]],  [middle[0], ur[1]] ] ], angle);
+        this.drawHmapTile(cameraPos, [node, [ [middle[0], middle[1]],  [ur[0], ur[1]] ] ], angle);
+       
+        return;
+    }
+     
+    var desiredSamplesPerViewExtent = 5;
+    var nodeExtent = node.extents.ur[1] - node.extents.ll[1];
+    var viewExtent = this.distance ;//* 0.1;
+    var lod = Math.log((desiredSamplesPerViewExtent * nodeExtent) / viewExtent) / map.log2;
+    lod = Math.max(0,lod - 8 + node.id[0]);
+   
+    var h, factor, prog, draw = map.draw; 
+
+    var sx = cameraPos[0];
+    var sx = cameraPos[0];
+    var sy = cameraPos[1];
+    var sz = cameraPos[2];
+    var buffer = draw.planeBuffer;
+    var gridPoints = this.gridPoints;
+    var useSurrogatez = map.config.mapGridSurrogatez;
+
+    if (!gridPoints) {
+
+        h = this.metanode.minZ;
+        var n1 = node.getPhysicalCoords([ur[0], ur[1], h], true);
+        var n2 = node.getPhysicalCoords([ur[0], ll[1], h], true);
+        var n3 = node.getPhysicalCoords([ll[0], ll[1], h], true);
+        var n4 = node.getPhysicalCoords([ll[0], ur[1], h], true);
+        var mtop = node.getPhysicalCoords([middle[0], ur[1], h], true);
+        var mbottom = node.getPhysicalCoords([middle[0], ll[1], h], true);
+        var mleft = node.getPhysicalCoords([ll[0], middle[1], h], true);
+        var mright = node.getPhysicalCoords([ur[0], middle[1], h], true);
+
+        middle[2] = h;
+        middle = node.getPhysicalCoords(middle, true);
+
+        if (!divNode) {
+
+            var gridPoints = [
+                n4[0], n4[1], n4[2],
+                mtop[0], mtop[1], mtop[2],
+                n1[0], n1[1], n1[2],
+
+                mleft[0], mleft[1], mleft[2],
+                middle[0], middle[1], middle[2],
+                mright[0], mright[1], mright[2],
+                
+                n3[0], n3[1], n3[2],
+                mbottom[0], mbottom[1], mbottom[2],
+                n2[0], n2[1], n2[2]
+            ];
+
+            this.gridPoints = gridPoints;
+
+        } else {
+            buffer[0] = n4[0] - sx;
+            buffer[1] = n4[1] - sy;
+            buffer[2] = n4[2] - sz;
+            
+            buffer[3] = mtop[0] - sx;
+            buffer[4] = mtop[1] - sy;
+            buffer[5] = mtop[2] - sz;
+
+            buffer[6] = n1[0] - sx;
+            buffer[7] = n1[1] - sy;
+            buffer[8] = n1[2] - sz;
+
+            buffer[9] = mleft[0] - sx;
+            buffer[10] = mleft[1] - sy;
+            buffer[11] = mleft[2] - sz;
+                    
+            buffer[12] = middle[0] - sx;
+            buffer[13] = middle[1] - sy;
+            buffer[14] = middle[2] - sz;
+                    
+            buffer[15] = mright[0] - sx;
+            buffer[16] = mright[1] - sy;
+            buffer[17] = mright[2] - sz;
+                
+            buffer[18] = n3[0] - sx;
+            buffer[19] = n3[1] - sy;
+            buffer[20] = n3[2] - sz;
+            
+            buffer[21] = mbottom[0] - sx;
+            buffer[22] = mbottom[1] - sy;
+            buffer[23] = mbottom[2] - sz;
+            
+            buffer[24] = n2[0] - sx;
+            buffer[25] = n2[1] - sy;
+            buffer[26] = n2[2] - sz;
+        }
+     }
+
+    var renderer = map.renderer;
+    var mv = renderer.camera.getModelviewMatrix();
+    var proj = renderer.camera.getProjectionMatrix();
+
+    if (gridPoints) {
+        buffer[0] = gridPoints[0] - sx;
+        buffer[1] = gridPoints[1] - sy;
+        buffer[2] = gridPoints[2] - sz;
+        
+        buffer[3] = gridPoints[3] - sx;
+        buffer[4] = gridPoints[4] - sy;
+        buffer[5] = gridPoints[5] - sz;
+
+        buffer[6] = gridPoints[6] - sx;
+        buffer[7] = gridPoints[7] - sy;
+        buffer[8] = gridPoints[8] - sz;
+
+        buffer[9] = gridPoints[9] - sx;
+        buffer[10] = gridPoints[10] - sy;
+        buffer[11] = gridPoints[11] - sz;
+                
+        buffer[12] = gridPoints[12] - sx;
+        buffer[13] = gridPoints[13] - sy;
+        buffer[14] = gridPoints[14] - sz;
+                
+        buffer[15] = gridPoints[15] - sx;
+        buffer[16] = gridPoints[16] - sy;
+        buffer[17] = gridPoints[17] - sz;
+            
+        buffer[18] = gridPoints[18] - sx;
+        buffer[19] = gridPoints[19] - sy;
+        buffer[20] = gridPoints[20] - sz;
+        
+        buffer[21] = gridPoints[21] - sx;
+        buffer[22] = gridPoints[22] - sy;
+        buffer[23] = gridPoints[23] - sz;
+        
+        buffer[24] = gridPoints[24] - sx;
+        buffer[25] = gridPoints[25] - sy;
+        buffer[26] = gridPoints[26] - sz;
+    }
+
+    if (hasPoles && !map.poleRadius && node.id[0] == 1 && !node.isPole) {
+        var p = node.getPhysicalCoords([node.extents.ur[0], node.extents.ur[1], 0]);
+        map.poleRadius = Math.sqrt(p[0]*p[0]+p[1]*p[1]); 
+        map.poleRadiusFactor = 8 * Math.pow(2.0, 552058 / map.poleRadius); 
+    }
+
+    factor = 1;
+
+    if (hasPoles && node.isPole) {
+        factor = map.poleRadiusFactor; 
+        prog = renderer.progPlane2; 
+        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+        prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
+    } else {
+        prog = renderer.progHmapPlane;
+        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+    }
+
+    prog.setMat4('uMV', mv);
+    prog.setMat4('uProj', proj);
+    prog.setFloatArray('uPoints', buffer);
+    
+    /*
+    var lx = (ur[0] - ll[0]);
+    var ly = (ll[1] - ur[1]);
+    var px = (ll[0] - node.extents.ll[0]) / lx;
+    var py = (ur[1] - node.extents.ll[1]) / ly;
+    
+    var llx = (node.extents.ur[0] - node.extents.ll[0]) / lx;
+    var lly = (node.extents.ur[1] - node.extents.ll[1]) / ly;
+
+    px = px / llx;
+    py = py / lly;
+    llx = 1.0/llx;
+    lly = 1.0/lly;
+    
+    llx *= step1;
+    lly *= step1;
+    px *= step1;
+    py *= step1;
+    */
+
+    var step1 = node.gridStep1 * factor;
+
+    var lx = 1.0 / (ur[0] - ll[0]);
+    var ly = 1.0 / (ll[1] - ur[1]);
+    var llx = step1 / ((node.extents.ur[0] - node.extents.ll[0]) * lx);
+    var lly = step1 / ((node.extents.ur[1] - node.extents.ll[1]) * ly);
+    var px = (ll[0] - node.extents.ll[0]) * lx * llx;
+    var py = (ur[1] - node.extents.ll[1]) * ly * lly;
+
+    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/15, node.gridStep2 * factor]);
+    prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
+    prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
+    prog.setVec4('uFogColor', draw.atmoColor);
+
+    renderer.gpu.bindTexture(renderer.heightmapTexture);
+    
+    //draw bbox
+    renderer.planeMesh.draw(prog, 'aPosition', 'aTexCoord');    
+
+    this.map.stats.drawnFaces += renderer.planeMesh.polygons;
+}; 
+
+
 export default MapSurfaceTile;
 
 

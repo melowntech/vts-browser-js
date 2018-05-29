@@ -87,7 +87,7 @@ GpuTexture.prototype.createFromData = function(lx, ly, data, filter, repeat) {
     this.loaded = true;
 };
 
-GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
+GpuTexture.prototype.createFromImage = function(image, filter, repeat, aniso) {
     var gl = this.gl;
 
     //utils.isPowerOfTwo = (function(value) {
@@ -139,7 +139,13 @@ GpuTexture.prototype.createFromImage = function(image, filter, repeat) {
         data = canvas;
     }
 
-    if (this.gpu.noTextures !== true) {
+    var gpu = this.gpu;
+
+    if (gpu.anisoLevel) {
+        gl.texParameterf(gl.TEXTURE_2D, gpu.anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, gpu.anisoLevel);
+    }
+
+    if (gpu.noTextures !== true) { //why is it here and not at the beginig of the code?
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
         if (mipmaps) {
