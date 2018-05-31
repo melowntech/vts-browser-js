@@ -62,7 +62,7 @@ RendererInit.prototype.initShaders = function() {
     renderer.progPlane2 = new GpuProgram(gpu, shaders.planeVertex2Shader, shaders.planeFragment2Shader); //poles
     renderer.progPlane3 = new GpuProgram(gpu, shaders.planeVertex3Shader, shaders.planeFragmentShader); // grid         
 
-    renderer.progHmapPlane = new GpuProgram(gpu, shaders.planeVertex3Shader, shaders.planeFragmentShader);        
+    renderer.progHmapPlane = new GpuProgram(gpu, shaders.planeVertex4Shader, shaders.planeFragmentShader);        
 
 
     renderer.progSkydome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.skydomeFragmentShader);

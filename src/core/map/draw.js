@@ -614,7 +614,7 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
     if (commands.length > 0) {
         this.drawTileCounter++;
     }
-    
+
     for (var i = 0, li = commands.length; i < li; i++) {
         var command = commands[i];
         
@@ -663,6 +663,7 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                     }
                     mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha);
                 } else {
+                    //tile.renderHappen = true;
                     mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha);
                 }
 
@@ -673,6 +674,7 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
         case VTS_DRAWCOMMAND_GEODATA:
                 
             var geodataView = command.geodataView; 
+            //tile.renderHappen = true;
                 
             if (geodataView && geodataView.isReady(doNotLoad, priority, true)) {
                 geodataView.draw(cameraPos);

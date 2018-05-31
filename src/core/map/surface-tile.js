@@ -63,6 +63,7 @@ var MapSurfaceTile = function(map, parent, id) {
     this.boundTextures = {};
     this.updateBounds = true;
 
+    this.hmap = null;
     this.heightMap = null;
     this.drawCommands = [[], [], []];
     this.imageryCredits = {};
@@ -138,6 +139,7 @@ MapSurfaceTile.prototype.kill = function() {
     this.lastState = null;
     this.lastRenderState = null;
         
+    this.hmap = null;
     this.heightMap = null;
     this.drawCommands = [[], [], []];
     this.imageryCredits = {};
@@ -289,10 +291,6 @@ MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad)
         this.viewSwitched();
         this.viewCoutner = this.map.viewCounter;
         this.map.markDirty(); 
-
-        if (this.lastRenderState) {
-            this.lastRenderState = this.lastRenderState; //debug
-        }
     }
         
     if (!preventLoad) {
