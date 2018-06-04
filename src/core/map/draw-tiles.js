@@ -616,11 +616,43 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
 
 
 MapDrawTiles.prototype.updateTileHmap = function(tile, node) {
-    if (node && node.hasNavtile() &&  tile.surface) { 
-        var path = tile.surface.getNavUrl(tile.id);
-        this.hmap = tile.resources.getTexture(path, null, null, null, tile, true);
+    if (node && node.hasNavtile() && tile.surface) { 
+
+        if (!tile.surface || !tile.resourceSurface) { //surface.virtual) {
+            return false; //is it best way how to do it?
+        }
+            
+        if (!tile.resourceSurface.getHMapUrl) { //virtual surface is as resource surface. Is it bug??!!
+            return false; //is it best way how to do it?
+        }
+            
+        var path = tile.resourceSurface.getHMapUrl(tile.id, true);
+        tile.hmap = tile.resources.getTexture(path);
+
+        //var path = tile.surface.getNavUrl(tile.id);
+        //tile.hmap = tile.resources.getTexture(path, null, null, null, tile, true);
     } else {
-        this.hmap = this.renderer.blackTexture;
+
+        //get parent with nav tile
+
+        /*
+        extraBound = null; 
+        
+        if (tile.id[0] > layer.lodRange[1]) {
+            extraBound = {
+                sourceTile : this.getParentTile(tile, layer.lodRange[1]),
+                sourceTexture : null,
+                layer : layer,
+                tile : tile 
+            };
+        }*/
+
+        /*
+        path = layer.getUrl(tile.id);
+        tile.hmap = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
+        */
+
+        tile.hmap = null;
     }
 };
 

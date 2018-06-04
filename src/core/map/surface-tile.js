@@ -1353,9 +1353,9 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
 
 
 MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipeline) {
-    if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
-        return;
-    }
+    //if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
+      //  return;
+    //}
     
     if (!this.metanode) {
         return;
@@ -1408,7 +1408,8 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
 
     if (!gridPoints) {
 
-        h = this.metanode.minZ;
+//        h = this.metanode.minZ;
+        h = 0;//this.metanode.minHeight;
         var n1 = node.getPhysicalCoords([ur[0], ur[1], h], true);
         var n2 = node.getPhysicalCoords([ur[0], ll[1], h], true);
         var n3 = node.getPhysicalCoords([ll[0], ll[1], h], true);
@@ -1526,6 +1527,8 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         map.poleRadiusFactor = 8 * Math.pow(2.0, 552058 / map.poleRadius); 
     }
 
+    var mnode = this.metanode; 
+
     factor = 1;
 
     if (hasPoles && node.isPole) {
@@ -1535,7 +1538,9 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
     } else {
         prog = renderer.progHmapPlane;
+//        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aBarycentric']);
         renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+        prog.setVec3('uVector', mnode.diskNormal);
     }
 
     prog.setMat4('uMV', mv);
@@ -1571,17 +1576,29 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     var px = (ll[0] - node.extents.ll[0]) * lx * llx;
     var py = (ur[1] - node.extents.ll[1]) * ly * lly;
 
-    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/15, node.gridStep2 * factor]);
+    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/63, node.gridStep2 * factor]);
     prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
     prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
     prog.setVec4('uFogColor', draw.atmoColor);
 
-    renderer.gpu.bindTexture(renderer.heightmapTexture);
-    
-    //draw bbox
-    renderer.planeMesh.draw(prog, 'aPosition', 'aTexCoord');    
+    prog.setVec2('uHeights', [mnode.minHeight, mnode.maxHeight]);
 
-    this.map.stats.drawnFaces += renderer.planeMesh.polygons;
+    renderer.gpu.bindTexture(renderer.heightmapTexture);
+    prog.setSampler('uSampler', 0);    
+
+//    if(this.hmap) {
+        renderer.gpu.bindTexture(this.hmap.getGpuTexture(), 1);
+  //  } else {
+        //renderer.gpu.bindTexture(renderer.blackTexture, 1);
+  //      renderer.gpu.bindTexture(renderer.blackTexture2, 1);
+   // }
+
+    prog.setSampler('uSampler2', 1);    
+
+    //draw bbox
+    renderer.planeMesh2.draw(prog, 'aPosition', 'aTexCoord');    
+
+    this.map.stats.drawnFaces += renderer.planeMesh2.polygons;
 }; 
 
 

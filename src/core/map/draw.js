@@ -581,6 +581,17 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
         
         switch (command.type) {
         case VTS_DRAWCOMMAND_SUBMESH:
+
+            var pipeline = command.pipeline;
+            if (pipeline) {
+                var hmap = command.hmap;
+    
+                if (!(hmap && hmap.isReady(doNotLoad, priority))) {
+                    ready = false;
+                }
+
+                break;
+            }
                 
             var mesh = command.mesh; 
             var texture = command.texture; 
@@ -591,7 +602,8 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
             if (!(meshReady && textureReady) ) {
                 ready = false;   
             }
-                
+
+               
             break;
 
         case VTS_DRAWCOMMAND_GEODATA:
@@ -624,8 +636,20 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
             break;
 
         case VTS_DRAWCOMMAND_SUBMESH:
+
+            var pipeline = command.pipeline;
+            if (pipeline) {
+                var hmap = command.hmap;
+    
+                if (hmap && hmap.isReady(doNotLoad, priority)) {
+                    tile.drawHmapTile(cameraPos, null, null, pipeline);
+                }
+
+                return;
+            }
+
             var mesh = command.mesh; 
-            var texture = command.texture, hmap;
+            var texture = command.texture;
 
             var meshReady = (mesh && mesh.isReady(doNotLoad, priority)), textureReady;
 
@@ -634,16 +658,6 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                 texture = null;
             } else {
                 textureReady = (!texture || (texture && texture.isReady(doNotLoad, priority)));
-            }
-
-            var pipeline = command.pipeline;
-
-            if (pipeline) {
-                //hmap = command.hmap;
-                //textureReady = (textureReady && (hmap && hmap.isReady(doNotLoad, priority)));
-
-                tile.drawHmapTile(cameraPos, null, null, pipeline);
-                return;
             }
                 
             if (meshReady && textureReady) {
