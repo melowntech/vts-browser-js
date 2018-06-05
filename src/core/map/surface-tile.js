@@ -1352,7 +1352,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
 }; 
 
 
-MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipeline) {
+MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipeline, texture) {
     //if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
       //  return;
     //}
@@ -1537,9 +1537,17 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
         prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
     } else {
-        prog = renderer.progHmapPlane;
+
+        switch(draw.debug.drawWireframe) {
+            case 0: prog = renderer.progHmapPlane; break;
+            case 1: prog = renderer.progHmapPlane2; break;
+            case 2: prog = renderer.progHmapPlane3; break;
+            case 3: prog = renderer.progHmapPlane4; break;
+        }
+
 //        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aBarycentric']);
-        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+        //renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+        renderer.gpu.useProgram(prog, ['aPosition']);
         prog.setVec3('uVector', mnode.diskNormal);
     }
 
@@ -1569,21 +1577,42 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
 
     var step1 = node.gridStep1 * factor;
 
-    var lx = 1.0 / (ur[0] - ll[0]);
-    var ly = 1.0 / (ll[1] - ur[1]);
-    var llx = step1 / ((node.extents.ur[0] - node.extents.ll[0]) * lx);
-    var lly = step1 / ((node.extents.ur[1] - node.extents.ll[1]) * ly);
-    var px = (ll[0] - node.extents.ll[0]) * lx * llx;
-    var py = (ur[1] - node.extents.ll[1]) * ly * lly;
+    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/127, node.gridStep2 * factor]);
 
-    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/63, node.gridStep2 * factor]);
-    prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
+
+    if (texture) {
+        prog.setVec4('uParams3', texture.getTransform());
+    } else {
+        var lx = 1.0 / (ur[0] - ll[0]);
+        var ly = 1.0 / (ll[1] - ur[1]);
+        var llx = step1 / ((node.extents.ur[0] - node.extents.ll[0]) * lx);
+        var lly = step1 / ((node.extents.ur[1] - node.extents.ll[1]) * ly);
+        var px = (ll[0] - node.extents.ll[0]) * lx * llx;
+        var py = (ur[1] - node.extents.ll[1]) * ly * lly;
+
+        prog.setVec4('uParams3', [lly, llx, (py - Math.floor(py)), (px - Math.floor(px))]);
+    }
+
     prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
     prog.setVec4('uFogColor', draw.atmoColor);
 
-    prog.setVec2('uHeights', [mnode.minHeight, mnode.maxHeight]);
 
-    renderer.gpu.bindTexture(renderer.heightmapTexture);
+    if (this.hmap.extraBound) {
+        //get height form parent
+        mnode = this.hmap.extraBound.sourceTile.metanode;
+        prog.setVec2('uHeights', [mnode.minHeight, mnode.maxHeight]);
+        prog.setVec4('uTransform', this.hmap.getTransform());
+    } else {
+        prog.setVec2('uHeights', [mnode.minHeight, mnode.maxHeight]);
+        prog.setVec4('uTransform', [1,1,0,0]);
+    }
+
+    if (texture) {
+        renderer.gpu.bindTexture(texture.getGpuTexture());
+    } else {
+        renderer.gpu.bindTexture(renderer.heightmapTexture);
+    }
+
     prog.setSampler('uSampler', 0);    
 
 //    if(this.hmap) {
@@ -1596,7 +1625,8 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     prog.setSampler('uSampler2', 1);    
 
     //draw bbox
-    renderer.planeMesh2.draw(prog, 'aPosition', 'aTexCoord');    
+    //renderer.planeMesh2.draw(prog, 'aPosition', 'aTexCoord');    
+    renderer.planeMesh2.draw(prog, 'aPosition');    
 
     this.map.stats.drawnFaces += renderer.planeMesh2.polygons;
 }; 

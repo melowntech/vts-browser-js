@@ -118,8 +118,8 @@ MapResourceNode.prototype.getGeodata = function(path, extraInfo) {
 
 MapResourceNode.prototype.getTexture = function(path, heightMap, extraBound, extraInfo, tile, internal) {
     var texture;
-    if (extraInfo && extraInfo.layer) {
-        var id = path + extraInfo.layer.id;
+    if (extraInfo && (extraInfo.layer || extraInfo.hmap)) {
+        var id = path + (extraInfo.hmap ? '' : extraInfo.layer.id);
         texture = this.textures[id];
         
         if (!texture) {

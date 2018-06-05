@@ -634,25 +634,35 @@ MapDrawTiles.prototype.updateTileHmap = function(tile, node) {
     } else {
 
         //get parent with nav tile
+        var parent = tile.parent;
+        var extraBound = null; 
 
-        /*
-        extraBound = null; 
-        
-        if (tile.id[0] > layer.lodRange[1]) {
-            extraBound = {
-                sourceTile : this.getParentTile(tile, layer.lodRange[1]),
-                sourceTexture : null,
-                layer : layer,
-                tile : tile 
-            };
-        }*/
+        while(parent && parent.id[0] > 0) {
+            if (parent.metanode && parent.metanode.hasNavtile()) {
+                extraBound = {
+                    sourceTile : parent,
+                    sourceTexture : null,
+                    hmap : true,
+                    tile : tile 
+                };
 
-        /*
-        path = layer.getUrl(tile.id);
-        tile.hmap = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
-        */
+                break;
+            }
 
-        tile.hmap = null;
+            parent = parent.parent;
+        }
+
+        //does parent with navtile exist
+        if (extraBound) {
+            var path = tile.resourceSurface.getHMapUrl(tile.id, true);
+            tile.hmap = tile.resources.getTexture(path, null, extraBound, {tile: tile, hmap: true}, tile, false);
+
+            if (tile.hmap.neverReady) {
+                tile.hmap = null;
+            }
+        } else {
+            tile.hmap = null;
+        }
     }
 };
 

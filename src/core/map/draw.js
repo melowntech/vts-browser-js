@@ -590,6 +590,15 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
                     ready = false;
                 }
 
+                if (this.debug.drawWireframe == 2) {
+                    var texture = command.texture; 
+                    var textureReady = this.config.mapNoTextures ? true : (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
+                        
+                    if (!textureReady) {
+                        ready = false;   
+                    }
+                }
+
                 break;
             }
                 
@@ -641,8 +650,19 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
             if (pipeline) {
                 var hmap = command.hmap;
     
-                if (hmap && hmap.isReady(doNotLoad, priority)) {
-                    tile.drawHmapTile(cameraPos, null, null, pipeline);
+                if (this.debug.drawWireframe == 2) {
+                    var texture = command.texture; 
+                    var textureReady = this.config.mapNoTextures ? true : (!texture  || (texture && texture.isReady(doNotLoad, priority)));
+                        
+                    if (textureReady) {
+                        if (hmap && hmap.isReady(doNotLoad, priority)) {
+                            tile.drawHmapTile(cameraPos, null, null, pipeline, texture);
+                        }
+                    }
+                } else {
+                    if (hmap && hmap.isReady(doNotLoad, priority)) {
+                        tile.drawHmapTile(cameraPos, null, null, pipeline);
+                    }
                 }
 
                 return;

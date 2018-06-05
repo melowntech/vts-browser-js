@@ -62,8 +62,10 @@ RendererInit.prototype.initShaders = function() {
     renderer.progPlane2 = new GpuProgram(gpu, shaders.planeVertex2Shader, shaders.planeFragment2Shader); //poles
     renderer.progPlane3 = new GpuProgram(gpu, shaders.planeVertex3Shader, shaders.planeFragmentShader); // grid         
 
-    renderer.progHmapPlane = new GpuProgram(gpu, shaders.planeVertex4Shader, shaders.planeFragmentShader2);        
-
+    renderer.progHmapPlane = new GpuProgram(gpu, shaders.planeVertex4Shader, shaders.planeFragmentShader2);
+    renderer.progHmapPlane2 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define grid\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane3 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define exmap\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane4 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define flat\n' + shaders.planeFragmentShader2);
 
     renderer.progSkydome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.skydomeFragmentShader);
     renderer.progStardome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.stardomeFragmentShader);
@@ -112,7 +114,7 @@ RendererInit.prototype.initHeightmap = function() {
     meshData = RendererGeometry.buildPlane(16);
     renderer.planeMesh = new GpuMesh(gpu, meshData, null, this.core);
 
-    meshData = RendererGeometry.buildPlane(64);
+    meshData = RendererGeometry.buildPlane(128);
     renderer.planeMesh2 = new GpuMesh(gpu, meshData, null, this.core);
 
     // create heightmap texture
