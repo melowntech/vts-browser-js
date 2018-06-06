@@ -237,7 +237,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
 
         for (i = 0; i < totalPoints; i++) {
             p = points[i];
-            p = mat4.multiplyVec4(mvp, [point[0] - cameraPos[0], point[1] - cameraPos[1], point[2] - cameraPos[2], 1 ]); 
+            p = mat4.multiplyVec4(mvp, [p[0] - cameraPos[0], p[1] - cameraPos[1], p[2] - cameraPos[2], 1 ]); 
 
             //project point coords to screen
             if (p[3] != 0) {

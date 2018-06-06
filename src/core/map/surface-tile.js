@@ -1549,36 +1549,46 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         //renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
         renderer.gpu.useProgram(prog, ['aPosition']);
         prog.setVec3('uVector', mnode.diskNormal);
+
+        //prog.setVec3('uRight', mnode.diskNormal);
+
+        if (gridPoints) {
+            var vecRight = [gridPoints[15] - gridPoints[12], gridPoints[16] - gridPoints[13], gridPoints[17] - gridPoints[14]];
+            var vecTop = [gridPoints[21] - gridPoints[22], gridPoints[4] - gridPoints[13], gridPoints[23] - gridPoints[14]];
+
+            vec3.normalize(vecRight);
+            vec3.normalize(vecTop);
+
+            var vecDir = mnode.diskNormal;
+
+            //prog.setVec3('uRight', vecRight);
+            //prog.setVec3('uTop', vecTop);
+
+            var space = [
+                vecTop[0], vecTop[1], vecTop[2],
+                vecDir[0], vecDir[1], vecDir[2],
+                vecRight[0], vecRight[1], vecRight[2],
+            ];
+
+            /*var mv = map.camera.camera.modelview;
+            var mv2 = vts.mat3.create();
+            vts.mat4.toInverseMat3(mv, mv2);
+            var mv3 = vts.mat3.toMat4(mv2);
+            vts.mat4.multiply(mv3, vts.mat3.toMat4(space), mv3);
+            prog.setMat3('uSpace', vts.mat4.toMat3(mv3));
+            */
+            
+            prog.setMat3('uSpace', space);
+        }
     }
 
     prog.setMat4('uMV', mv);
     prog.setMat4('uProj', proj);
     prog.setFloatArray('uPoints', buffer);
     
-    /*
-    var lx = (ur[0] - ll[0]);
-    var ly = (ll[1] - ur[1]);
-    var px = (ll[0] - node.extents.ll[0]) / lx;
-    var py = (ur[1] - node.extents.ll[1]) / ly;
-    
-    var llx = (node.extents.ur[0] - node.extents.ll[0]) / lx;
-    var lly = (node.extents.ur[1] - node.extents.ll[1]) / ly;
-
-    px = px / llx;
-    py = py / lly;
-    llx = 1.0/llx;
-    lly = 1.0/lly;
-    
-    llx *= step1;
-    lly *= step1;
-    px *= step1;
-    py *= step1;
-    */
 
     var step1 = node.gridStep1 * factor;
-
     prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/127, node.gridStep2 * factor]);
-
 
     if (texture) {
         prog.setVec4('uParams3', texture.getTransform());
@@ -1627,6 +1637,17 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     //draw bbox
     //renderer.planeMesh2.draw(prog, 'aPosition', 'aTexCoord');    
     renderer.planeMesh2.draw(prog, 'aPosition');    
+
+    if (vecRight && gridPoints) {
+        //renderer.draw.drawLineString(points, screenSpace, size, color, depthOffset, depthTest, transparent, writeDepth, useState);
+        renderer.draw.drawLineString([[gridPoints[12], gridPoints[13], gridPoints[14]], [gridPoints[15], gridPoints[16], gridPoints[17]]], false, 4, [1,0,0,1], null, false, false, false, false);
+        renderer.draw.drawLineString([[gridPoints[12], gridPoints[13], gridPoints[14]], [gridPoints[21], gridPoints[22], gridPoints[23]]], false, 4, [0,0,1,1], null, false, false, false, false);
+
+        renderer.draw.drawLineString([[0, 0, 0], [9000000, 0, 0]], false, 4, [1,0,0,1], null, false, false, false, false);
+        renderer.draw.drawLineString([[0, 0, 0], [0, 9000000, 0, 0]], false, 4, [0,1,0,1], null, false, false, false, false);
+        renderer.draw.drawLineString([[0, 0, 0], [0, 0, 9000000]], false, 4, [0,0,1,1], null, false, false, false, false);
+    }
+
 
     this.map.stats.drawnFaces += renderer.planeMesh2.polygons;
 }; 

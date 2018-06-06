@@ -830,6 +830,7 @@ GpuShaders.planeVertex4Shader =
     'uniform vec3 uVector;\n'+  
     'uniform vec2 uHeights;\n'+   //[hmin, hmax]
     'uniform vec4 uTransform;\n'+
+    'uniform mat3 uSpace;\n'+  
     //'uniform vec4 uTransform2;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec2 vTexCoord2;\n'+
@@ -872,7 +873,9 @@ GpuShaders.planeVertex4Shader =
         'vTexCoord = uv;\n'+
 
         'vBarycentric = camSpacePos.xyz;\n'+
-        'vNormal = getHFNormal(uv2, uParams[2], (uHeights[1]-uHeights[0]));\n'+
+        'vec3 n = getHFNormal(uv2, uParams[2], (uHeights[1]-uHeights[0]));\n'+
+        'n = uSpace * n;\n'+
+        'vNormal = normalize(n);\n'+
     '}';    
 
 GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
@@ -901,7 +904,7 @@ GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
             'float lcolor = (dot(normal, ldir) + 1.0) * 0.5;\n'+
             //'float lcolor = 0.25+(0.5*diffW)+(0.25*specW);\n'+
             //'float lcolor = 0.25+(0.75*diffW);\n'+
-            //'vec4 c2 = vec4(normalize(vNormal)*0.5+0.5,1.0);\n'+
+            //'vec4 c2 = vec4(normalize(vNormal)*0.5+0.5,1.0);\n'+        
             //'vec4 c2 = vec4(normalize(ldir)*0.5+0.5,1.0);\n'+
             'vec4 c2 = vec4(vec3(lcolor),1.0);\n'+
         '#endif\n'+
@@ -917,7 +920,11 @@ GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
             '#endif\n'+
         '#endif\n'+
 
-        'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
+        '#ifdef fog\n'+
+            'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
+        '#else\n'+
+            'gl_FragColor = c;\n'+
+        '#endif\n'+
     '}';
 
 //textured tile mesh
