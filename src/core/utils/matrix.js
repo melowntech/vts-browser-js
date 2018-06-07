@@ -397,6 +397,17 @@ mat3.toMat4 = function (a, b) {
     return b;
 };
 
+mat3.multiplyVec3 = function (a, b, c) {
+    c || (c = b);
+    var d = b[0],
+        e = b[1];
+    b = b[2];
+    c[0] = a[0] * d + a[3] * e + a[6] * b;
+    c[1] = a[1] * d + a[4] * e + a[7] * b;
+    c[2] = a[2] * d + a[5] * e + a[8] * b;
+    return c;
+};
+
 
 mat3.str = function (a) {
     return '[' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' + a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' + a[8] + ']';

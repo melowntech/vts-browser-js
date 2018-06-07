@@ -1559,10 +1559,23 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
             vec3.normalize(vecRight);
             vec3.normalize(vecTop);
 
-            var vecDir = mnode.diskNormal;
+            var vecDir = mnode.diskNormal.slice();
 
             //prog.setVec3('uRight', vecRight);
             //prog.setVec3('uTop', vecTop);
+
+
+            var mv = map.camera.camera.modelview;
+            var mv2 = vts.mat3.create();
+
+            //vts.mat4.toInverseMat3(mv, mv2);
+            //vts.mat3.transpose(mv2);
+
+            vts.mat4.toMat3(mv, mv2);
+
+            vts.mat3.multiplyVec3(mv2, vecTop);
+            vts.mat3.multiplyVec3(mv2, vecDir);
+            vts.mat3.multiplyVec3(mv2, vecRight);
 
             var space = [
                 vecTop[0], vecTop[1], vecTop[2],
@@ -1570,13 +1583,13 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
                 vecRight[0], vecRight[1], vecRight[2],
             ];
 
-            /*var mv = map.camera.camera.modelview;
-            var mv2 = vts.mat3.create();
-            vts.mat4.toInverseMat3(mv, mv2);
+
+            /*
             var mv3 = vts.mat3.toMat4(mv2);
             vts.mat4.multiply(mv3, vts.mat3.toMat4(space), mv3);
             prog.setMat3('uSpace', vts.mat4.toMat3(mv3));
             */
+            
             
             prog.setMat3('uSpace', space);
         }
@@ -1610,10 +1623,10 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     if (this.hmap.extraBound) {
         //get height form parent
         mnode = this.hmap.extraBound.sourceTile.metanode;
-        prog.setVec2('uHeights', [mnode.minHeight, mnode.maxHeight]);
+        prog.setVec3('uHeights', [mnode.minHeight, mnode.maxHeight, (1.0/mnode.pixelSize)]);
         prog.setVec4('uTransform', this.hmap.getTransform());
     } else {
-        prog.setVec2('uHeights', [mnode.minHeight, mnode.maxHeight]);
+        prog.setVec3('uHeights', [mnode.minHeight, mnode.maxHeight, (1.0/mnode.pixelSize)]);
         prog.setVec4('uTransform', [1,1,0,0]);
     }
 
@@ -1638,6 +1651,7 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     //renderer.planeMesh2.draw(prog, 'aPosition', 'aTexCoord');    
     renderer.planeMesh2.draw(prog, 'aPosition');    
 
+    /*
     if (vecRight && gridPoints) {
         //renderer.draw.drawLineString(points, screenSpace, size, color, depthOffset, depthTest, transparent, writeDepth, useState);
         renderer.draw.drawLineString([[gridPoints[12], gridPoints[13], gridPoints[14]], [gridPoints[15], gridPoints[16], gridPoints[17]]], false, 4, [1,0,0,1], null, false, false, false, false);
@@ -1646,7 +1660,7 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         renderer.draw.drawLineString([[0, 0, 0], [9000000, 0, 0]], false, 4, [1,0,0,1], null, false, false, false, false);
         renderer.draw.drawLineString([[0, 0, 0], [0, 9000000, 0, 0]], false, 4, [0,1,0,1], null, false, false, false, false);
         renderer.draw.drawLineString([[0, 0, 0], [0, 0, 9000000]], false, 4, [0,0,1,1], null, false, false, false, false);
-    }
+    }*/
 
 
     this.map.stats.drawnFaces += renderer.planeMesh2.polygons;

@@ -828,7 +828,7 @@ GpuShaders.planeVertex4Shader =
     'uniform vec4 uParams3;\n'+    //[px, py, sx, sy]
     'uniform float uPoints[9*3];\n'+
     'uniform vec3 uVector;\n'+  
-    'uniform vec2 uHeights;\n'+   //[hmin, hmax]
+    'uniform vec3 uHeights;\n'+   //[hmin, hmax]
     'uniform vec4 uTransform;\n'+
     'uniform mat3 uSpace;\n'+  
     //'uniform vec4 uTransform2;\n'+
@@ -873,7 +873,8 @@ GpuShaders.planeVertex4Shader =
         'vTexCoord = uv;\n'+
 
         'vBarycentric = camSpacePos.xyz;\n'+
-        'vec3 n = getHFNormal(uv2, uParams[2], (uHeights[1]-uHeights[0]));\n'+
+        //'vec3 n = getHFNormal(uv2, uParams[2], (uHeights[1]-uHeights[0]));\n'+
+        'vec3 n = getHFNormal(uv2, uParams[2], (uHeights[1]-uHeights[0]) * uHeights[2]);\n'+
         'n = uSpace * n;\n'+
         'vNormal = normalize(n);\n'+
     '}';    
