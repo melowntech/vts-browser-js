@@ -35,6 +35,7 @@ var MapDraw = function(map) {
         drawTexelSize : false,
         drawWireframe : 0,
         drawTestMode : 0,
+        drawTestData : 0,
         drawFaceCount : false,
         drawDistance : false,
         drawMaxLod : false,

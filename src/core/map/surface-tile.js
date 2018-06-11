@@ -1547,10 +1547,7 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
             case 1: prog = renderer.progHmapPlane2; break;
             case 2: prog = renderer.progHmapPlane5; break;
             case 3: prog = renderer.progHmapPlane6; break;
-            case 4:
-            case 5:
-            case 6:
-            case 7: prog = renderer.progHmapPlane7; break;
+            case 4: prog = renderer.progHmapPlane7; break;
 
             case 8: prog = renderer.progHmapPlane4; break;
             case 9: prog = renderer.progHmapPlane3; break;
@@ -1560,10 +1557,29 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         if (testMode == 3 || testMode == 4) {
             if (!renderer.ntextures) {
                 renderer.ntextures = [ 
-                    new GpuTexture(renderer.gpu, './textures/test/test001.png', renderer.core, null),
-                    new GpuTexture(renderer.gpu, './textures/test/test002.png', renderer.core, null),
-                    new GpuTexture(renderer.gpu, './textures/test003.jpg', renderer.core, null),
-                    new GpuTexture(renderer.gpu, './textures/download.png', renderer.core, null) ];
+                    new GpuTexture(renderer.gpu, './textures/test/test001.png', renderer.core, null), //0
+                    new GpuTexture(renderer.gpu, './textures/test/test002.png', renderer.core, null), //1
+                    new GpuTexture(renderer.gpu, './textures/test003.jpg', renderer.core, null),      //2
+                    new GpuTexture(renderer.gpu, './textures/download.png', renderer.core, null),     //3
+                    new GpuTexture(renderer.gpu, './textures/test009.jpg', renderer.core, null),      //4
+                    new GpuTexture(renderer.gpu, './textures/test004.jpg', renderer.core, null),      //5
+                    new GpuTexture(renderer.gpu, './textures/test005.jpg', renderer.core, null),      //6
+                    new GpuTexture(renderer.gpu, './textures/nor_sand.jpg', renderer.core, null),     //7
+                    new GpuTexture(renderer.gpu, './textures/test007.jpg', renderer.core, null),      //8
+                    new GpuTexture(renderer.gpu, './textures/test008.jpg', renderer.core, null),      //9
+
+                    new GpuTexture(renderer.gpu, './textures/download (1).png', renderer.core, null),  //10
+                    new GpuTexture(renderer.gpu, './textures/test010.jpg', renderer.core, null),      //11
+                    new GpuTexture(renderer.gpu, './textures/test011.jpg', renderer.core, null),      //12
+                    new GpuTexture(renderer.gpu, './textures/test012.jpg', renderer.core, null),      //13
+                    new GpuTexture(renderer.gpu, './textures/test013.jpg', renderer.core, null),      //14
+                    new GpuTexture(renderer.gpu, './textures/test014.jpg', renderer.core, null),      //15
+                    new GpuTexture(renderer.gpu, './textures/test015.jpg', renderer.core, null),      //16
+                    new GpuTexture(renderer.gpu, './textures/test016.jpg', renderer.core, null),      //17
+                    new GpuTexture(renderer.gpu, './textures/test017.jpg', renderer.core, null),      //18
+                    new GpuTexture(renderer.gpu, './textures/test018.jpg', renderer.core, null)      //18
+
+                    ];
             }
         }
 
@@ -1624,7 +1640,7 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     var step1 = node.gridStep1 * factor;
     prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/127, node.gridStep2 * factor]);
 
-    if (testMode >= 3 && testMode <= 7) {
+    if (testMode >= 3 && testMode <= 4) {
         prog.setVec4('uParams3', [1,1,0,0]);
     } else {
         if (texture) {
@@ -1655,11 +1671,11 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         prog.setVec4('uTransform', [1,1,0,0]);
     }
 
-    if (testMode >= 3 && testMode <= 7) {
-        if (!renderer.ntextures[Math.max(0,testMode-4)].loaded) {
+    if (testMode >= 3 && testMode <= 4) {
+        if (!renderer.ntextures[draw.debug.drawTestData].loaded) {
             return;
         }
-        renderer.gpu.bindTexture(renderer.ntextures[Math.max(0,testMode-4)]);
+        renderer.gpu.bindTexture(renderer.ntextures[draw.debug.drawTestData]);
     } else {
         if (texture) {
             renderer.gpu.bindTexture(texture.getGpuTexture());
