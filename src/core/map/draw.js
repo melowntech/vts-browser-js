@@ -34,6 +34,7 @@ var MapDraw = function(map) {
         drawPositions : false,
         drawTexelSize : false,
         drawWireframe : 0,
+        drawTestMode : 0,
         drawFaceCount : false,
         drawDistance : false,
         drawMaxLod : false,
@@ -590,7 +591,7 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
                     ready = false;
                 }
 
-                if (this.debug.drawWireframe == 2) {
+                if (this.debug.drawTestMode == 9) {
                     var texture = command.texture; 
                     var textureReady = this.config.mapNoTextures ? true : (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
                         
@@ -650,7 +651,7 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
             if (pipeline) {
                 var hmap = command.hmap;
     
-                if (this.debug.drawWireframe == 2) {
+                if (this.debug.drawTestMode == 9) {
                     var texture = command.texture; 
                     var textureReady = this.config.mapNoTextures ? true : (!texture  || (texture && texture.isReady(doNotLoad, priority)));
                         

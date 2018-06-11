@@ -66,6 +66,9 @@ RendererInit.prototype.initShaders = function() {
     renderer.progHmapPlane2 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define grid\n' + shaders.planeFragmentShader2);
     renderer.progHmapPlane3 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define exmap\n' + shaders.planeFragmentShader2);
     renderer.progHmapPlane4 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define flat\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane5 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define normals\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane6 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define nmix\n#define normals\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane7 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define nmix\n' + shaders.planeFragmentShader2);
 
     renderer.progSkydome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.skydomeFragmentShader);
     renderer.progStardome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.stardomeFragmentShader);
@@ -216,26 +219,6 @@ RendererInit.prototype.initTestMap = function() {
 
     renderer.blackTexture = new GpuTexture(gpu);
     renderer.blackTexture.createFromData(size, size, data);
-
-    data[0*16*4+0*4] = 255;
-    data[1*16*4+1*4] = 255;
-    data[2*16*4+1*4] = 255;
-    data[3*16*4+1*4] = 255;
-    data[4*16*4+1*4] = 255;
-    data[5*16*4+1*4] = 255;
-    data[6*16*4+1*4] = 255;
-    data[7*16*4+1*4] = 255;
-    data[8*16*4+1*4] = 255;
-    data[9*16*4+1*4] = 255;
-    data[10*16*4+1*4] = 255;
-    data[11*16*4+1*4] = 255;
-    data[12*16*4+1*4] = 255;
-    data[13*16*4+1*4] = 255;
-    data[14*16*4+1*4] = 255;
-    data[15*16*4+1*4] = 255;
-
-    renderer.blackTexture2 = new GpuTexture(gpu);
-    renderer.blackTexture2.createFromData(size, size, data);
 };
 
 

@@ -1,8 +1,10 @@
 
 import {vec3 as vec3_} from '../utils/matrix';
+import GpuTexture_ from '../renderer/gpu/texture';
 
 //get rid of compiler mess
 var vec3 = vec3_;
+var GpuTexture = GpuTexture_;
 
  var tileBorderTable = [
     [-1, -1, 0, 0],
@@ -1528,6 +1530,7 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     }
 
     var mnode = this.metanode; 
+    var testMode = draw.debug.drawTestMode;
 
     factor = 1;
 
@@ -1538,11 +1541,27 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
     } else {
 
-        switch(draw.debug.drawWireframe) {
+        switch(testMode) {
+            default:
             case 0: prog = renderer.progHmapPlane; break;
             case 1: prog = renderer.progHmapPlane2; break;
-            case 2: prog = renderer.progHmapPlane3; break;
-            case 3: prog = renderer.progHmapPlane4; break;
+            case 2: prog = renderer.progHmapPlane5; break;
+            case 3: prog = renderer.progHmapPlane6; break;
+            case 4: prog = renderer.progHmapPlane7; break;
+
+            case 8: prog = renderer.progHmapPlane4; break;
+            case 9: prog = renderer.progHmapPlane3; break;
+        }
+
+
+        if (testMode == 3) {
+            if (!renderer.textureT01) {
+                renderer.textureT01 = new GpuTexture(renderer.gpu, './textures/test/test001.png', renderer.core, null);
+            } else {
+                if (!renderer.textureT01.loaded) {
+                    return;
+                }
+            }
         }
 
 //        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aBarycentric']);
@@ -1554,12 +1573,13 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
 
         if (gridPoints) {
             var vecRight = [gridPoints[15] - gridPoints[12], gridPoints[16] - gridPoints[13], gridPoints[17] - gridPoints[14]];
-            var vecTop = [gridPoints[21] - gridPoints[22], gridPoints[4] - gridPoints[13], gridPoints[23] - gridPoints[14]];
+            var vecTop = [gridPoints[21] - gridPoints[12], gridPoints[22] - gridPoints[13], gridPoints[23] - gridPoints[14]];
 
             vec3.normalize(vecRight);
             vec3.normalize(vecTop);
 
             var vecDir = mnode.diskNormal.slice();
+            //vecDir = [-vecDir[0], -vecDir[1], -vecDir[2]];
 
             //prog.setVec3('uRight', vecRight);
             //prog.setVec3('uTop', vecTop);
@@ -1568,28 +1588,26 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
             var mv = map.camera.camera.modelview;
             var mv2 = vts.mat3.create();
 
-            //vts.mat4.toInverseMat3(mv, mv2);
-            //vts.mat3.transpose(mv2);
+            vts.mat4.toInverseMat3(mv, mv2);
 
-            vts.mat4.toMat3(mv, mv2);
+            //vts.mat4.toMat3(mv, mv2);
+            vts.mat3.transpose(mv2);
 
             vts.mat3.multiplyVec3(mv2, vecTop);
             vts.mat3.multiplyVec3(mv2, vecDir);
             vts.mat3.multiplyVec3(mv2, vecRight);
 
             var space = [
+                vecRight[0], vecRight[1], vecRight[2],
                 vecTop[0], vecTop[1], vecTop[2],
                 vecDir[0], vecDir[1], vecDir[2],
-                vecRight[0], vecRight[1], vecRight[2],
             ];
-
 
             /*
             var mv3 = vts.mat3.toMat4(mv2);
             vts.mat4.multiply(mv3, vts.mat3.toMat4(space), mv3);
             prog.setMat3('uSpace', vts.mat4.toMat3(mv3));
             */
-            
             
             prog.setMat3('uSpace', space);
         }
@@ -1603,17 +1621,21 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     var step1 = node.gridStep1 * factor;
     prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/127, node.gridStep2 * factor]);
 
-    if (texture) {
-        prog.setVec4('uParams3', texture.getTransform());
+    if (testMode >= 3 && testMode <= 4) {
+        prog.setVec4('uParams3', [1,1,0,0]);
     } else {
-        var lx = 1.0 / (ur[0] - ll[0]);
-        var ly = 1.0 / (ll[1] - ur[1]);
-        var llx = step1 / ((node.extents.ur[0] - node.extents.ll[0]) * lx);
-        var lly = step1 / ((node.extents.ur[1] - node.extents.ll[1]) * ly);
-        var px = (ll[0] - node.extents.ll[0]) * lx * llx;
-        var py = (ur[1] - node.extents.ll[1]) * ly * lly;
+        if (texture) {
+            prog.setVec4('uParams3', texture.getTransform());
+        } else {
+            var lx = 1.0 / (ur[0] - ll[0]);
+            var ly = 1.0 / (ll[1] - ur[1]);
+            var llx = step1 / ((node.extents.ur[0] - node.extents.ll[0]) * lx);
+            var lly = step1 / ((node.extents.ur[1] - node.extents.ll[1]) * ly);
+            var px = (ll[0] - node.extents.ll[0]) * lx * llx;
+            var py = (ur[1] - node.extents.ll[1]) * ly * lly;
 
-        prog.setVec4('uParams3', [lly, llx, (py - Math.floor(py)), (px - Math.floor(px))]);
+            prog.setVec4('uParams3', [lly, llx, (py - Math.floor(py)), (px - Math.floor(px))]);
+        }
     }
 
     prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
@@ -1630,10 +1652,14 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         prog.setVec4('uTransform', [1,1,0,0]);
     }
 
-    if (texture) {
-        renderer.gpu.bindTexture(texture.getGpuTexture());
+    if (testMode >= 3 && testMode <= 4) {
+        renderer.gpu.bindTexture(renderer.textureT01);
     } else {
-        renderer.gpu.bindTexture(renderer.heightmapTexture);
+        if (texture) {
+            renderer.gpu.bindTexture(texture.getGpuTexture());
+        } else {
+            renderer.gpu.bindTexture(renderer.heightmapTexture);
+        }
     }
 
     prog.setSampler('uSampler', 0);    
