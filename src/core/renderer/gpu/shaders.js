@@ -828,6 +828,7 @@ GpuShaders.getHFNormal2 =
         'return vec2(h[1] - h[2], h[3] - h[0]);}\n';
 
 GpuShaders.planeVertex4Shader =
+    '#define newspace\n'+
     'uniform sampler2D uSampler2;\n'+
     'attribute vec3 aPosition;\n'+
     //'attribute vec2 aTexCoord;\n'+
@@ -843,7 +844,15 @@ GpuShaders.planeVertex4Shader =
     'varying vec2 vTexCoord;\n'+
     'varying vec2 vTexCoord2;\n'+
     'varying vec3 vBarycentric;\n'+
-    'varying vec3 vNormal;\n'+
+
+    '#ifdef newspace\n'+
+        //'varying vec3 vTangent;\n'+
+        //'varying vec3 vBitangent;\n'+
+        'varying mat3 vTBN;\n'+
+    '#else\n'+
+        'varying vec3 vNormal;\n'+
+    '#endif\n'+
+
     'varying float vFogFactor;\n'+ GpuShaders.quadPoint +  GpuShaders.getHFNormal + GpuShaders.getHFNormal2 +
     //'float random(vec2 p) { return fract(cos(dot(p,vec2( 23.14069263277926, 2.665144142690225)))*12345.6789);}\n'+
 
@@ -879,20 +888,37 @@ GpuShaders.planeVertex4Shader =
 
         'vBarycentric = camSpacePos.xyz;\n'+
 
-        'vec3 n = getHFNormal(uv2, 1.0/(128.0), (uHeights[1]-uHeights[0]) * uHeights[2]);\n'+
-        'vNormal = normalize(n);\n'+
+        //'mat3 spce2 = mat3(vec3(1.0,0.0,0.0),vec3(0.0,1.0,0.0),vec3(0.0,0.0,1.0));\n'+
+
+        '#ifdef newspace\n'+
+            'vec2 d = getHFNormal2(uv2, 1.0/(128.0), (uHeights[1]-uHeights[0]) * uHeights[2]);\n'+
+            'vec3 T = vec3(2.0,0.0,-d.x); vec3 B = vec3(0.0,2.0,-d.y);\n'+
+            'vTBN = mat3(normalize(T), normalize(B), cross(T,B));\n'+
+        '#else\n'+
+            'vec3 n = getHFNormal(uv2, 1.0/(128.0), (uHeights[1]-uHeights[0]) * uHeights[2]);\n'+
+            'vNormal = normalize(n);\n'+
+        '#endif\n'+
 
     '}';    
 
 GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
     '#extension GL_OES_standard_derivatives : enable\n'+
+    '#define newspace\n'+
     'uniform sampler2D uSampler;\n'+
     'uniform vec4 uParams2;\n'+    //[uGridStep1, uGridStep2, uGridBlend, 0]
     'uniform mat3 uSpace;\n'+  
     'varying vec2 vTexCoord;\n'+
     'varying float vFogFactor;\n'+
     'varying vec3 vBarycentric;\n'+
-    'varying vec3 vNormal;\n'+
+
+    '#ifdef newspace\n'+
+        //'varying vec3 vTangent;\n'+
+        //'varying vec3 vBitangent;\n'+
+        'varying mat3 vTBN;\n'+
+    '#else\n'+
+        'varying vec3 vNormal;\n'+
+    '#endif\n'+
+
     'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec3 ldir = normalize(-vBarycentric);\n'+
@@ -903,12 +929,21 @@ GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
             'vec3 normal2 = normalize(cross(nx,ny));\n'+
             'vec4 c2 = vec4(vec3(max(0.0,normal2.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
         '#else\n'+
-            '#ifdef nmix\n'+
-                'vec3 normal = normalize(uSpace * (vNormal+((texture2D(uSampler, vTexCoord).xyz-0.5)*2.0)));\n'+
-                //'vec3 normal = vec3(0.0,0.0,1.0);\n'+
+
+            '#ifdef newspace\n'+
+                //'vec3 normal = cross(normalize(vTangent), normalize(vBitangent));\n'+
+
+                '#ifdef nmix\n'+
+                    'vec3 normal = vTBN * normalize((texture2D(uSampler, vTexCoord).xyz-0.5)*2.0);\n'+
+                '#else\n'+
+                    'vec3 normal = vTBN * vec3(0.0,0.0,1.0);\n'+
+                '#endif\n'+
+
             '#else\n'+
-                'vec3 normal = normalize(uSpace * vNormal);\n'+
+                'vec3 normal = vNormal;\n'+
             '#endif\n'+
+
+            'normal = normalize(uSpace * normal);\n'+
 
             'vec3 eyeDir = ldir;\n'+
             'vec3 refDir = reflect(-ldir, normal);\n'+
