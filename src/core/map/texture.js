@@ -5,16 +5,16 @@ import MapSubtexture_ from './subtexture';
 var MapSubtexture = MapSubtexture_;
 
 
-var MapTexture = function(map, path, heightMap, extraBound, extraInfo, tile, internal) {
+var MapTexture = function(map, path, type, extraBound, extraInfo, tile, internal) {
     this.map = map;
     this.stats = map.stats;
     this.tile = tile; // used only for stats
     this.internal = internal; // used only for stats
     
     if (tile) {
-        this.mainTexture = tile.resources.getSubtexture(this, path, heightMap, tile, internal); 
+        this.mainTexture = tile.resources.getSubtexture(this, path, type, tile, internal); 
     } else {
-        this.mainTexture = new MapSubtexture(map, path, heightMap, tile, internal); 
+        this.mainTexture = new MapSubtexture(map, path, type, tile, internal); 
     }
 
     this.maskTexture = null; 
@@ -25,7 +25,7 @@ var MapTexture = function(map, path, heightMap, extraBound, extraInfo, tile, int
     this.neverReady = false;
     this.maskTexture = null;
     this.mapLoaderUrl = path;
-    this.heightMap = heightMap || false;
+    this.type = type || VTS_TEXTURETYPE_COLOR;
     this.extraBound = extraBound;
     this.extraInfo = extraInfo;
     this.statsCounter = 0;

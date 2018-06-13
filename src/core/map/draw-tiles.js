@@ -261,7 +261,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                     if (submesh.internalUVs) {  //draw surface
                                         if (tile.surfaceTextures[i] == null) {
                                             path = tile.resourceSurface.getTextureUrl(tile.id, i);
-                                            tile.surfaceTextures[i] = tile.resources.getTexture(path, null, null, null, tile, true);
+                                            tile.surfaceTextures[i] = tile.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, tile, true);
                                         }
                                                 
                                         tile.drawCommands[0].push({
@@ -301,7 +301,6 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                                 mesh : tile.surfaceMesh,
                                                 submesh : i,
                                                 texture : texture,
-                                                material : VTS_MATERIAL_EXTERNAL_NOFOG,
                                                 alpha : bounds.alpha[layers[j]][1]
                                             });
                                         }
@@ -386,7 +385,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                     if (submesh.internalUVs) {  //draw surface
                                         if (tile.surfaceTextures[i] == null) {
                                             path = tile.resourceSurface.getTextureUrl(tile.id, i);
-                                            tile.surfaceTextures[i] = tile.resources.getTexture(path, null, null, null, tile, true);
+                                            tile.surfaceTextures[i] = tile.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, tile, true);
                                         }
 
                                         //draw mesh
@@ -414,7 +413,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
     
                             if (tile.surfaceTextures[i] == null) {
                                 path = tile.resourceSurface.getTextureUrl(tile.id, i);
-                                tile.surfaceTextures[i] = tile.resources.getTexture(path, null, null, null, tile, true);
+                                tile.surfaceTextures[i] = tile.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, tile, true);
                             } //else {
                             tile.drawCommands[0].push({
                                 type : VTS_DRAWCOMMAND_SUBMESH,
@@ -431,7 +430,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
 
                 if (tile.surfaceTextures[i] == null) {
                     path = tile.resourceSurface.getTextureUrl(tile.id, i);
-                    tile.surfaceTextures[i] = tile.resources.getTexture(path, null, null, null, tile, true);
+                    tile.surfaceTextures[i] = tile.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, tile, true);
                 } //else {
                 tile.drawCommands[0].push({
                     type : VTS_DRAWCOMMAND_SUBMESH,
@@ -763,7 +762,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
 
                     if (!texture) { //TODO: make sure that we load only textures which we need  
                         path = layer.getUrl(tile.id);
-                        texture = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
+                        texture = tile.resources.getTexture(path, layer.dataType, extraBound, {tile: tile, layer: layer}, tile, false);
 
                         if (texture.checkType == VTS_TEXTURECHECK_MEATATILE) {
                             texture.checkMask = true;
@@ -860,7 +859,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                 tile.boundLayers[layer.id] = layer;
                 if (!tile.boundTextures[layer.id]) {
                     path = layer.getUrl(tile.id);
-                    tile.boundTextures[layer.id] = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
+                    tile.boundTextures[layer.id] = tile.resources.getTexture(path, layer.dataType, extraBound, {tile: tile, layer: layer}, tile, false);
                 }
             }
         }
@@ -884,7 +883,7 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
                 tile.boundLayers[layer.id] = layer;
                 if (!tile.boundTextures[layer.id]) {
                     path = layer.getUrl(tile.id);
-                    tile.boundTextures[layer.id] = tile.resources.getTexture(path, null, extraBound, {tile: tile, layer: layer}, tile, false);
+                    tile.boundTextures[layer.id] = tile.resources.getTexture(path, layer.dataType, extraBound, {tile: tile, layer: layer}, tile, false);
                 }
             }
         }

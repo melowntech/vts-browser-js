@@ -58,6 +58,10 @@ plugins.push(
       'VTS_TEXTURECHECK_CODE' :       3,
       'VTS_TEXTURECHECK_SIZE' :       4,
 
+      'VTS_TEXTURETYPE_COLOR' :       0,
+      'VTS_TEXTURETYPE_HEIGHT' :      1,
+      'VTS_TEXTURETYPE_CLASS' :       2,
+
       'VTS_JOB_FLAT_LINE' :           1,
       'VTS_JOB_FLAT_RLINE' :          2,
       'VTS_JOB_FLAT_TLINE' :          3,
