@@ -69,6 +69,8 @@ var Core = function(element, config, coreInterface) {
         mapFog : true,
         mapNoTextures: false,
         mapMetricUnits : !(lang == 'en' || lang.indexOf('en-') == 0),
+        mapForceFrameTime: 0,
+        mapForcePipeline: 0,
         rendererAnisotropic : 0,
         rendererAntialiasing : true,
         rendererAllowScreenshots : false,

@@ -165,21 +165,28 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
     var drawTiles = this.drawTiles;
     var camInfo = camera.update();
-    this.renderer.dirty = true;
-    this.renderer.drawFog = this.debug.drawFog;
-    this.renderer.frameTime = this.stats.frameTime;
+    var renderer = this.renderer;
 
-    this.renderer.hoverFeatureCounter = 0;
-    this.renderer.hoverFeatureList = map.hoverFeatureList;
-    this.renderer.hoverFeature = map.hoverFeature;
+    renderer.dirty = true;
+    renderer.drawFog = this.debug.drawFog;
 
-    this.renderer.cameraPosition = camera.position;
-    this.renderer.cameraOrientation = map.position.getOrientation();
-    this.renderer.cameraTiltFator = Math.cos(math.radians(renderer.cameraOrientation[1]));
-    this.renderer.cameraVector = camera.vector; 
-    this.renderer.cameraViewExtent = map.position.getViewExtent();
-    this.renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
-    this.renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
+    if (config.mapForceFrameTime) {
+        renderer.frameTime = config.mapForceFrameTime;
+    } else {
+        renderer.frameTime = this.stats.frameTime;        
+    }
+
+    renderer.hoverFeatureCounter = 0;
+    renderer.hoverFeatureList = map.hoverFeatureList;
+    renderer.hoverFeature = map.hoverFeature;
+
+    renderer.cameraPosition = camera.position;
+    renderer.cameraOrientation = map.position.getOrientation();
+    renderer.cameraTiltFator = Math.cos(math.radians(renderer.cameraOrientation[1]));
+    renderer.cameraVector = camera.vector; 
+    renderer.cameraViewExtent = map.position.getViewExtent();
+    renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
+    renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
 
     if (projected) {
         var yaw = math.radians(renderer.cameraOrientation[0]);
@@ -221,7 +228,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     map.loader.setChannel(0); //0 = hires channel
     this.zFactor = 0;
 
-    this.ndcToScreenPixel = this.renderer.curSize[0] * 0.5;
+    this.ndcToScreenPixel = renderer.curSize[0] * 0.5;
     this.updateFogDensity();
     this.updateGridFactors();
     this.maxGpuUsed = Math.max(32*102*1204, map.gpuCache.getMaxCost() - 32*102*1204); 
@@ -332,9 +339,9 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 (replay.drawLoaded && replay.loaded)) {
                     
                 if (this.freeLayersHaveGeodata && this.drawChannel == 0) {
-                    this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
-                    this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
-                    this.renderer.draw.drawGpuJobs();
+                    renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
+                    renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
+                    renderer.draw.drawGpuJobs();
                 }
             }
     
@@ -496,8 +503,8 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     if (debug.drawEarth) {
         if (!skipFreeLayers) {
             if (map.freeLayersHaveGeodata && this.drawChannel == 0) {
-                this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
-                this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
+                renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
+                renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                 renderer.draw.drawGpuJobs();
             }
         }
