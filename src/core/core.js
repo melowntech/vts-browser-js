@@ -429,6 +429,8 @@ Core.prototype.setConfigParam = function(key, value) {
         this.config.map = utils.validateString(value, null);
     } else if (key == 'mapVirtualSurfaces') {
         this.config.mapVirtualSurfaces = utils.validateBool(value, true);
+    } else if (key == 'mapForcePipeline') {
+        this.config.mapForcePipeline = utils.validateNumber(value, 0, Number.MAXINTEGER, 0);
     } else if (key == 'inspector') {
         this.config.inspector = utils.validateBool(value, true);
     } else if (key == 'authorization') {

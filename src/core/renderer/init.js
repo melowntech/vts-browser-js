@@ -26,8 +26,6 @@ var RendererInit = function(renderer) {
 
     //renderer.font = new GpuFont(this.gpu, this.core);
     //renderer.fonts['#default'] = renderer.font;
-    //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font.png');
-    //renderer.font = new GpuFont(this.gpu, this.core, null, null, './font22.png');
     //renderer.font = new GpuFont(this.gpu, this.core, null, null, './allinone.fnt');
 
     this.initShaders();
@@ -61,14 +59,6 @@ RendererInit.prototype.initShaders = function() {
     renderer.progPlane = new GpuProgram(gpu, shaders.planeVertexShader, shaders.planeFragmentShader); //flat
     renderer.progPlane2 = new GpuProgram(gpu, shaders.planeVertex2Shader, shaders.planeFragment2Shader); //poles
     renderer.progPlane3 = new GpuProgram(gpu, shaders.planeVertex3Shader, shaders.planeFragmentShader); // grid         
-
-    renderer.progHmapPlane = new GpuProgram(gpu, shaders.planeVertex4Shader, shaders.planeFragmentShader2);
-    renderer.progHmapPlane2 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define grid\n' + shaders.planeFragmentShader2);
-    renderer.progHmapPlane3 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define exmap\n' + shaders.planeFragmentShader2);
-    renderer.progHmapPlane4 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define flat\n' + shaders.planeFragmentShader2);
-    renderer.progHmapPlane5 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define normals\n' + shaders.planeFragmentShader2);
-    renderer.progHmapPlane6 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define nmix\n#define normals\n' + shaders.planeFragmentShader2);
-    renderer.progHmapPlane7 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define nmix\n' + shaders.planeFragmentShader2);
 
     renderer.progSkydome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.skydomeFragmentShader);
     renderer.progStardome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.stardomeFragmentShader);
@@ -105,6 +95,19 @@ RendererInit.prototype.initShaders = function() {
     renderer.progIcon2 = new GpuProgram(gpu, shaders.icon2VertexShader, shaders.text2FragmentShader); //label
 };
 
+RendererInit.prototype.initProceduralShaders = function() {
+    var shaders = GpuShaders;
+    var renderer = this.renderer;
+    var gpu = this.gpu;
+    renderer.progHmapPlane = new GpuProgram(gpu, shaders.planeVertex4Shader, shaders.planeFragmentShader2);
+    renderer.progHmapPlane2 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define grid\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane3 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define exmap\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane4 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define flat\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane5 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define normals\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane6 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define nmix\n#define normals\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane7 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define nmix\n' + shaders.planeFragmentShader2);
+    renderer.progHmapPlane8 = new GpuProgram(gpu, shaders.planeVertex4Shader, '#define exmap\n#define classmap\n' + shaders.planeFragmentShader2);
+}
 
 RendererInit.prototype.initHeightmap = function() {
     var renderer = this.renderer;

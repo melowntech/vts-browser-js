@@ -170,8 +170,8 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.dirty = true;
     renderer.drawFog = this.debug.drawFog;
 
-    if (config.mapForceFrameTime) {
-        renderer.frameTime = config.mapForceFrameTime;
+    if (this.config.mapForceFrameTime) {
+        renderer.frameTime = this.config.mapForceFrameTime;
     } else {
         renderer.frameTime = this.stats.frameTime;        
     }

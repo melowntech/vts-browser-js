@@ -1364,6 +1364,11 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
     }
 
     var map = this.map, node, ll, ur, res;
+    var renderer = map.renderer;
+
+    if (!renderer.progHmapPlane) {
+        renderer.initProceduralShaders();
+    }
 
     if (divNode) {
         node = divNode[0]; 
@@ -1481,7 +1486,6 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         }
      }
 
-    var renderer = map.renderer;
     var mv = renderer.camera.getModelviewMatrix();
     var proj = renderer.camera.getProjectionMatrix();
 
@@ -1550,7 +1554,7 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
             case 4: prog = renderer.progHmapPlane7; break;
 
             case 8: prog = renderer.progHmapPlane4; break;
-            case 9: prog = renderer.progHmapPlane3; break;
+            case 9: prog = pipeline == 1 ? renderer.progHmapPlane3 : renderer.progHmapPlane8; break;
         }
 
 

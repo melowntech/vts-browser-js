@@ -846,8 +846,6 @@ GpuShaders.planeVertex4Shader =
     'varying vec3 vBarycentric;\n'+
 
     '#ifdef newspace\n'+
-        //'varying vec3 vTangent;\n'+
-        //'varying vec3 vBitangent;\n'+
         'varying mat3 vTBN;\n'+
     '#else\n'+
         'varying vec3 vNormal;\n'+
@@ -888,8 +886,6 @@ GpuShaders.planeVertex4Shader =
 
         'vBarycentric = camSpacePos.xyz;\n'+
 
-        //'mat3 spce2 = mat3(vec3(1.0,0.0,0.0),vec3(0.0,1.0,0.0),vec3(0.0,0.0,1.0));\n'+
-
         '#ifdef newspace\n'+
             'vec2 d = getHFNormal2(uv2, 1.0/(128.0), (uHeights[1]-uHeights[0]) * uHeights[2]);\n'+
             'vec3 T = vec3(2.0,0.0,-d.x); vec3 B = vec3(0.0,2.0,-d.y);\n'+
@@ -912,20 +908,10 @@ GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
     'varying vec3 vBarycentric;\n'+
 
     '#ifdef newspace\n'+
-        //'varying vec3 vTangent;\n'+
-        //'varying vec3 vBitangent;\n'+
         'varying mat3 vTBN;\n'+
     '#else\n'+
         'varying vec3 vNormal;\n'+
     '#endif\n'+
-
-    //'#ifdef exmap\n'+
-      //  'const vec4 ctable[1] = vec4[1]( vec4(0.125, 0.125, 0.125, 1.0) );\n'+
-    //'#endif\n'+
-
-    //'#ifdef exmap\n'+
-      //  'const float ctable[2] = float[2](1.0,2.0);\n'+
-    //'#endif\n'+
 
     'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
@@ -975,47 +961,49 @@ GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
             'c = mix(c, c2, 0.5);\n'+
         '#else\n'+
             '#ifdef exmap\n'+
-                //'vec4 ctable[1] = vec4[1]( vec4(0.125, 0.125, 0.125, 1.0) );\n'+
 
                 'vec4 c = texture2D(uSampler, vTexCoord);\n'+
-                'int i = int(c.x*255.0);\n'+
 
-                /*
-                'if (i == 0) c = vec4(0.3, 0.44, 0.64, 1.0);\n'+
-                'if (i == 1) c = vec4(0.0, 0.24, 0.0, 1.0);\n'+
-                'if (i == 2) c = vec4(0.58, 0.61, 0.44, 1.0);\n'+
-                'if (i == 3) c = vec4(0.0, 0.39, 0.0, 1.0);\n'+
-                'if (i == 4) c = vec4(0.12, 0.67, 0.02, 1.0);\n'+
-                'if (i == 5) c = vec4(0.08, 0.55, 0.24, 1.0);\n'+
-                'if (i == 6) c = vec4(0.36, 0.46, 0.17, 1.0);\n'+
-                'if (i == 7) c = vec4(0.7, 0.62, 0.18, 1.0);\n'+
-                'if (i == 8) c = vec4(0.7, 0.54, 0.2, 1.0);\n'+
-                'if (i == 9) c = vec4(0.91, 0.86, 0.37, 1.0);\n'+
-                'if (i == 10) c = vec4(0.88, 0.81, 0.54, 1.0);\n'+
-                'if (i == 11) c = vec4(0.61, 0.46, 0.33, 1.0);\n'+
-                'if (i == 12) c = vec4(0.73, 0.83, 0.56, 1.0);\n'+
-                'if (i == 13) c = vec4(0.25, 0.54, 0.45, 1.0);\n'+
-                'if (i == 14) c = vec4(0.42, 0.64, 0.54, 1.0);\n'+
-                'if (i == 15) c = vec4(0.9, 0.68, 0.4, 1.0);\n'+
-                'if (i == 16) c = vec4(0.66, 0.67, 0.68, 1.0);\n'+
-                'if (i == 17) c = vec4(0.86, 0.13, 0.15, 1.0);\n'+
-                'if (i == 18) c = vec4(0.3, 0.44, 0.64, 1.0);\n'+
-                'if (i == 19) c = vec4(1.0, 0.98, 1.0, 1.0);\n'+
-                'c = c * c2;\n'+
-                */
+                '#ifdef classmap\n'+
+                    'int i = int(c.x*255.0);\n'+
 
-                'if (i == 1 || i == 2 || i == 5 || i == 6) c = vec4(146.0, 178.0, 144.0, 255.0);\n'+
-                'if (i == 3 || i == 4) c = vec4(94.0, 169.0, 133.0, 255.0);\n'+
-                'if (i == 8 || i == 11) c = vec4(238.0, 221.0, 185.0, 255.0);\n'+
-                'if (i == 7) c = vec4(226.0, 192.0, 154.0, 255.0);\n'+
-                'if (i == 9 || i == 10 || i == 12) c = vec4(250.0, 246.0, 167.0, 255.0);\n'+
-                'if (i == 13 || i == 16) c = vec4(245.0, 236.0, 211.0, 255.0);\n'+
-                'if (i == 14) c = vec4(139.0, 185.0, 166.0, 255.0);\n'+
-                'if (i == 15) c = vec4(199.0, 219.0, 155.0, 255.0);\n'+
-                'if (i == 17) c = vec4(149.0, 132.0, 162.0, 255.0);\n'+
-                'if (i == 18 || i == 0) c = vec4(188.0, 221.0, 255.0, 255.0);\n'+
-                'if (i == 19) c = vec4(255.0, 255.0, 255.0, 255.0);\n'+
-                'c = (c*(1.0/255.0)) * c2;\n'+
+                    /*
+                    'if (i == 0) c = vec4(0.3, 0.44, 0.64, 1.0);\n'+
+                    'if (i == 1) c = vec4(0.0, 0.24, 0.0, 1.0);\n'+
+                    'if (i == 2) c = vec4(0.58, 0.61, 0.44, 1.0);\n'+
+                    'if (i == 3) c = vec4(0.0, 0.39, 0.0, 1.0);\n'+
+                    'if (i == 4) c = vec4(0.12, 0.67, 0.02, 1.0);\n'+
+                    'if (i == 5) c = vec4(0.08, 0.55, 0.24, 1.0);\n'+
+                    'if (i == 6) c = vec4(0.36, 0.46, 0.17, 1.0);\n'+
+                    'if (i == 7) c = vec4(0.7, 0.62, 0.18, 1.0);\n'+
+                    'if (i == 8) c = vec4(0.7, 0.54, 0.2, 1.0);\n'+
+                    'if (i == 9) c = vec4(0.91, 0.86, 0.37, 1.0);\n'+
+                    'if (i == 10) c = vec4(0.88, 0.81, 0.54, 1.0);\n'+
+                    'if (i == 11) c = vec4(0.61, 0.46, 0.33, 1.0);\n'+
+                    'if (i == 12) c = vec4(0.73, 0.83, 0.56, 1.0);\n'+
+                    'if (i == 13) c = vec4(0.25, 0.54, 0.45, 1.0);\n'+
+                    'if (i == 14) c = vec4(0.42, 0.64, 0.54, 1.0);\n'+
+                    'if (i == 15) c = vec4(0.9, 0.68, 0.4, 1.0);\n'+
+                    'if (i == 16) c = vec4(0.66, 0.67, 0.68, 1.0);\n'+
+                    'if (i == 17) c = vec4(0.86, 0.13, 0.15, 1.0);\n'+
+                    'if (i == 18) c = vec4(0.3, 0.44, 0.64, 1.0);\n'+
+                    'if (i == 19) c = vec4(1.0, 0.98, 1.0, 1.0);\n'+
+                    'c = c * c2;\n'+
+                    */
+
+                    'if (i == 1 || i == 2 || i == 5 || i == 6) c = vec4(146.0, 178.0, 144.0, 255.0);\n'+
+                    'if (i == 3 || i == 4) c = vec4(94.0, 169.0, 133.0, 255.0);\n'+
+                    'if (i == 8 || i == 11) c = vec4(238.0, 221.0, 185.0, 255.0);\n'+
+                    'if (i == 7) c = vec4(226.0, 192.0, 154.0, 255.0);\n'+
+                    'if (i == 9 || i == 10 || i == 12) c = vec4(250.0, 246.0, 167.0, 255.0);\n'+
+                    'if (i == 13 || i == 16) c = vec4(245.0, 236.0, 211.0, 255.0);\n'+
+                    'if (i == 14) c = vec4(139.0, 185.0, 166.0, 255.0);\n'+
+                    'if (i == 15) c = vec4(199.0, 219.0, 155.0, 255.0);\n'+
+                    'if (i == 17) c = vec4(149.0, 132.0, 162.0, 255.0);\n'+
+                    'if (i == 18 || i == 0) c = vec4(188.0, 221.0, 255.0, 255.0);\n'+
+                    'if (i == 19) c = vec4(255.0, 255.0, 255.0, 255.0);\n'+
+                    'c = (c*(1.0/255.0)) * c2;\n'+
+                '#endif\n'+
 
             '#else\n'+
                 'vec4 c = c2;\n'+

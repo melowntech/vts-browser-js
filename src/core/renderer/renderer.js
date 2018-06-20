@@ -150,6 +150,10 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.resizeGL(Math.floor(this.curSize[0]*factor), Math.floor(this.curSize[1]*factor));
 };
 
+Renderer.prototype.initProceduralShaders = function() {
+    this.init.initProceduralShaders();
+};
+
 
 Renderer.prototype.onResize = function() {
     if (this.killed){
