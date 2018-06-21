@@ -171,7 +171,11 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.drawFog = this.debug.drawFog;
 
     if (this.config.mapForceFrameTime) {
-        renderer.frameTime = this.config.mapForceFrameTime;
+        if (this.config.mapForceFrameTime != -1) {
+            renderer.frameTime = this.config.mapForceFrameTime;
+        } else {
+            renderer.frameTime = 0;
+        }
     } else {
         renderer.frameTime = this.stats.frameTime;        
     }
@@ -507,6 +511,13 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                 renderer.draw.drawGpuJobs();
             }
+        }
+    }
+
+    if (this.config.mapForceFrameTime) {
+        if (this.config.mapForceFrameTime != -1) {
+            renderer.frameTime = 0;
+            this.config.mapForceFrameTime = -1;
         }
     }
 };

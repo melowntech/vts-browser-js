@@ -69,7 +69,7 @@ Autopilot.prototype.flyTo = function(position, options) {
 };
 
 
-Autopilot.prototype.flyTrajectory = function(trajectory, sampleDuration, fakeTime) {
+Autopilot.prototype.flyTrajectory = function(trajectory, sampleDuration) {
     this.setTrajectory(trajectory, sampleDuration || 10, {});
 };
 
