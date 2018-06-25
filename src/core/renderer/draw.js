@@ -667,7 +667,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
     var ret, frameTime = renderer.frameTime, sortHbuffer = false;
 
-    console.log("" + frameTime);
+    //console.log("" + frameTime);
 
     //draw job buffer and also clean buffer
     for (var i = 0, li = jobZBuffer.length; i < li; i++) {
