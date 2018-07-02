@@ -1,10 +1,13 @@
 
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
+import {processGMap as processGMap_} from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
 var math = math_;
+var processGMap = processGMap_;
+
 
 var RendererDraw = function(renderer) {
     this.renderer = renderer;
@@ -661,6 +664,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
         this.rmap.clear();
     }
 
+    renderer.gmapIndex = 0;
+
     var forceUpdate = false;
 
     renderer.jobHBuffer = {};
@@ -740,6 +745,11 @@ RendererDraw.prototype.drawGpuJobs = function() {
                     //}
                 }
             }
+        }
+
+        if (renderer.gmapIndex > 0) {
+            processGMap(gpu, gl, renderer, screenPixelSize);
+            renderer.gmapIndex = 0;
         }
 
         if (rmap.rectanglesCount > 0) {
@@ -1198,7 +1208,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_LABEL:
 
 
-        if (job.reduce) {
+        if (job.reduce && job.reduce[0] != 7) {
             var a;
 
             if (job.reduce[0] > 4) {
@@ -1383,7 +1393,13 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 } 
             }
 
-            job.lastSubJob = [job, stickShift, texture, files, color, pp];
+            job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
+
+            if (job.reduce && job.reduce[0] == 7) {
+                renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
+                renderer.gmapIndex++;
+                return;
+            }
 
             if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], depth, job.lastSubJob)) {
                 renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], depth, job.lastSubJob);
@@ -1391,6 +1407,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
 
             return; //draw all labe from same z-index together
+        } else {
+            if (job.reduce && job.reduce[0] == 7) {
+                if (!pp) {
+                    pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                }
+
+                job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
+
+                renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
+                renderer.gmapIndex++;
+                return;
+            }
         }
 
         if (job.hysteresis && job.id) {

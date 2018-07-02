@@ -653,8 +653,9 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             if (Array.isArray(value) && value.length > 0 && (typeof value[0] === 'string')) {
 
                 if (key == 'dynamic-reduce') {
-                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' || value[0] == 'scr-count3') &&
-                        (typeof value[1] === 'number') && (typeof value[2] === 'number'))) {
+                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' ||
+                           value[0] == 'scr-count3' || value[0] == 'scr-count4') &&
+                        (typeof value[1] === 'number') && ((typeof value[2] === 'number') || value[0] == 'scr-count4'))) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
                     }
