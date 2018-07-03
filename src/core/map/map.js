@@ -140,14 +140,6 @@ var Map = function(core, mapConfig, path, config) {
 
     var body = this.referenceFrame.body, c;
 
-    body = {};
-    body.atmosphere = {
-        thickness : 50000,
-        visibility : 200000,
-        colorHorizon : [ 115, 100, 74, 255 ],
-        colorZenith : [ 115, 100, 74, 255 ]
-    };
-
     if (body && body.atmosphere) {
         c = body.atmosphere.colorHorizon;
         this.draw.atmoColor = [c[0]/255.0, c[1]/255.0, c[2]/255.0, c[3]/255.0];
