@@ -1,14 +1,13 @@
 
 
 function processGMap(gpu, gl, renderer, screenPixelSize) {
-
     var tileCount = renderer.config.mapFeatureGridCells; //31; //labelGridCells
     var featuresPerSquareInch = renderer.config.mapFeaturesPerSquareInch; //0.6614; //labelsPerSquareInch
     var ppi = 96 * (window.devicePixelRatio || 1);
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var featureCount = (screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch; 
-    var i, li, top = false;
+    var i, li, top = renderer.config.mapFeaturesSortByTop;
 
     //get top features
     var featureCache = renderer.gmap;

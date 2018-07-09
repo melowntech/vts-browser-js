@@ -818,6 +818,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapForcePipeline':              this.config.mapForcePipeline = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
     case 'mapFeatureGridCells':           this.config.mapFeatureGridCells = utils.validateNumber(value, 1, Number.MAXINTEGER, 0); break;
     case 'mapFeaturesPerSquareInch':      this.config.mapFeaturesPerSquareInch = utils.validateNumber(value, 0.000001, Number.MAXINTEGER, 0); break;
+    case 'mapFeaturesSortByTop':          this.config.mapFeaturesSortByTop = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
@@ -870,6 +871,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapForcePipeline':              return this.config.mapForcePipeline;
     case 'mapFeatureGridCells':           return this.config.mapFeatureGridCells;
     case 'mapFeaturesPerSquareInch':      return this.config.mapFeaturesPerSquareInch;
+    case 'mapFeaturesSortByTop':          return this.config.mapFeaturesSortByTop;
     case 'mario':                         return this.config.mario;
     }
 };
