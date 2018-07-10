@@ -56,22 +56,20 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
     var texturedLine = (lineStyle != 'solid');
     var widthByRatio = (lineWidthUnits == 'ratio');
 
-    //console.log("lineflat: "+lineFlat);
-    //var lineWidth = Math.pow(2, 23 - lod) / 32;
+    if (lineWidthUnits == 'points') {
+        lineWidth *= globals.pixelFactor / ((1 / 72) * (96));
+    }
 
     var index = 0, index2 = 0, index3 = 0;
     var skipJoins = false;
 
     if (widthByRatio) {
-        skipJoins = (!lineFlat && (lineWidth*1080) < 2.1);
+        skipJoins = (!lineFlat && ((lineWidth/* *globals.invPixelFactor*/)*1080) < 2.1);
     } else {
-        skipJoins = (!lineFlat && lineWidth < 2.1);        
+        skipJoins = (!lineFlat && (lineWidth/* *globals.invPixelFactor*/) < 2.1);        
     }
 
     var ii, i, li, p2, v, vv, l, n, nn, p1, p, elementIndex, elemetBase = 1;
-
-    //console.log("lod: " + lod + "  width: " + lineWidth);
-    //skipJoins = true;
 
     if (!skipJoins) {
         var circleBuffer = [];

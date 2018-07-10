@@ -78,7 +78,7 @@ MapGeodataProcessor.prototype.setListener = function(listener) {
 };
 
 
-MapGeodataProcessor.prototype.sendCommand = function(command, data, tile) {
+MapGeodataProcessor.prototype.sendCommand = function(command, data, tile, dpr) {
     if (this.killed) {
         return;
     }
@@ -93,6 +93,10 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile) {
         if (tile.metanode) {
             message['tileSize'] = tile.metanode.diskAngle * tile.metanode.diskDistance;
         }
+    }
+
+    if (dpr) {
+        message['dpr'] = dpr;
     }
 
     this.processWorker.postMessage(message);
