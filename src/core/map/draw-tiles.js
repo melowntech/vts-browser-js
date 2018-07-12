@@ -301,7 +301,8 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                                 mesh : tile.surfaceMesh,
                                                 submesh : i,
                                                 texture : texture,
-                                                alpha : bounds.alpha[layers[j]][1]
+                                                alpha : bounds.alpha[layers[j]][1],
+                                                material : VTS_MATERIAL_EXTERNAL_NOFOG
                                             });
                                         }
                                     }
