@@ -7,7 +7,7 @@ var utils = utils_;
 var GpuTexture = GpuTexture_;
 
 
-var MapSubtexture = function(map, path, heightMap, tile, internal) {
+var MapSubtexture = function(map, path, type, tile, internal) {
     this.map = map;
     this.stats = map.stats;
     this.tile = tile; // used only for stats
@@ -21,7 +21,7 @@ var MapSubtexture = function(map, path, heightMap, tile, internal) {
     this.loadErrorCounter = 0;
     this.neverReady = false;
     this.mapLoaderUrl = path;
-    this.heightMap = heightMap || false;
+    this.type = type || false;
     this.statsCounter = 0;
     this.checkStatus = 0;
     this.checkType = null;
@@ -166,7 +166,7 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
             this.map.resourcesCache.updateItem(this.cacheItem);
         }
 
-        if (((this.heightMap && !this.imageData) || (!this.heightMap && !this.gpuTexture)) &&
+        if (((this.type == VTS_TEXTURETYPE_HEIGHT && !this.imageData) || (this.type != VTS_TEXTURETYPE_HEIGHT && !this.gpuTexture)) &&
               this.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
             //console.log("testure resource build overflow");
             this.map.markDirty();
@@ -174,7 +174,7 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
         }
 
         if (doNotCheckGpu) {
-            if (this.heightMap) {
+            if (this.type == VTS_TEXTURETYPE_HEIGHT) {
                 if (!this.imageData) {
                     t = performance.now();
                     this.buildHeightMap();
@@ -185,7 +185,7 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
             return true;
         }
 
-        if (this.heightMap) {
+        if (this.type == VTS_TEXTURETYPE_HEIGHT) {
             if (!this.imageData) {
                 t = performance.now();
                 this.buildHeightMap();
@@ -458,7 +458,7 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
 
 MapSubtexture.prototype.buildGpuTexture = function () {
     this.gpuTexture = new GpuTexture(this.map.renderer.gpu, null, this.map.core);
-    this.gpuTexture.createFromImage(this.image, 'linear', false);
+    this.gpuTexture.createFromImage(this.image, (this.type == VTS_TEXTURETYPE_CLASS) ? 'nearest' : 'linear', false);
     this.stats.gpuTextures += this.gpuTexture.size;
 
     this.stats.graphsFluxTexture[0][0]++;

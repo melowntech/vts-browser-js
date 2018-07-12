@@ -25,6 +25,8 @@ var MapRefFrame = function(map, json) {
         publicSrs : map.getMapsSrs(model['publicSrs'])
     };
 
+    this.body = json['body'] ? map.getBody(json['body']) : null;
+
     this.params = {};
 
     if (json['parameters'] != null) {

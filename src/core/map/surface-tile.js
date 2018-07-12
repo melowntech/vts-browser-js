@@ -1,8 +1,10 @@
 
 import {vec3 as vec3_} from '../utils/matrix';
+import GpuTexture_ from '../renderer/gpu/texture';
 
 //get rid of compiler mess
 var vec3 = vec3_;
+var GpuTexture = GpuTexture_;
 
  var tileBorderTable = [
     [-1, -1, 0, 0],
@@ -1352,16 +1354,21 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
 }; 
 
 
-MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipeline) {
-    if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
-        return;
-    }
+MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipeline, texture) {
+    //if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
+      //  return;
+    //}
     
     if (!this.metanode) {
         return;
     }
 
     var map = this.map, node, ll, ur, res;
+    var renderer = map.renderer;
+
+    if (!renderer.progHmapPlane) {
+        renderer.initProceduralShaders();
+    }
 
     if (divNode) {
         node = divNode[0]; 
@@ -1408,7 +1415,8 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
 
     if (!gridPoints) {
 
-        h = this.metanode.minZ;
+//        h = this.metanode.minZ;
+        h = 0;//this.metanode.minHeight;
         var n1 = node.getPhysicalCoords([ur[0], ur[1], h], true);
         var n2 = node.getPhysicalCoords([ur[0], ll[1], h], true);
         var n3 = node.getPhysicalCoords([ll[0], ll[1], h], true);
@@ -1478,7 +1486,6 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         }
      }
 
-    var renderer = map.renderer;
     var mv = renderer.camera.getModelviewMatrix();
     var proj = renderer.camera.getProjectionMatrix();
 
@@ -1526,6 +1533,9 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         map.poleRadiusFactor = 8 * Math.pow(2.0, 552058 / map.poleRadius); 
     }
 
+    var mnode = this.metanode; 
+    var testMode = draw.debug.drawTestMode;
+
     factor = 1;
 
     if (hasPoles && node.isPole) {
@@ -1534,54 +1544,178 @@ MapSurfaceTile.prototype.drawHmapTile = function(cameraPos, divNode, angle, pipe
         renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
         prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
     } else {
-        prog = renderer.progHmapPlane;
-        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+
+        switch(testMode) {
+            default:
+            case 0: prog = renderer.progHmapPlane; break;
+            case 1: prog = renderer.progHmapPlane2; break;
+            case 2: prog = renderer.progHmapPlane5; break;
+            case 3: prog = renderer.progHmapPlane6; break;
+            case 4: prog = renderer.progHmapPlane7; break;
+
+            case 8: prog = renderer.progHmapPlane4; break;
+            case 9: prog = pipeline == 1 ? renderer.progHmapPlane3 : renderer.progHmapPlane8; break;
+        }
+
+
+        if (testMode == 3 || testMode == 4) {
+            if (!renderer.ntextures) {
+                renderer.ntextures = [ 
+                    new GpuTexture(renderer.gpu, './textures/test/test001.png', renderer.core, null), //0
+                    new GpuTexture(renderer.gpu, './textures/test/test002.png', renderer.core, null), //1
+                    new GpuTexture(renderer.gpu, './textures/test003.jpg', renderer.core, null),      //2
+                    new GpuTexture(renderer.gpu, './textures/download.png', renderer.core, null),     //3
+                    new GpuTexture(renderer.gpu, './textures/test009.jpg', renderer.core, null),      //4
+                    new GpuTexture(renderer.gpu, './textures/test004.jpg', renderer.core, null),      //5
+                    new GpuTexture(renderer.gpu, './textures/test005.jpg', renderer.core, null),      //6
+                    new GpuTexture(renderer.gpu, './textures/nor_sand.jpg', renderer.core, null),     //7
+                    new GpuTexture(renderer.gpu, './textures/test007.jpg', renderer.core, null),      //8
+                    new GpuTexture(renderer.gpu, './textures/test008.jpg', renderer.core, null),      //9
+
+                    new GpuTexture(renderer.gpu, './textures/download (1).png', renderer.core, null),  //10
+                    new GpuTexture(renderer.gpu, './textures/test010.jpg', renderer.core, null),      //11
+                    new GpuTexture(renderer.gpu, './textures/test011.jpg', renderer.core, null),      //12
+                    new GpuTexture(renderer.gpu, './textures/test012.jpg', renderer.core, null),      //13
+                    new GpuTexture(renderer.gpu, './textures/test013.jpg', renderer.core, null),      //14
+                    new GpuTexture(renderer.gpu, './textures/test014.jpg', renderer.core, null),      //15
+                    new GpuTexture(renderer.gpu, './textures/test015.jpg', renderer.core, null),      //16
+                    new GpuTexture(renderer.gpu, './textures/test016.jpg', renderer.core, null),      //17
+                    new GpuTexture(renderer.gpu, './textures/test017.jpg', renderer.core, null),      //18
+                    new GpuTexture(renderer.gpu, './textures/test018.jpg', renderer.core, null)      //18
+
+                    ];
+            }
+        }
+
+//        renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aBarycentric']);
+        //renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+        renderer.gpu.useProgram(prog, ['aPosition']);
+        prog.setVec3('uVector', mnode.diskNormal);
+
+        //prog.setVec3('uRight', mnode.diskNormal);
+
+        if (gridPoints) {
+            var vecRight = [gridPoints[15] - gridPoints[12], gridPoints[16] - gridPoints[13], gridPoints[17] - gridPoints[14]];
+            var vecTop = [gridPoints[21] - gridPoints[12], gridPoints[22] - gridPoints[13], gridPoints[23] - gridPoints[14]];
+
+            vec3.normalize(vecRight);
+            vec3.normalize(vecTop);
+
+            var vecDir = mnode.diskNormal.slice();
+            //vecDir = [-vecDir[0], -vecDir[1], -vecDir[2]];
+
+            //prog.setVec3('uRight', vecRight);
+            //prog.setVec3('uTop', vecTop);
+
+
+            var mv = map.camera.camera.modelview;
+            var mv2 = vts.mat3.create();
+
+            vts.mat4.toInverseMat3(mv, mv2);
+
+            //vts.mat4.toMat3(mv, mv2);
+            vts.mat3.transpose(mv2);
+
+            vts.mat3.multiplyVec3(mv2, vecTop);
+            vts.mat3.multiplyVec3(mv2, vecDir);
+            vts.mat3.multiplyVec3(mv2, vecRight);
+
+            var space = [
+                vecRight[0], vecRight[1], vecRight[2],
+                vecTop[0], vecTop[1], vecTop[2],
+                vecDir[0], vecDir[1], vecDir[2],
+            ];
+
+            /*
+            var mv3 = vts.mat3.toMat4(mv2);
+            vts.mat4.multiply(mv3, vts.mat3.toMat4(space), mv3);
+            prog.setMat3('uSpace', vts.mat4.toMat3(mv3));
+            */
+            
+            prog.setMat3('uSpace', space);
+        }
     }
 
     prog.setMat4('uMV', mv);
     prog.setMat4('uProj', proj);
     prog.setFloatArray('uPoints', buffer);
     
-    /*
-    var lx = (ur[0] - ll[0]);
-    var ly = (ll[1] - ur[1]);
-    var px = (ll[0] - node.extents.ll[0]) / lx;
-    var py = (ur[1] - node.extents.ll[1]) / ly;
-    
-    var llx = (node.extents.ur[0] - node.extents.ll[0]) / lx;
-    var lly = (node.extents.ur[1] - node.extents.ll[1]) / ly;
-
-    px = px / llx;
-    py = py / lly;
-    llx = 1.0/llx;
-    lly = 1.0/lly;
-    
-    llx *= step1;
-    lly *= step1;
-    px *= step1;
-    py *= step1;
-    */
 
     var step1 = node.gridStep1 * factor;
+    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/127, node.gridStep2 * factor]);
 
-    var lx = 1.0 / (ur[0] - ll[0]);
-    var ly = 1.0 / (ll[1] - ur[1]);
-    var llx = step1 / ((node.extents.ur[0] - node.extents.ll[0]) * lx);
-    var lly = step1 / ((node.extents.ur[1] - node.extents.ll[1]) * ly);
-    var px = (ll[0] - node.extents.ll[0]) * lx * llx;
-    var py = (ur[1] - node.extents.ll[1]) * ly * lly;
+    if (testMode >= 3 && testMode <= 4) {
+        prog.setVec4('uParams3', [1,1,0,0]);
+    } else {
+        if (texture) {
+            prog.setVec4('uParams3', texture.getTransform());
+        } else {
+            var lx = 1.0 / (ur[0] - ll[0]);
+            var ly = 1.0 / (ll[1] - ur[1]);
+            var llx = step1 / ((node.extents.ur[0] - node.extents.ll[0]) * lx);
+            var lly = step1 / ((node.extents.ur[1] - node.extents.ll[1]) * ly);
+            var px = (ll[0] - node.extents.ll[0]) * lx * llx;
+            var py = (ur[1] - node.extents.ll[1]) * ly * lly;
 
-    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/15, node.gridStep2 * factor]);
-    prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
+            prog.setVec4('uParams3', [lly, llx, (py - Math.floor(py)), (px - Math.floor(px))]);
+        }
+    }
+
     prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
     prog.setVec4('uFogColor', draw.atmoColor);
 
-    renderer.gpu.bindTexture(renderer.heightmapTexture);
-    
-    //draw bbox
-    renderer.planeMesh.draw(prog, 'aPosition', 'aTexCoord');    
 
-    this.map.stats.drawnFaces += renderer.planeMesh.polygons;
+    if (this.hmap.extraBound) {
+        //get height form parent
+        mnode = this.hmap.extraBound.sourceTile.metanode;
+        prog.setVec3('uHeights', [mnode.minHeight, mnode.maxHeight, (1.0/mnode.pixelSize)]);
+        prog.setVec4('uTransform', this.hmap.getTransform());
+    } else {
+        prog.setVec3('uHeights', [mnode.minHeight, mnode.maxHeight, (1.0/mnode.pixelSize)]);
+        prog.setVec4('uTransform', [1,1,0,0]);
+    }
+
+    if (testMode >= 3 && testMode <= 4) {
+        if (!renderer.ntextures[draw.debug.drawTestData].loaded) {
+            return;
+        }
+        renderer.gpu.bindTexture(renderer.ntextures[draw.debug.drawTestData]);
+    } else {
+        if (texture) {
+            renderer.gpu.bindTexture(texture.getGpuTexture());
+        } else {
+            renderer.gpu.bindTexture(renderer.heightmapTexture);
+        }
+    }
+
+    prog.setSampler('uSampler', 0);    
+
+//    if(this.hmap) {
+        renderer.gpu.bindTexture(this.hmap.getGpuTexture(), 1);
+  //  } else {
+        //renderer.gpu.bindTexture(renderer.blackTexture, 1);
+  //      renderer.gpu.bindTexture(renderer.blackTexture2, 1);
+   // }
+
+    prog.setSampler('uSampler2', 1);    
+
+    //draw bbox
+    //renderer.planeMesh2.draw(prog, 'aPosition', 'aTexCoord');    
+    renderer.planeMesh2.draw(prog, 'aPosition');    
+
+    /*
+    if (vecRight && gridPoints) {
+        //renderer.draw.drawLineString(points, screenSpace, size, color, depthOffset, depthTest, transparent, writeDepth, useState);
+        renderer.draw.drawLineString([[gridPoints[12], gridPoints[13], gridPoints[14]], [gridPoints[15], gridPoints[16], gridPoints[17]]], false, 4, [1,0,0,1], null, false, false, false, false);
+        renderer.draw.drawLineString([[gridPoints[12], gridPoints[13], gridPoints[14]], [gridPoints[21], gridPoints[22], gridPoints[23]]], false, 4, [0,0,1,1], null, false, false, false, false);
+
+        renderer.draw.drawLineString([[0, 0, 0], [9000000, 0, 0]], false, 4, [1,0,0,1], null, false, false, false, false);
+        renderer.draw.drawLineString([[0, 0, 0], [0, 9000000, 0, 0]], false, 4, [0,1,0,1], null, false, false, false, false);
+        renderer.draw.drawLineString([[0, 0, 0], [0, 0, 9000000]], false, 4, [0,0,1,1], null, false, false, false, false);
+    }*/
+
+
+    this.map.stats.drawnFaces += renderer.planeMesh2.polygons;
 }; 
 
 

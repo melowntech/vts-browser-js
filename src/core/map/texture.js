@@ -5,16 +5,16 @@ import MapSubtexture_ from './subtexture';
 var MapSubtexture = MapSubtexture_;
 
 
-var MapTexture = function(map, path, heightMap, extraBound, extraInfo, tile, internal) {
+var MapTexture = function(map, path, type, extraBound, extraInfo, tile, internal) {
     this.map = map;
     this.stats = map.stats;
     this.tile = tile; // used only for stats
     this.internal = internal; // used only for stats
     
     if (tile) {
-        this.mainTexture = tile.resources.getSubtexture(this, path, heightMap, tile, internal); 
+        this.mainTexture = tile.resources.getSubtexture(this, path, type, tile, internal); 
     } else {
-        this.mainTexture = new MapSubtexture(map, path, heightMap, tile, internal); 
+        this.mainTexture = new MapSubtexture(map, path, type, tile, internal); 
     }
 
     this.maskTexture = null; 
@@ -25,7 +25,7 @@ var MapTexture = function(map, path, heightMap, extraBound, extraInfo, tile, int
     this.neverReady = false;
     this.maskTexture = null;
     this.mapLoaderUrl = path;
-    this.heightMap = heightMap || false;
+    this.type = type || VTS_TEXTURETYPE_COLOR;
     this.extraBound = extraBound;
     this.extraInfo = extraInfo;
     this.statsCounter = 0;
@@ -80,20 +80,33 @@ MapTexture.prototype.killGpuTexture = function() {
 };
 
 
-MapTexture.prototype.setBoundTexture = function(tile, layer) {
-    if (tile && layer) {
-        this.extraBound.sourceTile = tile;
-        this.extraBound.layer = layer;
-        
-        if (!tile.boundTextures[layer.id]) {
-            tile.boundLayers[layer.id] = layer;
-            var path = layer.getUrl(tile.id);
-            tile.boundTextures[layer.id] = tile.resources.getTexture(path, null, null, {tile: tile, layer: layer}, this.tile, this.internal);
-        }
+MapTexture.prototype.setBoundTexture = function(tile, layer, hmap) {
+    if (tile) {
+        if (hmap) {
+            this.extraBound.sourceTile = tile;
+            this.extraBound.hmap = hmap;
 
-        this.extraBound.texture = tile.boundTextures[layer.id]; 
-        this.extraBound.transform = this.map.draw.drawTiles.getTileTextureTransform(tile, this.extraBound.tile);
+            if (!tile.hmap) {
+                var path = tile.resourceSurface.getHMapUrl(tile.id, true);
+                tile.hmap = tile.resources.getTexture(path, null, null, {tile: tile, hmap: hmap}, this.tile, this.internal);
+            }
+
+            this.extraBound.texture = tile.hmap; 
+
+        } else if (layer) {
+            this.extraBound.sourceTile = tile;
+            this.extraBound.layer = layer;
+            
+            if (!tile.boundTextures[layer.id]) {
+                tile.boundLayers[layer.id] = layer;
+                var path = layer.getUrl(tile.id);
+                tile.boundTextures[layer.id] = tile.resources.getTexture(path, null, null, {tile: tile, layer: layer}, this.tile, this.internal);
+            }
+
+            this.extraBound.texture = tile.boundTextures[layer.id]; 
+        }
         
+        this.extraBound.transform = this.map.draw.drawTiles.getTileTextureTransform(tile, this.extraBound.tile);
         this.map.markDirty();
     }
 };
@@ -118,11 +131,21 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
             while (this.extraBound.texture.extraBound || this.extraBound.texture.checkStatus == -1) {
 //            while (this.extraBound.texture.checkStatus == -1) {
                 parent = this.extraBound.sourceTile.parent;
-                if (parent.id[0] < this.extraBound.layer.lodRange[0]) {
-                    this.neverReady = true;
-                    this.extraBound.tile.resetDrawCommands = true;
-                    this.map.markDirty();
-                    return false;
+
+                if (this.extraBound.hmap) {
+                    if (!parent || parent.id[0] < 1) {
+                        this.neverReady = true;
+                        this.extraBound.tile.resetDrawCommands = true;
+                        this.map.markDirty();
+                        return false;
+                    }
+                } else if (this.extraBound.layer) {
+                    if (parent.id[0] < this.extraBound.layer.lodRange[0]) {
+                        this.neverReady = true;
+                        this.extraBound.tile.resetDrawCommands = true;
+                        this.map.markDirty();
+                        return false;
+                    }
                 }
  
                 this.setBoundTexture(parent, this.extraBound.layer);
@@ -138,7 +161,7 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
             return ready;
             
         } else {
-            this.setBoundTexture(this.extraBound.sourceTile, this.extraBound.layer);        
+            this.setBoundTexture(this.extraBound.sourceTile, this.extraBound.layer, this.extraBound.hmap);        
         }
         
         return false;

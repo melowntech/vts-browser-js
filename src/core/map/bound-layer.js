@@ -23,6 +23,7 @@ var MapBoundLayer = function(map, json, id) {
     this.baseUrlSchema = this.map.url.baseUrlSchema;
     this.baseUrlOrigin = this.map.url.baseUrlOrigin;
     this.ready = false;
+    this.dataType = VTS_TEXTURETYPE_COLOR;
 
     //hack
     if (id == 'esri-world-imagery') {
@@ -72,6 +73,13 @@ MapBoundLayer.prototype.parseJson = function(json) {
     this.isTransparent = json['isTransparent'] || false;
     this.credits = json['credits'] || [];
     this.creditsUrl = null;
+
+    switch(json['dataType']) {
+        default:
+        case 'color':          this.dataType = VTS_TEXTURETYPE_COLOR;  break;
+        case 'height':         this.dataType = VTS_TEXTURETYPE_HEIGHT; break;
+        case 'classification': this.dataType = VTS_TEXTURETYPE_CLASS;  break;
+    }
 
     this.specificity = Math.pow(2,this.lodRange[0]) / ((this.tileRange[1][0] - this.tileRange[1][0]+1)*(this.tileRange[1][1] - this.tileRange[1][1]+1));    
 

@@ -85,10 +85,10 @@ MapSurface.prototype.parseJson = function(json) {
     this.metaBinaryOrder = json['metaBinaryOrder'] || 1;
     this.metaUrl = this.processUrl(json['metaUrl'], '');
     this.navUrl = this.processUrl(json['navUrl'], '');
-    this.hmapUrl = this.processUrl(json['hmapUrl'], json['navUrl']);
+    this.hmapUrl = this.processUrl(json['hmapUrl'], json['navUrl'] + '00');
     //this.cmapUrl = this.processUrl(json['cmapUrl'], '');
-    //this.pipeline = json['pipeline'] || VTS_PIPELINE_HMAP;//VTS_PIPELINE_BASIC;
-    this.pipeline = json['pipeline'] || VTS_PIPELINE_BASIC;
+    this.pipeline = this.map.config.mapForcePipeline ? this.map.config.mapForcePipeline : (json['pipeline']); // || VTS_PIPELINE_HMAP);//VTS_PIPELINE_BASIC);
+    //this.pipeline = json['pipeline'] || VTS_PIPELINE_BASIC;
     this.navDelta = json['navDelta'] || 1;
     this.meshUrl = this.processUrl(json['meshUrl'], '');
     this.textureUrl = this.processUrl(json['textureUrl'], '');
@@ -362,6 +362,10 @@ MapSurface.prototype.getNavUrl = function(id, skipBaseUrl) {
     return this.map.url.makeUrl(this.navUrl, {lod:id[0], ix:id[1], iy:id[2] }, null, skipBaseUrl);
 };
 
+
+MapSurface.prototype.getHMapUrl = function(id, skipBaseUrl) {
+    return this.map.url.makeUrl(this.hmapUrl, {lod:id[0], ix:id[1], iy:id[2] }, null, skipBaseUrl);
+};
 
 MapSurface.prototype.getMeshUrl = function(id, skipBaseUrl) {
     return this.map.url.makeUrl(this.meshUrl, {lod:id[0], ix:id[1], iy:id[2] }, null, skipBaseUrl);

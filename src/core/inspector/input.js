@@ -253,6 +253,21 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             }
         }
 
+        if (this.diagnosticMode && debug.drawWireframe && !press) {
+            if (keyCode >= 96 && keyCode <= 105) {
+                if (this.altDown) {
+                    debug.drawTestData = keyCode - 96;
+                    if (this.ctrlDown) {
+                        debug.drawTestData += 10;
+                    }
+                } else {
+                    debug.drawTestMode = keyCode - 96;
+                }
+
+                hit = true;
+            } 
+        }
+
         if (this.diagnosticMode && inspector.drawRadar && !this.shiftDown && !press) {
             blockHit = true;
 

@@ -94,25 +94,29 @@ BrowserInterface.prototype.destroyMap = function() {
 
 
 BrowserInterface.prototype.on = function(eventName, call) {
+    if (this.killed) return;
     this.core.on(eventName, call);
     return this;    
 };
 
 
 BrowserInterface.prototype.setParams = function(params) {
-    this.setConfigParams(params);
+    if (this.killed) return;
+    this.setConfigParams(params,true);
     return this;
 };
 
 
 BrowserInterface.prototype.setParam = function(key, value) {
-    this.setConfigParam(key, value);
+    if (this.killed) return;
+    this.browser.setConfigParam(key, value, true);
     return this;
 };
 
 
 BrowserInterface.prototype.getParam = function(key) {
-    return this.getConfigParam(key);
+    if (this.killed) return;
+    return this.browser.getConfigParam(key);
 };
 
 

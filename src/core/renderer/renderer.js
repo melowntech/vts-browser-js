@@ -94,6 +94,12 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.fonts = {};
     this.fogDensity = 0;
 
+    this.gmap = new Array(2048);
+    this.gmapIndex = 0;
+    this.gmapTop = new Array(512);
+    this.gmapHit = new Array(512);
+    this.gmapStore = new Array(512);
+
     this.jobZBuffer = new Array(512);
     this.jobZBufferSize = new Array(512);
 
@@ -148,6 +154,10 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
     var factor = 1;
     this.resizeGL(Math.floor(this.curSize[0]*factor), Math.floor(this.curSize[1]*factor));
+};
+
+Renderer.prototype.initProceduralShaders = function() {
+    this.init.initProceduralShaders();
 };
 
 

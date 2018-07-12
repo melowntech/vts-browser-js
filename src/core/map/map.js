@@ -59,6 +59,7 @@ var Map = function(core, mapConfig, path, config) {
     this.lastPosition = this.position.clone();
 
     this.srses = {};
+    this.bodies = {};
     this.referenceFrame = {};
     this.credits = {};
     this.creditsByNumber = {};
@@ -137,30 +138,34 @@ var Map = function(core, mapConfig, path, config) {
     this.draw = new MapDraw(this);
     this.draw.setupDetailDegradation();
 
-    switch(this.referenceFrame.id) {
-        case 'melown2015':
-        case 'earth-qsc':
-            this.draw.atmoColor = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
-            this.draw.atmoColor2 = [72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0];
-            this.draw.atmoColor3 = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
-            this.draw.atmoHeight = 50000;
-            break;
+    var body = this.referenceFrame.body, c;
 
-        case 'mars-qsc':
-            this.draw.atmoColor = [255.0/255.0, 187.0/255.0, 157.0/255.0, 1.0];
-            this.draw.atmoColor2 = [255.0/255.0, 155.0/255.0, 113.0/255.0, 1.0];
-            this.draw.atmoColor3 = [255.0/255.0, 187.0/255.0, 157.0/255.0, 0.5];
-            this.draw.atmoHeight = 25000;
-            this.draw.atmoDensity = 1.0 / 0.25;
+    if (body && body.atmosphere) {
+        c = body.atmosphere.colorHorizon;
+        this.draw.atmoColor = [c[0]/255.0, c[1]/255.0, c[2]/255.0, c[3]/255.0];
+        c = body.atmosphere.colorZenith;
+        this.draw.atmoColor2 = [c[0]/255.0, c[1]/255.0, c[2]/255.0, c[3]/255.0];
+        this.draw.atmoHeight = 50000 * (body.atmosphere.thickness / 100000);
+        this.draw.atmoDensity = (body.atmosphere.visibility / 100000) * (100000 / body.atmosphere.thickness);
+    } else {
+        switch(this.referenceFrame.id) {
+            case 'melown2015':
+            case 'earth-qsc':
+                this.draw.atmoColor = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
+                this.draw.atmoColor2 = [72.0/255.0, 154.0/255.0, 255.0/255.0, 1.0];
+                //this.draw.atmoColor3 = [216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0];
+                this.draw.atmoHeight = 50000;
+                break;
 
-            // this.draw.atmoColor = [223.0/255.0, 200.0/255.0, 190.0/255.0, 1.0];
-            // this.draw.atmoColor2 = [255.0/255.0, 155.0/255.0, 113.0/255.0, 1.0];
-
-            // this.draw.atmoColor = [201.0/255.0, 149.0/255.0, 65.0/255.0, 1.0];
-            // this.draw.atmoColor2 = [201.0/255.0, 149.0/255.0, 65.0/255.0, 0.1];
-            break;
+            case 'mars-qsc':
+                this.draw.atmoColor = [255.0/255.0, 187.0/255.0, 157.0/255.0, 1.0];
+                this.draw.atmoColor2 = [255.0/255.0, 155.0/255.0, 113.0/255.0, 1.0];
+                //this.draw.atmoColor3 = [255.0/255.0, 187.0/255.0, 157.0/255.0, 0.5];
+                this.draw.atmoHeight = 25000;
+                this.draw.atmoDensity = 1.0 / 0.25;
+                break;
+        }
     }
-
 
     this.draw.atmoHeightFactor = this.draw.atmoHeight / 50000;
 
@@ -249,6 +254,21 @@ Map.prototype.getSrs = function(srsId) {
 
 Map.prototype.getSrses = function() {
     return this.getMapKeys(this.srses);
+};
+
+
+Map.prototype.addBody = function(id, body) {
+    this.bodies[id] = body;
+};
+
+
+Map.prototype.getBody = function(id) {
+    return this.bodies[id];
+};
+
+
+Map.prototype.getBodies = function() {
+    return this.getMapKeys(this.bodies);
 };
 
 
@@ -794,6 +814,11 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapDefaultFont':                this.config.mapDefaultFont =  utils.validateString(value, ''); break;
     case 'mapMetricUnits':                this.config.mapMetricUnits = utils.validateBool(value, true); break;
     case 'mapNoTextures':                 this.config.mapNoTextures = this.config.mapDisableCulling = utils.validateBool(value, false); break;
+    case 'mapForceFrameTime':             this.config.mapForceFrameTime = utils.validateNumber(value, -1, Number.MAXINTEGER, 0); break;
+    case 'mapForcePipeline':              this.config.mapForcePipeline = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
+    case 'mapFeatureGridCells':           this.config.mapFeatureGridCells = utils.validateNumber(value, 1, Number.MAXINTEGER, 0); break;
+    case 'mapFeaturesPerSquareInch':      this.config.mapFeaturesPerSquareInch = utils.validateNumber(value, 0.000001, Number.MAXINTEGER, 0); break;
+    case 'mapFeaturesSortByTop':          this.config.mapFeaturesSortByTop = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
@@ -842,6 +867,11 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapDefaultFont':                return this.config.mapDefaultFont;
     case 'mapMetricUnits':                return this.config.mapMetricUnits;
     case 'mapNoTextures':                 return this.config.mapNoTextures;
+    case 'mapForceFrameTime':             return this.config.mapForceFrameTime;
+    case 'mapForcePipeline':              return this.config.mapForcePipeline;
+    case 'mapFeatureGridCells':           return this.config.mapFeatureGridCells;
+    case 'mapFeaturesPerSquareInch':      return this.config.mapFeaturesPerSquareInch;
+    case 'mapFeaturesSortByTop':          return this.config.mapFeaturesSortByTop;
     case 'mario':                         return this.config.mario;
     }
 };

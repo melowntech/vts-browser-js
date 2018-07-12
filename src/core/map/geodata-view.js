@@ -167,7 +167,7 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
         if (this.geodata.isReady(doNotLoad, priority, doNotCheckGpu) && this.geodataProcessor.isReady()) {
             this.killedByCache = false;
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));
-            this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile);
+            this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile, (window.devicePixelRatio || 1));
             this.geodataProcessor.busy = true;
         }
     }

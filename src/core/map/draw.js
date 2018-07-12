@@ -34,6 +34,8 @@ var MapDraw = function(map) {
         drawPositions : false,
         drawTexelSize : false,
         drawWireframe : 0,
+        drawTestMode : 0,
+        drawTestData : 0,
         drawFaceCount : false,
         drawDistance : false,
         drawMaxLod : false,
@@ -163,21 +165,32 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
 
     var drawTiles = this.drawTiles;
     var camInfo = camera.update();
-    this.renderer.dirty = true;
-    this.renderer.drawFog = this.debug.drawFog;
-    this.renderer.frameTime = this.stats.frameTime;
+    var renderer = this.renderer;
 
-    this.renderer.hoverFeatureCounter = 0;
-    this.renderer.hoverFeatureList = map.hoverFeatureList;
-    this.renderer.hoverFeature = map.hoverFeature;
+    renderer.dirty = true;
+    renderer.drawFog = this.debug.drawFog;
 
-    this.renderer.cameraPosition = camera.position;
-    this.renderer.cameraOrientation = map.position.getOrientation();
-    this.renderer.cameraTiltFator = Math.cos(math.radians(renderer.cameraOrientation[1]));
-    this.renderer.cameraVector = camera.vector; 
-    this.renderer.cameraViewExtent = map.position.getViewExtent();
-    this.renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
-    this.renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
+    if (this.config.mapForceFrameTime) {
+        if (this.config.mapForceFrameTime != -1) {
+            renderer.frameTime = this.config.mapForceFrameTime;
+        } else {
+            renderer.frameTime = 0;
+        }
+    } else {
+        renderer.frameTime = this.stats.frameTime;        
+    }
+
+    renderer.hoverFeatureCounter = 0;
+    renderer.hoverFeatureList = map.hoverFeatureList;
+    renderer.hoverFeature = map.hoverFeature;
+
+    renderer.cameraPosition = camera.position;
+    renderer.cameraOrientation = map.position.getOrientation();
+    renderer.cameraTiltFator = Math.cos(math.radians(renderer.cameraOrientation[1]));
+    renderer.cameraVector = camera.vector; 
+    renderer.cameraViewExtent = map.position.getViewExtent();
+    renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
+    renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
 
     if (projected) {
         var yaw = math.radians(renderer.cameraOrientation[0]);
@@ -219,7 +232,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     map.loader.setChannel(0); //0 = hires channel
     this.zFactor = 0;
 
-    this.ndcToScreenPixel = this.renderer.curSize[0] * 0.5;
+    this.ndcToScreenPixel = renderer.curSize[0] * 0.5;
     this.updateFogDensity();
     this.updateGridFactors();
     this.maxGpuUsed = Math.max(32*102*1204, map.gpuCache.getMaxCost() - 32*102*1204); 
@@ -330,9 +343,9 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 (replay.drawLoaded && replay.loaded)) {
                     
                 if (this.freeLayersHaveGeodata && this.drawChannel == 0) {
-                    this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
-                    this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
-                    this.renderer.draw.drawGpuJobs();
+                    renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
+                    renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
+                    renderer.draw.drawGpuJobs();
                 }
             }
     
@@ -494,10 +507,17 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     if (debug.drawEarth) {
         if (!skipFreeLayers) {
             if (map.freeLayersHaveGeodata && this.drawChannel == 0) {
-                this.renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
-                this.renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
+                renderer.drawnGeodataTiles = this.stats.drawnGeodataTilesPerLayer; //drawnGeodataTiles;
+                renderer.drawnGeodataTilesFactor = this.stats.drawnGeodataTilesFactor;
                 renderer.draw.drawGpuJobs();
             }
+        }
+    }
+
+    if (this.config.mapForceFrameTime) {
+        if (this.config.mapForceFrameTime != -1) {
+            renderer.frameTime = 0;
+            this.config.mapForceFrameTime = -1;
         }
     }
 };
@@ -581,6 +601,26 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
         
         switch (command.type) {
         case VTS_DRAWCOMMAND_SUBMESH:
+
+            var pipeline = command.pipeline;
+            if (pipeline) {
+                var hmap = command.hmap;
+    
+                if (!(hmap && hmap.isReady(doNotLoad, priority))) {
+                    ready = false;
+                }
+
+                if (this.debug.drawTestMode == 9) {
+                    var texture = command.texture; 
+                    var textureReady = this.config.mapNoTextures ? true : (!texture  || (texture && texture.isReady(doNotLoad, priority, checkGpu)));
+                        
+                    if (!textureReady) {
+                        ready = false;   
+                    }
+                }
+
+                break;
+            }
                 
             var mesh = command.mesh; 
             var texture = command.texture; 
@@ -591,7 +631,8 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
             if (!(meshReady && textureReady) ) {
                 ready = false;   
             }
-                
+
+               
             break;
 
         case VTS_DRAWCOMMAND_GEODATA:
@@ -624,8 +665,31 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
             break;
 
         case VTS_DRAWCOMMAND_SUBMESH:
+
+            var pipeline = command.pipeline;
+            if (pipeline) {
+                var hmap = command.hmap;
+    
+                if (this.debug.drawTestMode == 9) {
+                    var texture = command.texture; 
+                    var textureReady = this.config.mapNoTextures ? true : (!texture  || (texture && texture.isReady(doNotLoad, priority)));
+                        
+                    if (textureReady) {
+                        if (hmap && hmap.isReady(doNotLoad, priority)) {
+                            tile.drawHmapTile(cameraPos, null, null, pipeline, texture);
+                        }
+                    }
+                } else {
+                    if (hmap && hmap.isReady(doNotLoad, priority)) {
+                        tile.drawHmapTile(cameraPos, null, null, pipeline);
+                    }
+                }
+
+                return;
+            }
+
             var mesh = command.mesh; 
-            var texture = command.texture, hmap;
+            var texture = command.texture;
 
             var meshReady = (mesh && mesh.isReady(doNotLoad, priority)), textureReady;
 
@@ -634,16 +698,6 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                 texture = null;
             } else {
                 textureReady = (!texture || (texture && texture.isReady(doNotLoad, priority)));
-            }
-
-            var pipeline = command.pipeline;
-
-            if (pipeline) {
-                //hmap = command.hmap;
-                //textureReady = (textureReady && (hmap && hmap.isReady(doNotLoad, priority)));
-
-                tile.drawHmapTile(cameraPos, null, null, pipeline);
-                return;
             }
                 
             if (meshReady && textureReady) {

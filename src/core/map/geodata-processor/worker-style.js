@@ -38,6 +38,7 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                         case '#lod':      return globals.tileLod;
                         case '#tileSize': return globals.tileSize;
                         case '#metric':   return globals.metricUnits;
+                        case '#dpr':      return globals.pixelFactor;
                     }
 
                     return finalValue;
@@ -72,6 +73,7 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                                 case '#lod':      return globals.tileLod;
                                 case '#tileSize': return globals.tileSize;
                                 case '#metric':   return globals.metricUnits;
+                                case '#dpr':      return globals.pixelFactor;
                             }
 
                         case '$':
@@ -173,6 +175,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         case '#lod':      return globals.tileLod;
                         case '#tileSize': return globals.tileSize;
                         case '#metric':   return globals.metricUnits;
+                        case '#dpr':      return globals.pixelFactor;
                     }
                     break;
             }
@@ -653,8 +656,9 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             if (Array.isArray(value) && value.length > 0 && (typeof value[0] === 'string')) {
 
                 if (key == 'dynamic-reduce') {
-                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' || value[0] == 'scr-count3') &&
-                        (typeof value[1] === 'number') && (typeof value[2] === 'number'))) {
+                    if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' ||
+                           value[0] == 'scr-count3' || value[0] == 'scr-count4') &&
+                        (typeof value[1] === 'number') && ((typeof value[2] === 'number') || value[0] == 'scr-count4'))) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
                     }
@@ -769,9 +773,20 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
+        if (key == 'label-size-units') {
+            switch(value) {
+            case 'pixels':
+            case 'points': return value;
+            default:
+                logError('wrong-property-value', layerId, key, value);
+                return getDefaultLayerPropertyValue(key);
+            }
+        }
+
         if (key == 'line-width-units') {
             switch(value) {
             case 'pixels':
+            case 'points':
             case 'meters':
             case 'ratio': return value;
             default:
@@ -871,6 +886,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'label-color2':     return validateValue(layerId, key, value, 'object', 4, 0, 255);
     case 'label-source':     return validateValue(layerId, key, value, 'string');
     case 'label-size':       return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'label-size-units': return validateValue(layerId, key, value, 'string');
     case 'label-offset':     return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'label-origin':     return validateValue(layerId, key, value, 'string');
     case 'label-align':      return validateValue(layerId, key, value, 'string');
@@ -958,6 +974,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'label-outline':    return [0.27,0.75,2.2,2.2];
     case 'label-source':     return '$name';
     case 'label-size':       return 10;
+    case 'label-size-units': return 'pixels';
     case 'label-offset':     return [0,0];
     case 'label-origin':     return 'bottom-center';
     case 'label-align':      return 'center';

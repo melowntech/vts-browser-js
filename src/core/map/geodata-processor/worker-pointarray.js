@@ -115,12 +115,17 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             bufferSize = getCharVerticesCount() * text.length * totalPoints;
             bufferSize2 = getCharVerticesCount(true) * text.length * totalPoints;
 
+            var factor = 1;
+            if (getLayerPropertyValue(style, 'label-size-units', pointArray, lod) == 'points') {
+                factor = globals.pixelFactor / ((1 / 72) * (96));
+            }
+
             var labelData = {
                 color : getLayerPropertyValue(style, 'label-color', pointArray, lod),
                 color2 : getLayerPropertyValue(style, 'label-color2', pointArray, lod),
                 outline : getLayerPropertyValue(style, 'label-outline', pointArray, lod),
                 reduce : getLayerPropertyValue(style, 'dynamic-reduce', pointArray, lod),
-                size : size,
+                size : size * factor,
                 offset : getLayerPropertyValue(style, 'label-offset', pointArray, lod),
                 stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'label-origin', pointArray, lod),
@@ -129,7 +134,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 fontsStorage : getFontsStorage(fontNames),
                 text : text,
                 hysteresis : getLayerPropertyValue(style, 'hysteresis', pointArray, lod),
-                width : getLayerPropertyValue(style, 'label-width', pointArray, lod),
+                width : factor * getLayerPropertyValue(style, 'label-width', pointArray, lod),
                 noOverlap : getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod),
                 noOverlapMargin : getLayerPropertyValue(style, 'label-no-overlap-margin', pointArray, lod),
                 noOverlapFactor : getLayerPropertyValue(style, 'label-no-overlap-factor', pointArray, lod),
@@ -140,6 +145,11 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 index2 : 0,
                 glyphsRes : glyphsRes
             };
+
+            if (labelData.stick) {
+                labelData.stick = labelData.stick.slice();
+                labelData.stick[2] *= factor;
+            }
         } else {
             label = false;
         }

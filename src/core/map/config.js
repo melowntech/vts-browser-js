@@ -4,6 +4,7 @@ import MapCredit_ from './credit';
 import MapRefFrame_ from './refframe';
 import MapView_ from './view';
 import MapSrs_ from './srs';
+import MapBody_ from './body';
 import MapSurface_ from './surface';
 import MapVirtualSurface_ from './virtual-surface';
 import MapStylesheet_ from './stylesheet';
@@ -14,6 +15,7 @@ var MapBoundLayer = MapBoundLayer_;
 var MapRefFrame = MapRefFrame_;
 var MapView = MapView_;
 var MapSrs = MapSrs_;
+var MapBody = MapBody_;
 var MapSurface = MapSurface_;
 var MapVirtualSurface = MapVirtualSurface_;
 var MapStylesheet = MapStylesheet_;
@@ -27,7 +29,7 @@ var MapConfig = function(map, config) {
 
 
 MapConfig.prototype.parseConfig = function() {
-    if (!(this.parseSrses() && this.parseReferenceFrame() &&
+    if (!(this.parseSrses() && this.parseBodies() && this.parseReferenceFrame() &&
           this.parseCredits() && this.parseStylesheets() && 
           this.parseSurfaces() && this.parseGlues() && 
           this.parseVirtualSurfaces() && this.parseBoundLayers() &&
@@ -63,6 +65,22 @@ MapConfig.prototype.parseSrses = function() {
 
     for (var key in srses) {
         this.map.addSrs(key, new MapSrs(this.map, key, srses[key]));
+    }
+
+    return true;
+};
+
+
+MapConfig.prototype.parseBodies = function() {
+    var bodies = this.mapConfig['bodies'];
+    this.map.bodies = {};
+
+    if (bodies == null) {
+        return true;//false;
+    }
+
+    for (var key in bodies) {
+        this.map.addBody(key, new MapBody(this.map, bodies[key]));
     }
 
     return true;

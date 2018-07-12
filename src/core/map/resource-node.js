@@ -116,21 +116,21 @@ MapResourceNode.prototype.getGeodata = function(path, extraInfo) {
 
 // Textures ---------------------------------
 
-MapResourceNode.prototype.getTexture = function(path, heightMap, extraBound, extraInfo, tile, internal) {
+MapResourceNode.prototype.getTexture = function(path, type, extraBound, extraInfo, tile, internal) {
     var texture;
-    if (extraInfo && extraInfo.layer) {
-        var id = path + extraInfo.layer.id;
+    if (extraInfo && (extraInfo.layer || extraInfo.hmap)) {
+        var id = path + (extraInfo.hmap ? '' : extraInfo.layer.id);
         texture = this.textures[id];
         
         if (!texture) {
-            texture = new MapTexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
+            texture = new MapTexture(this.map, path, type, extraBound, extraInfo, tile, internal);
             this.textures[id] = texture;
         }
     } else {
         texture = this.textures[path];
         
         if (!texture) {
-            texture = new MapTexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
+            texture = new MapTexture(this.map, path, type, extraBound, extraInfo, tile, internal);
             this.textures[path] = texture;
         }
     }
@@ -141,11 +141,11 @@ MapResourceNode.prototype.getTexture = function(path, heightMap, extraBound, ext
 
 // SubTextures ---------------------------------
 
-MapResourceNode.prototype.getSubtexture = function(texture, path, heightMap, extraBound, extraInfo, tile, internal) {
+MapResourceNode.prototype.getSubtexture = function(texture, path, type, extraBound, extraInfo, tile, internal) {
     texture = this.subtextures[path];
     
     if (!texture) {
-        texture = new MapSubtexture(this.map, path, heightMap, extraBound, extraInfo, tile, internal);
+        texture = new MapSubtexture(this.map, path, type, extraBound, extraInfo, tile, internal);
         this.subtextures[path] = texture;
     }
     

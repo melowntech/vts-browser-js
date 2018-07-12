@@ -711,7 +711,6 @@ GpuShaders.planeFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
     '}';
 
-
 GpuShaders.planeVertex2Shader =
     'attribute vec3 aPosition;\n'+
     'attribute vec2 aTexCoord;\n'+
@@ -810,19 +809,51 @@ GpuShaders.planeVertex3Shader =
         'vTexCoord = uv;\n'+
     '}';
 
+GpuShaders.getHFNormal =
+    'vec3 getHFNormal(vec2 uv, float texelSize, float heightDelta) {\n'+
+        'vec4 h;\n'+
+        'h[0] = texture2D(uSampler2, uv + (texelSize * vec2( 0.0,-1.0))).r * heightDelta;\n'+
+        'h[1] = texture2D(uSampler2, uv + (texelSize * vec2(-1.0, 0.0))).r * heightDelta;\n'+
+        'h[2] = texture2D(uSampler2, uv + (texelSize * vec2( 1.0, 0.0))).r * heightDelta;\n'+
+        'h[3] = texture2D(uSampler2, uv + (texelSize * vec2( 0.0, 1.0))).r * heightDelta;\n'+
+        'return normalize(vec3(h[1] - h[2], h[3] - h[0], 2.0));}\n';
+
+GpuShaders.getHFNormal2 =
+    'vec2 getHFNormal2(vec2 uv, float texelSize, float heightDelta) {\n'+
+        'vec4 h;\n'+
+        'h[0] = texture2D(uSampler2, uv + (texelSize * vec2( 0.0,-1.0))).r * heightDelta;\n'+
+        'h[1] = texture2D(uSampler2, uv + (texelSize * vec2(-1.0, 0.0))).r * heightDelta;\n'+
+        'h[2] = texture2D(uSampler2, uv + (texelSize * vec2( 1.0, 0.0))).r * heightDelta;\n'+
+        'h[3] = texture2D(uSampler2, uv + (texelSize * vec2( 0.0, 1.0))).r * heightDelta;\n'+
+        'return vec2(h[1] - h[2], h[3] - h[0]);}\n';
+
 GpuShaders.planeVertex4Shader =
+    '#define newspace\n'+
     'uniform sampler2D uSampler2;\n'+
     'attribute vec3 aPosition;\n'+
-    'attribute vec2 aTexCoord;\n'+
+    //'attribute vec2 aTexCoord;\n'+
+    //'attribute vec3 aBarycentric;\n'+
     'uniform mat4 uMV, uProj;\n'+
     'uniform vec4 uParams;\n'+    //[uGridStep1, fogDensity, indexFactor, uGridStep2]
     'uniform vec4 uParams3;\n'+    //[px, py, sx, sy]
     'uniform float uPoints[9*3];\n'+
     'uniform vec3 uVector;\n'+  
-    'uniform vec2 uHeights;\n'+   //[hmin, hmax]
+    'uniform vec3 uHeights;\n'+   //[hmin, hmax]
+    'uniform vec4 uTransform;\n'+
+    //'uniform vec4 uTransform2;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec2 vTexCoord2;\n'+
-    'varying float vFogFactor;\n'+ GpuShaders.quadPoint + 
+    'varying vec3 vBarycentric;\n'+
+
+    '#ifdef newspace\n'+
+        'varying mat3 vTBN;\n'+
+    '#else\n'+
+        'varying vec3 vNormal;\n'+
+    '#endif\n'+
+
+    'varying float vFogFactor;\n'+ GpuShaders.quadPoint +  GpuShaders.getHFNormal + GpuShaders.getHFNormal2 +
+    //'float random(vec2 p) { return fract(cos(dot(p,vec2( 23.14069263277926, 2.665144142690225)))*12345.6789);}\n'+
+
     'void main() {\n'+
         'vec3 indices = aPosition;\n'+
         'float t = aPosition.y * uParams[2];\n'+  //vertical index
@@ -838,16 +869,153 @@ GpuShaders.planeVertex4Shader =
         'float p2y = 2.0*p2.y-p1.y*0.5-p3.y*0.5;\n'+
         'float p2z = 2.0*p2.z-p1.z*0.5-p3.z*0.5;\n'+
         'vec4 p = vec4(t2*t2*p1.x+2.0*t2*t*p2x+t*t*p3.x, t2*t2*p1.y+2.0*t2*t*p2y+t*t*p3.y, t2*t2*p1.z+2.0*t2*t*p2z+t*t*p3.z, 1);\n'+
-        'p.xyz += uVector * (uHeights[0] + (uHeights[1]-uHeights[0])*texture2D(uSampler2, vec2(tt, tt2)).x);\n'+
+        'vec2 uv2 = vec2(tt, 1.0-tt2);\n'+
+        'uv2 = vec2(uTransform[0] * uv2[0] + uTransform[2], uTransform[1] * uv2[1] + uTransform[3]);\n'+
+
+        'p.xyz += uVector * (uHeights[0] + (uHeights[1]-uHeights[0])*texture2D(uSampler2, uv2).x);\n'+
+
         'vec4 camSpacePos = uMV * p;\n'+
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
         'vFogFactor = exp(uParams[1] * camDist);\n'+
-        'vec2 uv = aTexCoord;\n'+
-        'uv.x = uv.x * uParams3[2] + uParams3[0];\n'+
-        'uv.y = uv.y * uParams3[3] + uParams3[1];\n'+
+
+        'vec2 uv = vec2(tt, 1.0-tt2);\n'+
+        'uv.x = uv.x * uParams3[0] + uParams3[2];\n'+
+        'uv.y = uv.y * uParams3[1] + uParams3[3];\n'+
         'vTexCoord = uv;\n'+
+
+        'vBarycentric = camSpacePos.xyz;\n'+
+
+        '#ifdef newspace\n'+
+            'vec2 d = getHFNormal2(uv2, 1.0/(128.0), (uHeights[1]-uHeights[0]) * uHeights[2]);\n'+
+            'vec3 T = vec3(2.0,0.0,-d.x); vec3 B = vec3(0.0,2.0,-d.y);\n'+
+            'vTBN = mat3(normalize(T), normalize(B), cross(T,B));\n'+
+        '#else\n'+
+            'vec3 n = getHFNormal(uv2, 1.0/(128.0), (uHeights[1]-uHeights[0]) * uHeights[2]);\n'+
+            'vNormal = normalize(n);\n'+
+        '#endif\n'+
+
     '}';    
+
+GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
+    '#extension GL_OES_standard_derivatives : enable\n'+
+    '#define newspace\n'+
+    'uniform sampler2D uSampler;\n'+
+    'uniform vec4 uParams2;\n'+    //[uGridStep1, uGridStep2, uGridBlend, 0]
+    'uniform mat3 uSpace;\n'+  
+    'varying vec2 vTexCoord;\n'+
+    'varying float vFogFactor;\n'+
+    'varying vec3 vBarycentric;\n'+
+
+    '#ifdef newspace\n'+
+        'varying mat3 vTBN;\n'+
+    '#else\n'+
+        'varying vec3 vNormal;\n'+
+    '#endif\n'+
+
+    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'void main() {\n'+
+        'vec3 ldir = normalize(-vBarycentric);\n'+
+        
+        '#ifdef flat\n'+
+            'vec3 nx = dFdx(vBarycentric);\n'+
+            'vec3 ny = dFdy(vBarycentric);\n'+
+            'vec3 normal2 = normalize(cross(nx,ny));\n'+
+            'vec4 c2 = vec4(vec3(max(0.0,normal2.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
+        '#else\n'+
+
+            '#ifdef newspace\n'+
+                //'vec3 normal = cross(normalize(vTangent), normalize(vBitangent));\n'+
+
+                '#ifdef nmix\n'+
+                    'vec3 normal = vTBN * normalize((texture2D(uSampler, vTexCoord).xyz-0.5)*2.0);\n'+
+                '#else\n'+
+                    'vec3 normal = vTBN * vec3(0.0,0.0,1.0);\n'+
+                '#endif\n'+
+
+            '#else\n'+
+                'vec3 normal = vNormal;\n'+
+            '#endif\n'+
+
+            'normal = normalize(uSpace * normal);\n'+
+
+            'vec3 eyeDir = ldir;\n'+
+            'vec3 refDir = reflect(-ldir, normal);\n'+
+            'float specW = min(1.0, pow(max(dot(refDir, eyeDir), 0.0), 90.0));\n'+
+            'float diffW = min(1.0, max(dot(normal, ldir), 0.0));\n'+
+            'float lcolor = (dot(normal, ldir) + 1.0) * 0.5;\n'+
+            //'float lcolor = 0.25+(0.5*diffW)+(0.25*specW);\n'+
+            //'float lcolor = 0.25+(0.75*diffW);\n'+
+
+            '#ifdef normals\n'+
+                'vec4 c2 = vec4(normal*0.5+0.5,1.0);\n'+        
+            '#else\n'+
+                'vec4 c2 = vec4(vec3(dot(vec3(0.0,0.0,1.0), normal)),1.0);\n'+        
+            '#endif\n'+
+            //'vec4 c2 = vec4(normalize(ldir)*0.5+0.5,1.0);\n'+
+            //'vec4 c2 = vec4(vec3(lcolor),1.0);\n'+
+        '#endif\n'+
+
+        '#ifdef grid\n'+
+            'vec4 c = mix(texture2D(uSampler, vTexCoord), texture2D(uSampler, vTexCoord*8.0), uParams2[2]);\n'+
+            'c = mix(c, c2, 0.5);\n'+
+        '#else\n'+
+            '#ifdef exmap\n'+
+
+                'vec4 c = texture2D(uSampler, vTexCoord);\n'+
+
+                '#ifdef classmap\n'+
+                    'int i = int(c.x*255.0);\n'+
+
+                    /*
+                    'if (i == 0) c = vec4(0.3, 0.44, 0.64, 1.0);\n'+
+                    'if (i == 1) c = vec4(0.0, 0.24, 0.0, 1.0);\n'+
+                    'if (i == 2) c = vec4(0.58, 0.61, 0.44, 1.0);\n'+
+                    'if (i == 3) c = vec4(0.0, 0.39, 0.0, 1.0);\n'+
+                    'if (i == 4) c = vec4(0.12, 0.67, 0.02, 1.0);\n'+
+                    'if (i == 5) c = vec4(0.08, 0.55, 0.24, 1.0);\n'+
+                    'if (i == 6) c = vec4(0.36, 0.46, 0.17, 1.0);\n'+
+                    'if (i == 7) c = vec4(0.7, 0.62, 0.18, 1.0);\n'+
+                    'if (i == 8) c = vec4(0.7, 0.54, 0.2, 1.0);\n'+
+                    'if (i == 9) c = vec4(0.91, 0.86, 0.37, 1.0);\n'+
+                    'if (i == 10) c = vec4(0.88, 0.81, 0.54, 1.0);\n'+
+                    'if (i == 11) c = vec4(0.61, 0.46, 0.33, 1.0);\n'+
+                    'if (i == 12) c = vec4(0.73, 0.83, 0.56, 1.0);\n'+
+                    'if (i == 13) c = vec4(0.25, 0.54, 0.45, 1.0);\n'+
+                    'if (i == 14) c = vec4(0.42, 0.64, 0.54, 1.0);\n'+
+                    'if (i == 15) c = vec4(0.9, 0.68, 0.4, 1.0);\n'+
+                    'if (i == 16) c = vec4(0.66, 0.67, 0.68, 1.0);\n'+
+                    'if (i == 17) c = vec4(0.86, 0.13, 0.15, 1.0);\n'+
+                    'if (i == 18) c = vec4(0.3, 0.44, 0.64, 1.0);\n'+
+                    'if (i == 19) c = vec4(1.0, 0.98, 1.0, 1.0);\n'+
+                    'c = c * c2;\n'+
+                    */
+
+                    'if (i == 1 || i == 2 || i == 5 || i == 6) c = vec4(146.0, 178.0, 144.0, 255.0);\n'+
+                    'if (i == 3 || i == 4) c = vec4(94.0, 169.0, 133.0, 255.0);\n'+
+                    'if (i == 8 || i == 11) c = vec4(238.0, 221.0, 185.0, 255.0);\n'+
+                    'if (i == 7) c = vec4(226.0, 192.0, 154.0, 255.0);\n'+
+                    'if (i == 9 || i == 10 || i == 12) c = vec4(250.0, 246.0, 167.0, 255.0);\n'+
+                    'if (i == 13 || i == 16) c = vec4(245.0, 236.0, 211.0, 255.0);\n'+
+                    'if (i == 14) c = vec4(139.0, 185.0, 166.0, 255.0);\n'+
+                    'if (i == 15) c = vec4(199.0, 219.0, 155.0, 255.0);\n'+
+                    'if (i == 17) c = vec4(149.0, 132.0, 162.0, 255.0);\n'+
+                    'if (i == 18 || i == 0) c = vec4(188.0, 221.0, 255.0, 255.0);\n'+
+                    'if (i == 19) c = vec4(255.0, 255.0, 255.0, 255.0);\n'+
+                    'c = (c*(1.0/255.0)) * c2;\n'+
+                '#endif\n'+
+
+            '#else\n'+
+                'vec4 c = c2;\n'+
+            '#endif\n'+
+        '#endif\n'+
+
+        '#ifdef fog\n'+
+            'gl_FragColor = mix(uFogColor, c, vFogFactor);\n'+
+        '#else\n'+
+            'gl_FragColor = c;\n'+
+        '#endif\n'+
+    '}';
 
 //textured tile mesh
 GpuShaders.tileVertexShader =
