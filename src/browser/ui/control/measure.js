@@ -20,8 +20,13 @@ var UIControlMeasure = function(ui, visible) {
           + ' src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo2Nzg3NzczMzY3OEMxMUU3QjU2QUUxNTNCNzc4MzVBQiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo2Nzg3NzczNDY3OEMxMUU3QjU2QUUxNTNCNzc4MzVBQiI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjY3ODc3NzMxNjc4QzExRTdCNTZBRTE1M0I3NzgzNUFCIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY3ODc3NzMyNjc4QzExRTdCNTZBRTE1M0I3NzgzNUFCIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+owD8TQAAAepJREFUeNrcls8rBGEYx993lIMfxR4kF/+AKMqBg7K1ajelLEWK025tKOTnjVykuAklNgcHuzmQg4MiTtz4Aza3TeGActDr+45nZt41s7tmBwdbn2l35933M9/3eead5UII9tsvjf3FK2uSiGgBKdDtZW6JllXA2DG4A3teRM7LZQl2QRuY9irScghGQRXb5KteRVoOQSMY0895FGkk8JHgSBH0gllzpAeRkeSRBAEwQIIZUJMxukARly3GOZdpivA5DnpAM2iQ5zFx3KE55DIugT6cT+a7PTTlKt9xHAT74AzU6vWJiEVQ4iWR9uXHhkgu3QhYB/JK3zBZE6WoBkE3Ivt9YolOQBd9uwJedQFjC+A8XyJ1J3G+4zNFV+CCmmMejINnY8sQG0wVzZnFlnW2Fd55ezGaIUAtPgzqwAsmv8mYMCLW8DaqdyY1g73w+RMFQRh0glse1RtDHRvDcdJp6XInsScKU3u3gnukSfCoOcoH0YPa3jif/P7zxEqUoPqUkWBZ398YqwdTNHqLdu+YuyTONToEl+AaTIAhUE61qwTtuJC0e4klkssQAn7QTy3+BA5AhRQgfdoovHvJp6iYli5EdTqlBKZA7a7CJFaiHdABUqBUFfyMxBJt06PBrwpskn/xl+hDgAEAH0j0b9rsgVUAAAAASUVORK5CYII=">'
 
         + '<div id="vts-measure-text-holder" class="vts-measure-text-holder">'
-            + '<div class="vts-measure-text">'
-              + '<textarea id="vts-measure-text-input" rows="4" cols="50" wrap="hard"></textarea>'
+            + '<div class="vts-measure-text-holder2">'
+                + '<div class="vts-measure-text">'
+                  + '<textarea id="vts-measure-text-input" rows="6" cols="50" wrap="hard"></textarea>'
+                + '</div>'
+                + '<div class="vts-measure-tools">'
+                    + '<div id="vts-measure-clear" class="vts-measure-tools-button">Clear</div>'
+                + '</div>'
             + '</div>'
         + '</div>'
 
@@ -42,8 +47,13 @@ var UIControlMeasure = function(ui, visible) {
 
     this.info = this.control.getElement('vts-measure-info');
 
+    var clearButton = this.control.getElement('vts-measure-clear');
+    clearButton.on('click', this.onClear.bind(this));
+    clearButton.on('dblclick', this.onDoNothing.bind(this));
+
     this.measuring = false;
     this.counter = 1;
+    this.lastCoords = null;
 
     this.listPanel = this.control.getElement('vts-measure-text-holder');
     this.list = this.control.getElement('vts-measure-text-input');
@@ -79,12 +89,57 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
         return;
     }
 
+    var mapElement = this.ui.getMapElement();
+    var state = mapElement.getDraggingState();
+
+    //if (state['dragging']) { //TODO: why does not work this parameter? Fix it once you have time
+      //  return;
+    //}
+    var delta = state['absMoved'];
+
+    if ((delta[0]+delta[1]) > 0) {
+        return;
+    }
+
     var coords = event.getMouseCoords();
     var clickCoords = map.getHitCoords(coords[0], coords[1], 'fix');
+
+    if (!clickCoords) {
+        return;
+    }
+
     clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-    var str = '#' + this.counter + '  ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2);
+    var str = '#' + this.counter + '  ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm';
+
+    if (this.lastCoords) {
+        var res = map.getDistance(this.lastCoords, clickCoords, false, true);
+        var space = '\n   ';
+
+        for (var i = 0, li = ('' + this.counter).length; i < li; i++) {
+            space += ' ';
+        }
+
+        str += space + 'great-circle distance: ';
+
+        if (res[0] > 100000) {
+            str += '' + (res[0]*0.001).toFixed(2) + 'km';
+        } else {
+            str += '' + res[0].toFixed(2) + 'm';
+        }
+
+        str += space + 'elevation difference: ' + (clickCoords[2] - this.lastCoords[2]).toFixed(2) + 'm';
+        str += space + 'euclidean distance: ';
+
+        if (res[2] > 100000) {
+            str += '' + (res[2]*0.001).toFixed(2) + 'km';
+        } else {
+            str += '' + res[2].toFixed(2) + 'm';
+        }
+    }
+
     this.counter++;
+    this.lastCoords = clickCoords;
 
     var listElement = this.list.getElement();
     listElement.value += str + '\n';
@@ -99,9 +154,15 @@ UIControlMeasure.prototype.onMouseMove = function(event) {
 
     var coords = event.getMouseCoords();
     var clickCoords = map.getHitCoords(coords[0], coords[1], 'fix');
+
+    if (!clickCoords) {
+        this.info.setStyle('display', 'none');
+        return;    
+    }
+
     clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-    var str = clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2);
+    var str = clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm';
 
     coords[0] -= this.divRect.left;
     coords[1] -= this.divRect.top;
@@ -140,6 +201,14 @@ UIControlMeasure.prototype.onSwitch = function() {
     this.update();
 };
 
+UIControlMeasure.prototype.onClear = function() {
+    this.counter = 1;
+    this.lastCoords = null;
+
+    var listElement = this.list.getElement();
+    listElement.value = '';
+    listElement.scrollTop = 0;
+};
 
 UIControlMeasure.prototype.update = function() {
     //var button = this.control.getElement('vts-measure-button');

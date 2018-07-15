@@ -118,7 +118,13 @@ UIControlSearch.prototype.updateList = function(json) {
         for (var i = 0, li = data.length; i < li; i++) {
             item = data[i];
 
-            var title = item['title'] + '<small>';
+            var title = '';
+
+            if (this.coords && i == 0) {
+                title = 'location: ';
+            }
+
+            title += item['title'] + '<small>';
 
             if (item['region'] && item['title'] != item['region']) {
                 title += ', ' + item['region'];
@@ -129,21 +135,6 @@ UIControlSearch.prototype.updateList = function(json) {
             }
 
             title += '</small>';
-            
-
-            /*
-            var title = item['display'];
-            var names = title.split(',');
-
-            if (names.length > 1) {
-                title = names[0] + ', <small>' + names[1];
-
-                for (var j = 2, lj = names.length; j < lj; j++) {
-                    title += ', ' + names[j];
-                }
-                
-                title += '</small>';
-            }*/
 
             if (this.itemIndex == i) {
                 list += '<div id="vts-search-item' + i + '"'+ ' class="vts-search-listitem-selected">' + title + '</div>';
@@ -350,6 +341,15 @@ UIControlSearch.prototype.onListLoaded = function(counter, data) {
             data = nofilterSearch(data, coords[0], coords[1]);
         }
 
+        if (this.coords) {
+            data.unshift({
+                'title' : ('' + this.coords[0].toFixed(6) + ' ' + this.coords[1].toFixed(6)),
+                'lat' : this.coords[0],
+                'lon' : this.coords[1],
+                'type': 'street'
+            });
+        }
+
         this.updateList(data);
     }
 };
@@ -399,6 +399,139 @@ UIControlSearch.prototype.onKeyUp = function(event) {
 };
 
 
+UIControlSearch.prototype.parseLatLon = function(value) {
+    if (value.replace(/\d+/, '') == value) {
+        return null;
+    }
+
+    value = value.replace(',',' ');
+    value = (value.replace(/  +/g, ' ')).trim().toLowerCase();
+    var words = value.split(' '), lat, lon, i;
+    var lastChar, lastChar2, skip, part, numbers, num;
+
+    //simple case of two numbers
+    if (words.length == 2 && value.indexOf('n') == -1 && value.indexOf('s') == -1 &&
+        value.indexOf('w') == -1 && value.indexOf('e') == -1 ) {
+
+        lastChar = words[0].charAt(words[0].length - 1);
+        lastChar2 = words[1].charAt(words[1].length - 1);
+        skip = false;
+
+        //are numbers in degrees? 
+        if (lastChar == '°' || lastChar == "'" || lastChar == '"') {
+            if (lastChar2 == '°' || lastChar2 == "'" || lastChar2 == '"') {
+                words[0] = words[0] + 'n';
+                words[1] = words[1] + 'e';
+                value = words.join();
+            }
+        }
+
+        if (!skip) {
+            if (!isNaN(words[0]) && !isNaN(words[1])) {
+                lat = parseFloat(words[0]);
+                lon = parseFloat(words[1]);
+
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    return[math.clamp(lat, -90, 90), math.clamp(lon, -180, 180)];
+                }
+            }
+        }
+
+       return null;
+    }
+
+    var parts = value.split(/[°'"]+/).join(' ').split(/[^\w\S]+/);
+
+    //check wheteher it make sence to pase it further
+    lat = 0, lon = 0, numbers = 0;
+
+    var lengthCheck = false;
+
+    for (i in parts) {
+        part = parts[i];
+
+        if (isNaN(part)) {
+            num = parseFloat(part);
+            lengthCheck = true;
+            lastChar = part.charAt(part.length - 1);
+
+            if (!isNaN(num)) {
+                numbers++;
+                lengthCheck = false;
+            } 
+
+            if (!lengthCheck || (part.length == 1)) {
+                if (lastChar == 'w' || lastChar == 'e') {
+                    lat++;
+                }
+
+                if (lastChar == 'n' || lastChar == 's') {
+                    lon++;
+                }
+            }
+
+        } else {
+            numbers++;
+        }
+    }
+
+    if (!(lat == 1 && lon ==1)) {
+        return null;
+    }
+
+    // parse complex lat lon in degrees with directions
+    var directions = [];
+    var coords = [];
+    var dd = 0;
+    var pow = 0;
+    var numberCount = 0;
+
+    for (i in parts) {
+
+        // we end on a direction
+        if (isNaN(parts[i])) {
+            var direction = parts[i];
+            num = parseFloat(parts[i]);
+
+            if (!isNaN(num)) {
+                dd += ( num / Math.pow( 60, pow++ ) );
+                direction = parts[i].replace( num, '' );
+                numberCount++;
+            }
+
+            direction = direction[0];
+
+            if (direction == 's' || direction == 'w') {
+                dd *= -1;
+            }
+
+            directions[directions.length] = direction;
+            coords[coords.length] = dd;
+            dd = pow = 0;
+
+        } else {
+            num = parseFloat(parts[i]);
+
+            if (!isNaN(num)) {
+                dd += ( num / Math.pow( 60, pow++ ) );
+                numberCount++;
+            }
+        }
+    }
+
+    if (coords.length != 2 || numberCount < 2 || isNaN(coords[0]) || isNaN(coords[1])) {
+        return null;
+    }
+
+    if (directions[0] == 'w' || directions[0] == 'e') {
+        var tmp = coords[0];
+        coords[0] = coords[1];
+        coords[1] = tmp;
+    }
+
+    return coords;
+}
+
 UIControlSearch.prototype.onChange = function() {
     var value = this.input.getElement().value;
     value = value.trim();
@@ -415,8 +548,10 @@ UIControlSearch.prototype.onChange = function() {
     if (value == '') {
         //console.log("value-null");
         this.hideList();        
-    }    
-    
+    }
+
+    this.coords = this.parseLatLon(value);
+   
     var url = this.processTemplate(this.browser.config.controlSearchUrl || this.urlTemplate, { 'value' : value });
     //console.log(url);
     this.searchCounter++;

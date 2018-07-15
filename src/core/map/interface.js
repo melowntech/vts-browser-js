@@ -250,8 +250,8 @@ MapInterface.prototype.getSurfaceHeight = function(coords, precision) {
 };
 
 
-MapInterface.prototype.getDistance = function(coords, coords2, includingHeights) {
-    return this.map.measure.getDistance(coords, coords2, includingHeights);
+MapInterface.prototype.getDistance = function(coords, coords2, includingHeights, usePublic) {
+    return this.map.measure.getDistance(coords, coords2, includingHeights, usePublic);
 };
 
 
