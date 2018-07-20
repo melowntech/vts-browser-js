@@ -5,7 +5,7 @@ import UIElement_ from '../element/element';
 var UIElement = UIElement_;
 
 
-var UIControlHolder = function(ui, html, visible, parentElement) {
+var UIControlHolder = function(ui, html, visible, visibleLock, parentElement) {
     this.ui = ui;
     this.html = html;
     this.elementsById = [];
@@ -14,6 +14,9 @@ var UIControlHolder = function(ui, html, visible, parentElement) {
     //create holder element
     this.element = document.createElement('div');
     this.setVisible(this.visible);
+
+    this.visibleLock = visibleLock ? true : false;
+    this.setVisibleLock(this.visibleLock);
 
     //set element content
     this.setHtml(html);
@@ -50,6 +53,10 @@ UIControlHolder.prototype.getElement = function(id) {
 
 
 UIControlHolder.prototype.setVisible = function(state) {
+    if (this.visibleLock) {
+        return;
+    }
+
     this.element.style.display = state ? 'block' : 'none';
     this.visible = state;
 };
@@ -59,6 +66,14 @@ UIControlHolder.prototype.getVisible = function() {
     return this.visible;
 };
 
+UIControlHolder.prototype.setVisibleLock = function(state) {
+    this.visibleLock = state;
+};
+
+
+UIControlHolder.prototype.getVisibleLock = function() {
+    return this.visibleLock;
+};
 
 export default UIControlHolder;
 

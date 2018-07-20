@@ -5,7 +5,7 @@ import Dom_ from '../../utility/dom';
 var dom = Dom_;
 
 
-var UIControlMeasure = function(ui, visible) {
+var UIControlMeasure = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.browser = ui.browser;
     this.control = this.ui.addControl('measure',
@@ -33,7 +33,7 @@ var UIControlMeasure = function(ui, visible) {
         + '<div id="vts-measure-info" class="vts-measure-info">'
         + '</div>'
         
-     + ' </div>', visible);
+     + ' </div>', visible, visibleLock);
      
     this.div = this.control.getElement('vts-measure');
 

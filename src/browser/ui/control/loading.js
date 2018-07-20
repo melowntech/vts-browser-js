@@ -65,16 +65,16 @@ UIControlLoading.prototype.hide = function() {
             //search = (map.getSrsInfo(map.getReferenceFrame()["physical"]) == "melown2015");
         }
     } 
-    
-    this.ui.setControlVisible('compass', this.ui.config.controlCompass);
-    this.ui.setControlVisible('zoom', this.ui.config.controlZoom);
-    this.ui.setControlVisible('space', this.ui.config.controlSpace);
-    this.ui.setControlVisible('search', search);
-    this.ui.setControlVisible('link', this.ui.config.controlLink);
-    this.ui.setControlVisible('github', this.ui.config.controlGithub);
-    this.ui.setControlVisible('measure', this.ui.config.controlMeasure);
-    this.ui.setControlVisible('fullscreen', this.ui.config.controlFullscreen);
-    this.ui.setControlVisible('credits', this.ui.config.controlCredits);
+   
+    this.ui.setControlVisible('compass', this.ui.config.controlCompass, false);
+    this.ui.setControlVisible('zoom', this.ui.config.controlZoom, false);
+    this.ui.setControlVisible('space', this.ui.config.controlSpace, false);
+    this.ui.setControlVisible('search', search, false);
+    this.ui.setControlVisible('link', this.ui.config.controlLink, false);
+    this.ui.setControlVisible('github', this.ui.config.controlGithub, false);
+    this.ui.setControlVisible('measure', this.ui.config.controlMeasure, false);
+    this.ui.setControlVisible('fullscreen', this.ui.config.controlFullscreen, false);
+    this.ui.setControlVisible('credits', this.ui.config.controlCredits, false);
     this.ui.setControlVisible('loading', false);
 };
 

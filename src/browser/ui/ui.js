@@ -71,18 +71,18 @@ UI.prototype.init = function() {
    
     //create other ui controls
     var loading = this.config.controlLoading;
-    this.compass = new UIControlCompass(this, (!loading && this.config.controlCompass));
-    this.credits = new UIControlCredits(this, (!loading && this.config.controlCredits));
+    this.compass = new UIControlCompass(this, (!loading && this.config.controlCompass), loading);
+    this.credits = new UIControlCredits(this, (!loading && this.config.controlCredits), loading);
     //this.logo = new UIControlLogo(this, this.config.controlLogo);
-    this.fullscreen = new UIControlFullscreen(this, (!loading && this.config.controlFullscreen));
-    this.zoom = new UIControlZoom(this, (!loading && this.config.controlZoom));
-    this.space = new UIControlSpace(this, (!loading && this.config.controlSpace));
-    this.search = new UIControlSearch(this, (!loading && this.config.controlSearch));
-    this.link = new UIControlLink(this, (!loading && this.config.controlLink));
-    this.github = new UIControlGithub(this, (!loading && this.config.controlGithub));
-    this.measure = new UIControlMeasure(this, (!loading && this.config.controlMeasure));
+    this.fullscreen = new UIControlFullscreen(this, (!loading && this.config.controlFullscreen), loading);
+    this.zoom = new UIControlZoom(this, (!loading && this.config.controlZoom), loading);
+    this.space = new UIControlSpace(this, (!loading && this.config.controlSpace), loading);
+    this.search = new UIControlSearch(this, (!loading && this.config.controlSearch), loading);
+    this.link = new UIControlLink(this, (!loading && this.config.controlLink), loading);
+    this.github = new UIControlGithub(this, (!loading && this.config.controlGithub), loading);
+    this.measure = new UIControlMeasure(this, (!loading && this.config.controlMeasure), loading);
     //this.navigator = new UIControlNavigation(this, this.config.controlNavigator);
-    this.layers = new UIControlLayers(this, (!loading && this.config.controlLayers));
+    this.layers = new UIControlLayers(this, (!loading && this.config.controlLayers), loading);
     this.fallback = new UIControlFallback(this);
     this.popup = new UIControlPopup(this, false);
     this.loading = new UIControlLoading(this, this.config.controlLoading);
@@ -104,8 +104,8 @@ UI.prototype.kill = function() {
 };
 
 
-UI.prototype.addControl = function(id, html, visible, parentElement) {
-    var control = new UIControlHolder(this, html, visible, parentElement);
+UI.prototype.addControl = function(id, html, visible, visibleLock, parentElement) {
+    var control = new UIControlHolder(this, html, visible, visibleLock, parentElement);
     this.controls[id] = control;
     return control;
 };
@@ -125,8 +125,12 @@ UI.prototype.setControlHtml = function(id, html) {
 };
 
 
-UI.prototype.setControlVisible = function(id, state) {
+UI.prototype.setControlVisible = function(id, state, lockState) {
     if (this.controls[id] != null) {
+        if (typeof lockState !== 'undefined') {
+            this.controls[id].setVisibleLock(lockState);
+        }
+        
         this.controls[id].setVisible(state);
     }
 };
@@ -164,7 +168,7 @@ UI.prototype.setParam = function(key) {
     case 'controlSpace':       this.setControlVisible('space', this.config.controlSpace); break;
     case 'controlSearch':      this.setControlVisible('search', this.config.controlSearch); break;
     case 'controlLink':        this.setControlVisible('link', this.config.controlLink); break;
-    case 'controlMeasure':     this.setControlVisible('link', this.config.controlMeasure); break;
+    case 'controlMeasure':     this.setControlVisible('measure', this.config.controlMeasure); break;
     case 'controlLogo':        this.setControlVisible('logo', this.config.controlLogo); break;
     case 'controlFullscreen':  this.setControlVisible('fullscreeen', this.config.controlFullscreen); break;
     case 'controlCredits':     this.setControlVisible('credits', this.config.controlCredits); break;

@@ -1,9 +1,9 @@
 
-var UIControlScale = function(ui, visible) {
+var UIControlScale = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.control = this.ui.addControl("scale",
       '<div class="vts-scale"'
-      + '</div>', visible);
+      + '</div>', visible, visibleLock);
 };
 
 

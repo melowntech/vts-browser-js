@@ -13,7 +13,7 @@ var utils = utils_;
 var filterSearch = filterSearch_;
 var nofilterSearch = nofilterSearch_;
 
-var UIControlSearch = function(ui, visible) {
+var UIControlSearch = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.browser = ui.browser;
     
@@ -28,7 +28,7 @@ var UIControlSearch = function(ui, visible) {
       '<div class="vts-search">'
       + '<div class="vts-search-input"><input type="text" id="vts-search-input" autocomplete="off" spellcheck="false" placeholder="Search location..."></div>'      
       + '<div id="vts-search-list" class="vts-search-list"></div>'      
-      + '</div>', visible, element);
+      + '</div>', visible, visibleLock, element);
 
     this.input = this.control.getElement('vts-search-input');
     
@@ -266,6 +266,7 @@ UIControlSearch.prototype.onSelectItem = function(index) {
             case 'street':      viewExtent = 4000;    break;
             case 'residential': viewExtent = 3000;    break;
             case 'continent':   viewExtent = 8550000; break;             
+            case 'pos':         viewExtent = 150000;  break;             
             }
         }
         
@@ -346,7 +347,7 @@ UIControlSearch.prototype.onListLoaded = function(counter, data) {
                 'title' : ('' + this.coords[0].toFixed(6) + ' ' + this.coords[1].toFixed(6)),
                 'lat' : this.coords[0],
                 'lon' : this.coords[1],
-                'type': 'street'
+                'type': 'pos'
             });
         }
 
@@ -432,7 +433,16 @@ UIControlSearch.prototype.parseLatLon = function(value) {
                 lon = parseFloat(words[1]);
 
                 if (!isNaN(lat) && !isNaN(lon)) {
-                    return[math.clamp(lat, -90, 90), math.clamp(lon, -180, 180)];
+
+                    if (lat > 90 || lat < -90) {
+                        return null;
+                    }
+
+                    if (lon > 360 || lon < -360) {
+                        return null;
+                    }
+
+                    return[lat, lon];
                 }
             }
         }
@@ -527,6 +537,14 @@ UIControlSearch.prototype.parseLatLon = function(value) {
         var tmp = coords[0];
         coords[0] = coords[1];
         coords[1] = tmp;
+    }
+
+    if (coords[0] > 90 || coords[0] < -90) {
+        return null;
+    }
+
+    if (coords[1] > 360 || coords[1] < -360) {
+        return null;
     }
 
     return coords;
