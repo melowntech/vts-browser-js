@@ -5,7 +5,7 @@ import Dom_ from '../../utility/dom';
 var dom = Dom_;
 
 
-var UIControlZoom = function(ui, visible) {
+var UIControlZoom = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.browser = ui.browser;
     this.control = this.ui.addControl('zoom',
@@ -20,7 +20,7 @@ var UIControlZoom = function(ui, visible) {
           + '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAALUlEQVRIx2NgGAWjYBSMAqoCRlwSdnZ2/8kx8NChQxhmMo2G8ygYBaNgFGAHAElYBARpOBYqAAAAAElFTkSuQmCC">'
         + '</div>'
 
-     + ' </div>', visible);
+     + ' </div>', visible, visibleLock);
 
     var plus = this.control.getElement('vts-zoom-plus');
     plus.on('click', this.onZoomIn.bind(this));

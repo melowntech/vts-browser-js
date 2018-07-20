@@ -5,11 +5,11 @@ import Dom_ from '../../utility/dom';
 var dom = Dom_;
 
 
-var UIControlFullscreen = function(ui, visible) {
+var UIControlFullscreen = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.control = this.ui.addControl('fullscreen',
       '<img id="vts-fullscreen" class="vts-fullscreen" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAwUlEQVRo3u2YwRWDIBBEIc+SLMKmckpTFkFPePKQQ57DsitR/z/D6KgMDikBAMCTycKYxai9Bul8MYkic+NFS7BOs4FUa/1IrzTn9xk6O6+rrwEMjGayTlS/UXWeujbcDKgpEZRObgYOc1oYt7CIMXCFFLKmTrS+aqAEP8iSAGBYI1s776FLv7eReaWHWd/cyLz3Bas+vxIYGNXIhBTxOhcKNdCaHvPfGPjVYb3OhVjEGLhrI/Pewc9uZDQvAABwZQMKFi+DmFdLbgAAAABJRU5ErkJggg==">'
-      , visible);
+      , visible, visibleLock);
       
     var img = this.control.getElement('vts-fullscreen');
     img.on('click', this.onClick.bind(this));

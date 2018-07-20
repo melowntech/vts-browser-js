@@ -5,7 +5,7 @@ import Dom_ from '../../utility/dom';
 var dom = Dom_;
 
 
-var UIControlLink = function(ui, visible) {
+var UIControlLink = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.browser = ui.browser;
     this.control = this.ui.addControl('link',
@@ -21,7 +21,7 @@ var UIControlLink = function(ui, visible) {
             + '</div>'
         + '</div>'
         
-     + ' </div>', visible);
+     + ' </div>', visible, visibleLock);
      
     this.div = this.control.getElement('vts-link');
 

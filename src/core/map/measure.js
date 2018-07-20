@@ -15,6 +15,7 @@ var MapMeasure = function(map) {
     this.convert = map.convert;
     this.getPhysicalSrs = this.map.getPhysicalSrs();
     this.navigationSrs = this.map.getNavigationSrs();
+    this.publicSrs = this.map.getPublicSrs();
     this.navigationSrsInfo = this.navigationSrs.getSrsInfo();
     this.isProjected = this.navigationSrs.isProjected();
 
@@ -502,21 +503,17 @@ MapMeasure.prototype.getOptimalHeightLod = function(coords, viewExtent, desiredS
 };
 
 
-MapMeasure.prototype.getDistance = function(coords, coords2, includingHeight) {
-    var p1 = this.getPhysicalSrs.convertCoordsFrom(coords, this.navigationSrs);
-    var p2 = this.getPhysicalSrs.convertCoordsFrom(coords2, this.navigationSrs);
+MapMeasure.prototype.getDistance = function(coords, coords2, includingHeight, usePublic) {
+    var sourceSrs = usePublic ? this.publicSrs : this.navigationSrs;
+    var p1 = this.getPhysicalSrs.convertCoordsFrom(coords,  sourceSrs);
+    var p2 = this.getPhysicalSrs.convertCoordsFrom(coords2, sourceSrs);
     var d = 0;
 
     var dx = p2[0] - p1[0];
     var dy = p2[1] - p1[1];
     var dz = p2[2] - p1[2];
 
-    if (includingHeight) {
-        d = Math.sqrt(dx*dx + dy*dy + dz*dz);
-    } else {
-        d = Math.sqrt(dx*dx + dy*dy);
-    }
-
+    var dd = Math.sqrt(dx*dx + dy*dy + dz*dz);
     var navigationSrsInfo = this.navigationSrsInfo;
 
     if (!this.isProjected) {
@@ -525,18 +522,22 @@ MapMeasure.prototype.getDistance = function(coords, coords2, includingHeight) {
 
         var r = geod.Inverse(coords[1], coords[0], coords2[1], coords2[0]);
 
-        if (d > (navigationSrsInfo['a'] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
+        if (r.s12 > (navigationSrsInfo['a'] * 2 * Math.PI) / 4007.5) { //aprox 10km for earth
             if (includingHeight) {
-                return [Math.sqrt(r.s12*r.s12 + dz*dz), -r.azi1];
+                return [Math.sqrt(r.s12*r.s12 + dz*dz), -r.azi1, dd];
             } else {
-                return [r.s12, -r.azi1];
+                return [r.s12, -r.azi1, dd];
             }
         } else {
-            return [d, -r.azi1];
+            if (includingHeight) {
+                return [Math.sqrt(dx*dx + dy*dy + dz*dz), -r.azi1, dd];
+            } else {
+                return [r.s12, -r.azi1, dd];
+            }
         }
 
     } else {
-        return [d, math.degrees(Math.atan2(dx, dy))];
+        return [Math.sqrt(dx*dx + dy*dy), math.degrees(Math.atan2(dx, dy)), dd];
     }
 };
 

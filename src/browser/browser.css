@@ -478,17 +478,21 @@
 
 .vts-measure-text-holder {
     position: absolute;
-    bottom: 0px;
+    bottom: -2px;
     left: 35px;
     opacity: 0.95;
     border-radius: 5px;
     border: 2px solid rgba(255, 255, 255, 0.47);
 }
 
-.vts-measure-text {
+.vts-measure-text-holder2 {
     padding: 2px;
     border-radius: 2px;
     background-color: #fff;
+}
+
+.vts-measure-text {
+    padding: 0px;
 }
 
 .vts-measure-text textarea {
@@ -508,8 +512,29 @@
     background-color: rgba(255, 229, 42, 1);
     border: solid 1px #000;
     white-space: nowrap;
+    padding: 1px 3px;
 }
 
+.vts-measure-tools {
+    font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+    font-size: 12px;
+    margin-top: 2px;
+    /*background-color: rgba(255, 255, 255, 0.9);*/
+}
+
+.vts-measure-tools-button {
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.7);
+    display: inline-block;
+    padding: 0px 5px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.vts-measure-tools-button:hover {
+    color: rgba(0, 102, 255, 1);
+    border: 1px solid rgba(0, 102, 255, 1);
+}
 
 /*
  * FULLSCREEN

@@ -1,11 +1,11 @@
 
-var UIControlPopup = function(ui, visible) {
+var UIControlPopup = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.browser = ui.browser;
     this.control = this.ui.addControl('popup',
         '<div class="vts-popup-background" id="vts-popup-background">'
       +    '<div id="vts-popup"</div>'
-      + '</div>', visible);
+      + '</div>', visible, visibleLock);
 
     this.lastHTML = '';
     this.popup = this.control.getElement('vts-popup');

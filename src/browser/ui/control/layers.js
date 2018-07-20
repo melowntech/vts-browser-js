@@ -1,9 +1,9 @@
 
-var UIControlLayers = function(ui, visible) {
+var UIControlLayers = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.control = this.ui.addControl('layers',
       '<div class="vts-layers"'
-      + '</div>', visible);
+      + '</div>', visible, visibleLock);
 };
 
 

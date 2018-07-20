@@ -1,11 +1,11 @@
 
-var UIControlCredits = function(ui, visible) {
+var UIControlCredits = function(ui, visible, visibleLock) {
     this.ui = ui;
     this.browser = ui.browser;
     this.control = this.ui.addControl('credits',
       '<div id="vts-credits"'
       + ' class="vts-credits">'
-      + ' </div>', visible);
+      + ' </div>', visible, visibleLock);
 
     this.lastHTML = '';
     this.lastHTML2 = '';
