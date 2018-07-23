@@ -1,8 +1,10 @@
 
 import Dom_ from '../../utility/dom';
+import {utils as utils_} from '../../../core/utils/utils';
 
 //get rid of compiler mess
 var dom = Dom_;
+var utils = utils_;
 
 
 var UIControlMeasure = function(ui, visible, visibleLock) {
@@ -22,15 +24,25 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
         + '<div id="vts-measure-text-holder" class="vts-measure-text-holder">'
             + '<div class="vts-measure-text-holder2">'
                 + '<div class="vts-measure-text">'
-                  + '<textarea id="vts-measure-text-input" rows="6" cols="50" wrap="hard"></textarea>'
+                  + '<textarea id="vts-measure-text-input" rows="7" cols="57" wrap="hard"></textarea>'
                 + '</div>'
                 + '<div class="vts-measure-tools">'
-                    + '<div id="vts-measure-clear" class="vts-measure-tools-button">Clear</div>'
+                    + '<div id="vts-measure-position" class="vts-measure-tools-button">Position</div>'
+                    + '<div id="vts-measure-length" class="vts-measure-tools-button">Length</div>'
+                    + '<div id="vts-measure-track" class="vts-measure-tools-button">Track Length</div>'
+                    + '<div id="vts-measure-area" class="vts-measure-tools-button">Area</div>'
+                    + '<div id="vts-measure-volume" class="vts-measure-tools-button">Volume</div>'
+                    + '<div id="vts-measure-clear" class="vts-measure-tools-button">Clear Log</div>'
                 + '</div>'
             + '</div>'
         + '</div>'
 
         + '<div id="vts-measure-info" class="vts-measure-info">'
+        + '</div>'
+
+        + '<div id="vts-measure-compute" class="vts-measure-compute">'
+            + '<div id="vts-measure-undo" class="vts-measure-tools-button">Undo</div>'
+            + '<div id="vts-measure-compute" class="vts-measure-tools-button">Compute</div>'
         + '</div>'
         
      + ' </div>', visible, visibleLock);
@@ -51,9 +63,27 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
     clearButton.on('click', this.onClear.bind(this));
     clearButton.on('dblclick', this.onDoNothing.bind(this));
 
+    var toolButton = this.control.getElement('vts-measure-position');
+    toolButton.on('click', this.onTool.bind(this, 0));
+    toolButton.on('dblclick', this.onDoNothing.bind(this));
+    toolButton = this.control.getElement('vts-measure-length');
+    toolButton.on('click', this.onTool.bind(this, 1));
+    toolButton.on('dblclick', this.onDoNothing.bind(this));
+    toolButton = this.control.getElement('vts-measure-track');
+    toolButton.on('click', this.onTool.bind(this, 2));
+    toolButton.on('dblclick', this.onDoNothing.bind(this));
+    toolButton = this.control.getElement('vts-measure-area');
+    toolButton.on('click', this.onTool.bind(this, 3));
+    toolButton.on('dblclick', this.onDoNothing.bind(this));
+    toolButton = this.control.getElement('vts-measure-volume');
+    toolButton.on('click', this.onTool.bind(this, 4));
+    toolButton.on('dblclick', this.onDoNothing.bind(this));
+
     this.measuring = false;
     this.counter = 1;
     this.lastCoords = null;
+    this.navCoords = null;
+    this.tool = 0;
 
     this.listPanel = this.control.getElement('vts-measure-text-holder');
     this.list = this.control.getElement('vts-measure-text-input');
@@ -69,6 +99,7 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
     this.onMouseMoveCall = this.onMouseMove.bind(this);
     this.onMouseLeaveCall = this.onMouseLeave.bind(this);
     this.onMouseClickCall = this.onMouseClick.bind(this);
+    this.onMapUpdateCall = this.onMapUpdate.bind(this);
 
     this.update();
 };
@@ -104,46 +135,82 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
     var coords = event.getMouseCoords();
     var clickCoords = map.getHitCoords(coords[0], coords[1], 'fix');
 
+    map.redraw();
+
     if (!clickCoords) {
         return;
     }
 
-    clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
+    var i, li, res, str, m2ft = 3.28084, km2mi = 0.621371;
+    var space = '  ';
 
-    var str = '#' + this.counter + '  ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm';
+    for (i = 0, li = ('' + this.counter).length; i < li; i++) {
+        space += ' ';
+    }
 
-    if (this.lastCoords) {
-        var res = map.getDistance(this.lastCoords, clickCoords, false, true);
-        var space = '\n   ';
+    if (this.tool == 0) {
+        this.navCoords = clickCoords;
+        clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-        for (var i = 0, li = ('' + this.counter).length; i < li; i++) {
-            space += ' ';
-        }
+        str = '#' + this.counter + ' position: ';
+        str += '\n' + space + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
+        this.counter++;
 
-        str += space + 'great-circle distance: ';
+    } else if (this.tool == 1) { 
+        if (!this.navCoords || this.navCoords.length == 2) {
+            this.navCoords = [clickCoords];
+            clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-        if (res[0] > 100000) {
-            str += '' + (res[0]*0.001).toFixed(2) + 'km';
+            str = '#' + this.counter + ' length: ';
+            str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
         } else {
-            str += '' + res[0].toFixed(2) + 'm';
+            this.navCoords.push(clickCoords);
+            clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
+            
+            str = space + 'p2: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
+
+            res = map.getDistance(this.lastCoords, clickCoords, false, true);
+            str += '\n' +  space + 'great-circle distance: ';
+
+            if (res[0] >= 100000) {
+                str += '' + (res[0]*0.001).toFixed(2) + 'km/' + (res[0]*0.001*km2mi).toFixed(2) + 'mi';
+            } else {
+                str += '' + res[0].toFixed(2) + 'm/' + (res[0]*m2ft).toFixed(2) + 'ft';
+            }
+
+            str += '\n' + space + 'elevation difference: ' + (clickCoords[2] - this.lastCoords[2]).toFixed(2) + 'm/' + (((clickCoords[2] - this.lastCoords[2]))*m2ft).toFixed(2) + 'ft';
+            str += '\n' + space + 'euclidean distance: ';
+
+            if (res[2] >= 100000) {
+                str += '' + (res[2]*0.001).toFixed(2) + 'km/' + (res[2]*0.001*km2mi).toFixed(2) + 'mi';
+            } else {
+                str += '' + res[2].toFixed(2) + 'm/' + (res[2]*m2ft).toFixed(2) + 'ft';
+            }
+
+            this.counter++;
         }
+    } else if (this.tool == 2) { 
+        if (!this.navCoords) {
+            this.navCoords = [clickCoords];
+            clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-        str += space + 'elevation difference: ' + (clickCoords[2] - this.lastCoords[2]).toFixed(2) + 'm';
-        str += space + 'euclidean distance: ';
-
-        if (res[2] > 100000) {
-            str += '' + (res[2]*0.001).toFixed(2) + 'km';
+            str = '#' + this.counter + ' track length: ';
+            str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
         } else {
-            str += '' + res[2].toFixed(2) + 'm';
+            this.navCoords.push(clickCoords);
+            clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
+
+            str = space + 'p' + this.navCoords.length + ': ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
         }
     }
 
-    this.counter++;
     this.lastCoords = clickCoords;
 
-    var listElement = this.list.getElement();
-    listElement.value += str + '\n';
-    listElement.scrollTop = listElement.scrollHeight;    //scroll list to the last line
+    if (str) {
+        var listElement = this.list.getElement();
+        listElement.value += str + '\n';
+        listElement.scrollTop = listElement.scrollHeight;    //scroll list to the last line
+    }
 };
 
 UIControlMeasure.prototype.onMouseMove = function(event) {
@@ -187,6 +254,7 @@ UIControlMeasure.prototype.onSwitch = function() {
         mapElement.on('mousemove', this.onMouseMoveCall);
         mapElement.on('mouseleave', this.onMouseLeaveCall);
         mapElement.on('click', this.onMouseClickCall);
+        this.browser.on('map-update', this.onMapUpdateCall);
 
     } else {
         this.buttonOn.setStyle('display', 'none');
@@ -195,19 +263,36 @@ UIControlMeasure.prototype.onSwitch = function() {
         mapElement.off('mousemove', this.onMouseMoveCall);
         mapElement.off('mouseleave', this.onMouseLeaveCall);
         mapElement.off('click', this.onMouseClickCall);
+        this.browser.off('map-update', this.onMapUpdateCall);
     }
 
     this.updateLink();
     this.update();
 };
 
+UIControlMeasure.prototype.onTool = function(tool) {
+    this.tool = tool;
+    this.navCoords = null;
+
+    var map = this.browser.getMap();
+    if (map) {
+        map.redraw();
+    }
+};
+
 UIControlMeasure.prototype.onClear = function() {
     this.counter = 1;
     this.lastCoords = null;
+    this.navCoords = null;
 
     var listElement = this.list.getElement();
     listElement.value = '';
     listElement.scrollTop = 0;
+
+    var map = this.browser.getMap();
+    if (map) {
+        map.redraw();
+    }
 };
 
 UIControlMeasure.prototype.update = function() {
@@ -220,6 +305,100 @@ UIControlMeasure.prototype.update = function() {
     this.listPanel.setStyle('display', this.measuring ? 'block' : 'none');
 };
 
+
+UIControlMeasure.prototype.onMapUpdate = function() {
+    var map = this.browser.getMap();
+    if (!map) {
+        return;
+    }
+
+    var renderer = this.browser.getRenderer();
+
+    if (!this.circleImage) {
+        this.circleImage = utils.loadImage(
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAAAAAAAD5Q7t/AAAACW9GRnMAAAAgAAAA4ACD+EAUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA/UlEQVRYw+2VPwqDMBTG3dz1Am56EnH2XLroETxGuwc3Z7cOdhY8QJpfSUBspUvStJAPPggvD973/uQligICAgL+DKViqygUV02hbaXLwJlio7gpyhNu2idzEXwwgfI8H+u6vnZdN/V9P3EuimLcCRlsiyArGcfxjWDLsmzyAGzc4aNFNDZ7/iw7AeQH4LNrh5WZYLgkJTaZCyHuVVVdkiSZ0zSdOWMzlaBFWkRrQ4A4Zk/A4wBie1MFYUMAz0wybCYAmR8FUAlzj6+2r18TgM2VAO8tOB1Cyk7mrofQ+zP0voheVjHtIBjDxjrmvCu7k1Xs/TP6ie84ICDAGR5uCYdPo0MWiAAAAABJRU5ErkJggg==',
+                //"http://maps.google.com/mapfiles/kml/shapes/placemarkcircle.png",
+                (function(){
+                    this.circleTexture = renderer.createTexture({ 'source': this.circleImage });
+                }).bind(this)
+            );
+    }
+
+    if (!this.circleTexture) {
+        return;
+    }
+
+    var i, li, coords, points;
+
+    switch(this.tool) {
+        case 0: //point
+
+            if (this.navCoords) {
+                coords = map.convertCoordsFromNavToCanvas(this.navCoords, "fix");
+
+                renderer.drawImage({
+                    rect : [coords[0]-12, coords[1]-12, 24, 24],
+                    texture : this.circleTexture,
+                    color : [255,0,0,255],  //white point is multiplied by red color so resulting point will be red
+                    depth : coords[2],
+                    depthTest : false,
+                    blend : true   //point texture has alpha channel so blend is needed
+                    });
+            }
+
+            break;
+
+        case 1: //line
+        case 2: //track
+
+            if (this.navCoords) {
+                points = [];
+
+                for (i = 0, li = this.navCoords.length; i < li; i++) {
+                    points.push(map.convertCoordsFromNavToCanvas(this.navCoords[i], "fix"));
+                }
+
+                if (li > 1) {
+                    renderer.drawLineString({
+                        points : points,
+                        size : 5.0,
+                        color : [0,0,0,255],
+                        depthTest : false,
+                        //depthTest : true,
+                        //depthOffset : [-0.01,0,0],
+                        blend : false
+                        });
+
+                    renderer.drawLineString({
+                        points : points,
+                        size : 2.0,
+                        color : [255,0,0,255],
+                        depthTest : false,
+                        //depthTest : true,
+                        //depthOffset : [-0.01,0,0],
+                        blend : false
+                        });
+                }
+
+                for (i = 0; i < li; i++) {
+                    coords = points[i];
+
+                    renderer.drawImage({
+                        rect : [coords[0]-12, coords[1]-12, 24, 24],
+                        texture : this.circleTexture,
+                        color : [255,0,0,255],  //white point is multiplied by red color so resulting point will be red
+                        depth : coords[2],
+                        depthTest : false,
+                        blend : true   //point texture has alpha channel so blend is needed
+                        });
+                }
+            }
+
+
+    }
+
+
+};
 
 UIControlMeasure.prototype.updateLink = function() {
     /*

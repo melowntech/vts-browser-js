@@ -522,6 +522,17 @@
     /*background-color: rgba(255, 255, 255, 0.9);*/
 }
 
+.vts-measure-tools div {
+    margin-right: 2px;
+}
+
+.vts-measure-tools {
+    font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+    font-size: 12px;
+    margin-top: 2px;
+    /*background-color: rgba(255, 255, 255, 0.9);*/
+}
+
 .vts-measure-tools-button {
     border-radius: 2px;
     border: 1px solid rgba(0, 0, 0, 0.7);
@@ -534,6 +545,21 @@
 .vts-measure-tools-button:hover {
     color: rgba(0, 102, 255, 1);
     border: 1px solid rgba(0, 102, 255, 1);
+}
+
+
+.vts-measure-compute {
+    position: absolute;
+    font-family: Verdana, Tahoma, Geneva, Arial, Sans-serif;
+    font-size: 12px;
+    top: 0px;
+    left: 0px;
+    display: none;
+    border-radius: 2px;
+    border: 2px solid rgba(255, 255, 255, 0.47);
+    border: solid 1px #000;
+    white-space: nowrap;
+    padding: 1px 3px;
 }
 
 /*
