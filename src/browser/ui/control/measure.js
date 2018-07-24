@@ -170,7 +170,8 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
         this.navCoords = clickCoords;
         clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-        str = '#' + this.counter + ' position: ';
+        str = '------------------------------------------------------\n';
+        str += '#' + this.counter + ' Position: ';
         str += '\n' + space + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         this.counter++;
 
@@ -179,7 +180,8 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
             this.navCoords = [clickCoords];
             clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-            str = '#' + this.counter + ' length: ';
+            str = '------------------------------------------------------\n';
+            str += '#' + this.counter + ' Length: ';
             str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         } else {
             this.navCoords.push(clickCoords);
@@ -205,7 +207,8 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
         if (!this.navCoords) {
             this.navCoords = [clickCoords];
             clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
-            str = '#' + this.counter + ' track length: ';
+            str = '------------------------------------------------------\n';
+            str += '#' + this.counter + ' Track Length: ';
             str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         } else {
             this.navCoords.push(clickCoords);

@@ -273,6 +273,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
             gl.depthMask(false); 
         }
     
+        gl.disable(gl.STENCIL_TEST);
         gl.disable(gl.CULL_FACE);
     }
 
