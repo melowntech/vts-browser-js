@@ -108,7 +108,7 @@ Browser.prototype.getControlMode = function() {
 
 
 Browser.prototype.on = function(name, listener) {
-    this.core.on(name, listener);
+    return this.core.on(name, listener);
 };
 
 

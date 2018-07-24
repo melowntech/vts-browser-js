@@ -556,10 +556,14 @@
     left: 0px;
     display: none;
     border-radius: 2px;
-    border: 2px solid rgba(255, 255, 255, 0.47);
+    background-color: #aaa;
     border: solid 1px #000;
     white-space: nowrap;
-    padding: 1px 3px;
+    padding: 3px 1px 3px 3px;
+}
+
+.vts-measure-compute div {
+    margin-right: 2px;
 }
 
 /*

@@ -245,6 +245,11 @@ MapInterface.prototype.movePositionCoordsTo = function(position, azimuth, distan
 };
 
 
+MapInterface.prototype.getGeodesicLinePoints = function(coords, coords2, height, density) {
+    return this.map.convert.getGeodesicLinePoints(coords, coords2, height, density);
+};
+
+
 MapInterface.prototype.getSurfaceHeight = function(coords, precision) {
     return this.map.measure.getSurfaceHeight(coords, this.map.measure.getOptimalHeightLodBySampleSize(coords, precision));
 };

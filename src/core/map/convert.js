@@ -34,8 +34,7 @@ MapConvert.prototype.movePositionCoordsTo = function(position, azimuth, distance
         position.setCoords2([coords[0] + (forward[0]*distance),
             coords[1] + (forward[1]*distance)]);
     } else {
-        var geod = new GeographicLib.Geodesic.Geodesic(navigationSrsInfo['a'],
-                                                      (navigationSrsInfo['a'] / navigationSrsInfo['b']) - 1.0);
+        var geod = this.measure.getGeodesic();
 
         var r = geod.Direct(coords[1], coords[0], azimuth, distance);
         position.setCoords2([r.lon2, r.lat2]);
@@ -296,5 +295,41 @@ MapConvert.prototype.convertCoordsFromPhysToNav = function(coords, mode, lod) {
     return coords;
 };
 
+MapConvert.prototype.getGeodesicLinePoints = function(coords, coords2, height, density) {
+    var geod, r, length, azimuth, minStep, d;
+    var navigationSrsInfo = this.measure.navigationSrsInfo;
+    var dx = coords2[0] - coords[0];
+    var dy = coords2[1] - coords[1];
+    var dz = coords2[2] - coords[2];
+
+    if (this.isProjected) {
+        length = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        minStep = 1000000; //just big number
+    } else {
+        geod = this.measure.getGeodesic();
+        r = geod.Inverse(coords[1], coords[0], coords2[1], coords2[0]);
+        length = r.s12;
+        azimuth = r.azi1;
+        minStep = 10 * ((navigationSrsInfo['a'] * 2 * Math.PI) / 4007.5); //aprox 100km for earth
+    }
+
+    var points = [coords];
+    var distance = minStep;
+
+    for (;distance < length; distance += minStep) {
+        d = distance / length;
+
+        if (this.isProjected) {
+            points.push([ coords[0] + dx * d, coords[1] + dy * d, coords[2] + dz * d ]);
+        } else {
+            r = geod.Direct(coords[1], coords[0], azimuth, distance);
+            points.push([r.lon2, r.lat2, coords[2] + dz * d]);
+        }
+    }
+
+    points.push(coords2);
+
+    return points;
+};
 
 export default MapConvert;

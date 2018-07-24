@@ -24,7 +24,7 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
         + '<div id="vts-measure-text-holder" class="vts-measure-text-holder">'
             + '<div class="vts-measure-text-holder2">'
                 + '<div class="vts-measure-text">'
-                  + '<textarea id="vts-measure-text-input" rows="7" cols="57" wrap="hard"></textarea>'
+                  + '<textarea id="vts-measure-text-input" rows="10" cols="67" wrap="hard"></textarea>'
                 + '</div>'
                 + '<div class="vts-measure-tools">'
                     + '<div id="vts-measure-position" class="vts-measure-tools-button">Position</div>'
@@ -33,6 +33,7 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
                     + '<div id="vts-measure-area" class="vts-measure-tools-button">Area</div>'
                     + '<div id="vts-measure-volume" class="vts-measure-tools-button">Volume</div>'
                     + '<div id="vts-measure-clear" class="vts-measure-tools-button">Clear Log</div>'
+                    + '<div id="vts-measure-metric" class="vts-measure-tools-button">Metric Units ON</div>'
                 + '</div>'
             + '</div>'
         + '</div>'
@@ -40,7 +41,7 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
         + '<div id="vts-measure-info" class="vts-measure-info">'
         + '</div>'
 
-        + '<div id="vts-measure-compute" class="vts-measure-compute">'
+        + '<div id="vts-measure-buttons" class="vts-measure-compute">'
             + '<div id="vts-measure-undo" class="vts-measure-tools-button">Undo</div>'
             + '<div id="vts-measure-compute" class="vts-measure-tools-button">Compute</div>'
         + '</div>'
@@ -58,6 +59,14 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
     this.buttonOn.on('dblclick', this.onDoNothing.bind(this));
 
     this.info = this.control.getElement('vts-measure-info');
+    this.compute = this.control.getElement('vts-measure-buttons');
+
+    var computeButton = this.control.getElement('vts-measure-undo');
+    computeButton.on('click', this.onCompute.bind(this, 0));
+    computeButton.on('dblclick', this.onDoNothing.bind(this));
+    computeButton = this.control.getElement('vts-measure-compute');
+    computeButton.on('click', this.onCompute.bind(this, 1));
+    computeButton.on('dblclick', this.onDoNothing.bind(this));
 
     var clearButton = this.control.getElement('vts-measure-clear');
     clearButton.on('click', this.onClear.bind(this));
@@ -78,12 +87,20 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
     toolButton = this.control.getElement('vts-measure-volume');
     toolButton.on('click', this.onTool.bind(this, 4));
     toolButton.on('dblclick', this.onDoNothing.bind(this));
+    toolButton = this.control.getElement('vts-measure-metric');
+    toolButton.on('click', this.onTool.bind(this, 5));
+    toolButton.on('dblclick', this.onDoNothing.bind(this));
+    this.metricButton = toolButton;
+
 
     this.measuring = false;
     this.counter = 1;
+    this.renderCounter = 1;
     this.lastCoords = null;
     this.navCoords = null;
     this.tool = 0;
+    this.metric = true;
+    this.mapUpdateDestructor = null;
 
     this.listPanel = this.control.getElement('vts-measure-text-holder');
     this.list = this.control.getElement('vts-measure-text-input');
@@ -108,6 +125,7 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
 UIControlMeasure.prototype.onDoNothing = function(event) {
     dom.stopPropagation(event);    
 };
+
 
 UIControlMeasure.prototype.onMouseLeave = function(event) {
     this.info.setStyle('display', 'none');
@@ -141,7 +159,7 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
         return;
     }
 
-    var i, li, res, str, m2ft = 3.28084, km2mi = 0.621371;
+    var i, li, res, str;
     var space = '  ';
 
     for (i = 0, li = ('' + this.counter).length; i < li; i++) {
@@ -153,7 +171,7 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
         clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
         str = '#' + this.counter + ' position: ';
-        str += '\n' + space + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
+        str += '\n' + space + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         this.counter++;
 
     } else if (this.tool == 1) { 
@@ -162,45 +180,38 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
             clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
             str = '#' + this.counter + ' length: ';
-            str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
+            str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         } else {
             this.navCoords.push(clickCoords);
             clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
             
-            str = space + 'p2: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
+            str = space + 'p2: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
+            str += '\n' + space + '------------------------';
 
             res = map.getDistance(this.lastCoords, clickCoords, false, true);
-            str += '\n' +  space + 'great-circle distance: ';
-
-            if (res[0] >= 100000) {
-                str += '' + (res[0]*0.001).toFixed(2) + 'km/' + (res[0]*0.001*km2mi).toFixed(2) + 'mi';
-            } else {
-                str += '' + res[0].toFixed(2) + 'm/' + (res[0]*m2ft).toFixed(2) + 'ft';
-            }
-
-            str += '\n' + space + 'elevation difference: ' + (clickCoords[2] - this.lastCoords[2]).toFixed(2) + 'm/' + (((clickCoords[2] - this.lastCoords[2]))*m2ft).toFixed(2) + 'ft';
-            str += '\n' + space + 'euclidean distance: ';
-
-            if (res[2] >= 100000) {
-                str += '' + (res[2]*0.001).toFixed(2) + 'km/' + (res[2]*0.001*km2mi).toFixed(2) + 'mi';
-            } else {
-                str += '' + res[2].toFixed(2) + 'm/' + (res[2]*m2ft).toFixed(2) + 'ft';
-            }
+            str += '\n' +  space + 'great-circle distance: ' + this.getTextNumber(res[0]);
+            str += '\n' + space + 'euclidean distance: ' + this.getTextNumber(res[2]);
+            str += '\n' + space + 'elevation difference: ' + this.getTextNumber(clickCoords[2] - this.lastCoords[2]);
+            str += '\n' + space + 'azimuth: ' + res[1].toFixed(2) + ' deg';
 
             this.counter++;
         }
     } else if (this.tool == 2) { 
+        if (this.renderCounter != this.counter) {
+            this.renderCounter = this.counter;
+            this.onTool(2);
+        }
+
         if (!this.navCoords) {
             this.navCoords = [clickCoords];
             clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
-
             str = '#' + this.counter + ' track length: ';
-            str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
+            str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         } else {
             this.navCoords.push(clickCoords);
             clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-            str = space + 'p' + this.navCoords.length + ': ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm/' + (clickCoords[2]*m2ft).toFixed(2) + 'ft';
+            str = space + 'p' + this.navCoords.length + ': ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         }
     }
 
@@ -212,6 +223,7 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
         listElement.scrollTop = listElement.scrollHeight;    //scroll list to the last line
     }
 };
+
 
 UIControlMeasure.prototype.onMouseMove = function(event) {
     var map = this.browser.getMap();
@@ -229,7 +241,7 @@ UIControlMeasure.prototype.onMouseMove = function(event) {
 
     clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
 
-    var str = clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + clickCoords[2].toFixed(2) + 'm';
+    var str = clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
 
     coords[0] -= this.divRect.left;
     coords[1] -= this.divRect.top;
@@ -239,6 +251,7 @@ UIControlMeasure.prototype.onMouseMove = function(event) {
     this.info.setStyle('top', (coords[1]+10)+'px');
     this.info.setHtml(str);
 };
+
 
 UIControlMeasure.prototype.onSwitch = function() {
     this.measuring = !this.measuring;
@@ -254,7 +267,7 @@ UIControlMeasure.prototype.onSwitch = function() {
         mapElement.on('mousemove', this.onMouseMoveCall);
         mapElement.on('mouseleave', this.onMouseLeaveCall);
         mapElement.on('click', this.onMouseClickCall);
-        this.browser.on('map-update', this.onMapUpdateCall);
+        this.mapUpdateDestructor = this.browser.on('map-update', this.onMapUpdateCall);
 
     } else {
         this.buttonOn.setStyle('display', 'none');
@@ -263,22 +276,113 @@ UIControlMeasure.prototype.onSwitch = function() {
         mapElement.off('mousemove', this.onMouseMoveCall);
         mapElement.off('mouseleave', this.onMouseLeaveCall);
         mapElement.off('click', this.onMouseClickCall);
-        this.browser.off('map-update', this.onMapUpdateCall);
+        
+        if (this.mapUpdateDestructor) {
+            this.mapUpdateDestructor();
+        }
     }
 
-    this.updateLink();
+    this.onTool(this.tool);
+
+    this.compute.setStyle('display', 'none');
+
+    var map = this.browser.getMap();
+    if (map) {
+        map.redraw();
+    }
+
     this.update();
 };
 
+
 UIControlMeasure.prototype.onTool = function(tool) {
+    if (tool == 5) {
+        this.metric = !this.metric;
+        this.metricButton.setHtml(this.metric ? 'Metric Units ON' : 'Metric Units OFF');
+        return;
+    }
+
     this.tool = tool;
     this.navCoords = null;
+
+    this.compute.setStyle('display', 'none');
 
     var map = this.browser.getMap();
     if (map) {
         map.redraw();
     }
 };
+
+
+UIControlMeasure.prototype.onCompute = function(button) {
+    if (!this.navCoords) {
+        return;
+    }
+
+    var map = this.browser.getMap();
+    if (!map) {
+        return;
+    }
+
+    var str;
+
+    if (button == 0) {
+        this.navCoords.pop();
+    } else {
+        if (this.tool == 2) {
+
+            var distance = 0;
+            var distance2 = 0, i, li, coords, coords2, res;
+            var emin = Number.POSITIVE_INFINITY;
+            var emax = Number.NEGATIVE_INFINITY;
+
+            var space = '  ';
+
+            for (i = 0, li = ('' + this.counter).length; i < li; i++) {
+                space += ' ';
+            }
+
+            str = space + '------------------------';
+
+            for (i = 0, li = this.navCoords.length; i < li; i++) {
+                coords = map.convertCoordsFromNavToPublic(this.navCoords[i], 'fix');
+
+                if (coords[2] > emax) {
+                    emax = coords[2];
+                }
+
+                if (coords[2] < emin) {
+                    emin = coords[2];
+                }
+            }
+
+            for (i = 0, li = this.navCoords.length - 1; i < li; i++) {
+                coords = map.convertCoordsFromNavToPublic(this.navCoords[i], 'fix');
+                coords2 = map.convertCoordsFromNavToPublic(this.navCoords[i+1], 'fix');
+                res = map.getDistance(coords, coords2, false, true);
+                distance += res[0];
+                distance2 += res[2];
+            }
+
+            str += '\n' +  space + 'great-circle distance: ' + this.getTextNumber(distance);
+            str += '\n' + space + 'euclidean distance: ' + this.getTextNumber(distance2);
+            str += '\n' + space + 'max elevation: ' + this.getTextNumber(emax);
+            str += '\n' + space + 'min elevation: ' + this.getTextNumber(emin);
+            str += '\n' + space + 'elevation difference: ' + this.getTextNumber(emax - emin);
+
+            this.counter++;
+        }
+    }
+
+    if (str) {
+        var listElement = this.list.getElement();
+        listElement.value += str + '\n';
+        listElement.scrollTop = listElement.scrollHeight;    //scroll list to the last line
+    }
+
+    map.redraw();
+};
+
 
 UIControlMeasure.prototype.onClear = function() {
     this.counter = 1;
@@ -289,11 +393,14 @@ UIControlMeasure.prototype.onClear = function() {
     listElement.value = '';
     listElement.scrollTop = 0;
 
+    this.compute.setStyle('display', 'none');
+
     var map = this.browser.getMap();
     if (map) {
         map.redraw();
     }
 };
+
 
 UIControlMeasure.prototype.update = function() {
     //var button = this.control.getElement('vts-measure-button');
@@ -359,8 +466,20 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                 }
 
                 if (li > 1) {
+
+                    var points2 = [], points3 = [], tmp;
+
+                    for (i = 0, li = this.navCoords.length - 1; i < li; i++) {
+                        tmp = map.getGeodesicLinePoints(this.navCoords[i], this.navCoords[i+1]);
+                        points2 = points2.concat(tmp);
+                    }
+
+                    for (i = 0, li = points2.length; i < li; i++) {
+                        points3.push(map.convertCoordsFromNavToCanvas(points2[i], "fix"));
+                    }
+
                     renderer.drawLineString({
-                        points : points,
+                        points : points3,
                         size : 5.0,
                         color : [0,0,0,255],
                         depthTest : false,
@@ -370,7 +489,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                         });
 
                     renderer.drawLineString({
-                        points : points,
+                        points : points3,
                         size : 2.0,
                         color : [255,0,0,255],
                         depthTest : false,
@@ -380,7 +499,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                         });
                 }
 
-                for (i = 0; i < li; i++) {
+                for (i = 0, li = points.length; i < li; i++) {
                     coords = points[i];
 
                     renderer.drawImage({
@@ -398,16 +517,32 @@ UIControlMeasure.prototype.onMapUpdate = function() {
     }
 
 
+    if (this.tool == 2 && points) {
+        if (points.length < 2 || this.renderCounter != this.counter) {
+            this.compute.setStyle('display', 'none');
+            return;    
+        }
+
+        coords = points[points.length - 1];
+        coords[0] -= this.divRect.left;
+        coords[1] -= this.divRect.top;
+
+        this.compute.setStyle('display', 'block');
+        this.compute.setStyle('left', (coords[0]+20)+'px');
+        this.compute.setStyle('top', (coords[1]+10)+'px');
+    }
+
 };
 
-UIControlMeasure.prototype.updateLink = function() {
-    /*
-    var linkValue =  this.browser.getLinkWithCurrentPos();
-    if (this.list.getElement().value != linkValue) {
-        this.list.getElement().value = linkValue;
-    }*/
-};
+UIControlMeasure.prototype.getTextNumber = function(value) {
+    var m2ft = 3.28084, km2mi = 0.621371;
 
+    if (value >= 100000) {
+        return (this.metric) ? (value*0.001).toFixed(2) + 'km' : (value*0.001*km2mi).toFixed(2) + 'mi';
+    } else {
+        return (this.metric) ? (value).toFixed(2) + 'm' : (value*m2ft).toFixed(2) + 'ft';
+    }
+};
 
 export default UIControlMeasure;
 
