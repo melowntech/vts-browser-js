@@ -216,6 +216,24 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
 
             str = space + 'p' + this.navCoords.length + ': ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         }
+    } else if (this.tool == 3) { 
+        if (this.renderCounter != this.counter) {
+            this.renderCounter = this.counter;
+            this.onTool(3);
+        }
+
+        if (!this.navCoords) {
+            this.navCoords = [clickCoords];
+            clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
+            str = '------------------------------------------------------\n';
+            str += '#' + this.counter + ' Area: ';
+            str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
+        } else {
+            this.navCoords.push(clickCoords);
+            clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
+
+            str = space + 'p' + this.navCoords.length + ': ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
+        }
     }
 
     this.lastCoords = clickCoords;
@@ -327,19 +345,19 @@ UIControlMeasure.prototype.onCompute = function(button) {
         return;
     }
 
-    var str;
+    var str, i, li, space;
 
-    if (button == 0) {
+    if (button == 0) { //undo button
         this.navCoords.pop();
-    } else {
+    } else { //compute button
         if (this.tool == 2) {
 
             var distance = 0;
-            var distance2 = 0, i, li, coords, coords2, res;
+            var distance2 = 0, coords, coords2, res;
             var emin = Number.POSITIVE_INFINITY;
             var emax = Number.NEGATIVE_INFINITY;
 
-            var space = '  ';
+            space = '  ';
 
             for (i = 0, li = ('' + this.counter).length; i < li; i++) {
                 space += ' ';
@@ -374,6 +392,28 @@ UIControlMeasure.prototype.onCompute = function(button) {
             str += '\n' + space + 'elevation difference: ' + this.getTextNumber(emax - emin);
 
             this.counter++;
+        }
+
+        if (this.tool == 3) {
+            var geodata = map.createGeodata();
+            geodata.addPolygon3(this.navCoords, [], null, 'fix', {}, 'tmp-polygon');
+            geodata.processHeights('node-by-lod', 62, (function(){
+
+                space = '  ';
+
+                for (i = 0, li = ('' + this.counter).length; i < li; i++) {
+                    space += ' ';
+                }
+
+                str = space + '------------------------';
+
+                var poly = geodata.extractGeometry('tmp-polygon');
+
+                var area = poly.getSurfaceArea()
+
+                str += '\n' +  space + 'area: ' + area + 'm^2';
+
+            }).bind(this));
         }
     }
 
@@ -460,6 +500,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
 
         case 1: //line
         case 2: //track
+        case 3: //area
 
             if (this.navCoords) {
                 points = [];
@@ -520,7 +561,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
     }
 
 
-    if (this.tool == 2 && points) {
+    if ((this.tool == 2 || this.tool == 3) && points) {
         if (points.length < 2 || this.renderCounter != this.counter) {
             this.compute.setStyle('display', 'none');
             return;    
