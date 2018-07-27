@@ -33,7 +33,7 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
                     + '<div id="vts-measure-area" class="vts-measure-tools-button">Area</div>'
                     + '<div id="vts-measure-volume" class="vts-measure-tools-button">Volume</div>'
                     + '<div id="vts-measure-clear" class="vts-measure-tools-button">Clear Log</div>'
-                    + '<div id="vts-measure-metric" class="vts-measure-tools-button">Metric Units ON</div>'
+                    + '<div id="vts-measure-metric" class="vts-measure-tools-button">Units: Meters</div>'
                 + '</div>'
             + '</div>'
         + '</div>'
@@ -319,7 +319,7 @@ UIControlMeasure.prototype.onSwitch = function() {
 UIControlMeasure.prototype.onTool = function(tool) {
     if (tool == 5) {
         this.metric = !this.metric;
-        this.metricButton.setHtml(this.metric ? 'Metric Units ON' : 'Metric Units OFF');
+        this.metricButton.setHtml(this.metric ? 'Units: Meters' : 'Units: Feets');
         return;
     }
 
@@ -411,7 +411,34 @@ UIControlMeasure.prototype.onCompute = function(button) {
 
                 var area = poly.getSurfaceArea()
 
-                str += '\n' +  space + 'area: ' + area + 'm^2';
+                if (this.metric) {
+                    str += '\n' +  space + 'area: ' + area.toFixed(2) + ' m\u00B2';
+
+                    if (area > 100) {
+                        str += '\n' +  space + '      ' + (area/100).toFixed(2) + ' ares';
+                    }
+
+                    if (area > 10000) {
+                        str += '\n' +  space + '      ' + (area/10000).toFixed(2) + ' hectares';
+                    }
+
+                    if (area > 1000000) {
+                        str += '\n' +  space + '      ' + (area/1000000).toFixed(2) + ' km\u00B2';
+                    }
+                } else {
+                    //str += '\n' +  space + 'area: ' + (area / 0.09290304).toFixed(2) + ' ft²';
+                    str += '\n' +  space + 'area: ' + (area / 0.83612736).toFixed(2) + ' yd\u00B2';
+
+                    if ((area / 4046.8564224) >= 1) {
+                        str += '\n' +  space + '      ' + (area / 4046.8564224).toFixed(2) + ' acres';
+                    }
+                    
+                    if ((area / 2589988.110346) >= 1) {
+                        str += '\n' +  space + '      ' + (area / 2589988.110346).toFixed(2) + ' mi\u00B2';
+                    }
+                }
+
+                this.counter++;
 
             }).bind(this));
         }
@@ -520,6 +547,10 @@ UIControlMeasure.prototype.onMapUpdate = function() {
 
                     for (i = 0, li = points2.length; i < li; i++) {
                         points3.push(map.convertCoordsFromNavToCanvas(points2[i], "fix"));
+                    }
+
+                    if (this.tool == 3) {
+                        points3.push(map.convertCoordsFromNavToCanvas(points2[0], "fix"));
                     }
 
                     renderer.drawLineString({

@@ -27,6 +27,12 @@ var MapMeasure = function(map) {
 
 
 MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, nodeCoords, coordsArray, useNodeOnly) {
+    var tree = this.map.tree;
+
+    if (tree.surfaceSequence.length == 0) {
+        return [0, true, true, null, null, null];
+    }
+
     if (!node) {
         var result = this.getSpatialDivisionNode(coords);
         node = result[0];
@@ -40,8 +46,6 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
     if (useNodeOnly || this.config.mapIgnoreNavtiles) {
         return this.getSurfaceHeightNodeOnly(null, lod + 8, storeStats, lod, null, node, nodeCoords, coordsArray);        
     }
-
-    var tree = this.map.tree;
 
     if (node != null && lod !== null) {
         var root = tree.findSurfaceTile(node.id);
@@ -136,6 +140,12 @@ MapMeasure.prototype.getSurfaceHeight = function(coords, lod, storeStats, node, 
 
 MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats, statsLod, deltaSample, node, nodeCoords, coordsArray) {
     var arrayRes, height, stats = this.map.stats; 
+
+    var tree = this.map.tree;
+
+    if (tree.surfaceSequence.length == 0) {
+        return [0, true, true, null, null, null];
+    }
     
     if (!deltaSample) {
         if (!node) {
@@ -202,8 +212,6 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
         //convert new coords to nav coords
         //blend values
     }
-
-    var tree = this.map.tree;
 
     if (node != null && lod !== null) {
         var root = tree.findSurfaceTile(node.id);
