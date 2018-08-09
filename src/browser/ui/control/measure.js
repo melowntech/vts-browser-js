@@ -1,11 +1,12 @@
 
 import Dom_ from '../../utility/dom';
 import {utils as utils_} from '../../../core/utils/utils';
+import {vec3 as vec3_} from '../../../core/utils/matrix';
 
 //get rid of compiler mess
 var dom = Dom_;
 var utils = utils_;
-
+var vec3 = vec3_;
 
 var UIControlMeasure = function(ui, visible, visibleLock) {
     this.ui = ui;
@@ -216,17 +217,17 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
 
             str = space + 'p' + this.navCoords.length + ': ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         }
-    } else if (this.tool == 3) { 
+    } else if (this.tool == 3 || this.tool == 4) { 
         if (this.renderCounter != this.counter) {
             this.renderCounter = this.counter;
-            this.onTool(3);
+            this.onTool(this.tool);
         }
 
         if (!this.navCoords) {
             this.navCoords = [clickCoords];
             clickCoords = map.convertCoordsFromNavToPublic(clickCoords, 'fix');
             str = '------------------------------------------------------\n';
-            str += '#' + this.counter + ' Area: ';
+            str += '#' + this.counter + ((this.tool == 3) ? ' Area: ' : ' Volume: ');
             str += '\n' + space + 'p1: ' + clickCoords[0].toFixed(7) + ', ' + clickCoords[1].toFixed(7) + ', ' + this.getTextNumber(clickCoords[2]);
         } else {
             this.navCoords.push(clickCoords);
@@ -442,6 +443,94 @@ UIControlMeasure.prototype.onCompute = function(button) {
 
             }).bind(this));
         }
+
+        if (this.tool == 4) {
+            var geodata = map.createGeodata();
+            geodata.addPolygon(this.navCoords, [], null, 'fix', {}, 'tmp-polygon');
+            geodata.processHeights('node-by-lod', 62, (function(){
+
+            if (this.navCoords.length) {
+
+                space = '  ';
+
+                for (i = 0, li = ('' + this.counter).length; i < li; i++) {
+                    space += ' ';
+                }
+
+                str = space + '------------------------';
+
+                var center = [0,0,0];
+
+                for (i = 0, li = this.navCoords.length; i < li; i++) {
+                    coords = map.convertCoordsFromNavToPhys(this.navCoords[i], 'fix');
+                    center[0] += coords[0];
+                    center[1] += coords[1];
+                    center[2] += coords[2];
+                }
+
+                center[0] /= li;
+                center[1] /= li;
+                center[2] /= li;
+
+                var radius = 0, dx, dy, dz, distance;
+
+                for (i = 0, li = this.navCoords.length; i < li; i++) {
+                    coords = map.convertCoordsFromNavToPhys(this.navCoords[i], 'fix');
+                    dx = (center[0] - coords[0]);
+                    dy = (center[1] - coords[1]);
+                    dz = (center[2] - coords[2]);
+                    distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                    if (distance > radius) {
+                        radius = distance;
+                    }
+                }
+
+
+                var poly = geodata.extractGeometry('tmp-polygon');
+
+                var faces = new Array(poly.getElements());
+
+                for (i = 0, li = faces.length; i < li; i++) {
+                    faces[i] = poly.getElement(i);
+                }
+
+                //TODO: build octree
+                //TODO: extract meshes and build octree
+
+                var x, y, north, east;
+
+                coords = map.convertCoordsFromPhysToNav(center, 'fix');
+
+                var ned = map.getNED(coords, false);
+                north = ned.direction;
+                east = ned.east;
+
+                var steps = 5, l, sx, sy;
+
+                for (y = -steps; y <= steps; y++) {
+                    for (x = -steps; x <= steps; x++) {
+
+                        sx = (1.0 / steps) * x * radius;
+                        sy = (1.0 / steps) * y * radius;
+                        coords[0] = center[0] + north[0] * sy + east[0] * sx;
+                        coords[1] = center[1] + north[1] * sy + east[1] * sx;
+                        coords[2] = center[2] + north[2] * sy + east[2] * sx;
+
+                        res = this.hitFaces(coords, faces);
+
+                    }
+
+                   console.log("*");
+                }
+
+            }
+
+            this.counter++;
+
+            }).bind(this));
+        }
+
     }
 
     if (str) {
@@ -451,6 +540,68 @@ UIControlMeasure.prototype.onCompute = function(button) {
     }
 
     map.redraw();
+};
+
+UIControlMeasure.prototype.hitFace = function(origin, dir, face) {
+    var EPSILON = 0.0000001; 
+    var v1 = face[0];
+    var v2 = face[1];  
+    var v3 = face[2];
+
+    var h = [0,0,0], q = [0,0,0], s;
+    var a,f,u,v;
+    var edge1 = [v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]];
+    var edge2 = [v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]];
+
+    vec3.cross(dir, edge2, h);
+    a = vec3.dot(edge1, h);
+
+    if (a > -EPSILON && a < EPSILON) {
+        return [false];
+    }
+
+    f = 1/a;
+    s = [origin[0] - v1[0], origin[1] - v1[1], origin[2] - v1[2]];
+    u = f * (vec3.dot(s, h));
+
+    if (u < 0.0 || u > 1.0) {
+        return [false];
+    }
+
+    q = vec3.cross(s, edge1);
+    v = f * vec3.dot(dir, q);
+    if (v < 0.0 || u + v > 1.0) {
+        return [false];
+    }
+
+    // At this stage we can compute t to find out where the intersection point is on the line.
+    var t = f * vec3.dot(edge2, q);
+    //if (t > EPSILON) { // ray intersection
+        return [true, t]; //[origin[0] + dir[0] * t, origin[1] + dir[1] * t, origin[2] + dir[2] * t ]];
+    //} else { // This means that there is a line intersection but not a ray intersection.
+     //   return [false];
+    //}
+};
+
+
+UIControlMeasure.prototype.hitFaces = function(coords, faces) {
+    var dir = [0,0,0];
+    vec3.normalize(coords, dir); // TODO: add support for projected systems
+    var hit = false, t = Number.POSITIVE_INFINITY;
+
+    for (var i = 0, li = faces.length; i < li; i++) {
+        var res = this.hitFace(coords, dir, faces[i]);
+
+        if (res[0]) {
+            hit = true;
+            
+            if (res[1] < t) {
+                t = res[1];
+            }
+        }
+    }
+
+    console.log(hit ? ("" + t.toFixed(2)) : ("N"));
 };
 
 
@@ -528,6 +679,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
         case 1: //line
         case 2: //track
         case 3: //area
+        case 4: //volume
 
             if (this.navCoords) {
                 points = [];
@@ -592,7 +744,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
     }
 
 
-    if ((this.tool == 2 || this.tool == 3) && points) {
+    if ((this.tool == 2 || this.tool == 3 || this.tool == 4) && points) {
         if (points.length < 2 || this.renderCounter != this.counter) {
             this.compute.setStyle('display', 'none');
             return;    

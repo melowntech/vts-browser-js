@@ -265,8 +265,8 @@ MapInterface.prototype.getAzimuthCorrection = function(coords, coords2) {
 };
 
 
-MapInterface.prototype.getNED = function(coords) {
-    return this.map.measure.getNewNED(coords, true);
+MapInterface.prototype.getNED = function(coords, onlyMatrix) {
+    return this.map.measure.getNewNED(coords, (onlyMatrix === false) ? false : true);
 };
 
 
@@ -397,6 +397,11 @@ MapInterface.prototype.getScreenRay = function(screenX, screenY) {
 
 MapInterface.prototype.renderToImage = function() {
     return this.map.renderToImage();
+};
+
+
+MapInterface.prototype.getCurrentGeometry = function() {
+    return this.map.getCurrentGeometry();
 };
 
 

@@ -47,14 +47,15 @@ MapGeodataGeometry.prototype.getElement = function(index) {
         case 2: return [[v[i], v[i+1], v[i+2]],  [v[i+3], v[i+4], v[i+5]]]; //line
         case 3: 
             var s = this.surface;
-            return [[v[s[i]], v[s[i+1]], v[s[i+2]]],  [v[s[i+3]], v[s[i+4]], v[s[i+5]]],  [v[s[i+6]], v[s[i+7]], v[s[i+8]]]]; //polygon
+            var i1 = s[i], i2 = s[i+1], i3 = s[i+2];
+            return [[v[i1][0], v[i1][1], v[i1][2]],  [v[i2][0], v[i2][1], v[i2][2]],  [v[i3][0], v[i3][1], v[i3][2]]]; //polygon
     }
 };
 
 MapGeodataGeometry.prototype.getElements = function(pathIndex) {
     switch(this.type) {
         case 1: //point
-        case 3: return this.vertexBuffer.length / 3; //polygon
+        case 3: return this.surface.length / 3; //polygon
         case 2:  //line
             
             pathIndex = pathIndex || 0;
