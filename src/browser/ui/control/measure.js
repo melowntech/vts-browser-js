@@ -500,6 +500,8 @@ UIControlMeasure.prototype.onCompute = function(button) {
 
                 var terrain = map.getCurrentGeometry();
 
+                var renderer = this.browser.getRenderer();
+                var octree = renderer.buildOctreeFromGeometry(terrain);
 
                 var x, y, north, east;
 
@@ -509,7 +511,7 @@ UIControlMeasure.prototype.onCompute = function(button) {
                 north = ned.direction;
                 east = ned.east;
 
-                var steps = 5, l, sx, sy;
+                var steps = 5, l, sx, sy, res2, dir = [0,0,0];
 
                 for (y = -steps; y <= steps; y++) {
                     for (x = -steps; x <= steps; x++) {
@@ -520,8 +522,10 @@ UIControlMeasure.prototype.onCompute = function(button) {
                         coords[1] = center[1] + north[1] * sy + east[1] * sx;
                         coords[2] = center[2] + north[2] * sy + east[2] * sx;
 
-                        res = this.hitFaces(coords, faces);
+                        vec3.normalize(coords, dir); // TODO: add support for projected systems
 
+                        res = this.hitFaces(coords, dir, faces);
+                        res2 = renderer.raycastOctreeGeometry(octree, coords, dir);
                     }
 
                    console.log("*");
@@ -587,9 +591,7 @@ UIControlMeasure.prototype.hitFace = function(origin, dir, face) {
 };
 
 
-UIControlMeasure.prototype.hitFaces = function(coords, faces) {
-    var dir = [0,0,0];
-    vec3.normalize(coords, dir); // TODO: add support for projected systems
+UIControlMeasure.prototype.hitFaces = function(coords, dir, faces) {
     var hit = false, t = Number.POSITIVE_INFINITY;
 
     for (var i = 0, li = faces.length; i < li; i++) {
