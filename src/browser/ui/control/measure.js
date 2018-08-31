@@ -498,6 +498,9 @@ UIControlMeasure.prototype.onCompute = function(button) {
                 //TODO: build octree
                 //TODO: extract meshes and build octree
 
+                var terrain = map.getCurrentGeometry();
+
+
                 var x, y, north, east;
 
                 coords = map.convertCoordsFromPhysToNav(center, 'fix');

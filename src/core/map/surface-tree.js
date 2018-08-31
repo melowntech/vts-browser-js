@@ -125,7 +125,7 @@ MapSurfaceTree.prototype.findNavTile = function(id) {
 };
 
 
-MapSurfaceTree.prototype.draw = function() {
+MapSurfaceTree.prototype.draw = function(storeTilesOnly) {
     this.cameraPos = [0,0,0];
     this.worldPos = [0,0,0];
 
@@ -150,8 +150,8 @@ MapSurfaceTree.prototype.draw = function() {
         this.drawSurface([0,0,0]);
 
         if (periodicity.type == 'X') {
-            this.drawSurface([periodicity.period,0,0]);
-            this.drawSurface([-periodicity.period,0,0]);
+            this.drawSurface([periodicity.period,0,0], storeTilesOnly);
+            this.drawSurface([-periodicity.period,0,0], storeTilesOnly);
         }
 
     } else {
@@ -164,9 +164,9 @@ MapSurfaceTree.prototype.draw = function() {
         }
 
         switch(mode) {
-        case 'topdown': this.drawSurface([0,0,0]); break;
-        case 'fit':     this.drawSurfaceFit([0,0,0]); break;
-        case 'fitonly': this.drawSurfaceFitOnly([0,0,0]); break;
+        case 'topdown': this.drawSurface([0,0,0], storeTilesOnly); break;
+        case 'fit':     this.drawSurfaceFit([0,0,0], storeTilesOnly); break;
+        case 'fitonly': this.drawSurfaceFitOnly([0,0,0], storeTilesOnly); break;
         }
     }
 };
@@ -219,7 +219,7 @@ MapSurfaceTree.prototype.logTileInfo = function(tile, node, cameraPos) {
 
 
 //loadmode = topdown
-MapSurfaceTree.prototype.drawSurface = function() {
+MapSurfaceTree.prototype.drawSurface = function(shift, storeTilesOnly) {
     this.counter++;
 
     var tile = this.surfaceTree;
@@ -403,6 +403,11 @@ MapSurfaceTree.prototype.drawSurface = function() {
         processBufferIndex = newProcessBufferIndex;
 
     } while(processBufferIndex > 0);
+
+    if (storeTilesOnly) {
+        this.storeDrawBufferGeometry(drawBufferIndex);
+        return;
+    }
     
     if (best2 > draw.bestMeshTexelSize) {
         draw.bestMeshTexelSize = best2;
@@ -449,7 +454,7 @@ MapSurfaceTree.prototype.drawSurface = function() {
 
 
 //loadmode = fitonly
-MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
+MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift, storeTilesOnly) {
     this.counter++;
 //    this.surfaceTracer.trace(this.surfaceTree);//this.rootId);
 
@@ -622,6 +627,11 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
         
     } while(processBufferIndex > 0);
 
+    if (storeTilesOnly) {
+        this.storeDrawBufferGeometry(drawBufferIndex);
+        return;
+    }
+
     var stats = map.stats;
 
     stats.usedNodes = usedNodes;    
@@ -658,7 +668,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function() {
 
 
 //loadmode = fit
-MapSurfaceTree.prototype.drawSurfaceFit = function() {
+MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
     this.counter++;
 
     var tile = this.surfaceTree;
@@ -971,6 +981,11 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
         
     } while(processBufferIndex > 0);
 
+    if (storeTilesOnly) {
+        this.storeDrawBufferGeometry(drawBufferIndex);
+        return;
+    }
+
     var stats = map.stats;
 
     stats.usedNodes = usedNodes;    
@@ -1010,6 +1025,36 @@ MapSurfaceTree.prototype.drawSurfaceFit = function() {
     map.gpuCache.checkCost();
 };
 
+
+MapSurfaceTree.prototype.storeDrawBufferGeometry = function(drawBufferIndex) {
+    var map = this.map;
+    var drawBuffer = map.draw.drawBuffer;
+    map.storedTilesRes = new Array(drawBufferIndex);        
+
+    for (var i = drawBufferIndex - 1; i >= 0; i--) {
+        var tile = drawBuffer[i];
+
+        if (tile.metanode && tile.surface && tile.metanode.hasGeometry() &&
+            tile.surfaceMesh && tile.surfaceMesh.isReady(true, 0, true)) {
+
+            var mesh = tile.surfaceMesh;
+            var submeshes = [];
+
+            for (var j = 0, lj = mesh.submeshes.length; j < lj; j++) {
+                var submesh = mesh.submeshes[j];
+                submeshes.push({ 
+                    "bbox": [submesh.bbox.min, submesh.bbox.max],
+                    "vertices" : submesh.vertices });
+            }
+
+            map.storedTilesRes[i] = {
+                "id": tile.id.slice(),
+                "type": "mesh",
+                "submeshes": submeshes
+            };
+        }
+    }
+};
 
 MapSurfaceTree.prototype.traceHeight = function(tile, params, nodeOnly) {
     if (!tile) {
