@@ -1041,10 +1041,21 @@ MapSurfaceTree.prototype.storeDrawBufferGeometry = function(drawBufferIndex) {
             var submeshes = [];
 
             for (var j = 0, lj = mesh.submeshes.length; j < lj; j++) {
-                var submesh = mesh.submeshes[j];
+                var submesh = mesh.submeshes[j],
+                    vertices = submesh.vertices.slice(),
+                    min = submesh.bbox.min,
+                    max = submesh.bbox.max,
+                    delta = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+
+                for (var k = 0, lk = vertices.length; k < lk; k+=3) {
+                    vertices[k] = vertices[k]*delta[0] + min[0];
+                    vertices[k+1] = vertices[k+1]*delta[1] + min[1];
+                    vertices[k+2] = vertices[k+2]*delta[2] + min[2];
+                }
+
                 submeshes.push({ 
-                    "bbox": [submesh.bbox.min, submesh.bbox.max],
-                    "vertices" : submesh.vertices });
+                    "bbox": [min.slice(), max.slice()],
+                    "vertices" : vertices });
             }
 
             map.storedTilesRes[i] = {

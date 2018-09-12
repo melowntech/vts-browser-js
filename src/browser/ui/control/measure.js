@@ -525,7 +525,14 @@ UIControlMeasure.prototype.onCompute = function(button) {
                         vec3.normalize(coords, dir); // TODO: add support for projected systems
 
                         res = this.hitFaces(coords, dir, faces);
-                        res2 = renderer.raycastOctreeGeometry(octree, coords, dir);
+
+                        if (res[0]) {
+                            res2 = renderer.raycastOctreeGeometry(octree, coords, dir);
+
+                            if (res2 > 0) {
+                               console.log("T" + JSON.stringify(res2));
+                            }
+                        }
                     }
 
                    console.log("*");
@@ -607,6 +614,7 @@ UIControlMeasure.prototype.hitFaces = function(coords, dir, faces) {
     }
 
     console.log(hit ? ("" + t.toFixed(2)) : ("N"));
+    return [hit, t];
 };
 
 

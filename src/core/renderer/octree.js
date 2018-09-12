@@ -52,17 +52,17 @@ Octree.prototype.buildFromGeometry = function(data) {
         if (geometry["type"] == "mesh") {
             submeshes = geometry["submeshes"];
 
-            for (j = 0; j < lj; j++) {
+            for (j = 0, lj = submeshes.length; j < lj; j++) {
                 submesh = submeshes[j];
                 bbox = submesh["bbox"];
                 
-                if (bbox.min[0] < minX) minX = bbox.min[0];
-                if (bbox.min[1] < minY) minY = bbox.min[1];
-                if (bbox.min[2] < minZ) minZ = bbox.min[2];
+                if (bbox[0][0] < minX) minX = bbox[0][0];
+                if (bbox[0][1] < minY) minY = bbox[0][1];
+                if (bbox[0][2] < minZ) minZ = bbox[0][2];
 
-                if (bbox.max[0] > maxX) maxX = bbox.max[0];
-                if (bbox.max[1] > maxY) maxY = bbox.max[1];
-                if (bbox.max[2] > maxZ) maxZ = bbox.max[2];
+                if (bbox[1][0] > maxX) maxX = bbox[1][0];
+                if (bbox[1][1] > maxY) maxY = bbox[1][1];
+                if (bbox[1][2] > maxZ) maxZ = bbox[1][2];
             }
         }
     }
@@ -86,7 +86,7 @@ Octree.prototype.buildFromGeometry = function(data) {
                     maxX = maxY = maxZ = Number.NEGATIVE_INFINITY;
 
                     for (v = 0; v < 3; v ++) {
-                        index = k + v;
+                        index = k + v * 3;
 
                         if (vertices[index] < minX) minX = vertices[index];
                         if (vertices[index+1] < minY) minY = vertices[index+1];
@@ -98,7 +98,7 @@ Octree.prototype.buildFromGeometry = function(data) {
                     }
 
                     //this.root.add([minX, minY, minZ], [maxX, maxY, maxZ], [vertices, k])
-                    this.root.add([minX, minY, minZ, maxX, maxY, maxZ, vertices, k])
+                    this.root.add([minX, minY, minZ, maxX, maxY, maxZ, vertices, k], this)
                 }
 
             }
@@ -112,23 +112,45 @@ Octree.prototype.buildFromGeometry = function(data) {
 var OctreeNode = function(min, max) {
     this.min = min;
     this.max = max;
-    this.children = [];
+    this.children = null;
     this.items = null;
 };
 
 OctreeNode.prototype.add = function(item, octree) {
+    if (this.children) {
+        for (var i = 0; i < 8; i++) {
+            var child = this.children[i],
+                min = child.min,
+                max = child.max;
+
+            if (item[0] < max[0] && item[3] > min[0] &&
+                item[1] < max[1] && item[4] > min[1] &&
+                item[2] < max[2] && item[5] > min[2]) {
+
+                //collision detected, add item
+                child.add(item, octree);
+            }
+        }
+
+        return;
+    }
+
+    if (!this.items) {
+        this.items = [];
+    }
+
     this.items.push(item);
 
-    if (this.children.length >= octree.maxItemsPerNode) {
-        this.split();
+    if (this.items.length >= octree.maxItemsPerNode) {
+        this.split(octree);
     }
 };
 
-OctreeNode.prototype.split = function() {
-    var min = this.min;
-    var max = this.max;
-    var mid = [(max[0] + min[0]) * 0.5, (max[1] + min[1]) * 0.5, (max[2] + min[2]) * 0.5];
-    var i, li, j;
+OctreeNode.prototype.split = function(octree) {
+    var min = this.min,
+        max = this.max,
+        mid = [(max[0] + min[0]) * 0.5, (max[1] + min[1]) * 0.5, (max[2] + min[2]) * 0.5],
+        i, li, j;
 
     this.children = [
         null, null,
@@ -138,22 +160,24 @@ OctreeNode.prototype.split = function() {
     ];
 
     for (i = 0; i < 8; i++) {
-        var combination = this.pattern[i];
+        var combination = octree.pattern[i];
 
         this.children[i] = new OctreeNode(
             [
-                (combination[0] === 0) ? min.x : mid.x,
-                (combination[1] === 0) ? min.y : mid.y,
-                (combination[2] === 0) ? min.z : mid.z
+                (combination[0] === 0) ? min[0] : mid[0],
+                (combination[1] === 0) ? min[1] : mid[1],
+                (combination[2] === 0) ? min[2] : mid[2]
             ],
 
             [
-                (combination[0] === 0) ? mid.x : max.x,
-                (combination[1] === 0) ? mid.y : max.y,
-                (combination[2] === 0) ? mid.z : max.z
+                (combination[0] === 0) ? mid[0] : max[0],
+                (combination[1] === 0) ? mid[1] : max[1],
+                (combination[2] === 0) ? mid[2] : max[2]
             ]
         );
     }
+
+    var items = this.items;
 
     //distribute items
     if (items) {
@@ -170,12 +194,13 @@ OctreeNode.prototype.split = function() {
                     item[2] < max[2] && item[5] > min[2]) {
 
                     //collision detected, add item
-                    child.add(item);
+                    child.add(item, octree);
                 }
             }
         }
     }
 
+    this.items = null;   
 };
 
 
@@ -300,7 +325,7 @@ OctreeRaycaster.prototype.raycastOctant = function(octant, tx0, ty0, tz0, tx1, t
 
     if (tx1 >= 0.0 && ty1 >= 0.0 && tz1 >= 0.0) {
 
-        if (children === null) {
+        if (!children) {
 
             // Leaf.
             intersects.push(octant);
@@ -451,4 +476,8 @@ OctreeRaycaster.prototype.intersectOctree = function(rayPos, rayDir, octree, int
         // Find the intersecting octants.
         this.raycastOctant(octree.root, tx0, ty0, tz0, tx1, ty1, tz1, intersects);
     }
+
+    var hits = [];
 }
+
+export {Octree, OctreeRaycaster};
