@@ -1,4 +1,10 @@
 
+import {vec3 as vec3_} from '../utils/matrix';
+
+//get rid of compiler mess
+var vec3 = vec3_;
+
+
 var Octree = function() {
     this.root = null;
     this.maxItemsPerNode = 20;
@@ -308,14 +314,15 @@ OctreeRaycaster.prototype.findNextOctant = function(currentOctant, tx1, ty1, tz1
 /**
  * Finds all octants that intersect with the given ray.
  *
- * @param {Octant} octant - The current octant.
- * @param {Number} tx0 - Ray projection parameter. Initial tx0 = (minX - rayOriginX) / rayDirectionX.
- * @param {Number} ty0 - Ray projection parameter. Initial ty0 = (minY - rayOriginY) / rayDirectionY.
- * @param {Number} tz0 - Ray projection parameter. Initial tz0 = (minZ - rayOriginZ) / rayDirectionZ.
- * @param {Number} tx1 - Ray projection parameter. Initial tx1 = (maxX - rayOriginX) / rayDirectionX.
- * @param {Number} ty1 - Ray projection parameter. Initial ty1 = (maxY - rayOriginY) / rayDirectionY.
- * @param {Number} tz1 - Ray projection parameter. Initial tz1 = (maxZ - rayOriginZ) / rayDirectionZ.
- * @param {Array} intersects - An array to be filled with the intersecting octants.
+ * octant - The current octant.
+ * tx0 - Ray projection parameter. Initial tx0 = (minX - rayOriginX) / rayDirectionX.
+ * ty0 - Ray projection parameter. Initial ty0 = (minY - rayOriginY) / rayDirectionY.
+ * tz0 - Ray projection parameter. Initial tz0 = (minZ - rayOriginZ) / rayDirectionZ.
+ * tx1 - Ray projection parameter. Initial tx1 = (maxX - rayOriginX) / rayDirectionX.
+ * ty1 - Ray projection parameter. Initial ty1 = (maxY - rayOriginY) / rayDirectionY.
+ * tz1 - Ray projection parameter. Initial tz1 = (maxZ - rayOriginZ) / rayDirectionZ.
+ * intersects - An array to be filled with the intersecting octants.
+ * returns
  */
 
 OctreeRaycaster.prototype.raycastOctant = function(octant, tx0, ty0, tz0, tx1, ty1, tz1, intersects) {
@@ -328,7 +335,9 @@ OctreeRaycaster.prototype.raycastOctant = function(octant, tx0, ty0, tz0, tx1, t
         if (!children) {
 
             // Leaf.
-            intersects.push(octant);
+            if (octant.items) {
+                intersects.push(octant);
+            }
 
         } else {
 
@@ -400,12 +409,53 @@ OctreeRaycaster.prototype.raycastOctant = function(octant, tx0, ty0, tz0, tx1, t
 
 }
 
+OctreeRaycaster.prototype.hitFace = function(origin, dir, index, vertices) {
+    var EPSILON = 0.0000001,
+        v1 = [vertices[index], vertices[index+1], vertices[index+2]],
+        v2 = [vertices[index+3], vertices[index+4], vertices[index+5]],
+        v3 = [vertices[index+6], vertices[index+7], vertices[index+8]];
+
+    var h = [0,0,0], q = [0,0,0], s, a, f, u, v,
+        edge1 = [v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]],
+        edge2 = [v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]];
+
+    vec3.cross(dir, edge2, h);
+    a = vec3.dot(edge1, h);
+
+    if (a > -EPSILON && a < EPSILON) {
+        return [false];
+    }
+
+    f = 1/a;
+    s = [origin[0] - v1[0], origin[1] - v1[1], origin[2] - v1[2]];
+    u = f * (vec3.dot(s, h));
+
+    if (u < 0.0 || u > 1.0) {
+        return [false];
+    }
+
+    q = vec3.cross(s, edge1);
+    v = f * vec3.dot(dir, q);
+    if (v < 0.0 || u + v > 1.0) {
+        return [false];
+    }
+
+    // At this stage we can compute t to find out where the intersection point is on the line.
+    var t = f * vec3.dot(edge2, q);
+    //if (t > EPSILON) { // ray intersection
+        return [true, t]; //[origin[0] + dir[0] * t, origin[1] + dir[1] * t, origin[2] + dir[2] * t ]];
+    //} else { // This means that there is a line intersection but not a ray intersection.
+     //   return [false];
+    //}
+};
+
+
 /**
  * Finds the octants that intersect with the given ray. The intersecting
  * octants are sorted by distance, closest first.
  *
- * @param {Octree} octree - An octree.
- * @param {Array} intersects - A list to be filled with intersecting octants.
+ * octree - An octree.
+ * intersects - A list to be filled with intersecting octants.
  */
 
 // https://github.com/vanruesc/sparse-octree/blob/master/src/core/OctreeRaycaster.js
@@ -476,8 +526,30 @@ OctreeRaycaster.prototype.intersectOctree = function(rayPos, rayDir, octree, int
         // Find the intersecting octants.
         this.raycastOctant(octree.root, tx0, ty0, tz0, tx1, ty1, tz1, intersects);
     }
+};
 
+OctreeRaycaster.prototype.intersectOctants = function(rayPos, rayDir, octants) {
     var hits = [];
-}
+    var t = Number.POSITIVE_INFINITY;
+
+    for (var i = 0, li = octants.length; i < li; i++) {
+        var items = octants[i].items;
+
+        for (var j = 0, lj = items.length; j < lj; j++) {
+            var item = items[j];
+            var res = this.hitFace(rayPos, rayDir, item[7], item[6]);
+
+            if (res[0] && res[1] < t) {
+                t = res[1];
+            }
+        }
+    }
+
+    if (t !== Number.POSITIVE_INFINITY) {
+        hits = [t];
+    }
+
+    return hits;
+};
 
 export {Octree, OctreeRaycaster};

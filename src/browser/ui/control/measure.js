@@ -511,26 +511,40 @@ UIControlMeasure.prototype.onCompute = function(button) {
                 north = ned.direction;
                 east = ned.east;
 
-                var steps = 5, l, sx, sy, res2, dir = [0,0,0];
+                var steps = 25, l, sx, sy, res2, dir = [0,0,0], delta;
+                var sampleArea = (1.0 / steps) * radius;
+                var volumeAbove = 0;
+                var volumeBelow = 0;
 
                 for (y = -steps; y <= steps; y++) {
                     for (x = -steps; x <= steps; x++) {
 
                         sx = (1.0 / steps) * x * radius;
                         sy = (1.0 / steps) * y * radius;
-                        coords[0] = center[0] + north[0] * sy + east[0] * sx;
-                        coords[1] = center[1] + north[1] * sy + east[1] * sx;
-                        coords[2] = center[2] + north[2] * sy + east[2] * sx;
+                        coords[0] = center[0] * 1.0001 + north[0] * sy + east[0] * sx;
+                        coords[1] = center[1] * 1.0001 + north[1] * sy + east[1] * sx;
+                        coords[2] = center[2] * 1.0001 + north[2] * sy + east[2] * sx;
 
                         vec3.normalize(coords, dir); // TODO: add support for projected systems
+                        dir[0] = -dir[0];
+                        dir[1] = -dir[1];
+                        dir[2] = -dir[2];
 
                         res = this.hitFaces(coords, dir, faces);
 
                         if (res[0]) {
                             res2 = renderer.raycastOctreeGeometry(octree, coords, dir);
 
-                            if (res2 > 0) {
-                               console.log("T" + JSON.stringify(res2));
+                            if (res2.length > 0) {
+                                delta = (res[1] - res2[0]);
+
+                                if (delta >= 0) {
+                                    volumeAbove += delta;
+                                } else {
+                                    volumeBelow += -delta;
+                                }
+
+                                console.log("T" + JSON.stringify(res2));
                             }
                         }
                     }
@@ -538,7 +552,11 @@ UIControlMeasure.prototype.onCompute = function(button) {
                    console.log("*");
                 }
 
+                str += '\n' +  space + 'volume above: ' + volumeAbove.toFixed(2) + ' m\u00B3';
+                str += '\n' +  space + 'volume below: ' + volumeBelow.toFixed(2) + ' m\u00B3';
+                str += '\n' +  space + 'volume combined: ' + (volumeAbove + volumeBelow).toFixed(2) + ' m\u00B3';
             }
+
 
             this.counter++;
 

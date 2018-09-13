@@ -419,7 +419,7 @@ RendererInterface.prototype.buildOctreeFromGeometry = function(geometry) {
 RendererInterface.prototype.raycastOctreeGeometry = function(octree, rayPos, rayDir) {
     var raycaster = new OctreeRaycaster(), intersects = [];
     raycaster.intersectOctree(rayPos, rayDir, octree, intersects);
-    return intersects;
+    return raycaster.intersectOctants(rayPos, rayDir, intersects);
 };
 
 RendererInterface.prototype.saveScreenshot = function(output, filename, filetype) {
