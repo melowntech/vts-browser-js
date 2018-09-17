@@ -8,6 +8,12 @@ var vec3 = vec3_;
 var Octree = function() {
     this.root = null;
     this.maxItemsPerNode = 20;
+    this.maxDepth = 20;
+
+    this.depthCount = [];
+    for (var i = 0; i < 1000; i++) {
+        this.depthCount[i] = 0;
+    }
 
     /**
      * A binary pattern that describes the standard octant layout:
@@ -122,8 +128,12 @@ var OctreeNode = function(min, max) {
     this.items = null;
 };
 
-OctreeNode.prototype.add = function(item, octree) {
+OctreeNode.prototype.add = function(item, octree, depth) {
     if (this.children) {
+        if (!depth) {
+            depth = 0; 
+        }
+
         for (var i = 0; i < 8; i++) {
             var child = this.children[i],
                 min = child.min,
@@ -134,7 +144,7 @@ OctreeNode.prototype.add = function(item, octree) {
                 item[2] < max[2] && item[5] > min[2]) {
 
                 //collision detected, add item
-                child.add(item, octree);
+                child.add(item, octree, depth + 1);
             }
         }
 
@@ -147,12 +157,12 @@ OctreeNode.prototype.add = function(item, octree) {
 
     this.items.push(item);
 
-    if (this.items.length >= octree.maxItemsPerNode) {
-        this.split(octree);
+    if (depth < octree.maxDepth && this.items.length >= octree.maxItemsPerNode) {
+        this.split(octree, depth + 1);
     }
 };
 
-OctreeNode.prototype.split = function(octree) {
+OctreeNode.prototype.split = function(octree, depth) {
     var min = this.min,
         max = this.max,
         mid = [(max[0] + min[0]) * 0.5, (max[1] + min[1]) * 0.5, (max[2] + min[2]) * 0.5],
@@ -164,6 +174,8 @@ OctreeNode.prototype.split = function(octree) {
         null, null,
         null, null
     ];
+
+    this.depthCount[depth]++;
 
     for (i = 0; i < 8; i++) {
         var combination = octree.pattern[i];

@@ -516,6 +516,8 @@ UIControlMeasure.prototype.onCompute = function(button) {
                 var volumeAbove = 0;
                 var volumeBelow = 0;
 
+                sampleArea *= sampleArea;
+
                 for (y = -steps; y <= steps; y++) {
                     for (x = -steps; x <= steps; x++) {
 
@@ -536,7 +538,7 @@ UIControlMeasure.prototype.onCompute = function(button) {
                             res2 = renderer.raycastOctreeGeometry(octree, coords, dir);
 
                             if (res2.length > 0) {
-                                delta = (res[1] - res2[0]);
+                                delta = (res[1] - res2[0]) * sampleArea;
 
                                 if (delta >= 0) {
                                     volumeAbove += delta;
