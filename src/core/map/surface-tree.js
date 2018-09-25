@@ -1351,5 +1351,62 @@ MapSurfaceTree.prototype.getRenderedNodeById = function(id, drawCounter) {
     return;
 };
 
+MapSurfaceTree.prototype.traceAreaTiles = function(tile, priority, nodeReadyOnly) {
+    if (tile == null) {
+        return;
+    }
+
+    if (!tile.isMetanodeReady(this, 0) || nodeReadyOnly) {
+        this.params.loaded = false;
+        return;
+    }
+
+    tile.metanode.metatile.used();
+
+    if (tile.lastSurface && tile.lastSurface == tile.surface) {
+        tile.lastSurface = null;
+        tile.restoreLastState();
+        //return;
+    }
+
+    if (!tile.metanode.hasChildren()) {
+        console.log('(A)' + JSON.stringify(tile.id));
+
+        this.params.areaTiles.push(tile);
+    } else {
+        for (var i = 0; i < 4; i++) {
+            var child = tile.children[i];
+            
+            if (child && child.metanode) {
+                if (child.insideCone(this.params.coneVec, this.params.coneAngle, child.metanode)) {
+                    var fit = (this.params.mode == 'lod') ? (child.id[0] >= this.params.limit) : (child.metanode.pixelSize <= this.params.limit);
+
+                    if (fit) {
+                        console.log('(A)' + JSON.stringify(child.id));
+
+                        if (this.params.loadMeshes || this.params.loadTextures) {
+
+                            var tmp = this.config.mapNoTextures;
+                            this.config.mapNoTextures = !this.params.loadTextures;
+
+                            //are resources ready? priority=0, preventRender=true, preventLoad=false, doNotCheckGpu=true
+                            if (!this.map.draw.drawTiles.drawSurfaceTile(child, child.metanode, this.map.renderer.cameraPosition, child.texelSize, 0, true, false, true)) {
+                                this.params.loaded = false;
+                            }
+
+                            this.config.mapNoTextures = tmp;
+                        }
+
+                        this.params.areaTiles.push(child);
+                    } else {
+                        this.traceAreaTiles(child, priority, nodeReadyOnly);
+                    }
+                }
+            }
+        }
+    }
+};
+
+
 
 export default MapSurfaceTree;

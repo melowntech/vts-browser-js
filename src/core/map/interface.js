@@ -255,6 +255,11 @@ MapInterface.prototype.getSurfaceHeight = function(coords, precision) {
 };
 
 
+MapInterface.prototype.getSurfaceAreaTiles = function(coords, radius, mode, limit, loadMeshes, loadTextures) {
+    return this.map.measure.getSurfaceAreaTiles(coords, radius, mode, limit, loadMeshes, loadTextures);
+};
+
+
 MapInterface.prototype.getDistance = function(coords, coords2, includingHeights, usePublic) {
     return this.map.measure.getDistance(coords, coords2, includingHeights, usePublic);
 };

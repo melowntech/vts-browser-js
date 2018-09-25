@@ -507,6 +507,8 @@ UIControlMeasure.prototype.onCompute = function(button) {
 
                 coords = map.convertCoordsFromPhysToNav(center, 'fix');
 
+                map.getSurfaceAreaTiles(coords, radius, 'lod', 21, false, false);
+
                 var ned = map.getNED(coords, false);
                 north = ned.direction;
                 east = ned.east;
