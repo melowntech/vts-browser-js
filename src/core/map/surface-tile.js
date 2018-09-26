@@ -309,7 +309,7 @@ MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad)
                 var ret = this.checkMetanode(tree, priority);
                 
                 if (!ret && !(this.metanode != null && this.lastMetanode)) { //metanode is not ready yet
-                    return;
+                    return false;
                 }
             }
             

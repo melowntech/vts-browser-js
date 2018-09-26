@@ -25,7 +25,7 @@ var MapMeasure = function(map) {
     this.maxDivisionNodeDepth = res[1];
 };
 
-MapMeasure.prototype.getSurfaceAreaTiles = function(coords, radius, mode, limit, loadMeshes, loadTextures) {
+MapMeasure.prototype.getSurfaceAreaGeometry = function(coords, radius, mode, limit, loadMeshes, loadTextures) {
     var tree = this.map.tree;
 
     if (tree.surfaceSequence.length == 0) {

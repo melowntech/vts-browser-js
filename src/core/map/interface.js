@@ -255,8 +255,17 @@ MapInterface.prototype.getSurfaceHeight = function(coords, precision) {
 };
 
 
-MapInterface.prototype.getSurfaceAreaTiles = function(coords, radius, mode, limit, loadMeshes, loadTextures) {
-    return this.map.measure.getSurfaceAreaTiles(coords, radius, mode, limit, loadMeshes, loadTextures);
+MapInterface.prototype.getSurfaceAreaGeometry = function(coords, radius, mode, limit, callback, loadTextures) {
+    var res = this.map.measure.getSurfaceAreaGeometry(coords, radius, mode, limit, true, loadTextures);
+
+    console.log('getSurfaceAreaGeometry');
+
+    if (!res[0]) {
+        return this.map.core.once("map-update", this.getSurfaceAreaGeometry.bind(this, coords, radius, mode, limit, callback, loadTextures), 1);
+    } else {
+        callback(res[1]);
+        return (function(){});
+    }
 };
 
 

@@ -507,58 +507,72 @@ UIControlMeasure.prototype.onCompute = function(button) {
 
                 coords = map.convertCoordsFromPhysToNav(center, 'fix');
 
-                map.getSurfaceAreaTiles(coords, radius, 'lod', 21, false, false);
+                //map.getSurfaceAreaGeometry(coords, radius, 'lod', 21, false, false);
 
-                var ned = map.getNED(coords, false);
-                north = ned.direction;
-                east = ned.east;
+                var texelSize = radius * 0.0030; //0.15 texel size for 100m diameter 
 
-                var steps = 25, l, sx, sy, res2, dir = [0,0,0], delta;
-                var sampleArea = (1.0 / steps) * radius;
-                var volumeAbove = 0;
-                var volumeBelow = 0;
+                //map.getSurfaceAreaGeometry(coords, radius, 'texelSize', texelSize, false, false);
 
-                sampleArea *= sampleArea;
 
-                for (y = -steps; y <= steps; y++) {
-                    for (x = -steps; x <= steps; x++) {
+                var traceVolumeCall = (function(){
 
-                        sx = (1.0 / steps) * x * radius;
-                        sy = (1.0 / steps) * y * radius;
-                        coords[0] = center[0] * 1.0001 + north[0] * sy + east[0] * sx;
-                        coords[1] = center[1] * 1.0001 + north[1] * sy + east[1] * sx;
-                        coords[2] = center[2] * 1.0001 + north[2] * sy + east[2] * sx;
+                    return;
 
-                        vec3.normalize(coords, dir); // TODO: add support for projected systems
-                        dir[0] = -dir[0];
-                        dir[1] = -dir[1];
-                        dir[2] = -dir[2];
+                    var ned = map.getNED(coords, false);
+                    north = ned.direction;
+                    east = ned.east;
 
-                        res = this.hitFaces(coords, dir, faces);
+                    var steps = 25, l, sx, sy, res2, dir = [0,0,0], delta;
+                    var sampleArea = (1.0 / steps) * radius;
+                    var volumeAbove = 0;
+                    var volumeBelow = 0;
 
-                        if (res[0]) {
-                            res2 = renderer.raycastOctreeGeometry(octree, coords, dir);
+                    sampleArea *= sampleArea;
 
-                            if (res2.length > 0) {
-                                delta = (res[1] - res2[0]) * sampleArea;
+                    for (y = -steps; y <= steps; y++) {
+                        for (x = -steps; x <= steps; x++) {
 
-                                if (delta >= 0) {
-                                    volumeAbove += delta;
-                                } else {
-                                    volumeBelow += -delta;
+                            sx = (1.0 / steps) * x * radius;
+                            sy = (1.0 / steps) * y * radius;
+                            coords[0] = center[0] * 1.0001 + north[0] * sy + east[0] * sx;
+                            coords[1] = center[1] * 1.0001 + north[1] * sy + east[1] * sx;
+                            coords[2] = center[2] * 1.0001 + north[2] * sy + east[2] * sx;
+
+                            vec3.normalize(coords, dir); // TODO: add support for projected systems
+                            dir[0] = -dir[0];
+                            dir[1] = -dir[1];
+                            dir[2] = -dir[2];
+
+                            res = this.hitFaces(coords, dir, faces);
+
+                            if (res[0]) {
+                                res2 = renderer.raycastOctreeGeometry(octree, coords, dir);
+
+                                if (res2.length > 0) {
+                                    delta = (res[1] - res2[0]) * sampleArea;
+
+                                    if (delta >= 0) {
+                                        volumeAbove += delta;
+                                    } else {
+                                        volumeBelow += -delta;
+                                    }
+
+                                    console.log("T" + JSON.stringify(res2));
                                 }
-
-                                console.log("T" + JSON.stringify(res2));
                             }
                         }
+
+                       console.log("*");
                     }
 
-                   console.log("*");
-                }
+                    str += '\n' +  space + 'volume above: ' + volumeAbove.toFixed(2) + ' m\u00B3';
+                    str += '\n' +  space + 'volume below: ' + volumeBelow.toFixed(2) + ' m\u00B3';
+                    str += '\n' +  space + 'volume combined: ' + (volumeAbove + volumeBelow).toFixed(2) + ' m\u00B3';
 
-                str += '\n' +  space + 'volume above: ' + volumeAbove.toFixed(2) + ' m\u00B3';
-                str += '\n' +  space + 'volume below: ' + volumeBelow.toFixed(2) + ' m\u00B3';
-                str += '\n' +  space + 'volume combined: ' + (volumeAbove + volumeBelow).toFixed(2) + ' m\u00B3';
+                }).bind(this);
+
+                var destructor = map.getSurfaceAreaGeometry(coords, radius, 'texelSize', texelSize, traceVolumeCall, false, false);
+
             }
 
 
