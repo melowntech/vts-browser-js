@@ -542,11 +542,15 @@
     cursor: pointer;
 }
 
-.vts-measure-tools-button:hover {
+.vts-measure-tools-button-selected {
+    border-radius: 2px;
+    display: inline-block;
+    padding: 0px 5px;
+    background-color: #fff;
+    cursor: pointer;
     color: rgba(0, 102, 255, 1);
     border: 1px solid rgba(0, 102, 255, 1);
 }
-
 
 .vts-measure-compute {
     position: absolute;

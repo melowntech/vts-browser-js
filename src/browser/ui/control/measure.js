@@ -4,9 +4,12 @@ import {utils as utils_} from '../../../core/utils/utils';
 import {vec3 as vec3_} from '../../../core/utils/matrix';
 
 //get rid of compiler mess
-var dom = Dom_;
-var utils = utils_;
-var vec3 = vec3_;
+var dom = Dom_,
+    utils = utils_,
+    vec3 = vec3_,
+    UIControlMeasureIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2lpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDpkNjI1MjFjMi1mYzE5LTcyNDUtOTI5My1kNTU3MmE5N2E1MjgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6ODJGRUI2NzE2NzkwMTFFN0EzRUZFNzQ1NEFCMkVFQUQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6ODJGRUI2NzA2NzkwMTFFN0EzRUZFNzQ1NEFCMkVFQUQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjRBMjkwN0JENjc4QzExRTc5QTQwRjk4NjQzOEI4RDczIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjRBMjkwN0JFNjc4QzExRTc5QTQwRjk4NjQzOEI4RDczIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+k3ySjQAAAdJJREFUeNrclk0oBGEYgHemjZOLm8tSyt9BqT2I1O7JSdSSkpsDxZGLi5MTjn5K4SDh4OfiaPfkIDebOPiPUqKUiLKet96pzzT7MztxMPX0le+b95n3Z2ZZmUwm9NuXHfqLK1smsVhsED5hKkhswc4mYJmHVxgNIvIslyE4hnLYDSqycwiaoCGVSnUFFdk5BH2wKHtBRbYKqlVwbQhGoNU5GETkZHKpggjMqaBFhaGgIltv/mKphRuQss1oZkPuG4oRWTLHlmU5fSlhOYNKSEK7xIUugj+6hmSHpROm2RvL9Q7arqf80IykdDEdgll4IWi/Bm+ECT8Z2R7l+DBKV6N/PoRnEbBuwIKf0nm+8S7RGuzDLaxLMuw/5OuR+bn60ROPt9/pUUQnUEa6A56SyeSWeTYejzs9GkC8ZIpySjxEy1APbdCM6MAlGmeZdIahYIlLVAU9kIA7KZFxrJrA5+bU8RBjBf+eGD26gk0oI4AItiU4dMOqHh+GTylbQT3JU7oj2IMLmNBJrIATKIUoD5L2LfEQJbRPvXAP0iPZj5J92vNl9Fk6mSCZsBV4dwuyflb8XJrRqX6C3iDsFhSdiXOzZlSnwxD2yuBHJv/iX6JvAQYAPSICqA82OnoAAAAASUVORK5CYII=',
+    UIControlMeasureIcon2 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo2Nzg3NzczMzY3OEMxMUU3QjU2QUUxNTNCNzc4MzVBQiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo2Nzg3NzczNDY3OEMxMUU3QjU2QUUxNTNCNzc4MzVBQiI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjY3ODc3NzMxNjc4QzExRTdCNTZBRTE1M0I3NzgzNUFCIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY3ODc3NzMyNjc4QzExRTdCNTZBRTE1M0I3NzgzNUFCIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+owD8TQAAAepJREFUeNrcls8rBGEYx993lIMfxR4kF/+AKMqBg7K1ajelLEWK025tKOTnjVykuAklNgcHuzmQg4MiTtz4Aza3TeGActDr+45nZt41s7tmBwdbn2l35933M9/3eead5UII9tsvjf3FK2uSiGgBKdDtZW6JllXA2DG4A3teRM7LZQl2QRuY9irScghGQRXb5KteRVoOQSMY0895FGkk8JHgSBH0gllzpAeRkeSRBAEwQIIZUJMxukARly3GOZdpivA5DnpAM2iQ5zFx3KE55DIugT6cT+a7PTTlKt9xHAT74AzU6vWJiEVQ4iWR9uXHhkgu3QhYB/JK3zBZE6WoBkE3Ivt9YolOQBd9uwJedQFjC+A8XyJ1J3G+4zNFV+CCmmMejINnY8sQG0wVzZnFlnW2Fd55ezGaIUAtPgzqwAsmv8mYMCLW8DaqdyY1g73w+RMFQRh0glse1RtDHRvDcdJp6XInsScKU3u3gnukSfCoOcoH0YPa3jif/P7zxEqUoPqUkWBZ398YqwdTNHqLdu+YuyTONToEl+AaTIAhUE61qwTtuJC0e4klkssQAn7QTy3+BA5AhRQgfdoovHvJp6iYli5EdTqlBKZA7a7CJFaiHdABUqBUFfyMxBJt06PBrwpskn/xl+hDgAEAH0j0b9rsgVUAAAAASUVORK5CYII=';
+
 
 var UIControlMeasure = function(ui, visible, visibleLock) {
     this.ui = ui;
@@ -16,11 +19,11 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
 
         + '<img id="vts-measure-button"'
           + ' class="vts-measure-button"'
-          + ' src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2lpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDpkNjI1MjFjMi1mYzE5LTcyNDUtOTI5My1kNTU3MmE5N2E1MjgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6ODJGRUI2NzE2NzkwMTFFN0EzRUZFNzQ1NEFCMkVFQUQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6ODJGRUI2NzA2NzkwMTFFN0EzRUZFNzQ1NEFCMkVFQUQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjRBMjkwN0JENjc4QzExRTc5QTQwRjk4NjQzOEI4RDczIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjRBMjkwN0JFNjc4QzExRTc5QTQwRjk4NjQzOEI4RDczIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+k3ySjQAAAdJJREFUeNrclk0oBGEYgHemjZOLm8tSyt9BqT2I1O7JSdSSkpsDxZGLi5MTjn5K4SDh4OfiaPfkIDebOPiPUqKUiLKet96pzzT7MztxMPX0le+b95n3Z2ZZmUwm9NuXHfqLK1smsVhsED5hKkhswc4mYJmHVxgNIvIslyE4hnLYDSqycwiaoCGVSnUFFdk5BH2wKHtBRbYKqlVwbQhGoNU5GETkZHKpggjMqaBFhaGgIltv/mKphRuQss1oZkPuG4oRWTLHlmU5fSlhOYNKSEK7xIUugj+6hmSHpROm2RvL9Q7arqf80IykdDEdgll4IWi/Bm+ECT8Z2R7l+DBKV6N/PoRnEbBuwIKf0nm+8S7RGuzDLaxLMuw/5OuR+bn60ROPt9/pUUQnUEa6A56SyeSWeTYejzs9GkC8ZIpySjxEy1APbdCM6MAlGmeZdIahYIlLVAU9kIA7KZFxrJrA5+bU8RBjBf+eGD26gk0oI4AItiU4dMOqHh+GTylbQT3JU7oj2IMLmNBJrIATKIUoD5L2LfEQJbRPvXAP0iPZj5J92vNl9Fk6mSCZsBV4dwuyflb8XJrRqX6C3iDsFhSdiXOzZlSnwxD2yuBHJv/iX6JvAQYAPSICqA82OnoAAAAASUVORK5CYII=">'
+          + ' src="' + UIControlMeasureIcon + '">'
 
         + '<img id="vts-measure-button2"'
           + ' class="vts-measure-button"'
-          + ' src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo2Nzg3NzczMzY3OEMxMUU3QjU2QUUxNTNCNzc4MzVBQiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo2Nzg3NzczNDY3OEMxMUU3QjU2QUUxNTNCNzc4MzVBQiI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjY3ODc3NzMxNjc4QzExRTdCNTZBRTE1M0I3NzgzNUFCIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY3ODc3NzMyNjc4QzExRTdCNTZBRTE1M0I3NzgzNUFCIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+owD8TQAAAepJREFUeNrcls8rBGEYx993lIMfxR4kF/+AKMqBg7K1ajelLEWK025tKOTnjVykuAklNgcHuzmQg4MiTtz4Aza3TeGActDr+45nZt41s7tmBwdbn2l35933M9/3eead5UII9tsvjf3FK2uSiGgBKdDtZW6JllXA2DG4A3teRM7LZQl2QRuY9irScghGQRXb5KteRVoOQSMY0895FGkk8JHgSBH0gllzpAeRkeSRBAEwQIIZUJMxukARly3GOZdpivA5DnpAM2iQ5zFx3KE55DIugT6cT+a7PTTlKt9xHAT74AzU6vWJiEVQ4iWR9uXHhkgu3QhYB/JK3zBZE6WoBkE3Ivt9YolOQBd9uwJedQFjC+A8XyJ1J3G+4zNFV+CCmmMejINnY8sQG0wVzZnFlnW2Fd55ezGaIUAtPgzqwAsmv8mYMCLW8DaqdyY1g73w+RMFQRh0glse1RtDHRvDcdJp6XInsScKU3u3gnukSfCoOcoH0YPa3jif/P7zxEqUoPqUkWBZ398YqwdTNHqLdu+YuyTONToEl+AaTIAhUE61qwTtuJC0e4klkssQAn7QTy3+BA5AhRQgfdoovHvJp6iYli5EdTqlBKZA7a7CJFaiHdABUqBUFfyMxBJt06PBrwpskn/xl+hDgAEAH0j0b9rsgVUAAAAASUVORK5CYII=">'
+          + ' src="' + UIControlMeasureIcon2 + '">'
 
         + '<div id="vts-measure-text-holder" class="vts-measure-text-holder">'
             + '<div class="vts-measure-text-holder2">'
@@ -73,24 +76,31 @@ var UIControlMeasure = function(ui, visible, visibleLock) {
     clearButton.on('click', this.onClear.bind(this));
     clearButton.on('dblclick', this.onDoNothing.bind(this));
 
+    this.toolButtons = [];
     var toolButton = this.control.getElement('vts-measure-position');
     toolButton.on('click', this.onTool.bind(this, 0));
     toolButton.on('dblclick', this.onDoNothing.bind(this));
+    this.toolButtons.push(toolButton);
     toolButton = this.control.getElement('vts-measure-length');
     toolButton.on('click', this.onTool.bind(this, 1));
     toolButton.on('dblclick', this.onDoNothing.bind(this));
+    this.toolButtons.push(toolButton);
     toolButton = this.control.getElement('vts-measure-track');
     toolButton.on('click', this.onTool.bind(this, 2));
     toolButton.on('dblclick', this.onDoNothing.bind(this));
+    this.toolButtons.push(toolButton);
     toolButton = this.control.getElement('vts-measure-area');
     toolButton.on('click', this.onTool.bind(this, 3));
     toolButton.on('dblclick', this.onDoNothing.bind(this));
+    this.toolButtons.push(toolButton);
     toolButton = this.control.getElement('vts-measure-volume');
     toolButton.on('click', this.onTool.bind(this, 4));
     toolButton.on('dblclick', this.onDoNothing.bind(this));
+    this.toolButtons.push(toolButton);
     toolButton = this.control.getElement('vts-measure-metric');
     toolButton.on('click', this.onTool.bind(this, 5));
     toolButton.on('dblclick', this.onDoNothing.bind(this));
+    this.toolButtons.push(toolButton);
     this.metricButton = toolButton;
 
 
@@ -329,6 +339,12 @@ UIControlMeasure.prototype.onTool = function(tool) {
 
     this.compute.setStyle('display', 'none');
 
+    for (var i = 0; i < 5; i++) {
+        this.toolButtons[i].setClass('vts-measure-tools-button');
+    }
+
+    this.toolButtons[tool].setClass('vts-measure-tools-button-selected');
+
     var map = this.browser.getMap();
     if (map) {
         map.redraw();
@@ -446,8 +462,42 @@ UIControlMeasure.prototype.onCompute = function(button) {
         }
 
         if (this.tool == 4) {
+
+            var center = [0,0,0];
+
+            for (i = 0, li = this.navCoords.length; i < li; i++) {
+                coords = map.convertCoordsFromNavToPhys(this.navCoords[i], 'fix');
+                center[0] += coords[0];
+                center[1] += coords[1];
+                center[2] += coords[2];
+            }
+
+            center[0] /= li;
+            center[1] /= li;
+            center[2] /= li;
+
+            var radius = 0, dx, dy, dz, distance;
+
+            for (i = 0, li = this.navCoords.length; i < li; i++) {
+                coords = map.convertCoordsFromNavToPhys(this.navCoords[i], 'fix');
+                dx = (center[0] - coords[0]);
+                dy = (center[1] - coords[1]);
+                dz = (center[2] - coords[2]);
+                distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                if (distance > radius) {
+                    radius = distance;
+                }
+            }
+
             var geodata = map.createGeodata();
-            geodata.addPolygon(this.navCoords, [], null, 'fix', {}, 'tmp-polygon');
+
+            if (radius > 30000) {
+                geodata.addPolygon3(this.navCoords, [], null, 'fix', {}, 'tmp-polygon');
+            } else {
+                geodata.addPolygon(this.navCoords, [], null, 'fix', {}, 'tmp-polygon');
+            }
+
             geodata.processHeights('node-by-lod', 62, (function(){
 
             if (this.navCoords.length) {
@@ -460,34 +510,6 @@ UIControlMeasure.prototype.onCompute = function(button) {
 
                 str = space + '------------------------';
 
-                var center = [0,0,0];
-
-                for (i = 0, li = this.navCoords.length; i < li; i++) {
-                    coords = map.convertCoordsFromNavToPhys(this.navCoords[i], 'fix');
-                    center[0] += coords[0];
-                    center[1] += coords[1];
-                    center[2] += coords[2];
-                }
-
-                center[0] /= li;
-                center[1] /= li;
-                center[2] /= li;
-
-                var radius = 0, dx, dy, dz, distance;
-
-                for (i = 0, li = this.navCoords.length; i < li; i++) {
-                    coords = map.convertCoordsFromNavToPhys(this.navCoords[i], 'fix');
-                    dx = (center[0] - coords[0]);
-                    dy = (center[1] - coords[1]);
-                    dz = (center[2] - coords[2]);
-                    distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
-
-                    if (distance > radius) {
-                        radius = distance;
-                    }
-                }
-
-
                 var poly = geodata.extractGeometry('tmp-polygon');
 
                 var faces = new Array(poly.getElements());
@@ -496,35 +518,22 @@ UIControlMeasure.prototype.onCompute = function(button) {
                     faces[i] = poly.getElement(i);
                 }
 
-                //TODO: build octree
-                //TODO: extract meshes and build octree
-
-                //var terrain = map.getCurrentGeometry();
                 var renderer = this.browser.getRenderer();
-                //var octree = renderer.buildOctreeFromGeometry(terrain);
-
                 var x, y, north, east;
 
                 coords = map.convertCoordsFromPhysToNav(center, 'fix');
 
-                //map.getSurfaceAreaGeometry(coords, radius, 'lod', 21, false, false);
-
                 var texelSize = radius * 0.0030; //0.15 texel size for 100m diameter 
-
-                //map.getSurfaceAreaGeometry(coords, radius, 'texelSize', texelSize, false, false);
                 var core = this.browser.getCore();
-
 
                 var traceVolumeCall = (function(terrain){
 
-                    //str += '\n' +  space + 'data loaded';
                     str = listElement.value;
                     str = str.substr(0, str.lastIndexOf('loading data ...'));
                     str += 'computation progress: 0%';
 
                     if (!terrain) {
                         str += '\n some error ocurred. Try it again.';
-                        this.counter++;
                         return;
                     }
 
@@ -542,8 +551,6 @@ UIControlMeasure.prototype.onCompute = function(button) {
                     sampleArea *= sampleArea;
 
                     var y = -steps;
-
-                    //for (y = -steps; y <= steps; y++) {
 
                     var traceVolumeLine = (function(){
 
@@ -584,10 +591,17 @@ UIControlMeasure.prototype.onCompute = function(button) {
                             str += 'computation progress: ' + (((y + steps) / (steps*2))*100).toFixed(1) + ' %';
                         } else {
                             str = str.substr(0, str.lastIndexOf('computation progress:'));
-                            str += 'volume above: ' + volumeAbove.toFixed(2) + ' m\u00B3';
-                            str += '\n' +  space + 'volume below: ' + volumeBelow.toFixed(2) + ' m\u00B3';
-                            str += '\n' +  space + 'volume combined: ' + (volumeAbove + volumeBelow).toFixed(2) + ' m\u00B3' + '\n';
-                            this.counter++;
+                            
+                            if (this.metric) {
+                                str += 'volume above: ' + volumeAbove.toFixed(2) + ' m\u00B3';
+                                str += '\n' +  space + 'volume below: ' + volumeBelow.toFixed(2) + ' m\u00B3';
+                                str += '\n' +  space + 'volume combined: ' + (volumeAbove + volumeBelow).toFixed(2) + ' m\u00B3' + '\n';
+                            } else {
+                                var yd2m = 0.764554857984;
+                                str += 'volume above: ' + (volumeAbove/yd2m).toFixed(2) + ' yd\u00B3';
+                                str += '\n' +  space + 'volume below: ' + (volumeBelow/yd2m).toFixed(2) + ' yd\u00B3';
+                                str += '\n' +  space + 'volume combined: ' + ((volumeAbove + volumeBelow)/yd2m).toFixed(2) + ' yd\u00B3' + '\n';
+                            }
                         }
 
                         if (str) {
@@ -618,8 +632,9 @@ UIControlMeasure.prototype.onCompute = function(button) {
             }
 
             }).bind(this));
-        }
 
+            this.counter++;
+        }
     }
 
     if (str) {
@@ -788,7 +803,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                         points3.push(map.convertCoordsFromNavToCanvas(points2[i], "fix"));
                     }
 
-                    if (this.tool == 3) {
+                    if (this.tool == 3 || this.tool == 4) {
                         points3.push(map.convertCoordsFromNavToCanvas(points2[0], "fix"));
                     }
 
@@ -858,5 +873,5 @@ UIControlMeasure.prototype.getTextNumber = function(value) {
     }
 };
 
-export default UIControlMeasure;
+export {UIControlMeasure , UIControlMeasureIcon, UIControlMeasureIcon2};
 
