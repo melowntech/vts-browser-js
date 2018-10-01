@@ -736,6 +736,10 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
       //  tile = tile;
     //}
 
+    if (this.config.mapNoTextures) {
+        return;
+    }
+
     //search map view
     if (surface.boundLayerSequence.length > 0) {
         if (fullUpdate) {

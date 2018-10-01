@@ -347,6 +347,7 @@ UIControlMeasure.prototype.onCompute = function(button) {
     }
 
     var str, i, li, space;
+    var listElement = this.list.getElement();
 
     if (button == 0) { //undo button
         this.navCoords.pop();
@@ -498,10 +499,9 @@ UIControlMeasure.prototype.onCompute = function(button) {
                 //TODO: build octree
                 //TODO: extract meshes and build octree
 
-                var terrain = map.getCurrentGeometry();
-
+                //var terrain = map.getCurrentGeometry();
                 var renderer = this.browser.getRenderer();
-                var octree = renderer.buildOctreeFromGeometry(terrain);
+                //var octree = renderer.buildOctreeFromGeometry(terrain);
 
                 var x, y, north, east;
 
@@ -512,11 +512,23 @@ UIControlMeasure.prototype.onCompute = function(button) {
                 var texelSize = radius * 0.0030; //0.15 texel size for 100m diameter 
 
                 //map.getSurfaceAreaGeometry(coords, radius, 'texelSize', texelSize, false, false);
+                var core = this.browser.getCore();
 
 
-                var traceVolumeCall = (function(){
+                var traceVolumeCall = (function(terrain){
 
-                    return;
+                    //str += '\n' +  space + 'data loaded';
+                    str = listElement.value;
+                    str = str.substr(0, str.lastIndexOf('loading data ...'));
+                    str += 'computation progress: 0%';
+
+                    if (!terrain) {
+                        str += '\n some error ocurred. Try it again.';
+                        this.counter++;
+                        return;
+                    }
+
+                    var octree = renderer.buildOctreeFromGeometry(terrain);
 
                     var ned = map.getNED(coords, false);
                     north = ned.direction;
@@ -529,7 +541,12 @@ UIControlMeasure.prototype.onCompute = function(button) {
 
                     sampleArea *= sampleArea;
 
-                    for (y = -steps; y <= steps; y++) {
+                    var y = -steps;
+
+                    //for (y = -steps; y <= steps; y++) {
+
+                    var traceVolumeLine = (function(){
+
                         for (x = -steps; x <= steps; x++) {
 
                             sx = (1.0 / steps) * x * radius;
@@ -557,26 +574,48 @@ UIControlMeasure.prototype.onCompute = function(button) {
                                         volumeBelow += -delta;
                                     }
 
-                                    console.log("T" + JSON.stringify(res2));
+                                    ///console.log("T" + JSON.stringify(res2));
                                 }
                             }
                         }
 
-                       console.log("*");
-                    }
+                        if (y < steps) {
+                            str = str.substr(0, str.lastIndexOf('computation progress:'));
+                            str += 'computation progress: ' + (((y + steps) / (steps*2))*100).toFixed(1) + ' %';
+                        } else {
+                            str = str.substr(0, str.lastIndexOf('computation progress:'));
+                            str += 'volume above: ' + volumeAbove.toFixed(2) + ' m\u00B3';
+                            str += '\n' +  space + 'volume below: ' + volumeBelow.toFixed(2) + ' m\u00B3';
+                            str += '\n' +  space + 'volume combined: ' + (volumeAbove + volumeBelow).toFixed(2) + ' m\u00B3' + '\n';
+                            this.counter++;
+                        }
 
-                    str += '\n' +  space + 'volume above: ' + volumeAbove.toFixed(2) + ' m\u00B3';
-                    str += '\n' +  space + 'volume below: ' + volumeBelow.toFixed(2) + ' m\u00B3';
-                    str += '\n' +  space + 'volume combined: ' + (volumeAbove + volumeBelow).toFixed(2) + ' m\u00B3';
+                        if (str) {
+                            listElement.value = str;
+                            listElement.scrollTop = listElement.scrollHeight;    //scroll list to the last line
+                        }
+
+                        if (y < steps) {
+                            core.once('tick', traceVolumeLine, 1);
+                        }
+
+                        y++;
+
+                       //console.log("*");
+                    }).bind(this);
+
+                    core.once('tick', traceVolumeLine, 1);
 
                 }).bind(this);
 
-                var destructor = map.getSurfaceAreaGeometry(coords, radius, 'texelSize', texelSize, traceVolumeCall, false, false);
+                str += '\n' +  space + 'loading data ...';
+                listElement.value += str;
+                listElement.scrollTop = listElement.scrollHeight;    //scroll list to the last line
+                str = null;
+
+                var destructor = map.getSurfaceAreaGeometry(coords, radius, 'texelSize', texelSize, traceVolumeCall, false);
 
             }
-
-
-            this.counter++;
 
             }).bind(this));
         }
@@ -584,7 +623,6 @@ UIControlMeasure.prototype.onCompute = function(button) {
     }
 
     if (str) {
-        var listElement = this.list.getElement();
         listElement.value += str + '\n';
         listElement.scrollTop = listElement.scrollHeight;    //scroll list to the last line
     }
@@ -649,7 +687,7 @@ UIControlMeasure.prototype.hitFaces = function(coords, dir, faces) {
         }
     }
 
-    console.log(hit ? ("" + t.toFixed(2)) : ("N"));
+    //console.log(hit ? ("" + t.toFixed(2)) : ("N"));
     return [hit, t];
 };
 

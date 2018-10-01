@@ -1029,9 +1029,17 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
 MapSurfaceTree.prototype.storeDrawBufferGeometry = function(drawBufferIndex) {
     var map = this.map;
     var drawBuffer = map.draw.drawBuffer;
-    map.storedTilesRes = new Array(drawBufferIndex);        
 
-    for (var i = drawBufferIndex - 1; i >= 0; i--) {
+    this.storeGeometry(drawBuffer, drawBufferIndex);
+};
+
+
+MapSurfaceTree.prototype.storeGeometry = function(array, length) {
+    var map = this.map;
+    var drawBuffer = array;
+    map.storedTilesRes = new Array(length);        
+
+    for (var i = length - 1; i >= 0; i--) {
         var tile = drawBuffer[i];
 
         if (tile.metanode && tile.surface && tile.metanode.hasGeometry() &&
@@ -1351,6 +1359,23 @@ MapSurfaceTree.prototype.getRenderedNodeById = function(id, drawCounter) {
     return;
 };
 
+
+MapSurfaceTree.prototype.chekTileMesh = function(tile) {
+    if (this.params.loadMeshes || this.params.loadTextures) {
+
+        var tmp = this.config.mapNoTextures;
+        this.config.mapNoTextures = !this.params.loadTextures;
+
+        //are resources ready? priority=0, preventRender=true, preventLoad=false, doNotCheckGpu=true
+        if (!this.map.draw.drawTiles.drawSurfaceTile(tile, tile.metanode, this.map.renderer.cameraPosition, tile.texelSize, 0, true, false, true)) {
+            this.params.loaded = false;
+        }
+
+        this.config.mapNoTextures = tmp;
+    }
+};
+
+
 MapSurfaceTree.prototype.traceAreaTiles = function(tile, priority, nodeReadyOnly) {
     if (tile == null) {
         return;
@@ -1358,6 +1383,8 @@ MapSurfaceTree.prototype.traceAreaTiles = function(tile, priority, nodeReadyOnly
 
     if (!tile.isMetanodeReady(this, 0) || nodeReadyOnly) {
         this.params.loaded = false;
+        //console.log('(L)' + JSON.stringify(tile.id));
+        tile.isMetanodeReady(this, 0);
         return;
     }
 
@@ -1376,28 +1403,15 @@ MapSurfaceTree.prototype.traceAreaTiles = function(tile, priority, nodeReadyOnly
     var fit = (this.params.mode == 'lod') ? (tile.id[0] >= this.params.limit) : (tile.metanode.pixelSize <= this.params.limit);
 
     if (fit) {
-        console.log('(A)' + JSON.stringify(tile.id));
-
-        if (this.params.loadMeshes || this.params.loadTextures) {
-
-            var tmp = this.config.mapNoTextures;
-            this.config.mapNoTextures = !this.params.loadTextures;
-
-            //are resources ready? priority=0, preventRender=true, preventLoad=false, doNotCheckGpu=true
-            if (!this.map.draw.drawTiles.drawSurfaceTile(tile, tile.metanode, this.map.renderer.cameraPosition, tile.texelSize, 0, true, false, true)) {
-                this.params.loaded = false;
-            }
-
-            this.config.mapNoTextures = tmp;
-        }
-
+        //console.log('(A)' + JSON.stringify(tile.id));
+        this.chekTileMesh(tile);
         this.params.areaTiles.push(tile);
         return;
     }
 
     if (!tile.metanode.hasChildren()) {
-        console.log('(A)' + JSON.stringify(tile.id));
-
+        //console.log('(A)' + JSON.stringify(tile.id));
+        this.chekTileMesh(tile);
         this.params.areaTiles.push(tile);
     } else {
         for (var i = 0; i < 4; i++) {

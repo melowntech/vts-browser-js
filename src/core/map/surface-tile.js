@@ -634,13 +634,13 @@ MapSurfaceTile.prototype.bboxVisible = function(id, bbox, cameraPos, node) {
 
 MapSurfaceTile.prototype.insideCone = function(coneVec, angle, node) {
 
-    if (map.isGeocent && node.diskPos && node.diskNormal) {
-        var a = Math.acos(vec3.dot(rayVec, node.diskNormal));
+    if (this.map.isGeocent) { // && node.diskPos && node.diskNormal) {
+        var a = Math.acos(vec3.dot(coneVec, node.diskNormal));
 
-        return (a < angle + node.diskAngle2A) 
+        return (a < angle + node.diskAngle2A);
     }
 
-    return true;
+    return false;
 };
 
 

@@ -257,13 +257,21 @@ MapInterface.prototype.getSurfaceHeight = function(coords, precision) {
 
 MapInterface.prototype.getSurfaceAreaGeometry = function(coords, radius, mode, limit, callback, loadTextures) {
     var res = this.map.measure.getSurfaceAreaGeometry(coords, radius, mode, limit, true, loadTextures);
-
-    console.log('getSurfaceAreaGeometry');
+    //console.log('getSurfaceAreaGeometry');
 
     if (!res[0]) {
-        return this.map.core.once("map-update", this.getSurfaceAreaGeometry.bind(this, coords, radius, mode, limit, callback, loadTextures), 1);
+        return this.map.core.once('map-update', this.getSurfaceAreaGeometry.bind(this, coords, radius, mode, limit, callback, loadTextures), 1);
     } else {
-        callback(res[1]);
+        var buffer = res[1], ret = [], map = this.map;        
+
+        if (map.tree) {
+            map.storedTilesRes = [];
+            map.tree.storeGeometry(buffer, buffer.length);
+            ret = map.storedTilesRes;
+            map.storedTilesRes = [];
+        }
+
+        callback(ret);
         return (function(){});
     }
 };
