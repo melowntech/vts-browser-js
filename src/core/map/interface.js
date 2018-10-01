@@ -245,8 +245,35 @@ MapInterface.prototype.movePositionCoordsTo = function(position, azimuth, distan
 };
 
 
+MapInterface.prototype.getGeodesicLinePoints = function(coords, coords2, height, density) {
+    return this.map.convert.getGeodesicLinePoints(coords, coords2, height, density);
+};
+
+
 MapInterface.prototype.getSurfaceHeight = function(coords, precision) {
     return this.map.measure.getSurfaceHeight(coords, this.map.measure.getOptimalHeightLodBySampleSize(coords, precision));
+};
+
+
+MapInterface.prototype.getSurfaceAreaGeometry = function(coords, radius, mode, limit, callback, loadTextures) {
+    var res = this.map.measure.getSurfaceAreaGeometry(coords, radius, mode, limit, true, loadTextures);
+    //console.log('getSurfaceAreaGeometry');
+
+    if (!res[0]) {
+        return this.map.core.once('map-update', this.getSurfaceAreaGeometry.bind(this, coords, radius, mode, limit, callback, loadTextures), 1);
+    } else {
+        var buffer = res[1], ret = [], map = this.map;        
+
+        if (map.tree) {
+            map.storedTilesRes = [];
+            map.tree.storeGeometry(buffer, buffer.length);
+            ret = map.storedTilesRes;
+            map.storedTilesRes = [];
+        }
+
+        callback(ret);
+        return (function(){});
+    }
 };
 
 
@@ -260,8 +287,8 @@ MapInterface.prototype.getAzimuthCorrection = function(coords, coords2) {
 };
 
 
-MapInterface.prototype.getNED = function(coords) {
-    return this.map.measure.getNewNED(coords, true);
+MapInterface.prototype.getNED = function(coords, onlyMatrix) {
+    return this.map.measure.getNewNED(coords, (onlyMatrix === false) ? false : true);
 };
 
 
@@ -392,6 +419,11 @@ MapInterface.prototype.getScreenRay = function(screenX, screenY) {
 
 MapInterface.prototype.renderToImage = function() {
     return this.map.renderToImage();
+};
+
+
+MapInterface.prototype.getCurrentGeometry = function() {
+    return this.map.getCurrentGeometry();
 };
 
 

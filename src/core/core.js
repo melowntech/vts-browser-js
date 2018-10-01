@@ -339,7 +339,7 @@ Core.prototype.setOption = function(/*key, value*/) {
 };
 
 
-Core.prototype.on = function(name, listener) {
+Core.prototype.on = function(name, listener, wait, once) {
     if (this.killed) { // || this.renderer == null) {
         return;
     }
@@ -349,9 +349,14 @@ Core.prototype.on = function(name, listener) {
     }
 
     this.listenerCounter++;
-    this.listeners.push({ name : name, listener : listener, id : this.listenerCounter });
+    this.listeners.push({ name : name, listener : listener, id : this.listenerCounter, once: once, wait: wait ? wait : 0 });
 
     return (function(id){ this.removeListener(id); }).bind(this, this.listenerCounter);
+};
+
+
+Core.prototype.once = function(name, listener, wait) {
+    this.on(name, listener, wait, true);
 };
 
 
@@ -359,7 +364,17 @@ Core.prototype.on = function(name, listener) {
 Core.prototype.callListener = function(name, event, log) {
     for (var i = 0; i < this.listeners.length; i++) {
         if (this.listeners[i].name == name) {
-            this.listeners[i].listener(event);
+            var listener = this.listeners[i];
+
+            if (listener.wait > 0) {
+                listener.wait--;
+            } else {
+                listener.listener(event);
+                if (listener.once) {
+                    this.listeners.splice(i, 1);
+                    i--;
+                }
+            }
         }
     }
     
@@ -508,7 +523,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.15.17';
+    return (full ? 'Core: ' : '') + '2.16.0';
 }
 
 

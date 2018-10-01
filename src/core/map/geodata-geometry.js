@@ -25,6 +25,9 @@ var MapGeodataGeometry = function(map, data) {
             break;
         case 'polygon-geometry':
             this.type = 3;
+            this.vertexBuffer = this.data.geometryBuffer;
+            this.surface = this.data.surface;
+            this.borders = this.data.borders;
             break;
     }
 };
@@ -42,12 +45,17 @@ MapGeodataGeometry.prototype.getElement = function(index) {
     switch(this.type) {
         case 1: return [v[i], v[i+1], v[i+2]]; //point
         case 2: return [[v[i], v[i+1], v[i+2]],  [v[i+3], v[i+4], v[i+5]]]; //line
+        case 3: 
+            var s = this.surface;
+            var i1 = s[i], i2 = s[i+1], i3 = s[i+2];
+            return [[v[i1][0], v[i1][1], v[i1][2]],  [v[i2][0], v[i2][1], v[i2][2]],  [v[i3][0], v[i3][1], v[i3][2]]]; //polygon
     }
 };
 
 MapGeodataGeometry.prototype.getElements = function(pathIndex) {
     switch(this.type) {
-        case 1: return this.vertexBuffer.length / 3; //point
+        case 1: //point
+        case 3: return this.surface.length / 3; //polygon
         case 2:  //line
             
             pathIndex = pathIndex || 0;
@@ -272,6 +280,46 @@ MapGeodataGeometry.prototype.getPathsCount = function() {
 };
 
 
+MapGeodataGeometry.prototype.getSurfaceArea = function() {
+    if (this.type != 3) {
+        return 0;
+    }
+
+    if (!this.surfaceArea) {
+        var v = this.vertexBuffer, s = this.surface;
+        var p1, p2, p3, l1, l2, l3, dx, dy, dz, perimeter, area;
+
+        this.surfaceArea = 0;
+        for (var i = 0, li = s.length; i < li; i+= 3) {
+            p1 = v[s[i]];
+            p2 = v[s[i+1]];
+            p3 = v[s[i+2]];
+
+            dx = p2[0] - p1[0];
+            dy = p2[1] - p1[1];
+            dz = p2[2] - p1[2];
+            l1 = Math.sqrt(dx*dx + dy*dy + dz*dz); 
+
+            dx = p2[0] - p3[0];
+            dy = p2[1] - p3[1];
+            dz = p2[2] - p3[2];
+            l2 = Math.sqrt(dx*dx + dy*dy + dz*dz); 
+
+            dx = p3[0] - p1[0];
+            dy = p3[1] - p1[1];
+            dz = p3[2] - p1[2];
+            l3 = Math.sqrt(dx*dx + dy*dy + dz*dz); 
+
+            //Heron's formula
+            perimeter = (l1 + l2 + l3)/2;
+            area =  Math.sqrt(perimeter*((perimeter-l1)*(perimeter-l2)*(perimeter-l3)));
+
+            this.surfaceArea += area;
+        }
+    }
+
+    return this.surfaceArea;
+};
 
 export default MapGeodataGeometry;
 

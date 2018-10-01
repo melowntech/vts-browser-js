@@ -81,7 +81,12 @@ CoreInterface.prototype.getProj4 = function() {
 
 CoreInterface.prototype.on = function(eventName, call) {
     if (!this.core) { return null; }
-    this.core.on(eventName, call);
+    return this.core.on(eventName, call);
+};
+
+CoreInterface.prototype.once = function(eventName, call, wait) {
+    if (!this.core) { return null; }
+    return this.core.once(eventName, call, wait);
 };
 
 CoreInterface.prototype.callListener = function(name, event) {

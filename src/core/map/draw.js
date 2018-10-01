@@ -357,7 +357,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         }
     
         if (this.tree.surfaceSequence.length > 0) {
-            this.tree.draw(camInfo);
+            this.tree.draw();
         }
     
         if (replay.storeTiles) { //used only in inspectors
@@ -404,7 +404,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
                 if (layer.type == 'geodata') {
                     this.drawMonoliticGeodata(layer);
                 } else {
-                    layer.tree.draw(camInfo);
+                    layer.tree.draw();
                 }
 
                 this.zbufferOffset = null;

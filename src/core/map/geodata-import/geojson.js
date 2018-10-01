@@ -21,7 +21,7 @@ MapGeodataImportGeoJSON.prototype.processGeometry = function(geometry, feature) 
             break;
 
         case 'MultiPoint':
-            this.builder.addPointArray(cords, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs);
+            this.builder.addPointArray(coords, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs);
             break;
 
         case 'LineString':

@@ -1,6 +1,6 @@
 {
   "name": "vts-browser-js",
-  "version": "2.15.17",
+  "version": "2.16.0",
   "description": "JavaScript WebGL 3D maps rendering engine",
   "main": "src/browser/index.js",
   "scripts": {

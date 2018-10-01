@@ -2,12 +2,14 @@
 import GpuTexture_ from './gpu/texture';
 import GpuMesh_ from './gpu/mesh';
 import GpuProgram_ from './gpu/program';
+import {Octree as Octree_, OctreeRaycaster as OctreeRaycaster_} from './octree.js';
 
 //get rid of compiler mess
 var GpuTexture = GpuTexture_;
 var GpuMesh = GpuMesh_;
 var GpuProgram = GpuProgram_;
-
+var Octree = Octree_;
+var OctreeRaycaster = OctreeRaycaster_;
 
 var RendererInterface = function(renderer) {
     this.renderer = renderer;
@@ -406,6 +408,19 @@ RendererInterface.prototype.drawDebugText = function(options) {
     return this;    
 };
 
+
+RendererInterface.prototype.buildOctreeFromGeometry = function(geometry) {
+    var octree = new Octree();
+    octree.buildFromGeometry(geometry);
+    return octree;
+};
+
+
+RendererInterface.prototype.raycastOctreeGeometry = function(octree, rayPos, rayDir) {
+    var raycaster = new OctreeRaycaster(), intersects = [];
+    raycaster.intersectOctree(rayPos, rayDir, octree, intersects);
+    return raycaster.intersectOctants(rayPos, rayDir, intersects);
+};
 
 RendererInterface.prototype.saveScreenshot = function(output, filename, filetype) {
     return this.renderer.saveScreenshot(output, filename, filetype);

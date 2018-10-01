@@ -95,8 +95,8 @@ BrowserInterface.prototype.destroyMap = function() {
 
 BrowserInterface.prototype.on = function(eventName, call) {
     if (this.killed) return;
-    this.core.on(eventName, call);
-    return this;    
+    return this.core.on(eventName, call);
+    //return this;    
 };
 
 
