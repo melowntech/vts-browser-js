@@ -309,7 +309,7 @@ MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad)
                 var ret = this.checkMetanode(tree, priority);
                 
                 if (!ret && !(this.metanode != null && this.lastMetanode)) { //metanode is not ready yet
-                    return;
+                    return false;
                 }
             }
             
@@ -630,6 +630,17 @@ MapSurfaceTile.prototype.bboxVisible = function(id, bbox, cameraPos, node) {
             return camera.camera.pointsVisible(node.bbox2, cameraPos);
         }
     }
+};
+
+MapSurfaceTile.prototype.insideCone = function(coneVec, angle, node) {
+
+    if (this.map.isGeocent) { // && node.diskPos && node.diskNormal) {
+        var a = Math.acos(vec3.dot(coneVec, node.diskNormal));
+
+        return (a < angle + node.diskAngle2A);
+    }
+
+    return false;
 };
 
 

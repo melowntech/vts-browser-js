@@ -6,7 +6,7 @@ function processGMap(gpu, gl, renderer, screenPixelSize) {
     var ppi = 96 * (window.devicePixelRatio || 1);
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
-    var featureCount = (screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch; 
+    var featureCount = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
     var i, li, top = renderer.config.mapFeaturesSortByTop;
 
     //get top features
@@ -61,7 +61,7 @@ function processGMap(gpu, gl, renderer, screenPixelSize) {
 
             pp = feature[5];
 
-            if (pp[0] < 0 || pp[0] >= screenLX || pp[1] < 0 || pp[1] >= screenLY) {
+            if (pp[0] < 30 || pp[0] >= (screenLX-30) || pp[1] < 30 || pp[1] >= (screenLY-30)) {
                 featureCache[i] = null;
                 continue;
             }
@@ -137,6 +137,7 @@ function processGMap(gpu, gl, renderer, screenPixelSize) {
         c *= my;
 
         usedFeatures += a + b + c + d;
+        featureCount -= a + b + c + d;
         tileSize *= 2;
 
     } while(usedFeatures < featureCount2);

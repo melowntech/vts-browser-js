@@ -108,7 +108,7 @@ Browser.prototype.getControlMode = function() {
 
 
 Browser.prototype.on = function(name, listener) {
-    this.core.on(name, listener);
+    return this.core.on(name, listener);
 };
 
 
@@ -310,6 +310,7 @@ Browser.prototype.initConfig = function() {
         controlSearchUrl : null,
         controlSearchFilter : true,
         controlMeasure : false,
+        controlMeasureLite : false,
         controlLink : false,
         controlGithub : false,
         controlScale : true,
@@ -391,13 +392,14 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'controlSearchFilter':    this.config.controlSearchFilter = utils.validateBool(value, true);  break;
     case 'controlSearchElement':   this.config.controlSearchElement = value; this.updateUI(key);  break;
     case 'controlSearchValue':     this.config.controlSearchValue = /*utils.validateString(*/value/*, null)*/; this.updateUI(key); break;
-    case 'controlLink':            this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);      break;
-    case 'controlGithub':          this.config.controlGithub = utils.validateBool(value, false); this.updateUI(key);    break;
-    case 'controlMeasure':         this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);   break;
-    case 'controlLogo':            this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);      break;
-    case 'controlFullscreen':      this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key); break;
-    case 'controlCredits':         this.config.controlCredits = utils.validateBool(value, true); this.updateUI(key);    break;
-    case 'controlLoading':         this.config.controlLoading = utils.validateBool(value, true); this.updateUI(key);    break;
+    case 'controlLink':            this.config.controlLink = utils.validateBool(value, false); this.updateUI(key);        break;
+    case 'controlGithub':          this.config.controlGithub = utils.validateBool(value, false); this.updateUI(key);      break;
+    case 'controlMeasure':         this.config.controlMeasure = utils.validateBool(value, false); this.updateUI(key);     break;
+    case 'controlMeasureLite':     this.config.controlMeasureLite = utils.validateBool(value, false); this.updateUI(key); break;
+    case 'controlLogo':            this.config.controlLogo = utils.validateBool(value, false); this.updateUI(key);        break;
+    case 'controlFullscreen':      this.config.controlFullscreen = utils.validateBool(value, true); this.updateUI(key);   break;
+    case 'controlCredits':         this.config.controlCredits = utils.validateBool(value, true); this.updateUI(key);      break;
+    case 'controlLoading':         this.config.controlLoading = utils.validateBool(value, true); this.updateUI(key);      break;
     case 'minViewExtent':          this.config.minViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, 100); break;
     case 'maxViewExtent':          this.config.maxViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, Number.MAXINTEGER); break;
     case 'sensitivity':            this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
@@ -486,6 +488,7 @@ Browser.prototype.getConfigParam = function(key) {
     case 'controlLink':          return this.config.controlLink;
     case 'controlGithub':        return this.config.controlGithub;
     case 'controlMeasure':       return this.config.controlMeasure;
+    case 'controlMeasureLite':   return this.config.controlMeasureLite;
     case 'controlLogo':          return this.config.controlLogo;
     case 'controlFullscreen':    return this.config.controlFullscreen;
     case 'controlCredits':       return this.config.controlCredits;

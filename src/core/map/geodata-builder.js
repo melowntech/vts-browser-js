@@ -1043,7 +1043,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                                        ' p6:' + (Array.isArray(sbuffer2[l+5][1]) ? 'a' : '') + sbuffer2[l+5][1]);*/
 
                         } else if (l2 == l) {
-                            console.log('l2');
+                            //console.log('l2');
 
                             //add new vertices to the buffer
                             vbuffer[mm] = p5[0];
@@ -1463,7 +1463,8 @@ MapGeodataBuilder.prototype.extractGeometry = function(id) {
         var group = this.groups[i];
 
         var groupPoints = group.points;
-        var groupLines = group.lines, j, lj;
+        var groupLines = group.lines;
+        var groupPolygons = group.polygons, j, lj;
 
         //get group bbox
         for (j = 0, lj = groupPoints.length; j < lj; j++) {
@@ -1475,6 +1476,12 @@ MapGeodataBuilder.prototype.extractGeometry = function(id) {
         for (j = 0, lj = groupLines.length; j < lj; j++) {
             if (groupLines[j].id == id) {
                 feature = groupLines[j];
+            }
+        }
+
+        for (j = 0, lj = groupPolygons.length; j < lj; j++) {
+            if (groupPolygons[j].id == id) {
+                feature = groupPolygons[j];
             }
         }
     }
@@ -1529,6 +1536,13 @@ MapGeodataBuilder.prototype.extractGeometry = function(id) {
             }
 
             return new MapGeodataGeometry(this.map, {'type': 'line-geometry', 'id':feature.id, 'geometryBuffer': vertexBuffer, 'indicesBuffer': indexBuffer });
+        } else if (feature.vertices) {
+
+            /*feature.vertices = featureVertices;
+            feature.surface = featureSurface;
+            feature.borders = featureBorders;*/
+
+            return new MapGeodataGeometry(this.map, {'type': 'polygon-geometry', 'id':feature.id, 'geometryBuffer': feature.vertices, 'surface': feature.surface });
         }
 
         return;

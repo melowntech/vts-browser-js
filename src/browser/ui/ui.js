@@ -19,11 +19,12 @@ import UIControlSpace_ from './control/space';
 import UIControlSearch_ from './control/search';
 import UIControlLink_ from './control/link';
 import UIControlGithub_ from './control/github';
-import UIControlMeasure_ from './control/measure';
 import UIControlLayers_ from './control/layers';
 import UIControlFallback_ from './control/fallback';
 import UIControlPopup_ from './control/popup';
 import UIControlLoading_ from './control/loading';
+import { UIControlMeasure as UIControlMeasure_ }  from './control/measure';
+import UIControlMeasureLite_ from './control/measure-lite';
 
 //get rid of compiler mess
 var UIControlCompass = UIControlCompass_;
@@ -35,6 +36,7 @@ var UIControlSearch = UIControlSearch_;
 var UIControlLink = UIControlLink_;
 var UIControlGithub = UIControlGithub_;
 var UIControlMeasure = UIControlMeasure_;
+var UIControlMeasureLite = UIControlMeasureLite_;
 var UIControlLayers = UIControlLayers_;
 var UIControlFallback = UIControlFallback_;
 var UIControlPopup = UIControlPopup_;
@@ -81,6 +83,7 @@ UI.prototype.init = function() {
     this.link = new UIControlLink(this, (!loading && this.config.controlLink), loading);
     this.github = new UIControlGithub(this, (!loading && this.config.controlGithub), loading);
     this.measure = new UIControlMeasure(this, (!loading && this.config.controlMeasure), loading);
+    this.measure2 = new UIControlMeasureLite(this, (!loading && this.config.controlMeasureLite), loading);
     //this.navigator = new UIControlNavigation(this, this.config.controlNavigator);
     this.layers = new UIControlLayers(this, (!loading && this.config.controlLayers), loading);
     this.fallback = new UIControlFallback(this);

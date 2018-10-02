@@ -1122,6 +1122,16 @@ Map.prototype.hitTestGeoLayers = function(screenX, screenY, mode) {
     }
 };
 
+Map.prototype.getCurrentGeometry = function() {
+    if (this.draw.tree.surfaceSequence.length > 0) {
+        this.draw.tree.draw(true);
+        var res = this.storedTilesRes;
+        this.storedTilesRes = [];
+        return res;
+    }
+
+    return res;
+};
 
 Map.prototype.applyCredits = function(tile) {
     var value, value2;
