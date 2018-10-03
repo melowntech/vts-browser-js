@@ -24,6 +24,18 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
     var hitMap = renderer.gmapHit, usedFeatures = 0;
     var tileFeatures, count, feature;
 
+    var colors = [
+        [0, 0, 255, 255],
+        [128, 0, 255, 255],
+        [255, 0, 0, 255],
+        [255, 128, 0, 255],
+        [0, 255, 0, 255],
+        [0, 255, 128, 255],
+        [128, 255, 128, 255]
+    ];
+
+    var colorIndex = 0;
+
     do {
         var a,b,c,d,ix,iy,is,pp,tx,ty,mx,my,v,index,o,j;
 
@@ -47,6 +59,41 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
 
         var hitMap = renderer.gmapStore;
         var hitMapCount = renderer.gmapHit;
+
+        if (renderer.drawGridCells) {
+            gpu.setState(renderer.lineLabelState);
+
+            var x = 0, y = 0, j, lj;
+
+            for (j = 0, lj = (my + 1); j < lj; j++) {
+                for (i = 0, li = (mx + 1); i < li; i++) {
+                    x = tileSize * i;
+                    y = tileSize * j;
+
+                    v = a;
+
+                    if (i >= mx) {
+                        if (j >= my) {
+                            v =d;
+                        } else {
+                            v = b;
+                        }
+
+                    } else {
+                        if (j >= my) {
+                            v = b;
+                        }
+                    }
+
+                    draw.drawLineString([[x, y, 0.5], [x+tileSize, y, 0.5],
+                                         [x+tileSize, y+tileSize, 0.5], [x, y+tileSize, 0.5]], true, 1, colors[colorIndex], null, true, null, null, null);
+
+                    draw.drawText(Math.round(x+5), Math.round(y + 5 + colorIndex * 15), 10, '' + v, colors[colorIndex], 0.5);
+                }
+            }
+
+        }
+
 
         //clear hit-map
         for (i = 0, li = (mx+1) * (my+1); i < li; i++) {
@@ -139,6 +186,8 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
         usedFeatures += a + b + c + d;
         featureCount -= a + b + c + d;
         tileSize *= 2;
+
+        colorIndex++;
 
     } while(usedFeatures < featureCount2);
 
