@@ -234,12 +234,18 @@ function sortFeatures(features, top, count, renderer) {
 }
 
 function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
-    var maxRadius = 200; //renderer.config.mapFeatureGridCells; //31; //labelGridCells
-    var maxHitcount = 2; //renderer.config.mapFeaturesPerSquareInch; //0.6614; //labelsPerSquareInch
+    //var maxRadius = 200; 
+    //var maxHitcount = 2; 
+
     var ppi = 96 * (window.devicePixelRatio || 1);
+
+    var maxRadius = renderer.config.mapFeatureGridCells * ppi; //mapFeatureRadius
+    var maxHitcount = renderer.config.mapFeaturesPerSquareInch; //0.6614; //mapFeatureMaxOverlays
+
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
-    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp, feature, pp, pp2;
+    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
+    var feature, feature2, pp, pp2, o;
 
     //get top features
     var featureCache = renderer.gmap;
@@ -267,9 +273,10 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
 
 
     //sort features by prominence
-    var hit = false;
 
     do {
+
+        var hit = false;
 
         if (top) {
             for (i = 0, li = featureCacheSize2 - 1; i < li; i++) {
@@ -314,13 +321,13 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
 
             if ((dx*dx+dy*dy) < maxRadius) {
                 hitCount++;
-                if (hitCount >= maxHitcount) {
+                if (hitCount > maxHitcount) {
                     break;
                 }
             }
         }
 
-        if (hitCount < 2) {
+        if (hitCount <= maxHitcount) {
             //render job
             if (feature[6]) { //no-overlap 
                 pp = feature[5];
