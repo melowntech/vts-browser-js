@@ -1,12 +1,13 @@
 
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
-import {processGMap as processGMap_} from './gmap';
+import {processGMap as processGMap_, processGMap2 as processGMap2_} from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
 var math = math_;
 var processGMap = processGMap_;
+var processGMap2 = processGMap2_;
 
 
 var RendererDraw = function(renderer) {
@@ -666,6 +667,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
     }
 
     renderer.gmapIndex = 0;
+    renderer.gmapUseVersion = 1;
 
     var forceUpdate = false;
 
@@ -758,7 +760,11 @@ RendererDraw.prototype.drawGpuJobs = function() {
         }
 
         if (renderer.gmapIndex > 0) {
-            processGMap(gpu, gl, renderer, screenPixelSize);
+            if (renderer.gmapUseVersion == 2) {
+                processGMap2(gpu, gl, renderer, screenPixelSize, this);
+            } else {
+                processGMap(gpu, gl, renderer, screenPixelSize, this);
+            }
             renderer.gmapIndex = 0;
         }
 
@@ -1224,7 +1230,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_LABEL:
 
 
-        if (job.reduce && job.reduce[0] != 7) {
+        if (job.reduce && (job.reduce[0] != 7 && job.reduce[0] != 8)) {
             var a;
 
             if (job.reduce[0] > 4) {
@@ -1411,7 +1417,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
 
-            if (job.reduce && job.reduce[0] == 7) {
+            if (job.reduce && (job.reduce[0] == 7 || job.reduce[0] == 8)) {
+                renderer.gmapUseVersion = (job.reduce[0] == 8) ? 2 : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
                 return;
@@ -1424,13 +1431,14 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             return; //draw all labe from same z-index together
         } else {
-            if (job.reduce && job.reduce[0] == 7) {
+            if (job.reduce && (job.reduce[0] == 7 || job.reduce[0] == 8)) {
                 if (!pp) {
                     pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 }
 
                 job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
 
+                renderer.gmapUseVersion = (job.reduce[0] == 8) ? 2 : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
                 return;

@@ -95,6 +95,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.fogDensity = 0;
 
     this.gmap = new Array(2048);
+    this.gmap2 = new Array(2048);
     this.gmapIndex = 0;
     this.gmapTop = new Array(512);
     this.gmapHit = new Array(512);

@@ -373,6 +373,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
             case 'scr-count2': job.reduce[0] = 5; break;
             case 'scr-count3': job.reduce[0] = 6; break;
             case 'scr-count4': job.reduce[0] = 7; break;
+            case 'scr-count5': job.reduce[0] = 8; break;
         }
     }
 
