@@ -9,6 +9,14 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
     var featureCount = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
     var i, li, top = renderer.config.mapFeaturesSortByTop;
 
+    if (tileCount >= 0) {
+        tileCount = featureCount * 2; //31; //labelGridCells
+    } else {
+        tileCount = -tileCount;
+    }
+
+    renderer.debugStr = "<br>featuresPerScr: " + featureCount + "<br>gridCells: " + tileCount;
+
     //get top features
     var featureCache = renderer.gmap;
     var featureCacheSize = renderer.gmapIndex;

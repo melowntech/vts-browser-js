@@ -48,7 +48,8 @@ var MapDraw = function(map) {
         drawCredits : false,
         drawOrder : false,
         drawLabelBoxes : false,
-        drawEarth : true,   
+        drawEarth : true, 
+        drawGridCells : false,
         drawTileCounter : 0,
         drawFog : this.config.mapFog,
         debugTextSize : 2.0,
@@ -191,6 +192,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.cameraViewExtent = map.position.getViewExtent();
     renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
     renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
+    renderer.drawGridCells = this.debug.drawGridCells;
 
     if (projected) {
         var yaw = math.radians(renderer.cameraOrientation[0]);

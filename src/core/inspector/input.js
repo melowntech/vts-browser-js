@@ -422,6 +422,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
         case 'debugNoEarth': debug.drawEarth = false; break;
         case 'debugShader': debug.drawWireframe = parseInt(value); break;
         case 'debugHeightmap': debug.heightmapOnly = true; break;
+        case 'debugGridCells': debug.drawGridCells = true; break;
         case 'debugRadar':
             inspector.enableInspector();
             inspector.drawRadar = true;
@@ -430,6 +431,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
                 inspector.radarLod = null;
             } 
             break;
+
     }
 
     map.markDirty();

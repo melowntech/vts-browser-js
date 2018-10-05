@@ -45,6 +45,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     //this.math = Math;
     this.stencilLineState = null;
     this.drawLabelBoxes = false;
+    this.drawGridCells = false;
 
 
     this.geodataSelection = [];
@@ -131,7 +132,6 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.labelVector = [0,0,0];
     this.drawnGeodataTiles = 0;
     this.drawnGeodataTilesFactor = 0;
-    this.drawGridCells = true;
 
     //hack for vts maps
     //this.vtsHack = true;

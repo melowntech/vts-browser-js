@@ -816,7 +816,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapNoTextures':                 this.config.mapNoTextures = this.config.mapDisableCulling = utils.validateBool(value, false); break;
     case 'mapForceFrameTime':             this.config.mapForceFrameTime = utils.validateNumber(value, -1, Number.MAXINTEGER, 0); break;
     case 'mapForcePipeline':              this.config.mapForcePipeline = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
-    case 'mapFeatureGridCells':           this.config.mapFeatureGridCells = utils.validateNumber(value, 1, Number.MAXINTEGER, 0); break;
+    case 'mapFeatureGridCells':           this.config.mapFeatureGridCells = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, 0); break;
     case 'mapFeaturesPerSquareInch':      this.config.mapFeaturesPerSquareInch = utils.validateNumber(value, 0.000001, Number.MAXINTEGER, 0); break;
     case 'mapFeaturesSortByTop':          this.config.mapFeaturesSortByTop = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;

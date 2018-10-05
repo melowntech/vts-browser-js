@@ -124,6 +124,10 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
             'Loaded/Errors: ' + (stats.loadedCount) + ' / ' + (stats.loadErrorCount) + '<br/>' +
             'Load time: ' + ((stats.loadLast - stats.loadFirst)*0.001).toFixed(2) + 's <br/>';
 
+    if (stats.debugStr) {
+        text2 += stats.debugStr + '<br/>';        
+    }
+
     var text3 = 'Metatiles: ' + (stats.processedMetatiles) +'<br/>'+
                  'Metanodes: ' + (stats.processedNodes) + ' / ' + (stats.usedNodes) + '<br/>'+
                  'GeodataTiles: ' + (stats.drawnGeodataTiles) +'<br/>' +
@@ -136,6 +140,7 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
             text3 += 'LOD ' + i + ': ' + (stats.renderedLods[i]) +'<br/>';
         }
     }
+
 
     var text = '<table style="width:305px"><tr><td>' + text2 + '</td><td>' + text3 + '</td></tr></table>';
 

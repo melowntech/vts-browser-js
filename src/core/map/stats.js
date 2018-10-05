@@ -73,6 +73,7 @@ var MapStats = function(map) {
     this.heightNode = 0;
     this.heightTerrain = 0;
     this.heightDelta = 0;
+    this.debugStr = null;
 };
 
 //Object.defineProperty(MapStats.prototype, 'gpuNeeded', {
@@ -204,6 +205,7 @@ MapStats.prototype.end = function(dirty) {
     this.graphsFluxTexture = [[0,0],[0,0]];
     this.graphsFluxMesh = [[0,0],[0,0]];
     this.graphsFluxGeodata = [[0,0],[0,0]];
+    this.debugStr = this.map.renderer.debugStr;
 };
 
 
