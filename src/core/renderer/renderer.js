@@ -97,6 +97,8 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
     this.gmap = new Array(2048);
     this.gmap2 = new Array(2048);
+    this.gmap3 = new Array(8000);
+    this.gmap3Size = new Array(8000);
     this.gmapIndex = 0;
     this.gmapTop = new Array(512);
     this.gmapHit = new Array(512);
@@ -117,7 +119,12 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
         this.jobZBuffer2[i] = {};
         this.jobZBuffer2Size[i] = 0;
     }
-    
+
+    for (i = 0, li = this.gmap3.length; i < li; i++) {
+        this.gmap3[i] = [];
+        this.gmap3Size[i] = 0;
+    }
+
     this.layerGroupVisible = [];
     this.bitmaps = {};
     

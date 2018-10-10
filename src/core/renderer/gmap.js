@@ -241,6 +241,7 @@ function sortFeatures(features, top, count, renderer) {
 
 }
 
+
 function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
     //var maxRadius = 200; 
     //var maxHitcount = 2; 
@@ -355,8 +356,237 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
             hitCacheSize++;
         }
     }
+}
 
 
+function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
+    //var maxRadius = 200; 
+    //var maxHitcount = 2; 
+
+    var ppi = 96 * (window.devicePixelRatio || 1);
+
+    var maxRadius = renderer.config.mapFeatureGridCells * ppi; //mapFeatureRadius
+    var maxHitcount = renderer.config.mapFeaturesPerSquareInch; //0.6614; //mapFeatureMaxOverlays
+
+    var screenLX = renderer.curSize[0];
+    var screenLY = renderer.curSize[1];
+    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
+    var feature, feature2, pp, pp2, o;
+
+    //get top features
+    var featureCache = renderer.gmap;
+    var featureCacheSize = renderer.gmapIndex;
+
+
+    var hmap = renderer.gmap3;
+    var hmapSize = renderer.gmap3Size;
+
+    var hmin = 8000;
+    var hmax = 0;
+
+    //filter features and sort them by prominence
+    for (i = 0, li = featureCacheSize; i < li; i++) {
+        feature = featureCache[i];
+        if (!feature) {
+            continue;
+        }
+
+        pp = feature[5];
+
+        if (pp[0] < 30 || pp[0] >= (screenLX-30) || pp[1] < 30 || pp[1] >= (screenLY-30)) {
+            featureCache[i] = null;
+            continue;
+        }
+
+        var h = feature[0].reduce[1];
+        if (h < 0) h = 0;
+        if (h > 8000) h = 7999;
+        if (h < hmin) hmin = h;
+        if (h > hmax) hmax = h;
+
+        hmap[h][hmapSize[h]++] = feature;
+    }
+
+
+    var hitCache = renderer.gmapHit;
+    var hitCacheSize = 0, j, lj, k, lk, hitCount, dx, dy;
+
+    maxRadius *= maxRadius;
+
+    for (i = hmin, li = hmax; i < li; i++) {
+
+        if (hmapSize[i] > 0) {
+            var features = hmap[i];
+
+            for (j = 0, lj = hmapSize[i]; j < lj; j++) {
+                feature = features[j];
+
+                hitCount = 0;
+                pp = feature[5];
+
+                for (k = 0, lk = hitCacheSize; k < lk; k++) {
+                    feature2 = hitCache[k];
+                    pp2 = feature2[5];
+
+                    dx = pp[0] - pp2[0];
+                    dy = pp[1] - pp2[1];
+
+                    if ((dx*dx+dy*dy) < maxRadius) {
+                        hitCount++;
+                        if (hitCount > maxHitcount) {
+                            break;
+                        }
+                    }
+                }
+
+                if (hitCount <= maxHitcount) {
+                    //render job
+                    if (feature[6]) { //no-overlap 
+                        pp = feature[5];
+                        o = feature[8];
+                        if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob)) {
+                            renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
+                        }
+                    } else {
+                        if (feature[0].hysteresis) {
+                            renderer.jobHBuffer[feature[0].id] = feature[0];
+                        } else {
+                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
+                        }
+                    }
+
+                    hitCache[hitCacheSize] = feature;
+                    hitCacheSize++;
+                }
+
+
+            }
+        }
+
+    }
+}
+
+
+function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
+    //var maxRadius = 200; 
+    //var maxHitcount = 2; 
+
+    var ppi = 96 * (window.devicePixelRatio || 1);
+
+    var maxRadius = renderer.config.mapFeatureGridCells * ppi; //mapFeatureRadius
+    var maxHitcount = renderer.config.mapFeaturesPerSquareInch; //0.6614; //mapFeatureMaxOverlays
+
+    var screenLX = renderer.curSize[0];
+    var screenLY = renderer.curSize[1];
+    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
+    var feature, feature2, pp, pp2, o;
+
+    //get top features
+    var featureCache = renderer.gmap;
+    var featureCacheSize = renderer.gmapIndex;
+
+
+    var hmap = renderer.gmap3;
+    var hmapSize = renderer.gmap3Size;
+
+    var hmin = 8000;
+    var hmax = 0;
+
+    //filter features and sort them by prominence
+    for (i = 0, li = featureCacheSize; i < li; i++) {
+        feature = featureCache[i];
+        if (!feature) {
+            continue;
+        }
+
+        pp = feature[5];
+
+        if (pp[0] < 30 || pp[0] >= (screenLX-30) || pp[1] < 30 || pp[1] >= (screenLY-30)) {
+            featureCache[i] = null;
+            continue;
+        }
+
+        var h = feature[0].reduce[1];
+        if (h < 0) h = 0;
+        if (h > 8000) h = 7999;
+        if (h < hmin) hmin = h;
+        if (h > hmax) hmax = h;
+
+        hmap[h][hmapSize[h]++] = feature;
+    }
+
+    var mx = Math.floor(screenLX / maxRadius);
+    var my = Math.floor(screenLY / maxRadius);
+
+    var hitMap = renderer.gmapStore;
+    var hitMapCount = renderer.gmapHit;
+
+    //clear hit-map
+    for (i = 0, li = (mx+1) * (my+1); i < li; i++) {
+        hitMap[i] = null;
+    }
+
+    //var hitCache = renderer.gmapHit2;
+    var hitCacheSize = 0, j, lj, k, lk, hitCount, dx, dy;
+
+    maxRadius *= maxRadius;
+
+    for (i = hmin, li = hmax; i < li; i++) {
+
+        if (hmapSize[i] > 0) {
+            var features = hmap[i];
+
+            for (j = 0, lj = hmapSize[i]; j < lj; j++) {
+                feature = features[j];
+
+                hitCount = 0;
+                pp = feature[5];
+
+                //check area
+                // check                
+
+
+
+                for (k = 0, lk = hitCacheSize; k < lk; k++) {
+                    feature2 = hitCache[k];
+                    pp2 = feature2[5];
+
+                    dx = pp[0] - pp2[0];
+                    dy = pp[1] - pp2[1];
+
+                    if ((dx*dx+dy*dy) < maxRadius) {
+                        hitCount++;
+                        if (hitCount > maxHitcount) {
+                            break;
+                        }
+                    }
+                }
+
+                if (hitCount <= maxHitcount) {
+                    //render job
+                    if (feature[6]) { //no-overlap 
+                        pp = feature[5];
+                        o = feature[8];
+                        if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob)) {
+                            renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
+                        }
+                    } else {
+                        if (feature[0].hysteresis) {
+                            renderer.jobHBuffer[feature[0].id] = feature[0];
+                        } else {
+                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
+                        }
+                    }
+
+                    hitCache[hitCacheSize] = feature;
+                    hitCacheSize++;
+                }
+
+
+            }
+        }
+
+    }
 }
 
 

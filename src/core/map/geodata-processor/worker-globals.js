@@ -31,7 +31,8 @@ var globals = {
     autoLod : false,
     featureType : null,
     groupId : null,
-    disableLog : false
+    disableLog : false,
+    reduceMode : 'scr-count4'
 };
 
 

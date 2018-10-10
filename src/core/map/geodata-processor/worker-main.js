@@ -416,6 +416,7 @@ self.onmessage = function (e) {
         globals.tileLod = message['lod'] || 0;
         globals.tileSize = message['tileSize'] || 1;
         globals.pixelFactor = message['dpr'] || 1;
+        globals.reduceMode = message['reduceMode'] || 'scr-count4';
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
         data = JSON.parse(data);            
         exportedGeometries = [];
