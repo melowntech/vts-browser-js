@@ -3,8 +3,8 @@ import {mat4 as mat4_} from '../utils/matrix';
 import {utils as utils_} from '../utils/utils';
 import MapSubmesh_ from './submesh';
 import BBox_ from '../renderer/bbox';
-import GpuProgram_ from './gpu/program';
-import GpuShaders_ from './gpu/shaders';
+import GpuProgram_ from '../renderer/gpu/program';
+import GpuShaders_ from '../renderer/gpu/shaders';
 
 //get rid of compiler mess
 var mat4 = mat4_;
