@@ -719,10 +719,10 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                         material = VTS_MATERIAL_FLAT;
                         break; 
                     }
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha, command.layer);
                 } else {
                     //tile.renderHappen = true;
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha, command.layer);
                 }
 
             }

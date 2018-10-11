@@ -46,8 +46,10 @@ RendererInit.prototype.initShaders = function() {
     var renderer = this.renderer;
     var gpu = this.gpu;
     renderer.progTile = new GpuProgram(gpu, shaders.tileVertexShader, shaders.tileFragmentShader);
-    renderer.progTile2 = new GpuProgram(gpu, shaders.tile2VertexShader, shaders.tile2FragmentShader);
-    renderer.progTile3 = new GpuProgram(gpu, shaders.tile2VertexShader, shaders.tile3FragmentShader);
+
+    renderer.progTile2 = new GpuProgram(gpu, shaders.tile2VertexShader, shaders.tile2FragmentShader.replace('__FILTER__', ''));
+    renderer.progTile3 = new GpuProgram(gpu, shaders.tile2VertexShader, shaders.tile3FragmentShader.replace('__FILTER__', ''));
+
     renderer.progShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileShadedFragmentShader);
     renderer.progTShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileTShadedFragmentShader);
     renderer.progFogTile = new GpuProgram(gpu, shaders.fogTileVertexShader, shaders.fogTileFragmentShader);

@@ -71,6 +71,7 @@ MapBoundLayer.prototype.parseJson = function(json) {
     this.metaUrl = this.processUrl(json['metaUrl']);
     this.maskUrl = this.processUrl(json['maskUrl']);
     this.isTransparent = json['isTransparent'] || false;
+    this.shaderFilter = json['shaderFilter'] || null;
     this.credits = json['credits'] || [];
     this.creditsUrl = null;
 

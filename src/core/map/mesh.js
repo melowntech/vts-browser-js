@@ -3,13 +3,16 @@ import {mat4 as mat4_} from '../utils/matrix';
 import {utils as utils_} from '../utils/utils';
 import MapSubmesh_ from './submesh';
 import BBox_ from '../renderer/bbox';
+import GpuProgram_ from './gpu/program';
+import GpuShaders_ from './gpu/shaders';
 
 //get rid of compiler mess
 var mat4 = mat4_;
 var BBox = BBox_;
 var MapSubmesh = MapSubmesh_;
 var utils = utils_;
-
+var GpuProgram = GpuProgram_;
+var GpuShaders = GpuShaders_;
 
 var MapMesh = function(map, url, tile) {
     this.generateLines = true;
@@ -335,7 +338,7 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
 };
 
 
-MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha) {
+MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer) {
     if (this.gpuSubmeshes[index] == null && this.submeshes[index] != null && !this.submeshes[index].killed) {
         this.gpuSubmeshes[index] = this.submeshes[index].buildGpuMesh();
     }
@@ -401,6 +404,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     
             case VTS_MATERIAL_EXTERNAL:
             case VTS_MATERIAL_EXTERNAL_NOFOG:
+
                 program = renderer.progTile2;
                     
                 if (texture) {
@@ -409,6 +413,20 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                         program = renderer.progTile3;
                     }
                 } 
+                
+                if (layer && layer.shaderFilter) {
+                    var id = (gpuMask) ? 'progTile3' : 'progTile2';
+                    var renderer = this.map.renderer;
+                    id += layer.shaderFilter;
+
+                    program = renderer.progMap[id];
+
+                    if (!program) {
+                        var gpu = renderer.gpu, pixelShader = gpuMask ? shaders.tile3FragmentShader : shaders.tile2FragmentShader;
+                        program = new GpuProgram(gpu, GpuShaders.tile2VertexShader, shader.replace('__FILTER__', layer.shaderFilter));
+                        renderer.progMap[id] = program;
+                    }
+                }
                     
                 texcoords2Attr = 'aTexCoord2';  
                 attributes.push('aTexCoord2');
