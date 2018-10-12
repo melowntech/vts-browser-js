@@ -1078,7 +1078,7 @@ GpuShaders.tile2FragmentShader = 'precision mediump float;\n'+
     'void main() {\n'+
         'vec4 c1 = texture2D(uSampler, vTexCoord);\n'+
         'vec4 c = mix(c1, uFogColor, vFogFactor);\n'+
-        'c.w = cc.w * uAlpha;\n'+'__FILTER__' +
+        'c.w = c1.w * uAlpha;\n'+'__FILTER__' +
         'gl_FragColor = c;\n'+
     '}';
 

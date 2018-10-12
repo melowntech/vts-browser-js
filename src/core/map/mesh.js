@@ -422,8 +422,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                     program = renderer.progMap[id];
 
                     if (!program) {
-                        var gpu = renderer.gpu, pixelShader = gpuMask ? shaders.tile3FragmentShader : shaders.tile2FragmentShader;
-                        program = new GpuProgram(gpu, GpuShaders.tile2VertexShader, shader.replace('__FILTER__', layer.shaderFilter));
+                        var gpu = renderer.gpu, pixelShader = gpuMask ? GpuShaders.tile3FragmentShader : GpuShaders.tile2FragmentShader;
+                        program = new GpuProgram(gpu, GpuShaders.tile2VertexShader, pixelShader.replace('__FILTER__', layer.shaderFilter));
                         renderer.progMap[id] = program;
                     }
                 }

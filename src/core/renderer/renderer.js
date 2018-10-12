@@ -139,6 +139,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.labelVector = [0,0,0];
     this.drawnGeodataTiles = 0;
     this.drawnGeodataTilesFactor = 0;
+    this.progMap = {};
 
     //hack for vts maps
     //this.vtsHack = true;
