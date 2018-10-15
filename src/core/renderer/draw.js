@@ -730,6 +730,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         jobZBuffer2Size[i]++;
                         forceUpdate = true;
                     } else {
+                        /*
                         if (job.tile && job2.tile && job.tile.id[0] != job2.tile.id[0]) {
                         //if (job != job2) {
 
@@ -749,7 +750,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                             job2.timerShow = 0;
                             job2.timerHide = 0;
                             job2.draw = false;
-                        } 
+                        } */
                     }
 
                     //if (job.hysteresis[3] === true) {
@@ -778,11 +779,18 @@ RendererDraw.prototype.drawGpuJobs = function() {
             var hbuffer = renderer.jobHBuffer;
 
             for (key in buffer2) {
-                job = hbuffer[key];
+                job = buffer2[key];
+                job2 = hbuffer[key];
 
                 if (!hitmapRender) {
-                    if (job) {
-                      
+                    if (job2) {
+                        if (isNaN(job.timerShow)) {
+                            job.timerShow = 0;
+                            job.timerHide = 0;
+                            job.draw = false;
+                        }
+
+
                         if (!job.draw) {
                             job.timerShow += frameTime;
 
@@ -800,7 +808,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         job.timerHide = 0;
 
                     } else {
-                        job = buffer2[key];
+                        //job = buffer2[key];
 
                         if (job.draw) {
                             job.timerHide += frameTime;
