@@ -820,6 +820,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapFeaturesPerSquareInch':      this.config.mapFeaturesPerSquareInch = utils.validateNumber(value, 0.000001, Number.MAXINTEGER, 0); break;
     case 'mapFeaturesSortByTop':          this.config.mapFeaturesSortByTop = utils.validateBool(value, false); break;
     case 'mapFeaturesReduceMode':         this.config.mapFeaturesReduceMode = utils.validateString(value, 'scr-count4'); break;
+    case 'mapFeaturesReduceParams':       this.config.mapFeaturesReduceParams = value; break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     }
 };
@@ -874,6 +875,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapFeaturesPerSquareInch':      return this.config.mapFeaturesPerSquareInch;
     case 'mapFeaturesSortByTop':          return this.config.mapFeaturesSortByTop;
     case 'mapFeaturesReduceMode':         return this.config.mapFeaturesReduceMode;
+    case 'mapFeaturesReduceParams':       return this.config.mapFeaturesReduceParams;
     case 'mario':                         return this.config.mario;
     }
 };

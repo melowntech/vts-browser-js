@@ -926,6 +926,8 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
     case 'next-pass':   return validateValue(layerId, key, value, 'object');
 
+    case 'importance-source':  return validateValue(layerId, key, value, 'string');
+
     }
 
     return value; //custom property
@@ -1013,6 +1015,8 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'hysteresis':      return null;
     case 'culling':         return 180;
     case 'next-pass':       return null;
+
+    case 'importance-source':  '';
     }
 };
 

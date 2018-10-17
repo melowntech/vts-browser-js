@@ -790,7 +790,6 @@ RendererDraw.prototype.drawGpuJobs = function() {
                             job.draw = false;
                         }
 
-
                         if (!job.draw) {
                             job.timerShow += frameTime;
 

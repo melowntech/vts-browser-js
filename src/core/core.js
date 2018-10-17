@@ -62,10 +62,14 @@ var Core = function(element, config, coreInterface) {
         mapXhrImageLoad : true,
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,
+
         mapFeatureGridCells : 31,
         mapFeaturesPerSquareInch : 0.25, //0.6614,
         mapFeaturesSortByTop : false,
+
         mapFeaturesReduceMode : 'scr-count4',
+        mapFeaturesReduceParams : null,
+
         mapDegradeHorizon : false,
         mapDegradeHorizonParams : [1, 1500, 97500, 3500], //[1, 3000, 15000, 7000],
         mapDefaultFont : '//cdn.melown.com/libs/vtsjs/fonts/noto-basic/1.0.0/noto.fnt',

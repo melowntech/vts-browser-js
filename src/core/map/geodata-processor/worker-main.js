@@ -55,6 +55,28 @@ function processFeatures(type, features, lod, featureType, group) {
     //loop layers
     for (var key in globals.stylesheetLayers) {
         var layer = globals.stylesheetLayers[key];
+
+        var importance = layer['importance-source'];
+        if (importance != '') {
+            importance = getLayerPropertyValueInner(layer, null, feature, lod, 'importance-source', 0);
+            
+            switch (globals.reduceMode) {
+                case 'scr-count2': 
+                    layer['reduce'] = ['bottom',100,importance];
+                    layer['dynamic-reduce'] = ['scr-count2',1,50];
+                    break;
+                case 'scr-count4': 
+                    layer['reduce'] = ['bottom',100,importance];
+                    layer['dynamic-reduce'] = ['scr-count4',importance];
+                    break;
+                case 'scr-count5': 
+                    layer['reduce'] = ['bottom',100,importance];
+                    layer['dynamic-reduce'] = ['scr-count5',importance];
+                    break;
+            }
+
+        }
+
         var filter =  layer['filter'];
         var reduce =  layer['reduce'], i, li;
 
@@ -396,6 +418,8 @@ self.onmessage = function (e) {
         if (data) {
             globals.geocent = data['geocent'];
             globals.metricUnits = data['metric'];
+            globals.reduceMode = message['reduceMode'];
+            globals.reduceParams = message['reduceParams'];
             processStylesheet(data['data']);
         }
         postMessage({'command' : 'ready'});
@@ -416,7 +440,6 @@ self.onmessage = function (e) {
         globals.tileLod = message['lod'] || 0;
         globals.tileSize = message['tileSize'] || 1;
         globals.pixelFactor = message['dpr'] || 1;
-        globals.reduceMode = message['reduceMode'] || 'scr-count4';
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
         data = JSON.parse(data);            
         exportedGeometries = [];
