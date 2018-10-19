@@ -56,25 +56,30 @@ function processFeatures(type, features, lod, featureType, group) {
     for (var key in globals.stylesheetLayers) {
         var layer = globals.stylesheetLayers[key];
 
-        var importance = layer['importance-source'];
-        if (importance != '') {
-            importance = getLayerPropertyValueInner(layer, null, feature, lod, 'importance-source', 0);
-            
-            switch (globals.reduceMode) {
-                case 'scr-count2': 
-                    layer['reduce'] = ['bottom',100,importance];
-                    layer['dynamic-reduce'] = ['scr-count2',1,50];
-                    break;
-                case 'scr-count4': 
-                    layer['reduce'] = ['bottom',100,importance];
-                    layer['dynamic-reduce'] = ['scr-count4',importance];
-                    break;
-                case 'scr-count5': 
-                    layer['reduce'] = ['bottom',100,importance];
-                    layer['dynamic-reduce'] = ['scr-count5',importance];
-                    break;
+        if (type == 'point-array') {
+            var importance = layer['importance-source'];
+
+            if (!importance && features[0] && features[0]['importance']) {
+                importance = '$importance';
             }
 
+            if (importance) {
+                //importance = '$importance';
+                switch (globals.reduceMode) {
+                    case 'scr-count2': 
+                        layer['reduce'] = ['bottom',100,importance];
+                        layer['dynamic-reduce'] = ['scr-count2', globals.reduceParams[0], globals.reduceParams[1]];
+                        break;
+                    case 'scr-count4': 
+                        layer['reduce'] = ['bottom',100,importance];
+                        layer['dynamic-reduce'] = ['scr-count4',importance];
+                        break;
+                    case 'scr-count5': 
+                        layer['reduce'] = ['bottom',100,importance];
+                        layer['dynamic-reduce'] = ['scr-count5',importance];
+                        break;
+                }
+            }
         }
 
         var filter =  layer['filter'];
@@ -418,8 +423,8 @@ self.onmessage = function (e) {
         if (data) {
             globals.geocent = data['geocent'];
             globals.metricUnits = data['metric'];
-            globals.reduceMode = message['reduceMode'];
-            globals.reduceParams = message['reduceParams'];
+            globals.reduceMode = data['reduceMode'];
+            globals.reduceParams = data['reduceParams'];
             processStylesheet(data['data']);
         }
         postMessage({'command' : 'ready'});

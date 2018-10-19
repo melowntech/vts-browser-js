@@ -69,6 +69,7 @@ var Core = function(element, config, coreInterface) {
 
         mapFeaturesReduceMode : 'scr-count4',
         mapFeaturesReduceParams : null,
+        mapFeaturesReduceFactor : 1,
 
         mapDegradeHorizon : false,
         mapDegradeHorizonParams : [1, 1500, 97500, 3500], //[1, 3000, 15000, 7000],
@@ -528,7 +529,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.16.1';
+    return (full ? 'Core: ' : '') + '2.16.2';
 }
 
 

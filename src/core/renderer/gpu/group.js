@@ -375,6 +375,10 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
             case 'scr-count4': job.reduce[0] = 7; break;
             case 'scr-count5': job.reduce[0] = 8; break;
         }
+
+        if (job.reduce[0] == 7 || job.reduce[0] == 8) {
+            job.reduce[2] = job.reduce[1]; //copy prominence for prom / dist support
+        }
     }
 
     if (!job.program.isReady()) {

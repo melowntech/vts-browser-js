@@ -1428,6 +1428,17 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 renderer.gmapUseVersion = (job.reduce[0] == 8) ? 2 : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
+
+                if (renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
+                    if (l === null) {
+                        p2 = job.center;
+                        p1 = renderer.cameraPosition;
+                        camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                        l = vec3.length(camVec) + 0.0001;
+                    }
+
+                    job.reduce[1] = job.reduce[2] / l;
+                }
                 return;
             }
 
@@ -1448,6 +1459,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 renderer.gmapUseVersion = (job.reduce[0] == 8) ? 2 : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
+
+                if (renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
+                    if (l === null) {
+                        p2 = job.center;
+                        p1 = renderer.cameraPosition;
+                        camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                        l = vec3.length(camVec) + 0.0001;
+                    }
+
+                    job.reduce[1] = job.reduce[2] / l;
+                }
+
                 return;
             }
         }

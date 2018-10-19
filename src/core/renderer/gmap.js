@@ -1,18 +1,18 @@
 
 
 function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
-    var tileCount = renderer.config.mapFeatureGridCells; //31; //labelGridCells
-    var featuresPerSquareInch = renderer.config.mapFeaturesPerSquareInch; //0.6614; //labelsPerSquareInch
+    var tileCount = renderer.config.mapFeaturesReduceParams[1]; //31; //labelGridCells
+    var featuresPerSquareInch = renderer.config.mapFeaturesReduceParams[0]; //0.6614; //labelsPerSquareInch
     var ppi = 96 * (window.devicePixelRatio || 1);
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var featureCount = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
     var i, li, top = renderer.config.mapFeaturesSortByTop;
 
-    if (tileCount >= 0) {
+    if (tileCount <= 0) {
         tileCount = featureCount * 2; //31; //labelGridCells
     } else {
-        tileCount = -tileCount;
+        tileCount = tileCount;
     }
 
     renderer.debugStr = "<br>featuresPerScr: " + featureCount + "<br>gridCells: " + tileCount;
@@ -248,8 +248,8 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
 
     var ppi = 96 * (window.devicePixelRatio || 1);
 
-    var maxRadius = renderer.config.mapFeatureGridCells * ppi; //mapFeatureRadius
-    var maxHitcount = renderer.config.mapFeaturesPerSquareInch; //0.6614; //mapFeatureMaxOverlays
+    var maxRadius = renderer.config.mapFeaturesReduceParams[0] * ppi; //mapFeatureRadius
+    var maxHitcount = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //mapFeatureMaxOverlays
 
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
@@ -365,8 +365,8 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
 
     var ppi = 96 * (window.devicePixelRatio || 1);
 
-    var maxRadius = renderer.config.mapFeatureGridCells * ppi; //mapFeatureRadius
-    var maxHitcount = renderer.config.mapFeaturesPerSquareInch; //0.6614; //mapFeatureMaxOverlays
+    var maxRadius = renderer.config.mapFeaturesReduceParams[0] * ppi; //mapFeatureRadius
+    var maxHitcount = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //mapFeatureMaxOverlays
 
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
@@ -473,8 +473,8 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
 
     var ppi = 96 * (window.devicePixelRatio || 1);
 
-    var maxRadius = renderer.config.mapFeatureGridCells * ppi; //mapFeatureRadius
-    var maxHitcount = renderer.config.mapFeaturesPerSquareInch; //0.6614; //mapFeatureMaxOverlays
+    var maxRadius = renderer.config.mapFeaturesReduceParams[0] * ppi; //mapFeatureRadius
+    var maxHitcount = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //mapFeatureMaxOverlays
 
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];

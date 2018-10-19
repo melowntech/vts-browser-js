@@ -114,23 +114,24 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
 
     var config = this.map.config;
     var params = config.mapFeaturesReduceParams;
+    var isDef = (function(val){ return (typeof val !== 'undefinde') });
 
     switch (config.mapFeaturesReduceMode) {
         case 'scr-count2':
             if (!params) {
                 params = [1,50,0];
             } else {
-                params[0] = params[0] ? params[0] : 1;
-                params[1] = params[1] ? params[1] : 50;
-                params[2] = (params[2] === 1 || params[2] === 0) ? params[2] : 0;
+                params[0] = isDef(params[0]) ? params[0] : 1;
+                params[1] = isDef(params[1]) ? params[1] : 50;
+                params[2] = isDef(params[2]) ? params[2] : 0;
             }
         case 'scr-count4':
             if (!params) {
-                params = [0.18,32,0];
+                params = [0.18,0,0];
             } else {
-                params[0] = params[0] ? params[0] : 0.18;
-                params[1] = params[1] ? params[1] : 32;
-                params[2] = (params[2] === 1 || params[2] === 0) ? params[2] : 0;
+                params[0] = isDef(params[0]) ? params[0] : 0.18;
+                params[1] = isDef(params[1]) ? params[1] : 0;
+                params[2] = isDef(params[2]) ? params[2] : 0;
             }
             break;
 
@@ -138,12 +139,14 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
             if (!params) {
                 params = [2,1,0];
             } else {
-                params[0] = params[0] ? params[0] : 2;
-                params[1] = params[1] ? params[1] : 1;
-                params[2] = (params[2] === 1 || params[2] === 0) ? params[2] : 0;
+                params[0] = isDef(params[0]) ? params[0] : 2;
+                params[1] = isDef(params[1]) ? params[1] : 1;
+                params[2] = isDef(params[2]) ? params[2] : 0;
             }
             break;
     }
+
+    config.mapFeaturesReduceFactor = params[2];
 
     //this.setFont('#default', this.renderer.font);
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data,
