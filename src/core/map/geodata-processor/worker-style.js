@@ -23,8 +23,6 @@ var getLayer = function(layerId, featureType, index) {
 var getLayerExpresionValue = function(layer, value, feature, lod, key) {
     var finalValue;
 
-    console.log(JSON.stringify(value));
-
     switch(typeof value) {
     case 'string':
 
