@@ -68,7 +68,7 @@ var Core = function(element, config, coreInterface) {
         mapFeaturesSortByTop : false,
 
         mapFeaturesReduceMode : 'scr-count4',
-        mapFeaturesReduceParams : null,
+        mapFeaturesReduceParams : [0.18,0,0],
         mapFeaturesReduceFactor : 1,
 
         mapDegradeHorizon : false,

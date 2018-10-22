@@ -23,6 +23,8 @@ var getLayer = function(layerId, featureType, index) {
 var getLayerExpresionValue = function(layer, value, feature, lod, key) {
     var finalValue;
 
+    console.log(JSON.stringify(value));
+
     switch(typeof value) {
     case 'string':
 
@@ -53,10 +55,10 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
 
                     if (typeof finalValue == 'undefined') {
                         logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
+                        return finalValue;
                     }
 
                     return getLayerExpresionValue(layer, finalValue, feature, lod, key);
-                    //return finalValue;
             }
 
             return simpleFmtCall(value, (function(str){  
@@ -86,6 +88,7 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
 
                             if (typeof finalValue == 'undefined') {
                                 logError('wrong-expresion', layer['$$layer-id'], value, value, null, 'feature-property');
+                                return finalValue;
                             }
 
                             finalValue = getLayerPropertyValueInner(layer, key, feature, lod, finalValue, 0);
