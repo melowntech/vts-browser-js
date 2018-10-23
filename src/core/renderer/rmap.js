@@ -123,6 +123,8 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     var removeList = {};
     var exit = false;
 
+    var top = this.renderer.config.mapFeaturesSortByTop;
+
     //test collision
     for (y = 0; y < ly; y++) {
         for (x = 0; x < lx; x++) {
@@ -137,8 +139,14 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
                 if (x1 < rectangles[rectangleIndex + 2] && x2 > rectangles[rectangleIndex + 0] &&
                     y1 < rectangles[rectangleIndex + 3] && y2 > rectangles[rectangleIndex + 1]) {
 
-                    if (z > rectangles[rectangleIndex + 4]) {
-                        return false;
+                    if (top) {
+                        if (z < rectangles[rectangleIndex + 4]) {
+                            return false;
+                        }
+                    } else {
+                        if (z > rectangles[rectangleIndex + 4]) {
+                            return false;
+                        }
                     }
 
                     removeList[rectangleIndex] = true;

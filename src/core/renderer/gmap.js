@@ -381,7 +381,7 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
     var hmap = renderer.gmap3;
     var hmapSize = renderer.gmap3Size;
 
-    var hmin = 8000;
+    var hmin = 10000;
     var hmax = 0;
 
     //filter features and sort them by prominence
@@ -398,9 +398,9 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
             continue;
         }
 
-        var h = feature[0].reduce[1];
+        var h = Math.round(feature[0].reduce[1] + 5000);
         if (h < 0) h = 0;
-        if (h > 8000) h = 7999;
+        if (h > 10000) h = 9999;
         if (h < hmin) hmin = h;
         if (h > hmax) hmax = h;
 
@@ -413,7 +413,8 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
 
     maxRadius *= maxRadius;
 
-    for (i = hmin, li = hmax; i < li; i++) {
+//    for (i = hmin, li = hmax; i < li; i++) {
+    for (i = hmax, li = hmin; i >= 0; i--) {
 
         if (hmapSize[i] > 0) {
             var features = hmap[i];
@@ -458,9 +459,9 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
                     hitCache[hitCacheSize] = feature;
                     hitCacheSize++;
                 }
-
-
             }
+
+            hmapSize[i] = 0;  //zero size
         }
 
     }
@@ -489,7 +490,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     var hmap = renderer.gmap3;
     var hmapSize = renderer.gmap3Size;
 
-    var hmin = 8000;
+    var hmin = 10000;
     var hmax = 0;
 
     //filter features and sort them by prominence
@@ -506,9 +507,9 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
             continue;
         }
 
-        var h = feature[0].reduce[1];
+        var h = Math.round(feature[0].reduce[1] + 5000);
         if (h < 0) h = 0;
-        if (h > 8000) h = 7999;
+        if (h > 10000) h = 9999;
         if (h < hmin) hmin = h;
         if (h > hmax) hmax = h;
 
@@ -531,7 +532,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
 
     maxRadius *= maxRadius;
 
-    for (i = hmin, li = hmax; i < li; i++) {
+    for (i = hmax, li = hmin; i >= 0; i--) {
 
         if (hmapSize[i] > 0) {
             var features = hmap[i];
@@ -584,11 +585,13 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
 
 
             }
+
+            hmapSize[i] = 0;  //zero size
         }
 
     }
 }
 
 
-export {processGMap, processGMap2};
+export {processGMap, processGMap2, processGMap3, processGMap4};
 

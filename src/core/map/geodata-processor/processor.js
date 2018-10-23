@@ -124,6 +124,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
                 params[0] = isDef(params[0]) ? params[0] : 1;
                 params[1] = isDef(params[1]) ? params[1] : 50;
                 params[2] = isDef(params[2]) ? params[2] : 0;
+                config.mapFeaturesSortByTop = true;
             }
         case 'scr-count4':
             if (!params) {
@@ -132,6 +133,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
                 params[0] = isDef(params[0]) ? params[0] : 0.18;
                 params[1] = isDef(params[1]) ? params[1] : 0;
                 params[2] = isDef(params[2]) ? params[2] : 0;
+                config.mapFeaturesSortByTop = true;
             }
             break;
 
@@ -142,6 +144,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
                 params[0] = isDef(params[0]) ? params[0] : 2;
                 params[1] = isDef(params[1]) ? params[1] : 1;
                 params[2] = isDef(params[2]) ? params[2] : 0;
+                config.mapFeaturesSortByTop = true;
             }
             break;
     }

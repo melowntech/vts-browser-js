@@ -67,15 +67,16 @@ function processFeatures(type, features, lod, featureType, group) {
                 //importance = '$importance';
                 switch (globals.reduceMode) {
                     case 'scr-count2': 
-                        layer['reduce'] = ['bottom',100,importance];
+                        //layer['reduce'] = ['bottom',100,importance];
+                        layer['reduce'] = ['top',100,importance];
                         layer['dynamic-reduce'] = ['scr-count2', globals.reduceParams[0], globals.reduceParams[1]];
                         break;
                     case 'scr-count4': 
-                        layer['reduce'] = ['bottom',100,importance];
+                        //layer['reduce'] = ['bottom',100,importance];
                         layer['dynamic-reduce'] = ['scr-count4',importance];
                         break;
                     case 'scr-count5': 
-                        layer['reduce'] = ['bottom',100,importance];
+                        //layer['reduce'] = ['bottom',100,importance];
                         layer['dynamic-reduce'] = ['scr-count5',importance];
                         break;
                 }

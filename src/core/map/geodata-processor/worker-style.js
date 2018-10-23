@@ -319,6 +319,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             case 'atan':
             case 'sqrt':
             case 'abs':
+            case 'log':
             case 'round':
             case 'floor':
             case 'ceil':
@@ -340,6 +341,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         case 'atan': return Math.atan(functionValue);
                         case 'sqrt': return Math.sqrt(functionValue);
                         case 'abs':  return Math.abs(functionValue);
+                        case 'log':  return Math.log(functionValue);
                         case 'round': return Math.round(functionValue);
                         case 'floor': return Math.floor(functionValue);
                         case 'ceil':  return Math.ceil(functionValue);

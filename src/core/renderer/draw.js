@@ -1,13 +1,15 @@
 
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
-import {processGMap as processGMap_, processGMap2 as processGMap2_} from './gmap';
+import {processGMap as processGMap_, processGMap2 as processGMap2_, processGMap3 as processGMap3_, processGMap4 as processGMap4_} from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
 var math = math_;
 var processGMap = processGMap_;
 var processGMap2 = processGMap2_;
+var processGMap3 = processGMap3_;
+var processGMap4 = processGMap4_;
 
 
 var RendererDraw = function(renderer) {
@@ -762,7 +764,9 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
         if (renderer.gmapIndex > 0) {
             if (renderer.gmapUseVersion == 2) {
-                processGMap2(gpu, gl, renderer, screenPixelSize, this);
+                //processGMap2(gpu, gl, renderer, screenPixelSize, this);
+                processGMap3(gpu, gl, renderer, screenPixelSize, this);
+                //processGMap4(gpu, gl, renderer, screenPixelSize, this);
             } else {
                 processGMap(gpu, gl, renderer, screenPixelSize, this);
             }
@@ -1418,7 +1422,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    depth = o[5]/l;
+                    depth = o[5]/( Math.log(l)/Math.log(1.0017) );  //TODO: OPTIONAL ???
                 } 
             }
 
@@ -1437,7 +1441,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    job.reduce[1] = job.reduce[2] / l;
+                    job.reduce[1] = job.reduce[2] / ( Math.log(l)/Math.log(1.0017) );   //TODO: OPTIONAL ???
                 }
                 return;
             }
