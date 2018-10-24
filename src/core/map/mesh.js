@@ -292,6 +292,7 @@ MapMesh.prototype.parseMapMesh = function (stream) {
 
     this.submeshes = [];
     this.gpuSize = 0; 
+    this.faces = 0;
 
     for (var i = 0, li = this.numSubmeshes; i < li; i++) {
         var submesh = new MapSubmesh(this, stream);

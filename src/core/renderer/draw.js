@@ -1422,7 +1422,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    depth = o[5]/( Math.log(l)/Math.log(1.0017) );  //TODO: OPTIONAL ???
+                    //depth = o[5]/( Math.log(l)/Math.log(1.0017) );  //TODO: OPTIONAL ???
+                    depth = Math.log(Math.pow(1.0017, o[5]) / l) / Math.log(1.0017);  //TODO: OPTIONAL ???
                 } 
             }
 
@@ -1441,7 +1442,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    job.reduce[1] = job.reduce[2] / ( Math.log(l)/Math.log(1.0017) );   //TODO: OPTIONAL ???
+                    //job.reduce[1] = job.reduce[2] / ( Math.log(l)/Math.log(1.0017) );   //TODO: OPTIONAL ???
+                    job.reduce[1] = Math.log(Math.pow(1.0017, job.reduce[2]) / l)/Math.log(1.0017);   //TODO: OPTIONAL ???
                 }
                 return;
             }
