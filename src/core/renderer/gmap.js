@@ -341,8 +341,9 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
             if (feature[6]) { //no-overlap 
                 pp = feature[5];
                 o = feature[8];
-                if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob)) {
-                    renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
+                if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                    hitCache[hitCacheSize] = feature;
+                    hitCacheSize++;
                 }
             } else {
                 if (feature[0].hysteresis) {
@@ -350,10 +351,10 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
                 } else {
                     draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
                 }
-            }
 
-            hitCache[hitCacheSize] = feature;
-            hitCacheSize++;
+                hitCache[hitCacheSize] = feature;
+                hitCacheSize++;
+            }
         }
     }
 }
@@ -445,8 +446,9 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
                     if (feature[6]) { //no-overlap 
                         pp = feature[5];
                         o = feature[8];
-                        if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob)) {
-                            renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
+                        if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                            hitCache[hitCacheSize] = feature;
+                            hitCacheSize++;
                         }
                     } else {
                         if (feature[0].hysteresis) {
@@ -454,10 +456,10 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
                         } else {
                             draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
                         }
-                    }
 
-                    hitCache[hitCacheSize] = feature;
-                    hitCacheSize++;
+                        hitCache[hitCacheSize] = feature;
+                        hitCacheSize++;
+                    }
                 }
             }
 
@@ -568,8 +570,9 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                     if (feature[6]) { //no-overlap 
                         pp = feature[5];
                         o = feature[8];
-                        if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob)) {
-                            renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
+                        if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                            hitCache[hitCacheSize] = feature;
+                            hitCacheSize++;
                         }
                     } else {
                         if (feature[0].hysteresis) {
@@ -577,10 +580,10 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                         } else {
                             draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
                         }
-                    }
 
-                    hitCache[hitCacheSize] = feature;
-                    hitCacheSize++;
+                        hitCache[hitCacheSize] = feature;
+                        hitCacheSize++;
+                    }
                 }
 
 

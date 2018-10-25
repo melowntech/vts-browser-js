@@ -1400,6 +1400,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
         }
 
+        var reduce78 = (job.reduce && (job.reduce[0] == 7 || job.reduce[0] == 8));
+
         if (job.noOverlap) { 
             if (!pp) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
@@ -1422,14 +1424,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    //depth = o[5]/( Math.log(l)/Math.log(1.0017) );  //TODO: OPTIONAL ???
-                    depth = Math.log(Math.pow(1.0017, o[5]) / l) / Math.log(1.0017);  //TODO: OPTIONAL ???
+                    if (reduce78) {
+                        //job.reduce[1] = Math.log(o[5] / l) * VTS_IMPORATANCE_INV_LOG;
+                        depth = Math.log(o[5] / (l)) / Math.log(1.0017);
+                    } else {
+                        depth = o[5] / l;            
+                    }
                 } 
             }
 
             job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
 
-            if (job.reduce && (job.reduce[0] == 7 || job.reduce[0] == 8)) {
+            if (reduce78) {
                 renderer.gmapUseVersion = (job.reduce[0] == 8) ? 2 : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
@@ -1442,8 +1448,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    //job.reduce[1] = job.reduce[2] / ( Math.log(l)/Math.log(1.0017) );   //TODO: OPTIONAL ???
-                    job.reduce[1] = Math.log(Math.pow(1.0017, job.reduce[2]) / l)/Math.log(1.0017);   //TODO: OPTIONAL ???
+                    //job.reduce[1] = Math.log(job.reduce[2] / l) * VTS_IMPORATANCE_INV_LOG;
+                    job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
                 }
                 return;
             }
@@ -1455,7 +1461,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             return; //draw all labe from same z-index together
         } else {
-            if (job.reduce && (job.reduce[0] == 7 || job.reduce[0] == 8)) {
+            if (reduce78) {
                 if (!pp) {
                     pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 }
@@ -1474,7 +1480,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    job.reduce[1] = job.reduce[2] / l;
+                    //job.reduce[1] = Math.log(job.reduce[2] / l) * VTS_IMPORATANCE_INV_LOG;
+                    job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
                 }
 
                 return;

@@ -79,7 +79,7 @@ RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjo
 };
 
 
-RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
+RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
         rectangles = this.rectangles, rectangleIndex, t;
 
@@ -138,6 +138,10 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
 
                 if (x1 < rectangles[rectangleIndex + 2] && x2 > rectangles[rectangleIndex + 0] &&
                     y1 < rectangles[rectangleIndex + 3] && y2 > rectangles[rectangleIndex + 1]) {
+
+                    if (any) {
+                        return false;
+                    }
 
                     if (top) {
                         if (z < rectangles[rectangleIndex + 4]) {
