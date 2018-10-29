@@ -764,8 +764,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
         if (renderer.gmapIndex > 0) {
             if (renderer.gmapUseVersion == 2) {
-                //processGMap2(gpu, gl, renderer, screenPixelSize, this);
-                processGMap3(gpu, gl, renderer, screenPixelSize, this);
+                processGMap2(gpu, gl, renderer, screenPixelSize, this);
+                //processGMap3(gpu, gl, renderer, screenPixelSize, this);
                 //processGMap4(gpu, gl, renderer, screenPixelSize, this);
             } else {
                 processGMap(gpu, gl, renderer, screenPixelSize, this);

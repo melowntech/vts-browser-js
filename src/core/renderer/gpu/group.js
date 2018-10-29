@@ -377,7 +377,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         }
 
         if (job.reduce[0] == 7 || job.reduce[0] == 8) {
-            job.reduce[2] = job.reduce[1]; //copy prominence for prom / dist support
+            job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
             //job.reduce[1] = Math.log(job.reduce[2]) * VTS_IMPORATANCE_INV_LOG;
             job.reduce[1] = Math.log(job.reduce[2]) / Math.log(1.0017);
         }
