@@ -379,7 +379,13 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         if (job.reduce[0] == 7 || job.reduce[0] == 8) {
             job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
             //job.reduce[1] = Math.log(job.reduce[2]) * VTS_IMPORATANCE_INV_LOG;
-            job.reduce[1] = Math.log(job.reduce[2]) / Math.log(1.0017);
+            //job.reduce[1] = Math.log(job.reduce[2]) / Math.log(1.0017);
+
+            if (this.renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
+                job.reduce[1] = job.reduce[2];
+            } else {
+                job.reduce[1] = Math.floor((Math.log(job.reduce[2] * 500) / Math.log(1.0017)) + 5000);
+            }
         }
     }
 

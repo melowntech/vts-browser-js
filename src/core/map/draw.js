@@ -193,6 +193,9 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
     renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
     renderer.drawGridCells = this.debug.drawGridCells;
+    renderer.fmaxDist = Number.NEGATIVE_INFINITY;
+    renderer.fminDist = Number.POSITIVE_INFINITY;
+
 
     if (projected) {
         var yaw = math.radians(renderer.cameraOrientation[0]);

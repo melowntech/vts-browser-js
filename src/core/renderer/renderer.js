@@ -103,6 +103,8 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.gmapTop = new Array(512);
     this.gmapHit = new Array(512);
     this.gmapStore = new Array(512);
+    this.fmaxDist = 0;
+    this.fminDist = 0;
 
     this.jobZBuffer = new Array(512);
     this.jobZBufferSize = new Array(512);

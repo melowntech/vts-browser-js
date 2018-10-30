@@ -254,13 +254,15 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
-    var feature, feature2, pp, pp2, o;
+    var feature, feature2, pp, pp2, o, r;
 
     //get top features
     var featureCache = renderer.gmap;
     var featureCache2 = renderer.gmap2;
     var featureCacheSize = renderer.gmapIndex;
     var featureCacheSize2 = 0;
+
+    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
 
     //filter features before sort
     for (i = 0, li = featureCacheSize; i < li; i++) {
@@ -270,16 +272,15 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
         }
 
         pp = feature[5];
-
-        if (pp[0] < 30 || pp[0] >= (screenLX-30) || pp[1] < 30 || pp[1] >= (screenLY-30)) {
-            featureCache[i] = null;
-            continue;
+        
+        if (divByDist) {
+            r = feature[0].reduce;
+            r[1] = r[2] / r[4];
         }
 
         featureCache2[featureCacheSize2] = feature;
         featureCacheSize2++;
     }
-
 
     //sort features by prominence
 
@@ -378,12 +379,22 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
     var featureCache = renderer.gmap;
     var featureCacheSize = renderer.gmapIndex;
 
-
     var hmap = renderer.gmap3;
     var hmapSize = renderer.gmap3Size;
 
     var hmin = 10000;
-    var hmax = 0;
+    var hmax = 0, h, r;
+
+    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
+
+    if (divByDist) { // prom / dists
+        if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
+            return;
+        }
+
+        var ub = 1 - Math.log(renderer.fminDist) / Math.log(101);
+        var lb = -Math.log(renderer.fmaxDist) / Math.log(101); 
+    }
 
     //filter features and sort them by prominence
     for (i = 0, li = featureCacheSize; i < li; i++) {
@@ -394,14 +405,15 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
 
         pp = feature[5];
 
-        if (pp[0] < 30 || pp[0] >= (screenLX-30) || pp[1] < 30 || pp[1] >= (screenLY-30)) {
-            featureCache[i] = null;
-            continue;
+        if (divByDist) {
+            r = feature[0].reduce;
+            h = Math.round(-5000 + ( ( Math.log(r[1]+1) - Math.log(r[4]) ) / Math.log(101) - lb ) / ( ub-lb ) * 10000) + 5000;
+        } else {
+            h = feature[0].reduce[1];            
         }
 
-        var h = Math.round(feature[0].reduce[1] + 5000);
         if (h < 0) h = 0;
-        if (h > 10000) h = 9999;
+        if (h >= 10000) h = 9999;
         if (h < hmin) hmin = h;
         if (h > hmax) hmax = h;
 

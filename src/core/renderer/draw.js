@@ -764,8 +764,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
         if (renderer.gmapIndex > 0) {
             if (renderer.gmapUseVersion == 2) {
-                processGMap2(gpu, gl, renderer, screenPixelSize, this);
-                //processGMap3(gpu, gl, renderer, screenPixelSize, this);
+                //processGMap2(gpu, gl, renderer, screenPixelSize, this);
+                processGMap3(gpu, gl, renderer, screenPixelSize, this);
                 //processGMap4(gpu, gl, renderer, screenPixelSize, this);
             } else {
                 processGMap(gpu, gl, renderer, screenPixelSize, this);
@@ -1413,6 +1413,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 return;
             }
 
+            if (!renderer.rmap.checkRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], stickShift)) {
+                return;
+            }
+
             if (o[4] !== null) {
                 if (o[4] === VTS_NO_OVERLAP_DIRECT) {
                     depth = o[5];
@@ -1424,10 +1428,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    if (reduce78) {
-                        //job.reduce[1] = Math.log(o[5] / l) * VTS_IMPORATANCE_INV_LOG;
-                        depth = Math.log(o[5] / (l)) / Math.log(1.0017);
-                    } else {
+                    if (job.reduce && job.reduce[0] != 8) {  //not overlap code not used for reduce==8
                         depth = o[5] / l;            
                     }
                 } 
@@ -1448,8 +1449,15 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
+                    if (l > renderer.fmaxDist) renderer.fmaxDist = l;
+                    if (l < renderer.fminDist) renderer.fminDist = l;
+
                     //job.reduce[1] = Math.log(job.reduce[2] / l) * VTS_IMPORATANCE_INV_LOG;
-                    job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
+                    //job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
+                    
+                    //job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
+                    job.reduce[1] = job.reduce[2];
+                    job.reduce[4] = l;
                 }
                 return;
             }

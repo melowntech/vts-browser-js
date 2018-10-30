@@ -32,14 +32,14 @@ var Browser = function(element, config) {
     element = (typeof element !== 'string') ? element : document.getElementById(element);
 
     if (!checkSupport()) {
-        this.ui.setControlDisplayState('fallback', true);
+        this.ui.setControlVisible('fallback', true);
         return;
     }
 
     this.core = new CoreInterface(this.ui.getMapControl().getMapElement().getElement(), config);
 
     if (this.core == null) {
-        this.ui.setControlDisplayState('fallback', true);
+        this.ui.setControlVisible('fallback', true);
         return;
     }
     
