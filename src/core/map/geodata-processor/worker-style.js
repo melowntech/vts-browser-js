@@ -32,13 +32,14 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                 case '#': 
                     //debugger;
                     switch(value) {
-                        case '#id':       return feature.id;
-                        case '#type':     return globals.featureType;
-                        case '#group':    return globals.groupId;
-                        case '#lod':      return globals.tileLod;
-                        case '#tileSize': return globals.tileSize;
-                        case '#metric':   return globals.metricUnits;
-                        case '#dpr':      return globals.pixelFactor;
+                        case '#id':        return feature.id;
+                        case '#type':      return globals.featureType;
+                        case '#group':     return globals.groupId;
+                        case '#lod':       return globals.tileLod;
+                        case '#tileSize':  return globals.tileSize;
+                        case '#pixelSize': return globals.pixelSize;
+                        case '#metric':    return globals.metricUnits;
+                        case '#dpr':       return globals.pixelFactor;
                     }
 
                     return finalValue;
@@ -67,13 +68,14 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key) {
                         case '#': 
                             //debugger;
                             switch(str) {
-                                case '#id':       return feature.id;
-                                case '#type':     return globals.featureType;
-                                case '#group':    return globals.groupId;
-                                case '#lod':      return globals.tileLod;
-                                case '#tileSize': return globals.tileSize;
-                                case '#metric':   return globals.metricUnits;
-                                case '#dpr':      return globals.pixelFactor;
+                                case '#id':        return feature.id;
+                                case '#type':      return globals.featureType;
+                                case '#group':     return globals.groupId;
+                                case '#lod':       return globals.tileLod;
+                                case '#tileSize':  return globals.tileSize;
+                                case '#pixelSize': return globals.pixelSize;
+                                case '#metric':    return globals.metricUnits;
+                                case '#dpr':       return globals.pixelFactor;
                             }
 
                         case '$':
@@ -170,13 +172,14 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 case '#': 
                     //debugger;
                     switch(value) {
-                        case '#id':       return feature.id;
-                        case '#type':     return globals.featureType;
-                        case '#group':    return globals.groupId;
-                        case '#lod':      return globals.tileLod;
-                        case '#tileSize': return globals.tileSize;
-                        case '#metric':   return globals.metricUnits;
-                        case '#dpr':      return globals.pixelFactor;
+                        case '#id':        return feature.id;
+                        case '#type':      return globals.featureType;
+                        case '#group':     return globals.groupId;
+                        case '#lod':       return globals.tileLod;
+                        case '#tileSize':  return globals.tileSize;
+                        case '#pixelSize': return globals.pixelSize;
+                        case '#metric':    return globals.metricUnits;
+                        case '#dpr':       return globals.pixelFactor;
                     }
                     break;
             }

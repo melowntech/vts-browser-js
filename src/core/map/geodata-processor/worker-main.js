@@ -445,6 +445,7 @@ self.onmessage = function (e) {
     case 'processGeodata':
         globals.tileLod = message['lod'] || 0;
         globals.tileSize = message['tileSize'] || 1;
+        globals.pixelSize = message['pixelSize'] || 1;
         globals.pixelFactor = message['dpr'] || 1;
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
         data = JSON.parse(data);            

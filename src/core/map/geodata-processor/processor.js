@@ -91,7 +91,8 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile, dpr) {
         message['lod'] = tile.id[0];
 
         if (tile.metanode) {
-            message['tileSize'] = tile.metanode.diskAngle * tile.metanode.diskDistance;
+            message['tileSize'] = Math.tan(tile.metanode.diskAngle2A) * tile.metanode.diskDistance;
+            message['pixelSize'] =  (message['tileSize'] * 0.70710678118) / tile.metanode.displaySize;
         }
     }
 

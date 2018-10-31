@@ -991,6 +991,12 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
     }
 
+    //draw geodata pixel size
+    if (debug.drawGPixelSize) {
+        text = '' + ((Math.tan(tile.metanode.diskAngle2A) * tile.metanode.diskDistance * 0.70710678118) / node.displaySize).toFixed(2);
+        this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
+    }
+
     //draw order
     if (debug.drawOrder) {
         text = '' + this.drawTileCounter + ' cmds: ' + (tile.drawCommands[0].length);

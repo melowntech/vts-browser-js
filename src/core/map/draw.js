@@ -52,6 +52,7 @@ var MapDraw = function(map) {
         drawGridCells : false,
         drawTileCounter : 0,
         drawFog : this.config.mapFog,
+        drawGPixelSize : false,
         debugTextSize : 2.0,
         ignoreTexelSize : false,
         maxZoom : false

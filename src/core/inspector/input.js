@@ -368,6 +368,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 122:
                 map.config.mapPreciseDistanceTest = !map.config.mapPreciseDistanceTest; break; //key Z pressed
 
+            case 75:
+            case 107:
+                debug.drawGPixelSize = !debug.drawGPixelSize; break; //key K pressed
+
             default:
                 blockHit = false;
                 break;
@@ -417,6 +421,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
             if (has('C')) debug.drawCredits = true;
             if (has('O')) debug.drawOrder = true;
             if (has('E')) debug.debugTextSize = 3.0;
+            if (has('K')) debug.drawGPixelSize = true;
             break;
         case 'debugLBox': debug.drawLabelBoxes = true; break;
         case 'debugNoEarth': debug.drawEarth = false; break;
