@@ -126,6 +126,8 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 outline : getLayerPropertyValue(style, 'label-outline', pointArray, lod),
                 reduce : getLayerPropertyValue(style, 'dynamic-reduce', pointArray, lod),
                 size : size * factor,
+                spacing: getLayerPropertyValue(style, 'label-spacing', pointArray, lod),
+                lineHeight: getLayerPropertyValue(style, 'label-line-height', pointArray, lod),
                 offset : getLayerPropertyValue(style, 'label-offset', pointArray, lod),
                 stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'label-origin', pointArray, lod),
@@ -533,7 +535,7 @@ var processLabel = function(point, labelData) {
 
         // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(null /*line*/, labelData.width, labelData.size, fonts, glyphsRes);
+            var splitIndex = getSplitIndex(null /*line*/, labelData.width, labelData.size, labelData.spacing, fonts, glyphsRes);
             var codes = glyphsRes[2];
 
             //if (line.length == splitIndex) {
@@ -555,13 +557,13 @@ var processLabel = function(point, labelData) {
 
     var x = 0;
     var y = 0;
-    var lineHeight = getLineHeight(labelData.size, fonts);
+    var lineHeight = getLineHeight(labelData.size, labelData.lineHeight, fonts);
     var maxWidth = 0;
     var lineWidths = [];
 
     //get max width
     for (i = 0, li = linesGlyphsRes2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(null /*lines2[i]*/, labelData.size, fonts, linesGlyphsRes2[i]);
+        lineWidths[i] = getTextLength(null /*lines2[i]*/, labelData.size, labelData.spacing, fonts, linesGlyphsRes2[i]);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
@@ -578,7 +580,7 @@ var processLabel = function(point, labelData) {
         case 'center': x = (maxWidth - textWidth)*0.5; break;
         }
 
-        index = addText([x,y,0], [1,0,0], null /*lines2[i]*/, labelData.size, fonts, vertexBuffer, texcoordsBuffer, true, index, planes, linesGlyphsRes2[i]);
+        index = addText([x,y,0], [1,0,0], null /*lines2[i]*/, labelData.size, labelData.spacing, fonts, vertexBuffer, texcoordsBuffer, true, index, planes, linesGlyphsRes2[i]);
         y -= lineHeight;
     }
 

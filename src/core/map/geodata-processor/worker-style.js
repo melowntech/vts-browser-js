@@ -875,6 +875,8 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'line-label-color2':  return validateValue(layerId, key, value, 'object', 4, 0, 255);
     case 'line-label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'line-label-offset':  return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'line-label-spacing': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'line-label-line-height': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
 
     case 'point':        return validateValue(layerId, key, value, 'boolean');
     case 'point-flat':   return validateValue(layerId, key, value, 'boolean');
@@ -891,18 +893,20 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'icon-stick':   return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'icon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
-    case 'label':            return validateValue(layerId, key, value, 'boolean');
-    case 'label-color':      return validateValue(layerId, key, value, 'object', 4, 0, 255);
-    case 'label-color2':     return validateValue(layerId, key, value, 'object', 4, 0, 255);
-    case 'label-source':     return validateValue(layerId, key, value, 'string');
-    case 'label-size':       return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
-    case 'label-size-units': return validateValue(layerId, key, value, 'string');
-    case 'label-offset':     return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
-    case 'label-origin':     return validateValue(layerId, key, value, 'string');
-    case 'label-align':      return validateValue(layerId, key, value, 'string');
-    case 'label-stick':      return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
-    case 'label-width':      return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
-    case 'label-no-overlap': return validateValue(layerId, key, value, 'boolean');
+    case 'label':             return validateValue(layerId, key, value, 'boolean');
+    case 'label-color':       return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'label-color2':      return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'label-source':      return validateValue(layerId, key, value, 'string');
+    case 'label-size':        return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'label-size-units':  return validateValue(layerId, key, value, 'string');
+    case 'label-spacing':     return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'label-line-height': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'label-offset':      return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'label-origin':      return validateValue(layerId, key, value, 'string');
+    case 'label-align':       return validateValue(layerId, key, value, 'string');
+    case 'label-stick':       return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'label-width':       return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'label-no-overlap':  return validateValue(layerId, key, value, 'boolean');
     case 'label-no-overlap-factor': return validateValue(layerId, key, value, 'object');
     case 'label-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
 
@@ -964,6 +968,8 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'line-label-source':  return '$name';
     case 'line-label-size':    return 1;
     case 'line-label-offset':  return 0;
+    case 'line-label-spacing': return 1;
+    case 'line-label-line-height': return 1;
 
     case 'point':        return false;
     case 'point-flat':   return false;
@@ -979,20 +985,22 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'icon-stick':   return [0,0,0,255,255,255,255];
     case 'icon-color':   return [255,255,255,255];
 
-    case 'label':            return false;
-    case 'label-font':       return ['#default'];
-    case 'label-color':      return [255,255,255,255];
-    case 'label-color2':     return [0,0,0,255];
-    case 'label-outline':    return [0.27,0.75,2.2,2.2];
-    case 'label-source':     return '$name';
-    case 'label-size':       return 10;
-    case 'label-size-units': return 'pixels';
-    case 'label-offset':     return [0,0];
-    case 'label-origin':     return 'bottom-center';
-    case 'label-align':      return 'center';
-    case 'label-stick':      return [0,0,0,255,255,255,255];
-    case 'label-width':      return 200;
-    case 'label-no-overlap': return true;
+    case 'label':             return false;
+    case 'label-font':        return ['#default'];
+    case 'label-color':       return [255,255,255,255];
+    case 'label-color2':      return [0,0,0,255];
+    case 'label-outline':     return [0.27,0.75,2.2,2.2];
+    case 'label-source':      return '$name';
+    case 'label-size':        return 10;
+    case 'label-size-units':  return 'pixels';
+    case 'label-spacing':     return 1;
+    case 'label-line-height': return 1;
+    case 'label-offset':      return [0,0];
+    case 'label-origin':      return 'bottom-center';
+    case 'label-align':       return 'center';
+    case 'label-stick':       return [0,0,0,255,255,255,255];
+    case 'label-width':       return 200;
+    case 'label-no-overlap':  return true;
     case 'label-no-overlap-factor': return null;
     case 'label-no-overlap-margin': return [5,5];
        
