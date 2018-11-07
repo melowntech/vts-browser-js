@@ -819,9 +819,17 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapFeatureGridCells':           this.config.mapFeatureGridCells = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, 0); break;
     case 'mapFeaturesPerSquareInch':      this.config.mapFeaturesPerSquareInch = utils.validateNumber(value, 0.000001, Number.MAXINTEGER, 0); break;
     case 'mapFeaturesSortByTop':          this.config.mapFeaturesSortByTop = utils.validateBool(value, false); break;
-    case 'mapFeaturesReduceMode':         this.config.mapFeaturesReduceMode = utils.validateString(value, 'scr-count4'); break;
     case 'mapFeaturesReduceParams':       this.config.mapFeaturesReduceParams = value; break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
+    case 'mapFeaturesReduceMode':         
+        value = utils.validateString(value, 'scr-count4');
+        if (value == 'auto') value = 'scr-count2';
+        if (value == 'legacy') value = 'scr-count2';
+        if (value == 'gridcells') value = 'scr-count4';
+        if (value == 'singlepass') value = 'scr-count5';
+        this.config.mapFeaturesReduceMode = value;
+        break;
+
     }
 };
 

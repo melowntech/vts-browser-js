@@ -19,6 +19,7 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.jobs = [];
     this.reduced = 0;
     this.geometries = {};
+    this.subjob = null;
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
@@ -439,12 +440,28 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.vertexOriginBuffer.itemSize = 3;
     job.vertexOriginBuffer.numItems = origins.length / 3;
 
-    this.jobs.push(job);
+    if (this.subjobs) {
+        this.subjobs.push(job);
+    } else {
+        this.jobs.push(job);
+    }
 
     this.size += job.vertexPositionBuffer.numItems * 4 +
                   job.vertexOriginBuffer.numItems * 4 +
                   job.vertexTexcoordBuffer.numItems * 4;
     this.polygons += job.vertexPositionBuffer.numItems / (4 * 3);
+};
+
+
+GpuGroup.prototype.addPack = function(data) {
+
+    var job = {
+        type : VTS_JOB_PACK;
+        subjobs: this.subjobs;
+    };
+
+    this.jobs.push(job);
+    this.subjobs = null;
 };
 
 
@@ -460,6 +477,8 @@ GpuGroup.prototype.addRenderJob = function(data, tile) {
     case 'label':          this.addIconJob(data, true, tile); break;
     case 'point-geometry': this.addGeometry(data); break;
     case 'line-geometry':  this.addGeometry(data); break;
+    case 'pack-begin':     this.subjobs = []; break;
+    case 'pack-end':       this.addPack(); break;
     }
 };
 

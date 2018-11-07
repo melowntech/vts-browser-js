@@ -1239,6 +1239,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
     case VTS_JOB_ICON:
     case VTS_JOB_LABEL:
+    case VTS_JOB_PACK:
 
 
         if (job.reduce && (job.reduce[0] != 7 && job.reduce[0] != 8)) {
