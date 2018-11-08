@@ -1281,20 +1281,55 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         var files = job.files;
 
-        if (files.length > 0) {
-            for (var i = 0, li = files.length; i < li; i++) {
-                if (files[i].length > 0) {
-                    var font = job.fonts[i];
-                    if (font && !font.areTexturesReady(files[i])) {
-                        return;
+        if (job.type == VTS_JOB_PACK) {
+
+            var notready = false;
+            
+            for (var j = 0, lj = job.subjobs.length; j < lj; j++) {
+                var subjob = job.subjobs[j];
+
+                files = subjob.files;
+
+                if (files.length > 0) {
+                    for (var i = 0, li = files.length; i < li; i++) {
+                        if (files[i].length > 0) {
+                            var font = subjob.fonts[i];
+                            if (font && !font.areTexturesReady(files[i])) {
+                                notready = true;
+                            }
+                        }
+                    }
+
+                } else {
+                    texture = hitmapRender ? renderer.whiteTexture : subjob.texture;
+                    if (!texture.loaded) {
+                        notready = true;
                     }
                 }
             }
 
-        } else {
-            texture = hitmapRender ? renderer.whiteTexture : job.texture;
-            if (!texture.loaded) {
+            if (notready) {
                 return;
+            }
+
+        } else {
+            files = job.files;
+
+            if (files.length > 0) {
+                for (var i = 0, li = files.length; i < li; i++) {
+                    if (files[i].length > 0) {
+                        var font = job.fonts[i];
+                        if (font && !font.areTexturesReady(files[i])) {
+                            return;
+                        }
+                    }
+                }
+
+            } else {
+                texture = hitmapRender ? renderer.whiteTexture : job.texture;
+                if (!texture.loaded) {
+                    return;
+                }
             }
         }
 
@@ -1504,6 +1539,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             job.lastSubJob = [job, stickShift, texture, files, color, pp];
             renderer.jobHBuffer[job.id] = job;
+            return;
+        }
+
+        if (job.type == VTS_JOB_PACK) {
             return;
         }
 
