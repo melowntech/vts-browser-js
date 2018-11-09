@@ -1715,6 +1715,23 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     }
 
+    if (job.type == VTS_JOB_PACK) {
+        for (var i = 0, li = job.subjobs.length; i < li; i++) {
+            var subjob2 = job.subjobs[i];
+
+            var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
+                files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
+                o = job.noOverlap;
+
+
+            var s = [subjob2, stickShift, texture, files, color, pp, true, depth, o];
+
+            this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, s, fade);
+        }
+
+        return;
+    }
+
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
 
     if (renderer.drawLabelBoxes && o) {

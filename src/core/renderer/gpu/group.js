@@ -456,9 +456,35 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
 GpuGroup.prototype.addPack = function(data) {
 
     var job = {
-        type : VTS_JOB_PACK;
-        subjobs: this.subjobs;
+        type : VTS_JOB_PACK,
+        subjobs: this.subjobs,
+        culling : 180
     };
+
+    //extract no overlap, remove it form subjobs
+    for (var i = 0, li = job.subjobs.length; i < li; i++) {
+        var subjob = job.subjobs[i];
+
+        if (subjob.noOverlap) {
+            job.noOverlap = subjob.noOverlap;
+            subjob.noOverlap = null;
+        }
+
+        if (subjob.culling <= job.culling) {
+            job.culling = subjob.culling;
+            subjob.culling = 180;
+        }
+
+        if (subjob.visibility) {
+            job.visibility = subjob.visibility;
+            subjob.visibility = null;
+        }
+
+        if (subjob.stick) {
+            job.stick = subjob.stick;
+            subjob.stick = null;
+        }
+    }
 
     this.jobs.push(job);
     this.subjobs = null;

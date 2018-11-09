@@ -926,6 +926,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'draw-event':      return validateValue(layerId, key, value, 'boolean');
     case 'advanced-hit':    return validateValue(layerId, key, value, 'boolean');
     case 'export-geometry': return validateValue(layerId, key, value, 'boolean');
+    case 'pack':            return validateValue(layerId, key, value, 'boolean');
 
     case 'visible':         return validateValue(layerId, key, value, 'boolean');
     case 'visibility':      return validateValue(layerId, key, value, 'number', null, 0.00001, Number.MAX_VALUE);
@@ -1020,6 +1021,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'draw-event':      return false;
     case 'advanced-hit':    return false;
     case 'export-geometry': return false;
+    case 'pack':            return false;
 
     case 'visible':        return true;
     case 'visibility':     return null;

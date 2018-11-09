@@ -109,7 +109,14 @@ function processFeatures(type, features, lod, featureType, group) {
                     featureCache[featureCacheIndex] = feature;
                     featureCacheIndex++;
                 } else {
-                    processLayerFeature(type, feature, lod, layer, i);
+                    if (feature.properties['pack']) {
+                        //add pack begin
+                        processLayerFeature(type, feature, lod, layer, i);
+                        //add pack end
+                        // also for reduce
+                    } else {
+                        processLayerFeature(type, feature, lod, layer, i);
+                    }
                 }
             }
         }
