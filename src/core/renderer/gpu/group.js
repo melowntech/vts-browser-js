@@ -454,11 +454,17 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
 
 
 GpuGroup.prototype.addPack = function(data) {
+    if (!this.subjobs.length) {
+        this.subjobs = null;
+        return;
+    }
 
     var job = {
         type : VTS_JOB_PACK,
         subjobs: this.subjobs,
-        culling : 180
+        culling : 180,
+        zIndex : 0,
+        ready : true
     };
 
     //extract no overlap, remove it form subjobs
@@ -482,10 +488,24 @@ GpuGroup.prototype.addPack = function(data) {
 
         if (subjob.stick) {
             job.stick = subjob.stick;
-            subjob.stick = null;
+            subjob.stick = [0,0,0,255,255,255,255];
         }
-    }
 
+        if (subjob.zIndex > job.zIndex) {
+            job.zIndex = subjob.zIndex;
+        }
+
+        if (subjob.center) {
+            job.center = subjob.center;
+        }
+
+        job.eventInfo = subjob.eventInfo;
+        job.reduce = subjob.reduce;
+
+        job.hysteresis = subjob.hysteresis;
+        job.id = subjob.id;
+    }
+    
     this.jobs.push(job);
     this.subjobs = null;
 };

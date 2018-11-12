@@ -55,6 +55,7 @@ function processFeatures(type, features, lod, featureType, group) {
     //loop layers
     for (var key in globals.stylesheetLayers) {
         var layer = globals.stylesheetLayers[key];
+        var pack = (layer['pack'] == true);
 
         if (type == 'point-array') {
             var importance = layer['importance-source'];
@@ -109,10 +110,10 @@ function processFeatures(type, features, lod, featureType, group) {
                     featureCache[featureCacheIndex] = feature;
                     featureCacheIndex++;
                 } else {
-                    if (feature.properties['pack']) {
-                        //add pack begin
+                    if (pack) {
+                        postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
                         processLayerFeature(type, feature, lod, layer, i);
-                        //add pack end
+                        postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
                         // also for reduce
                     } else {
                         processLayerFeature(type, feature, lod, layer, i);
@@ -216,7 +217,16 @@ function processFeatures(type, features, lod, featureType, group) {
 
             //process reduced features
             for (i = 0, li = finalFeatureCacheIndex; i < li; i++) {
-                processLayerFeature(type, finalFeatureCache[i], lod, layer, i);
+                feature = finalFeatureCache[i];
+                
+                if (pack) {
+                    postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
+                    processLayerFeature(type, finalFeatureCache[i], lod, layer, i);
+                    postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
+                } else {
+                    processLayerFeature(type, finalFeatureCache[i], lod, layer, i);
+                }
+
             }
 
         }

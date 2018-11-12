@@ -940,6 +940,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
       //  return;
     //}
 
+    if (!job.eventInfo) {
+        return;
+    }
+
     var state = job.state & 0xff;
     var id = job.eventInfo['#id'];
 
@@ -1715,24 +1719,32 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     }
 
+    var hitmapRender = job.hitable && renderer.onlyHitLayers;
+
     if (job.type == VTS_JOB_PACK) {
         for (var i = 0, li = job.subjobs.length; i < li; i++) {
-            var subjob2 = job.subjobs[i];
+            var subjob2 = job.subjobs[i], job2;
+            subjob2.mvp = job.mvp;
 
-            var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
-                files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
-                o = job.noOverlap;
+            var depth = subjob[7];
 
+            o = null;
+            files = subjob2.files;
 
-            var s = [subjob2, stickShift, texture, files, color, pp, true, depth, o];
+            if (hitmapRender) {
+                color = subjob[4];
+                texture = renderer.whiteTexture;
+            } else {
+                color = subjob2.color;
+                texture = subjob2.texture;
+            }
 
-            this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, s, fade);
+            this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, [subjob2, stickShift, texture, files, color, pp, true, depth, o], fade);
         }
 
         return;
     }
 
-    var hitmapRender = job.hitable && renderer.onlyHitLayers;
 
     if (renderer.drawLabelBoxes && o) {
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
