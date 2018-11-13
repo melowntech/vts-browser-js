@@ -387,7 +387,7 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
 
     var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
 
-    if (divByDist) { // prom / dists
+    if (divByDist) { // imp / dists
         if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
             return;
         }
@@ -396,7 +396,7 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
         var lb = -Math.log(renderer.fmaxDist) / Math.log(101); 
     }
 
-    //filter features and sort them by prominence
+    //filter features and sort them by importance
     for (i = 0, li = featureCacheSize; i < li; i++) {
         feature = featureCache[i];
         if (!feature) {
@@ -482,6 +482,32 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
 }
 
 
+function storeFeatureToHitmap(id, feature, ix, iy, mx, my, hitMap) {
+    var x1 = ix - 1, y1 = iy - 1,
+        x2 = ix + 1, y2 = iy + 1, index, features;
+
+    if (x1 < 0) x1 = 0;
+    if (y1 < 0) y1 = 0;
+    if (x2 > mx) x2 = mx;
+    if (y2 > my) y2 = my;
+
+    for (y1 <= y2; y1++) {
+        for (x1 <= x2; x1++) {
+            index = y1 * mx + x1;
+            features = hitMap[index];
+
+            if (!features) {
+                features = {};
+                features[id] = feature;
+                hitMap[index] = features;
+            }
+
+            features[id] = feature;
+        }
+    }
+}
+
+
 function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     //var maxRadius = 200; 
     //var maxHitcount = 2; 
@@ -500,14 +526,24 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     var featureCache = renderer.gmap;
     var featureCacheSize = renderer.gmapIndex;
 
-
     var hmap = renderer.gmap3;
     var hmapSize = renderer.gmap3Size;
 
     var hmin = 10000;
-    var hmax = 0;
+    var hmax = 0, h, r;
 
-    //filter features and sort them by prominence
+    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
+
+    if (divByDist) { // imp / dists
+        if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
+            return;
+        }
+
+        var ub = 1 - Math.log(renderer.fminDist) / Math.log(101);
+        var lb = -Math.log(renderer.fmaxDist) / Math.log(101); 
+    }
+
+    //filter features and sort them by importance
     for (i = 0, li = featureCacheSize; i < li; i++) {
         feature = featureCache[i];
         if (!feature) {
@@ -516,22 +552,24 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
 
         pp = feature[5];
 
-        if (pp[0] < 30 || pp[0] >= (screenLX-30) || pp[1] < 30 || pp[1] >= (screenLY-30)) {
-            featureCache[i] = null;
-            continue;
+        if (divByDist) {
+            r = feature[0].reduce;
+            h = Math.round(-5000 + ( ( Math.log(r[1]+1) - Math.log(r[4]) ) / Math.log(101) - lb ) / ( ub-lb ) * 10000) + 5000;
+        } else {
+            h = feature[0].reduce[1];            
         }
 
-        var h = Math.round(feature[0].reduce[1] + 5000);
         if (h < 0) h = 0;
-        if (h > 10000) h = 9999;
+        if (h >= 10000) h = 9999;
         if (h < hmin) hmin = h;
         if (h > hmax) hmax = h;
 
         hmap[h][hmapSize[h]++] = feature;
     }
 
-    var mx = Math.floor(screenLX / maxRadius);
-    var my = Math.floor(screenLY / maxRadius);
+    var invMaxRadius = 1 / maxRadius, index, ix, iy, features;
+    var mx = Math.floor(screenLX * invMaxRadius);
+    var my = Math.floor(screenLY * invMaxRadius);
 
     var hitMap = renderer.gmapStore;
     var hitMapCount = renderer.gmapHit;
@@ -558,32 +596,39 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                 pp = feature[5];
 
                 //check area
-                // check                
+                ix = Math.floor(pp[0] * invMaxRadius);
+                iy = Math.floor(pp[1] * invMaxRadius);
+                index = (iy * mx) + ix;
+                features = hitMap[index];
 
+                //check
+                if (features) {
+                    for (var key in features) {
+                        feature2 = features[key];
+                        pp2 = feature2[5];
 
+                        dx = pp[0] - pp2[0];
+                        dy = pp[1] - pp2[1];
 
-                for (k = 0, lk = hitCacheSize; k < lk; k++) {
-                    feature2 = hitCache[k];
-                    pp2 = feature2[5];
-
-                    dx = pp[0] - pp2[0];
-                    dy = pp[1] - pp2[1];
-
-                    if ((dx*dx+dy*dy) < maxRadius) {
-                        hitCount++;
-                        if (hitCount > maxHitcount) {
-                            break;
+                        if ((dx*dx+dy*dy) < maxRadius) {
+                            hitCount++;
+                            if (hitCount > maxHitcount) {
+                                break;
+                            }
                         }
                     }
                 }
 
+                // check                
                 if (hitCount <= maxHitcount) {
+                    index = hitCacheSize;
+
                     //render job
                     if (feature[6]) { //no-overlap 
                         pp = feature[5];
                         o = feature[8];
                         if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                            hitCache[hitCacheSize] = feature;
+                            //hitCache[hitCacheSize] = feature;
                             hitCacheSize++;
                         }
                     } else {
@@ -593,17 +638,20 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                             draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
                         }
 
-                        hitCache[hitCacheSize] = feature;
+                        //hitCache[hitCacheSize] = feature;
                         hitCacheSize++;
                     }
-                }
 
+                    //store to hitmap
+                    if (index != hitCacheSize) {
+                        storeFeatureToHitmap(index, feature, ix, iy, mx, my, hitMap);
+                    }
+                }
 
             }
 
             hmapSize[i] = 0;  //zero size
         }
-
     }
 }
 
