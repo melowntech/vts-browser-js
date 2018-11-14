@@ -124,6 +124,15 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
             'Loaded/Errors: ' + (stats.loadedCount) + ' / ' + (stats.loadErrorCount) + '<br/>' +
             'Load time: ' + ((stats.loadLast - stats.loadFirst)*0.001).toFixed(2) + 's <br/>';
 
+    var renderer = this.core.renderer;
+
+    if (renderer) {
+        text2 += '<br/>Render jobs: ' + renderer.totalJobs + '<br/>' +
+                 'Drawn jobs: ' + renderer.drawnJobs + '<br/>' +
+                 'Jobs total time: ' +  Math.round((renderer.jobsTimer2 - renderer.jobsTimer1)*1000) + '<br/>' +
+                 'Jobs reduce time: ' + Math.round((renderer.jobsTimer4)*1000) + '<br/>';
+    }
+
     if (stats.debugStr) {
         text2 += stats.debugStr + '<br/>';        
     }

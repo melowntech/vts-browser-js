@@ -264,6 +264,9 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
 
     var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
 
+    renderer.debugStr = "<br>: " + featureCount + "<br>gridCells: " + tileCount;
+
+
     //filter features before sort
     for (i = 0, li = featureCacheSize; i < li; i++) {
         feature = featureCache[i];
@@ -350,6 +353,7 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
                 if (feature[0].hysteresis) {
                     renderer.jobHBuffer[feature[0].id] = feature[0];
                 } else {
+                    renderer.drawnJobs++;
                     draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
                 }
 
@@ -466,6 +470,7 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
                         if (feature[0].hysteresis) {
                             renderer.jobHBuffer[feature[0].id] = feature[0];
                         } else {
+                            renderer.drawnJobs++;
                             draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
                         }
 
@@ -482,29 +487,37 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
 }
 
 
-function storeFeatureToHitmap(id, feature, ix, iy, mx, my, hitMap) {
-    var x1 = ix - 1, y1 = iy - 1,
-        x2 = ix + 1, y2 = iy + 1, index, features;
+function storeFeatureToHitmap(id, feature, ix, iy, mx, my, hitMap, hcache, hcacheSize) {
+    var x1 = ix - 1, y1 = iy - 1, x,
+        x2 = ix + 1, y2 = iy + 1, index, blockFeatures;
 
     if (x1 < 0) x1 = 0;
     if (y1 < 0) y1 = 0;
     if (x2 > mx) x2 = mx;
     if (y2 > my) y2 = my;
 
-    for (y1 <= y2; y1++) {
-        for (x1 <= x2; x1++) {
-            index = y1 * mx + x1;
-            features = hitMap[index];
+    for (; y1 <= y2; y1++) {
+        for (x = x1; x <= x2; x++) {
+            index = (y1 * mx + x) * 2;
+            blockFeatures = hitMap[index];
 
-            if (!features) {
-                features = {};
-                features[id] = feature;
-                hitMap[index] = features;
+            if (!hitMap[index]) {
+                hitMap[index] = hcacheSize;
+                hitMap[index+1] = hcacheSize+1;
+                hcache[hcacheSize] = feature;
+                hcache[hcacheSize+1] = 0;
+                hcacheSize +=2;
+            } else {
+                hcache[hitMap[index+1]] = hcacheSize;
+                hitMap[index+1] = hcacheSize+1;
+                hcache[hcacheSize] = feature;
+                hcache[hcacheSize+1] = 0;
+                hcacheSize +=2;
             }
-
-            features[id] = feature;
         }
     }
+
+    return hcacheSize;
 }
 
 
@@ -526,8 +539,12 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     var featureCache = renderer.gmap;
     var featureCacheSize = renderer.gmapIndex;
 
+    var hcache = renderer.gmap2;
+    var hcacheSize = 1;
     var hmap = renderer.gmap3;
     var hmapSize = renderer.gmap3Size;
+    var hmap = renderer.gmap3;
+
 
     var hmin = 10000;
     var hmax = 0, h, r;
@@ -575,12 +592,12 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     var hitMapCount = renderer.gmapHit;
 
     //clear hit-map
-    for (i = 0, li = (mx+1) * (my+1); i < li; i++) {
-        hitMap[i] = null;
+    for (i = 0, li = (mx+1) * (my+1) * 2; i < li; i+=2) {
+        hitMap[i] = 0;
     }
 
     //var hitCache = renderer.gmapHit2;
-    var hitCacheSize = 0, j, lj, k, lk, hitCount, dx, dy;
+    var hitCacheSize = 0, j, lj, k, lk, hitCount, dx, dy, blockFeatures;
 
     maxRadius *= maxRadius;
 
@@ -598,13 +615,13 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                 //check area
                 ix = Math.floor(pp[0] * invMaxRadius);
                 iy = Math.floor(pp[1] * invMaxRadius);
-                index = (iy * mx) + ix;
-                features = hitMap[index];
+                index = ((iy * mx) + ix) * 2;
+                //blockFeatures = hitMap[index];
 
                 //check
-                if (features) {
-                    for (var key in features) {
-                        feature2 = features[key];
+                if (hitMap[index]) {
+                    do {
+                        feature2 = hcache[index];
                         pp2 = feature2[5];
 
                         dx = pp[0] - pp2[0];
@@ -616,7 +633,9 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                                 break;
                             }
                         }
-                    }
+
+                        index = hcache[index+1];
+                    } while (index);
                 }
 
                 // check                
@@ -635,6 +654,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                         if (feature[0].hysteresis) {
                             renderer.jobHBuffer[feature[0].id] = feature[0];
                         } else {
+                            renderer.drawnJobs++;
                             draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
                         }
 
@@ -644,7 +664,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
 
                     //store to hitmap
                     if (index != hitCacheSize) {
-                        storeFeatureToHitmap(index, feature, ix, iy, mx, my, hitMap);
+                        hcacheSize = storeFeatureToHitmap(index, feature, ix, iy, mx, my, hitMap, hcache, hcacheSize);
                     }
                 }
 

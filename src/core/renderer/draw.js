@@ -638,6 +638,12 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var renderer = this.renderer;
 
     renderer.geoRenderCounter++;
+    renderer.totalJobs = 0;
+    renderer.drawnJobs = 0;
+    renderer.jobsTimer4 = 0;
+    renderer.jobsTimer3 = 0;
+    renderer.jobsTimer2 = 0;
+    renderer.jobsTimer1 = performance.now();
 
     //setup stencil
     gl.stencilMask(0xFF);
@@ -684,6 +690,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
         var j, lj = jobZBufferSize[i], lj2 = jobZBuffer2Size[i];
         var buffer = jobZBuffer[i];
         var buffer2 = jobZBuffer2[i];
+
+        renderer.totalJobs += lj;
 
         if (lj > 0 && i >= clearPass) {
             gl.clear(gl.STENCIL_BUFFER_BIT);
@@ -761,12 +769,14 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 }
             }
         }
+    
+        renderer.jobsTimer3 = performance.now();
 
         if (renderer.gmapIndex > 0) {
             if (renderer.gmapUseVersion == 2) {
                 //processGMap2(gpu, gl, renderer, screenPixelSize, this);
-                processGMap3(gpu, gl, renderer, screenPixelSize, this);
-                //processGMap4(gpu, gl, renderer, screenPixelSize, this);
+                //processGMap3(gpu, gl, renderer, screenPixelSize, this);
+                processGMap4(gpu, gl, renderer, screenPixelSize, this);
             } else {
                 processGMap(gpu, gl, renderer, screenPixelSize, this);
             }
@@ -777,6 +787,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
             rmap.processRectangles(gpu, gl, renderer, screenPixelSize);
         }
 
+        renderer.jobsTimer4 += performance.now() - renderer.jobsTimer3;
+
         lj2 = jobZBuffer2Size[i];
 
         if (lj2) {
@@ -785,6 +797,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
             for (key in buffer2) {
                 job = buffer2[key];
                 job2 = hbuffer[key];
+
+                renderer.drawnJobs++;
 
                 if (!hitmapRender) {
                     if (job2) {
@@ -883,6 +897,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
         this.core.markDirty();
     }
 
+    renderer.jobsTimer2 = performance.now();
 };
 
 

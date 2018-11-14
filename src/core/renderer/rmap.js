@@ -106,7 +106,7 @@ RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
 
 RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
-        rectangles = this.rectangles, rectangleIndex, t;
+        rectangleIndex, t;
 
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
@@ -148,7 +148,7 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
     var removeList = {};
     var exit = false;
 
-    var top = this.renderer.config.mapFeaturesSortByTop;
+    var top = this.renderer.config.mapFeaturesSortByTop, rectangles = this.rectangles;
 
     //test collision
     for (y = 0; y < ly; y++) {
@@ -298,6 +298,7 @@ RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPix
             if (subjob[0].hysteresis) {
                 renderer.jobHBuffer[subjob[0].id] = subjob[0];
             } else {
+                renderer.drawnJobs++;
                 draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
             }
         }
