@@ -338,6 +338,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     var vertices = data['vertexBuffer'];
     var texcoords = data['texcoordsBuffer'];
     var origins = data['originBuffer'];
+    var singleBuffer = data['singleBuffer'];
     var s = data['stick'];
     var f = 1.0/255;
 
@@ -419,26 +420,42 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         job.visibility = [job.visibility];
     }
 
-    //create vertex buffer
-    job.vertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    job.vertexPositionBuffer.itemSize = 4;
-    job.vertexPositionBuffer.numItems = vertices.length / 4;
+    if (singleBuffer) {
+        job.singleBuffer = singleBuffer;
+        job.singleBuffer2 = [singleBuffer[0], singleBuffer[1],
+                             singleBuffer[4], singleBuffer[5],
+                             singleBuffer[8], singleBuffer[9],
+                             singleBuffer[12], singleBuffer[13]];
+        this.polygons += 2;
 
-    //create normal buffer
-    job.vertexTexcoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
-    job.vertexTexcoordBuffer.itemSize = 4;
-    job.vertexTexcoordBuffer.numItems = texcoords.length / 4;
+    } else {
+        //create vertex buffer
+        job.vertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        job.vertexPositionBuffer.itemSize = 4;
+        job.vertexPositionBuffer.numItems = vertices.length / 4;
 
-    //create origin buffer
-    job.vertexOriginBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexOriginBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, origins, gl.STATIC_DRAW);
-    job.vertexOriginBuffer.itemSize = 3;
-    job.vertexOriginBuffer.numItems = origins.length / 3;
+        //create normal buffer
+        job.vertexTexcoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
+        job.vertexTexcoordBuffer.itemSize = 4;
+        job.vertexTexcoordBuffer.numItems = texcoords.length / 4;
+
+        //create origin buffer
+        job.vertexOriginBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexOriginBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, origins, gl.STATIC_DRAW);
+        job.vertexOriginBuffer.itemSize = 3;
+        job.vertexOriginBuffer.numItems = origins.length / 3;
+
+        this.size += job.vertexPositionBuffer.numItems * 4 +
+                      job.vertexOriginBuffer.numItems * 4 +
+                      job.vertexTexcoordBuffer.numItems * 4;
+        this.polygons += job.vertexPositionBuffer.numItems / (4 * 3);
+    }
+
 
     if (this.subjobs) {
         this.subjobs.push(job);
@@ -446,10 +463,6 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         this.jobs.push(job);
     }
 
-    this.size += job.vertexPositionBuffer.numItems * 4 +
-                  job.vertexOriginBuffer.numItems * 4 +
-                  job.vertexTexcoordBuffer.numItems * 4;
-    this.polygons += job.vertexPositionBuffer.numItems / (4 * 3);
 };
 
 

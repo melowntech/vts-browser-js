@@ -1783,6 +1783,44 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
     }
 
+    if (job.singleBuffer) {
+        var prog = renderer.progImage;
+        var b, b2;
+
+        b[0] = pp[0] + b2[0];
+        b[1] = pp[1] + b2[1];
+
+        b[4] = pp[0] + b2[4];
+        b[5] = pp[1] + b2[5];
+
+        b[8] = pp[0] + b2[8];
+        b[9] = pp[1] + b2[9];
+
+        b[12] = pp[0] + b2[12];
+        b[13] = pp[1] + b2[13];
+
+        gpu.useProgram(prog, ['aPosition']);
+        gpu.bindTexture(texture);
+
+        var vertices = renderer.rectVerticesBuffer;
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
+        gl.vertexAttribPointer(prog.getAttribute('aPosition'), vertices.itemSize, gl.FLOAT, false, 0, 0);
+
+        var indices = renderer.rectIndicesBuffer;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
+
+        prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
+
+        prog.setMat4('uData', job.singleBuffer );
+
+        prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
+        prog.setFloat('uDepth', depth != null ? depth : 0);
+
+        gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
+        
+        return;   
+    }
+
     var prog = job.program; //renderer.progIcon;
 
     gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aOrigin']);

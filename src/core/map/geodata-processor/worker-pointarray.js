@@ -77,12 +77,18 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 reduce : getLayerPropertyValue(style, 'dynamic-reduce', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'icon-origin', pointArray, lod),
                 source : getLayerPropertyValue(style, 'icon-source', pointArray, lod),
-                vertexBuffer : new Float32Array(bufferSize),
-                originBuffer : new Float32Array(bufferSize2),
-                texcoordsBuffer : new Float32Array(bufferSize),
                 index : 0,
                 index2 : 0
             };
+
+            if (totalPoints > 1) {
+                iconData.vertexBuffer = new Float32Array(bufferSize);
+                iconData.originBuffer = new Float32Array(bufferSize2);
+                iconData.texcoordsBuffer = new Float32Array(bufferSize);
+            } else {
+                iconData.singleBuffer = new Float32Array(16);
+            }
+
         } else {
             icon = false;
         }
@@ -331,14 +337,24 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         globals.signatureCounter++;
         signature = (""+globals.signatureCounter);
 
-        postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
-            'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
-            'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
-            'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
-            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
-            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
-            'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer], signature);
+        if (icon.singleBuffer) {
+            postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'singleBuffer': iconData.singleBuffer,
+                'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
+                'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.singleBuffer.buffer], signature);
+        } else {
+            postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
+                'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
+                'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
+                'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer], signature);
+        }
     }
 
     if (label && labelData.vertexBuffer.length > 0) {
@@ -395,6 +411,33 @@ var processIcon = function(point, iconData) {
 
     var width = Math.abs(icon[3] * iconData.scale);
     var height = Math.abs(icon[4] * iconData.scale);
+
+    //get offset
+    var originOffset = getOriginOffset(iconData.origin, width, height);
+    var offsetX = originOffset[0] + iconData.offset[0];
+    var offsetY = originOffset[1] + iconData.offset[1];
+
+    if (iconData.singleBuffer) {
+        var b = iconData.singleBuffer;
+
+        b[0] = 0; b[1] = 0;
+        b[2] = icon[1];
+        b[3] = icon[2];
+
+        b[4] = width; b[5] = 0;
+        b[6] = icon[1]+icon[3];
+        b[7] = icon[2];
+
+        b[8] = width; b[9] = -height;
+        b[10] = icon[1]+icon[3];
+        b[11] = icon[2]+icon[4];
+
+        b[12] = 0; b[13] = -height;
+        b[14] = icon[1];
+        b[15] = icon[2]+icon[4];
+
+        return;
+    }
 
     var vertexBuffer = iconData.vertexBuffer;
     var texcoordsBuffer = iconData.texcoordsBuffer;
@@ -465,11 +508,6 @@ var processIcon = function(point, iconData) {
     texcoordsBuffer[index+11] = 0;
     
     index += 12;
-
-    //get offset
-    var originOffset = getOriginOffset(iconData.origin, width, height);
-    var offsetX = originOffset[0] + iconData.offset[0];
-    var offsetY = originOffset[1] + iconData.offset[1];
 
     var p1 = point[0];
     var p2 = point[1];
