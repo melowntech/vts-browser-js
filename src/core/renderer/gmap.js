@@ -620,6 +620,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
 
                 //check
                 if (hitMap[index]) {
+                    index = hitMap[index];
                     do {
                         feature2 = hcache[index];
                         pp2 = feature2[5];
