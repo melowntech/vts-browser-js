@@ -869,6 +869,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 if (draw) {
                     // update job matricies
                     if (job.renderCounter[0][0] !== geoRenderCounter && job.renderCounter[0][0] !== null) { 
+                        job.updatePos = true;
+
                         var renderCounter = job.renderCounter[0];
 
                         var mvp = mat4.create();
@@ -888,6 +890,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                     }                    
 
                     this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+                    job.updatePos = false;
                 }
             }
         }
@@ -1598,6 +1601,60 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             this.drawText(Math.round(pp[0]-this.getTextSize(10,stmp)*0.5), Math.round(pp[1]), 10, stmp, [1,1,1,1], 0);
         }*/
 
+        if (job.singleBuffer) {
+            if (!pp) {
+                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+            }
+            
+            var b = job.singleBuffer;
+
+            if (!job.singleBuffer2) {
+                job.singleBuffer2 = new Float32Array(b);
+
+                var tx = 1 / texture.width, ty = 1 / texture.height;
+                b[2] *= tx; b[3] *= ty;
+                b[6] *= tx; b[7] *= ty;
+                b[10] *= tx; b[11] *= ty;
+                b[14] *= tx; b[15] *= ty;
+            }
+
+            prog = renderer.progImage;
+            var b2 = job.singleBuffer2;
+
+            b[0] = pp[0] + b2[0];
+            b[1] = pp[1] + b2[1];
+
+            b[4] = pp[0] + b2[4];
+            b[5] = pp[1] + b2[5];
+
+            b[8] = pp[0] + b2[8];
+            b[9] = pp[1] + b2[9];
+
+            b[12] = pp[0] + b2[12];
+            b[13] = pp[1] + b2[13];
+
+            gpu.useProgram(prog, ['aPosition']);
+            gpu.bindTexture(texture);
+
+            var vertices = renderer.rectVerticesBuffer;
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
+            gl.vertexAttribPointer(prog.getAttribute('aPosition'), vertices.itemSize, gl.FLOAT, false, 0, 0);
+
+            var indices = renderer.rectIndicesBuffer;
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
+
+            prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
+
+            prog.setMat4('uData', b );
+
+            prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
+            prog.setFloat('uDepth', depth != null ? depth : 0);
+
+            gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
+            
+            return;   
+        }
+
         prog = job.program; //renderer.progIcon;
 
         gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aOrigin']);
@@ -1740,6 +1797,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         for (var i = 0, li = job.subjobs.length; i < li; i++) {
             var subjob2 = job.subjobs[i], job2;
             subjob2.mvp = job.mvp;
+            subjob2.updatePos = job.updatePos;
 
             var depth = subjob[7];
 
@@ -1785,7 +1843,23 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     if (job.singleBuffer) {
         var prog = renderer.progImage;
-        var b, b2;
+        var b = job.singleBuffer;
+
+        if (!job.singleBuffer2) {
+            job.singleBuffer2 = new Float32Array(b);
+
+            var tx = 1 / texture.width, ty = 1 / texture.height;
+            b[2] *= tx; b[3] *= ty;
+            b[6] *= tx; b[7] *= ty;
+            b[10] *= tx; b[11] *= ty;
+            b[14] *= tx; b[15] *= ty;
+        }
+
+        if (job.updatePos) {
+            pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+        }
+
+        var b2 = job.singleBuffer2;
 
         b[0] = pp[0] + b2[0];
         b[1] = pp[1] + b2[1];

@@ -422,10 +422,6 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
 
     if (singleBuffer) {
         job.singleBuffer = singleBuffer;
-        job.singleBuffer2 = [singleBuffer[0], singleBuffer[1],
-                             singleBuffer[4], singleBuffer[5],
-                             singleBuffer[8], singleBuffer[9],
-                             singleBuffer[12], singleBuffer[13]];
         this.polygons += 2;
 
     } else {

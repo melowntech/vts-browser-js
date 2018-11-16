@@ -166,17 +166,6 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     var index = 0;
     var index2 = 0;
 
-    var circleBuffer = [];
-    var circleSides = clamp(pointRadius * 8 * 0.5, 8, 32);
-
-    var angle = 0, step = (2.0*Math.PI) / circleSides;
-
-    for (i = 0; i < circleSides; i++) {
-        circleBuffer[i] = [-Math.sin(angle), Math.cos(angle)];
-        angle += step;
-    }
-
-    circleBuffer[circleSides] = [0, 1.0];
     
     var center = [0,0,0];
     var forceOrigin = globals.forceOrigin;
@@ -188,15 +177,29 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
     var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
 
-    //allocate buffers
-    if (!pointFlat) {
-        pointsVertices = circleSides * 3 * 4;
-        vertexBuffer = new Float32Array(totalPoints * pointsVertices);
-        pointsNormals = circleSides * 3 * 4;
-        normalBuffer = new Float32Array(totalPoints * pointsNormals);
-    } else {
-        pointsVertices = circleSides * 3 * 3;
-        vertexBuffer = new Float32Array(totalPoints * pointsVertices);
+    if (point) {
+        var circleBuffer = [];
+        var circleSides = clamp(pointRadius * 8 * 0.5, 8, 32);
+
+        var angle = 0, step = (2.0*Math.PI) / circleSides;
+
+        for (i = 0; i < circleSides; i++) {
+            circleBuffer[i] = [-Math.sin(angle), Math.cos(angle)];
+            angle += step;
+        }
+
+        circleBuffer[circleSides] = [0, 1.0];
+
+        //allocate buffers
+        if (!pointFlat) {
+            pointsVertices = circleSides * 3 * 4;
+            vertexBuffer = new Float32Array(totalPoints * pointsVertices);
+            pointsNormals = circleSides * 3 * 4;
+            normalBuffer = new Float32Array(totalPoints * pointsNormals);
+        } else {
+            pointsVertices = circleSides * 3 * 3;
+            vertexBuffer = new Float32Array(totalPoints * pointsVertices);
+        }
     }
 
     for (g = 0, gl = pointsGroups.length; g < gl; g++) {
@@ -228,10 +231,11 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 if (label) {
                     labelBBox = processLabel(p1, labelData); //, pointArray, lod, style, zIndex);
                 }
-        
-                for (var j = 0; j < circleSides; j++) {
 
-                    if (point) {
+                if (point) {
+        
+                    for (var j = 0; j < circleSides; j++) {
+
        
                         if (pointFlat) {
         
@@ -333,11 +337,12 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         }
     }
 
-    if (icon && iconData.vertexBuffer.length > 0) {
-        globals.signatureCounter++;
-        signature = (""+globals.signatureCounter);
+    if (icon) {
 
-        if (icon.singleBuffer) {
+        if (iconData.singleBuffer) {
+            globals.signatureCounter++;
+            signature = (""+globals.signatureCounter);
+
             postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'singleBuffer': iconData.singleBuffer,
                 'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
                 'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
@@ -345,7 +350,10 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
                 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
                 'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.singleBuffer.buffer], signature);
-        } else {
+        } else if (iconData.vertexBuffer && iconData.vertexBuffer.length > 0) {
+            globals.signatureCounter++;
+            signature = (""+globals.signatureCounter);
+
             postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
                 'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
                 'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
@@ -409,8 +417,8 @@ var processIcon = function(point, iconData) {
     var index2 = iconData.index2;
     var lastIndex = index;
 
-    var width = Math.abs(icon[3] * iconData.scale);
-    var height = Math.abs(icon[4] * iconData.scale);
+    var width = Math.abs(icon[3] * iconData.scale * 0.5);
+    var height = Math.abs(icon[4] * iconData.scale * 0.5);
 
     //get offset
     var originOffset = getOriginOffset(iconData.origin, width, height);
@@ -420,19 +428,19 @@ var processIcon = function(point, iconData) {
     if (iconData.singleBuffer) {
         var b = iconData.singleBuffer;
 
-        b[0] = 0; b[1] = 0;
+        b[0] = offsetX; b[1] = offsetY;
         b[2] = icon[1];
         b[3] = icon[2];
 
-        b[4] = width; b[5] = 0;
+        b[4] = width + offsetX; b[5] = offsetY;
         b[6] = icon[1]+icon[3];
         b[7] = icon[2];
 
-        b[8] = width; b[9] = -height;
+        b[8] = width + offsetX; b[9] = height + offsetY;
         b[10] = icon[1]+icon[3];
         b[11] = icon[2]+icon[4];
 
-        b[12] = 0; b[13] = -height;
+        b[12] = offsetX; b[13] = height + offsetY;
         b[14] = icon[1];
         b[15] = icon[2]+icon[4];
 
