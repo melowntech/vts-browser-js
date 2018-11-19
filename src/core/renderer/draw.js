@@ -1546,8 +1546,13 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
+                    if (l > renderer.fmaxDist) renderer.fmaxDist = l;
+                    if (l < renderer.fminDist) renderer.fminDist = l;
+
                     //job.reduce[1] = Math.log(job.reduce[2] / l) * VTS_IMPORATANCE_INV_LOG;
-                    job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
+                    //job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
+                    job.reduce[1] = job.reduce[2];
+                    job.reduce[4] = l;
                 }
 
                 return;
@@ -1794,6 +1799,18 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
 
     if (job.type == VTS_JOB_PACK) {
+        if (renderer.drawLabelBoxes && o) {
+            gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+            this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
+                                 [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
+        }
+
+        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
+
+        if (s[0] != 0 && s[2] != 0) {
+            this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
+        }
+
         for (var i = 0, li = job.subjobs.length; i < li; i++) {
             var subjob2 = job.subjobs[i], job2;
             subjob2.mvp = job.mvp;
@@ -1857,6 +1874,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
         if (job.updatePos) {
             pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+            pp[1] -= stickShift;
         }
 
         var b2 = job.singleBuffer2;

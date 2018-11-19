@@ -656,7 +656,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                             renderer.jobHBuffer[feature[0].id] = feature[0];
                         } else {
                             renderer.drawnJobs++;
-                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
+                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
                         }
 
                         //hitCache[hitCacheSize] = feature;

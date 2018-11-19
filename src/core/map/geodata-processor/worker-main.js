@@ -33,7 +33,7 @@ function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex
     case 'line-string':
         if (getLayerPropertyValue(layer, 'point', feature, lod) ||
             getLayerPropertyValue(layer, 'label', feature, lod)) {
-            processPointArrayPass(feature, lod, layer, zIndex, eventInfo);
+            processPointArrayPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
         }
 
         processLineStringPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
