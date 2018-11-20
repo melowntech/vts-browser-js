@@ -157,6 +157,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             if (labelData.stick) {
                 labelData.stick = labelData.stick.slice();
                 labelData.stick[2] *= factor;
+                //labelData.stick[7] *= factor;
             }
         } else {
             label = false;

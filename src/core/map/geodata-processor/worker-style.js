@@ -890,7 +890,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'icon-scale':   return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'icon-offset':  return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'icon-origin':  return validateValue(layerId, key, value, 'string');
-    case 'icon-stick':   return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'icon-stick':   return validateValue(layerId, key, value, 'object', 8, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'icon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
     case 'label':             return validateValue(layerId, key, value, 'boolean');
@@ -904,7 +904,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'label-offset':      return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'label-origin':      return validateValue(layerId, key, value, 'string');
     case 'label-align':       return validateValue(layerId, key, value, 'string');
-    case 'label-stick':       return validateValue(layerId, key, value, 'object', 7, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'label-stick':       return validateValue(layerId, key, value, 'object', 8, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'label-width':       return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'label-no-overlap':  return validateValue(layerId, key, value, 'boolean');
     case 'label-no-overlap-factor': return validateValue(layerId, key, value, 'object');
@@ -983,7 +983,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'icon-scale':   return 1;
     case 'icon-offset':  return [0,0];
     case 'icon-origin':  return 'bottom-center';
-    case 'icon-stick':   return [0,0,0,255,255,255,255];
+    case 'icon-stick':   return [0,0,0,255,255,255,255,0];
     case 'icon-color':   return [255,255,255,255];
 
     case 'label':             return false;
@@ -999,7 +999,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'label-offset':      return [0,0];
     case 'label-origin':      return 'bottom-center';
     case 'label-align':       return 'center';
-    case 'label-stick':       return [0,0,0,255,255,255,255];
+    case 'label-stick':       return [0,0,0,255,255,255,255,0];
     case 'label-width':       return 200;
     case 'label-no-overlap':  return true;
     case 'label-no-overlap-factor': return null;

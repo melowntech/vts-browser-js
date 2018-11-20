@@ -1454,7 +1454,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             } else if (s[2] != 0) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
-                pp[1] -= stickShift;
+                pp[1] -= stickShift + s[7];
             }
         }
 
@@ -1790,7 +1790,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             } else if (s[2] != 0) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
-                pp[1] -= stickShift;
+                pp[1] -= stickShift + s[7];
             }
         }
 
@@ -1874,7 +1874,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
         if (job.updatePos) {
             pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
-            pp[1] -= stickShift;
+            pp[1] -= stickShift + s[7];
         }
 
         var b2 = job.singleBuffer2;
