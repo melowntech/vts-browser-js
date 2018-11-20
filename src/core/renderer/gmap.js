@@ -1,6 +1,10 @@
 
 
 function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
+    if (!renderer.config.mapFeaturesReduceParams) {
+        return;
+    }
+
     var tileCount = renderer.config.mapFeaturesReduceParams[1]; //31; //labelGridCells
     var featuresPerSquareInch = renderer.config.mapFeaturesReduceParams[0]; //0.6614; //labelsPerSquareInch
     var ppi = 96 * (window.devicePixelRatio || 1);
@@ -243,8 +247,9 @@ function sortFeatures(features, top, count, renderer) {
 
 
 function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
-    //var maxRadius = 200; 
-    //var maxHitcount = 2; 
+    if (!renderer.config.mapFeaturesReduceParams) {
+        return;
+    }
 
     var ppi = 96 * (window.devicePixelRatio || 1);
 
@@ -366,8 +371,9 @@ function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
 
 
 function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
-    //var maxRadius = 200; 
-    //var maxHitcount = 2; 
+    if (!renderer.config.mapFeaturesReduceParams) {
+        return;
+    }
 
     var ppi = 96 * (window.devicePixelRatio || 1);
 
@@ -522,8 +528,9 @@ function storeFeatureToHitmap(id, feature, ix, iy, mx, my, hitMap, hcache, hcach
 
 
 function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
-    //var maxRadius = 200; 
-    //var maxHitcount = 2; 
+    if (!renderer.config.mapFeaturesReduceParams) {
+        return;
+    }
 
     var ppi = 96 * (window.devicePixelRatio || 1);
 

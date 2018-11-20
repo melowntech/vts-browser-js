@@ -152,6 +152,14 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
 
     config.mapFeaturesReduceFactor = params[2];
 
+    if (!config.mapFeaturesReduceParams) {
+        switch(config.mapFeaturesReduceMode) {
+            case 'scr-count2': config.mapFeaturesReduceParams = [1, 50, 0]; break;
+            case 'scr-count4': config.mapFeaturesReduceParams = [0.18, 0, 1]; break;
+            case 'scr-count5': config.mapFeaturesReduceParams = [2, 1, 1]; break;
+        }
+    }
+
     //this.setFont('#default', this.renderer.font);
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data,
                                         'geocent' : (!this.map.getNavigationSrs().isProjected()), 'metric': config.mapMetricUnits,

@@ -1807,7 +1807,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
-        if (s[0] != 0 && s[2] != 0) {
+        if (s[0] != 0 && s[2] != 0 && stickShift >= 2) {
             this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
         }
 
@@ -1854,7 +1854,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         }
     }
 
-    if (s[0] != 0 && s[2] != 0) {
+    if (s[0] != 0 && s[2] != 0 && stickShift >= 2) {
         this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
     }
 
