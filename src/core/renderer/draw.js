@@ -1454,7 +1454,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             } else if (s[2] != 0) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
-                pp[1] -= stickShift + s[7];
+                pp[1] -= stickShift;
             }
         }
 
@@ -1752,8 +1752,8 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         }
 
         if (o) {
-            var x1 = pp[0]+o[0], y1 = pp[1]+o[1], 
-                x2 = pp[0]+o[2], y2 = pp[1]+o[3]+stickShift;
+            //var x1 = pp[0]+o[0], y1 = pp[1]+o[1], 
+              //  x2 = pp[0]+o[2], y2 = pp[1]+o[3]+stickShift;
 
             if (s[0] != 0) {
                 stickShift = renderer.cameraTiltFator * s[0];
@@ -1790,7 +1790,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             } else if (s[2] != 0) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
-                pp[1] -= stickShift + s[7];
+                pp[1] -= stickShift;
             }
         }
 
@@ -1807,8 +1807,9 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
-        if (s[0] != 0 && s[2] != 0 && stickShift >= 2) {
+        if (s[0] != 0 && s[2] != 0 && stickShift >= 4) {
             this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
+            stickShift += s[7];
         }
 
         for (var i = 0, li = job.subjobs.length; i < li; i++) {
@@ -1854,7 +1855,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         }
     }
 
-    if (s[0] != 0 && s[2] != 0 && stickShift >= 2) {
+    if (s[0] != 0 && s[2] != 0 && stickShift >= 4) {
         this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
     }
 
@@ -1874,7 +1875,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
         if (job.updatePos) {
             pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
-            pp[1] -= stickShift + s[7];
+            pp[1] -= stickShift;
         }
 
         var b2 = job.singleBuffer2;

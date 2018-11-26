@@ -357,7 +357,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.eventInfo = data['eventInfo'];
     job.state = data['state'];
     job.center = data['center'];
-    job.stick = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f];
+    job.stick = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f, s[7]];
     job.lod = data['lod'];
     job.zbufferOffset = data['zbuffer-offset'];
     job.hysteresis = data['hysteresis'];
@@ -497,7 +497,7 @@ GpuGroup.prototype.addPack = function(data) {
 
         if (subjob.stick) {
             job.stick = subjob.stick;
-            subjob.stick = [0,0,0,255,255,255,255];
+            subjob.stick = [0,0,0,255,255,255,255,0];
         }
 
         if (subjob.zIndex > job.zIndex) {
