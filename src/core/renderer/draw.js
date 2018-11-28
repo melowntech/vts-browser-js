@@ -1876,7 +1876,10 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         if (job.updatePos) {
             pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
             pp[1] -= stickShift;
+            pp[2] = pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2);
         }
+
+        depth = pp[2];
 
         var b2 = job.singleBuffer2;
 
@@ -1906,8 +1909,9 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
         prog.setMat4('uData', job.singleBuffer );
 
-        prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
-        prog.setFloat('uDepth', depth != null ? depth : 0);
+        //prog.setVec4('uColor', hitmapRender ? color : color2);
+        prog.setVec4('uColor', color);
+        prog.setFloat('uDepth', depth);
 
         gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
         
