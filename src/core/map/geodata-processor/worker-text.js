@@ -270,7 +270,7 @@ var addTextOnPath = function(points, distance, text, size, spacing, textVector, 
 
             vec3Normalize(dir);
 
-            var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, spacing, glyph, factor, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes, gfonts[i]);
+            var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, glyph, factor, spacing, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes, gfonts[i]);
 
             p1 = shift[0];
             index = shift[1];
@@ -295,7 +295,7 @@ var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalO
         return;
     }
 
-    var textVector = getPathTextVector(points, shift, text, size, fonts, glyphsRes);
+    var textVector = getPathTextVector(points, shift, text, size, spacing, fonts, glyphsRes);
 
     return addTextOnPath(points, shift, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes);
 };
