@@ -736,10 +736,19 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         job.timerShow = 0;
                         job.timerHide = 0;
                         job.draw = false;
+                        job.hysteresisCounter = renderer.geoRenderCounter;
                         buffer2[job.id] = job;
                         jobZBuffer2Size[i]++;
                         forceUpdate = true;
                     } else {
+
+                        if (job == job2) {
+                            job2.hysteresisCounter = renderer.geoRenderCounter;
+                        } else {
+                            job2.hysteresisBackup = job;
+                        }
+
+
                         /*
                         if (job.tile && job2.tile && job.tile.id[0] != job2.tile.id[0]) {
                         //if (job != job2) {
@@ -867,6 +876,18 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
 
                 if (draw) {
+
+                    if (job.hysteresisCounter != renderer.geoRenderCounter && job.hysteresisBackup) {
+                        var job3 = job.hysteresisBackup;
+                        buffer2[key] = job3;
+
+                        job3.timerShow = job.timerShow;
+                        job3.timerHide = job.timerHide;
+                        job3.draw = job.draw;
+
+                        job = job3;
+                    }
+
                     // update job matricies
                     if (job.renderCounter[0][0] !== geoRenderCounter && job.renderCounter[0][0] !== null) { 
                         job.updatePos = true;
@@ -892,6 +913,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
                     this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
                     job.updatePos = false;
                 }
+
+                job.hysteresisBackup = null;
             }
         }
     }

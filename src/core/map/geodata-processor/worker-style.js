@@ -1,10 +1,11 @@
 
-import {globals as globals_, simpleFmtCall as simpleFmtCall_} from './worker-globals.js';
+import {globals as globals_, simpleFmtCall as simpleFmtCall_, getHash as getHash_} from './worker-globals.js';
 import {areTextCharactersAvailable as areTextCharactersAvailable_, hasLatin as hasLatin_, isCJK as isCJK_ } from './worker-text.js';
 
 //get rid of compiler mess
 var globals = globals_;
 var simpleFmtCall = simpleFmtCall_;
+var getHash = getHash_;
 var hasLatin = hasLatin_, isCJK = isCJK_;
 var areTextCharactersAvailable = areTextCharactersAvailable_;
 
@@ -1296,10 +1297,13 @@ var processStylesheet = function(stylesheetLayersData) {
         //var skip = false;
 
         if ((typeof bitmap) == 'string') {
-            bitmap = {'url':bitmap};
+            bitmap = {'url':bitmap, 'hash': getHash(bitmap) };
         } else if((typeof bitmap) == 'object'){
             if (bitmap['url'] == null) {
+                bitmap['hash'] = 'null';
                 logError('wrong-bitmap', key);
+            } else {
+                bitmap['hash'] = getHash(bitmap['url']);
             }
         } else {
             logError('wrong-bitmap', key);
@@ -1311,6 +1315,13 @@ var processStylesheet = function(stylesheetLayersData) {
     //load bitmaps
     postMessage({'command':'loadBitmaps', 'bitmaps': globals.stylesheetBitmaps});
 
+    //remove urls
+    bitmaps = globals.stylesheetBitmaps;
+
+    for (key in bitmaps) {
+        bitmap = bitmaps[key];
+        bitmap['url'] = null;
+    }
 
     //get fonts
     var fonts = stylesheetLayersData['fonts'] || {};

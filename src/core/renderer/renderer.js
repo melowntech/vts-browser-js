@@ -602,11 +602,11 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
 };
 
 
-Renderer.prototype.getBitmap = function(url, filter, tiled) {
-    var id = url + '*' + filter + '*' + tiled;
+Renderer.prototype.getBitmap = function(url, filter, tiled, hash, useHash) {
+    var id = (useHash ? hash : url) + '*' + filter + '*' + tiled;
 
     var texture = this.bitmaps[id];
-    if (!texture) {
+    if (!texture && url) {
         texture = new GpuTexture(this.gpu, url, this.core, null, null, tiled, filter);
         this.bitmaps[id] = texture;
     }

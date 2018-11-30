@@ -397,7 +397,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
 
     if (label !== true) {
         var icon = data['icon'];
-        job.texture = this.renderer.getBitmap(icon['url'], icon['filter'] || 'linear', icon['tiled'] || false);
+        job.texture = this.renderer.getBitmap(null, icon['filter'] || 'linear', icon['tiled'] || false, icon['hash'], true);
         job.files = [];
     } else {
         job.color2 = this.convertColor(data['color2']);

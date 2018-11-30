@@ -65,6 +65,15 @@ MapGeodataProcessor.prototype.onMessage = function(message) {
         //console.log("ready");
     } else if (command == 'styleDone') {
         this.busy = false;
+    } else if (command == 'loadBitmaps') {
+        var bitmaps = message['bitmaps'];
+
+        for (var key in bitmaps) {
+            var bitmap = bitmaps[key];
+            this.renderer.getBitmap(bitmap['url'], bitmap['filter'] || 'linear', bitmap['tiled'] || false, bitmap['hash'], true);
+        }
+
+        message['command']        
     }
 
     if (this.listener != null) {
