@@ -456,7 +456,11 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     if (this.subjobs) {
         this.subjobs.push(job);
     } else {
-        this.jobs.push(job);
+        if (this.vsjobs) {
+            this.vsjobs.push(job);
+        } else {
+            this.jobs.push(job);
+        }
     }
 
 };
@@ -514,9 +518,51 @@ GpuGroup.prototype.addPack = function(data) {
         job.hysteresis = subjob.hysteresis;
         job.id = subjob.id;
     }
+
+    if (this.vsjobs) {
+        this.vsjobs.push(job);
+    } else {
+        this.jobs.push(job);
+    }
     
-    this.jobs.push(job);
     this.subjobs = null;
+};
+
+
+GpuGroup.prototype.addVSPoint = function(data){
+    var job = { tile: tile };
+    job.type = VTS_JOB_VSPOINT;
+    job.zIndex = data['z-index'] + 256;
+    job.visibility = data['visibility'];
+    job.culling = data['culling'];
+    job.hitable = false;
+    job.eventInfo = data['eventInfo'];
+    job.state = data['state'];
+    job.center = data['center'];
+    job.lod = data['lod'];
+    job.hysteresis = data['hysteresis'];
+    job.id = job.hysteresis ? job.hysteresis[2] : null;
+    job.reduced = false;
+    job.ready = true;
+    job.reduce = data['reduce'];
+    job.vswitch = [];
+
+    this.vsjob = job;
+};
+
+
+GpuGroup.prototype.storeVSJobs = function(data){
+    job.vswitch.push([data.viewExtent, this.vsjobs]);
+    this.vsjobs = [];
+};
+
+
+GpuGroup.prototype.addVSwitch = function(){
+    if (this.vsjob) {
+        this.jobs.push(this.vsjob);
+    }
+
+    this.vsjobs = null;
 };
 
 
@@ -534,6 +580,10 @@ GpuGroup.prototype.addRenderJob = function(data, tile) {
     case 'line-geometry':  this.addGeometry(data); break;
     case 'pack-begin':     this.subjobs = []; break;
     case 'pack-end':       this.addPack(); break;
+    case 'vspoint':        this.addVSPoint(data, tile); break;
+    case 'vswitch-begin':  this.vsjobs = []; this.vsjob = null; break;
+    case 'vswitch-store':  this.storeVSJobs(data); break;
+    case 'vswitch-end':    this.addVSwitch(); break;
     }
 };
 

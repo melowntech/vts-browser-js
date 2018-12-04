@@ -5,7 +5,7 @@ import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
         processStylesheet as processStylesheet_, getFilterResult as getFilterResult_,
         getLayerPropertyValueInner as getLayerPropertyValueInner_, makeFasterFilter as makeFasterFilter_} from './worker-style.js';
 import {processLineStringPass as processLineStringPass_, processLineStringGeometry as processLineStringGeometry_} from './worker-linestring.js';
-import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_} from './worker-pointarray.js';
+import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_, processPointArrayVSwitchPass as processPointArrayVSwitchPass_} from './worker-pointarray.js';
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
 import {postGroupMessage as postGroupMessage_, optimizeGroupMessages as optimizeGroupMessages_} from './worker-message.js';
 
@@ -17,6 +17,7 @@ var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
     processStylesheet = processStylesheet_, getFilterResult = getFilterResult_;
 var processLineStringPass = processLineStringPass_;
 var processPointArrayPass = processPointArrayPass_;
+var processPointArrayVSwitchPass = processPointArrayVSwitchPass_;
 var processPolygonPass = processPolygonPass_;
 var processLineStringGeometry = processLineStringGeometry_;
 var processPointArrayGeometry = processPointArrayGeometry_;
@@ -55,7 +56,6 @@ function processFeatures(type, features, lod, featureType, group) {
     //loop layers
     for (var key in globals.stylesheetLayers) {
         var layer = globals.stylesheetLayers[key];
-        var pack = (layer['pack'] == true);
 
         if (type == 'point-array') {
             var importance = layer['importance-source'];
@@ -85,7 +85,7 @@ function processFeatures(type, features, lod, featureType, group) {
         }
 
         var filter =  layer['filter'];
-        var reduce =  layer['reduce'], i, li;
+        var reduce =  layer['reduce'], i, li, j, lj;
 
         if (filter) {
             filter = layer['#filter'];
@@ -110,14 +110,7 @@ function processFeatures(type, features, lod, featureType, group) {
                     featureCache[featureCacheIndex] = feature;
                     featureCacheIndex++;
                 } else {
-                    if (pack) {
-                        postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
-                        processLayerFeature(type, feature, lod, layer, i);
-                        postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
-                        // also for reduce
-                    } else {
-                        processLayerFeature(type, feature, lod, layer, i);
-                    }
+                    processLayerFeature(type, feature, lod, layer, i);
                 }
             }
         }
@@ -218,15 +211,7 @@ function processFeatures(type, features, lod, featureType, group) {
             //process reduced features
             for (i = 0, li = finalFeatureCacheIndex; i < li; i++) {
                 feature = finalFeatureCache[i];
-                
-                if (pack) {
-                    postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
-                    processLayerFeature(type, finalFeatureCache[i], lod, layer, i);
-                    postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
-                } else {
-                    processLayerFeature(type, finalFeatureCache[i], lod, layer, i);
-                }
-
+                processLayerFeature(type, finalFeatureCache[i], lod, layer, i);
             }
 
         }
@@ -286,8 +271,33 @@ function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, e
 }
 
 
-function processLayerFeature(type, feature, lod, layer, featureIndex) {
+function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) {
     if (!getLayerPropertyValue(layer, 'visible', feature, lod)) {
+        return;
+    }
+
+    if (type == 'point-array') {
+        if (layer['visibility-switch']) {
+            postGroupMessage({'command':'addRenderJob', 'type':'vswitch-begin'});
+            processPointArrayVSwitchPass(type, feature, lod, layer, featureIndex, zIndex, eventInfo);
+
+            var vswitch = feature['visibility-switch'];
+            for (j = 0, lj = vswitch.length; j <lj; j++) {
+                var slayer = getLayer(vswitch[j][1], type, featureIndex);
+                processLayerFeature(type, feature, lod, slayer, featureIndex);
+                postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[j][0]});
+            }
+
+            postGroupMessage({'command':'addRenderJob', 'type':'vswitch-end'});
+        }
+    } else {
+        return;
+    }
+
+    if (!skipPack && layer['pack'] == true) {
+        postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
+        processLayerFeature(type, feature, lod, layer, featureIndex, true);
+        postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
         return;
     }
 
@@ -348,7 +358,6 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
     processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex, eventInfo);
     processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, eventInfo);
 }
-
 
 function processGroup(group, lod) {
     var i, li;

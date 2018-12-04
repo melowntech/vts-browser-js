@@ -61,6 +61,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.oldSize = [rect.width, rect.height]; //QSize
     this.dirty = true;
     this.cameraVector = [0,1,0];
+    this.viewExtent = 1;
     //this.texelSizeLimit = this.core.mapConfig.texelSize * texelSizeFactor;
 
     this.gpu = new GpuDevice(this, div, this.curSize, this.config.rendererAllowScreenshots, this.config.rendererAntialiasing, this.config.rendererAnisotropic);

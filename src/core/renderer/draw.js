@@ -1285,6 +1285,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_ICON:
     case VTS_JOB_LABEL:
     case VTS_JOB_PACK:
+    case VTS_JOB_VSPOINT:
 
 
         if (job.reduce && (job.reduce[0] != 7 && job.reduce[0] != 8)) {
@@ -1326,54 +1327,56 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         var files = job.files;
 
-        if (job.type == VTS_JOB_PACK) {
+        if (job.type != VTS_JOB_VSPOINT) {
+            if (job.type == VTS_JOB_PACK) {
 
-            var notready = false;
-            
-            for (var j = 0, lj = job.subjobs.length; j < lj; j++) {
-                var subjob = job.subjobs[j];
+                var notready = false;
+                
+                for (var j = 0, lj = job.subjobs.length; j < lj; j++) {
+                    var subjob = job.subjobs[j];
 
-                files = subjob.files;
+                    files = subjob.files;
+
+                    if (files.length > 0) {
+                        for (var i = 0, li = files.length; i < li; i++) {
+                            if (files[i].length > 0) {
+                                var font = subjob.fonts[i];
+                                if (font && !font.areTexturesReady(files[i])) {
+                                    notready = true;
+                                }
+                            }
+                        }
+
+                    } else {
+                        texture = hitmapRender ? renderer.whiteTexture : subjob.texture;
+                        if (!texture.loaded) {
+                            notready = true;
+                        }
+                    }
+                }
+
+                if (notready) {
+                    return;
+                }
+
+            } else {
+                files = job.files;
 
                 if (files.length > 0) {
                     for (var i = 0, li = files.length; i < li; i++) {
                         if (files[i].length > 0) {
-                            var font = subjob.fonts[i];
+                            var font = job.fonts[i];
                             if (font && !font.areTexturesReady(files[i])) {
-                                notready = true;
+                                return;
                             }
                         }
                     }
 
                 } else {
-                    texture = hitmapRender ? renderer.whiteTexture : subjob.texture;
+                    texture = hitmapRender ? renderer.whiteTexture : job.texture;
                     if (!texture.loaded) {
-                        notready = true;
+                        return;
                     }
-                }
-            }
-
-            if (notready) {
-                return;
-            }
-
-        } else {
-            files = job.files;
-
-            if (files.length > 0) {
-                for (var i = 0, li = files.length; i < li; i++) {
-                    if (files[i].length > 0) {
-                        var font = job.fonts[i];
-                        if (font && !font.areTexturesReady(files[i])) {
-                            return;
-                        }
-                    }
-                }
-
-            } else {
-                texture = hitmapRender ? renderer.whiteTexture : job.texture;
-                if (!texture.loaded) {
-                    return;
                 }
             }
         }
@@ -1464,6 +1467,23 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                     break;
             }
+        }
+
+        if (job.type == VTS_JOB_VSPOINT) {
+            //TODO: solve switch an call render
+            var viewExtent = renderer.viewExtent;
+            var lastViewExtent = 0, vswitch = job.vswitch;
+
+            for (i = 0, li = vswitch.length; i++) {
+                if (viewExtent <= vswitch[i][0]) {
+                    var slayers = vswitch[i][1];
+                    for (j = 0, lj = slayers.length; i++) {
+                        this.drawGpuJob(gpu, gl, renderer, slayers[j], screenPixelSize, advancedHitPass, ignoreFilters);
+                    }
+                }
+            }
+
+            return;
         }
 
         var s = job.stick;

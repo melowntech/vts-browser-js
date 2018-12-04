@@ -71,6 +71,7 @@ plugins.push(
       'VTS_JOB_ICON' :                7,
       'VTS_JOB_LABEL' :               8,
       'VTS_JOB_PACK' :                9,
+      'VTS_JOB_VSPOINT' :             10,
 
       'VTS_TILE_COUNT_FACTOR' :       0.5,
 

@@ -694,7 +694,8 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
         }
 
         //check multipasss
-        if (key == 'next-pass') {
+        if (key == 'next-pass' || key == 'visibility-switch') {
+            var vswitch = (key == 'visibility-switch');
             if (Array.isArray(value) && value.length > 0) {
 
                 for (i = 0; i < li; i++) {
@@ -704,7 +705,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
                             Array.isArray(valueItem) &&
                             valueItem.length == 2 &&
                             typeof valueItem[0] == 'number' &&
-                            typeof valueItem[1] == 'string')) {
+                            (typeof valueItem[1] == 'string' || (vswitch && valueItem[1] === null)))) {
 
                         logError('wrong-property-value[]', layerId, key, value, i);
                         return getDefaultLayerPropertyValue(key);
@@ -929,10 +930,11 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'export-geometry': return validateValue(layerId, key, value, 'boolean');
     case 'pack':            return validateValue(layerId, key, value, 'boolean');
 
-    case 'visible':         return validateValue(layerId, key, value, 'boolean');
-    case 'visibility':      return validateValue(layerId, key, value, 'number', null, 0.00001, Number.MAX_VALUE);
-    case 'visibility-abs':  return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
-    case 'visibility-rel':  return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
+    case 'visible':           return validateValue(layerId, key, value, 'boolean');
+    case 'visibility':        return validateValue(layerId, key, value, 'number', null, 0.00001, Number.MAX_VALUE);
+    case 'visibility-abs':    return validateValue(layerId, key, value, 'object', 2, 0.00001, Number.MAX_VALUE);
+    case 'visibility-rel':    return validateValue(layerId, key, value, 'object', 4, 0.00001, Number.MAX_VALUE);
+    case 'visibility-switch': return validateValue(layerId, key, value, 'object');
 
     case 'hysteresis':  return validateValue(layerId, key, value, 'object');
     case 'culling':     return validateValue(layerId, key, value, 'number', 180, 0.0001, 180);
@@ -1024,10 +1026,11 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'export-geometry': return false;
     case 'pack':            return false;
 
-    case 'visible':        return true;
-    case 'visibility':     return null;
-    case 'visibility-abs': return null;
-    case 'visibility-rel': return null;
+    case 'visible':           return true;
+    case 'visibility':        return null;
+    case 'visibility-abs':    return null;
+    case 'visibility-rel':    return null;
+    case 'visibility-switch': return null;
 
     case 'hysteresis':      return null;
     case 'culling':         return 180;

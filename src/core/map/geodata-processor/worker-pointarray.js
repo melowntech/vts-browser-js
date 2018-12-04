@@ -398,6 +398,97 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
 };
 
+
+var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex, zIndex, eventInfo) {
+    var pointsGroups = []; 
+    var i, li, dpoints = false;
+
+    if (pointArray['lines'] || pointArray['d-lines']) {  //use lines as points
+        pointsGroups = pointArray['lines'] || pointArray['d-lines'];
+        dpoints = (pointArray['d-lines']) ? true : false;
+    } else {
+        if (pointArray['points'] || pointArray['d-points']) {
+            pointsGroups = [(pointArray['points'] || pointArray['d-points'])];
+            dpoints = (pointArray['d-points']) ? true : false;
+        }
+    }
+    
+    if (pointsGroups.length == 0) {
+        return;
+    }
+
+    var visibility = getLayerPropertyValue(style, 'visibility-rel', pointArray, lod) || 
+                     getLayerPropertyValue(style, 'visibility-abs', pointArray, lod) ||
+                     getLayerPropertyValue(style, 'visibility', pointArray, lod);
+    var culling = getLayerPropertyValue(style, 'culling', pointArray, lod);
+
+    var points, g, gl, totalPoints = 0;
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
+        if (Array.isArray(points) && points.length > 0) {
+            totalPoints += points.length;
+        }
+    }
+
+    var center = [0,0,0];
+    var forceOrigin = globals.forceOrigin;
+    var bboxMin = globals.bboxMin;
+    var tileX = globals.tileX;
+    var tileY = globals.tileY;
+    var forceScale = globals.forceScale;
+    var p, p1;
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
+        
+        if (Array.isArray(points) && points.length > 0) {
+            p = points[0];
+            p1 = [p[0], p[1], p[2]];
+       
+            //add ponints
+            for (i = 0, li = points.length; i < li; i++) {
+        
+                if (forceOrigin) {
+                    p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+                }
+        
+                if (forceScale != null) {
+                    p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+                }
+        
+                center[0] += p1[0];
+                center[1] += p1[1];
+                center[2] += p1[2];
+       
+                if ((i + 1) < li) {
+                    if (dpoints) {
+                        var p2 = points[i+1];
+                        p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
+                    } else {
+                        p1 = points[i+1];
+                    }
+                }
+            }
+        }
+    }
+   
+    if (totalPoints > 0) {
+        center[0] /= totalPoints;
+        center[1] /= totalPoints;
+        center[2] /= totalPoints;
+    }
+
+    center[0] += bboxMin[0];//groupOrigin[0];
+    center[1] += bboxMin[1];//groupOrigin[1];
+    center[2] += bboxMin[2];//groupOrigin[2];
+
+    postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 
+        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
+        'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
+};
+
+
 var getOriginOffset = function(origin, width, height) {
     switch(origin) {
     case 'top-left':        return [0, 0];
@@ -732,6 +823,6 @@ var processPointArrayGeometry = function(pointArray) {
                       [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));
 };
 
-export {processPointArrayPass, processPointArrayGeometry};
+export {processPointArrayPass, processPointArrayGeometry, processPointArrayVSwitchPass};
 
 
