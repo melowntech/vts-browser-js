@@ -529,7 +529,7 @@ GpuGroup.prototype.addPack = function(data) {
 };
 
 
-GpuGroup.prototype.addVSPoint = function(data){
+GpuGroup.prototype.addVSPoint = function(data, tile){
     var job = { tile: tile };
     job.type = VTS_JOB_VSPOINT;
     job.zIndex = data['z-index'] + 256;
@@ -552,7 +552,7 @@ GpuGroup.prototype.addVSPoint = function(data){
 
 
 GpuGroup.prototype.storeVSJobs = function(data){
-    job.vswitch.push([data.viewExtent, this.vsjobs]);
+    this.vsjob.vswitch.push([data.viewExtent, this.vsjobs]);
     this.vsjobs = [];
 };
 

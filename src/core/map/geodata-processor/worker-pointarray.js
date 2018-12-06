@@ -483,8 +483,11 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
     center[1] += bboxMin[1];//groupOrigin[1];
     center[2] += bboxMin[2];//groupOrigin[2];
 
-    postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 
-        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
+    globals.signatureCounter++;
+    var signature = (""+globals.signatureCounter);
+
+    postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 'eventInfo':eventInfo, 
+        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, //'reduce': iconData.reduce,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
 };
 

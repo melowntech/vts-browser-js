@@ -279,19 +279,20 @@ function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) 
     if (type == 'point-array') {
         if (layer['visibility-switch']) {
             postGroupMessage({'command':'addRenderJob', 'type':'vswitch-begin'});
-            processPointArrayVSwitchPass(type, feature, lod, layer, featureIndex, zIndex, eventInfo);
+            var zIndex = getLayerPropertyValue(layer, 'z-index', feature, lod);
+            var eventInfo = feature.properties;
+            processPointArrayVSwitchPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
 
-            var vswitch = feature['visibility-switch'];
-            for (j = 0, lj = vswitch.length; j <lj; j++) {
-                var slayer = getLayer(vswitch[j][1], type, featureIndex);
+            var vswitch = layer['visibility-switch'];
+            for (var i = 0, li = vswitch.length; i <li; i++) {
+                var slayer = getLayer(vswitch[i][1], type, featureIndex);
                 processLayerFeature(type, feature, lod, slayer, featureIndex);
-                postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[j][0]});
+                postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[i][0]});
             }
 
             postGroupMessage({'command':'addRenderJob', 'type':'vswitch-end'});
+            return;
         }
-    } else {
-        return;
     }
 
     if (!skipPack && layer['pack'] == true) {

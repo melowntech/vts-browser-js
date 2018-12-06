@@ -1474,12 +1474,14 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             var viewExtent = renderer.viewExtent;
             var lastViewExtent = 0, vswitch = job.vswitch;
 
-            for (i = 0, li = vswitch.length; i++) {
-                if (viewExtent <= vswitch[i][0]) {
+            for (i = 0, li = vswitch.length; i < li; i++) {
+                if (viewExtent <= vswitch[i][0] || i == (li-1)) {
                     var slayers = vswitch[i][1];
-                    for (j = 0, lj = slayers.length; i++) {
+                    for (j = 0, lj = slayers.length; j < lj; j++) {
                         this.drawGpuJob(gpu, gl, renderer, slayers[j], screenPixelSize, advancedHitPass, ignoreFilters);
                     }
+
+                    return;
                 }
             }
 
