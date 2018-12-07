@@ -421,6 +421,7 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
                      getLayerPropertyValue(style, 'visibility-abs', pointArray, lod) ||
                      getLayerPropertyValue(style, 'visibility', pointArray, lod);
     var culling = getLayerPropertyValue(style, 'culling', pointArray, lod);
+    var hysteresis = getLayerPropertyValue(style, 'hysteresis', pointArray, lod);
 
     var points, g, gl, totalPoints = 0;
 
@@ -486,7 +487,7 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
     globals.signatureCounter++;
     var signature = (""+globals.signatureCounter);
 
-    postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 'eventInfo':eventInfo, 
+    postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 'hysteresis' : hysteresis,
         'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, //'reduce': iconData.reduce,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
 };
