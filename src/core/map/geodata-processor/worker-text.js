@@ -13,7 +13,7 @@ var globals = globals_,
 
 
 var setFont = function(fontData) {
-    console.log('setFont ' + fontData['url']);
+    //console.log('setFont ' + fontData['url']);
     //debugger;
 
     var font = Typr.parse(fontData['data']);

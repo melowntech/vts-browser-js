@@ -1,14 +1,14 @@
 
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
-import {processGMap as processGMap_, processGMap2 as processGMap2_, processGMap3 as processGMap3_, processGMap4 as processGMap4_} from './gmap';
+import {processGMap as processGMap_, /*processGMap2 as processGMap2_, processGMap3 as processGMap3_,*/ processGMap4 as processGMap4_} from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
 var math = math_;
 var processGMap = processGMap_;
-var processGMap2 = processGMap2_;
-var processGMap3 = processGMap3_;
+//var processGMap2 = processGMap2_;
+//var processGMap3 = processGMap3_;
 var processGMap4 = processGMap4_;
 
 
@@ -748,28 +748,6 @@ RendererDraw.prototype.drawGpuJobs = function() {
                             job2.hysteresisBackup = job;
                         }
 
-
-                        /*
-                        if (job.tile && job2.tile && job.tile.id[0] != job2.tile.id[0]) {
-                        //if (job != job2) {
-
-                            buffer2[job.id] = job;
-                            job.timerShow = job2.timerShow;
-                            job.timerHide = job2.timerHide;
-                            job.draw = job2.draw;
-                            //job.mv = job2.mv;
-                            //job.mvp = job2.mvp;
-                            job.renderCounter[0][0] = 0;
-                            
-                            if (job2.lastSubJob) {
-                                job.lastSubJob = job2.lastSubJob.slice();
-                                job.lastSubJob[0] = job;
-                            }
-
-                            job2.timerShow = 0;
-                            job2.timerHide = 0;
-                            job2.draw = false;
-                        } */
                     }
 
                     //if (job.hysteresis[3] === true) {
@@ -910,7 +888,22 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         job.mvp = mvp;
                     }                    
 
-                    this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+                    if (job.type == VTS_JOB_VSPOINT) {
+                        var viewExtent = renderer.viewExtent;
+                        var slayers = job.vswitch[job.vswitchIndex][1];
+
+                        for (var k = 0, lk = slayers.length; k < lk; k++) {
+                            var sjob = slayers[k];
+                            sjob.updatePos = job.updatePos;
+                            sjob.mvp = job.mvp;
+                            sjob.mv = job.mv;
+                            this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, fade);
+                        }
+
+                    } else {
+                        this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+                    }
+
                     job.updatePos = false;
                 }
 
@@ -1473,9 +1466,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             //TODO: solve switch an call render
             var viewExtent = renderer.viewExtent;
             var lastViewExtent = 0, vswitch = job.vswitch;
+            job.vswitchIndex = 0;
 
             for (i = 0, li = vswitch.length; i < li; i++) {
                 if (viewExtent <= vswitch[i][0] || i == (li-1)) {
+                    job.vswitchIndex = i;
                     var slayers = vswitch[i][1];
                     for (j = 0, lj = slayers.length; j < lj; j++) {
                         var sjob = slayers[j];

@@ -453,6 +453,7 @@ self.onmessage = function (e) {
             globals.metricUnits = data['metric'];
             globals.reduceMode = data['reduceMode'];
             globals.reduceParams = data['reduceParams'];
+            globals.log = data['log'];
             processStylesheet(data['data']);
         }
         postMessage({'command' : 'ready'});

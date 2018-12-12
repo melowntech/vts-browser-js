@@ -173,7 +173,8 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data,
                                         'geocent' : (!this.map.getNavigationSrs().isProjected()), 'metric': config.mapMetricUnits,
                                         'reduceMode': config.mapFeaturesReduceMode,
-                                        'reduceParams': config.mapFeaturesReduceParams } );
+                                        'reduceParams': config.mapFeaturesReduceParams,
+                                        'log': config.mapLogGeodataStyles } );
 
     var fonts = stylesheet.fonts;
     var fontMap = {}; //'#default' : '#default' };

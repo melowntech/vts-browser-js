@@ -80,6 +80,8 @@ var Core = function(element, config, coreInterface) {
         mapMetricUnits : !(lang == 'en' || lang.indexOf('en-') == 0),
         mapForceFrameTime: 0,
         mapForcePipeline: 0,
+        mapLogGeodataStyles: true,
+
         rendererAnisotropic : 0,
         rendererAntialiasing : true,
         rendererAllowScreenshots : false,
@@ -106,6 +108,7 @@ var Core = function(element, config, coreInterface) {
     this.renderer = new Renderer(this, this.element, null, this.onResize.bind(this), this.config);
     this.rendererInterface = new RendererInterface(this.renderer);
     this.proj4 = Proj4;
+    this.contextLost = false;
 
     //platform detection
     platform.init();
@@ -408,7 +411,7 @@ Core.prototype.markDirty = function() {
 };
 
 Core.prototype.onUpdate = function() {
-    if (this.killed) {
+    if (this.killed || this.contextLost) {
         return;
     }
 
@@ -529,7 +532,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.16.5';
+    return (full ? 'Core: ' : '') + '2.16.7';
 }
 
 

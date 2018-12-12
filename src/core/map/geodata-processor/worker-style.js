@@ -621,7 +621,7 @@ var logError = function(errorType, layerId, key, value, index, subkey) {
         break;
     }
     
-    if (str) {
+    if (str && globals.log) {
          // eslint-disable-next-line 
         console.log(str);
         //throw str;

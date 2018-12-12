@@ -245,7 +245,7 @@ function sortFeatures(features, top, count, renderer) {
 
 }
 
-
+/*
 function processGMap2(gpu, gl, renderer, screenPixelSize, draw) {
     if (!renderer.config.mapFeaturesReduceParams) {
         return;
@@ -491,7 +491,7 @@ function processGMap3(gpu, gl, renderer, screenPixelSize, draw) {
 
     }
 }
-
+*/
 
 function storeFeatureToHitmap(id, feature, ix, iy, mx, my, hitMap, hcache, hcacheSize) {
     var x1 = ix - 1, y1 = iy - 1, x,
