@@ -302,7 +302,8 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                                 submesh : i,
                                                 texture : texture,
                                                 alpha : bounds.alpha[layers[j]][1],
-                                                material : VTS_MATERIAL_EXTERNAL_NOFOG
+                                                material : VTS_MATERIAL_EXTERNAL_NOFOG,
+                                                layer : layer
                                             });
                                         }
                                     }
@@ -342,7 +343,8 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                             mesh : tile.surfaceMesh,
                                             submesh : i,
                                             texture : texture,
-                                            material : VTS_MATERIAL_EXTERNAL
+                                            material : VTS_MATERIAL_EXTERNAL,
+                                            layer : layer
                                         });
                                     }
                                 }
@@ -376,7 +378,8 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                                                 mesh : tile.surfaceMesh,
                                                 submesh : i,
                                                 texture : texture,
-                                                material : VTS_MATERIAL_EXTERNAL
+                                                material : VTS_MATERIAL_EXTERNAL,
+                                                layer : layer
                                             });
                                         }
                                     }
@@ -949,9 +952,9 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
 
     //draw lods
     if (debug.drawLods) {
-        //text = '' + tile.id[0]; // + ' ta:' + Math.abs(tile.tiltAngle).toFixed(3);
-        text = '' + tile.id[0] + ' c:' + (50*(Math.pow(Math.abs(tile.tiltAngle * tile.texelSize), VTS_TILE_COUNT_FACTOR) / Math.max(0.00001, this.renderer.drawnGeodataTilesFactor))).toFixed(3) + 
-               ' l:' + Math.pow(Math.abs(tile.tiltAngle * tile.texelSize), VTS_TILE_COUNT_FACTOR).toFixed(3) + ' g:' + this.renderer.drawnGeodataTilesFactor.toFixed(3);
+        text = '' + tile.id[0]; // + ' ta:' + Math.abs(tile.tiltAngle).toFixed(3);
+        //text = '' + tile.id[0] + ' c:' + (50*(Math.pow(Math.abs(tile.tiltAngle * tile.texelSize), VTS_TILE_COUNT_FACTOR) / Math.max(0.00001, this.renderer.drawnGeodataTilesFactor))).toFixed(3) + 
+          //     ' l:' + Math.pow(Math.abs(tile.tiltAngle * tile.texelSize), VTS_TILE_COUNT_FACTOR).toFixed(3) + ' g:' + this.renderer.drawnGeodataTilesFactor.toFixed(3);
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-4*factor), 4*factor, text, [1,0,0,1], pos[2]);
     }
 
@@ -985,6 +988,12 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
     //draw face count
     if (debug.drawFaceCount && mesh) {
         text = '' + mesh.faces + ' - ' + mesh.submeshes.length + ((tile.surface && tile.surface.glue) ? ' - 1' : ' - 0');
+        this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
+    }
+
+    //draw geodata pixel size
+    if (debug.drawGPixelSize) {
+        text = '' + ((Math.tan(tile.metanode.diskAngle2A) * tile.metanode.diskDistance * 0.70710678118) / node.displaySize).toFixed(2);
         this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
     }
 

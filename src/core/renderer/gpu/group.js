@@ -19,6 +19,7 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.jobs = [];
     this.reduced = 0;
     this.geometries = {};
+    this.subjob = null;
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
@@ -337,6 +338,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     var vertices = data['vertexBuffer'];
     var texcoords = data['texcoordsBuffer'];
     var origins = data['originBuffer'];
+    var singleBuffer = data['singleBuffer'];
     var s = data['stick'];
     var f = 1.0/255;
 
@@ -355,7 +357,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.eventInfo = data['eventInfo'];
     job.state = data['state'];
     job.center = data['center'];
-    job.stick = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f];
+    job.stick = [s[0], s[1], s[2], s[3]*f, s[4]*f, s[5]*f, s[6]*f, s[7]];
     job.lod = data['lod'];
     job.zbufferOffset = data['zbuffer-offset'];
     job.hysteresis = data['hysteresis'];
@@ -373,6 +375,19 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
             case 'scr-count2': job.reduce[0] = 5; break;
             case 'scr-count3': job.reduce[0] = 6; break;
             case 'scr-count4': job.reduce[0] = 7; break;
+            case 'scr-count5': job.reduce[0] = 8; break;
+        }
+
+        if (job.reduce[0] == 7 || job.reduce[0] == 8) {
+            job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
+            //job.reduce[1] = Math.log(job.reduce[2]) * VTS_IMPORATANCE_INV_LOG;
+            //job.reduce[1] = Math.log(job.reduce[2]) / Math.log(1.0017);
+
+            if (this.renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
+                job.reduce[1] = job.reduce[2];
+            } else {
+                job.reduce[1] = Math.floor((Math.log(job.reduce[2] * 500) / Math.log(1.0017)) + 5000);
+            }
         }
     }
 
@@ -382,7 +397,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
 
     if (label !== true) {
         var icon = data['icon'];
-        job.texture = this.renderer.getBitmap(icon['url'], icon['filter'] || 'linear', icon['tiled'] || false);
+        job.texture = this.renderer.getBitmap(null, icon['filter'] || 'linear', icon['tiled'] || false, icon['hash'], true);
         job.files = [];
     } else {
         job.color2 = this.convertColor(data['color2']);
@@ -405,33 +420,149 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         job.visibility = [job.visibility];
     }
 
-    //create vertex buffer
-    job.vertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    job.vertexPositionBuffer.itemSize = 4;
-    job.vertexPositionBuffer.numItems = vertices.length / 4;
+    if (singleBuffer) {
+        job.singleBuffer = singleBuffer;
+        this.polygons += 2;
 
-    //create normal buffer
-    job.vertexTexcoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
-    job.vertexTexcoordBuffer.itemSize = 4;
-    job.vertexTexcoordBuffer.numItems = texcoords.length / 4;
+    } else {
+        //create vertex buffer
+        job.vertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        job.vertexPositionBuffer.itemSize = 4;
+        job.vertexPositionBuffer.numItems = vertices.length / 4;
 
-    //create origin buffer
-    job.vertexOriginBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexOriginBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, origins, gl.STATIC_DRAW);
-    job.vertexOriginBuffer.itemSize = 3;
-    job.vertexOriginBuffer.numItems = origins.length / 3;
+        //create normal buffer
+        job.vertexTexcoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
+        job.vertexTexcoordBuffer.itemSize = 4;
+        job.vertexTexcoordBuffer.numItems = texcoords.length / 4;
 
-    this.jobs.push(job);
+        //create origin buffer
+        job.vertexOriginBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexOriginBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, origins, gl.STATIC_DRAW);
+        job.vertexOriginBuffer.itemSize = 3;
+        job.vertexOriginBuffer.numItems = origins.length / 3;
 
-    this.size += job.vertexPositionBuffer.numItems * 4 +
-                  job.vertexOriginBuffer.numItems * 4 +
-                  job.vertexTexcoordBuffer.numItems * 4;
-    this.polygons += job.vertexPositionBuffer.numItems / (4 * 3);
+        this.size += job.vertexPositionBuffer.numItems * 4 +
+                      job.vertexOriginBuffer.numItems * 4 +
+                      job.vertexTexcoordBuffer.numItems * 4;
+        this.polygons += job.vertexPositionBuffer.numItems / (4 * 3);
+    }
+
+
+    if (this.subjobs) {
+        this.subjobs.push(job);
+    } else {
+        if (this.vsjobs) {
+            this.vsjobs.push(job);
+        } else {
+            this.jobs.push(job);
+        }
+    }
+
+};
+
+
+GpuGroup.prototype.addPack = function(data) {
+    if (!this.subjobs.length) {
+        this.subjobs = null;
+        return;
+    }
+
+    var job = {
+        type : VTS_JOB_PACK,
+        subjobs: this.subjobs,
+        culling : 180,
+        zIndex : 0,
+        ready : true
+    };
+
+    //extract no overlap, remove it form subjobs
+    for (var i = 0, li = job.subjobs.length; i < li; i++) {
+        var subjob = job.subjobs[i];
+
+        if (subjob.noOverlap) {
+            job.noOverlap = subjob.noOverlap;
+            subjob.noOverlap = null;
+        }
+
+        if (subjob.culling <= job.culling) {
+            job.culling = subjob.culling;
+            subjob.culling = 180;
+        }
+
+        if (subjob.visibility) {
+            job.visibility = subjob.visibility;
+            subjob.visibility = null;
+        }
+
+        if (subjob.stick) {
+            job.stick = subjob.stick;
+            subjob.stick = [0,0,0,255,255,255,255,0];
+        }
+
+        if (subjob.zIndex > job.zIndex) {
+            job.zIndex = subjob.zIndex;
+        }
+
+        if (subjob.center) {
+            job.center = subjob.center;
+        }
+
+        job.eventInfo = subjob.eventInfo;
+        job.reduce = subjob.reduce;
+
+        job.hysteresis = subjob.hysteresis;
+        job.id = subjob.id;
+    }
+
+    if (this.vsjobs) {
+        this.vsjobs.push(job);
+    } else {
+        this.jobs.push(job);
+    }
+    
+    this.subjobs = null;
+};
+
+
+GpuGroup.prototype.addVSPoint = function(data, tile){
+    var job = { tile: tile };
+    job.type = VTS_JOB_VSPOINT;
+    job.zIndex = data['z-index'] + 256;
+    job.visibility = data['visibility'];
+    job.culling = data['culling'];
+    job.hitable = false;
+    job.eventInfo = data['eventInfo'];
+    job.state = data['state'];
+    job.center = data['center'];
+    job.lod = data['lod'];
+    job.hysteresis = data['hysteresis'];
+    job.id = job.hysteresis ? job.hysteresis[2] : null;
+    job.reduced = false;
+    job.ready = true;
+    job.reduce = data['reduce'];
+    job.vswitch = [];
+
+    this.vsjob = job;
+};
+
+
+GpuGroup.prototype.storeVSJobs = function(data){
+    this.vsjob.vswitch.push([data.viewExtent, this.vsjobs]);
+    this.vsjobs = [];
+};
+
+
+GpuGroup.prototype.addVSwitch = function(){
+    if (this.vsjob) {
+        this.jobs.push(this.vsjob);
+    }
+
+    this.vsjobs = null;
 };
 
 
@@ -447,6 +578,12 @@ GpuGroup.prototype.addRenderJob = function(data, tile) {
     case 'label':          this.addIconJob(data, true, tile); break;
     case 'point-geometry': this.addGeometry(data); break;
     case 'line-geometry':  this.addGeometry(data); break;
+    case 'pack-begin':     this.subjobs = []; break;
+    case 'pack-end':       this.addPack(); break;
+    case 'vspoint':        this.addVSPoint(data, tile); break;
+    case 'vswitch-begin':  this.vsjobs = []; this.vsjob = null; break;
+    case 'vswitch-store':  this.storeVSJobs(data); break;
+    case 'vswitch-end':    this.addVSwitch(); break;
     }
 };
 

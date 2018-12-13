@@ -70,11 +70,17 @@ plugins.push(
       'VTS_JOB_LINE_LABEL' :          6,
       'VTS_JOB_ICON' :                7,
       'VTS_JOB_LABEL' :               8,
+      'VTS_JOB_PACK' :                9,
+      'VTS_JOB_VSPOINT' :             10,
 
       'VTS_TILE_COUNT_FACTOR' :       0.5,
 
       'VTS_NO_OVERLAP_DIRECT' :       0,
-      'VTS_NO_OVERLAP_DIV_BY_DIST' :  1
+      'VTS_NO_OVERLAP_DIV_BY_DIST' :  1,
+
+      'VTS_IMPORATANCE_LOG_BASE' :    1.0017,
+      'VTS_IMPORATANCE_INV_LOG' :     1355.6127860321758038669705901537 // 1/log(LOG_BASE)
+
 
     })
 );

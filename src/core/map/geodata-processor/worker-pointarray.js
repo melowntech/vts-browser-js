@@ -77,12 +77,18 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 reduce : getLayerPropertyValue(style, 'dynamic-reduce', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'icon-origin', pointArray, lod),
                 source : getLayerPropertyValue(style, 'icon-source', pointArray, lod),
-                vertexBuffer : new Float32Array(bufferSize),
-                originBuffer : new Float32Array(bufferSize2),
-                texcoordsBuffer : new Float32Array(bufferSize),
                 index : 0,
                 index2 : 0
             };
+
+            if (totalPoints > 1) {
+                iconData.vertexBuffer = new Float32Array(bufferSize);
+                iconData.originBuffer = new Float32Array(bufferSize2);
+                iconData.texcoordsBuffer = new Float32Array(bufferSize);
+            } else {
+                iconData.singleBuffer = new Float32Array(16);
+            }
+
         } else {
             icon = false;
         }
@@ -126,6 +132,8 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 outline : getLayerPropertyValue(style, 'label-outline', pointArray, lod),
                 reduce : getLayerPropertyValue(style, 'dynamic-reduce', pointArray, lod),
                 size : size * factor,
+                spacing: getLayerPropertyValue(style, 'label-spacing', pointArray, lod),
+                lineHeight: getLayerPropertyValue(style, 'label-line-height', pointArray, lod),
                 offset : getLayerPropertyValue(style, 'label-offset', pointArray, lod),
                 stick : getLayerPropertyValue(style, 'label-stick', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'label-origin', pointArray, lod),
@@ -149,6 +157,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             if (labelData.stick) {
                 labelData.stick = labelData.stick.slice();
                 labelData.stick[2] *= factor;
+                //labelData.stick[7] *= factor;
             }
         } else {
             label = false;
@@ -158,17 +167,6 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     var index = 0;
     var index2 = 0;
 
-    var circleBuffer = [];
-    var circleSides = clamp(pointRadius * 8 * 0.5, 8, 32);
-
-    var angle = 0, step = (2.0*Math.PI) / circleSides;
-
-    for (i = 0; i < circleSides; i++) {
-        circleBuffer[i] = [-Math.sin(angle), Math.cos(angle)];
-        angle += step;
-    }
-
-    circleBuffer[circleSides] = [0, 1.0];
     
     var center = [0,0,0];
     var forceOrigin = globals.forceOrigin;
@@ -180,15 +178,29 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
     var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
 
-    //allocate buffers
-    if (!pointFlat) {
-        pointsVertices = circleSides * 3 * 4;
-        vertexBuffer = new Float32Array(totalPoints * pointsVertices);
-        pointsNormals = circleSides * 3 * 4;
-        normalBuffer = new Float32Array(totalPoints * pointsNormals);
-    } else {
-        pointsVertices = circleSides * 3 * 3;
-        vertexBuffer = new Float32Array(totalPoints * pointsVertices);
+    if (point) {
+        var circleBuffer = [];
+        var circleSides = clamp(pointRadius * 8 * 0.5, 8, 32);
+
+        var angle = 0, step = (2.0*Math.PI) / circleSides;
+
+        for (i = 0; i < circleSides; i++) {
+            circleBuffer[i] = [-Math.sin(angle), Math.cos(angle)];
+            angle += step;
+        }
+
+        circleBuffer[circleSides] = [0, 1.0];
+
+        //allocate buffers
+        if (!pointFlat) {
+            pointsVertices = circleSides * 3 * 4;
+            vertexBuffer = new Float32Array(totalPoints * pointsVertices);
+            pointsNormals = circleSides * 3 * 4;
+            normalBuffer = new Float32Array(totalPoints * pointsNormals);
+        } else {
+            pointsVertices = circleSides * 3 * 3;
+            vertexBuffer = new Float32Array(totalPoints * pointsVertices);
+        }
     }
 
     for (g = 0, gl = pointsGroups.length; g < gl; g++) {
@@ -220,10 +232,11 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 if (label) {
                     labelBBox = processLabel(p1, labelData); //, pointArray, lod, style, zIndex);
                 }
-        
-                for (var j = 0; j < circleSides; j++) {
 
-                    if (point) {
+                if (point) {
+        
+                    for (var j = 0; j < circleSides; j++) {
+
        
                         if (pointFlat) {
         
@@ -325,18 +338,32 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         }
     }
 
-    if (icon && iconData.vertexBuffer.length > 0) {
-        globals.signatureCounter++;
-        signature = (""+globals.signatureCounter);
+    if (icon) {
 
-        postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
-            'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
-            'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
-            'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
-            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
-            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
-            'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer], signature);
+        if (iconData.singleBuffer) {
+            globals.signatureCounter++;
+            signature = (""+globals.signatureCounter);
+
+            postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'singleBuffer': iconData.singleBuffer,
+                'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
+                'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.singleBuffer.buffer], signature);
+        } else if (iconData.vertexBuffer && iconData.vertexBuffer.length > 0) {
+            globals.signatureCounter++;
+            signature = (""+globals.signatureCounter);
+
+            postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
+                'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
+                'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
+                'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer], signature);
+        }
     }
 
     if (label && labelData.vertexBuffer.length > 0) {
@@ -371,6 +398,101 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
 };
 
+
+var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex, zIndex, eventInfo) {
+    var pointsGroups = []; 
+    var i, li, dpoints = false;
+
+    if (pointArray['lines'] || pointArray['d-lines']) {  //use lines as points
+        pointsGroups = pointArray['lines'] || pointArray['d-lines'];
+        dpoints = (pointArray['d-lines']) ? true : false;
+    } else {
+        if (pointArray['points'] || pointArray['d-points']) {
+            pointsGroups = [(pointArray['points'] || pointArray['d-points'])];
+            dpoints = (pointArray['d-points']) ? true : false;
+        }
+    }
+    
+    if (pointsGroups.length == 0) {
+        return;
+    }
+
+    var visibility = getLayerPropertyValue(style, 'visibility-rel', pointArray, lod) || 
+                     getLayerPropertyValue(style, 'visibility-abs', pointArray, lod) ||
+                     getLayerPropertyValue(style, 'visibility', pointArray, lod);
+    var culling = getLayerPropertyValue(style, 'culling', pointArray, lod);
+    var hysteresis = getLayerPropertyValue(style, 'hysteresis', pointArray, lod);
+
+    var points, g, gl, totalPoints = 0;
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
+        if (Array.isArray(points) && points.length > 0) {
+            totalPoints += points.length;
+        }
+    }
+
+    var center = [0,0,0];
+    var forceOrigin = globals.forceOrigin;
+    var bboxMin = globals.bboxMin;
+    var tileX = globals.tileX;
+    var tileY = globals.tileY;
+    var forceScale = globals.forceScale;
+    var p, p1;
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
+        
+        if (Array.isArray(points) && points.length > 0) {
+            p = points[0];
+            p1 = [p[0], p[1], p[2]];
+       
+            //add ponints
+            for (i = 0, li = points.length; i < li; i++) {
+        
+                if (forceOrigin) {
+                    p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+                }
+        
+                if (forceScale != null) {
+                    p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+                }
+        
+                center[0] += p1[0];
+                center[1] += p1[1];
+                center[2] += p1[2];
+       
+                if ((i + 1) < li) {
+                    if (dpoints) {
+                        var p2 = points[i+1];
+                        p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
+                    } else {
+                        p1 = points[i+1];
+                    }
+                }
+            }
+        }
+    }
+   
+    if (totalPoints > 0) {
+        center[0] /= totalPoints;
+        center[1] /= totalPoints;
+        center[2] /= totalPoints;
+    }
+
+    center[0] += bboxMin[0];//groupOrigin[0];
+    center[1] += bboxMin[1];//groupOrigin[1];
+    center[2] += bboxMin[2];//groupOrigin[2];
+
+    globals.signatureCounter++;
+    var signature = (""+globals.signatureCounter);
+
+    postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 'hysteresis' : hysteresis,
+        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, //'reduce': iconData.reduce,
+        'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
+};
+
+
 var getOriginOffset = function(origin, width, height) {
     switch(origin) {
     case 'top-left':        return [0, 0];
@@ -391,8 +513,35 @@ var processIcon = function(point, iconData) {
     var index2 = iconData.index2;
     var lastIndex = index;
 
-    var width = Math.abs(icon[3] * iconData.scale);
-    var height = Math.abs(icon[4] * iconData.scale);
+    var width = Math.abs(icon[3] * iconData.scale * 0.5);
+    var height = Math.abs(icon[4] * iconData.scale * 0.5);
+
+    //get offset
+    var originOffset = getOriginOffset(iconData.origin, width, height);
+    var offsetX = originOffset[0] + iconData.offset[0];
+    var offsetY = originOffset[1] + iconData.offset[1];
+
+    if (iconData.singleBuffer) {
+        var b = iconData.singleBuffer;
+
+        b[0] = offsetX; b[1] = offsetY;
+        b[2] = icon[1];
+        b[3] = icon[2];
+
+        b[4] = width + offsetX; b[5] = offsetY;
+        b[6] = icon[1]+icon[3];
+        b[7] = icon[2];
+
+        b[8] = width + offsetX; b[9] = height + offsetY;
+        b[10] = icon[1]+icon[3];
+        b[11] = icon[2]+icon[4];
+
+        b[12] = offsetX; b[13] = height + offsetY;
+        b[14] = icon[1];
+        b[15] = icon[2]+icon[4];
+
+        return;
+    }
 
     var vertexBuffer = iconData.vertexBuffer;
     var texcoordsBuffer = iconData.texcoordsBuffer;
@@ -464,11 +613,6 @@ var processIcon = function(point, iconData) {
     
     index += 12;
 
-    //get offset
-    var originOffset = getOriginOffset(iconData.origin, width, height);
-    var offsetX = originOffset[0] + iconData.offset[0];
-    var offsetY = originOffset[1] + iconData.offset[1];
-
     var p1 = point[0];
     var p2 = point[1];
     var p3 = point[2];
@@ -533,7 +677,7 @@ var processLabel = function(point, labelData) {
 
         // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(null /*line*/, labelData.width, labelData.size, fonts, glyphsRes);
+            var splitIndex = getSplitIndex(null /*line*/, labelData.width, labelData.size, labelData.spacing, fonts, glyphsRes);
             var codes = glyphsRes[2];
 
             //if (line.length == splitIndex) {
@@ -555,13 +699,13 @@ var processLabel = function(point, labelData) {
 
     var x = 0;
     var y = 0;
-    var lineHeight = getLineHeight(labelData.size, fonts);
+    var lineHeight = getLineHeight(labelData.size, labelData.lineHeight, fonts);
     var maxWidth = 0;
     var lineWidths = [];
 
     //get max width
     for (i = 0, li = linesGlyphsRes2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(null /*lines2[i]*/, labelData.size, fonts, linesGlyphsRes2[i]);
+        lineWidths[i] = getTextLength(null /*lines2[i]*/, labelData.size, labelData.spacing, fonts, linesGlyphsRes2[i]);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
 
@@ -578,7 +722,7 @@ var processLabel = function(point, labelData) {
         case 'center': x = (maxWidth - textWidth)*0.5; break;
         }
 
-        index = addText([x,y,0], [1,0,0], null /*lines2[i]*/, labelData.size, fonts, vertexBuffer, texcoordsBuffer, true, index, planes, linesGlyphsRes2[i]);
+        index = addText([x,y,0], [1,0,0], null /*lines2[i]*/, labelData.size, labelData.spacing, fonts, vertexBuffer, texcoordsBuffer, true, index, planes, linesGlyphsRes2[i]);
         y -= lineHeight;
     }
 
@@ -683,6 +827,6 @@ var processPointArrayGeometry = function(pointArray) {
                       [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));
 };
 
-export {processPointArrayPass, processPointArrayGeometry};
+export {processPointArrayPass, processPointArrayGeometry, processPointArrayVSwitchPass};
 
 

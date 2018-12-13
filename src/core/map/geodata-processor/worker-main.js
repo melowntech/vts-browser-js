@@ -5,7 +5,7 @@ import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
         processStylesheet as processStylesheet_, getFilterResult as getFilterResult_,
         getLayerPropertyValueInner as getLayerPropertyValueInner_, makeFasterFilter as makeFasterFilter_} from './worker-style.js';
 import {processLineStringPass as processLineStringPass_, processLineStringGeometry as processLineStringGeometry_} from './worker-linestring.js';
-import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_} from './worker-pointarray.js';
+import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_, processPointArrayVSwitchPass as processPointArrayVSwitchPass_} from './worker-pointarray.js';
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
 import {postGroupMessage as postGroupMessage_, optimizeGroupMessages as optimizeGroupMessages_} from './worker-message.js';
 
@@ -17,6 +17,7 @@ var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
     processStylesheet = processStylesheet_, getFilterResult = getFilterResult_;
 var processLineStringPass = processLineStringPass_;
 var processPointArrayPass = processPointArrayPass_;
+var processPointArrayVSwitchPass = processPointArrayVSwitchPass_;
 var processPolygonPass = processPolygonPass_;
 var processLineStringGeometry = processLineStringGeometry_;
 var processPointArrayGeometry = processPointArrayGeometry_;
@@ -33,7 +34,7 @@ function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex
     case 'line-string':
         if (getLayerPropertyValue(layer, 'point', feature, lod) ||
             getLayerPropertyValue(layer, 'label', feature, lod)) {
-            processPointArrayPass(feature, lod, layer, zIndex, eventInfo);
+            processPointArrayPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
         }
 
         processLineStringPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
@@ -55,8 +56,36 @@ function processFeatures(type, features, lod, featureType, group) {
     //loop layers
     for (var key in globals.stylesheetLayers) {
         var layer = globals.stylesheetLayers[key];
+
+        if (type == 'point-array') {
+            var importance = layer['importance-source'];
+
+            if (!importance && features[0] && features[0]['importance']) {
+                importance = '$importance';
+            }
+
+            if (importance) {
+                //importance = '$importance';
+                switch (globals.reduceMode) {
+                    case 'scr-count2': 
+                        //layer['reduce'] = ['bottom',100,importance];
+                        layer['reduce'] = ['top',100,importance];
+                        layer['dynamic-reduce'] = ['scr-count2', globals.reduceParams[0], globals.reduceParams[1]];
+                        break;
+                    case 'scr-count4': 
+                        //layer['reduce'] = ['bottom',100,importance];
+                        layer['dynamic-reduce'] = ['scr-count4',importance];
+                        break;
+                    case 'scr-count5': 
+                        //layer['reduce'] = ['bottom',100,importance];
+                        layer['dynamic-reduce'] = ['scr-count5',importance];
+                        break;
+                }
+            }
+        }
+
         var filter =  layer['filter'];
-        var reduce =  layer['reduce'], i, li;
+        var reduce =  layer['reduce'], i, li, j, lj;
 
         if (filter) {
             filter = layer['#filter'];
@@ -181,6 +210,7 @@ function processFeatures(type, features, lod, featureType, group) {
 
             //process reduced features
             for (i = 0, li = finalFeatureCacheIndex; i < li; i++) {
+                feature = finalFeatureCache[i];
                 processLayerFeature(type, finalFeatureCache[i], lod, layer, i);
             }
 
@@ -241,8 +271,34 @@ function processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, e
 }
 
 
-function processLayerFeature(type, feature, lod, layer, featureIndex) {
+function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) {
     if (!getLayerPropertyValue(layer, 'visible', feature, lod)) {
+        return;
+    }
+
+    if (type == 'point-array') {
+        if (layer['visibility-switch']) {
+            postGroupMessage({'command':'addRenderJob', 'type':'vswitch-begin'});
+            var zIndex = getLayerPropertyValue(layer, 'z-index', feature, lod);
+            var eventInfo = feature.properties;
+            processPointArrayVSwitchPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
+
+            var vswitch = layer['visibility-switch'];
+            for (var i = 0, li = vswitch.length; i <li; i++) {
+                var slayer = getLayer(vswitch[i][1], type, featureIndex);
+                processLayerFeature(type, feature, lod, slayer, featureIndex);
+                postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[i][0]});
+            }
+
+            postGroupMessage({'command':'addRenderJob', 'type':'vswitch-end'});
+            return;
+        }
+    }
+
+    if (!skipPack && layer['pack'] == true) {
+        postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
+        processLayerFeature(type, feature, lod, layer, featureIndex, true);
+        postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
         return;
     }
 
@@ -303,7 +359,6 @@ function processLayerFeature(type, feature, lod, layer, featureIndex) {
     processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex, eventInfo);
     processLayerFeatureMultipass(type, feature, lod, layer, featureIndex, eventInfo);
 }
-
 
 function processGroup(group, lod) {
     var i, li;
@@ -396,6 +451,9 @@ self.onmessage = function (e) {
         if (data) {
             globals.geocent = data['geocent'];
             globals.metricUnits = data['metric'];
+            globals.reduceMode = data['reduceMode'];
+            globals.reduceParams = data['reduceParams'];
+            globals.log = data['log'];
             processStylesheet(data['data']);
         }
         postMessage({'command' : 'ready'});
@@ -415,6 +473,7 @@ self.onmessage = function (e) {
     case 'processGeodata':
         globals.tileLod = message['lod'] || 0;
         globals.tileSize = message['tileSize'] || 1;
+        globals.pixelSize = message['pixelSize'] || 1;
         globals.pixelFactor = message['dpr'] || 1;
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
         data = JSON.parse(data);            

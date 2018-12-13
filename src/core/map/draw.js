@@ -48,9 +48,11 @@ var MapDraw = function(map) {
         drawCredits : false,
         drawOrder : false,
         drawLabelBoxes : false,
-        drawEarth : true,   
+        drawEarth : true, 
+        drawGridCells : false,
         drawTileCounter : 0,
         drawFog : this.config.mapFog,
+        drawGPixelSize : false,
         debugTextSize : 2.0,
         ignoreTexelSize : false,
         maxZoom : false
@@ -191,6 +193,10 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.cameraViewExtent = map.position.getViewExtent();
     renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
     renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
+    renderer.drawGridCells = this.debug.drawGridCells;
+    renderer.fmaxDist = Number.NEGATIVE_INFINITY;
+    renderer.fminDist = Number.POSITIVE_INFINITY;
+
 
     if (projected) {
         var yaw = math.radians(renderer.cameraOrientation[0]);
@@ -717,10 +723,10 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                         material = VTS_MATERIAL_FLAT;
                         break; 
                     }
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha, command.layer);
                 } else {
                     //tile.renderHappen = true;
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha, command.layer);
                 }
 
             }

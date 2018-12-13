@@ -816,10 +816,21 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapNoTextures':                 this.config.mapNoTextures = this.config.mapDisableCulling = utils.validateBool(value, false); break;
     case 'mapForceFrameTime':             this.config.mapForceFrameTime = utils.validateNumber(value, -1, Number.MAXINTEGER, 0); break;
     case 'mapForcePipeline':              this.config.mapForcePipeline = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
-    case 'mapFeatureGridCells':           this.config.mapFeatureGridCells = utils.validateNumber(value, 1, Number.MAXINTEGER, 0); break;
+    case 'mapFeatureGridCells':           this.config.mapFeatureGridCells = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, 0); break;
     case 'mapFeaturesPerSquareInch':      this.config.mapFeaturesPerSquareInch = utils.validateNumber(value, 0.000001, Number.MAXINTEGER, 0); break;
     case 'mapFeaturesSortByTop':          this.config.mapFeaturesSortByTop = utils.validateBool(value, false); break;
+    case 'mapFeaturesReduceParams':       this.config.mapFeaturesReduceParams = value; break;
+    case 'mapLogGeodataStyles':           this.config.mapLogGeodataStyles = utils.validateBool(value, true); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
+    case 'mapFeaturesReduceMode':         
+        value = utils.validateString(value, 'scr-count4');
+        if (value == 'auto') value = 'scr-count2';
+        if (value == 'legacy') value = 'scr-count2';
+        if (value == 'gridcells') value = 'scr-count4';
+        if (value == 'singlepass') value = 'scr-count5';
+        this.config.mapFeaturesReduceMode = value;
+        break;
+
     }
 };
 
@@ -872,6 +883,9 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapFeatureGridCells':           return this.config.mapFeatureGridCells;
     case 'mapFeaturesPerSquareInch':      return this.config.mapFeaturesPerSquareInch;
     case 'mapFeaturesSortByTop':          return this.config.mapFeaturesSortByTop;
+    case 'mapFeaturesReduceMode':         return this.config.mapFeaturesReduceMode;
+    case 'mapFeaturesReduceParams':       return this.config.mapFeaturesReduceParams;
+    case 'mapLogGeodataStyles':           return this.config.mapLogGeodataStyles;
     case 'mario':                         return this.config.mario;
     }
 };

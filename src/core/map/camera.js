@@ -66,6 +66,7 @@ MapCamera.prototype.update = function() {
     
     //this.renderer.cameraDistance = camInfo.distance; //needed for fog
     map.renderer.cameraDistance = this.distance; //needed for fog
+    map.renderer.viewExtent = map.position.getViewExtent();
 
     this.camera.setViewHeight(map.position.getViewExtent());
     //this.camera.setOrtho(true);

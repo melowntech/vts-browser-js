@@ -45,6 +45,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     //this.math = Math;
     this.stencilLineState = null;
     this.drawLabelBoxes = false;
+    this.drawGridCells = false;
 
 
     this.geodataSelection = [];
@@ -60,6 +61,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.oldSize = [rect.width, rect.height]; //QSize
     this.dirty = true;
     this.cameraVector = [0,1,0];
+    this.viewExtent = 1;
     //this.texelSizeLimit = this.core.mapConfig.texelSize * texelSizeFactor;
 
     this.gpu = new GpuDevice(this, div, this.curSize, this.config.rendererAllowScreenshots, this.config.rendererAntialiasing, this.config.rendererAnisotropic);
@@ -95,10 +97,15 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.fogDensity = 0;
 
     this.gmap = new Array(2048);
+    this.gmap2 = new Array(2048);
+    this.gmap3 = new Array(10000);
+    this.gmap3Size = new Array(10000);
     this.gmapIndex = 0;
     this.gmapTop = new Array(512);
     this.gmapHit = new Array(512);
     this.gmapStore = new Array(512);
+    this.fmaxDist = 0;
+    this.fminDist = 0;
 
     this.jobZBuffer = new Array(512);
     this.jobZBufferSize = new Array(512);
@@ -115,7 +122,12 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
         this.jobZBuffer2[i] = {};
         this.jobZBuffer2Size[i] = 0;
     }
-    
+
+    for (i = 0, li = this.gmap3.length; i < li; i++) {
+        this.gmap3[i] = [];
+        this.gmap3Size[i] = 0;
+    }
+
     this.layerGroupVisible = [];
     this.bitmaps = {};
     
@@ -130,6 +142,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.labelVector = [0,0,0];
     this.drawnGeodataTiles = 0;
     this.drawnGeodataTilesFactor = 0;
+    this.progMap = {};
 
     //hack for vts maps
     //this.vtsHack = true;
@@ -590,11 +603,11 @@ Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
 };
 
 
-Renderer.prototype.getBitmap = function(url, filter, tiled) {
-    var id = url + '*' + filter + '*' + tiled;
+Renderer.prototype.getBitmap = function(url, filter, tiled, hash, useHash) {
+    var id = (useHash ? hash : url) + '*' + filter + '*' + tiled;
 
     var texture = this.bitmaps[id];
-    if (!texture) {
+    if (!texture && url) {
         texture = new GpuTexture(this.gpu, url, this.core, null, null, tiled, filter);
         this.bitmaps[id] = texture;
     }

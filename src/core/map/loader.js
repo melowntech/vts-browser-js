@@ -1,6 +1,7 @@
 
 var MapLoader = function(map, maxThreads) {
     this.map = map;
+    this.core = map.core;
 
     this.maxThreads = maxThreads || 1;
     this.usedThreads = 0;
@@ -174,7 +175,7 @@ MapLoader.prototype.updateChannel = function(channel) {
 
 
 MapLoader.prototype.update = function() {
-    if (this.map.loaderSuspended) {
+    if (this.map.loaderSuspended || this.core.contextLost) {
         return;
     }
 

@@ -41,6 +41,9 @@ GpuDevice.prototype.init = function() {
         return;
     }
 
+    canvas.addEventListener("webglcontextlost", this.contextLost.bind(this), false);
+    canvas.addEventListener("webglcontextrestored", this.contextRestored.bind(this), false);
+
     var gl;
 
     try {
@@ -97,6 +100,18 @@ GpuDevice.prototype.kill = function() {
     this.div.removeChild(this.canvas);
     delete this.canvas;
     this.canvas = null;
+};
+
+
+GpuDevice.prototype.contextLost = function(event) {
+    event.preventDefault();
+    this.renderer.core.contextLost = true;
+    this.renderer.core.callListener('gpu-context-lost', {});
+};
+
+
+GpuDevice.prototype.contextRestored = function() {
+    this.renderer.core.callListener('gpu-context-restored', {});
 };
 
 

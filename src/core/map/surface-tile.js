@@ -896,7 +896,13 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
 
                     pixelSize = this.getPixelSize(node.bbox, screenPixelSize, p, p, true);
                 } else {
-                    screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / 256) * (256 / node.displaySize);
+                    if (draw.isGeocent) {
+                        //screenPixelSize = draw.ndcToScreenPixel * ((node.diskAngle2A * draw.planetRadius * 2 * 0.70710678118) / 256) * (256 / node.displaySize);
+                        screenPixelSize = draw.ndcToScreenPixel * ((node.diskAngle2A * draw.planetRadius * 1.41421356236) / node.displaySize);
+                    } else {
+                        //screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / 256) * (256 / node.displaySize);
+                        screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / node.displaySize);
+                    }
 
                     pixelSize = this.getPixelSize3(node, screenPixelSize);
                 }

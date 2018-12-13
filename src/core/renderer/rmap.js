@@ -78,10 +78,35 @@ RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjo
         this.rectangles2Count += 6;
 };
 
+RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
+    var t;
 
-RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
+    if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
+    if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
+
+    y3 += y2;
+    
+    //screen including credits
+    if (x1 < 0 || x2 > this.slx || y1 < 0 || y3 > this.sly) {
+        return false;
+    }
+
+    //compass
+    if (x1 < this.clx && x2 > 0 && y1 <= this.sly && y3 > (this.sly -this.cly)) {
+        return false;
+    }
+
+    //search bar
+    if (x1 < this.blx && x2 > 0 && y1 <= this.bly && y3 > 0) {
+        return false;
+    }
+
+    return true;
+}
+
+RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
-        rectangles = this.rectangles, rectangleIndex, t;
+        rectangleIndex, t;
 
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
@@ -123,6 +148,8 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
     var removeList = {};
     var exit = false;
 
+    var top = this.renderer.config.mapFeaturesSortByTop, rectangles = this.rectangles;
+
     //test collision
     for (y = 0; y < ly; y++) {
         for (x = 0; x < lx; x++) {
@@ -137,8 +164,18 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob) {
                 if (x1 < rectangles[rectangleIndex + 2] && x2 > rectangles[rectangleIndex + 0] &&
                     y1 < rectangles[rectangleIndex + 3] && y2 > rectangles[rectangleIndex + 1]) {
 
-                    if (z > rectangles[rectangleIndex + 4]) {
+                    if (any) {
                         return false;
+                    }
+
+                    if (top) {
+                        if (z < rectangles[rectangleIndex + 4]) {
+                            return false;
+                        }
+                    } else {
+                        if (z > rectangles[rectangleIndex + 4]) {
+                            return false;
+                        }
                     }
 
                     removeList[rectangleIndex] = true;
@@ -261,6 +298,7 @@ RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPix
             if (subjob[0].hysteresis) {
                 renderer.jobHBuffer[subjob[0].id] = subjob[0];
             } else {
+                renderer.drawnJobs++;
                 draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
             }
         }

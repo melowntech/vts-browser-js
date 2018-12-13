@@ -7,6 +7,7 @@ var ModelOBJ = function(map, renderer, params) {
     this.optimize = (params.optimize === false)  ? false : true;
     this.textureFilter = params.textureFitler || 'trilinear';
     this.fastTessellation = params.fastTessellation || false;
+    this.flipYZ = params.flipYZ || false;
     this.onLoaded = params.onLoaded;
 
     this.meshes = [];
@@ -136,7 +137,7 @@ ModelOBJ.prototype.objLoaded = function(data) {
     var vertexIndex = 0, normalIndex = 0, uvIndex = 0;
     var meshVertices = [], meshNormals = [], meshUvs = []; 
     var v1, v2, v3, v4, id, materialId;
-    var gpuMeshes = [], i, li, j, lj;
+    var gpuMeshes = [], i, li, j, lj, tmp;
 
     var lines = data.match(/[^\r\n]+/g);
 
@@ -300,6 +301,29 @@ ModelOBJ.prototype.objLoaded = function(data) {
 
     if (mesh) {
         mesh.gpuData = { vertices: meshVertices, uvs: meshUvs, normals: meshNormals };
+    }
+
+    if (this.flipYZ) {
+        for (i = 0, li = meshes.length; i < li; i++) {
+            mesh = meshes[i];
+
+            if (mesh.gpuData) {
+                meshVertices = mesh.gpuData.vertices;
+
+                for (j = 0, lj = meshVertices.length; j < lj; j+=3) {
+                    tmp = meshVertices[j+1];
+                    meshVertices[j+1] = -meshVertices[j+2];
+                    meshVertices[j+2] = tmp;
+                }
+
+                meshNormals = mesh.gpuData.normals;
+                for (j = 0, lj = meshNormals.length; j < lj; j+=3) {
+                    tmp = meshNormals[j+1];
+                    meshNormals[j+1] = -meshNormals[j+2];
+                    meshNormals[j+2] = tmp;
+                }
+            }
+        }
     }
 
     if (!this.optimize) {

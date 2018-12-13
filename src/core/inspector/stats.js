@@ -124,6 +124,19 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
             'Loaded/Errors: ' + (stats.loadedCount) + ' / ' + (stats.loadErrorCount) + '<br/>' +
             'Load time: ' + ((stats.loadLast - stats.loadFirst)*0.001).toFixed(2) + 's <br/>';
 
+    var renderer = this.core.renderer;
+
+    if (renderer) {
+        text2 += '<br/>Render jobs: ' + renderer.totalJobs + '<br/>' +
+                 'Drawn jobs: ' + renderer.drawnJobs + '<br/>' +
+                 'Jobs total time: ' +  Math.round((renderer.jobsTimer2 - renderer.jobsTimer1)*1000) + '<br/>' +
+                 'Jobs reduce time: ' + Math.round((renderer.jobsTimer4)*1000) + '<br/>';
+    }
+
+    if (stats.debugStr) {
+        text2 += stats.debugStr + '<br/>';        
+    }
+
     var text3 = 'Metatiles: ' + (stats.processedMetatiles) +'<br/>'+
                  'Metanodes: ' + (stats.processedNodes) + ' / ' + (stats.usedNodes) + '<br/>'+
                  'GeodataTiles: ' + (stats.drawnGeodataTiles) +'<br/>' +
@@ -136,6 +149,7 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
             text3 += 'LOD ' + i + ': ' + (stats.renderedLods[i]) +'<br/>';
         }
     }
+
 
     var text = '<table style="width:305px"><tr><td>' + text2 + '</td><td>' + text3 + '</td></tr></table>';
 

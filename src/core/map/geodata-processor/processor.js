@@ -65,6 +65,15 @@ MapGeodataProcessor.prototype.onMessage = function(message) {
         //console.log("ready");
     } else if (command == 'styleDone') {
         this.busy = false;
+    } else if (command == 'loadBitmaps') {
+        var bitmaps = message['bitmaps'];
+
+        for (var key in bitmaps) {
+            var bitmap = bitmaps[key];
+            this.renderer.getBitmap(bitmap['url'], bitmap['filter'] || 'linear', bitmap['tiled'] || false, bitmap['hash'], true);
+        }
+
+        message['command']        
     }
 
     if (this.listener != null) {
@@ -91,7 +100,8 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile, dpr) {
         message['lod'] = tile.id[0];
 
         if (tile.metanode) {
-            message['tileSize'] = tile.metanode.diskAngle * tile.metanode.diskDistance;
+            message['tileSize'] = Math.tan(tile.metanode.diskAngle2A) * tile.metanode.diskDistance;
+            message['pixelSize'] =  (message['tileSize'] * 0.70710678118) / tile.metanode.displaySize;
         }
     }
 
@@ -112,8 +122,59 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
 
     this.busy = true;
 
+    var config = this.map.config;
+    var params = config.mapFeaturesReduceParams;
+    var isDef = (function(val){ return (typeof val !== 'undefinde') });
+
+    switch (config.mapFeaturesReduceMode) {
+        case 'scr-count2':
+            if (!params) {
+                params = [1,50,0];
+            } else {
+                params[0] = isDef(params[0]) ? params[0] : 1;
+                params[1] = isDef(params[1]) ? params[1] : 50;
+                params[2] = isDef(params[2]) ? params[2] : 0;
+                config.mapFeaturesSortByTop = true;
+            }
+        case 'scr-count4':
+            if (!params) {
+                params = [0.18,0,0];
+            } else {
+                params[0] = isDef(params[0]) ? params[0] : 0.18;
+                params[1] = isDef(params[1]) ? params[1] : 0;
+                params[2] = isDef(params[2]) ? params[2] : 0;
+                config.mapFeaturesSortByTop = true;
+            }
+            break;
+
+        case 'scr-count5':
+            if (!params) {
+                params = [2,1,0];
+            } else {
+                params[0] = isDef(params[0]) ? params[0] : 2;
+                params[1] = isDef(params[1]) ? params[1] : 1;
+                params[2] = isDef(params[2]) ? params[2] : 0;
+                config.mapFeaturesSortByTop = true;
+            }
+            break;
+    }
+
+    config.mapFeaturesReduceFactor = params[2];
+
+    if (!config.mapFeaturesReduceParams) {
+        switch(config.mapFeaturesReduceMode) {
+            case 'scr-count2': config.mapFeaturesReduceParams = [1, 50, 0]; break;
+            case 'scr-count4': config.mapFeaturesReduceParams = [0.18, 0, 1]; break;
+            case 'scr-count5': config.mapFeaturesReduceParams = [2, 1, 1]; break;
+        }
+    }
+
     //this.setFont('#default', this.renderer.font);
-    this.sendCommand('setStylesheet', { 'data' : stylesheet.data, 'geocent' : (!this.map.getNavigationSrs().isProjected()), 'metric': this.map.config.mapMetricUnits } );
+    this.sendCommand('setStylesheet', { 'data' : stylesheet.data,
+                                        'geocent' : (!this.map.getNavigationSrs().isProjected()), 'metric': config.mapMetricUnits,
+                                        'reduceMode': config.mapFeaturesReduceMode,
+                                        'reduceParams': config.mapFeaturesReduceParams,
+                                        'log': config.mapLogGeodataStyles } );
 
     var fonts = stylesheet.fonts;
     var fontMap = {}; //'#default' : '#default' };

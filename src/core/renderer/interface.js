@@ -454,4 +454,11 @@ RendererInterface.prototype.getConfigParam = function(key) {
 };
 
 
+RendererInterface.prototype.getGLInterface = function() {
+    return {
+        canvas : this.gpu.canvas,
+        gl : this.gpu.gl
+    };
+};
+
 export default RendererInterface;

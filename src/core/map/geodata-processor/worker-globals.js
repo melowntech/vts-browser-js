@@ -31,7 +31,9 @@ var globals = {
     autoLod : false,
     featureType : null,
     groupId : null,
-    disableLog : false
+    disableLog : false,
+    reduceMode : 'scr-count4',
+    reduceParams : null,
 };
 
 
@@ -98,42 +100,21 @@ function vec3Cross(a, b, c) {
 }
 
 
-/*function vec3AnyPerpendicular(a, b) {
-    b || (b = a);
-    var c = a[0],
-        d = a[1],
-        e = a[2];
-        
-    b[0] = 1;        
-    b[1] = 1;        
-
-    var f = c + d;
-
-    if (e) {
-        b[2] = -f / e;        
-    } else {
-        b[2] = 0;
+function getHash(str) {
+    if (!str || str.length === 0) {
+        return 0;    
     }
 
-    return b;
-}*/
-
-/*
-var simpleFmtCall = (function obj(str, call) {
-    if (!str || str == '') {
-        return '';
+    var hash = 0, c;
+    for (var i = 0, li = str.length; i < li; i++) {
+        c   = str.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + c;
+        hash |= 0; // Convert to 32bit integer
     }
 
-    //return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
+    return hash;
+}
 
-//    return str.replace(/\{(?:[^{}]*+|(?0))*\}/g, (function(s, match) {
-    return str.replace(/\{(?:[^{}]*+|(?0))*\}/g, (function(s, match) {
-        if (match.length > 2) {
-            return call(match.substring(1, match.length - 2));
-        }
-    }));
-});
-*/
 
 var simpleFmtCall = (function obj(str, call) {
     if (!str || str == '') {
@@ -173,17 +154,7 @@ var simpleFmtCall = (function obj(str, call) {
     }
 
     return str2;
-
-    //return str.replace(/\{([$a-zA-Z(-9][$a-zA-Z(-9]*)\}/g, function(s, match) {
-
-//    return str.replace(/\{(?:[^{}]*+|(?0))*\}/g, (function(s, match) {
-/*    
-    return str.replace(/\{(?:[^{}]*+|(?0))*\}/g, (function(s, match) {
-        if (match.length > 2) {
-            return call(match.substring(1, match.length - 2));
-        }
-    }));*/
 });
 
 
-export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, /*vec3AnyPerpendicular,*/ simpleFmtCall};
+export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, simpleFmtCall, getHash};

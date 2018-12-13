@@ -899,6 +899,8 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var labelOutline = getLayerPropertyValue(style, 'line-label-outline', lineString, lod);
     var labelSource = getLayerPropertyValue(style, 'line-label-source', lineString, lod);
     var labelSize = getLayerPropertyValue(style, 'line-label-size', lineString, lod);
+    var labelSpacing = getLayerPropertyValue(style, 'line-label-spacing', lineString, lod);
+    var labelLineHeight = getLayerPropertyValue(style, 'line-label-line-height', lineString, lod);
     var labelOffset = getLayerPropertyValue(style, 'line-label-offset', lineString, lod);
 
     if (Math.abs(labelSize) < 0.0001) {
@@ -945,8 +947,8 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
-    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes);
-    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index, null, glyphsRes);
+    var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes);
+    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index, null, glyphsRes);
 
     if (!index) {
         return;
