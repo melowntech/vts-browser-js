@@ -709,6 +709,16 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
                         logError('wrong-property-value[]', layerId, key, value, i);
                         return getDefaultLayerPropertyValue(key);
+                    } else {
+                        //fast constant 
+                        if (typeof valueItem[1] == 'string' && valueItem[1].charAt(0) == '@') {
+                            if (typeof globals.stylesheetConstants[valueItem[1]] == 'undefined') {
+                                logError('wrong-property-value[]', layerId, key, value, i);
+                                return getDefaultLayerPropertyValue(key);
+                            } else {
+                                valueItem[1] = globals.stylesheetConstants[valueItem[1]];
+                            }
+                        }
                     }
                 }
 
@@ -1278,6 +1288,41 @@ var processLayer = function(layerId, layerData, stylesheetLayersData) {
                 }
             }
         }
+
+        //copy constats to vswitch
+        if (key == 'visibility-switch') {
+            if (Array.isArray(value) && value.length > 0) {
+                for (var i = 0, li = value.length; i < li; i++) {
+                    var valueItem = value[i];
+                    var wrong = false;
+
+                    if (!(typeof valueItem == 'object' && Array.isArray(valueItem) && valueItem.length == 2)) {
+                        wrong = true;
+                    } else {
+                        if (typeof valueItem[0] == 'string' && valueItem[0].charAt(0) == '@') {
+                            if (typeof globals.stylesheetConstants[valueItem[0]] == 'undefined') {
+                                wrong = true;
+                            } else {
+                                valueItem[0] = globals.stylesheetConstants[valueItem[0]];
+                            }
+                        }
+
+                        if (!(typeof valueItem[0] == 'number' && (typeof valueItem[1] == 'string' || valueItem[1] === null))) {
+                            wrong = true;
+                        }
+                    }
+
+                    if (wrong) {
+                        logError('wrong-property-value[]', layerId, key, value, i);
+                    }
+                }
+
+            } else {
+                logError('wrong-property-value', layerId, key, value);
+                return getDefaultLayerPropertyValue(key);
+            }
+        }
+
     }
 
     return layer;
