@@ -285,8 +285,10 @@ function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) 
 
             var vswitch = layer['visibility-switch'];
             for (var i = 0, li = vswitch.length; i <li; i++) {
-                var slayer = getLayer(vswitch[i][1], type, featureIndex);
-                processLayerFeature(type, feature, lod, slayer, featureIndex);
+                if (vswitch[i][1]) {
+                    var slayer = getLayer(vswitch[i][1], type, featureIndex);
+                    processLayerFeature(type, feature, lod, slayer, featureIndex);
+                }
                 postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[i][0]});
             }
 
