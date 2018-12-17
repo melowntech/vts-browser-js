@@ -747,7 +747,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
         //check array
         if (arrayLength != null) {
-            if (Array.isArray(value) && value.length == arrayLength) {
+            if (Array.isArray(value) && (value.length == arrayLength || ((key == 'icon-stick' || 'label-stick') && value.length == 7) )) {
 
                 //validate array values
                 i = 0;
