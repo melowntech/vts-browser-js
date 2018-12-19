@@ -162,14 +162,19 @@ MapConfig.prototype.parseViews = function() {
     var views = this.mapConfig['namedViews'];
     this.map.namedViews = [];
 
-    if (views != null) {
+    if (views) {
         for (var key in views) {
             this.map.addNamedView(key, new MapView(this.map, views[key]));
         }
     }
 
     var view = this.mapConfig['view'];
-    if (view == null) {
+
+    if (typeof view === 'string') {
+        view = this.map.namedViews[view];
+    }
+
+    if (!view) {
         return true;
     }
 

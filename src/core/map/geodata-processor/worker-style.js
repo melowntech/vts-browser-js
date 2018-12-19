@@ -1,5 +1,5 @@
 
-import {globals as globals_, simpleFmtCall as simpleFmtCall_, getHash as getHash_} from './worker-globals.js';
+import {globals as globals_, simpleFmtCall as simpleFmtCall_, getHash as getHash_, clamp as clamp_} from './worker-globals.js';
 import {areTextCharactersAvailable as areTextCharactersAvailable_, hasLatin as hasLatin_, isCJK as isCJK_ } from './worker-text.js';
 
 //get rid of compiler mess
@@ -137,7 +137,7 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
 
 
 var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth) {
-    var index = 0, i, li, finalValue, root, v1, v2;
+    var index = 0, i, li, finalValue, root, v1, v2, v3;
     var tmpValue;
 
     
@@ -286,6 +286,8 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                     }
                 }
 
+                break;
+
             case 'add':
             case 'sub':
             case 'mul':
@@ -313,6 +315,27 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         }
                     }
                 }
+
+                break;
+
+            case 'clamp':
+
+                if (!Array.isArray(functionValue) || functionValue.length != 3) {
+                    functionError = true;
+                } else {
+
+                    v1 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
+                    v2 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[1], depth + 1);
+                    v3 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[2], depth + 1);
+
+                    if (typeof v1 !== 'number' || typeof v2 !== 'number' || typeof v3 !== 'number') {
+                        functionError = true;
+                    } else {
+                        return clamp(v1, v2, v3);
+                    }
+                }
+
+                break;
 
             case 'sgn':
             case 'sin':

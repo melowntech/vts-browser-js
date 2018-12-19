@@ -67,6 +67,7 @@ function processFeatures(type, features, lod, featureType, group) {
             if (importance) {
                 //importance = '$importance';
                 switch (globals.reduceMode) {
+                    case 'scr-count1': 
                     case 'scr-count2': 
                         //layer['reduce'] = ['bottom',100,importance];
                         layer['reduce'] = ['top',100,importance];
@@ -80,6 +81,10 @@ function processFeatures(type, features, lod, featureType, group) {
                         //layer['reduce'] = ['bottom',100,importance];
                         layer['dynamic-reduce'] = ['scr-count5',importance];
                         break;
+
+                    case 'margin': 
+                        layer['label-no-overlap-margin'] = globals.reduceParams[0];
+
                 }
             }
         }
