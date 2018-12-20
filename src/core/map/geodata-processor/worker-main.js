@@ -52,6 +52,7 @@ function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex
 }
 
 function processFeatures(type, features, lod, featureType, group) {
+    var reduceParams = globals.reduceParams;
 
     //loop layers
     for (var key in globals.stylesheetLayers) {
@@ -69,21 +70,19 @@ function processFeatures(type, features, lod, featureType, group) {
                 switch (globals.reduceMode) {
                     case 'scr-count1': 
                     case 'scr-count2': 
-                        //layer['reduce'] = ['bottom',100,importance];
                         layer['reduce'] = ['top',100,importance];
-                        layer['dynamic-reduce'] = ['scr-count2', globals.reduceParams[0], globals.reduceParams[1]];
+                        layer['dynamic-reduce'] = ['scr-count2', reduceParams[0], reduceParams[1]];
                         break;
                     case 'scr-count4': 
-                        //layer['reduce'] = ['bottom',100,importance];
                         layer['dynamic-reduce'] = ['scr-count4',importance];
                         break;
                     case 'scr-count5': 
-                        //layer['reduce'] = ['bottom',100,importance];
                         layer['dynamic-reduce'] = ['scr-count5',importance];
                         break;
-
-                    case 'margin': 
-                        layer['label-no-overlap-margin'] = globals.reduceParams[0];
+                    case 'scr-count6': 
+                        layer['dynamic-reduce'] = ['scr-count6',importance];
+                        layer['label-no-overlap-margin'] = [reduceParams[0]*reduceParams[3], reduceParams[0]*reduceParams[3]];
+                        break;
 
                 }
             }
