@@ -122,11 +122,13 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
 
     this.busy = true;
 
+    var ppi = 96 * (window.devicePixelRatio || 1);
     var config = this.map.config;
     var params = config.mapFeaturesReduceParams;
-    var isDef = (function(val){ return (typeof val !== 'undefinde') });
+    var isDef = (function(val){ return (typeof val !== 'undefined') });
 
     switch (config.mapFeaturesReduceMode) {
+        case 'scr-count1':
         case 'scr-count2':
             if (!params) {
                 params = [1,50,0];
@@ -134,8 +136,10 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
                 params[0] = isDef(params[0]) ? params[0] : 1;
                 params[1] = isDef(params[1]) ? params[1] : 50;
                 params[2] = isDef(params[2]) ? params[2] : 0;
-                config.mapFeaturesSortByTop = true;
             }
+            config.mapFeaturesSortByTop = (config.mapFeaturesReduceMode == 'scr-count2') ? true : false;
+            break;
+
         case 'scr-count4':
             if (!params) {
                 params = [0.18,0,0];
@@ -143,8 +147,8 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
                 params[0] = isDef(params[0]) ? params[0] : 0.18;
                 params[1] = isDef(params[1]) ? params[1] : 0;
                 params[2] = isDef(params[2]) ? params[2] : 0;
-                config.mapFeaturesSortByTop = true;
             }
+            config.mapFeaturesSortByTop = true;
             break;
 
         case 'scr-count5':
@@ -154,18 +158,33 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
                 params[0] = isDef(params[0]) ? params[0] : 2;
                 params[1] = isDef(params[1]) ? params[1] : 1;
                 params[2] = isDef(params[2]) ? params[2] : 0;
+            }
+            config.mapFeaturesSortByTop = true;
+            break;
+
+        case 'scr-count6':
+            if (!params) {
+                params = [0.5,0,0];
+            } else {
+                params[0] = (isDef(params[0]) ? params[0] : 0.5);
+                params[1] = isDef(params[1]) ? params[1] : 0;
+                params[2] = isDef(params[2]) ? params[2] : 0;
+                params[3] = ppi;
                 config.mapFeaturesSortByTop = true;
             }
             break;
+
     }
 
     config.mapFeaturesReduceFactor = params[2];
 
     if (!config.mapFeaturesReduceParams) {
         switch(config.mapFeaturesReduceMode) {
+            case 'scr-count1':
             case 'scr-count2': config.mapFeaturesReduceParams = [1, 50, 0]; break;
             case 'scr-count4': config.mapFeaturesReduceParams = [0.18, 0, 1]; break;
             case 'scr-count5': config.mapFeaturesReduceParams = [2, 1, 1]; break;
+            case 'scr-count6': config.mapFeaturesReduceParams = [0.5, 0, 0, ppi]; break;
         }
     }
 

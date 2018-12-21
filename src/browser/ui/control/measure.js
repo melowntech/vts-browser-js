@@ -413,6 +413,8 @@ UIControlMeasure.prototype.onCompute = function(button) {
         }
 
         if (this.tool == 3) {
+            console.log(JSON.stringify(this.navCoords));
+
             var geodata = map.createGeodata();
             geodata.addPolygon3(this.navCoords, [], null, 'fix', {}, 'tmp-polygon');
             geodata.processHeights('node-by-lod', 62, (function(){
@@ -799,12 +801,13 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                         points2 = points2.concat(tmp);
                     }
 
-                    for (i = 0, li = points2.length; i < li; i++) {
-                        points3.push(map.convertCoordsFromNavToCanvas(points2[i], "fix"));
+                    if (this.tool == 3 || this.tool == 4) {
+                        tmp = map.getGeodesicLinePoints(this.navCoords[li], this.navCoords[0]);
+                        points2 = points2.concat(tmp);
                     }
 
-                    if (this.tool == 3 || this.tool == 4) {
-                        points3.push(map.convertCoordsFromNavToCanvas(points2[0], "fix"));
+                    for (i = 0, li = points2.length; i < li; i++) {
+                        points3.push(map.convertCoordsFromNavToCanvas(points2[i], "fix"));
                     }
 
                     renderer.drawLineString({

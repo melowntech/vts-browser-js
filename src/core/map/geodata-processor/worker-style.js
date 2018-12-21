@@ -1,9 +1,10 @@
 
-import {globals as globals_, simpleFmtCall as simpleFmtCall_, getHash as getHash_} from './worker-globals.js';
+import {globals as globals_, simpleFmtCall as simpleFmtCall_, getHash as getHash_, clamp as clamp_} from './worker-globals.js';
 import {areTextCharactersAvailable as areTextCharactersAvailable_, hasLatin as hasLatin_, isCJK as isCJK_ } from './worker-text.js';
 
 //get rid of compiler mess
 var globals = globals_;
+var clamp = clamp_;
 var simpleFmtCall = simpleFmtCall_;
 var getHash = getHash_;
 var hasLatin = hasLatin_, isCJK = isCJK_;
@@ -137,7 +138,7 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
 
 
 var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth) {
-    var index = 0, i, li, finalValue, root, v1, v2;
+    var index = 0, i, li, finalValue, root, v1, v2, v3;
     var tmpValue;
 
     
@@ -286,6 +287,8 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                     }
                 }
 
+                break;
+
             case 'add':
             case 'sub':
             case 'mul':
@@ -313,6 +316,27 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                         }
                     }
                 }
+
+                break;
+
+            case 'clamp':
+
+                if (!Array.isArray(functionValue) || functionValue.length != 3) {
+                    functionError = true;
+                } else {
+
+                    v1 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
+                    v2 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[1], depth + 1);
+                    v3 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[2], depth + 1);
+
+                    if (typeof v1 !== 'number' || typeof v2 !== 'number' || typeof v3 !== 'number') {
+                        functionError = true;
+                    } else {
+                        return clamp(v1, v2, v3);
+                    }
+                }
+
+                break;
 
             case 'sgn':
             case 'sin':
@@ -668,8 +692,8 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
                     }
 
                     if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' ||
-                           value[0] == 'scr-count3' || value[0] == 'scr-count4' || value[0] == 'scr-count5') &&
-                        (typeof value[1] === 'number') && ((typeof value[2] === 'number') || value[0] == 'scr-count4' || value[0] == 'scr-count5'))) {
+                           value[0] == 'scr-count3' || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6') &&
+                        (typeof value[1] === 'number') && ((typeof value[2] === 'number') || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6'))) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
                     }

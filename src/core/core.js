@@ -67,7 +67,7 @@ var Core = function(element, config, coreInterface) {
         mapFeaturesPerSquareInch : 0.25, //0.6614,
         mapFeaturesSortByTop : false,
 
-        mapFeaturesReduceMode : 'scr-count5',
+        mapFeaturesReduceMode : 'scr-count1', //have to be 'scr-count1' because of legacy https://rigel.mlwn.se/store/map-config/high-terrain/
         mapFeaturesReduceParams : null,
         mapFeaturesReduceFactor : 1,
 
@@ -532,7 +532,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.16.10';
+    return (full ? 'Core: ' : '') + '2.16.12';
 }
 
 
