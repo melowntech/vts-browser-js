@@ -977,7 +977,7 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
 };
 
 
-MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
+MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle, onlySetBorderData) {
     if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
         return;
     }
@@ -1167,28 +1167,16 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                 ((border[8] + border[7] + border[5] + border[4]) * 0.25) - h
             ];
 
-            var border22 = [
-                ((border[0] + border[1] + border[3] + border[4]) * 0.25), 
-                ((border[1] + border[4]) * 0.5),
-                ((border[2] + border[1] + border[5] + border[4]) * 0.25),
-
-                ((border[3] + border[4]) * 0.5),
-                border[4],
-                ((border[5] + border[4]) * 0.5),
-
-                ((border[6] + border[7] + border[3] + border[4]) * 0.25),
-                ((border[7] + border[4]) * 0.5),
-                ((border[8] + border[7] + border[5] + border[4]) * 0.25)
-            ];
-
             mnode.border2 = border2;
-            mnode.border22 = border22;
         }
 
         if (!skip) {
             mnode.borderReady = true;
         }
 
+        if (onlySetBorderData) {
+            return;
+        }
 
         if (joinGrids) {
             var cornerTable = tileCornerTable;
@@ -1253,8 +1241,14 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                         case 8:  bcoords = [mnode.urx, mnode.ury]; break;
                     }
 
+                    if (!n.border2) {
+                        n.tile.drawGrid(cameraPos, divNode, angle, true);
+                    }
+
                     if (n.border2) {
                         mnode.border3[i] = (n.getGridHeight(bcoords, n.border2, 3) + (useSurrogatez ? n.surrogatez : n.minZ))  - h; 
+                    } else {
+                        border2[i];
                     }
                 } else {
                     mnode.border3[i] = border2[i];

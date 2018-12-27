@@ -1353,6 +1353,10 @@ MapSurfaceTree.prototype.getRenderedNodeById = function(id, drawCounter) {
             }
 
             return tile.metanode;
+        } else {
+            if (lod == 1) { //rendered lod is probably from more detailed lod so we take one which is from same lod
+                return tile.metanode;
+            }
         }
     }
 
