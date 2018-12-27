@@ -802,6 +802,10 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapLoadMode':                   this.config.mapLoadMode = utils.validateString(value, 'topdown'); break;
     case 'mapGeodataLoadMode':            this.config.mapGeodataLoadMode = utils.validateString(value, 'fit'); break;
     case 'mapGridMode':                   this.config.mapGridMode = utils.validateString(value, 'linear'); break;
+    case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
+    case 'mapGridUnderSurface':           this.config.mapGridUnderSurface = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, 0); break;
+    case 'mapGridTextureLevel':           this.config.mapGridTextureLevel = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, -1); break;
+    case 'mapGridTextureLayer':           this.config.mapGridTextureLayer = utils.validateString(value, ''); break;
     case 'mapPreciseBBoxTest':            this.config.mapPreciseBBoxTest = utils.validateBool(value, true); break;
     case 'mapPreciseDistanceTest':        this.config.mapPreciseDistanceTest = utils.validateBool(value, false); break;
     case 'mapHeightfiledWhenUnloaded':    this.config.mapHeightfiledWhenUnloaded = utils.validateBool(value, false); break;
@@ -809,7 +813,6 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapVirtualSurfaces':            this.config.mapVirtualSurfaces = utils.validateBool(value, true); break;
     case 'mapDegradeHorizon':             this.config.mapDegradeHorizon = utils.validateBool(value, true); break;
     case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], [1, 3000, 15000, 7000]); break;
-    case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
     case 'mapRefreshCycles':              this.config.mapRefreshCycles = utils.validateNumber(value, 0, Number.MAXINTEGER, 3); break;
     case 'mapDefaultFont':                this.config.mapDefaultFont =  utils.validateString(value, ''); break;
     case 'mapMetricUnits':                this.config.mapMetricUnits = utils.validateBool(value, true); break;
@@ -867,6 +870,10 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapLoadMode':                   return this.config.mapLoadMode;
     case 'mapGeodataLoadMode':            return this.config.mapGeodataLoadMode;
     case 'mapGridMode':                   return this.config.mapGridMode;
+    case 'mapGridSurrogatez':             return this.config.mapGridSurrogatez;
+    case 'mapGridUnderSurface':           return this.config.mapGridUnderSurface;
+    case 'mapGridTextureLevel':           return this.config.mapGridTextureLevel;
+    case 'mapGridTextureLayer':           return this.config.mapGridTextureLayer;
     case 'mapPreciseBBoxTest':            return this.config.mapPreciseBBoxTest;
     case 'mapPreciseDistanceTest':        return this.config.mapPreciseDistanceTest;
     case 'mapHeightfiledWhenUnloaded':    return this.config.mapHeightfiledWhenUnloaded;
@@ -874,7 +881,6 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapVirtualSurfaces':            return this.config.mapVirtualSurfaces;
     case 'mapDegradeHorizon':             return this.config.mapDegradeHorizon;
     case 'mapDegradeHorizonParams':       return this.config.mapDegradeHorizonParams;
-    case 'mapGridSurrogatez':             return this.config.mapGridSurrogatez;
     case 'mapRefreshCycles':              return this.config.mapRefreshCycles;
     case 'mapDefaultFont':                return this.config.mapDefaultFont;
     case 'mapMetricUnits':                return this.config.mapMetricUnits;

@@ -59,6 +59,9 @@ var Core = function(element, config, coreInterface) {
         mapGeodataLoadMode : 'fit', //"fitonly"
         mapGridMode : 'linear', //"flat"
         mapGridSurrogatez : false, 
+        mapGridUnderSurface: 0,
+        mapGridTextureLevel: -1,
+        mapGridTextureLayer: "bing",
         mapXhrImageLoad : true,
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,

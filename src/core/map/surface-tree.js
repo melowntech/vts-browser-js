@@ -724,7 +724,8 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
     var pocessedNodes = 1;
     var pocessedMetatiles = 1;  
     var drawCounter = draw.drawCounter;
-    var maxHiresLodLevels = map.config.mapMaxHiresLodLevels, i, j, lj, child, priority, parent, parent2, children2; 
+    var maxHiresLodLevels = map.config.mapMaxHiresLodLevels, i, j, lj, child, priority, parent, parent2, children2;
+    var grids = false; 
     
     do {
         var best = 0;
@@ -769,6 +770,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
                         
                         drawBuffer[drawBufferIndex] = [parent, true]; //draw grid
                         drawBufferIndex++;
+                        grids = true;
                     }
                 }
 
@@ -979,6 +981,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
 
                     drawBuffer[drawBufferIndex] = [parent, true]; //draw grid
                     drawBufferIndex++;
+                    grids = true;
                 }
             }
 
@@ -1019,20 +1022,54 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
 
     map.gpuCache.skipCostCheck = true;
 
-    for (i = drawBufferIndex - 1; i >= 0; i--) {
-        var item = drawBuffer[i];
-        tile = item[0];
+    if (drawGrid && map.config.mapGridUnderSurface >= 0) {
 
-        if ((drawGrid && item[1]) || stats.gpuRenderUsed >= draw.maxGpuUsed)  {
-
-            if (drawTiles.debug.drawBBoxes) {
-                drawTiles.drawTileInfo(tile, tile.metanode, cameraPos);
+        if (grids) {
+            //draw only grid
+            for (i = drawBufferIndex - 1; i >= 0; i--) {
+                drawBuffer[i][0].drawGrid(cameraPos); 
             }
 
-            tile.drawGrid(cameraPos); 
-        } else if (!item[1]) {
-            drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false /*, checkGpu*/);
+            //clear zbuffer
+            if (map.config.mapGridSurrogatez) {
+                map.renderer.gpu.clear(true, false);
+            }
         }
+
+        //draw only surface
+        for (i = drawBufferIndex - 1; i >= 0; i--) {
+            var item = drawBuffer[i];
+            tile = item[0];
+
+            if (!item[1] && !(stats.gpuRenderUsed >= draw.maxGpuUsed))  {
+                drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false /*, checkGpu*/);
+            } else {
+                if (drawTiles.debug.drawBBoxes) {
+                    drawTiles.drawTileInfo(tile, tile.metanode, cameraPos);
+                }
+            }
+        }
+
+
+    } else {
+
+        for (i = drawBufferIndex - 1; i >= 0; i--) {
+            var item = drawBuffer[i];
+            tile = item[0];
+
+            if ((drawGrid && item[1]) || stats.gpuRenderUsed >= draw.maxGpuUsed)  {
+
+                if (drawTiles.debug.drawBBoxes) {
+                    drawTiles.drawTileInfo(tile, tile.metanode, cameraPos);
+                }
+
+                tile.drawGrid(cameraPos); 
+            } else if (!item[1]) {
+                drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false /*, checkGpu*/);
+            }
+        }
+
+
     }
 
     map.gpuCache.skipCostCheck = false;
