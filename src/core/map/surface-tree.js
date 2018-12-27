@@ -358,7 +358,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift, storeTilesOnly) {
                     }
         
                     if (/*!(gpuNeeded > gpuMax) &&*/ childrenCount > 0 && childrenCount == readyCount && childrenCount != more3) {
-                        //sort childern by distance
+                        //sort children by distance
     
                         do {
                             var sorted = true;
@@ -375,7 +375,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift, storeTilesOnly) {
                         } while(!sorted);
     
     
-                        //add childern to new process buffer 
+                        //add children to new process buffer 
                         for (j = 0, lj = childrenBuffer.length; j < lj; j++) {
                             
                             /*var n = childrenBuffer[j].metanode.divisionNode;
@@ -581,7 +581,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift, storeTilesOnly) {
                     }
         
                     if (childrenCount > 0/* && childrenCount == readyCount*/) {
-                        //sort childern by distance
+                        //sort children by distance
     
                         do {
                             var sorted = true;
@@ -597,7 +597,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift, storeTilesOnly) {
                             
                         } while(!sorted);
     
-                        //add childern to new process buffer 
+                        //add childrn to new process buffer 
                         for (j = 0, lj = childrenBuffer.length; j < lj; j++) {
 
                             //var n = childrenBuffer[j].metanode.divisionNode;
@@ -724,7 +724,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
     var pocessedNodes = 1;
     var pocessedMetatiles = 1;  
     var drawCounter = draw.drawCounter;
-    var maxHiresLodLevels = map.config.mapMaxHiresLodLevels, i, j, lj, child, priority, parent; 
+    var maxHiresLodLevels = map.config.mapMaxHiresLodLevels, i, j, lj, child, priority, parent, parent2, children2; 
     
     do {
         var best = 0;
@@ -749,15 +749,22 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
                 if (drawGrid) {
                     parent = tile;
 
-                    for (j = depth; j > 0; j--) { //make sure that we draw grid with lowest possible detail 
-                        if ((!parent.parent) || parent.parent.childrenReadyCount != 0) {
-                            break;
-                        }
+                    //make sure that we draw grid with lowest possible detail 
+                    parent2 = parent.parent;                    
 
-                        parent = parent.parent;
+                    if (parent.id[0] > 3 && depth !=0 && parent2 && parent2.childrenReadyCount == 0) {
+                        children2 = parent2.children;
+
+                        if (!(depth >= 1 && parent.parent && ((children2[0] && children2[0].childrenReadyCount != 0) || 
+                             (children2[1] && children2[1].childrenReadyCount != 0) ||
+                             (children2[2] && children2[2].childrenReadyCount != 0) ||
+                             (children2[3] && children2[3].childrenReadyCount != 0)))) {
+                            parent = parent.parent;
+                        }
                     }
 
-                    if (parent.drawCounter != draw.drawCounter) { //make sure that grid tile is rendered only one time
+                    //make sure that grid tile is rendered only one time
+                    if (parent.drawCounter != draw.drawCounter && (!parent.parent || parent.parent.drawCounter != draw.drawCounter )) { 
                         parent.drawCounter = draw.drawCounter;
                         
                         drawBuffer[drawBufferIndex] = [parent, true]; //draw grid
@@ -868,7 +875,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
                     }
         
                     if (childrenCount > 0 && childrenCount == readyCount) {
-                        //sort childern by distance
+                        //sort children by distance
     
                         do {
                             var sorted = true;
@@ -884,7 +891,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
                             
                         } while(!sorted);
     
-                        //add childern to new process buffer 
+                        //add children to new process buffer 
                         for (j = 0, lj = childrenBuffer.length; j < lj; j++) {
                             newProcessBuffer[newProcessBufferIndex] = [childrenBuffer[j], depth];
                             newProcessBufferIndex++;
@@ -912,7 +919,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
 
                         } else {
 
-                            //add childern to new process buffer 
+                            //add children to new process buffer 
                             for (j = 0; j < 4; j++) {
                                 child = tile.children[j];
                                 if (child) {
@@ -952,15 +959,22 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
             if (drawGrid && lastProcessBufferIndex == newProcessBufferIndex && lastDrawBufferIndex == drawBufferIndex) {
                 parent = tile;
 
-                for (j = depth; j > 0; j--) { //make sure that we draw grid with lowest possible detail 
-                    if ((!parent.parent) || parent.parent.childrenReadyCount != 0) {
-                        break;
-                    }
+                //make sure that we draw grid with lowest possible detail 
+                parent2 = parent.parent;                    
 
-                    parent = parent.parent;
+                if (parent.id[0] > 3 && depth !=0 && parent2 && parent2.childrenReadyCount == 0) {
+                    children2 = parent2.children;
+
+                    if (!(depth >= 1 && parent.parent && ((children2[0] && children2[0].childrenReadyCount != 0) || 
+                         (children2[1] && children2[1].childrenReadyCount != 0) ||
+                         (children2[2] && children2[2].childrenReadyCount != 0) ||
+                         (children2[3] && children2[3].childrenReadyCount != 0)))) {
+                        parent = parent.parent;
+                    }
                 }
 
-                if (parent.drawCounter != draw.drawCounter) { //make sure that grid tile is rendered only one time
+                //make sure that grid tile is rendered only one time
+                if (parent && parent.drawCounter != draw.drawCounter) { 
                     parent.drawCounter = draw.drawCounter;
 
                     drawBuffer[drawBufferIndex] = [parent, true]; //draw grid
