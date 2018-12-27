@@ -1129,9 +1129,9 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
         
 
         var borderTable = tileBorderTable;
+        var skip = false;
 
         if (!mnode.borderReady) {
-            var skip = false;
             
             for (i = 0; i < 9; i++) {
                 if (i != 4 && !borderNodes[i]) {
@@ -1146,10 +1146,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                     }
                 }
             }
-            
-            if (!skip) {
-                mnode.borderReady = true;
-            }
+           
         }
 
         var border2 = mnode.border2;
@@ -1170,8 +1167,28 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle) {
                 ((border[8] + border[7] + border[5] + border[4]) * 0.25) - h
             ];
 
+            var border22 = [
+                ((border[0] + border[1] + border[3] + border[4]) * 0.25), 
+                ((border[1] + border[4]) * 0.5),
+                ((border[2] + border[1] + border[5] + border[4]) * 0.25),
+
+                ((border[3] + border[4]) * 0.5),
+                border[4],
+                ((border[5] + border[4]) * 0.5),
+
+                ((border[6] + border[7] + border[3] + border[4]) * 0.25),
+                ((border[7] + border[4]) * 0.5),
+                ((border[8] + border[7] + border[5] + border[4]) * 0.25)
+            ];
+
             mnode.border2 = border2;
+            mnode.border22 = border22;
         }
+
+        if (!skip) {
+            mnode.borderReady = true;
+        }
+
 
         if (joinGrids) {
             var cornerTable = tileCornerTable;
