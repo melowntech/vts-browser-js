@@ -693,9 +693,9 @@ GpuShaders.planeVertexShader =
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
         'vFogFactor = exp(uParams[1] * camDist);\n'+
-        'vec2 uv = aTexCoord;\n'+
-        'uv.x = uv.x * uParams3[2] + uParams3[0];\n'+
-        'uv.y = uv.y * uParams3[3] + uParams3[1];\n'+
+        'vec2 uv;\n'+
+        'uv.x = aTexCoord.y * uParams3[2] + uParams3[0];\n'+
+        'uv.y = 1.0-(aTexCoord.x * uParams3[3] + uParams3[1]);\n'+
         'vTexCoord = uv;\n'+
     '}';
 
@@ -738,9 +738,9 @@ GpuShaders.planeVertex2Shader =
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
         'vFogFactor = exp(uParams[1] * camDist);\n'+
-        'vec2 uv = aTexCoord;\n'+
-        'uv.x = uv.x * uParams3[2] + uParams3[0];\n'+
-        'uv.y = uv.y * uParams3[3] + uParams3[1];\n'+
+        'vec2 uv;\n'+
+        'uv.x = aTexCoord.y * uParams3[2] + uParams3[0];\n'+
+        'uv.y = 1.0-(aTexCoord.x * uParams3[3] + uParams3[1]);\n'+
         'vTexCoord = uv;\n'+
         'vTexCoord2 = p.xy;\n'+
     '}';
@@ -803,9 +803,9 @@ GpuShaders.planeVertex3Shader =
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
         'vFogFactor = exp(uParams[1] * camDist);\n'+
-        'vec2 uv = aTexCoord;\n'+
-        'uv.x = uv.x * uParams3[2] + uParams3[0];\n'+
-        'uv.y = uv.y * uParams3[3] + uParams3[1];\n'+
+        'vec2 uv;\n'+
+        'uv.x = aTexCoord.y * uParams3[2] + uParams3[0];\n'+
+        'uv.y = (1.0-aTexCoord.x) * uParams3[3] + uParams3[1];\n'+
         'vTexCoord = uv;\n'+
     '}';
 

@@ -1,10 +1,12 @@
 
 import {vec3 as vec3_} from '../utils/matrix';
 import GpuTexture_ from '../renderer/gpu/texture';
+import {math as math_} from '../utils/math';
 
 //get rid of compiler mess
 var vec3 = vec3_;
 var GpuTexture = GpuTexture_;
+var math = math_;
 
  var tileBorderTable = [
     [-1, -1, 0, 0],
@@ -1307,6 +1309,34 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle, onlySetB
 
     factor = 1;
 
+    var useTexture = (map.config.mapGridTextureLayer != '');
+
+    if (useTexture) {
+        if (!this.gridTexture) {
+
+            var layer = map.boundLayers[map.config.mapGridTextureLayer];
+            var sourceTile = this;
+
+            if (!layer || sourceTile < layer.lodRange[0]) {
+                useTexture = false;
+            } else {
+                var sourceLod = math.clamp(sourceTile.id[0] - 3, layer.lodRange[0], layer.lodRange[3]);
+
+                while (sourceTile.id[0] > sourceLod) {
+                    sourceTile = sourceTile.parent;
+                }
+
+                //(path, type, extraBound, extraInfo, tile, internal)
+                this.gridTexture = this.resources.getTexture("gmap#"+map.config.mapGridTextureLayer, null, {sourceTile: sourceTile, layer:layer, tile: this }, null, null, null);
+            }
+
+        }
+
+        if (!this.gridTexture.isReady(false, 0, false)) {  //TODO: set params with max priority
+            useTexture = false;       
+        }     
+    }
+
     if (hasPoles && node.isPole) {
         factor = map.poleRadiusFactor; 
         prog = renderer.progPlane2; 
@@ -1368,13 +1398,27 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle, onlySetB
     var px = (ll[0] - node.extents.ll[0]) * lx * llx;
     var py = (ur[1] - node.extents.ll[1]) * ly * lly;
 
-    prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/15, node.gridStep2 * factor]);
-    prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
-    prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
+
+    if (useTexture) {
+        renderer.gpu.bindTexture(this.gridTexture.getGpuTexture());
+        prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/15, node.gridStep2 * factor]);
+
+        var tt = this.gridTexture.getTransform();
+
+//        prog.setVec4('uParams3', [tt[2], tt[3]+tt[1], tt[0], tt[1]]);
+        prog.setVec4('uParams3', [tt[2], tt[3], tt[0], tt[1]]);
+
+        //prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly*0.5, llx*0.5]);
+        prog.setVec4('uParams2', [0, 0, 0, 0]);
+    } else {
+        renderer.gpu.bindTexture(renderer.heightmapTexture);       
+        prog.setVec4('uParams', [step1 * factor, draw.fogDensity, 1/15, node.gridStep2 * factor]);
+        prog.setVec4('uParams3', [(py - Math.floor(py)), (px - Math.floor(px)), lly, llx]);
+        prog.setVec4('uParams2', [0, 0, node.gridBlend, 0]);
+    }
+    
     prog.setVec4('uFogColor', draw.atmoColor);
 
-    renderer.gpu.bindTexture(renderer.heightmapTexture);
-    
     //draw bbox
     renderer.planeMesh.draw(prog, 'aPosition', 'aTexCoord');    
 
