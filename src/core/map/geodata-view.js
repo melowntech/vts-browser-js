@@ -183,11 +183,14 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
 MapGeodataView.prototype.getWorldMatrix = function(bbox, geoPos, matrix) {
     var m = matrix;
 
-    if (m != null) {/*
-        m[0] = bbox.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
-        m[4] = 0; m[5] = bbox.side(1); m[6] = 0; m[7] = 0;
-        m[8] = 0; m[9] = 0; m[10] = bbox.side(2); m[11] = 0;
-        m[12] = this.bbox.min[0] - geoPos[0]; m[13] = this.bbox.min[1] - geoPos[1]; m[14] = this.bbox.min[2] - geoPos[2]; m[15] = 1;*/
+    if (m != null) {
+        //m[0] = bbox.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
+        //m[4] = 0; m[5] = bbox.side(1); m[6] = 0; m[7] = 0;
+        //m[8] = 0; m[9] = 0; m[10] = bbox.side(2); m[11] = 0;
+        m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
+        m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
+        m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
+        m[12] = bbox.min[0] - geoPos[0]; m[13] = bbox.min[1] - geoPos[1]; m[14] = bbox.min[2] - geoPos[2]; m[15] = 1;
     } else {
         m = mat4.create();
 
@@ -212,12 +215,13 @@ MapGeodataView.prototype.draw = function(cameraPos) {
                 continue; //TODO: remove empty groups
             }
 
-            var mvp = mat4.create();
-            var mv = mat4.create();
+            var mvp = group.mvp;
+            var mv = group.mv;
+            var mtmp = mvp; //use it as tmp matrix
         
-            mat4.multiply(renderer.camera.getModelviewMatrix(), this.getWorldMatrix(group.bbox, cameraPos), mv);
+            mat4.multiply(renderer.camera.getModelviewFMatrix(), this.getWorldMatrix(group.bbox, cameraPos, mtmp), mv);
         
-            var proj = renderer.camera.getProjectionMatrix();
+            var proj = renderer.camera.getProjectionFMatrix();
             mat4.multiply(proj, mv, mvp);
             
             group.draw(mv, mvp, null, tiltAngle, (this.tile ? this.tile.texelSize : 1));

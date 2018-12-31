@@ -35,8 +35,8 @@ var MapMesh = function(map, url, tile) {
     this.loadErrorTime = null;
     this.loadErrorCounter = 0;
 
-    this.mBuffer = mat4.create();
-    this.mBuffer2 = mat4.create();
+    this.mBuffer = new Float32Array(16);
+    this.mBuffer2 = new Float32Array(16);
 
     this.submeshes = [];
     this.gpuSubmeshes = [];
@@ -471,8 +471,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     }
 
     var mv = this.mBuffer;
-    mat4.multiply(renderer.camera.getModelviewMatrix(), submesh.getWorldMatrix(cameraPos, this.mBuffer2), mv);
-    var proj = renderer.camera.getProjectionMatrix();
+    mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrix(cameraPos, this.mBuffer2), mv);
+    var proj = renderer.camera.getProjectionFMatrix();
 
     program.setMat4('uMV', mv);
 

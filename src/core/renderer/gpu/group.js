@@ -20,6 +20,8 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.reduced = 0;
     this.geometries = {};
     this.subjob = null;
+    this.mv = new Float32Array(16);
+    this.mvp = new Float32Array(16);
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);

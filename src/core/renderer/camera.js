@@ -21,9 +21,12 @@ var Camera = function(parent, fov, near, far) {
     this.modelview = mat4.create();
     this.rotationview = mat4.create();
     this.projection = mat4.create();
-    this.projection2 = mat4.create();
     this.mvp = mat4.create();
-    this.mvp2 = mat4.create();
+    this.mvp32 = new Float32Array(16);
+    this.modelview32 = new Float32Array(16);
+    this.rotationview32 = new Float32Array(16);
+    this.projection32 = new Float32Array(16);
+
     this.frustumPlanes = [ [0,0,0,0], [0,0,0,0], [0,0,0,0],
                            [0,0,0,0], [0,0,0,0], [0,0,0,0] ];
     this.bboxPoints = [
@@ -120,11 +123,20 @@ Camera.prototype.getRotationviewMatrix = function() {
     return this.rotationview;
 };
 
+Camera.prototype.getRotationviewFMatrix = function() {
+    if (this.dirty) this.update();
+    return this.rotationview32;
+};
 
 // Returns a matrix that transforms the world space to camera space.
 Camera.prototype.getModelviewMatrix = function(){
     if (this.dirty) this.update();
     return this.modelview;
+};
+
+Camera.prototype.getModelviewFMatrix = function(){
+    if (this.dirty) this.update();
+    return this.modelview32;
 };
 
 
@@ -134,11 +146,21 @@ Camera.prototype.getProjectionMatrix = function() {
     return this.projection;
 };
 
+Camera.prototype.getProjectionFMatrix = function() {
+    if (this.dirty) this.update();
+    return this.projection32;
+};
+
 
 // Returns projectionMatrix() * modelviewMatrix()
 Camera.prototype.getMvpMatrix = function() {
     if (this.dirty) this.update();
     return this.mvp;
+};
+
+Camera.prototype.getMvpFMatrix = function() {
+    if (this.dirty) this.update();
+    return this.mvp32;
 };
 
 // Returns how much a length unit located at a point in world space is
@@ -323,8 +345,6 @@ Camera.prototype.update = function(zoffset) {
     // is trivial here -- negative angles, reverse order of transformations)
     //this.modelview = mat4.create();
 
-    //console.log("camera-update");
-
     if (!this.rotationByMatrix) {
         mat4.multiply(math.rotationMatrix(2, math.radians(-this.orientation[2])), math.rotationMatrix(0, math.radians(-this.orientation[1] - 90.0)), this.rotationview);
         mat4.multiply(this.rotationview, math.rotationMatrix(2, math.radians(-this.orientation[0])), this.rotationview);
@@ -338,21 +358,7 @@ Camera.prototype.update = function(zoffset) {
         this.projection = math.perspectiveMatrix(this.fov, this.aspect, this.near, this.far);
     }
 
-    /*
-    mat4.set(this.projection, this.projection2); //without zoffset
-
-    if (zoffset) {
-        zoffset = 1.0 + zoffset;
-        var m = this.projection; 
-        m[2] *= zoffset;
-        m[6] *= zoffset;
-        m[10] *= zoffset;
-        m[15] *= zoffset;
-    }*/
-
-    //this.mvp = mat4.create();
     mat4.multiply(this.projection, this.modelview, this.mvp);
-    //mat4.multiply(this.projection2, this.modelview, this.mvp2); //without zoffset
 
     // prepare frustum planes (in normalized device coordinates)
     this.frustumPlanes[0] = [ 0, 0, 1, 1 ]; // far
@@ -366,11 +372,15 @@ Camera.prototype.update = function(zoffset) {
     // planes in homogeneous coordinates transform as p' = M^{-T} * p, where
     // M^{-T} is the transpose of inverse of M
     var mvpt = mat4.create();
-    //mat4.transpose(this.mvp2, mvpt); //without zoffset
     mat4.transpose(this.mvp, mvpt); //without zoffset
     for (var i = 0; i < 6; i++) {
         this.frustumPlanes[i] = mat4.multiplyVec4(mvpt, this.frustumPlanes[i]);
     }
+
+    this.mvp32.set(this.mvp);
+    this.projection32.set(this.projection);
+    this.modelview32.set(this.modelview);
+    this.rotationview32.set(this.rotationview);
 
     // the derived quantities are now in sync with the parameters
     this.dirty = false;

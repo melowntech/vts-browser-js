@@ -228,7 +228,7 @@ Renderer.prototype.resizeGL = function(width, height, skipCanvas, skipPaint) {
        // this.draw.paintGL();
     //}
 
-    var m = [];
+    var m = new Float32Array(16);
     m[0] = 2.0/width; m[1] = 0; m[2] = 0; m[3] = 0;
     m[4] = 0; m[5] = -2.0/height; m[6] = 0; m[7] = 0;
     m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
