@@ -778,7 +778,6 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapGPUCache':                   this.config.mapGPUCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 360); this.setupCache(); break;
     case 'mapMetatileCache':              this.config.mapMetatileCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 60); this.setupCache(); break;
     case 'mapTexelSizeFit':               this.config.mapTexelSizeFit = utils.validateNumber(value, 0.0001, Number.MAXINTEGER, 1.1); break;
-    case 'mapLowresBackground':           this.config.mapLowresBackground = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
     case 'mapDownloadThreads':            this.config.mapDownloadThreads = utils.validateNumber(value, 1, Number.MAXINTEGER, 6); break;
     case 'mapMaxProcessingTime':          this.config.mapMaxProcessingTime = utils.validateNumber(value, 1, Number.MAXINTEGER, 1000/20); break;
     case 'mapMobileMode':                 this.config.mapMobileMode = utils.validateBool(value, false); this.setupMobileMode(); break;
@@ -824,6 +823,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapFeaturesSortByTop':          this.config.mapFeaturesSortByTop = utils.validateBool(value, false); break;
     case 'mapFeaturesReduceParams':       this.config.mapFeaturesReduceParams = value; break;
     case 'mapLogGeodataStyles':           this.config.mapLogGeodataStyles = utils.validateBool(value, true); break;
+    case 'map16bitMeshes':                this.config.map16bitMeshes = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -846,7 +846,6 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapGPUCache':                   return this.config.mapGPUCache;
     case 'mapMetatileCache':              return this.config.mapMetatileCache;
     case 'mapTexelSizeFit':               return this.config.mapTexelSizeFit;
-    case 'mapLowresBackground':           return this.config.mapLowresBackground;
     case 'mapDownloadThreads':            return this.config.mapDownloadThreads;
     case 'mapMaxProcessingTime':          return this.config.mapMaxProcessingTime;
     case 'mapMobileMode':                 return this.config.mapMobileMode;
@@ -893,6 +892,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapFeaturesReduceMode':         return this.config.mapFeaturesReduceMode;
     case 'mapFeaturesReduceParams':       return this.config.mapFeaturesReduceParams;
     case 'mapLogGeodataStyles':           return this.config.mapLogGeodataStyles;
+    case 'map16bitMeshes':                return this.config.map16bitMeshes;
     case 'mario':                         return this.config.mario;
     }
 };

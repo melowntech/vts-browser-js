@@ -222,12 +222,10 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     gpu.setState(this.drawStardomeState);
 
     if (this.drawChannel != 1) {
-        if (this.config.mapLowresBackground < 0.8) {
-            if (debug.drawWireframe == 2) {
-                renderer.draw.drawSkydome(renderer.whiteTexture, renderer.progStardome);
-            } else {
-                renderer.draw.drawSkydome(renderer.blackTexture, renderer.progStardome);
-            }
+        if (debug.drawWireframe == 2) {
+            renderer.draw.drawSkydome(renderer.whiteTexture, renderer.progStardome);
+        } else {
+            renderer.draw.drawSkydome(renderer.blackTexture, renderer.progStardome);
         }
     }
 

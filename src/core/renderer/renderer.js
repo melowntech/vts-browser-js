@@ -232,7 +232,7 @@ Renderer.prototype.resizeGL = function(width, height, skipCanvas, skipPaint) {
     this.oldSize = [width, height];
     this.gpu.resize(this.curSize, skipCanvas);
 
-    if (skipPaint !== true) {
+    if (skipPaint !== true) { //remove this??
         this.draw.paintGL();
     }
 

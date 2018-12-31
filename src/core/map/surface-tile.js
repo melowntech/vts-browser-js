@@ -661,17 +661,15 @@ MapSurfaceTile.prototype.getPixelSize = function(bbox, screenPixelSize, cameraPo
     var h2 = max[2] - cameraPos[2];
     
     //camera inside bbox
-    if (!this.map.config.mapLowresBackground) {
-        if (cameraPos[0] > min[0] && cameraPos[0] < max[0] &&
-            cameraPos[1] > min[1] && cameraPos[1] < max[1] &&
-            cameraPos[2] > min[2] && cameraPos[2] < max[2]) {
-    
-            if (returnDistance) {
-                return [Number.POSITIVE_INFINITY, 0.1];
-            }
-        
-            return Number.POSITIVE_INFINITY;
+    if (cameraPos[0] > min[0] && cameraPos[0] < max[0] &&
+        cameraPos[1] > min[1] && cameraPos[1] < max[1] &&
+        cameraPos[2] > min[2] && cameraPos[2] < max[2]) {
+
+        if (returnDistance) {
+            return [Number.POSITIVE_INFINITY, 0.1];
         }
+    
+        return Number.POSITIVE_INFINITY;
     }
 
     var factor = 0;

@@ -194,13 +194,14 @@ GpuProgram.prototype.getAttribute = function(name) {
     var gl = this.gl;
     if (gl == null || this.program == null) return;
 
-    if (this.attributeLocationCache[name] == null) {
-        var location = gl.getAttribLocation(this.program, name);
+    var location = this.attributeLocationCache[name];
+
+    if (location == null) {
+        location = gl.getAttribLocation(this.program, name);
         this.attributeLocationCache[name] = location;
-        return location;
-    } else {
-        return this.attributeLocationCache[name];
     }
+
+    return location;
 };
 
 
@@ -208,13 +209,14 @@ GpuProgram.prototype.getUniform = function(name) {
     var gl = this.gl;
     if (gl == null || this.program == null) return;
 
-    if (this.uniformLocationCache[name] == null) {
-        var location = gl.getUniformLocation(this.program, name);
+    var location = this.uniformLocationCache[name];
+
+    if (location == null) {
+        location = gl.getUniformLocation(this.program, name);
         this.uniformLocationCache[name] = location;
-        return location;
-    } else {
-        return this.uniformLocationCache[name];
     }
+    
+    return location;
 };
 
 

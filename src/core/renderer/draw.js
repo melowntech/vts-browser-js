@@ -972,7 +972,7 @@ RendererDraw.prototype.clearJobHBuffer = function() {
 };
 
 
-RendererDraw.prototype.paintGL = function() {
+RendererDraw.prototype.paintGL = function() {   //remove this??
     var renderer = this.renderer;
 
     this.gpu.clear(true, false);

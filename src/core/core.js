@@ -31,7 +31,6 @@ var Core = function(element, config, coreInterface) {
         mapMetatileCache : 60,
         mapTexelSizeFit : 1.1,
         mapMaxHiresLodLevels : 2,
-        mapLowresBackground : 0,
         mapDownloadThreads : 20,
         mapMaxProcessingTime : 1000*20,
         mapMobileMode : false,
@@ -469,6 +468,8 @@ Core.prototype.setConfigParam = function(key, value) {
         this.config.mapVirtualSurfaces = utils.validateBool(value, true);
     } else if (key == 'mapForcePipeline') {
         this.config.mapForcePipeline = utils.validateNumber(value, -1, Number.MAXINTEGER, 0);
+    } else if (key == 'map16bitMeshes') {
+        this.config.map16bitMeshes = utils.validateBool(value, false);
     } else if (key == 'inspector') {
         this.config.inspector = utils.validateBool(value, true);
     } else if (key == 'authorization') {

@@ -1022,7 +1022,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
 
     map.gpuCache.skipCostCheck = true;
 
-    if (drawGrid && map.config.mapGridUnderSurface >= 0) {
+    if (drawGrid && map.config.mapGridUnderSurface > 0) {
 
         if (grids) {
             //draw only grid

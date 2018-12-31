@@ -113,17 +113,18 @@ RendererInit.prototype.initProceduralShaders = function() {
 
 RendererInit.prototype.initHeightmap = function() {
     var renderer = this.renderer;
+    var use16Bit = renderer.core.config.map16bitMeshes;
     var gpu = this.gpu;
 
     // initialize heightmap geometry
-    var meshData = RendererGeometry.buildHeightmap(5);
-    renderer.heightmapMesh = new GpuMesh(gpu, meshData, null, this.core);
+    var meshData = RendererGeometry.buildHeightmap(5, true);
+    //renderer.heightmapMesh = new GpuMesh(gpu, meshData, null, this.core, true, use16Bit);
 
-    meshData = RendererGeometry.buildPlane(16);
-    renderer.planeMesh = new GpuMesh(gpu, meshData, null, this.core);
+    meshData = RendererGeometry.buildPlane(16, true);
+    renderer.planeMesh = new GpuMesh(gpu, meshData, null, this.core, true, use16Bit, true);
 
-    meshData = RendererGeometry.buildPlane(128);
-    renderer.planeMesh2 = new GpuMesh(gpu, meshData, null, this.core);
+    meshData = RendererGeometry.buildPlane(128, true);
+    renderer.planeMesh2 = new GpuMesh(gpu, meshData, null, this.core, true, use16Bit, true);
 
     // create heightmap texture
     var size = 64;
@@ -264,13 +265,14 @@ RendererInit.prototype.initImage = function() {
 
 RendererInit.prototype.initSkydome = function() {
     var renderer = this.renderer;
-    var meshData = RendererGeometry.buildSkydome(32, 64);
-    renderer.skydomeMesh = new GpuMesh(this.gpu, meshData, null, this.core);
+    var use16Bit = renderer.core.config.map16bitMeshes;
+    var meshData = RendererGeometry.buildSkydome(32, 64, use16Bit);
+    renderer.skydomeMesh = new GpuMesh(this.gpu, meshData, null, this.core, true, use16Bit);
     //this.skydomeTexture = new GpuTexture(this.gpu, "./skydome.jpg", this.core);
 
-    meshData = RendererGeometry.buildSkydome(128, 256);
+    meshData = RendererGeometry.buildSkydome(128, 256, use16Bit);
 //    var meshData = RendererGeometry.buildSkydome(256, 512);
-    renderer.atmoMesh = new GpuMesh(this.gpu, meshData, null, this.core);
+    renderer.atmoMesh = new GpuMesh(this.gpu, meshData, null, this.core, true, use16Bit);
 };
 
 

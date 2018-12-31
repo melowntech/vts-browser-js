@@ -1,5 +1,5 @@
 
-var GpuMesh = function(gpu, meshData, fileSize, core, direct) {
+var GpuMesh = function(gpu, meshData, fileSize, core, direct, use16bit, verticesUnnormalized) {
     this.gpu = gpu;
     this.gl = gpu.gl;
     this.bbox = meshData.bbox; //< bbox copy from Mesh
@@ -8,6 +8,8 @@ var GpuMesh = function(gpu, meshData, fileSize, core, direct) {
     this.vertexBuffer = null;
     this.uvBuffer = null;
     this.uv2Buffer = null;
+    this.use16bit = use16bit ? true : false;
+    this.verticesUnnormalized = verticesUnnormalized ? true : false;
 
     var vertices = meshData.vertices;
     var uvs = meshData.uvs;
@@ -26,6 +28,7 @@ var GpuMesh = function(gpu, meshData, fileSize, core, direct) {
     this.vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 
+    //when direct mode is used vertices can be also unit16
     gl.bufferData(gl.ARRAY_BUFFER, direct ? vertices : (new Float32Array(vertices)), gl.STATIC_DRAW);
     this.vertexBuffer.itemSize = vertexSize;
     this.vertexBuffer.numItems = vertices.length / vertexSize;
@@ -50,9 +53,10 @@ var GpuMesh = function(gpu, meshData, fileSize, core, direct) {
         this.uv2Buffer.numItems = uvs2.length / uv2Size;
     }
 
-    this.size = this.vertexBuffer.numItems * vertexSize * 4;
-    this.size += (uvs == null) ? 0 : this.uvBuffer.numItems * uvSize * 4;
-    this.size += (uvs2 == null) ? 0 : this.uv2Buffer.numItems * uv2Size * 4;
+    var varSize = this.use16bit ? 2 : 4;
+    this.size = this.vertexBuffer.numItems * vertexSize * varSize;
+    this.size += (uvs == null) ? 0 : this.uvBuffer.numItems * uvSize * varSize;
+    this.size += (uvs2 == null) ? 0 : this.uv2Buffer.numItems * uv2Size * varSize;
     this.polygons = this.vertexBuffer.numItems / 3;
 
     this.valid = true;
@@ -88,22 +92,42 @@ GpuMesh.prototype.draw = function(program, attrVertex, attrUV, attrUV2, attrBary
         return;
     }
 
-    //bind vetex positions
-    var vertexAttribute = program.getAttribute(attrVertex);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    gl.vertexAttribPointer(vertexAttribute, this.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    if (this.use16bit) {
+        //bind vetex positions
+        var vertexAttribute = program.getAttribute(attrVertex);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.vertexAttribPointer(vertexAttribute, this.vertexBuffer.itemSize, gl.UNSIGNED_SHORT, !this.verticesUnnormalized, 0, 0);
 
-    //bind texture coords
-    if (this.uvBuffer && attrUV) {
-        var uvAttribute = program.getAttribute(attrUV);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-        gl.vertexAttribPointer(uvAttribute, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    }
+        //bind texture coords
+        if (this.uvBuffer && attrUV) {
+            var uvAttribute = program.getAttribute(attrUV);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+            gl.vertexAttribPointer(uvAttribute, this.uvBuffer.itemSize, gl.UNSIGNED_SHORT, true, 0, 0);
+        }
 
-    if (this.uv2Buffer && attrUV2) {
-        var uv2Attribute = program.getAttribute(attrUV2);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.uv2Buffer);
-        gl.vertexAttribPointer(uv2Attribute, this.uv2Buffer.itemSize, gl.FLOAT, false, 0, 0);
+        if (this.uv2Buffer && attrUV2) {
+            var uv2Attribute = program.getAttribute(attrUV2);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.uv2Buffer);
+            gl.vertexAttribPointer(uv2Attribute, this.uv2Buffer.itemSize, gl.UNSIGNED_SHORT, true, 0, 0);
+        }
+    } else {
+        //bind vetex positions
+        var vertexAttribute = program.getAttribute(attrVertex);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.vertexAttribPointer(vertexAttribute, this.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        //bind texture coords
+        if (this.uvBuffer && attrUV) {
+            var uvAttribute = program.getAttribute(attrUV);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+            gl.vertexAttribPointer(uvAttribute, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        }
+
+        if (this.uv2Buffer && attrUV2) {
+            var uv2Attribute = program.getAttribute(attrUV2);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.uv2Buffer);
+            gl.vertexAttribPointer(uv2Attribute, this.uv2Buffer.itemSize, gl.FLOAT, false, 0, 0);
+        }
     }
 
     if (attrBarycenteric && attrBarycenteric) {

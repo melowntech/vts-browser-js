@@ -22,6 +22,7 @@ var MapSubmesh = function(mesh, stream) {
     this.statsCounter = 0;
     this.valid = true;
     this.killed = false;
+    this.use16bit = mesh.use16bit;
 
     this.bbox = new BBox();
     this.size = 0;
@@ -144,13 +145,13 @@ struct VerticesBlock {
     var internalUVs = null;
     var externalUVs = null;
 
-    var vertices = new Float32Array(numVertices * 3);
+    var vertices = this.use16bit ? (new Uint16Array(numVertices * 3)) : (new Float32Array(numVertices * 3));
 
     if (this.flags & this.flagsExternalTexcoords) {
-        externalUVs = new Float32Array(numVertices * 2);
+        externalUVs = this.use16bit ? (new Uint16Array(numVertices * 2)) : (new Float32Array(numVertices * 2));
     }
 
-    var uvfactor = 1.0 / 65535;
+    var uvfactor = this.use16bit ? 1.0 : (1.0 / 65535);
     var vindex = 0;
     var uvindex = 0;
     var i, li;
@@ -192,7 +193,7 @@ struct TexcoorsBlock {
     if (this.flags & this.flagsInternalTexcoords) {
         var numUVs = data.getUint16(index, true); index += 2;
     
-        internalUVs = new Float32Array(numUVs * 2);//[];
+        internalUVs = this.use16bit ? (new Uint16Array(numUVs * 2)) : (new Float32Array(numUVs * 2));
         //var uvfactor = 1.0 / 65535;
     
         for (i = 0, li = numUVs * 2; i < li; i+=2) {
@@ -222,6 +223,7 @@ struct FacesBlock {
     internalUVs = null;
     externalUVs = null;
 
+    /*
     vertices = new Float32Array(numFaces * 3 * 3);//[];
 
     if (this.flags & this.flagsInternalTexcoords) {
@@ -230,6 +232,16 @@ struct FacesBlock {
 
     if (this.flags & this.flagsExternalTexcoords) {
         externalUVs = new Float32Array(numFaces * 3 * 2);//[];
+    }*/
+
+    vertices = this.use16bit ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
+
+    if (this.flags & this.flagsInternalTexcoords) {
+        internalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
+    }
+
+    if (this.flags & this.flagsExternalTexcoords) {
+        externalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
     }
 
     var vtmp = this.tmpVertices;
@@ -374,7 +386,7 @@ struct VerticesBlock {
     var multiplier = 1.0 / quant;
     var externalUVs = null;
 
-    var vertices = new Float32Array(numVertices * 3);//[];
+    var vertices = this.use16bit ? (new Uint16Array(numVertices * 3)) : (new Float32Array(numVertices * 3));
     var vindex;
     
     var x = 0, y = 0,z = 0;
@@ -387,41 +399,80 @@ struct VerticesBlock {
     var sz = 1.0 / (this.bbox.max[2] - this.bbox.min[2]);
     
     var res = [0, index];
-    var i, li;
+    var i, li, t;
 
-    for (i = 0; i < numVertices; i++) {
-        this.parseDelta(uint8Data, res);
-        x += res[0];
-        this.parseDelta(uint8Data, res);
-        y += res[0];
-        this.parseDelta(uint8Data, res);
-        z += res[0];
-        
-        vindex = i * 3;
-        vertices[vindex] = ((x * multiplier * scale + cx) - mx) * sx;
-        vertices[vindex+1] = ((y * multiplier * scale + cy) - my) * sy;
-        vertices[vindex+2] = ((z * multiplier * scale + cz) - mz) * sz;
+    if (this.use16bit) {
+        for (i = 0; i < numVertices; i++) {
+            this.parseDelta(uint8Data, res);
+            x += res[0];
+            this.parseDelta(uint8Data, res);
+            y += res[0];
+            this.parseDelta(uint8Data, res);
+            z += res[0];
+            
+            vindex = i * 3;
+            t = ((x * multiplier * scale + cx) - mx) * sx;
+            if (t < 0) t = 0; if (t > 1.0) t = 1.0;
+            vertices[vindex] = t * 65535;
+            t = ((y * multiplier * scale + cy) - my) * sy;
+            if (t < 0) t = 0; if (t > 1.0) t = 1.0;
+            vertices[vindex+1] = t * 65535;
+            t = ((z * multiplier * scale + cz) - mz) * sz;
+            if (t < 0) t = 0; if (t > 1.0) t = 1.0;
+            vertices[vindex+2] = t * 65535;
+        }
+    } else {
+        for (i = 0; i < numVertices; i++) {
+            this.parseDelta(uint8Data, res);
+            x += res[0];
+            this.parseDelta(uint8Data, res);
+            y += res[0];
+            this.parseDelta(uint8Data, res);
+            z += res[0];
+            
+            vindex = i * 3;
+            vertices[vindex] = ((x * multiplier * scale + cx) - mx) * sx;
+            vertices[vindex+1] = ((y * multiplier * scale + cy) - my) * sy;
+            vertices[vindex+2] = ((z * multiplier * scale + cz) - mz) * sz;
+        }
     }
     
     index = res[1];
 
     if (this.flags & this.flagsExternalTexcoords) {
         quant = data.getUint16(index, true); index += 2;
-        multiplier = 1.0 / quant;
+        multiplier = (this.use16bit) ? (65535 / quant) : (1.0 / quant);
 
-        externalUVs = new Float32Array(numVertices * 2);
+        externalUVs = this.use16bit ? (new Uint16Array(numVertices * 2)) : (new Float32Array(numVertices * 2));
         x = 0, y = 0;
         res[1] = index;
 
-        for (i = 0; i < numVertices; i++) {
-            this.parseDelta(uint8Data, res);
-            x += res[0];
-            this.parseDelta(uint8Data, res);
-            y += res[0];
+        if (this.use16bit) {
+            for (i = 0; i < numVertices; i++) {
+                this.parseDelta(uint8Data, res);
+                x += res[0];
+                this.parseDelta(uint8Data, res);
+                y += res[0];
 
-            var uvindex = i * 2;
-            externalUVs[uvindex] = x * multiplier;
-            externalUVs[uvindex+1] = 1 - (y * multiplier);
+                var uvindex = i * 2;
+                t = x * multiplier;
+                if (t < 0) t = 0; if (t > 65535) t = 65535;
+                externalUVs[uvindex] = t;
+                t = y * multiplier;
+                if (t < 0) t = 0; if (t > 65535) t = 65535;
+                externalUVs[uvindex+1] = 65535 - t;
+            }
+        } else {
+            for (i = 0; i < numVertices; i++) {
+                this.parseDelta(uint8Data, res);
+                x += res[0];
+                this.parseDelta(uint8Data, res);
+                y += res[0];
+
+                var uvindex = i * 2;
+                externalUVs[uvindex] = x * multiplier;
+                externalUVs[uvindex+1] = 1 - (y * multiplier);
+            }
         }
     }
 
@@ -448,21 +499,37 @@ struct TexcoorsBlock {
         var numUVs = data.getUint16(index, true); index += 2;
         var quantU = data.getUint16(index, true); index += 2;
         var quantV = data.getUint16(index, true); index += 2;
-        var multiplierU = 1.0 / quantU;
-        var multiplierV = 1.0 / quantV;
+        var multiplierU = (this.use16bit) ? (65536.0 / quantU) : (1.0 / quantU);
+        var multiplierV = (this.use16bit) ? (65536.0 / quantV) : (1.0 / quantV);
         x = 0, y = 0;
     
-        var internalUVs = new Float32Array(numUVs * 2);//[];
+        var internalUVs = this.use16bit ? (new Uint16Array(numUVs * 3)) : (new Float32Array(numUVs * 3));
         res[1] = index;
 
-        for (i = 0, li = numUVs * 2; i < li; i+=2) {
-            this.parseDelta(uint8Data, res);
-            x += res[0];
-            this.parseDelta(uint8Data, res);
-            y += res[0];
+        if (this.use16bit) {
+            for (i = 0, li = numUVs * 2; i < li; i+=2) {
+                this.parseDelta(uint8Data, res);
+                x += res[0];
+                this.parseDelta(uint8Data, res);
+                y += res[0];
 
-            internalUVs[i] = x * multiplierU;
-            internalUVs[i+1] = 1 - (y * multiplierV);
+                t = x * multiplierU;
+                if (t < 0) t = 0; if (t > 65535) t = 65535;
+                internalUVs[i] = t;
+                t = y * multiplierV;
+                if (t < 0) t = 0; if (t > 65535) t = 65535;
+                internalUVs[i+1] = 65535 - t;
+            }
+        } else {
+            for (i = 0, li = numUVs * 2; i < li; i+=2) {
+                this.parseDelta(uint8Data, res);
+                x += res[0];
+                this.parseDelta(uint8Data, res);
+                y += res[0];
+
+                internalUVs[i] = x * multiplierU;
+                internalUVs[i+1] = 1 - (y * multiplierV);
+            }
         }
 
         index = res[1];
@@ -488,14 +555,14 @@ struct FacesBlock {
     internalUVs = null;
     externalUVs = null;
 
-    vertices = new Float32Array(numFaces * 3 * 3);//[];
+    vertices = this.use16bit ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
 
     if (this.flags & this.flagsInternalTexcoords) {
-        internalUVs = new Float32Array(numFaces * 3 * 2);//[];
+        internalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
     }
 
     if (this.flags & this.flagsExternalTexcoords) {
-        externalUVs = new Float32Array(numFaces * 3 * 2);//[];
+        externalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
     }
 
     var vtmp = this.tmpVertices;
@@ -610,7 +677,7 @@ MapSubmesh.prototype.buildGpuMesh = function () {
         vertices: this.vertices,
         uvs: this.internalUVs,
         uvs2: this.externalUVs
-    }, 1, this.map.core, true);
+    }, 1, this.map.core, true, this.use16bit);
 };
 
 

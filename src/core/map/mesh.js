@@ -20,6 +20,7 @@ var MapMesh = function(map, url, tile) {
     this.stats = map.stats;
     this.mapLoaderUrl  = url;
     this.tile = tile; // used only for stats
+    this.use16bit = map.config.map16bitMeshes;
 
     this.bbox = new BBox();
     this.size = 0;
@@ -302,9 +303,10 @@ MapMesh.prototype.parseMapMesh = function (stream) {
             this.faces += submesh.faces;
 
             //aproximate size
-            this.gpuSize += (submesh.vertices ? submesh.vertices.length : 0) * 3 * 4 +
-                            (submesh.internalUVs ? submesh.internalUVs.length : 0) * 2 * 4 +
-                            (submesh.externalUVs ? submesh.externalUVs.length : 0) * 2 * 4;
+            var varSize = this.use16bit ? 2 : 4;
+            this.gpuSize += (submesh.vertices ? submesh.vertices.length : 0) * 3 * varSize +
+                            (submesh.internalUVs ? submesh.internalUVs.length : 0) * 2 * varSize +
+                            (submesh.externalUVs ? submesh.externalUVs.length : 0) * 2 * varSize;
         }
     }
     

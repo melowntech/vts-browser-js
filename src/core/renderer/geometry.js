@@ -37,7 +37,7 @@ RendererGeometry.setFaceUVs = function(uvs, a, b, c, index) {
 
 // Procedural mesh representing a heightmap block
 // Creates a grid of size x size vertices, all coords are [0..1].
-RendererGeometry.buildHeightmap = function(size) {
+RendererGeometry.buildHeightmap = function(size, use16bit) {
     size--;
 
     var g = RendererGeometry;
@@ -71,33 +71,37 @@ RendererGeometry.buildHeightmap = function(size) {
 
     var bbox = new BBox(0,0,0,1,1,1);
 
-    return { bbox:bbox, vertices:vertices, uvs: uvs};
+    if (use16bit) {
+        return { bbox:bbox, vertices:this.covnetTo16Bit(vertices), uvs: this.covnetTo16Bit(uvs)};
+    } else {
+        return { bbox:bbox, vertices:vertices, uvs: uvs};
+    }
 };
 
 
-RendererGeometry.buildPlane = function(size) {
+RendererGeometry.buildPlane = function(size, use16bit) {
     size--;
 
     var g = RendererGeometry;
     var numFaces = (size* size) * 2;
-    var vertices = new Float32Array(numFaces * 3 * 3);//[];
+    var vertices = (use16bit) ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
     var uvs = new Float32Array(numFaces * 3 * 2);//[];
 
     var factor = 1.0 / (size);
-    var index = 0;
-    var index2 = 0;
+    var index = 0, index2 = 0;
+    var x1, y1, x2, y2, xx1, xx2, yy1, yy2;
 
     for (var i = 0; i < size; i++) {
         for (var j = 0; j < size; j++) {
-            var x1 = j;
-            var x2 = j+1;
-            var y1 = i;
-            var y2 = i+1;
+            x1 = j;
+            x2 = j+1;
+            y1 = i;
+            y2 = i+1;
 
-            var xx1 = j * factor;
-            var xx2 = (j+1) * factor;
-            var yy1 = (i) * factor;
-            var yy2 = (i+1) * factor;
+            xx1 = j * factor;
+            xx2 = (j+1) * factor;
+            yy1 = (i) * factor;
+            yy2 = (i+1) * factor;
 
             g.setFaceVertices(vertices, [x1, y1, 0], [x1, y2, 0], [x2, y2, 0], index);
             g.setFaceUVs(uvs, [xx1, yy1], [xx1, yy2], [xx2, yy2], index2);
@@ -113,7 +117,11 @@ RendererGeometry.buildPlane = function(size) {
 
     var bbox = new BBox(0,0,0,1,1,1);
 
-    return { bbox:bbox, vertices:vertices, uvs: uvs};
+    if (use16bit) {
+        return { bbox:bbox, vertices:vertices, uvs: this.covnetTo16Bit(uvs)};
+    } else {
+        return { bbox:bbox, vertices:vertices, uvs: uvs};
+    }
 };
 
 RendererGeometry.spherePos = function(lon, lat) {
@@ -129,7 +137,7 @@ RendererGeometry.spherePos = function(lon, lat) {
 // Creates an approximation of a unit sphere, note that all coords are
 // in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
 // are oriented inwards.
-RendererGeometry.buildSkydome = function(latitudeBands, longitudeBands) {
+RendererGeometry.buildSkydome = function(latitudeBands, longitudeBands, use16bit) {
     var g = RendererGeometry;
     var numFaces = (latitudeBands * longitudeBands) * 2;
     var vertices = new Float32Array(numFaces * 3 * 3);
@@ -154,8 +162,24 @@ RendererGeometry.buildSkydome = function(latitudeBands, longitudeBands) {
 
     var bbox = new BBox(0,0,0,1,1,1);
 
-    return { bbox:bbox, vertices:vertices, uvs: uvs};
+    if (use16bit) {
+        return { bbox:bbox, vertices:this.covnetTo16Bit(vertices), uvs: this.covnetTo16Bit(uvs)};
+    } else {
+        return { bbox:bbox, vertices:vertices, uvs: uvs};
+    }
 };
+
+RendererGeometry.covnetTo16Bit = function(array) {
+    var t, array2 = new Uint16Array(array.length);
+
+    for (var i = 0, li = array.length; i < li; i++) {
+        t = array[i] * 65535;
+        if (t < 0) t = 0; if (t > 65535) t = 65535;
+        array2[i] = t;
+    }
+
+    return array2;
+}
 
 
 RendererGeometry.makeQuad = function(lon1, lat1, lon2, lat2, vertices, index, uvs, index2) {
