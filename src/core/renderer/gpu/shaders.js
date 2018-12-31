@@ -504,7 +504,7 @@ GpuShaders.atmoFragmentShader2 = 'precision mediump float;\n'+
 
 GpuShaders.atmoVertexShader3 =
     'attribute vec3 aPosition;\n'+
-    'attribute vec2 aTexCoord;\n'+
+    //'attribute vec2 aTexCoord;\n'+
     'uniform mat4 uMV, uProj;\n'+
     //"uniform mat3 uNorm;\n"+
     'uniform vec4 uParams;\n'+       //[surfaceRadius, surfaceRadius, strech ,safetyfactor]

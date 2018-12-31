@@ -124,9 +124,9 @@ RendererDraw.prototype.drawBall = function(position, size, size2, shader, params
     mat3.transpose(norm);
     
     gpu.useProgram(shader, ['aPosition']);
-    gpu.bindTexture(renderer.redTexture);
+    //gpu.bindTexture(renderer.redTexture);
 
-    shader.setSampler('uSampler', 0);
+    //shader.setSampler('uSampler', 0);
     shader.setMat4('uProj', proj);
     shader.setMat4('uMV', mv);
     

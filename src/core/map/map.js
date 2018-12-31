@@ -824,6 +824,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapFeaturesReduceParams':       this.config.mapFeaturesReduceParams = value; break;
     case 'mapLogGeodataStyles':           this.config.mapLogGeodataStyles = utils.validateBool(value, true); break;
     case 'map16bitMeshes':                this.config.map16bitMeshes = utils.validateBool(value, false); break;
+    case 'mapOnlyOneUVs':                 this.config.mapOnlyOneUVs = utils.validateBool(value, false); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -893,6 +894,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapFeaturesReduceParams':       return this.config.mapFeaturesReduceParams;
     case 'mapLogGeodataStyles':           return this.config.mapLogGeodataStyles;
     case 'map16bitMeshes':                return this.config.map16bitMeshes;
+    case 'mapOnlyOneUVs':                 return this.config.mapOnlyOneUVs;
     case 'mario':                         return this.config.mario;
     }
 };

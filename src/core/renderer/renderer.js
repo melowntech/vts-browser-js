@@ -195,10 +195,6 @@ Renderer.prototype.kill = function() {
 
     this.killed = true;
 
-    if (this.planet != null) {
-        this.planet.kill();
-    }
-
     if (this.heightmapMesh) this.heightmapMesh.kill();
     if (this.heightmapTexture) this.heightmapTexture.kill();
     if (this.skydomeMesh) this.skydomeMesh.kill();
@@ -221,20 +217,15 @@ Renderer.prototype.kill = function() {
 };
 
 
-Renderer.prototype.getPlanet = function() {
-    return this.planet;
-};
-
-
 Renderer.prototype.resizeGL = function(width, height, skipCanvas, skipPaint) {
     this.camera.setAspect(width / height);
     this.curSize = [width, height];
     this.oldSize = [width, height];
     this.gpu.resize(this.curSize, skipCanvas);
 
-    if (skipPaint !== true) { //remove this??
-        this.draw.paintGL();
-    }
+    //if (skipPaint !== true) { //remove this??
+       // this.draw.paintGL();
+    //}
 
     var m = [];
     m[0] = 2.0/width; m[1] = 0; m[2] = 0; m[3] = 0;
