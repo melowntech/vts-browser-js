@@ -37,6 +37,7 @@ var MapMesh = function(map, url, tile) {
 
     this.mBuffer = new Float32Array(16);
     this.mBuffer2 = new Float32Array(16);
+    this.vBuffer = new Float32Array(4);
 
     this.submeshes = [];
     this.gpuSubmeshes = [];
@@ -470,8 +471,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         return;
     }
 
-    var mv = this.mBuffer;
-    mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrix(cameraPos, this.mBuffer2), mv);
+    var mv = this.mBuffer, m = this.mBuffer2, v = this.vBuffer;
+    mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrix(cameraPos, m), mv);
     var proj = renderer.camera.getProjectionFMatrix();
 
     program.setMat4('uMV', mv);
@@ -483,43 +484,48 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     }
 
     if (drawWireframe == 0) {
+        var cv = this.map.camera.vector2, c = draw.atmoColor, t, bmin = submesh.bbox.min, bmax = submesh.bbox.max;
+
         switch(type) {
         case VTS_MATERIAL_INTERNAL:
         case VTS_MATERIAL_FOG:
-            program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
-            program.setVec4('uFogColor', draw.atmoColor);
-            
-            submesh.getWorldMatrix([0,0,0], this.mBuffer2);
-            program.setMat4('uMV2', this.mBuffer2);
-            program.setVec4('uCamVec', this.map.camera.vector2);
-            break;
-
         case VTS_MATERIAL_INTERNAL_NOFOG:
-                //program.setFloat("uFogDensity", 0);
-            program.setVec4('uParams', [draw.zFactor, 0, 0, 0]);
+
+            m[0] = draw.zFactor, m[1] = (type == VTS_MATERIAL_INTERNAL_NOFOG) ? 0 : draw.fogDensity;
+            m[2] = bmax[0] - bmin[0], m[3] = bmax[1] - bmin[1],
+            m[4] = cv[0], m[5] = cv[1], m[6] = cv[2], m[7] = cv[3],
+            m[12] = bmax[2] - bmin[2], m[13] = bmin[0], m[14] = bmin[1], m[15] = bmin[2];
+
+            program.setMat4('uParams', m);
+                                /*[draw.zFactor, (type == VTS_MATERIAL_INTERNAL_NOFOG) ? 0 : draw.fogDensity, bmax[0] - bmin[0], bmax[1] - bmin[1],
+                                        v[0], v[1], v[2], v[3],
+                                        0,0,0,0,
+                                        bmax[2] - bmin[2], bmin[0], bmin[1], bmin[2]]);*/
+
+            v[0] = c[0], v[1] = c[1], v[2] = c[2];
+            program.setVec4('uParams2', v);
             break;
 
         case VTS_MATERIAL_EXTERNAL:
-            program.setFloat('uAlpha', 1);
-                //program.setFloat("uFogDensity", draw.fogDensity);
-            program.setVec4('uParams', [draw.zFactor, draw.fogDensity, 0, 0]);
-            program.setVec4('uTransform', texture.getTransform());
-            program.setVec4('uFogColor', draw.atmoColor);
-
-            submesh.getWorldMatrix([0,0,0], this.mBuffer2);
-            program.setMat4('uMV2', this.mBuffer2);
-            program.setVec4('uCamVec', this.map.camera.vector2);
-            break;
-
         case VTS_MATERIAL_EXTERNAL_NOFOG:
-            program.setFloat('uAlpha', alpha);
-                //program.setFloat("uFogDensity", 0);
-            program.setVec4('uParams', [draw.zFactor, 0, 0, 0]);
-            program.setVec4('uTransform', texture.getTransform());
 
-            submesh.getWorldMatrix([0,0,0], this.mBuffer2);
-            program.setMat4('uMV2', this.mBuffer2);
-            program.setVec4('uCamVec', [1,0,0,0]);
+            t = texture.getTransform();
+
+            m[0] = draw.zFactor, m[1] = (type == VTS_MATERIAL_EXTERNAL) ? draw.fogDensity : 0;
+            m[2] = bmax[0] - bmin[0], m[3] = bmax[1] - bmin[1],
+            m[4] = cv[0], m[5] = cv[1], m[6] = cv[2], m[7] = cv[3],
+            m[8] = t[0], m[9] = t[1], m[10] = t[2], m[11] = t[3],
+            m[12] = bmax[2] - bmin[2], m[13] = bmin[0], m[14] = bmin[1], m[15] = bmin[2];
+
+            program.setMat4('uParams', m);
+
+            /* [draw.zFactor, (type == VTS_MATERIAL_EXTERNAL) ? draw.fogDensity : 0, bmax[0] - bmin[0], bmax[1] - bmin[1],
+                                        v[0], v[1], v[2], v[3],
+                                        t[0], t[1], t[2], t[3],
+                                        bmax[2] - bmin[2], bmin[0], bmin[1], bmin[2]]);*/
+
+            v[0] = c[0], v[1] = c[1], v[2] = c[2]; v[3] = (type == VTS_MATERIAL_EXTERNAL) ? 1 : alpha;
+            program.setVec4('uParams2', v);
             break;
         }
     }
@@ -527,16 +533,9 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     if (submesh.statsCoutner != this.stats.counter) {
         submesh.statsCoutner = this.stats.counter;
         this.stats.gpuRenderUsed += gpuSubmesh.size;
-    } //else {
-        //this.stats.gpuRenderUsed ++;
-    //}
-
-    //this.map.renderer.gpu.gl.polygonOffset(-1.0, this.map.zShift);
-    //this.map.renderer.gpu.gl.enable(this.map.renderer.gpu.gl.POLYGON_OFFSET_FILL);
+    } 
 
     gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null);
-
-    //this.map.renderer.gpu.gl.disable(this.map.renderer.gpu.gl.POLYGON_OFFSET_FILL);
 
     this.stats.drawnFaces += this.faces;
     this.stats.drawCalls ++;

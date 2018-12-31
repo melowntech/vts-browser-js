@@ -184,9 +184,6 @@ MapGeodataView.prototype.getWorldMatrix = function(bbox, geoPos, matrix) {
     var m = matrix;
 
     if (m != null) {
-        //m[0] = bbox.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
-        //m[4] = 0; m[5] = bbox.side(1); m[6] = 0; m[7] = 0;
-        //m[8] = 0; m[9] = 0; m[10] = bbox.side(2); m[11] = 0;
         m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
         m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
         m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
