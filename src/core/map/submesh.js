@@ -144,10 +144,10 @@ struct VerticesBlock {
     var internalUVs = null;
     var externalUVs = null;
 
-    var vertices = new Float32Array(numVertices * 3);//[];
+    var vertices = new Float32Array(numVertices * 3);
 
     if (this.flags & this.flagsExternalTexcoords) {
-        externalUVs = new Float32Array(numVertices * 2);//[];
+        externalUVs = new Float32Array(numVertices * 2);
     }
 
     var uvfactor = 1.0 / 65535;
@@ -156,17 +156,12 @@ struct VerticesBlock {
     var i, li;
 
     for (i = 0; i < numVertices; i++) {
-        //vertices[vindex] = data.getUint16(index, true) * vfactor; index += 2;
-        //vertices[vindex+1] = data.getUint16(index, true) * vfactor; index += 2;
-        //vertices[vindex+2] = data.getUint16(index, true) * vfactor; index += 2;
         vertices[vindex] = (uint8Data[index] + (uint8Data[index + 1]<<8)) * uvfactor;
         vertices[vindex+1] = (uint8Data[index+2] + (uint8Data[index + 3]<<8)) * uvfactor;
         vertices[vindex+2] = (uint8Data[index+4] + (uint8Data[index + 5]<<8)) * uvfactor;
         vindex += 3;
 
         if (externalUVs != null) {
-            //externalUVs[uvindex] = data.getUint16(index, true) * uvfactor; index += 2;
-            //externalUVs[uvindex+1] = (65535 - data.getUint16(index, true)) * uvfactor; index += 2;
             externalUVs[uvindex] = (uint8Data[index+6] + (uint8Data[index + 7]<<8)) * uvfactor;
             externalUVs[uvindex+1] = (65535 - (uint8Data[index+8] + (uint8Data[index + 9]<<8))) * uvfactor;
             uvindex += 2;
@@ -615,7 +610,7 @@ MapSubmesh.prototype.buildGpuMesh = function () {
         vertices: this.vertices,
         uvs: this.internalUVs,
         uvs2: this.externalUVs
-    }, 1, this.map.core);
+    }, 1, this.map.core, true);
 };
 
 

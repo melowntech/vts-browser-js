@@ -162,6 +162,7 @@ MapTexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
             
         } else {
             this.setBoundTexture(this.extraBound.sourceTile, this.extraBound.layer, this.extraBound.hmap);        
+            return this.isReady(doNotLoad, priority, doNotCheckGpu);
         }
         
         return false;

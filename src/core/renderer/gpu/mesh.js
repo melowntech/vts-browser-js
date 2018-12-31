@@ -1,5 +1,5 @@
 
-var GpuMesh = function(gpu, meshData, fileSize, core) {
+var GpuMesh = function(gpu, meshData, fileSize, core, direct) {
     this.gpu = gpu;
     this.gl = gpu.gl;
     this.bbox = meshData.bbox; //< bbox copy from Mesh
@@ -26,7 +26,7 @@ var GpuMesh = function(gpu, meshData, fileSize, core) {
     this.vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, direct ? vertices : (new Float32Array(vertices)), gl.STATIC_DRAW);
     this.vertexBuffer.itemSize = vertexSize;
     this.vertexBuffer.numItems = vertices.length / vertexSize;
 
@@ -35,7 +35,7 @@ var GpuMesh = function(gpu, meshData, fileSize, core) {
         this.uvBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
 
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, direct ? uvs : (new Float32Array(uvs)), gl.STATIC_DRAW);
         this.uvBuffer.itemSize = uvSize;
         this.uvBuffer.numItems = uvs.length / uvSize;
     }
@@ -45,7 +45,7 @@ var GpuMesh = function(gpu, meshData, fileSize, core) {
         this.uv2Buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.uv2Buffer);
 
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs2), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, direct ? uvs2 : (new Float32Array(uvs2)), gl.STATIC_DRAW);
         this.uv2Buffer.itemSize = uv2Size;
         this.uv2Buffer.numItems = uvs2.length / uv2Size;
     }
