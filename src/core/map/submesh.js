@@ -227,77 +227,133 @@ struct FacesBlock {
 */
 
     var numFaces = data.getUint16(index, true); index += 2;
+    var indices = null;
 
     internalUVs = null;
     externalUVs = null;
 
-    vertices = this.use16bit ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
+    var onlyExternalIndices = (this.map.config.mapIndexBuffers && this.map.config.mapOnlyOneUVs && !(this.flags & this.flagsInternalTexcoords));
+    var onlyInternalIndices = (this.map.config.mapIndexBuffers && this.map.config.mapOnlyOneUVs && (this.flags & this.flagsInternalTexcoords));
+    var onlyIndices = onlyExternalIndices || onlyInternalIndices;
 
-    if (this.flags & this.flagsInternalTexcoords) {
-        internalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
-    }
+    if (onlyIndices) {
+        indices = new Uint16Array(numFaces * 3);
+    } else {
+        vertices = this.use16bit ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
 
-    if (!onlyOneUVs && (this.flags & this.flagsExternalTexcoords)) {
-        externalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
+        if (this.flags & this.flagsInternalTexcoords) {
+            internalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
+        }
+
+        if (!onlyOneUVs && (this.flags & this.flagsExternalTexcoords)) {
+            externalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
+        }
     }
 
     var vtmp = this.tmpVertices;
     var eUVs = this.tmpExternalUVs;
     var iUVs = this.tmpInternalUVs;
+    var v1, v2, v3, vv1, vv2, vv3, sindex;
+
+    if (onlyExternalIndices) {
+        vertices = this.tmpVertices;
+        externalUVs = this.tmpExternalUVs;
+    }
+
+    if (onlyInternalIndices) {
+        vertices = this.use16bit ? (new Uint16Array((iUVs.length / 2) * 3)) : (new Float32Array((iUVs.length / 2) * 3));
+        internalUVs = this.tmpInternalUVs;
+    }
 
     for (i = 0; i < numFaces; i++) {
-        vindex = i * (3 * 3);
-        var v1 = (uint8Data[index] + (uint8Data[index + 1]<<8));
-        var v2 = (uint8Data[index+2] + (uint8Data[index + 3]<<8));
-        var v3 = (uint8Data[index+4] + (uint8Data[index + 5]<<8));
+        v1 = (uint8Data[index] + (uint8Data[index + 1]<<8));
+        v2 = (uint8Data[index+2] + (uint8Data[index + 3]<<8));
+        v3 = (uint8Data[index+4] + (uint8Data[index + 5]<<8));
 
-        //var dindex = i * (3 * 3);
-        var sindex = v1 * 3;
-        vertices[vindex] = vtmp[sindex];
-        vertices[vindex+1] = vtmp[sindex+1];
-        vertices[vindex+2] = vtmp[sindex+2];
+        if (onlyIndices) {
+            vindex = i * 3;
 
-        sindex = v2 * 3;
-        vertices[vindex+3] = vtmp[sindex];
-        vertices[vindex+4] = vtmp[sindex+1];
-        vertices[vindex+5] = vtmp[sindex+2];
+            if (internalUVs != null) {
+                vv1 = (uint8Data[index+6] + (uint8Data[index + 7]<<8));
+                vv2 = (uint8Data[index+8] + (uint8Data[index + 9]<<8));
+                vv3 = (uint8Data[index+10] + (uint8Data[index + 11]<<8));
 
-        sindex = v3 * 3;
-        vertices[vindex+6] = vtmp[sindex];
-        vertices[vindex+7] = vtmp[sindex+1];
-        vertices[vindex+8] = vtmp[sindex+2];
+                vertices[vv1*3] = vtmp[v1*3];
+                vertices[vv1*3+1] = vtmp[v1*3+1];
+                vertices[vv1*3+2] = vtmp[v1*3+2];
 
-        if (externalUVs != null) {
-            vindex = i * (3 * 2);
-            externalUVs[vindex] = eUVs[v1*2];
-            externalUVs[vindex+1] = eUVs[v1*2+1];
-            externalUVs[vindex+2] = eUVs[v2*2];
-            externalUVs[vindex+3] = eUVs[v2*2+1];
-            externalUVs[vindex+4] = eUVs[v3*2];
-            externalUVs[vindex+5] = eUVs[v3*2+1];
-        }
+                vertices[vv2*3] = vtmp[v2*3];
+                vertices[vv2*3+1] = vtmp[v2*3+1];
+                vertices[vv2*3+2] = vtmp[v2*3+2];
 
-        if (internalUVs != null) {
-            v1 = (uint8Data[index+6] + (uint8Data[index + 7]<<8));
-            v2 = (uint8Data[index+8] + (uint8Data[index + 9]<<8));
-            v3 = (uint8Data[index+10] + (uint8Data[index + 11]<<8));
-            index += 12;
+                vertices[vv3*3] = vtmp[v3*3];
+                vertices[vv3*3+1] = vtmp[v3*3+1];
+                vertices[vv3*3+2] = vtmp[v3*3+2];
 
-            vindex = i * (3 * 2);
-            internalUVs[vindex] = iUVs[v1*2];
-            internalUVs[vindex+1] = iUVs[v1*2+1];
-            internalUVs[vindex+2] = iUVs[v2*2];
-            internalUVs[vindex+3] = iUVs[v2*2+1];
-            internalUVs[vindex+4] = iUVs[v3*2];
-            internalUVs[vindex+5] = iUVs[v3*2+1];
+                indices[vindex] = vv1;
+                indices[vindex+1] = vv2;
+                indices[vindex+2] = vv3;
+
+                index += 12;
+            } else {
+                indices[vindex] = v1;
+                indices[vindex+1] = v2;
+                indices[vindex+2] = v3;
+
+                index += 6;
+            }
+
         } else {
-            index += 6;
+            vindex = i * (3 * 3);
+
+            sindex = v1 * 3;
+            vertices[vindex] = vtmp[sindex];
+            vertices[vindex+1] = vtmp[sindex+1];
+            vertices[vindex+2] = vtmp[sindex+2];
+
+            sindex = v2 * 3;
+            vertices[vindex+3] = vtmp[sindex];
+            vertices[vindex+4] = vtmp[sindex+1];
+            vertices[vindex+5] = vtmp[sindex+2];
+
+            sindex = v3 * 3;
+            vertices[vindex+6] = vtmp[sindex];
+            vertices[vindex+7] = vtmp[sindex+1];
+            vertices[vindex+8] = vtmp[sindex+2];
+
+            if (externalUVs != null) {
+                vindex = i * (3 * 2);
+                externalUVs[vindex] = eUVs[v1*2];
+                externalUVs[vindex+1] = eUVs[v1*2+1];
+                externalUVs[vindex+2] = eUVs[v2*2];
+                externalUVs[vindex+3] = eUVs[v2*2+1];
+                externalUVs[vindex+4] = eUVs[v3*2];
+                externalUVs[vindex+5] = eUVs[v3*2+1];
+            }
+
+            if (internalUVs != null) {
+                v1 = (uint8Data[index+6] + (uint8Data[index + 7]<<8));
+                v2 = (uint8Data[index+8] + (uint8Data[index + 9]<<8));
+                v3 = (uint8Data[index+10] + (uint8Data[index + 11]<<8));
+                index += 12;
+
+                vindex = i * (3 * 2);
+                internalUVs[vindex] = iUVs[v1*2];
+                internalUVs[vindex+1] = iUVs[v1*2+1];
+                internalUVs[vindex+2] = iUVs[v2*2];
+                internalUVs[vindex+3] = iUVs[v2*2+1];
+                internalUVs[vindex+4] = iUVs[v3*2];
+                internalUVs[vindex+5] = iUVs[v3*2+1];
+            } else {
+                index += 6;
+            }
         }
     }
 
     this.vertices = vertices;
     this.internalUVs = internalUVs;
     this.externalUVs = externalUVs;
+    this.indices = indices;
 
     this.tmpVertices = null;
     this.tmpInternalUVs = null;
@@ -305,10 +361,10 @@ struct FacesBlock {
 
     stream.index = index;
 
-    this.size = this.vertices.length;
-    if (this.internalUVs) this.size += this.internalUVs.length;
-    if (this.externalUVs) this.size += this.externalUVs.length;
-    this.size *= 4;
+    this.size = this.vertices.byteLength;
+    if (this.internalUVs) this.size += this.internalUVs.byteLength;
+    if (this.externalUVs) this.size += this.externalUVs.byteLength;
+    if (this.indices) this.size += this.indices.byteLength;
     this.faces = numFaces;
 };
 
@@ -568,8 +624,6 @@ struct FacesBlock {
     var onlyIndices = onlyExternalIndices || onlyInternalIndices;
 
     if (onlyIndices) {
-        vertices = this.tmpVertices;
-        externalUVs = this.tmpExternalUVs;
         indices = new Uint16Array(numFaces * 3);
     } else {
         vertices = this.use16bit ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
@@ -710,10 +764,10 @@ struct FacesBlock {
 
     stream.index = index;
 
-    this.size = this.vertices.length;
-    if (this.internalUVs) this.size += this.internalUVs.length;
-    if (this.externalUVs) this.size += this.externalUVs.length;
-    this.size *= 4;
+    this.size = this.vertices.byteLength;
+    if (this.internalUVs) this.size += this.internalUVs.byteLength;
+    if (this.externalUVs) this.size += this.externalUVs.byteLength;
+    if (this.indices) this.size += this.indices.byteLength;
     this.faces = numFaces;
 };
 
