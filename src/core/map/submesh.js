@@ -510,8 +510,8 @@ struct TexcoorsBlock {
         var multiplierV = (this.use16bit) ? (65536.0 / quantV) : (1.0 / quantV);
         x = 0, y = 0;
     
-        var internalUVs = this.use16bit ? (new Uint16Array(numUVs * 3)) : (new Float32Array(numUVs * 3));
-        res[1] = index;
+        var internalUVs = this.use16bit ? (new Uint16Array(numUVs * 2)) : (new Float32Array(numUVs * 2));
+        res[1] = index;7
 
         if (this.use16bit) {
             for (i = 0, li = numUVs * 2; i < li; i+=2) {
@@ -564,8 +564,10 @@ struct FacesBlock {
     externalUVs = null;
 
     var onlyExternalIndices = (this.map.config.mapIndexBuffers && this.map.config.mapOnlyOneUVs && !(this.flags & this.flagsInternalTexcoords));
+    var onlyInternalIndices = (this.map.config.mapIndexBuffers && this.map.config.mapOnlyOneUVs && (this.flags & this.flagsInternalTexcoords));
+    var onlyIndices = onlyExternalIndices || onlyInternalIndices;
 
-    if (onlyExternalIndices) {
+    if (onlyIndices) {
         vertices = this.tmpVertices;
         externalUVs = this.tmpExternalUVs;
         indices = new Uint16Array(numFaces * 3);
@@ -585,7 +587,7 @@ struct FacesBlock {
     var eUVs = this.tmpExternalUVs;
     var iUVs = this.tmpInternalUVs;
     var high = 0;
-    var v1, v2, v3;
+    var v1, v2, v3, vv1, vv2, vv3;
     res[1] = index;
 
     for (i = 0; i < numFaces; i++) {
@@ -601,7 +603,7 @@ struct FacesBlock {
         v3 = high - res[0];
         if (!res[0]) { high++; }
 
-        if (onlyExternalIndices) {
+        if (onlyIndices) {
             vindex = i * 3;
             indices[vindex] = v1;
             indices[vindex+1] = v2;
@@ -635,6 +637,16 @@ struct FacesBlock {
         }
     }
 
+    if (onlyExternalIndices) {
+        vertices = this.tmpVertices;
+        externalUVs = this.tmpExternalUVs;
+    }
+
+    if (onlyInternalIndices) {
+        vertices = this.use16bit ? (new Uint16Array((iUVs.length / 2) * 3)) : (new Float32Array((iUVs.length / 2) * 3));
+        internalUVs = this.tmpInternalUVs;
+    }
+
     high = 0;
 
     if (internalUVs != null) {
@@ -651,13 +663,37 @@ struct FacesBlock {
             v3 = high - res[0];
             if (!res[0]) { high++; }
 
-            vindex = i * (3 * 2);
-            internalUVs[vindex] = iUVs[v1*2];
-            internalUVs[vindex+1] = iUVs[v1*2+1];
-            internalUVs[vindex+2] = iUVs[v2*2];
-            internalUVs[vindex+3] = iUVs[v2*2+1];
-            internalUVs[vindex+4] = iUVs[v3*2];
-            internalUVs[vindex+5] = iUVs[v3*2+1];
+            if (onlyInternalIndices) {
+                vindex = i * 3;
+
+                vv1 = indices[vindex] * 3;
+                vv2 = indices[vindex+1] * 3;
+                vv3 = indices[vindex+2] * 3;
+
+                vertices[v1*3] = vtmp[vv1];
+                vertices[v1*3+1] = vtmp[vv1+1];
+                vertices[v1*3+2] = vtmp[vv1+2];
+
+                vertices[v2*3] = vtmp[vv2];
+                vertices[v2*3+1] = vtmp[vv2+1];
+                vertices[v2*3+2] = vtmp[vv2+2];
+
+                vertices[v3*3] = vtmp[vv3];
+                vertices[v3*3+1] = vtmp[vv3+1];
+                vertices[v3*3+2] = vtmp[vv3+2];
+
+                indices[vindex] = v1;
+                indices[vindex+1] = v2;
+                indices[vindex+2] = v3;
+            } else {
+                vindex = i * (3 * 2);
+                internalUVs[vindex] = iUVs[v1*2];
+                internalUVs[vindex+1] = iUVs[v1*2+1];
+                internalUVs[vindex+2] = iUVs[v2*2];
+                internalUVs[vindex+3] = iUVs[v2*2+1];
+                internalUVs[vindex+4] = iUVs[v3*2];
+                internalUVs[vindex+5] = iUVs[v3*2+1];
+            }
         }
     }
 
