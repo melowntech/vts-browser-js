@@ -137,35 +137,86 @@ RendererGeometry.spherePos = function(lon, lat) {
 // Creates an approximation of a unit sphere, note that all coords are
 // in the range [0..1] and the center is in (0.5, 0.5). Triangle "normals"
 // are oriented inwards.
-RendererGeometry.buildSkydome = function(latitudeBands, longitudeBands, use16bit) {
+RendererGeometry.buildSkydome = function(latitudeBands, longitudeBands, use16bit, useIndices) {
     var g = RendererGeometry;
     var numFaces = (latitudeBands * longitudeBands) * 2;
-    var vertices = new Float32Array(numFaces * 3 * 3);
-    var uvs = new Float32Array(numFaces * 3 * 2);
-    var index = 0;
-    var index2 = 0;
+    var numVertices = (latitudeBands * longitudeBands) * (useIndices ? 1 : 3);
+    var vertices = new Float32Array(numVertices * 3);
+    var uvs = new Float32Array(numVertices * 2);
+    var indices = useIndices ? (new Uint16Array(numFaces * 3)) : null;
+    var index = 0, index2 = 0;
+    var g = RendererGeometry, lat, lon, lon2, lat2, v, flon, flat;
 
-    for (var lat = 0; lat < latitudeBands; lat++) {
-        for (var lon = 0; lon < longitudeBands; lon++)
-        {
-            var lon1 = ((lon) / longitudeBands);
-            var lon2 = ((lon+1) / longitudeBands);
+    if (useIndices) {
 
-            var lat1 = ((lat) / latitudeBands);
-            var lat2 = ((lat+1) / latitudeBands);
+        for (lat = 0; lat < latitudeBands; lat++) {
+            for (lon = 0; lon < longitudeBands; lon++) {
 
-            g.makeQuad(lon1, lat1, lon2, lat2, vertices, index, uvs, index2);
-            index += 9*2;
-            index2 += 6*2;
+                flon = lon / longitudeBands;
+                flat = lat / latitudeBands;
+                v = g.spherePos(flon, flat);
+
+                vertices[index] = v[0];
+                vertices[index+1] = v[1];
+                vertices[index+2] = v[2];
+
+                uvs[index2] = flon;
+                uvs[index2+1] = flat;
+
+                index += 3;
+                index2 += 2;
+            }
         }
+
+        index = 0;
+
+        for (lat = 0; lat < (latitudeBands - 1); lat++) {
+            for (lon = 0; lon < longitudeBands; lon++) {
+
+                lat2 = lat + 1;
+                lon2 = lon + 1;
+
+                if (lon2 >= longitudeBands) {
+                    lon2 = 0;
+                }
+
+                indices[index] = (lat2 * longitudeBands) + lon;
+                indices[index+1] = (lat * longitudeBands) + lon;
+                indices[index+2] = (lat * longitudeBands) + lon2;
+
+                indices[index+3] = (lat * longitudeBands) + lon2;
+                indices[index+4] = (lat2 * longitudeBands) + lon2;
+                indices[index+5] = (lat2 * longitudeBands) + lon;
+
+                index += 6;
+            }
+        }
+
+    } else {
+
+        for (var lat = 0; lat < latitudeBands; lat++) {
+            for (var lon = 0; lon < longitudeBands; lon++) {
+
+                var lon1 = ((lon) / longitudeBands);
+                var lon2 = ((lon+1) / longitudeBands);
+
+                var lat1 = ((lat) / latitudeBands);
+                var lat2 = ((lat+1) / latitudeBands);
+
+                g.makeQuad(lon1, lat1, lon2, lat2, vertices, index, uvs, index2);
+                index += 9*2;
+                index2 += 6*2;
+            }
+        }
+
     }
 
     var bbox = new BBox(0,0,0,1,1,1);
 
     if (use16bit) {
-        return { bbox:bbox, vertices:this.covnetTo16Bit(vertices), uvs: this.covnetTo16Bit(uvs)};
+        return { bbox:bbox, vertices:this.covnetTo16Bit(vertices), uvs: this.covnetTo16Bit(uvs), indices:indices};
     } else {
-        return { bbox:bbox, vertices:vertices, uvs: uvs};
+        return { bbox:bbox, vertices:vertices, uvs: uvs, indices:indices};
     }
 };
 

@@ -270,7 +270,7 @@ RendererInit.prototype.initSkydome = function() {
     renderer.skydomeMesh = new GpuMesh(this.gpu, meshData, null, this.core, true, use16Bit);
     //this.skydomeTexture = new GpuTexture(this.gpu, "./skydome.jpg", this.core);
 
-    meshData = RendererGeometry.buildSkydome(128, 256, use16Bit);
+    meshData = RendererGeometry.buildSkydome(128, 256, use16Bit, true);
 //    var meshData = RendererGeometry.buildSkydome(256, 512);
     renderer.atmoMesh = new GpuMesh(this.gpu, meshData, null, this.core, true, use16Bit);
 };
