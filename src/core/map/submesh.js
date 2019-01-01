@@ -18,6 +18,7 @@ var MapSubmesh = function(mesh, stream) {
     this.vertices = null;
     this.internalUVs = null;
     this.externalUVs = null;
+    this.indices = null;
     this.mesh = mesh;
     this.statsCounter = 0;
     this.valid = true;
@@ -229,17 +230,6 @@ struct FacesBlock {
 
     internalUVs = null;
     externalUVs = null;
-
-    /*
-    vertices = new Float32Array(numFaces * 3 * 3);//[];
-
-    if (this.flags & this.flagsInternalTexcoords) {
-        internalUVs = new Float32Array(numFaces * 3 * 2);//[];
-    }
-
-    if (this.flags & this.flagsExternalTexcoords) {
-        externalUVs = new Float32Array(numFaces * 3 * 2);//[];
-    }*/
 
     vertices = this.use16bit ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
 
@@ -568,18 +558,27 @@ struct FacesBlock {
 */
 
     var numFaces = data.getUint16(index, true); index += 2;
+    var indices = null;
 
     internalUVs = null;
     externalUVs = null;
 
-    vertices = this.use16bit ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
+    var onlyExternalIndices = (this.map.config.mapIndexBuffers && this.map.config.mapOnlyOneUVs && !(this.flags & this.flagsInternalTexcoords));
 
-    if (this.flags & this.flagsInternalTexcoords) {
-        internalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
-    }
+    if (onlyExternalIndices) {
+        vertices = this.tmpVertices;
+        externalUVs = this.tmpExternalUVs;
+        indices = new Uint16Array(numFaces * 3);
+    } else {
+        vertices = this.use16bit ? (new Uint16Array(numFaces * 3 * 3)) : (new Float32Array(numFaces * 3 * 3));
 
-    if (!onlyOneUVs && (this.flags & this.flagsExternalTexcoords)) {
-        externalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
+        if (this.flags & this.flagsInternalTexcoords) {
+            internalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
+        }
+
+        if (!onlyOneUVs && (this.flags & this.flagsExternalTexcoords)) {
+            externalUVs = this.use16bit ? (new Uint16Array(numFaces * 3 * 2)) : (new Float32Array(numFaces * 3 * 2));
+        }
     }
 
     var vtmp = this.tmpVertices;
@@ -590,8 +589,6 @@ struct FacesBlock {
     res[1] = index;
 
     for (i = 0; i < numFaces; i++) {
-        vindex = i * (3 * 3);
-       
         this.parseWord(uint8Data, res);
         v1 = high - res[0];
         if (!res[0]) { high++; }
@@ -603,31 +600,38 @@ struct FacesBlock {
         this.parseWord(uint8Data, res);
         v3 = high - res[0];
         if (!res[0]) { high++; }
-        
-        //var dindex = i * (3 * 3);
-        var sindex = v1 * 3;
-        vertices[vindex] = vtmp[sindex];
-        vertices[vindex+1] = vtmp[sindex+1];
-        vertices[vindex+2] = vtmp[sindex+2];
 
-        sindex = v2 * 3;
-        vertices[vindex+3] = vtmp[sindex];
-        vertices[vindex+4] = vtmp[sindex+1];
-        vertices[vindex+5] = vtmp[sindex+2];
+        if (onlyExternalIndices) {
+            vindex = i * 3;
+            indices[vindex] = v1;
+            indices[vindex+1] = v2;
+            indices[vindex+2] = v3;
+        } else {
+            vindex = i * (3 * 3);
+            var sindex = v1 * 3;
+            vertices[vindex] = vtmp[sindex];
+            vertices[vindex+1] = vtmp[sindex+1];
+            vertices[vindex+2] = vtmp[sindex+2];
 
-        sindex = v3 * 3;
-        vertices[vindex+6] = vtmp[sindex];
-        vertices[vindex+7] = vtmp[sindex+1];
-        vertices[vindex+8] = vtmp[sindex+2];
+            sindex = v2 * 3;
+            vertices[vindex+3] = vtmp[sindex];
+            vertices[vindex+4] = vtmp[sindex+1];
+            vertices[vindex+5] = vtmp[sindex+2];
 
-        if (externalUVs != null) {
-            vindex = i * (3 * 2);
-            externalUVs[vindex] = eUVs[v1*2];
-            externalUVs[vindex+1] = eUVs[v1*2+1];
-            externalUVs[vindex+2] = eUVs[v2*2];
-            externalUVs[vindex+3] = eUVs[v2*2+1];
-            externalUVs[vindex+4] = eUVs[v3*2];
-            externalUVs[vindex+5] = eUVs[v3*2+1];
+            sindex = v3 * 3;
+            vertices[vindex+6] = vtmp[sindex];
+            vertices[vindex+7] = vtmp[sindex+1];
+            vertices[vindex+8] = vtmp[sindex+2];
+
+            if (externalUVs != null) {
+                vindex = i * (3 * 2);
+                externalUVs[vindex] = eUVs[v1*2];
+                externalUVs[vindex+1] = eUVs[v1*2+1];
+                externalUVs[vindex+2] = eUVs[v2*2];
+                externalUVs[vindex+3] = eUVs[v2*2+1];
+                externalUVs[vindex+4] = eUVs[v3*2];
+                externalUVs[vindex+5] = eUVs[v3*2+1];
+            }
         }
     }
 
@@ -662,6 +666,7 @@ struct FacesBlock {
     this.vertices = vertices;
     this.internalUVs = internalUVs;
     this.externalUVs = externalUVs;
+    this.indices = indices;
 
     this.tmpVertices = null;
     this.tmpInternalUVs = null;
@@ -693,7 +698,8 @@ MapSubmesh.prototype.buildGpuMesh = function () {
         bbox: this.bbox,
         vertices: this.vertices,
         uvs: this.internalUVs,
-        uvs2: this.externalUVs
+        uvs2: this.externalUVs,
+        indices: this.indices
     }, 1, this.map.core, true, this.use16bit);
 };
 

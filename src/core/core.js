@@ -66,6 +66,7 @@ var Core = function(element, config, coreInterface) {
         mapRefreshCycles : 3,
         map16bitMeshes : false,
         mapOnlyOneUVs : false,
+        mapIndexBuffers : false,
 
         mapFeatureGridCells : 31,
         mapFeaturesPerSquareInch : 0.25, //0.6614,

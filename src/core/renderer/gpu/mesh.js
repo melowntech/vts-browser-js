@@ -14,6 +14,7 @@ var GpuMesh = function(gpu, meshData, fileSize, core, direct, use16bit, vertices
     var vertices = meshData.vertices;
     var uvs = meshData.uvs;
     var uvs2 = meshData.uvs2;
+    var indices = meshData.indices;
     var vertexSize = meshData.vertexSize || 3;
     var uvSize = meshData.uvSize || 2;
     var uv2Size = meshData.uv2Size || 2;
@@ -53,11 +54,22 @@ var GpuMesh = function(gpu, meshData, fileSize, core, direct, use16bit, vertices
         this.uv2Buffer.numItems = uvs2.length / uv2Size;
     }
 
+    if (indices != null) {
+        //create index buffer
+        this.indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, direct ? indices : (new Uint16Array(indices)), gl.STATIC_DRAW);
+        this.indexBuffer.itemSize = 1;
+        this.indexBuffer.numItems = indices.length;
+    }
+
     var varSize = this.use16bit ? 2 : 4;
     this.size = this.vertexBuffer.numItems * vertexSize * varSize;
-    this.size += (uvs == null) ? 0 : this.uvBuffer.numItems * uvSize * varSize;
-    this.size += (uvs2 == null) ? 0 : this.uv2Buffer.numItems * uv2Size * varSize;
-    this.polygons = this.vertexBuffer.numItems / 3;
+    this.size += (uvs) ? this.uvBuffer.numItems * uvSize * varSize : 0;
+    this.size += (uvs2) ? this.uv2Buffer.numItems * uv2Size * varSize : 0;
+    this.size += (indices) ? indices.length * 2 : 0;
+    this.polygons = (indices) ? indices.length / 3 : this.vertexBuffer.numItems / 3;
 
     this.valid = true;
 };
@@ -79,10 +91,15 @@ GpuMesh.prototype.kill = function() {
     if (this.uv2Buffer) {
         this.gl.deleteBuffer(this.uv2Buffer);
     }
+
+    if (this.indexBuffer) {
+        this.gl.deleteBuffer(this.indexBuffer);
+    }
     
     this.vertexBuffer = null;
     this.uvBuffer = null;
     this.uv2Buffer = null;
+    this.indexBuffer = null;
 };
 
 // Draws the mesh, given the two vertex shader attributes locations.
@@ -140,7 +157,13 @@ GpuMesh.prototype.draw = function(program, attrVertex, attrUV, attrUV2, attrBary
     }
 
     //draw polygons
-    gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffer.numItems);
+    if (this.indexBuffer) {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+
+        gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    }  else {
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffer.numItems);
+    }
 };
 
 
