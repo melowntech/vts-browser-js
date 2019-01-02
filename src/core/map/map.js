@@ -826,6 +826,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'map16bitMeshes':                this.config.map16bitMeshes = utils.validateBool(value, false); break;
     case 'mapOnlyOneUVs':                 this.config.mapOnlyOneUVs = utils.validateBool(value, false); break;
     case 'mapIndexBuffers':               this.config.mapIndexBuffers = utils.validateBool(value, false); break;
+    case 'mapAsyncImageDecode':           this.config.mapAsyncImageDecode = (utils.validateBool(value, false) && createImageBitmap) ? true : false; break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -897,6 +898,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'map16bitMeshes':                return this.config.map16bitMeshes;
     case 'mapOnlyOneUVs':                 return this.config.mapOnlyOneUVs;
     case 'mapIndexBuffers':               return this.config.mapIndexBuffers;
+    case 'mapAsyncImageDecode':           return this.config.mapAsyncImageDecode;
     case 'mario':                         return this.config.mario;
     }
 };

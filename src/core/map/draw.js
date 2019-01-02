@@ -169,6 +169,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     var camInfo = camera.update();
     var renderer = this.renderer;
 
+    renderer.debugStr = 'AsyncImageDecode: ' + this.config.mapAsyncImageDecode;
     renderer.dirty = true;
     renderer.drawFog = this.debug.drawFog;
 

@@ -93,7 +93,7 @@ InspectorStats.prototype.switchPanel = function() {
 
 
 InspectorStats.prototype.updateStatsPanel = function(stats) {
-    if (!this.infoElement) {
+    if (!this.infoElement || !this.panelVisible) {
         return;
     }
     var inspector = this.inspector;

@@ -19,7 +19,7 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
         tileCount = tileCount;
     }
 
-    renderer.debugStr = "<br>featuresPerScr: " + featureCount + "<br>gridCells: " + tileCount;
+    //renderer.debugStr = '<br>featuresPerScr: ' + featureCount + '<br>gridCells: ' + tileCount + '';
 
     //get top features
     var featureCache = renderer.gmap;
