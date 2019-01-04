@@ -406,11 +406,17 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         job.color2 = this.convertColor(data['color2']);
         job.outline = data['outline'];
         job.size = data['size'];
+        job.origin = data['origin'];
         job.files = data['files'] || [];
         job.index = data['index'] || 0;
         job.noOverlap = data['noOverlap'];
         var fonts = data['fonts'] || ['#default'];
         job.fonts = fonts;
+        job.gamma = [job.outline[2] * 1.4142 / job.size, job.outline[3] * 1.4142 / job.size];
+
+        if (job.origin) {
+            job.origin = new Float32Array(job.origin);
+        }
 
         for (var i = 0, li = fonts.length; i < li; i++) {
             fonts[i] = this.renderer.fonts[fonts[i]];

@@ -95,6 +95,12 @@ RendererInit.prototype.initShaders = function() {
     renderer.progImage = new GpuProgram(gpu, shaders.imageVertexShader, shaders.imageFragmentShader);
     renderer.progIcon = new GpuProgram(gpu, shaders.iconVertexShader, shaders.textFragmentShader); //label or icon
     renderer.progIcon2 = new GpuProgram(gpu, shaders.icon2VertexShader, shaders.text2FragmentShader); //label
+
+    renderer.progLabel16 = new GpuProgram(gpu, '#define DSIZE 16\n' + shaders.icon3VertexShader, shaders.text2FragmentShader); //label with singleBuffer
+    renderer.progLabel32 = new GpuProgram(gpu, '#define DSIZE 32\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
+    renderer.progLabel48 = new GpuProgram(gpu, '#define DSIZE 48\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
+    renderer.progLabel64 = new GpuProgram(gpu, '#define DSIZE 64\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
+    renderer.progLabel96 = new GpuProgram(gpu, '#define DSIZE 96\n' + shaders.icon3VertexShader, shaders.text2FragmentShader); 
 };
 
 RendererInit.prototype.initProceduralShaders = function() {
@@ -260,8 +266,65 @@ RendererInit.prototype.initImage = function() {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     renderer.rectIndicesBuffer.itemSize = 1;
     renderer.rectIndicesBuffer.numItems = 6;
+
+    renderer.textBuff16 = new Float32Array(16 * 4);
+    renderer.textBuff32 = new Float32Array(32 * 4);
+    renderer.textBuff48 = new Float32Array(48 * 4);
+    renderer.textBuff64 = new Float32Array(64 * 4);
+
+    renderer.textQuads16 = this.generateTextQuads(16);
+    renderer.textQuads32 = this.generateTextQuads(32);
+    renderer.textQuads48 = this.generateTextQuads(48);
+    renderer.textQuads64 = this.generateTextQuads(64);
+    renderer.textQuads96 = this.generateTextQuads(96);
 };
 
+
+RendererInit.prototype.generateTextQuads = function(num) {
+    var renderer = this.renderer;
+    var gl = this.gpu.gl;
+
+    var buffer = new Float32Array(num * 2 * 6);
+    var index, j;
+
+    for (var i = 0; i < num; i++) {
+        index = i * 6 * 2;
+
+        j = 0;
+        buffer[index] = i;
+        buffer[index+1] = j;
+
+        j = 1;
+        buffer[index+2] = i;
+        buffer[index+3] = j;
+
+        j = 2;
+        buffer[index+4] = i;
+        buffer[index+5] = j;
+
+        j = 2;
+        buffer[index+6] = i;
+        buffer[index+7] = j;
+
+        j = 3;
+        buffer[index+8] = i;
+        buffer[index+9] = j;
+
+        j = 0;
+        buffer[index+10] = i;
+        buffer[index+11] = j;
+    }
+
+    //create vertices buffer for rect
+    var vbuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
+
+    gl.bufferData(gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW);
+    vbuffer.itemSize = 2;
+    vbuffer.numItems = num * 6;
+
+    return vbuffer;
+};
 
 RendererInit.prototype.initSkydome = function() {
     var renderer = this.renderer;

@@ -1740,13 +1740,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == VTS_JOB_LABEL ? 1.0 : 1.0 / texture.width), stickShift*2]);
 
-        var j = 0, lj = 1, gamma = 0, gamma2 = 0;
+        var j = 0, lj = 1;
 
         if (prog != renderer.progIcon) {
-            gamma = job.outline[2] * 1.4142 / job.size;
-            gamma2 = job.outline[3] * 1.4142 / job.size;
             prog.setVec4('uColor', hitmapRender ? color : job.color2);
-            prog.setVec2('uParams', [job.outline[0], gamma2]);
+            prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
             lj = hitmapRender ? 1 : 2;
         } else {
             prog.setVec4('uColor', color);
@@ -1772,7 +1770,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         for(;j<lj;j++) {
             if (j == 1) {
                 prog.setVec4('uColor', color);
-                prog.setVec2('uParams', [job.outline[1], gamma]);
+                prog.setVec2('uParams', [job.outline[1], job.gamma[0]]);
             }
 
             if (files.length > 0) {
@@ -1918,7 +1916,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
-    var j = 0, lj = 1, gamma = 0, gamma2 = 0, color2 = job.color2;
+    var j = 0, lj = 1, color2 = job.color2;
 
     if (fade !== null) {
         color = [color[0], color[1], color[2], color[3] * fade];
@@ -1932,66 +1930,116 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
     }
 
+    var prog = job.program; //renderer.progIcon;
+
     if (job.singleBuffer) {
-        var prog = renderer.progImage;
-        var b = job.singleBuffer;
 
-        if (!job.singleBuffer2) {
-            job.singleBuffer2 = new Float32Array(b);
+        if (prog == renderer.progIcon) {
+            var b = job.singleBuffer;
+            prog = renderer.progImage;
 
-            var tx = 1 / texture.width, ty = 1 / texture.height;
-            b[2] *= tx; b[3] *= ty;
-            b[6] *= tx; b[7] *= ty;
-            b[10] *= tx; b[11] *= ty;
-            b[14] *= tx; b[15] *= ty;
+            if (!job.singleBuffer2) {
+                job.singleBuffer2 = new Float32Array(b);
+
+                var tx = 1 / texture.width, ty = 1 / texture.height;
+                b[2] *= tx; b[3] *= ty;
+                b[6] *= tx; b[7] *= ty;
+                b[10] *= tx; b[11] *= ty;
+                b[14] *= tx; b[15] *= ty;
+            }
+
+            if (job.updatePos) {
+                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp[1] -= stickShift;
+                pp[2] = pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2);
+            }
+
+            depth = pp[2];
+
+            var b2 = job.singleBuffer2;
+
+            b[0] = pp[0] + b2[0];
+            b[1] = pp[1] + b2[1];
+
+            b[4] = pp[0] + b2[4];
+            b[5] = pp[1] + b2[5];
+
+            b[8] = pp[0] + b2[8];
+            b[9] = pp[1] + b2[9];
+
+            b[12] = pp[0] + b2[12];
+            b[13] = pp[1] + b2[13];
+
+            gpu.useProgram(prog, ['aPosition']);
+            gpu.bindTexture(texture);
+
+            var vertices = renderer.rectVerticesBuffer;
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
+            gl.vertexAttribPointer(prog.getAttribute('aPosition'), vertices.itemSize, gl.FLOAT, false, 0, 0);
+
+            var indices = renderer.rectIndicesBuffer;
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
+
+            prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
+
+            prog.setMat4('uData', job.singleBuffer );
+
+            //prog.setVec4('uColor', hitmapRender ? color : color2);
+            prog.setVec4('uColor', color);
+            prog.setFloat('uDepth', depth);
+
+            gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
+
+        } else {
+
+            var b = job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
+
+            if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLabel96; } else
+            if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLabel64; } else
+            if (bl > 128) { vbuff = renderer.textQuads48; prog = renderer.progLabel48; } else
+            if (bl > 64) { vbuff = renderer.textQuads32; prog = renderer.progLabel32; }
+            else { vbuff = renderer.textQuads16; prog = renderer.progLabel16; }
+
+            gpu.useProgram(prog, ['aPosition']);
+            prog.setSampler('uSampler', 0);
+            prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+            prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], 1, stickShift*2]);
+            prog.setVec3('uOrigin', job.origin);
+            prog.setVec4('uColor', hitmapRender ? color : color2);
+            prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
+            lj = hitmapRender ? 1 : 2;
+
+            var vertexPositionAttribute = prog.getAttribute('aPosition');
+
+            prog.setVec4('uData', b);
+
+            //bind vetex positions
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbuff);
+            gl.vertexAttribPointer(vertexPositionAttribute, vbuff.itemSize, gl.FLOAT, false, 0, 0);
+
+            //draw polygons
+            for(;j<lj;j++) {
+                if (j == 1) {
+                    prog.setVec4('uColor', color);
+                    prog.setVec2('uParams', [job.outline[1], job.gamma[0]]);
+                }
+
+                for (var i = 0, li = files.length; i < li; i++) {
+                    var fontFiles = files[i];
+
+                    for (var k = 0, lk = fontFiles.length; k < lk; k++) {
+                        var file = fontFiles[k];
+                        prog.setFloat('uFile', Math.round(file+i*1000));
+                        gpu.bindTexture(job.fonts[i].getTexture(file));
+                        gl.drawArrays(gl.TRIANGLES, 0, vitems);
+                    }
+                }
+            }
+
         }
-
-        if (job.updatePos) {
-            pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
-            pp[1] -= stickShift;
-            pp[2] = pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2);
-        }
-
-        depth = pp[2];
-
-        var b2 = job.singleBuffer2;
-
-        b[0] = pp[0] + b2[0];
-        b[1] = pp[1] + b2[1];
-
-        b[4] = pp[0] + b2[4];
-        b[5] = pp[1] + b2[5];
-
-        b[8] = pp[0] + b2[8];
-        b[9] = pp[1] + b2[9];
-
-        b[12] = pp[0] + b2[12];
-        b[13] = pp[1] + b2[13];
-
-        gpu.useProgram(prog, ['aPosition']);
-        gpu.bindTexture(texture);
-
-        var vertices = renderer.rectVerticesBuffer;
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
-        gl.vertexAttribPointer(prog.getAttribute('aPosition'), vertices.itemSize, gl.FLOAT, false, 0, 0);
-
-        var indices = renderer.rectIndicesBuffer;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
-
-        prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
-
-        prog.setMat4('uData', job.singleBuffer );
-
-        //prog.setVec4('uColor', hitmapRender ? color : color2);
-        prog.setVec4('uColor', color);
-        prog.setFloat('uDepth', depth);
-
-        gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
         
         return;   
     }
-
-    var prog = job.program; //renderer.progIcon;
 
     gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aOrigin']);
     prog.setSampler('uSampler', 0);
@@ -1999,10 +2047,8 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], (job.type == VTS_JOB_LABEL ? 1.0 : 1.0 / texture.width), stickShift*2]);
 
     if (prog != renderer.progIcon) {
-        gamma = job.outline[2] * 1.4142 / job.size;
-        gamma2 = job.outline[3] * 1.4142 / job.size;
         prog.setVec4('uColor', hitmapRender ? color : color2);
-        prog.setVec2('uParams', [job.outline[0], gamma2]);
+        prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
         lj = hitmapRender ? 1 : 2;
     } else {
         prog.setVec4('uColor', color);
@@ -2028,7 +2074,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     for(;j<lj;j++) {
         if (j == 1) {
             prog.setVec4('uColor', color);
-            prog.setVec2('uParams', [job.outline[1], gamma]);
+            prog.setVec2('uParams', [job.outline[1], job.gamma[0]]);
         }
 
         if (files.length > 0) {

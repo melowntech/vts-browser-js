@@ -378,6 +378,37 @@ GpuShaders.icon2VertexShader =
         '}'+
     '}';
 
+GpuShaders.icon3VertexShader =
+    'attribute vec2 aPosition;\n'+
+    'uniform mat4 uMVP;\n'+
+    'uniform vec4 uScale;\n'+
+    'uniform vec3 uOrigin;\n'+
+    'uniform vec4 uData[DSIZE];\n'+
+    'uniform float uFile;\n'+
+    'varying vec2 vTexCoord;\n'+
+    'void main(){ \n'+
+        'int index = int(aPosition.x);\n'+
+        'vec4 data = uData[index];\n'+
+        'vec4 data2 = uData[index+1];\n'+
+        'vec4 v;\n'+
+        'int corner = int(aPosition.y);\n'+
+        'if (corner==0) v = vec4(data.x, data.y, data2.x, data2.y);\n'+
+        'if (corner==1) v = vec4(data.z, data.y, data2.z, data2.y);\n'+
+        'if (corner==2) v = vec4(data.z, data.w, data2.z, data2.w);\n'+
+        'if (corner==3) v = vec4(data.x, data.w, data2.x, data2.w);\n'+
+//        'vTexCoord = vec2(v.z, v.w) * uScale[2];\n'+
+        'vTexCoord = vec2(v.z, v.w);\n'+
+        'float file = floor(v.w/4.0);\n'+
+        'vTexCoord.y = mod(v.w,4.0);\n'+
+        'if (file != floor(uFile)) {\n'+
+            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+        '}else{\n'+
+            'vec4 pos = (uMVP * vec4(uOrigin.xyz, 1.0));\n'+
+            'gl_Position = pos + vec4(v.x*uScale.x*pos.w, (v.y+uScale.w)*uScale.y*pos.w, 0.0, 0.0);\n'+
+        '}'+
+    '}';
+
+
 GpuShaders.textFragmentShader = 'precision mediump float;\n'+
     'uniform sampler2D uSampler;\n'+
     'uniform vec4 uColor;\n'+
@@ -416,6 +447,7 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
 
         'if(alpha < 0.01){ discard; }\n'+
         'gl_FragColor = vec4(uColor.rgb, alpha);\n'+
+        //'gl_FragColor = vec4(1.0);\n'+
     '}';
 
 GpuShaders.skydomeVertexShader =
