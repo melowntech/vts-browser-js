@@ -408,6 +408,17 @@ utils.getParamsFromUrl = function(url) {
 };
 
 
+var textDecoderUtf8 = TextEncoder ? (new TextDecoder('utf-8')) : null;
+
+utils.unint8ToStringArray = function(array) {
+    if (textDecoderUtf8) {
+        return textDecoderUtf8.decode(array);
+    } else {
+        return String.fromCharCode.apply(null, new Uint8Array(array.buffer));
+    }
+}
+
+
 export {utils};
 
 // only implement if no native implementation is available

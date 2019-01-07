@@ -6,7 +6,7 @@ import {getLayerPropertyValue as getLayerPropertyValue_,
 import {addStreetTextOnPath as addStreetTextOnPath_, getTextGlyphs as getTextGlyphs_,
         areTextCharactersAvailable as areTextCharactersAvailable_,
         getCharVerticesCount as getCharVerticesCount_, getFonts as getFonts_, getFontsStorage as getFontsStorage_} from './worker-text.js';
-import {postGroupMessage as postGroupMessage_} from './worker-message.js';
+import {postGroupMessage as postGroupMessage_, postGroupMessageFast as postGroupMessageFast_} from './worker-message.js';
 
 //get rid of compiler mess
 var globals = globals_, vec3Normalize = vec3Normalize_,
@@ -15,7 +15,7 @@ var getLayerPropertyValue = getLayerPropertyValue_,
     getLayerExpresionValue = getLayerExpresionValue_;
 var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
     getCharVerticesCount = getCharVerticesCount_, getFonts = getFonts_, getFontsStorage = getFontsStorage_;
-var postGroupMessage = postGroupMessage_, getTextGlyphs = getTextGlyphs_;
+var postGroupMessage = postGroupMessage_, postGroupMessageFast = postGroupMessageFast_, getTextGlyphs = getTextGlyphs_;
 
 
 var processLineStringPass = function(lineString, lod, style, featureIndex, zIndex, eventInfo) {
@@ -847,10 +847,10 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
     center[1] += globals.groupOrigin[1];
     center[2] += globals.groupOrigin[2];
 
-    var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
+    var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent, type;
 
     if (line) {
-        var messageData = {'command':'addRenderJob', 'vertexBuffer': vertexBuffer,
+        var messageData = {
             'color':lineColor, 'z-index':zIndex, 'center': center, 'normalBuffer': normalBuffer,
             'elementBuffer': elementBuffer, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
@@ -858,9 +858,9 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
             'line-width':lineWidth*2, 'lod':(globals.autoLod ? null : globals.tileLod) };
     
         if (lineFlat) {
-            messageData['type'] = texturedLine ? 'flat-tline' : (widthByRatio ? 'flat-rline' : 'flat-line');
+            type = texturedLine ? VTS_WORKER_TYPE_FLAT_TLINE : (widthByRatio ? VTS_WORKER_TYPE_FLAT_RLINE : VTS_WORKER_TYPE_FLAT_LINE);
         } else {
-            messageData['type'] = texturedLine ? 'pixel-tline' : 'pixel-line';
+            type = texturedLine ? VTS_WORKER_TYPE_PIXEL_TLINE : VTS_WORKER_TYPE_PIXEL_LINE;
         }
     
         if (texturedLine) {
@@ -871,18 +871,15 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
         }
 
         var signature = JSON.stringify({
-            type: messageData['type'],
+            type: 'T'+type,
             color : lineColor,
             zIndex : zIndex,
             zOffset : zbufferOffset,
             state : globals.hitState
         });
         
-        if (normalBuffer) {
-            postGroupMessage(messageData, [vertexBuffer.buffer, normalBuffer.buffer], signature);
-        } else {
-            postGroupMessage(messageData, [vertexBuffer.buffer], signature);
-        }
+        postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, type, messageData,
+                             (normalBuffer) ? [vertexBuffer, normalBuffer] : [vertexBuffer], signature);
     }
 
     if (lineLabel) {
@@ -989,12 +986,20 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         zOffset : zbufferOffset
     });
 
-    postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_LINE_LABEL, {
+        'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 
+        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+        'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
+        'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, texcoordsBuffer], signature);
+
+
+    /*postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
         'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 
         'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
         'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
         'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
-        'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);
+        'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);*/
 };
 
 var processLineStringGeometry = function(lineString) {
@@ -1064,8 +1069,12 @@ var processLineStringGeometry = function(lineString) {
     }
 
     globals.signatureCounter++;
-    postGroupMessage({'command':'addRenderJob', 'type': 'line-geometry', 'id':lineString['id'], 'geometryBuffer': geometryBuffer,
-                      'indicesBuffer': indicesBuffer }, [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));
+
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_LINE_GEOMETRY, {
+        'id':lineString['id'] }, [geometryBuffer, indicesBuffer], (""+globals.signatureCounter));
+
+    /*postGroupMessage({'command':'addRenderJob', 'type': 'line-geometry', 'id':lineString['id'], 'geometryBuffer': geometryBuffer,
+                      'indicesBuffer': indicesBuffer }, [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));*/
 };
 
 

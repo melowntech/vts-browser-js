@@ -1,8 +1,8 @@
 
-import {globals as globals_} from './worker-globals.js';
+import {globals as globals_, stringToUint8Array as stringToUint8Array_ } from './worker-globals.js';
 
 //get rid of compiler mess
-var globals = globals_;
+var globals = globals_, stringToUint8Array = stringToUint8Array_;
 
 
 function postGroupMessage(message, arrays, signature) {
@@ -12,7 +12,6 @@ function postGroupMessage(message, arrays, signature) {
             var oldBuffer = globals.messageBuffer; 
             globals.messageBufferSize += 65536;
             globals.messageBuffer = new Array(globals.messageBufferSize);
-            globals.messageBuffer2 = new Array(globals.messageBufferSize);
             
             for (var i = 0, li = globals.messageBufferIndex; i < li; i++) {
                 globals.messageBuffer[i] = oldBuffer[i];
@@ -27,8 +26,87 @@ function postGroupMessage(message, arrays, signature) {
 }
 
 
+function postGroupMessageFast(command, type, message, buffers, signature) {
+
+    message = stringToUint8Array(JSON.stringify(message));
+
+    var messageSize = 1+1+4+message.byteLength, i, li;
+
+    for (i = 0, li = buffers.length; i < li; i++) {
+        messageSize += 4+buffers[i].byteLength;
+    }
+
+    var buff = new ArrayBuffer(messageSize);
+    var buff2 = new Uint8Array(buff);
+    var view = new DataView(buff), index = 0, index2 = 0;
+
+    view.setUint8(index, command); index += 1;
+    view.setUint8(index, type); index += 1;
+    view.setUint32(index, message.byteLength); index += 4;
+    buff2.set(message, index); index += message.byteLength;
+    index2 = index;
+
+    for (i = 0, li = buffers.length; i < li; i++) {
+        view.setUint32(index, buffers[i].length); index += 4;
+        buff2.set( new Uint8Array(buffers[i].buffer), index); index += buffers[i].byteLength;
+    }
+
+    postGroupMessageDirect(buff, index2, signature);
+}
+
+function postGroupMessageLite(command, type, number) {
+    var messageSize = 1+1+4, index = 0;
+
+    var buff = new ArrayBuffer(messageSize);
+    var view = new DataView(buff), index = 0;
+
+    view.setUint8(index, command); index += 1;
+    view.setUint8(index, type); index += 1;
+    view.setUint32(index, (number ? number : 0)); index += 4;
+
+    postGroupMessageDirect(buff, index, "");
+}
+
+
+function postGroupMessageDirect(message, buffersIndex, signature) {
+
+    if (globals.messageBufferIndex2 >= globals.messageBufferSize2) { 
+        var oldBuffer = globals.messageBuffer2; 
+        globals.messageBufferSize2 += 65536;
+        globals.messageBuffer2 = new Array(globals.messageBufferSize2);
+        
+        for (var i = 0, li = globals.messageBufferIndex2; i < li; i++) {
+            globals.messageBuffer2[i] = oldBuffer[i];
+        }
+    }
+    
+    globals.messageBuffer2[globals.messageBufferIndex2] = { job : message, buffersIndex: buffersIndex, signature : signature };
+    globals.messageBufferIndex2++;
+    globals.messagePackSize += message.byteLength;
+}
+
+
+function optimizeGroupMessagesFast() {
+    var buffer = new Uint8Array(globals.messagePackSize), index = 0;
+
+    for (var i = 0, li = globals.messageBufferIndex2; i < li; i++) {
+        buffer.set(new Uint8Array(globals.messageBuffer2[i].job), index);
+        index += globals.messageBuffer2[i].job.byteLength;
+    }
+
+    postMessage({'command' : 'addPackedCommands', 'buffer': buffer}, [buffer.buffer]);
+
+    globals.messageBufferIndex2 = 0;
+    globals.messagePackSize = 0;
+}
+
+
 function optimizeGroupMessages() {
     //debugger;
+
+    optimizeGroupMessagesFast();
+    return;
+
     //loop messages
     var messages = globals.messageBuffer;
     var j, lk, k, message2, job2, vbufferSize, vbuffer, index, buff, buff2;
@@ -168,5 +246,5 @@ function optimizeGroupMessages() {
 } 
 
 
-export {postGroupMessage, optimizeGroupMessages};
+export {postGroupMessage, optimizeGroupMessages, postGroupMessageFast, postGroupMessageLite};
 

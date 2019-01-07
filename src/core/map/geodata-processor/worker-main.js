@@ -7,7 +7,9 @@ import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
 import {processLineStringPass as processLineStringPass_, processLineStringGeometry as processLineStringGeometry_} from './worker-linestring.js';
 import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_, processPointArrayVSwitchPass as processPointArrayVSwitchPass_} from './worker-pointarray.js';
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
-import {postGroupMessage as postGroupMessage_, optimizeGroupMessages as optimizeGroupMessages_} from './worker-message.js';
+import {postGroupMessage as postGroupMessage_, postGroupMessageFast as postGroupMessageFast_,
+        postGroupMessageLite as postGroupMessageLite_, optimizeGroupMessages as optimizeGroupMessages_} from './worker-message.js';
+
 
 //get rid of compiler mess
 var globals = globals_;
@@ -21,7 +23,8 @@ var processPointArrayVSwitchPass = processPointArrayVSwitchPass_;
 var processPolygonPass = processPolygonPass_;
 var processLineStringGeometry = processLineStringGeometry_;
 var processPointArrayGeometry = processPointArrayGeometry_;
-var postGroupMessage = postGroupMessage_, optimizeGroupMessages = optimizeGroupMessages_;
+var postGroupMessage = postGroupMessage_, postGroupMessageFast = postGroupMessageFast_, 
+    postGroupMessageLite = postGroupMessageLite_, optimizeGroupMessages = optimizeGroupMessages_;
 var getLayerPropertyValueInner = getLayerPropertyValueInner_;
 
 var exportedGeometries = [];
@@ -282,7 +285,8 @@ function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) 
 
     if (type == 'point-array') {
         if (layer['visibility-switch']) {
-            postGroupMessage({'command':'addRenderJob', 'type':'vswitch-begin'});
+            postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSWITCH_BEGIN);
+            //postGroupMessage({'command':'addRenderJob', 'type':'vswitch-begin'});
             var zIndex = getLayerPropertyValue(layer, 'z-index', feature, lod);
             var eventInfo = feature.properties;
             processPointArrayVSwitchPass(feature, lod, layer, featureIndex, zIndex, eventInfo);
@@ -293,18 +297,22 @@ function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) 
                     var slayer = getLayer(vswitch[i][1], type, featureIndex);
                     processLayerFeature(type, feature, lod, slayer, featureIndex);
                 }
-                postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[i][0]});
+                postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSWITCH_STORE, vswitch[i][0]);
+                //postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[i][0]});
             }
 
-            postGroupMessage({'command':'addRenderJob', 'type':'vswitch-end'});
+            postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSWITCH_END);
+            //postGroupMessage({'command':'addRenderJob', 'type':'vswitch-end'});
             return;
         }
     }
 
     if (!skipPack && layer['pack'] == true) {
-        postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
+        postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PACK_BEGIN);
+        //postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
         processLayerFeature(type, feature, lod, layer, featureIndex, true);
-        postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
+        postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PACK_END);
+        //postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
         return;
     }
 
@@ -391,7 +399,8 @@ function processGroup(group, lod) {
         bboxDelta[1] / bboxResolution,
         bboxDelta[2] / bboxResolution];
 
-    postGroupMessage({'command':'beginGroup', 'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin});
+    postGroupMessageFast(VTS_WORKERCOMMAND_GROUP_BEGIN, 0, {'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin}, [], "");
+    //postGroupMessage({'command':'beginGroup', 'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin});
 
     //process points
     var points = group['points'] || [];
@@ -408,11 +417,14 @@ function processGroup(group, lod) {
     globals.featureType = 'polygon';
     processFeatures('polygon', polygons, lod, 'polygon', groupId);
 
-    postGroupMessage({'command':'endGroup'});
+    postGroupMessageLite(VTS_WORKERCOMMAND_GROUP_END, 0);
+    //postGroupMessage({'command':'endGroup'});
 
     if (globals.groupOptimize) {
         optimizeGroupMessages();
     }
+
+    //optimizeGroupMessagesFast();
 }
 
 
@@ -485,12 +497,14 @@ self.onmessage = function (e) {
         data = JSON.parse(data);            
         exportedGeometries = [];
         processGeodata(data, globals.tileLod);
+
+        postGroupMessageLite(VTS_WORKERCOMMAND_ALL_PROCESSED, 0);
             
         if (globals.groupOptimize) {
             optimizeGroupMessages();
         }
             
-        postMessage({'command' : 'allProcessed'});
+        //postMessage({'command' : 'allProcessed'});
         postMessage({'command' : 'ready'});
         break;
     }

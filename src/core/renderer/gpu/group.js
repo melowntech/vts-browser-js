@@ -2,11 +2,13 @@
 import {vec3 as vec3_, mat4 as mat4_} from '../../utils/matrix';
 import BBox_ from '../bbox';
 import {math as math_} from '../../utils/math';
+import {utils as utils_} from '../../utils/utils';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat4 = mat4_;
 var BBox = BBox_;
 var math = math_;
+var utils = utils_;
 
 
 var GpuGroup = function(id, bbox, origin, gpu, renderer) {
@@ -572,6 +574,95 @@ GpuGroup.prototype.addVSwitch = function(){
     }
 
     this.vsjobs = null;
+};
+
+
+GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
+    var data, str, length, tmp;
+    var view = new DataView(buffer.buffer);
+    var type = buffer[index]; index += 1;
+
+    if (type != VTS_WORKER_TYPE_PACK_BEGIN && type != VTS_WORKER_TYPE_PACK_END && 
+        type != VTS_WORKER_TYPE_VSWITCH_BEGIN && type != VTS_WORKER_TYPE_VSWITCH_END && type != VTS_WORKER_TYPE_VSWITCH_STORE) {
+
+        length = view.getUint32(index); index += 4;
+        str = utils.unint8ToStringArray(new Uint8Array(buffer.buffer, index, length)); index+= length;
+        data = JSON.parse(str);
+    }
+
+    switch(type) {
+        case VTS_WORKER_TYPE_FLAT_LINE:
+            this.addLineJob(data);
+            break;
+
+        case VTS_WORKER_TYPE_FLAT_TLINE:
+        case VTS_WORKER_TYPE_FLAT_RLINE:
+        case VTS_WORKER_TYPE_PIXEL_LINE:
+        case VTS_WORKER_TYPE_PIXEL_TLINE:
+
+            this.addExtentedLineJob(data);
+            break;
+
+        case VTS_WORKER_TYPE_LINE_LABEL:
+
+            this.addLineLabelJob(data);
+            break;
+
+        case VTS_WORKER_TYPE_ICON:
+        case VTS_WORKER_TYPE_ICON2:
+
+            length = view.getUint32(index); index += 4;
+            data.singleBuffer = new Float32Array(length);
+            //data.singleBuffer.set(new Float32Array(buffer.buffer, index, length)); index += length * 4;
+            tmp = new Uint8Array(data.singleBuffer.buffer);
+            tmp.set(new Uint8Array(buffer.buffer, index, length*4)); index += length * 4;
+
+            this.addIconJob(data);
+            break;
+
+        case VTS_WORKER_TYPE_LABEL:
+        case VTS_WORKER_TYPE_LABEL2:
+
+            length = view.getUint32(index); index += 4;
+            data.singleBuffer = new Float32Array(length);
+            tmp = new Uint8Array(data.singleBuffer.buffer);
+            tmp.set(new Uint8Array(buffer.buffer, index, length*4)); index += length * 4;
+
+            this.addIconJob(data, true, tile);
+            break;
+
+        case VTS_WORKER_TYPE_POINT_GEOMETRY:
+        case VTS_WORKER_TYPE_LINE_GEOMETRY:
+            this.addGeometry(data);
+            break;
+
+        case VTS_WORKER_TYPE_PACK_BEGIN:
+            this.subjobs = []; index += 4;
+            break;
+
+        case VTS_WORKER_TYPE_PACK_END:
+            this.addPack(); index += 4;
+            break;
+
+        case VTS_WORKER_TYPE_VSPOINT:
+            this.addVSPoint(data, tile);
+            break;
+
+        case VTS_WORKER_TYPE_VSWITCH_BEGIN:
+            this.vsjobs = []; this.vsjob = null; index += 4;
+            break;
+
+        case VTS_WORKER_TYPE_VSWITCH_END:
+            this.addVSwitch(); index += 4;
+            break;
+
+        case VTS_WORKER_TYPE_VSWITCH_STORE:
+            data = { viewExtent: view.getUint32(index) }; index += 4;
+            this.storeVSJobs(data);
+            break;
+    }
+
+    return index;
 };
 
 

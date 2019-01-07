@@ -1,12 +1,12 @@
 
 import {mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
+import {utils as utils_} from '../utils/utils';
 import GpuGroup_ from '../renderer/gpu/group';
 import MapGeodataProcessor_ from './geodata-processor/processor';
 
 //get rid of compiler mess
-var mat4 = mat4_;
-var math = math_;
+var mat4 = mat4_, math = math_, utils = utils_;
 var GpuGroup = GpuGroup_;
 var MapGeodataProcessor = MapGeodataProcessor_;
 
@@ -74,6 +74,57 @@ MapGeodataView.prototype.killGeodataView = function(killedByCache) {
 };
 
 
+MapGeodataView.prototype.processPackedCommands = function(buffer, index) {
+
+    var maxIndex = buffer.byteLength;
+    var t = performance.now(), length, str, data;
+    var view = new DataView(buffer.buffer);
+
+    do {
+
+        var command = buffer[index]; index += 1;
+
+        switch(command) {
+            case VTS_WORKERCOMMAND_GROUP_BEGIN:
+                index += 1;
+                length = view.getUint32(index); index += 4;
+                str = utils.unint8ToStringArray(new Uint8Array(buffer.buffer, index, length)); index+= length;
+                data = JSON.parse(str);
+
+                this.currentGpuGroup = new GpuGroup(data['id'], data['bbox'], data['origin'], this.gpu, this.renderer);
+                this.gpuGroups.push(this.currentGpuGroup);
+                break;
+
+            case VTS_WORKERCOMMAND_GROUP_END:
+                this.size += this.currentGpuGroup.size; index += 1 + 4;
+                break;
+
+            case VTS_WORKERCOMMAND_ADD_RENDER_JOB:
+                index = this.currentGpuGroup.addRenderJob2(buffer, index, this.tile);
+                break;
+
+            case VTS_WORKERCOMMAND_ALL_PROCESSED:
+                this.map.markDirty();
+                this.gpuCacheItem = this.map.gpuCache.insert(this.killGeodataView.bind(this, true), this.size);
+
+                this.stats.gpuGeodata += this.size;
+                this.stats.graphsFluxGeodata[0][0]++;
+                this.stats.graphsFluxGeodata[0][1] += this.size;
+                this.ready = true;
+
+                index += 1 + 4;
+                break;
+        }
+
+
+    } while(index < maxIndex);
+
+    this.stats.renderBuild += performance.now() - t; 
+
+    return index;
+};
+
+
 MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, task) {
     if (this.killed || this.killedByCache){
         return;
@@ -81,6 +132,20 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
 
     switch (command) {
 
+    case 'addPackedCommands':
+
+        if (task) {
+            this.processPackedCommands(message['buffer'], message.index)
+            this.map.markDirty();
+        } else {
+            message.index = 0;
+            this.map.markDirty();
+            this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
+        }
+
+        break;
+
+    /*
     case 'beginGroup':
         
         if (task) {
@@ -141,8 +206,10 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
         }
 
         break;
+    */
 
     case 'ready':
+        this.geodataProcessor.busy = false;
         this.map.markDirty();
             //this.ready = true;
         break;

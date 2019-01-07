@@ -26,7 +26,10 @@ var globals = {
     messageBuffer : new Array(65536),
     messageBuffer2 : new Array(65536),
     messageBufferIndex : 0,
+    messageBufferIndex2 : 0,
     messageBufferSize : 65536,
+    messageBufferSize2 : 65536,
+    messagePackSize : 0,
     signatureCounter : 0,
     autoLod : false,
     featureType : null,
@@ -156,5 +159,84 @@ var simpleFmtCall = (function obj(str, call) {
     return str2;
 });
 
+/*
+function copyArrayToBuffer(view, index, array) {
+    for (var i = 0, li = array.length; i < li; i++) {
+        view.setFloat32(index, array[i]); index += 4;
+    }
 
-export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, simpleFmtCall, getHash};
+    return index;
+}
+
+function copyDynamicArrayToBuffer(view, index, array) {
+    if (array) {
+        view.setUint8(index, array.length); index += 1;
+
+        for (var i = 0, li = array.length; i < li; i++) {
+            view.setFloat32(index, array[i]); index += 4;
+        }
+    } else {
+        view.setUint8(index, 0); index += 1;
+    }
+
+    return index;
+}
+
+function copyDynamicArrayOfArraysToBuffer(view, index, array) {
+    if (array) {
+        view.setUint16(index, array.length); index += 2;
+
+        for (var i = 0, li = array.length; i < li; i++) {
+            var subarray = array[i];
+
+            for (var j = 0, lj = array.length; j < lj; j++) {
+                view.setUint16(index, subarray[j]); index += 2;
+            }
+        }
+    } else {
+        view.setUint16(index, 0); index += 2;
+    }
+
+    return index;
+}
+
+function getSizeOfArrayOfArrays(array) {
+    var size = 0;
+
+    for (var i = 0, li = array.length; i < li; i++) {
+        size += array[i].length;
+    }
+
+    return size;
+}
+*/
+
+var textEncoderUtf8 = TextEncoder ? (new TextEncoder('utf-8')) : null;
+
+function stringToUint8Array(str) {
+    if (textEncoderUtf8) {
+        return textEncoderUtf8.encode(str);
+    } else {
+
+        var buffer = new ArrayBuffer(str.length * 2);
+        var view = new Uint16Array(buffer);
+        for (var i = 0, li = str.length; i < li; i++) {
+            view[i] = str.charCodeAt(i);
+        }
+        return new Uint8Array(buffer);
+    }
+}
+
+/*
+var textDecoderUtf8 = TextEncoder ? (new TextDecoder('utf-8')) : null;
+
+function unint8ToStringArray(array) {
+    if (textDecoderUtf8) {
+        return textDecoderUtf8.decode(array);
+    } else {
+        return String.fromCharCode.apply(null, new Uint8Array(array.buffer));
+    }
+}
+*/
+
+export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, simpleFmtCall, getHash, stringToUint8Array};
