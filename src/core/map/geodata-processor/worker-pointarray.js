@@ -368,7 +368,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
         if ((iconData.singleBuffer && iconData.singleBuffer.length > 0) || (iconData.vertexBuffer && iconData.vertexBuffer.length > 0)) {
 
-            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_ICON, {
+            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_ICON : VTS_WORKER_TYPE_ICON2, {
                 'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
                 'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
@@ -423,7 +423,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
         if ((labelData.singleBuffer && labelData.singleBuffer.length > 0) || (labelData.vertexBuffer && labelData.vertexBuffer.length > 0)) {
 
-            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_LABEL, {
+            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_LABEL : VTS_WORKER_TYPE_LABEL2, {
                 'size':labelData.size, 'origin':labelData.pos, 'color':labelData.color,
                 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
                 'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),

@@ -183,11 +183,12 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     var job = {};
     job.type = data['type'];
 
-    switch(data['type']) {
-    case 'flat-tline':  job.type = VTS_JOB_FLAT_TLINE;  break;
-    case 'flat-rline':  job.type = VTS_JOB_FLAT_RLINE;  break;
-    case 'pixel-line':  job.type = VTS_JOB_PIXEL_LINE;  break;
-    case 'pixel-tline': job.type = VTS_JOB_PIXEL_TLINE; break;
+    
+    switch(job.type) {
+    case VTS_WORKER_TYPE_FLAT_LINE:  job.type = VTS_JOB_FLAT_TLINE;  break;
+    case VTS_WORKER_TYPE_FLAT_RLINE:  job.type = VTS_JOB_FLAT_RLINE;  break;
+    case VTS_WORKER_TYPE_PIXEL_LINE:  job.type = VTS_JOB_PIXEL_LINE;  break;
+    case VTS_WORKER_TYPE_PIXEL_TLINE: job.type = VTS_JOB_PIXEL_TLINE; break;
     }
 
     job.color = this.convertColor(data['color']);
@@ -577,6 +578,13 @@ GpuGroup.prototype.addVSwitch = function(){
 };
 
 
+GpuGroup.prototype.copyBuffer = function(buffer, source, index) {
+    var tmp = new Uint8Array(buffer.buffer);
+    tmp.set(new Uint8Array(source.buffer, index, buffer.byteLength));
+    return buffer;
+};
+
+
 GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
     var data, str, length, tmp;
     var view = new DataView(buffer.buffer);
@@ -592,6 +600,9 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
 
     switch(type) {
         case VTS_WORKER_TYPE_FLAT_LINE:
+            data.type = type;
+            length = view.getUint32(index); index += 4;
+            data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
             this.addLineJob(data);
             break;
 
@@ -599,40 +610,51 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
         case VTS_WORKER_TYPE_FLAT_RLINE:
         case VTS_WORKER_TYPE_PIXEL_LINE:
         case VTS_WORKER_TYPE_PIXEL_TLINE:
-
+            data.type = type;
+            length = view.getUint32(index); index += 4;
+            data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.normalBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.normalBuffer.byteLength;
             this.addExtentedLineJob(data);
             break;
 
         case VTS_WORKER_TYPE_LINE_LABEL:
 
+            length = view.getUint32(index); index += 4;
+            data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.texcoordsBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.texcoordsBuffer.byteLength;
             this.addLineLabelJob(data);
             break;
 
         case VTS_WORKER_TYPE_ICON:
-        case VTS_WORKER_TYPE_ICON2:
+        case VTS_WORKER_TYPE_LABEL:
 
             length = view.getUint32(index); index += 4;
-            data.singleBuffer = new Float32Array(length);
-            //data.singleBuffer.set(new Float32Array(buffer.buffer, index, length)); index += length * 4;
-            tmp = new Uint8Array(data.singleBuffer.buffer);
-            tmp.set(new Uint8Array(buffer.buffer, index, length*4)); index += length * 4;
-
-            this.addIconJob(data);
+            data.singleBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.singleBuffer.byteLength;
+            this.addIconJob(data, (type == VTS_WORKER_TYPE_LABEL), tile);
             break;
 
-        case VTS_WORKER_TYPE_LABEL:
+        case VTS_WORKER_TYPE_ICON2:
         case VTS_WORKER_TYPE_LABEL2:
 
             length = view.getUint32(index); index += 4;
-            data.singleBuffer = new Float32Array(length);
-            tmp = new Uint8Array(data.singleBuffer.buffer);
-            tmp.set(new Uint8Array(buffer.buffer, index, length*4)); index += length * 4;
-
-            this.addIconJob(data, true, tile);
+            data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.originBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.originBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.texcoordsBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.texcoordsBuffer.byteLength;
+            this.addIconJob(data, (type == VTS_WORKER_TYPE_LABEL2), tile);
             break;
 
         case VTS_WORKER_TYPE_POINT_GEOMETRY:
         case VTS_WORKER_TYPE_LINE_GEOMETRY:
+
+            length = view.getUint32(index); index += 4;
+            data.geometryBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.originBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.indicesBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.indicesBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
             this.addGeometry(data);
             break;
 
