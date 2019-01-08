@@ -51,7 +51,7 @@ var UIControlSearch = function(ui, visible, visibleLock) {
 
     this.ignoreDrag = false; 
 
-    this.urlTemplate = '//cdn.melown.com/vts/geocode?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
+    this.urlTemplate = '//cdn.melown.com/vtsapi/geocode?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
     this.urlTemplate2 = this.urlTemplate;
     this.data = [];
     this.lastSearch = '';

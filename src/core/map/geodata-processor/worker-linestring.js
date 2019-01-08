@@ -851,9 +851,9 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
 
     if (line) {
         var messageData = {
-            'color':lineColor, 'z-index':zIndex, 'center': center, 'normalBuffer': normalBuffer,
+            'color':lineColor, 'z-index':zIndex, 'center': center, 'normalBuffer': normalBuffer, 'advancedHit': advancedHit,
             'elementBuffer': elementBuffer, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
+            'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
             'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'width-units': lineWidthUnits,
             'line-width':lineWidth*2, 'lod':(globals.autoLod ? null : globals.tileLod) };
     
@@ -989,8 +989,8 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_LINE_LABEL, {
         'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 
         'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-        'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-        'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
+        'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit,
+        'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, texcoordsBuffer], signature);
 
 

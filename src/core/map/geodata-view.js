@@ -88,7 +88,7 @@ MapGeodataView.prototype.processPackedCommands = function(buffer, index) {
             case VTS_WORKERCOMMAND_GROUP_BEGIN:
                 index += 1;
                 length = view.getUint32(index); index += 4;
-                str = utils.unint8ToStringArray(new Uint8Array(buffer.buffer, index, length)); index+= length;
+                str = utils.unint8ArrayToString(new Uint8Array(buffer.buffer, index, length)); index+= length;
                 data = JSON.parse(str);
 
                 this.currentGpuGroup = new GpuGroup(data['id'], data['bbox'], data['origin'], this.gpu, this.renderer);
@@ -116,12 +116,15 @@ MapGeodataView.prototype.processPackedCommands = function(buffer, index) {
                 break;
         }
 
+        if ((performance.now() - t) > 10) {
+            return index;
+        }
 
     } while(index < maxIndex);
 
     this.stats.renderBuild += performance.now() - t; 
 
-    return index;
+    return -1;
 };
 
 
@@ -135,12 +138,19 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
     case 'addPackedCommands':
 
         if (task) {
-            this.processPackedCommands(message['buffer'], message.index)
-            this.map.markDirty();
+            var index = this.processPackedCommands(message['buffer'], message.index);
+
+            if (index < 0) {
+                this.map.markDirty();
+            } else {
+                message.index = index;
+                return -123;
+            }
+
         } else {
             message.index = 0;
             this.map.markDirty();
-            this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
+            this.map.addProcessingTask2(this.onGeodataProcessorMessage.bind(this, command, message, true));
         }
 
         break;

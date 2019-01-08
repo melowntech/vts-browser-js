@@ -71,6 +71,7 @@ var Map = function(core, mapConfig, path, config) {
     this.dynamicLayers = [];
     this.stylesheets = [];
     this.processingTasks = [];
+    this.processingTasks2 = [];
     this.geodataProcessors = [];
 
     this.surfaceSequence = new MapSurfaceSequence(this);
@@ -826,7 +827,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'map16bitMeshes':                this.config.map16bitMeshes = utils.validateBool(value, false); break;
     case 'mapOnlyOneUVs':                 this.config.mapOnlyOneUVs = utils.validateBool(value, false); break;
     case 'mapIndexBuffers':               this.config.mapIndexBuffers = utils.validateBool(value, false); break;
-    case 'mapAsyncImageDecode':           this.config.mapAsyncImageDecode = (utils.validateBool(value, false) && createImageBitmap) ? true : false; break;
+    case 'mapAsyncImageDecode':           this.config.mapAsyncImageDecode = (utils.validateBool(value, false) && (typeof createImageBitmap !== 'undefined')) ? true : false; break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -1214,10 +1215,23 @@ Map.prototype.processProcessingTasks = function() {
         this.processingTasks[0]();
         this.processingTasks.shift();
     }
+
+    while (this.processingTasks2.length > 0) {
+        if (this.processingTasks2[0]() != -123) {
+            this.processingTasks2.shift();
+        } else {
+            break;
+        }
+    }
+
 };
 
 
 Map.prototype.addProcessingTask = function(task) {
+    this.processingTasks.push(task);
+};
+
+Map.prototype.addProcessingTask2 = function(task) {
     this.processingTasks.push(task);
 };
 

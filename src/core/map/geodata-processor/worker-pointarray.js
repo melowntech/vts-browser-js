@@ -332,9 +332,9 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         if (pointFlat) {
             postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_FLAT_LINE, {
                 'color':pointColor, 'z-index':zIndex, 'visibility': visibility, 'center': center,
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
                 'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer], signature);
 
             /*postGroupMessage({'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
@@ -348,7 +348,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 'color':pointColor, 'z-index':zIndex, 'visibility': visibility, 'center': center,
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
                 'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, normalBuffer], signature);
 
             /*postGroupMessage({'command':'addRenderJob', 'type': 'pixel-line', 'vertexBuffer': vertexBuffer,
@@ -373,8 +373,8 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
-                'lod':(globals.autoLod ? null : globals.tileLod) },
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
+                'index': featureIndex, 'reduce': iconData.reduce, 'lod':(globals.autoLod ? null : globals.tileLod) },
                 (iconData.singleBuffer) ? [iconData.singleBuffer] : [iconData.vertexBuffer, iconData.originBuffer, iconData.texcoordsBuffer],
                 signature);
 
@@ -428,9 +428,9 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
                 'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage, 'hysteresis': labelData.hysteresis,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit, 'reduce': labelData.reduce,  
-                'lod':(globals.autoLod ? null : globals.tileLod) },
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
+                'hitable':hitable, 'state':globals.hitState, 'advancedHit': advancedHit, 'reduce': labelData.reduce, 'hysteresis': labelData.hysteresis, 
+                'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 'lod':(globals.autoLod ? null : globals.tileLod) },
                 (labelData.singleBuffer) ? [labelData.singleBuffer] : [labelData.vertexBuffer, labelData.originBuffer, labelData.texcoordsBuffer],
                 signature);
 
@@ -551,8 +551,8 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSPOINT, {
         'z-index':zIndex, 'hysteresis' : hysteresis,
-        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, //'reduce': iconData.reduce,
-        'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
+        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
+         'index': featureIndex, 'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
 
     /*postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 'hysteresis' : hysteresis,
         'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, //'reduce': iconData.reduce,

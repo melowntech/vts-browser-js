@@ -594,7 +594,7 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
         type != VTS_WORKER_TYPE_VSWITCH_BEGIN && type != VTS_WORKER_TYPE_VSWITCH_END && type != VTS_WORKER_TYPE_VSWITCH_STORE) {
 
         length = view.getUint32(index); index += 4;
-        str = utils.unint8ToStringArray(new Uint8Array(buffer.buffer, index, length)); index+= length;
+        str = utils.unint8ArrayToString(new Uint8Array(buffer.buffer, index, length)); index+= length;
         data = JSON.parse(str);
     }
 

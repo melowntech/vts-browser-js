@@ -109,9 +109,9 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
     
     var messageData = {'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
-        'color':polygonColor, 'z-index':zIndex, 'center': center,
+        'color':polygonColor, 'z-index':zIndex, 'center': center, 'advancedHit': advancedHit,
         'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-        'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
+        'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
         'lod':(globals.autoLod ? null : globals.tileLod) };
 
