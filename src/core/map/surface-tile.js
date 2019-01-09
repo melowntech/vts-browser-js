@@ -191,7 +191,6 @@ MapSurfaceTile.prototype.viewSwitched = function() {
     } else {
         this.lastRenderState = null;
     }
-
     
     //zero surface related data    
     this.verifyChildren = true;
@@ -199,6 +198,22 @@ MapSurfaceTile.prototype.viewSwitched = function() {
     this.lastMetanode = this.metanode;
     this.metanode = null; //quick hack for switching virtual surfaeces //keep old value for smart switching
 
+    if (!this.map.config.mapSoftViewSwitch) {
+
+        if (this.metanode) {
+            this.metanode.border = null;
+            this.metanode.border2 = null;
+            this.metanode.border3 = null;
+            this.metanode.borderNodes = null;
+            this.metanode.borderReady = null;
+        }
+
+        this.lastState = null;
+        this.lastRenderState = null;
+        this.lastMetanode = null;
+        this.metanode = null;
+        this.gridPoints = null;
+    }
 
     //this.lastMetanode = null;
     //this.metanode = null;

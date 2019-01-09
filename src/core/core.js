@@ -64,6 +64,7 @@ var Core = function(element, config, coreInterface) {
         mapXhrImageLoad : true,
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,
+        mapSoftViewSwitch : true,
 
         map16bitMeshes : true,
         mapOnlyOneUVs : true,
@@ -541,7 +542,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.17.0';
+    return (full ? 'Core: ' : '') + '2.17.1';
 }
 
 
