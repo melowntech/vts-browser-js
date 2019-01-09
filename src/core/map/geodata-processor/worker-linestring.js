@@ -1002,14 +1002,6 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit,
         'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, texcoordsBuffer], signature);
-
-
-    /*postGroupMessage({'command':'addRenderJob', 'type': 'line-label', 'vertexBuffer': vertexBuffer,
-        'texcoordsBuffer': texcoordsBuffer, 'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 
-        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-        'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-        'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
-        'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, texcoordsBuffer.buffer], signature);*/
 };
 
 var processLineStringGeometry = function(lineString) {
@@ -1084,9 +1076,6 @@ var processLineStringGeometry = function(lineString) {
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_LINE_GEOMETRY, {
         'id':lineString['id'] }, [geometryBuffer, indicesBuffer], (""+globals.signatureCounter));
-
-    /*postGroupMessage({'command':'addRenderJob', 'type': 'line-geometry', 'id':lineString['id'], 'geometryBuffer': geometryBuffer,
-                      'indicesBuffer': indicesBuffer }, [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));*/
 };
 
 

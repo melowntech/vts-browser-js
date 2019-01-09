@@ -336,13 +336,6 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
                 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
                 'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer], signature);
-
-            /*postGroupMessage({'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
-                'color':pointColor, 'z-index':zIndex, 'visibility': visibility, 'center': center,
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer], signature);*/
         } else {
             postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PIXEL_LINE, {
                 'color':pointColor, 'z-index':zIndex, 'visibility': visibility, 'center': center,
@@ -350,14 +343,6 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
                 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
                 'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, normalBuffer], signature);
-
-            /*postGroupMessage({'command':'addRenderJob', 'type': 'pixel-line', 'vertexBuffer': vertexBuffer,
-                'normalBuffer': normalBuffer, 'color':pointColor, 'z-index':zIndex,
-                'visibility': visibility, 'center': center,
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, normalBuffer.buffer], signature);*/
         }
     }
 
@@ -377,27 +362,6 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 'index': featureIndex, 'reduce': iconData.reduce, 'lod':(globals.autoLod ? null : globals.tileLod) },
                 (iconData.singleBuffer) ? [iconData.singleBuffer] : [iconData.vertexBuffer, iconData.originBuffer, iconData.texcoordsBuffer],
                 signature);
-
-            /*
-            postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'singleBuffer': iconData.singleBuffer,
-                'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
-                'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.singleBuffer.buffer], signature);
-
-            } else if (iconData.vertexBuffer && iconData.vertexBuffer.length > 0) {
-
-            postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
-                'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
-                'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
-                'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer], signature);
-            */
         }
     }
 
@@ -433,28 +397,6 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 'lod':(globals.autoLod ? null : globals.tileLod) },
                 (labelData.singleBuffer) ? [labelData.singleBuffer] : [labelData.vertexBuffer, labelData.originBuffer, labelData.texcoordsBuffer],
                 signature);
-
-
-            /*
-            postGroupMessage({'command':'addRenderJob', 'type': 'label', 'singleBuffer': labelData.singleBuffer, 'size':labelData.size, 'origin':labelData.pos,
-                'color':labelData.color, 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
-                'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage, 'hysteresis': labelData.hysteresis,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit, 'reduce': labelData.reduce,  
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.singleBuffer.buffer], signature);
-
-            } else if (labelData.vertexBuffer && labelData.vertexBuffer.length > 0) {
-
-            postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,
-                'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer, 'size':labelData.size,
-                'color':labelData.color, 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
-                'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage, 'hysteresis': labelData.hysteresis,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit, 'reduce': labelData.reduce,  
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);
-            */                
         }
     }
 
@@ -553,10 +495,6 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
         'z-index':zIndex, 'hysteresis' : hysteresis,
         'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo': {} /*(globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}*/,
          'index': featureIndex, 'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
-
-    /*postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 'hysteresis' : hysteresis,
-        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, //'reduce': iconData.reduce,
-        'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);*/
 };
 
 
@@ -887,9 +825,6 @@ var processPointArrayGeometry = function(pointArray) {
     globals.signatureCounter++;
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_POINT_GEOMETRY, {
         'id':pointArray['id'] }, [geometryBuffer, indicesBuffer], (""+globals.signatureCounter));
-      
-    /*postGroupMessage({'command':'addRenderJob', 'type': 'point-geometry', 'id':lineString['id'], 'geometryBuffer': geometryBuffer },
-                      [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));*/
 };
 
 export {processPointArrayPass, processPointArrayGeometry, processPointArrayVSwitchPass};

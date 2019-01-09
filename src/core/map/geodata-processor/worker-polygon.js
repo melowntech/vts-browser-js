@@ -114,8 +114,6 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
         'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, texcoordsBuffer], signature);
-
-    //postGroupMessage(messageData);
 };
 
 var createEmptyFeatureFromPolygon = function(polygon) {
