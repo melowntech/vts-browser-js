@@ -4,7 +4,7 @@ import {getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue 
 import {addText as addText_, getSplitIndex as getSplitIndex_, getTextGlyphs as getTextGlyphs_,
         getTextLength as getTextLength_, getFonts as getFonts_, getFontsStorage as getFontsStorage_,
         areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from './worker-text.js';
-import {postGroupMessage as postGroupMessage_, postGroupMessageFast as postGroupMessageFast_} from './worker-message.js';
+import {postGroupMessageFast as postGroupMessageFast_} from './worker-message.js';
 
 //get rid of compiler mess
 var globals = globals_, clamp = clamp_;
@@ -12,7 +12,7 @@ var getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = get
 var addText = addText_, getSplitIndex = getSplitIndex_, getTextGlyphs = getTextGlyphs_,
     getTextLength = getTextLength_, getFonts = getFonts_, getFontsStorage = getFontsStorage_,
     areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
-var postGroupMessage = postGroupMessage_, postGroupMessageFast = postGroupMessageFast_;
+var postGroupMessageFast = postGroupMessageFast_;
 
 
 var processPointArrayPass = function(pointArray, lod, style, featureIndex, zIndex, eventInfo) {
@@ -551,7 +551,7 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSPOINT, {
         'z-index':zIndex, 'hysteresis' : hysteresis,
-        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
+        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo': {} /*(globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}*/,
          'index': featureIndex, 'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
 
     /*postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 'hysteresis' : hysteresis,

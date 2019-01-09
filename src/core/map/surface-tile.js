@@ -197,7 +197,7 @@ MapSurfaceTile.prototype.viewSwitched = function() {
     this.verifyChildren = true;
     this.renderReady = false;
     this.lastMetanode = this.metanode;
-    //this.metanode = null; //keep old value for smart switching
+    this.metanode = null; //quick hack for switching virtual surfaeces //keep old value for smart switching
 
 
     //this.lastMetanode = null;
@@ -227,6 +227,7 @@ MapSurfaceTile.prototype.viewSwitched = function() {
     this.virtual = false;
     this.virtualReady = false;
     this.virtualSurfaces = [];
+    this.virtualSurfacesUncomplete = false;
     
     this.drawCommands = [[], [], []];
     this.imageryCredits = {};

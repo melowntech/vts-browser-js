@@ -114,7 +114,7 @@ GpuGroup.prototype.convertColor = function(c) {
 GpuGroup.prototype.addLineJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data['vertexBuffer'];
+    var vertices = data.vertexBuffer;
 
     var job = {};
     job.type = VTS_JOB_FLAT_LINE;
@@ -158,7 +158,7 @@ GpuGroup.prototype.addLineJob = function(data) {
     if (job.advancedHit) {
         job.program = this.renderer.progLine;
 
-        var elements = data['elementBuffer'];
+        var elements = data.elementBuffer;
 
         job.vertexElementBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexElementBuffer);
@@ -177,8 +177,8 @@ GpuGroup.prototype.addLineJob = function(data) {
 GpuGroup.prototype.addExtentedLineJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data['vertexBuffer'];
-    var normals = data['normalBuffer'];
+    var vertices = data.vertexBuffer;
+    var normals = data.normalBuffer;
 
     var job = {};
     job.type = data['type'];
@@ -260,7 +260,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     job.vertexNormalBuffer.numItems = normals.length / 4;
 
     if (job.advancedHit) {
-        var elements = data['elementBuffer'];
+        var elements = data.elementBuffer;
 
         job.vertexElementBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexElementBuffer);
@@ -279,8 +279,8 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 GpuGroup.prototype.addLineLabelJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data['vertexBuffer'];
-    var texcoords = data['texcoordsBuffer'];
+    var vertices = data.vertexBuffer;
+    var texcoords = data.texcoordsBuffer;
 
     var job = {};
     job.type = VTS_JOB_LINE_LABEL;
@@ -340,10 +340,10 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 GpuGroup.prototype.addIconJob = function(data, label, tile) {
     var gl = this.gl;
 
-    var vertices = data['vertexBuffer'];
-    var texcoords = data['texcoordsBuffer'];
-    var origins = data['originBuffer'];
-    var singleBuffer = data['singleBuffer'];
+    var vertices = data.vertexBuffer;
+    var texcoords = data.texcoordsBuffer;
+    var origins = data.originBuffer;
+    var singleBuffer = data.singleBuffer;
     var s = data['stick'];
     var f = 1.0/255;
 
@@ -603,6 +603,12 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
             data.type = type;
             length = view.getUint32(index); index += 4;
             data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
+
+            if (data['advancedHit']) {
+                length = view.getUint32(index); index += 4;
+                data.elementBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.elementBuffer.byteLength;
+            }
+
             this.addLineJob(data);
             break;
 
@@ -615,6 +621,12 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
             data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
             length = view.getUint32(index); index += 4;
             data.normalBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.normalBuffer.byteLength;
+
+            if (data['advancedHit']) {
+                length = view.getUint32(index); index += 4;
+                data.elementBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.elementBuffer.byteLength;
+            }
+
             this.addExtentedLineJob(data);
             break;
 
@@ -651,9 +663,9 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
         case VTS_WORKER_TYPE_LINE_GEOMETRY:
 
             length = view.getUint32(index); index += 4;
-            data.geometryBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.originBuffer.byteLength;
+            data.geometryBuffer = this.copyBuffer(new Float64Array(length), buffer, index); index += data.originBuffer.byteLength;
             length = view.getUint32(index); index += 4;
-            data.indicesBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.indicesBuffer.byteLength;
+            data.indicesBuffer = this.copyBuffer(new Uint32Array(length), buffer, index); index += data.indicesBuffer.byteLength;
             length = view.getUint32(index); index += 4;
             this.addGeometry(data);
             break;

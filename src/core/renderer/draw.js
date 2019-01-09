@@ -136,7 +136,6 @@ RendererDraw.prototype.drawBall = function(position, size, size2, shader, params
         //gl.disable(gl.DEPTH_TEST);
     }
     
-
     if (params) {
         shader.setVec4('uParams', params);
     }

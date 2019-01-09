@@ -7,7 +7,7 @@ import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
 import {processLineStringPass as processLineStringPass_, processLineStringGeometry as processLineStringGeometry_} from './worker-linestring.js';
 import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_, processPointArrayVSwitchPass as processPointArrayVSwitchPass_} from './worker-pointarray.js';
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
-import {postGroupMessage as postGroupMessage_, postGroupMessageFast as postGroupMessageFast_,
+import {postGroupMessageFast as postGroupMessageFast_,
         postGroupMessageLite as postGroupMessageLite_, optimizeGroupMessages as optimizeGroupMessages_} from './worker-message.js';
 
 
@@ -23,7 +23,7 @@ var processPointArrayVSwitchPass = processPointArrayVSwitchPass_;
 var processPolygonPass = processPolygonPass_;
 var processLineStringGeometry = processLineStringGeometry_;
 var processPointArrayGeometry = processPointArrayGeometry_;
-var postGroupMessage = postGroupMessage_, postGroupMessageFast = postGroupMessageFast_, 
+var postGroupMessageFast = postGroupMessageFast_, 
     postGroupMessageLite = postGroupMessageLite_, optimizeGroupMessages = optimizeGroupMessages_;
 var getLayerPropertyValueInner = getLayerPropertyValueInner_;
 

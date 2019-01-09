@@ -3,30 +3,8 @@ import {globals as globals_, stringToUint8Array as stringToUint8Array_ } from '.
 
 //get rid of compiler mess
 var globals = globals_, stringToUint8Array = stringToUint8Array_;
-var tmpVertexBuffer = new Uint8Array(65536*4*4*4);
-var tmpVertexBuffer2 = new Uint8Array(65536*4*4*4);
-
-
-function postGroupMessage(message, arrays, signature) {
-
-    if (globals.groupOptimize) {
-        if (globals.messageBufferIndex >= globals.messageBufferSize) { //resize buffer
-            var oldBuffer = globals.messageBuffer; 
-            globals.messageBufferSize += 65536;
-            globals.messageBuffer = new Array(globals.messageBufferSize);
-            
-            for (var i = 0, li = globals.messageBufferIndex; i < li; i++) {
-                globals.messageBuffer[i] = oldBuffer[i];
-            }
-        }
-        
-        globals.messageBuffer[globals.messageBufferIndex] = { job : message, arrays: arrays, signature : signature };
-        globals.messageBufferIndex++;
-    } else {
-        postMessage(message, arrays);
-    }
-}
-
+var tmpVertexBuffer = new Uint8Array(65536*4*4*4*4);
+var tmpVertexBuffer2 = new Uint8Array(65536*4*4*4*4);
 
 function postGroupMessageFast(command, type, message, buffers, signature) {
 
@@ -51,7 +29,7 @@ function postGroupMessageFast(command, type, message, buffers, signature) {
         buff.set( new Uint8Array(buffers[i].buffer), index); index += buffers[i].byteLength;
     }
 
-    postGroupMessageDirect(command, type, buff.buffer, index2, signature, message.hitable, (type == VTS_WORKER_TYPE_LINE_LABEL) ? message : null);
+    postGroupMessageDirect(command, type, buff.buffer, index2, signature, message['hitable'], message['totalPoints'], (type == VTS_WORKER_TYPE_LINE_LABEL) ? message : null);
 }
 
 function postGroupMessageLite(command, type, number) {
@@ -68,7 +46,7 @@ function postGroupMessageLite(command, type, number) {
 }
 
 
-function postGroupMessageDirect(command, type, message, buffersIndex, signature, hitable, job2) {
+function postGroupMessageDirect(command, type, message, buffersIndex, signature, hitable, totalPoints, job2) {
 
     if (globals.messageBufferIndex >= globals.messageBufferSize) { 
         var oldBuffer = globals.messageBuffer; 
@@ -80,7 +58,7 @@ function postGroupMessageDirect(command, type, message, buffersIndex, signature,
         }
     }
     
-    globals.messageBuffer[globals.messageBufferIndex] = { command: command, type: type, job : message, buffersIndex: buffersIndex, signature: signature, hitable: hitable, job2: job2 };
+    globals.messageBuffer[globals.messageBufferIndex] = { command: command, type: type, job : message, buffersIndex: buffersIndex, signature: signature, hitable: hitable, totalPoints: totalPoints, job2: job2 };
     globals.messageBufferIndex++;
     globals.messagePackSize += message.byteLength;
 }
@@ -90,8 +68,9 @@ function optimizeGroupMessages() {
 
     //loop messages
     var messages = globals.messageBuffer;
-    var j, lk, k, message2, job2, bufferSize, buffer, view, index, length, buff, buff2, index, count;
+    var j, lk, k, message2, job2, bufferSize, buffer, view, index, length, buff, buff2, index, count, totalVertices;
 
+    //try {
 
     for (var i = 0, li = globals.messageBufferIndex; i < li; i++) {
         var message = messages[i];
@@ -150,9 +129,14 @@ function optimizeGroupMessages() {
             case VTS_WORKER_TYPE_FLAT_RLINE:
 
                 count = 0;
+                totalVertices = 0;
 
                 //get message vertices length and copy vertices to buffer
-                length = (new DataView(message.job)).getUint32(message.buffersIndex) * 4;
+                length = (new DataView(message.job)).getUint32(message.buffersIndex);
+                //console.log('count: ' + count + ' totalPoints:' + message.totalPoints + ' length: ' + length);
+                length *= 4;
+                totalVertices += length;
+
 
                 tmpVertexBuffer.set(new Uint8Array(message.job, message.buffersIndex+4, length), 0);
                 tmpVertexBuffer2.set(new Uint8Array(message.job, message.buffersIndex+4+length+4, length), 0);
@@ -166,7 +150,11 @@ function optimizeGroupMessages() {
                         count++;
 
                         //get message2 vertices length
-                        length = (new DataView(message2.job)).getUint32(message2.buffersIndex) * 4;
+                        length = (new DataView(message2.job)).getUint32(message2.buffersIndex);
+                        //console.log('count:' + count + ' totalPoints:' + message2.totalPoints + ' length:' + length + ' jobl:' + message2.job.byteLength + ' remaning:' + (message2.job.byteLength - (message2.buffersIndex+4)) + ' bufferSize:' + bufferSize + ' totalVertices:' + totalVertices);
+                        length *= 4;
+                        totalVertices += length;
+
 
                         // copy vertices to buffer
                         tmpVertexBuffer.set(new Uint8Array(message2.job, message2.buffersIndex+4, length), bufferSize);
@@ -233,6 +221,10 @@ function optimizeGroupMessages() {
            
         }
     }
+
+    //} catch(e) {
+      //  debugger    
+    //}
 
     var buffer = new Uint8Array(globals.messagePackSize), index = 0;
 
@@ -393,5 +385,5 @@ function optimizeGroupMessages() {
 } 
 */
 
-export {postGroupMessage, optimizeGroupMessages, postGroupMessageFast, postGroupMessageLite};
+export {optimizeGroupMessages, postGroupMessageFast, postGroupMessageLite};
 

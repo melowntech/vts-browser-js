@@ -59,6 +59,7 @@ function onHeightProcessed() {
         },
 
         "layers" : {
+
             "track-line" : {
                 "filter" : ["==", "#type", "line"],
                 "line": true,
@@ -73,9 +74,7 @@ function onHeightProcessed() {
                 "line": true,
                 "line-width" : 20,
                 "line-color": [0,0,0,120],
-                "zbuffer-offset" : [-7,0,0],
-                "hover-event" : true,
-                "advanced-hit" : true
+                "zbuffer-offset" : [-7,0,0]
             },
 
             "place" : {

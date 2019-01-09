@@ -53,8 +53,11 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function() {
         //add proper glues to the list
         for (key in this.map.glues) {
             glue = this.map.glues[key];
-            
+
             //add only glue which contains desired surfaces
+
+            if (!glue || !glue.id) continue;
+
             var id = glue.id; 
             if (id.length <= vsurfaceCount) {
     

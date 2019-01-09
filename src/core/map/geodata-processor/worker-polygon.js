@@ -1,14 +1,14 @@
 
 import {globals as globals_} from './worker-globals.js';
 import {getLayerPropertyValue as getLayerPropertyValue_} from './worker-style.js';
-import {postGroupMessage as postGroupMessage_} from './worker-message.js';
+import {postGroupMessageFast as postGroupMessageFast_} from './worker-message.js';
 import {processLineStringPass as processLineStringPass_} from './worker-linestring.js';
 import {processPointArrayPass as processPointArrayPass_} from './worker-pointarray.js';
 
 //get rid of compiler mess
 var globals = globals_;
 var getLayerPropertyValue = getLayerPropertyValue_;
-var postGroupMessage = postGroupMessage_;
+var postGroupMessageFast = postGroupMessageFast_;
 var processLineStringPass = processLineStringPass_;
 var processPointArrayPass = processPointArrayPass_;
 
@@ -108,14 +108,14 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
     
-    var messageData = {'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_FLAT_LINE, {
         'color':polygonColor, 'z-index':zIndex, 'center': center, 'advancedHit': advancedHit,
         'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
         'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-        'lod':(globals.autoLod ? null : globals.tileLod) };
+        'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, texcoordsBuffer], signature);
 
-    postGroupMessage(messageData);
+    //postGroupMessage(messageData);
 };
 
 var createEmptyFeatureFromPolygon = function(polygon) {

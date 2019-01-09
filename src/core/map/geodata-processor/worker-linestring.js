@@ -6,7 +6,7 @@ import {getLayerPropertyValue as getLayerPropertyValue_,
 import {addStreetTextOnPath as addStreetTextOnPath_, getTextGlyphs as getTextGlyphs_,
         areTextCharactersAvailable as areTextCharactersAvailable_,
         getCharVerticesCount as getCharVerticesCount_, getFonts as getFonts_, getFontsStorage as getFontsStorage_} from './worker-text.js';
-import {postGroupMessage as postGroupMessage_, postGroupMessageFast as postGroupMessageFast_} from './worker-message.js';
+import {postGroupMessageFast as postGroupMessageFast_} from './worker-message.js';
 
 //get rid of compiler mess
 var globals = globals_, vec3Normalize = vec3Normalize_,
@@ -15,7 +15,7 @@ var getLayerPropertyValue = getLayerPropertyValue_,
     getLayerExpresionValue = getLayerExpresionValue_;
 var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
     getCharVerticesCount = getCharVerticesCount_, getFonts = getFonts_, getFontsStorage = getFontsStorage_;
-var postGroupMessage = postGroupMessage_, postGroupMessageFast = postGroupMessageFast_, getTextGlyphs = getTextGlyphs_;
+var postGroupMessageFast = postGroupMessageFast_, getTextGlyphs = getTextGlyphs_;
 
 
 var processLineStringPass = function(lineString, lod, style, featureIndex, zIndex, eventInfo) {
@@ -96,6 +96,9 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
         }
     }
 
+    if (totalPoints <= 1) {
+        return;
+    }
 
     if (lineFlat) {
         circleSides = 2;
@@ -850,11 +853,13 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent, type;
 
     if (line) {
+        //console.log('totalPoints:' + totalPoints + ' vbuff-l:' + (vertexBuffer ? vertexBuffer.length : '??'));
+
         var messageData = {
-            'color':lineColor, 'z-index':zIndex, 'center': center, 'normalBuffer': normalBuffer, 'advancedHit': advancedHit,
-            'elementBuffer': elementBuffer, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+            'color':lineColor, 'z-index':zIndex, 'center': center, 'advancedHit': advancedHit, 'totalPoints': totalPoints,
+            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'width-units': lineWidthUnits,
             'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
-            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'width-units': lineWidthUnits,
+            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 
             'line-width':lineWidth*2, 'lod':(globals.autoLod ? null : globals.tileLod) };
     
         if (lineFlat) {
@@ -877,9 +882,14 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
             zOffset : zbufferOffset,
             state : globals.hitState
         });
+
+        var buffers = (normalBuffer) ? [vertexBuffer, normalBuffer] : [vertexBuffer];
+
+        if (advancedHit) {
+            buffers.push(elementBuffer);
+        }
         
-        postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, type, messageData,
-                             (normalBuffer) ? [vertexBuffer, normalBuffer] : [vertexBuffer], signature);
+        postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, type, messageData, buffers, signature);
     }
 
     if (lineLabel) {
@@ -1008,6 +1018,8 @@ var processLineStringGeometry = function(lineString) {
     if (lines.length == 0) {
         return;
     }
+
+    //debugger
 
     var dlines = (lineString['d-lines']) ? true : false;
     var totalPoints = 0;
