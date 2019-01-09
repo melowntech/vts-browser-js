@@ -23,13 +23,6 @@ var MapDrawTiles = function(map, draw) {
 
 
 MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSize, priority, preventRedener, preventLoad, doNotCheckGpu) {
-    /*if (!(tile.id[0] == 14 &&
-        tile.id[1] == 4450 &&
-        tile.id[2] == 2749)) {
-        //tile = tile;
-        return true;
-    }*/
-
     if (this.stats.gpuRenderUsed >= this.draw.maxGpuUsed) {
         return false;
     }
@@ -47,19 +40,16 @@ MapDrawTiles.prototype.drawSurfaceTile = function(tile, node, cameraPos, pixelSi
 
             if (this.debug.heightmapOnly && !preventRedener) {
                 if (!tile.surface.geodata) {
-                    //node.drawPlane(cameraPos, tile);
                     tile.drawGrid(cameraPos);
                 }
                 return true;
             }
-
-            //tile.renderHappen = false;
-            
+           
             if (!preventRedener) {
                 this.stats.renderedLods[tile.id[0]]++;
                 this.stats.drawnTiles++;
 
-                if (tile.surface.geodata) {
+                if (tile.surface.geodata && this.renderer.drawnGeodataTilesUsed) {    //used in scr-count2 !!! legacy mode, do not remove
 
                     var pp = this.renderer.project2(
                         [(node.bbox2[12] + node.bbox2[15] + node.bbox2[18] + node.bbox2[21])*0.25 - cameraPos[0],
@@ -185,12 +175,6 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
     // so we have to wait until is mesh ready and then we can generate commands
     if (tile.surfaceMesh.isReady(preventLoad, priority, doNotCheckGpu) && !preventLoad) {
         var submeshes = tile.surfaceMesh.submeshes;
-
-        /*if (tile.id[0] == 14 &&
-            tile.id[1] == 4421 &&
-            tile.id[2] == 2804) {
-            tile = tile;
-        }*/
 
         tile.drawCommands = [[], [], []]; //??
         tile.imageryCredits = {};
@@ -521,12 +505,6 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
         return true;
     }
 
-    /*if (tile.id[0] == 21 && 
-        tile.id[1] == 566376 &&
-        tile.id[2] == 355252 ){ 
-//        return true;        
-    }*/
-
     if (tile.surfaceGeodata == null) {
         var path;
         
@@ -569,25 +547,6 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
         tile.lastRenderState = null;
         return true;
     }
-/*    
-     else if (tile.lastRenderState){
-
-        if (tile.surfaceGeodata.isReady(true, priority, doNotCheckGpu) {
-            if (tile.drawCommands[channel].length > 0) {
-                if (!preventRedener) {
-                    this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
-                    this.applyCredits(tile);
-                }
-                return;
-            }
-        } else {
-            if (!preventRedener) {
-                this.draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
-                this.applyCredits(tile);
-            }
-        }
-    }
-*/
 
     if (!tile.surfaceGeodataView) {
         if (tile.surfaceGeodata.isReady(preventLoad, priority, doNotCheckGpu) && !preventLoad) {
@@ -605,12 +564,11 @@ MapDrawTiles.prototype.drawGeodataTile = function(tile, node, cameraPos, pixelSi
             tile.mapdataCredits[node.credits[k]] = specificity;  
         }
 
-        //if (tile.drawCommands[channel].length == 0) {
         tile.drawCommands[channel][0] = {
             type : VTS_DRAWCOMMAND_GEODATA,
             geodataView : tile.surfaceGeodataView 
         };
-        //}
+
         return tile.surfaceGeodataView.isReady();
     }
 
@@ -734,10 +692,6 @@ MapDrawTiles.prototype.getTileTextureTransform = function(sourceTile, targetTile
 
 MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface, bound, fullUpdate) {
     var path, extraBound, layer, texture;
-
-    //if (tile.id[0] == 10 && tile.id[1] == 273 && tile.id[2] == 171) {
-      //  tile = tile;
-    //}
 
     if (this.config.mapNoTextures) {
         return;
@@ -896,10 +850,6 @@ MapDrawTiles.prototype.updateTileSurfaceBounds = function(tile, submesh, surface
             }
         }
     }
-
-    //if (tile.id[0] == 10 && tile.id[1] == 273 && tile.id[2] == 171) {
-      //  console.log(JSON.stringify(bound.sequence))
-    //}
 };
 
 
@@ -907,11 +857,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
     var debug = this.debug, pos;
 
     if (!debug.drawMeshBBox) {
-        //if (this.drawCredits) {
-          //  node.drawBBox2(cameraPos);
-        //} else {
         node.drawBBox(cameraPos);
-        //}
     }
 
     //get screen pos of node
@@ -968,7 +914,7 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
     if (debug.drawPositions) {
         //text = "" + min[0].toFixed(1) + " " + min[1].toFixed(1) + " " + min[2].toFixed(1);
         //text = "" + Math.floor(node.corners[0]) + " " + Math.floor(node.corners[1]) + " " + Math.floor(node.corners[2]) + " " + Math.floor(node.corners[3]);
-        /*
+        
         var b = node.border2;
         if (b) {
             text = '' + Math.floor(b[0]) + ' ' + Math.floor(b[1]) + ' ' + Math.floor(b[2]) + ' ' + Math.floor(b[3]) + ' ' + Math.floor(b[4]) + ' ' + Math.floor(b[5]) + ' ' + Math.floor(b[6]) + ' ' + Math.floor(b[7]) + ' ' + Math.floor(b[8]);
@@ -979,10 +925,10 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
         if (b) {
             text = '' + Math.floor(b[0]) + ' ' + Math.floor(b[1]) + ' ' + Math.floor(b[2]) + ' ' + Math.floor(b[3]) + ' ' + Math.floor(b[4]) + ' ' + Math.floor(b[5]) + ' ' + Math.floor(b[6]) + ' ' + Math.floor(b[7]) + ' ' + Math.floor(b[8]);
             this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,1,1], pos[2]);
-        }*/
+        }
 
-        text = 'llx:' + Math.floor(node.llx) + ' lly:' + Math.floor(node.lly) + ' urx:' + Math.floor(node.urx) + ' ury:' + Math.floor(node.ury);
-        this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+3*factor), 4*factor, text, [0,1,1,1], pos[2]);
+        //text = 'llx:' + Math.floor(node.llx) + ' lly:' + Math.floor(node.lly) + ' urx:' + Math.floor(node.urx) + ' ury:' + Math.floor(node.ury);
+        //this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+3*factor), 4*factor, text, [0,1,1,1], pos[2]);
     }
 
     //draw face count

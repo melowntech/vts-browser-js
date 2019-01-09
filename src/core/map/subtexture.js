@@ -301,22 +301,33 @@ MapSubtexture.prototype.onBinaryLoaded = function(data) {
         }
     }
 
-    var image = new Image();
-    image.onerror = this.onLoadError.bind(this, true);
-    image.onload = this.onLoaded.bind(this, true);
-    this.image = image;
-    image.src = window.URL.createObjectURL(data);
     this.fileSize = data.size;
+
+    if (this.map.config.mapAsyncImageDecode) {
+        createImageBitmap(data).then(this.onLoaded.bind(this, false));
+    } else {
+        var image = new Image();
+        image.onerror = this.onLoadError.bind(this, true, null);
+        image.onload = this.onLoaded.bind(this, true, null);
+        this.image = image;
+        image.src = window.URL.createObjectURL(data);
+    }
 };
 
 
-MapSubtexture.prototype.onLoaded = function(killBlob) {
+MapSubtexture.prototype.onLoaded = function(killBlob, bitmap) {
     if (this.map.killed){
         return;
     }
 
     if (killBlob) {
         window.URL.revokeObjectURL(this.image.src);
+    }
+
+    if (bitmap) {
+        this.image = bitmap;
+        this.image.naturalWidth = bitmap.width;
+        this.image.naturalHeight = bitmap.height;
     }
 
     var size = this.image.naturalWidth * this.image.naturalHeight * (this.heightMap ? 3 : 3);

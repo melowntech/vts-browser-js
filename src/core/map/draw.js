@@ -169,6 +169,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     var camInfo = camera.update();
     var renderer = this.renderer;
 
+    renderer.debugStr = 'AsyncImageDecode: ' + this.config.mapAsyncImageDecode;
     renderer.dirty = true;
     renderer.drawFog = this.debug.drawFog;
 
@@ -214,22 +215,25 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     this.degradeHorizonTiltFactor = 0.5*(1.0+Math.cos(math.radians(Math.min(180,Math.abs(renderer.cameraOrientation[1]*2*3)))));
    
     if (this.drawChannel != 1) {
-        gpu.clear(true, false);
-    } else { //dender depth map
+        if (debug.drawWireframe == 2) {
+            gpu.clear(true, true, [255,255,255,255]);
+        } else {
+            gpu.clear(true, true, [0,0,0,255]);
+        }
+    } else { //render depth map
         gpu.clear(true, true, [255,255,255,255]);
     }
 
     gpu.setState(this.drawStardomeState);
 
+    /*
     if (this.drawChannel != 1) {
-        if (this.config.mapLowresBackground < 0.8) {
-            if (debug.drawWireframe == 2) {
-                renderer.draw.drawSkydome(renderer.whiteTexture, renderer.progStardome);
-            } else {
-                renderer.draw.drawSkydome(renderer.blackTexture, renderer.progStardome);
-            }
+        if (debug.drawWireframe == 2) {
+            renderer.draw.drawSkydome(renderer.whiteTexture, renderer.progStardome);
+        } else {
+            renderer.draw.drawSkydome(renderer.blackTexture, renderer.progStardome);
         }
-    }
+    }*/
 
     gpu.setState(this.drawTileState);
 

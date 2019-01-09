@@ -12,9 +12,12 @@ var UIElement = function(control, element) {
     this.ui = this.control.ui;
     this.element = element;
     this.events = [];
-    this.dragBeginCall = this.onDragBegin.bind(this);
-    this.dragMoveCall = this.onDragMove.bind(this);
-    this.dragEndCall = this.onDragEnd.bind(this);
+    this.dragBeginCall = this.onDragBegin.bind(this, false);
+    this.dragBeginCallTouch = this.onDragBegin.bind(this, true);
+    this.dragMoveCall = this.onDragMove.bind(this, false);
+    this.dragMoveCallTouch = this.onDragMove.bind(this, true);
+    this.dragEndCall = this.onDragEnd.bind(this, false);
+    this.dragEndCallTouch = this.onDragEnd.bind(this, true);
     this.firstDragDistance = 0;
     this.lastDragDistance = 0;
     this.dragStartPos = [0,0];
@@ -190,16 +193,16 @@ UIElement.prototype.getEventName = function(type) {
 UIElement.prototype.setDraggableState = function(state) {
     if (state) {
         this.on('mousedown', this.dragBeginCall);
-        this.on('touchstart', this.dragBeginCall);
+        this.on('touchstart', this.dragBeginCallTouch);
     } else if (this.dragable){
         this.off('mousedown', this.dragBeginCall);
         this.off('mousemove', this.dragMoveCall, document);
         //this.off("mouseup", this.onDragEnd.bind(this));
         this.off('mouseup', this.dragEndCall, document);
         
-        this.off('touchstart', this.dragBeginCall);
-        this.off('touchmove', this.dragMoveCall, document);
-        this.off('touchend', this.dragEndCall, document);
+        this.off('touchstart', this.dragBeginCallTouch);
+        this.off('touchmove', this.dragMoveCallTouch, document);
+        this.off('touchend', this.dragEndCallTouch, document);
         
         this.dragging = false;
     }
@@ -241,7 +244,7 @@ UIElement.prototype.getDraggingState = function() {
 };
 
 
-UIElement.prototype.onDragBegin = function(event) {
+UIElement.prototype.onDragBegin = function(touchUsed, event) {
     //console.log("bergin: 1#:  " + JSON.stringify(this.dragButtons));
 
     this.dragButtons[event.getMouseButton()] = true;
@@ -255,10 +258,12 @@ UIElement.prototype.onDragBegin = function(event) {
     this.dragTouches2.push(event.getTouchCoords(1));            
     //}
 
-    this.resetPos = true;
-    this.firstDragDistance = 0;
-    this.lastDragDistance = 0;
-    this.zoomDrag = false;
+    if (touchUsed) {
+        this.resetPos = true;
+        this.firstDragDistance = 0;
+        this.lastDragDistance = 0;
+        this.zoomDrag = false;
+    }
 
     if (!this.dragging) {
         this.dragging = true;
@@ -272,13 +277,16 @@ UIElement.prototype.onDragBegin = function(event) {
         this.on('mouseup', this.dragEndCall, document);
         //this.on("mouseup", this.onDragEnd.bind(this), document);
 
-        this.on('touchmove', this.dragMoveCall, document);
-        this.on('touchend', this.dragEndCall, document);
+        this.on('touchmove', this.dragMoveCallTouch, document);
+        this.on('touchend', this.dragEndCallTouch, document);
 
         dom.disableTextSelection();
         dom.disableImageDrag();
         //dom.disableContexMenu();
         dom.preventDefault(event);
+
+        this.dragLastPos[0] = pos[0];
+        this.dragLastPos[1] = pos[1];
 
         this.fire('dragstart', {
             'clientX' : pos[0],
@@ -290,7 +298,7 @@ UIElement.prototype.onDragBegin = function(event) {
 };
 
 
-UIElement.prototype.onDragMove = function(event) {
+UIElement.prototype.onDragMove = function(touchUsed, event) {
     var pos = event.getMouseCoords();
 
     if (event.getTouchesCount() != -1) {
@@ -306,125 +314,128 @@ UIElement.prototype.onDragMove = function(event) {
     var distanceDelta = 0;
 
     //var el = document.getElementById("debug123");
-    
-    var touchCount = event.getTouchesCount();
-    if (touchCount != this.dragTouchCount) {
-        this.dragLastPos[0] = pos[0];
-        this.dragLastPos[1] = pos[1];
-        this.dragTouchCount = touchCount; 
-    }
 
-    if (this.resetPos) {
-        this.dragCurrentPos = [pos[0], pos[1]];
-        this.dragLastPos[0] = pos[0];
-        this.dragLastPos[1] = pos[1];
-        this.resetPos = false;
-    }
+    if (touchUsed) {
 
-    if (touchCount == 2) {
-        this.dragTouches.push(event.getTouchCoords(0));            
-        this.dragTouches2.push(event.getTouchCoords(1));            
-
-        if (this.dragTouches.length >= 7) {
-            this.dragTouches.shift();
-            this.dragTouches2.shift();
+        var touchCount = event.getTouchesCount();
+        if (touchCount != this.dragTouchCount) {
+            this.dragLastPos[0] = pos[0];
+            this.dragLastPos[1] = pos[1];
+            this.dragTouchCount = touchCount; 
         }
 
-        if (this.dragTouches.length == 6) {
+        if (this.resetPos) {
+            this.dragCurrentPos = [pos[0], pos[1]];
+            this.dragLastPos[0] = pos[0];
+            this.dragLastPos[1] = pos[1];
+            this.resetPos = false;
+        }
 
-            //get vector for touch #1
-            var t = this.dragTouches;
-            var v1x = (t[5][0] - t[4][0]) + (t[4][0] - t[3][0]) + (t[3][0] - t[2][0]) + (t[2][0] - t[1][0]) + (t[1][0] - t[0][0]);
-            var v1y = (t[5][1] - t[4][1]) + (t[4][1] - t[3][1]) + (t[3][1] - t[2][1]) + (t[2][1] - t[1][1]) + (t[1][1] - t[0][1]);
+        if (touchCount == 2) {
+            this.dragTouches.push(event.getTouchCoords(0));            
+            this.dragTouches2.push(event.getTouchCoords(1));            
 
-            //get vector for touch #2
-            var t2 = this.dragTouches2;
-            var v2x = (t2[5][0] - t2[4][0]) + (t2[4][0] - t2[3][0]) + (t2[3][0] - t2[2][0]) + (t2[2][0] - t2[1][0]) + (t2[1][0] - t2[0][0]);
-            var v2y = (t2[5][1] - t2[4][1]) + (t2[4][1] - t2[3][1]) + (t2[3][1] - t2[2][1]) + (t2[2][1] - t2[1][1]) + (t2[1][1] - t2[0][1]);
-            
-            //get distance of each vector
-            var d1 = Math.sqrt(v1x * v1x + v1y * v1y);
-            var d2 = Math.sqrt(v2x * v2x + v2y * v2y);
-            var cosAngle, cosAngle2; 
-
-            mode = 'pan';
-
-            if (d1 > d2 * 5 || d2 > d1 * 5) { //dectec situation where only one finger is closing to another
-
-                var p1, p2, p3;
-                
-                //make first vector from non moving point to beginnig position of moving point
-                //make seconf vector from non moving point to ending position of moving point
-                if (d1 > d2 * 5) {
-                    p1 = t2[0];
-                    p2 = t[0];
-                    p3 = t[5];
-                } else {
-                    p1 = t[0];
-                    p2 = t2[0];
-                    p3 = t2[5];
-                }
-                
-                var v1 = [p2[0] - p1[0], p2[1] - p1[1]];
-                var v2 = [p3[0] - p1[0], p3[1] - p1[1]];
-
-                //normalize vectors                
-                var d =  Math.sqrt(v1[0] * v1[0] + v1[1] * v1[1]);
-                v1[0] /= d;
-                v1[1] /= d;
-                
-                d =  Math.sqrt(v2[0] * v2[0] + v2[1] * v2[1]);
-                v2[0] /= d;
-                v2[1] /= d;
-
-                //measure angle between vectors
-                cosAngle = v1[0] * v2[0] + v1[1] * v2[1];
-                cosAngle2 = -v1[1] * v2[0] + v1[0] * v2[1]; //v1 is rotated by 90deg
-                
-                rotateDelta = (Math.acos(cosAngle2) * (180.0/Math.PI)) - 90;
-
-                if (cosAngle > 0.9999) { //are vectors in same line?
-                    mode = 'zoom';
-                } else {
-                    panDelta = [(v1x + v2x) *0.5, (v1y + v2y) *0.5];
-                }
-
-            } else if (d1 > 1 && d2 > 1) { //are bouth vectors in motion
-
-                //normalize vectors
-                var nv1x = v1x / d1;
-                var nv1y = v1y / d1;
-
-                var nv2x = v2x / d2;
-                var nv2y = v2y / d2;
-                
-                //do vectors move in same direction
-                cosAngle = nv1x * nv2x + nv1y * nv2y;
-                
-                if (cosAngle < 0.2) {
-                    mode = 'zoom';
-                } else {
-                    panDelta = [(v1x + v2x) *0.5, (v1y + v2y) *0.5];
-                } 
+            if (this.dragTouches.length >= 7) {
+                this.dragTouches.shift();
+                this.dragTouches2.shift();
             }
-            
-            //if (mode == "zoom") {
-            t = this.dragTouches;
-            t2 = this.dragTouches2;
 
-                //get distance between points at the beginig
-            var dx = (t2[0][0] - t[0][0]);
-            var dy = (t2[0][1] - t[0][1]);
-            d1 = Math.sqrt(dx * dx + dy * dy);
+            if (this.dragTouches.length == 6) {
 
-                //get distance between points at the end
-            dx = (t2[5][0] - t[5][0]);
-            dy = (t2[5][1] - t[5][1]);
-            d2 = Math.sqrt(dx * dx + dy * dy);
+                //get vector for touch #1
+                var t = this.dragTouches;
+                var v1x = (t[5][0] - t[4][0]) + (t[4][0] - t[3][0]) + (t[3][0] - t[2][0]) + (t[2][0] - t[1][0]) + (t[1][0] - t[0][0]);
+                var v1y = (t[5][1] - t[4][1]) + (t[4][1] - t[3][1]) + (t[3][1] - t[2][1]) + (t[2][1] - t[1][1]) + (t[1][1] - t[0][1]);
 
-                //get delta betwwen distances
-            distanceDelta = d2 - d1;   
-            //}  
+                //get vector for touch #2
+                var t2 = this.dragTouches2;
+                var v2x = (t2[5][0] - t2[4][0]) + (t2[4][0] - t2[3][0]) + (t2[3][0] - t2[2][0]) + (t2[2][0] - t2[1][0]) + (t2[1][0] - t2[0][0]);
+                var v2y = (t2[5][1] - t2[4][1]) + (t2[4][1] - t2[3][1]) + (t2[3][1] - t2[2][1]) + (t2[2][1] - t2[1][1]) + (t2[1][1] - t2[0][1]);
+                
+                //get distance of each vector
+                var d1 = Math.sqrt(v1x * v1x + v1y * v1y);
+                var d2 = Math.sqrt(v2x * v2x + v2y * v2y);
+                var cosAngle, cosAngle2; 
+
+                mode = 'pan';
+
+                if (d1 > d2 * 5 || d2 > d1 * 5) { //dectec situation where only one finger is closing to another
+
+                    var p1, p2, p3;
+                    
+                    //make first vector from non moving point to beginnig position of moving point
+                    //make seconf vector from non moving point to ending position of moving point
+                    if (d1 > d2 * 5) {
+                        p1 = t2[0];
+                        p2 = t[0];
+                        p3 = t[5];
+                    } else {
+                        p1 = t[0];
+                        p2 = t2[0];
+                        p3 = t2[5];
+                    }
+                    
+                    var v1 = [p2[0] - p1[0], p2[1] - p1[1]];
+                    var v2 = [p3[0] - p1[0], p3[1] - p1[1]];
+
+                    //normalize vectors                
+                    var d =  Math.sqrt(v1[0] * v1[0] + v1[1] * v1[1]);
+                    v1[0] /= d;
+                    v1[1] /= d;
+                    
+                    d =  Math.sqrt(v2[0] * v2[0] + v2[1] * v2[1]);
+                    v2[0] /= d;
+                    v2[1] /= d;
+
+                    //measure angle between vectors
+                    cosAngle = v1[0] * v2[0] + v1[1] * v2[1];
+                    cosAngle2 = -v1[1] * v2[0] + v1[0] * v2[1]; //v1 is rotated by 90deg
+                    
+                    rotateDelta = (Math.acos(cosAngle2) * (180.0/Math.PI)) - 90;
+
+                    if (cosAngle > 0.9999) { //are vectors in same line?
+                        mode = 'zoom';
+                    } else {
+                        panDelta = [(v1x + v2x) *0.5, (v1y + v2y) *0.5];
+                    }
+
+                } else if (d1 > 1 && d2 > 1) { //are bouth vectors in motion
+
+                    //normalize vectors
+                    var nv1x = v1x / d1;
+                    var nv1y = v1y / d1;
+
+                    var nv2x = v2x / d2;
+                    var nv2y = v2y / d2;
+                    
+                    //do vectors move in same direction
+                    cosAngle = nv1x * nv2x + nv1y * nv2y;
+                    
+                    if (cosAngle < 0.2) {
+                        mode = 'zoom';
+                    } else {
+                        panDelta = [(v1x + v2x) *0.5, (v1y + v2y) *0.5];
+                    } 
+                }
+                
+                //if (mode == "zoom") {
+                t = this.dragTouches;
+                t2 = this.dragTouches2;
+
+                    //get distance between points at the beginig
+                var dx = (t2[0][0] - t[0][0]);
+                var dy = (t2[0][1] - t[0][1]);
+                d1 = Math.sqrt(dx * dx + dy * dy);
+
+                    //get distance between points at the end
+                dx = (t2[5][0] - t[5][0]);
+                dy = (t2[5][1] - t[5][1]);
+                d2 = Math.sqrt(dx * dx + dy * dy);
+
+                    //get delta betwwen distances
+                distanceDelta = d2 - d1;   
+                //}  
+            }
         }
     }
 
@@ -441,7 +452,7 @@ UIElement.prototype.onDragMove = function(event) {
         'touchPanDelta' : panDelta,
         'touchRotateDelta' : rotateDelta,
         'touchDistanceDelta' : distanceDelta,
-        'touches' : touchCount  
+        'touches' : (touchUsed) ? touchCount : 0
     });
 
     //
@@ -455,7 +466,7 @@ UIElement.prototype.onDragMove = function(event) {
 
 //var debugCoutner = 0;
 
-UIElement.prototype.onDragEnd = function(event) {
+UIElement.prototype.onDragEnd = function(touchUsed, event) {
     //this.dragButtons[event.getMouseButton()] = false;
     //console.log("end: 1#:  " + JSON.stringify(this.dragButtons));
 
@@ -474,12 +485,12 @@ UIElement.prototype.onDragEnd = function(event) {
 
     //console.log("end: 2#:  " + JSON.stringify(this.dragButtons));
 
-    this.resetPos = true;
-
-    this.firstDragDistance = 0;
-    this.lastDragDistance = 0;
-    this.zoomDrag = false;
-
+    if (touchUsed) {
+        this.resetPos = true;
+        this.firstDragDistance = 0;
+        this.lastDragDistance = 0;
+        this.zoomDrag = false;
+    }
 
     if (this.dragging) {
         var pos = event.getMouseCoords();
@@ -495,8 +506,8 @@ UIElement.prototype.onDragEnd = function(event) {
             this.off('mouseup', this.dragEndCall, document);
             //this.off("mouseup", this.onDragEnd.bind(this), document);
 
-            this.off('touchmove', this.dragMoveCall, document);
-            this.off('touchend', this.dragEndCall, document);
+            this.off('touchmove', this.dragMoveCallTouch, document);
+            this.off('touchend', this.dragEndCallTouch, document);
 
             dom.enableTextSelection();
             dom.enableImageDrag();
@@ -525,31 +536,6 @@ UIElement.prototype.updateDragButtonsState = function(event, state) {
     }        
 };
 
-
-UIElement.prototype.setDraggableState = function(state) {
-    if (state) {
-        this.on('mousedown', this.dragBeginCall);
-        this.on('touchstart', this.dragBeginCall);
-    } else if (this.dragable){
-        this.off('mousedown', this.dragBeginCall);
-        this.off('mousemove', this.dragMoveCall, document);
-        //this.off("mouseup", this.onDragEnd.bind(this));
-        this.off('mouseup', this.dragEndCall, document);
-        
-        this.off('touchstart', this.dragBeginCall);
-        this.off('touchmove', this.dragMoveCall, document);
-        this.off('touchend', this.dragEndCall, document);
-        
-        this.dragging = false;
-    }
-
-    this.dragable = state;
-    this.dragButtons = {
-        'left' : false,
-        'right' : false,
-        'middle' : false
-    };
-};
 
 
 export default UIElement;

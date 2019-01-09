@@ -45,14 +45,14 @@ RendererInit.prototype.initShaders = function() {
     var shaders = GpuShaders;
     var renderer = this.renderer;
     var gpu = this.gpu;
-    renderer.progTile = new GpuProgram(gpu, shaders.tileVertexShader, shaders.tileFragmentShader);
 
-    renderer.progTile2 = new GpuProgram(gpu, shaders.tile2VertexShader, shaders.tile2FragmentShader.replace('__FILTER__', ''));
-    renderer.progTile3 = new GpuProgram(gpu, shaders.tile2VertexShader, shaders.tile3FragmentShader.replace('__FILTER__', ''));
+    renderer.progTile = new GpuProgram(gpu, shaders.tileVertexShader, shaders.tileFragmentShader);
+    renderer.progTile2 = new GpuProgram(gpu, '#define externalTex\n' + shaders.tileVertexShader, '#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+    renderer.progTile3 = new GpuProgram(gpu, '#define externalTex\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+    renderer.progFogTile = new GpuProgram(gpu, '#define onlyFog\n' + shaders.tileVertexShader, '#define onlyFog\n' + shaders.tileFragmentShader);
 
     renderer.progShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileShadedFragmentShader);
     renderer.progTShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileTShadedFragmentShader);
-    renderer.progFogTile = new GpuProgram(gpu, shaders.fogTileVertexShader, shaders.fogTileFragmentShader);
     renderer.progWireframeTile = new GpuProgram(gpu, shaders.tileWireframeVertexShader, shaders.tileWireframeFragmentShader);
     renderer.progWireframeTile2 = new GpuProgram(gpu, shaders.tileWireframeVertexShader, shaders.tileWireframe2FragmentShader);
     renderer.progWireframeTile3 = new GpuProgram(gpu, shaders.tileWireframe3VertexShader, shaders.tileWireframeFragmentShader);
@@ -95,6 +95,12 @@ RendererInit.prototype.initShaders = function() {
     renderer.progImage = new GpuProgram(gpu, shaders.imageVertexShader, shaders.imageFragmentShader);
     renderer.progIcon = new GpuProgram(gpu, shaders.iconVertexShader, shaders.textFragmentShader); //label or icon
     renderer.progIcon2 = new GpuProgram(gpu, shaders.icon2VertexShader, shaders.text2FragmentShader); //label
+
+    renderer.progLabel16 = new GpuProgram(gpu, '#define DSIZE 16\n' + shaders.icon3VertexShader, shaders.text2FragmentShader); //label with singleBuffer
+    renderer.progLabel32 = new GpuProgram(gpu, '#define DSIZE 32\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
+    renderer.progLabel48 = new GpuProgram(gpu, '#define DSIZE 48\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
+    renderer.progLabel64 = new GpuProgram(gpu, '#define DSIZE 64\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
+    renderer.progLabel96 = new GpuProgram(gpu, '#define DSIZE 96\n' + shaders.icon3VertexShader, shaders.text2FragmentShader); 
 };
 
 RendererInit.prototype.initProceduralShaders = function() {
@@ -113,17 +119,18 @@ RendererInit.prototype.initProceduralShaders = function() {
 
 RendererInit.prototype.initHeightmap = function() {
     var renderer = this.renderer;
+    var use16Bit = renderer.core.config.map16bitMeshes;
     var gpu = this.gpu;
 
     // initialize heightmap geometry
-    var meshData = RendererGeometry.buildHeightmap(5);
-    renderer.heightmapMesh = new GpuMesh(gpu, meshData, null, this.core);
+    var meshData = RendererGeometry.buildHeightmap(5, true);
+    //renderer.heightmapMesh = new GpuMesh(gpu, meshData, null, this.core, true, use16Bit);
 
-    meshData = RendererGeometry.buildPlane(16);
-    renderer.planeMesh = new GpuMesh(gpu, meshData, null, this.core);
+    meshData = RendererGeometry.buildPlane(16, true);
+    renderer.planeMesh = new GpuMesh(gpu, meshData, null, this.core, true, use16Bit, true);
 
-    meshData = RendererGeometry.buildPlane(128);
-    renderer.planeMesh2 = new GpuMesh(gpu, meshData, null, this.core);
+    meshData = RendererGeometry.buildPlane(128, true);
+    renderer.planeMesh2 = new GpuMesh(gpu, meshData, null, this.core, true, use16Bit, true);
 
     // create heightmap texture
     var size = 64;
@@ -259,18 +266,76 @@ RendererInit.prototype.initImage = function() {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     renderer.rectIndicesBuffer.itemSize = 1;
     renderer.rectIndicesBuffer.numItems = 6;
+
+    renderer.textBuff16 = new Float32Array(16 * 4);
+    renderer.textBuff32 = new Float32Array(32 * 4);
+    renderer.textBuff48 = new Float32Array(48 * 4);
+    renderer.textBuff64 = new Float32Array(64 * 4);
+
+    renderer.textQuads16 = this.generateTextQuads(16);
+    renderer.textQuads32 = this.generateTextQuads(32);
+    renderer.textQuads48 = this.generateTextQuads(48);
+    renderer.textQuads64 = this.generateTextQuads(64);
+    renderer.textQuads96 = this.generateTextQuads(96);
 };
 
 
+RendererInit.prototype.generateTextQuads = function(num) {
+    var renderer = this.renderer;
+    var gl = this.gpu.gl;
+
+    var buffer = new Float32Array(num * 2 * 6);
+    var index, j;
+
+    for (var i = 0; i < num; i++) {
+        index = i * 6 * 2;
+
+        j = 0;
+        buffer[index] = i;
+        buffer[index+1] = j;
+
+        j = 1;
+        buffer[index+2] = i;
+        buffer[index+3] = j;
+
+        j = 2;
+        buffer[index+4] = i;
+        buffer[index+5] = j;
+
+        j = 2;
+        buffer[index+6] = i;
+        buffer[index+7] = j;
+
+        j = 3;
+        buffer[index+8] = i;
+        buffer[index+9] = j;
+
+        j = 0;
+        buffer[index+10] = i;
+        buffer[index+11] = j;
+    }
+
+    //create vertices buffer for rect
+    var vbuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
+
+    gl.bufferData(gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW);
+    vbuffer.itemSize = 2;
+    vbuffer.numItems = num * 6;
+
+    return vbuffer;
+};
+
 RendererInit.prototype.initSkydome = function() {
     var renderer = this.renderer;
-    var meshData = RendererGeometry.buildSkydome(32, 64);
-    renderer.skydomeMesh = new GpuMesh(this.gpu, meshData, null, this.core);
+    var use16Bit = renderer.core.config.map16bitMeshes;
+    var meshData = RendererGeometry.buildSkydome(32, 64, use16Bit);
+    renderer.skydomeMesh = new GpuMesh(this.gpu, meshData, null, this.core, true, use16Bit);
     //this.skydomeTexture = new GpuTexture(this.gpu, "./skydome.jpg", this.core);
 
-    meshData = RendererGeometry.buildSkydome(128, 256);
+    meshData = RendererGeometry.buildSkydome(128, 256, use16Bit, true);
 //    var meshData = RendererGeometry.buildSkydome(256, 512);
-    renderer.atmoMesh = new GpuMesh(this.gpu, meshData, null, this.core);
+    renderer.atmoMesh = new GpuMesh(this.gpu, meshData, null, this.core, true, use16Bit);
 };
 
 

@@ -33,7 +33,7 @@ GpuProgram.prototype.createShader = function(source, vertexShader) {
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         var info = gl.getShaderInfoLog(shader);
-        console.log('An error occurred compiling the shaders: ' + info);
+        console.log('An error occurred compiling the ' + ((vertexShader !== true) ? 'fragment' : 'vertex') + ' shaders: ' + info);
         this.gpu.renderer.core.callListener('renderer-shader-error', { 'where':'compilation', 'info' : info });
         return null;
     }
@@ -194,13 +194,14 @@ GpuProgram.prototype.getAttribute = function(name) {
     var gl = this.gl;
     if (gl == null || this.program == null) return;
 
-    if (this.attributeLocationCache[name] == null) {
-        var location = gl.getAttribLocation(this.program, name);
+    var location = this.attributeLocationCache[name];
+
+    if (location == null) {
+        location = gl.getAttribLocation(this.program, name);
         this.attributeLocationCache[name] = location;
-        return location;
-    } else {
-        return this.attributeLocationCache[name];
     }
+
+    return location;
 };
 
 
@@ -208,13 +209,14 @@ GpuProgram.prototype.getUniform = function(name) {
     var gl = this.gl;
     if (gl == null || this.program == null) return;
 
-    if (this.uniformLocationCache[name] == null) {
-        var location = gl.getUniformLocation(this.program, name);
+    var location = this.uniformLocationCache[name];
+
+    if (location == null) {
+        location = gl.getUniformLocation(this.program, name);
         this.uniformLocationCache[name] = location;
-        return location;
-    } else {
-        return this.uniformLocationCache[name];
     }
+    
+    return location;
 };
 
 

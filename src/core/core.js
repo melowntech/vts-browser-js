@@ -31,7 +31,6 @@ var Core = function(element, config, coreInterface) {
         mapMetatileCache : 60,
         mapTexelSizeFit : 1.1,
         mapMaxHiresLodLevels : 2,
-        mapLowresBackground : 0,
         mapDownloadThreads : 20,
         mapMaxProcessingTime : 1000*20,
         mapMobileMode : false,
@@ -59,9 +58,18 @@ var Core = function(element, config, coreInterface) {
         mapGeodataLoadMode : 'fit', //"fitonly"
         mapGridMode : 'linear', //"flat"
         mapGridSurrogatez : false, 
+        mapGridUnderSurface: 0,
+        mapGridTextureLevel: -1,
+        mapGridTextureLayer: null, //"bing",
         mapXhrImageLoad : true,
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,
+        mapSoftViewSwitch : true,
+
+        map16bitMeshes : true,
+        mapOnlyOneUVs : true,
+        mapIndexBuffers : true,
+        mapAsyncImageDecode : true,
 
         mapFeatureGridCells : 31,
         mapFeaturesPerSquareInch : 0.25, //0.6614,
@@ -465,6 +473,8 @@ Core.prototype.setConfigParam = function(key, value) {
         this.config.mapVirtualSurfaces = utils.validateBool(value, true);
     } else if (key == 'mapForcePipeline') {
         this.config.mapForcePipeline = utils.validateNumber(value, -1, Number.MAXINTEGER, 0);
+    } else if (key == 'map16bitMeshes') {
+        this.config.map16bitMeshes = utils.validateBool(value, false);
     } else if (key == 'inspector') {
         this.config.inspector = utils.validateBool(value, true);
     } else if (key == 'authorization') {
@@ -532,7 +542,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.16.12';
+    return (full ? 'Core: ' : '') + '2.17.1';
 }
 
 

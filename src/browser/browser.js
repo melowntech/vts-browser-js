@@ -298,6 +298,7 @@ Browser.prototype.initConfig = function() {
         jumpAllowed : false,
         sensitivity : [1, 0.06, 0.05],
         inertia : [0.81, 0.9, 0.7],
+        legacyInertia : false, // legacy inertia [0.8,0.8,0.8] sensitivity [0.5,0.4]
         positionInUrl : false,
         positionUrlHistory : false,
         constrainCamera : true,
@@ -377,7 +378,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'zoomAllowed':            this.config.zoomAllowed = utils.validateBool(value, true);          break;
     case 'jumpAllowed':            this.config.jumpAllowed = utils.validateBool(value, false);         break;
     case 'constrainCamera':        this.config.constrainCamera = utils.validateBool(value, true);      break;
-    case 'navigationMode':         this.config.navigationMode = value;                                        break;
+    case 'navigationMode':         this.config.navigationMode = value;                                 break;
     case 'positionInUrl':          this.config.positionInUrl = utils.validateBool(value, false);       break;
     case 'positionUrlHistory':     this.config.positionUrlHistory = utils.validateBool(value, false);  break;
     case 'controlCompass':         this.config.controlCompass = utils.validateBool(value, true); this.updateUI(key);    break;
@@ -404,6 +405,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'maxViewExtent':          this.config.maxViewExtent = utils.validateNumber(value, 0.01, Number.MAXINTEGER, Number.MAXINTEGER); break;
     case 'sensitivity':            this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
     case 'inertia':                this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
+    case 'legacyInertia':          this.config.legacyInertia = utils.validateBool(value, false); break;
     case 'tiltConstrainThreshold': this.config.tiltConstrainThreshold = utils.validateNumberArray(value, 2, [0.5,1], [-Number.MAXINTEGER, -Number.MAXINTEGER], [Number.MAXINTEGER, Number.MAXINTEGER]); break;
     case 'geodata':                this.config.geodata = value; break;
     case 'geojson':                this.config.geojson = value; break;
@@ -474,6 +476,7 @@ Browser.prototype.getConfigParam = function(key) {
     case 'jumpAllowed':          return this.config.jumpAllowed;
     case 'sensitivity':          return this.config.sensitivity;
     case 'inertia':              return this.config.inertia;
+    case 'legacyInertia':        return this.config.legacyInertia;
     case 'navigationMode':       return this.config.navigationMode;
     case 'constrainCamera':      return this.config.constrainCamera;
     case 'positionInUrl':        return this.config.positionInUrl;

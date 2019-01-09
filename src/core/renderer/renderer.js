@@ -142,6 +142,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.labelVector = [0,0,0];
     this.drawnGeodataTiles = 0;
     this.drawnGeodataTilesFactor = 0;
+    this.drawnGeodataTilesUsed = false;
     this.progMap = {};
 
     //hack for vts maps
@@ -195,10 +196,6 @@ Renderer.prototype.kill = function() {
 
     this.killed = true;
 
-    if (this.planet != null) {
-        this.planet.kill();
-    }
-
     if (this.heightmapMesh) this.heightmapMesh.kill();
     if (this.heightmapTexture) this.heightmapTexture.kill();
     if (this.skydomeMesh) this.skydomeMesh.kill();
@@ -221,22 +218,17 @@ Renderer.prototype.kill = function() {
 };
 
 
-Renderer.prototype.getPlanet = function() {
-    return this.planet;
-};
-
-
 Renderer.prototype.resizeGL = function(width, height, skipCanvas, skipPaint) {
     this.camera.setAspect(width / height);
     this.curSize = [width, height];
     this.oldSize = [width, height];
     this.gpu.resize(this.curSize, skipCanvas);
 
-    if (skipPaint !== true) {
-        this.draw.paintGL();
-    }
+    //if (skipPaint !== true) { //remove this??
+       // this.draw.paintGL();
+    //}
 
-    var m = [];
+    var m = new Float32Array(16);
     m[0] = 2.0/width; m[1] = 0; m[2] = 0; m[3] = 0;
     m[4] = 0; m[5] = -2.0/height; m[6] = 0; m[7] = 0;
     m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;

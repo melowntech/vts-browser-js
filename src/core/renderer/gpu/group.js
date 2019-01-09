@@ -2,11 +2,13 @@
 import {vec3 as vec3_, mat4 as mat4_} from '../../utils/matrix';
 import BBox_ from '../bbox';
 import {math as math_} from '../../utils/math';
+import {utils as utils_} from '../../utils/utils';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat4 = mat4_;
 var BBox = BBox_;
 var math = math_;
+var utils = utils_;
 
 
 var GpuGroup = function(id, bbox, origin, gpu, renderer) {
@@ -20,6 +22,8 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.reduced = 0;
     this.geometries = {};
     this.subjob = null;
+    this.mv = new Float32Array(16);
+    this.mvp = new Float32Array(16);
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
@@ -110,7 +114,7 @@ GpuGroup.prototype.convertColor = function(c) {
 GpuGroup.prototype.addLineJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data['vertexBuffer'];
+    var vertices = data.vertexBuffer;
 
     var job = {};
     job.type = VTS_JOB_FLAT_LINE;
@@ -154,7 +158,7 @@ GpuGroup.prototype.addLineJob = function(data) {
     if (job.advancedHit) {
         job.program = this.renderer.progLine;
 
-        var elements = data['elementBuffer'];
+        var elements = data.elementBuffer;
 
         job.vertexElementBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexElementBuffer);
@@ -173,17 +177,18 @@ GpuGroup.prototype.addLineJob = function(data) {
 GpuGroup.prototype.addExtentedLineJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data['vertexBuffer'];
-    var normals = data['normalBuffer'];
+    var vertices = data.vertexBuffer;
+    var normals = data.normalBuffer;
 
     var job = {};
     job.type = data['type'];
 
-    switch(data['type']) {
-    case 'flat-tline':  job.type = VTS_JOB_FLAT_TLINE;  break;
-    case 'flat-rline':  job.type = VTS_JOB_FLAT_RLINE;  break;
-    case 'pixel-line':  job.type = VTS_JOB_PIXEL_LINE;  break;
-    case 'pixel-tline': job.type = VTS_JOB_PIXEL_TLINE; break;
+    
+    switch(job.type) {
+    case VTS_WORKER_TYPE_FLAT_LINE:  job.type = VTS_JOB_FLAT_TLINE;  break;
+    case VTS_WORKER_TYPE_FLAT_RLINE:  job.type = VTS_JOB_FLAT_RLINE;  break;
+    case VTS_WORKER_TYPE_PIXEL_LINE:  job.type = VTS_JOB_PIXEL_LINE;  break;
+    case VTS_WORKER_TYPE_PIXEL_TLINE: job.type = VTS_JOB_PIXEL_TLINE; break;
     }
 
     job.color = this.convertColor(data['color']);
@@ -255,7 +260,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     job.vertexNormalBuffer.numItems = normals.length / 4;
 
     if (job.advancedHit) {
-        var elements = data['elementBuffer'];
+        var elements = data.elementBuffer;
 
         job.vertexElementBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexElementBuffer);
@@ -274,8 +279,8 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 GpuGroup.prototype.addLineLabelJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data['vertexBuffer'];
-    var texcoords = data['texcoordsBuffer'];
+    var vertices = data.vertexBuffer;
+    var texcoords = data.texcoordsBuffer;
 
     var job = {};
     job.type = VTS_JOB_LINE_LABEL;
@@ -335,10 +340,10 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 GpuGroup.prototype.addIconJob = function(data, label, tile) {
     var gl = this.gl;
 
-    var vertices = data['vertexBuffer'];
-    var texcoords = data['texcoordsBuffer'];
-    var origins = data['originBuffer'];
-    var singleBuffer = data['singleBuffer'];
+    var vertices = data.vertexBuffer;
+    var texcoords = data.texcoordsBuffer;
+    var origins = data.originBuffer;
+    var singleBuffer = data.singleBuffer;
     var s = data['stick'];
     var f = 1.0/255;
 
@@ -372,8 +377,8 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
             case 'tilt-cos':   job.reduce[0] = 2; break;
             case 'tilt-cos2':  job.reduce[0] = 3; break;
             case 'scr-count':  job.reduce[0] = 4; break;
-            case 'scr-count2': job.reduce[0] = 5; break;
-            case 'scr-count3': job.reduce[0] = 6; break;
+            case 'scr-count2': job.reduce[0] = 5; this.renderer.drawnGeodataTilesUsed = true; break;
+            case 'scr-count3': job.reduce[0] = 6; this.renderer.drawnGeodataTilesUsed = true; break;
             case 'scr-count4': job.reduce[0] = 7; break;
             case 'scr-count5': job.reduce[0] = 8; break;
             case 'scr-count6': job.reduce[0] = 9; break;
@@ -404,11 +409,17 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         job.color2 = this.convertColor(data['color2']);
         job.outline = data['outline'];
         job.size = data['size'];
+        job.origin = data['origin'];
         job.files = data['files'] || [];
         job.index = data['index'] || 0;
         job.noOverlap = data['noOverlap'];
         var fonts = data['fonts'] || ['#default'];
         job.fonts = fonts;
+        job.gamma = [job.outline[2] * 1.4142 / job.size, job.outline[3] * 1.4142 / job.size];
+
+        if (job.origin) {
+            job.origin = new Float32Array(job.origin);
+        }
 
         for (var i = 0, li = fonts.length; i < li; i++) {
             fonts[i] = this.renderer.fonts[fonts[i]];
@@ -564,6 +575,128 @@ GpuGroup.prototype.addVSwitch = function(){
     }
 
     this.vsjobs = null;
+};
+
+
+GpuGroup.prototype.copyBuffer = function(buffer, source, index) {
+    var tmp = new Uint8Array(buffer.buffer);
+    tmp.set(new Uint8Array(source.buffer, index, buffer.byteLength));
+    return buffer;
+};
+
+
+GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
+    var data, str, length, tmp;
+    var view = new DataView(buffer.buffer);
+    var type = buffer[index]; index += 1;
+
+    if (type != VTS_WORKER_TYPE_PACK_BEGIN && type != VTS_WORKER_TYPE_PACK_END && 
+        type != VTS_WORKER_TYPE_VSWITCH_BEGIN && type != VTS_WORKER_TYPE_VSWITCH_END && type != VTS_WORKER_TYPE_VSWITCH_STORE) {
+
+        length = view.getUint32(index); index += 4;
+        str = utils.unint8ArrayToString(new Uint8Array(buffer.buffer, index, length)); index+= length;
+        data = JSON.parse(str);
+    }
+
+    switch(type) {
+        case VTS_WORKER_TYPE_FLAT_LINE:
+            data.type = type;
+            length = view.getUint32(index); index += 4;
+            data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
+
+            if (data['advancedHit']) {
+                length = view.getUint32(index); index += 4;
+                data.elementBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.elementBuffer.byteLength;
+            }
+
+            this.addLineJob(data);
+            break;
+
+        case VTS_WORKER_TYPE_FLAT_TLINE:
+        case VTS_WORKER_TYPE_FLAT_RLINE:
+        case VTS_WORKER_TYPE_PIXEL_LINE:
+        case VTS_WORKER_TYPE_PIXEL_TLINE:
+            data.type = type;
+            length = view.getUint32(index); index += 4;
+            data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.normalBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.normalBuffer.byteLength;
+
+            if (data['advancedHit']) {
+                length = view.getUint32(index); index += 4;
+                data.elementBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.elementBuffer.byteLength;
+            }
+
+            this.addExtentedLineJob(data);
+            break;
+
+        case VTS_WORKER_TYPE_LINE_LABEL:
+
+            length = view.getUint32(index); index += 4;
+            data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.texcoordsBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.texcoordsBuffer.byteLength;
+            this.addLineLabelJob(data);
+            break;
+
+        case VTS_WORKER_TYPE_ICON:
+        case VTS_WORKER_TYPE_LABEL:
+
+            length = view.getUint32(index); index += 4;
+            data.singleBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.singleBuffer.byteLength;
+            this.addIconJob(data, (type == VTS_WORKER_TYPE_LABEL), tile);
+            break;
+
+        case VTS_WORKER_TYPE_ICON2:
+        case VTS_WORKER_TYPE_LABEL2:
+
+            length = view.getUint32(index); index += 4;
+            data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.originBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.originBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.texcoordsBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.texcoordsBuffer.byteLength;
+            this.addIconJob(data, (type == VTS_WORKER_TYPE_LABEL2), tile);
+            break;
+
+        case VTS_WORKER_TYPE_POINT_GEOMETRY:
+        case VTS_WORKER_TYPE_LINE_GEOMETRY:
+
+            length = view.getUint32(index); index += 4;
+            data.geometryBuffer = this.copyBuffer(new Float64Array(length), buffer, index); index += data.originBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.indicesBuffer = this.copyBuffer(new Uint32Array(length), buffer, index); index += data.indicesBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            this.addGeometry(data);
+            break;
+
+        case VTS_WORKER_TYPE_PACK_BEGIN:
+            this.subjobs = []; index += 4;
+            break;
+
+        case VTS_WORKER_TYPE_PACK_END:
+            this.addPack(); index += 4;
+            break;
+
+        case VTS_WORKER_TYPE_VSPOINT:
+            this.addVSPoint(data, tile);
+            break;
+
+        case VTS_WORKER_TYPE_VSWITCH_BEGIN:
+            this.vsjobs = []; this.vsjob = null; index += 4;
+            break;
+
+        case VTS_WORKER_TYPE_VSWITCH_END:
+            this.addVSwitch(); index += 4;
+            break;
+
+        case VTS_WORKER_TYPE_VSWITCH_STORE:
+            data = { viewExtent: view.getUint32(index) }; index += 4;
+            this.storeVSJobs(data);
+            break;
+    }
+
+    return index;
 };
 
 

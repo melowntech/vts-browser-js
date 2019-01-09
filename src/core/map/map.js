@@ -71,6 +71,7 @@ var Map = function(core, mapConfig, path, config) {
     this.dynamicLayers = [];
     this.stylesheets = [];
     this.processingTasks = [];
+    this.processingTasks2 = [];
     this.geodataProcessors = [];
 
     this.surfaceSequence = new MapSurfaceSequence(this);
@@ -778,7 +779,6 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapGPUCache':                   this.config.mapGPUCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 360); this.setupCache(); break;
     case 'mapMetatileCache':              this.config.mapMetatileCache = utils.validateNumber(value, 10, Number.MAXINTEGER, 60); this.setupCache(); break;
     case 'mapTexelSizeFit':               this.config.mapTexelSizeFit = utils.validateNumber(value, 0.0001, Number.MAXINTEGER, 1.1); break;
-    case 'mapLowresBackground':           this.config.mapLowresBackground = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
     case 'mapDownloadThreads':            this.config.mapDownloadThreads = utils.validateNumber(value, 1, Number.MAXINTEGER, 6); break;
     case 'mapMaxProcessingTime':          this.config.mapMaxProcessingTime = utils.validateNumber(value, 1, Number.MAXINTEGER, 1000/20); break;
     case 'mapMobileMode':                 this.config.mapMobileMode = utils.validateBool(value, false); this.setupMobileMode(); break;
@@ -802,6 +802,10 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapLoadMode':                   this.config.mapLoadMode = utils.validateString(value, 'topdown'); break;
     case 'mapGeodataLoadMode':            this.config.mapGeodataLoadMode = utils.validateString(value, 'fit'); break;
     case 'mapGridMode':                   this.config.mapGridMode = utils.validateString(value, 'linear'); break;
+    case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
+    case 'mapGridUnderSurface':           this.config.mapGridUnderSurface = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, 0); break;
+    case 'mapGridTextureLevel':           this.config.mapGridTextureLevel = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, -1); break;
+    case 'mapGridTextureLayer':           this.config.mapGridTextureLayer = utils.validateString(value, ''); break;
     case 'mapPreciseBBoxTest':            this.config.mapPreciseBBoxTest = utils.validateBool(value, true); break;
     case 'mapPreciseDistanceTest':        this.config.mapPreciseDistanceTest = utils.validateBool(value, false); break;
     case 'mapHeightfiledWhenUnloaded':    this.config.mapHeightfiledWhenUnloaded = utils.validateBool(value, false); break;
@@ -809,7 +813,6 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapVirtualSurfaces':            this.config.mapVirtualSurfaces = utils.validateBool(value, true); break;
     case 'mapDegradeHorizon':             this.config.mapDegradeHorizon = utils.validateBool(value, true); break;
     case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], [1, 3000, 15000, 7000]); break;
-    case 'mapGridSurrogatez':             this.config.mapGridSurrogatez = utils.validateBool(value, false); break;
     case 'mapRefreshCycles':              this.config.mapRefreshCycles = utils.validateNumber(value, 0, Number.MAXINTEGER, 3); break;
     case 'mapDefaultFont':                this.config.mapDefaultFont =  utils.validateString(value, ''); break;
     case 'mapMetricUnits':                this.config.mapMetricUnits = utils.validateBool(value, true); break;
@@ -821,6 +824,11 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapFeaturesSortByTop':          this.config.mapFeaturesSortByTop = utils.validateBool(value, false); break;
     case 'mapFeaturesReduceParams':       this.config.mapFeaturesReduceParams = value; break;
     case 'mapLogGeodataStyles':           this.config.mapLogGeodataStyles = utils.validateBool(value, true); break;
+    case 'map16bitMeshes':                this.config.map16bitMeshes = utils.validateBool(value, false); break;
+    case 'mapOnlyOneUVs':                 this.config.mapOnlyOneUVs = utils.validateBool(value, false); break;
+    case 'mapIndexBuffers':               this.config.mapIndexBuffers = utils.validateBool(value, false); break;
+    case 'mapSoftViewSwitch':             this.config.mapSoftViewSwitch = utils.validateBool(value, true); break;
+    case 'mapAsyncImageDecode':           this.config.mapAsyncImageDecode = (utils.validateBool(value, false) && (typeof createImageBitmap !== 'undefined')) ? true : false; break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -843,7 +851,6 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapGPUCache':                   return this.config.mapGPUCache;
     case 'mapMetatileCache':              return this.config.mapMetatileCache;
     case 'mapTexelSizeFit':               return this.config.mapTexelSizeFit;
-    case 'mapLowresBackground':           return this.config.mapLowresBackground;
     case 'mapDownloadThreads':            return this.config.mapDownloadThreads;
     case 'mapMaxProcessingTime':          return this.config.mapMaxProcessingTime;
     case 'mapMobileMode':                 return this.config.mapMobileMode;
@@ -867,6 +874,10 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapLoadMode':                   return this.config.mapLoadMode;
     case 'mapGeodataLoadMode':            return this.config.mapGeodataLoadMode;
     case 'mapGridMode':                   return this.config.mapGridMode;
+    case 'mapGridSurrogatez':             return this.config.mapGridSurrogatez;
+    case 'mapGridUnderSurface':           return this.config.mapGridUnderSurface;
+    case 'mapGridTextureLevel':           return this.config.mapGridTextureLevel;
+    case 'mapGridTextureLayer':           return this.config.mapGridTextureLayer;
     case 'mapPreciseBBoxTest':            return this.config.mapPreciseBBoxTest;
     case 'mapPreciseDistanceTest':        return this.config.mapPreciseDistanceTest;
     case 'mapHeightfiledWhenUnloaded':    return this.config.mapHeightfiledWhenUnloaded;
@@ -874,7 +885,6 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapVirtualSurfaces':            return this.config.mapVirtualSurfaces;
     case 'mapDegradeHorizon':             return this.config.mapDegradeHorizon;
     case 'mapDegradeHorizonParams':       return this.config.mapDegradeHorizonParams;
-    case 'mapGridSurrogatez':             return this.config.mapGridSurrogatez;
     case 'mapRefreshCycles':              return this.config.mapRefreshCycles;
     case 'mapDefaultFont':                return this.config.mapDefaultFont;
     case 'mapMetricUnits':                return this.config.mapMetricUnits;
@@ -887,6 +897,11 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapFeaturesReduceMode':         return this.config.mapFeaturesReduceMode;
     case 'mapFeaturesReduceParams':       return this.config.mapFeaturesReduceParams;
     case 'mapLogGeodataStyles':           return this.config.mapLogGeodataStyles;
+    case 'map16bitMeshes':                return this.config.map16bitMeshes;
+    case 'mapOnlyOneUVs':                 return this.config.mapOnlyOneUVs;
+    case 'mapIndexBuffers':               return this.config.mapIndexBuffers;
+    case 'mapSoftViewSwitch':             return this.config.mapSoftViewSwitch;
+    case 'mapAsyncImageDecode':           return this.config.mapAsyncImageDecode;
     case 'mario':                         return this.config.mario;
     }
 };
@@ -1202,10 +1217,23 @@ Map.prototype.processProcessingTasks = function() {
         this.processingTasks[0]();
         this.processingTasks.shift();
     }
+
+    while (this.processingTasks2.length > 0) {
+        if (this.processingTasks2[0]() != -123) {
+            this.processingTasks2.shift();
+        } else {
+            break;
+        }
+    }
+
 };
 
 
 Map.prototype.addProcessingTask = function(task) {
+    this.processingTasks.push(task);
+};
+
+Map.prototype.addProcessingTask2 = function(task) {
     this.processingTasks.push(task);
 };
 

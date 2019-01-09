@@ -4,7 +4,7 @@ import {getLayerPropertyValue as getLayerPropertyValue_, getLayerExpresionValue 
 import {addText as addText_, getSplitIndex as getSplitIndex_, getTextGlyphs as getTextGlyphs_,
         getTextLength as getTextLength_, getFonts as getFonts_, getFontsStorage as getFontsStorage_,
         areTextCharactersAvailable as areTextCharactersAvailable_, getCharVerticesCount as getCharVerticesCount_, getLineHeight as getLineHeight_} from './worker-text.js';
-import {postGroupMessage as postGroupMessage_} from './worker-message.js';
+import {postGroupMessageFast as postGroupMessageFast_} from './worker-message.js';
 
 //get rid of compiler mess
 var globals = globals_, clamp = clamp_;
@@ -12,7 +12,7 @@ var getLayerPropertyValue = getLayerPropertyValue_, getLayerExpresionValue = get
 var addText = addText_, getSplitIndex = getSplitIndex_, getTextGlyphs = getTextGlyphs_,
     getTextLength = getTextLength_, getFonts = getFonts_, getFontsStorage = getFontsStorage_,
     areTextCharactersAvailable = areTextCharactersAvailable_, getCharVerticesCount = getCharVerticesCount_, getLineHeight = getLineHeight_;
-var postGroupMessage = postGroupMessage_;
+var postGroupMessageFast = postGroupMessageFast_;
 
 
 var processPointArrayPass = function(pointArray, lod, style, featureIndex, zIndex, eventInfo) {
@@ -121,6 +121,8 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             bufferSize = getCharVerticesCount() * text.length * totalPoints;
             bufferSize2 = getCharVerticesCount(true) * text.length * totalPoints;
 
+            var useSingleBuffer = (totalPoints == 1);
+
             var factor = 1;
             if (getLayerPropertyValue(style, 'label-size-units', pointArray, lod) == 'points') {
                 factor = globals.pixelFactor / ((1 / 72) * (96));
@@ -146,9 +148,10 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 noOverlap : getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod),
                 noOverlapMargin : getLayerPropertyValue(style, 'label-no-overlap-margin', pointArray, lod),
                 noOverlapFactor : getLayerPropertyValue(style, 'label-no-overlap-factor', pointArray, lod),
-                vertexBuffer : new Float32Array(bufferSize),
-                originBuffer : new Float32Array(bufferSize2),
-                texcoordsBuffer : new Float32Array(bufferSize),
+                vertexBuffer : (useSingleBuffer) ? null : (new Float32Array(bufferSize)),
+                originBuffer : (useSingleBuffer) ? null : (new Float32Array(bufferSize2)),
+                texcoordsBuffer : (useSingleBuffer) ? null : (new Float32Array(bufferSize)),
+                singleBuffer : (useSingleBuffer) ? (new Float32Array(text.length * 4 * 2)) : null,
                 index : 0,
                 index2 : 0,
                 glyphsRes : glyphsRes
@@ -159,6 +162,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 labelData.stick[2] *= factor;
                 //labelData.stick[7] *= factor;
             }
+
         } else {
             label = false;
         }
@@ -315,58 +319,53 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     center[2] += bboxMin[2];//groupOrigin[2];
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
+    var message, messageSize;
 
     globals.signatureCounter++;
     var signature = (""+globals.signatureCounter);
 
+    if (visibility && !Array.isArray(visibility)) {
+        visibility = [visibility];
+    }
+
     if (point) {
         if (pointFlat) {
-            postGroupMessage({'command':'addRenderJob', 'type': 'flat-line', 'vertexBuffer': vertexBuffer,
+            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_FLAT_LINE, {
+                'color':pointColor, 'z-index':zIndex, 'visibility': visibility, 'center': center,
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer], signature);
+        } else {
+            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PIXEL_LINE, {
                 'color':pointColor, 'z-index':zIndex, 'visibility': visibility, 'center': center,
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer], signature);
-        } else {
-            postGroupMessage({'command':'addRenderJob', 'type': 'pixel-line', 'vertexBuffer': vertexBuffer,
-                'normalBuffer': normalBuffer, 'color':pointColor, 'z-index':zIndex,
-                'visibility': visibility, 'center': center,
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer.buffer, normalBuffer.buffer], signature);
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
+                'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, normalBuffer], signature);
         }
     }
 
     if (icon) {
 
-        if (iconData.singleBuffer) {
-            globals.signatureCounter++;
-            signature = (""+globals.signatureCounter);
+        globals.signatureCounter++;
+        signature = (""+globals.signatureCounter);
 
-            postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'singleBuffer': iconData.singleBuffer,
+        if ((iconData.singleBuffer && iconData.singleBuffer.length > 0) || (iconData.vertexBuffer && iconData.vertexBuffer.length > 0)) {
+
+            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_ICON : VTS_WORKER_TYPE_ICON2, {
                 'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
                 'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
                 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.singleBuffer.buffer], signature);
-        } else if (iconData.vertexBuffer && iconData.vertexBuffer.length > 0) {
-            globals.signatureCounter++;
-            signature = (""+globals.signatureCounter);
-
-            postGroupMessage({'command':'addRenderJob', 'type': 'icon', 'vertexBuffer': iconData.vertexBuffer,
-                'originBuffer': iconData.originBuffer, 'texcoordsBuffer': iconData.texcoordsBuffer,
-                'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
-                'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'index': featureIndex, 'reduce': iconData.reduce,
-                'lod':(globals.autoLod ? null : globals.tileLod) }, [iconData.vertexBuffer.buffer, iconData.originBuffer.buffer, iconData.texcoordsBuffer.buffer], signature);
+                'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
+                'index': featureIndex, 'reduce': iconData.reduce, 'lod':(globals.autoLod ? null : globals.tileLod) },
+                (iconData.singleBuffer) ? [iconData.singleBuffer] : [iconData.vertexBuffer, iconData.originBuffer, iconData.texcoordsBuffer],
+                signature);
         }
     }
 
-    if (label && labelData.vertexBuffer.length > 0) {
+    if (label) {
         globals.signatureCounter++;
         signature = (""+globals.signatureCounter);
 
@@ -386,14 +385,19 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1], factorType, factorValue];
         }
 
-        postGroupMessage({'command':'addRenderJob', 'type': 'label', 'vertexBuffer': labelData.vertexBuffer,
-            'originBuffer': labelData.originBuffer, 'texcoordsBuffer': labelData.texcoordsBuffer, 'size':labelData.size,
-            'color':labelData.color, 'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
-            'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
-            'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
-            'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage, 'hysteresis': labelData.hysteresis,
-            'hitable':hitable, 'state':globals.hitState, 'eventInfo':eventInfo, 'advancedHit': advancedHit, 'reduce': labelData.reduce,  
-            'lod':(globals.autoLod ? null : globals.tileLod) }, [labelData.vertexBuffer.buffer, labelData.originBuffer.buffer, labelData.texcoordsBuffer.buffer], signature);
+        if ((labelData.singleBuffer && labelData.singleBuffer.length > 0) || (labelData.vertexBuffer && labelData.vertexBuffer.length > 0)) {
+
+            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_LABEL : VTS_WORKER_TYPE_LABEL2, {
+                'size':labelData.size, 'origin':labelData.pos, 'color':labelData.color,
+                'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
+                'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
+                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
+                'hitable':hitable, 'state':globals.hitState, 'advancedHit': advancedHit, 'reduce': labelData.reduce, 'hysteresis': labelData.hysteresis, 
+                'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 'lod':(globals.autoLod ? null : globals.tileLod) },
+                (labelData.singleBuffer) ? [labelData.singleBuffer] : [labelData.vertexBuffer, labelData.originBuffer, labelData.texcoordsBuffer],
+                signature);
+        }
     }
 
 };
@@ -487,9 +491,10 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
     globals.signatureCounter++;
     var signature = (""+globals.signatureCounter);
 
-    postGroupMessage({'command':'addRenderJob', 'type': 'vspoint', 'z-index':zIndex, 'hysteresis' : hysteresis,
-        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo':eventInfo, 'index': featureIndex, //'reduce': iconData.reduce,
-        'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSPOINT, {
+        'z-index':zIndex, 'hysteresis' : hysteresis,
+        'visibility': visibility, 'culling': culling, 'center': center, 'eventInfo': {} /*(globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}*/,
+         'index': featureIndex, 'lod':(globals.autoLod ? null : globals.tileLod) }, [], signature);
 };
 
 
@@ -637,6 +642,7 @@ var processLabel = function(point, labelData) {
     var vertexBuffer = labelData.vertexBuffer;
     var texcoordsBuffer = labelData.texcoordsBuffer;
     var originBuffer = labelData.originBuffer;
+    var singleBuffer = labelData.singleBuffer;
     var index = labelData.index;
     var index2 = labelData.index2;
     var lastIndex = index;
@@ -645,25 +651,17 @@ var processLabel = function(point, labelData) {
     var planes = {}, i, li;
     var glyphsRes = labelData.glyphsRes;
 
-    //split by new line
-    //var lines = text.match(/[^\r\n]+/g);
-    //var lines = [];
-    //var lines2 = [];
     var linesGlyphsRes = [];
     var linesGlyphsRes2 = [];
 
     //split text to lines
     do {
-        //var res = text.indexOf('\n');
         var res = glyphsRes[2].indexOf(10); //search /n
 
         if (res != -1) {
-            //lines.push(text.substring(0,res));
             linesGlyphsRes.push([glyphsRes[0].slice(0,res), glyphsRes[1].slice(0,res), glyphsRes[2].slice(0,res)]);
-            //text = text.substring(res+1);
             glyphsRes = [glyphsRes[0].slice(res+1), glyphsRes[1].slice(res+1), glyphsRes[2].slice(res+1)];
         } else {
-            //lines.push(text);
             linesGlyphsRes.push(glyphsRes);
         }
 
@@ -672,45 +670,36 @@ var processLabel = function(point, labelData) {
     //split lines by width
     for (var i = 0, li = linesGlyphsRes.length; i < li; i++) {
 
-        //var line = lines[i];
         var glyphsRes = linesGlyphsRes[i];
 
         // eslint-disable-next-line
         do {
-            var splitIndex = getSplitIndex(null /*line*/, labelData.width, labelData.size, labelData.spacing, fonts, glyphsRes);
+            var splitIndex = getSplitIndex(null, labelData.width, labelData.size, labelData.spacing, fonts, glyphsRes);
             var codes = glyphsRes[2];
 
-            //if (line.length == splitIndex) {
             if (codes.length == splitIndex) {
-                //lines2.push(line);
                 linesGlyphsRes2.push(glyphsRes);
                 break;
             }
 
-            //lines2.push(line.substring(0,splitIndex));
             linesGlyphsRes2.push([glyphsRes[0].slice(0,splitIndex), glyphsRes[1].slice(0,splitIndex), glyphsRes[2].slice(0,splitIndex)]);
 
-            //line = line.substring(splitIndex+1);
             glyphsRes = [glyphsRes[0].slice(splitIndex+1), glyphsRes[1].slice(splitIndex+1), glyphsRes[2].slice(splitIndex+1)];
 
         } while(true);
 
     }
 
-    var x = 0;
-    var y = 0;
+    var x = 0, y = 0;
     var lineHeight = getLineHeight(labelData.size, labelData.lineHeight, fonts);
     var maxWidth = 0;
     var lineWidths = [];
 
     //get max width
     for (i = 0, li = linesGlyphsRes2.length; i < li; i++) {
-        lineWidths[i] = getTextLength(null /*lines2[i]*/, labelData.size, labelData.spacing, fonts, linesGlyphsRes2[i]);
+        lineWidths[i] = getTextLength(null, labelData.size, labelData.spacing, fonts, linesGlyphsRes2[i]);
         maxWidth = Math.max(lineWidths[i], maxWidth);
     }
-
-    //console.log("line height: " + lineHeight);
-    //console.log("max width: " + maxWidth);
 
     //generate text
     for (i = 0, li = linesGlyphsRes2.length; i < li; i++) {
@@ -722,7 +711,7 @@ var processLabel = function(point, labelData) {
         case 'center': x = (maxWidth - textWidth)*0.5; break;
         }
 
-        index = addText([x,y,0], [1,0,0], null /*lines2[i]*/, labelData.size, labelData.spacing, fonts, vertexBuffer, texcoordsBuffer, true, index, planes, linesGlyphsRes2[i]);
+        index = addText([x,y,0], [1,0,0], null, labelData.size, labelData.spacing, fonts, vertexBuffer, texcoordsBuffer, true, index, planes, linesGlyphsRes2[i], singleBuffer);
         y -= lineHeight;
     }
 
@@ -736,16 +725,27 @@ var processLabel = function(point, labelData) {
     var p3 = point[2];
 
     //set origin buffer and apply offset
-    for (i = lastIndex; i < index; i+=4) {
-        vertexBuffer[i] += offsetX;
-        vertexBuffer[i+1] -= offsetY;
+    if (!singleBuffer) {
+        for (i = lastIndex; i < index; i+=4) {
+            vertexBuffer[i] += offsetX;
+            vertexBuffer[i+1] -= offsetY;
 
-        originBuffer[index2] = p1;
-        originBuffer[index2 + 1] = p2;
-        originBuffer[index2 + 2] = p3;
-        index2 += 3;
+            originBuffer[index2] = p1;
+            originBuffer[index2 + 1] = p2;
+            originBuffer[index2 + 2] = p3;
+            index2 += 3;
+        }
+    } else {
+        for (i = lastIndex; i < index; i+=8) {
+            singleBuffer[i] += offsetX;
+            singleBuffer[i+1] -= offsetY;
+            singleBuffer[i+2] += offsetX;
+            singleBuffer[i+3] -= offsetY;
+        }
+
+        labelData.pos = [p1,p2,p3];
+        singleBuffer = new Float32Array(singleBuffer.buffer, 0, index);
     }
-
     
     var fonts = labelData.fonts;
     labelData.files = new Array(fonts.length);
@@ -791,7 +791,6 @@ var processPointArrayGeometry = function(pointArray) {
     }
 
     var index = 0;
-    
     var forceScale = globals.forceScale;
 
     var geometryBuffer = new Float64Array(points.length);
@@ -822,9 +821,10 @@ var processPointArrayGeometry = function(pointArray) {
             p1 = points[i+1];
         }
     }
-  
-    postGroupMessage({'command':'addRenderJob', 'type': 'point-geometry', 'id':lineString['id'], 'geometryBuffer': geometryBuffer },
-                      [geometryBuffer.buffer, indicesBuffer.buffer], (""+globals.signatureCounter));
+
+    globals.signatureCounter++;
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_POINT_GEOMETRY, {
+        'id':pointArray['id'] }, [geometryBuffer, indicesBuffer], (""+globals.signatureCounter));
 };
 
 export {processPointArrayPass, processPointArrayGeometry, processPointArrayVSwitchPass};

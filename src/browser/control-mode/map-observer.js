@@ -41,7 +41,7 @@ ControlModeMapObserver.prototype.drag = function(event) {
     //var zoom = event.getDragZoom(); 
     var touches = event.getDragTouches(); 
     var azimuthDistance = this.getAzimuthAndDistance(delta[0], delta[1]);
-    var sensitivity;
+    var sensitivity, config = this.config;
     
     var modifierKey = (this.browser.controlMode.altKey
                || this.browser.controlMode.shiftKey
@@ -55,21 +55,26 @@ ControlModeMapObserver.prototype.drag = function(event) {
             return;
         }
         
-        if (event.getTouchParameter('touchMode') == 'pan' && this.config.rotationAllowed) {
-            //var pan = event.getTouchParameter('touchPanDelta');
-            sensitivity = this.config.sensitivity[1] * this.retinaFactor;
-            this.orientationDeltas.push([delta[0] * sensitivity, 
-                -delta[1] * sensitivity, 0]);
+        if (event.getTouchParameter('touchMode') == 'pan' && config.rotationAllowed) {
+
+            sensitivity = config.sensitivity[1] * this.retinaFactor;
+            this.orientationDeltas.push([delta[0] * sensitivity,  -delta[1] * sensitivity, 0]);
             this.browser.callListener('map-position-rotated', {});
-        } else if (this.config.zoomAllowed) {
+
+        } else if (config.zoomAllowed) {
+
             var factor = 1.0 + (event.getTouchParameter('touchDistanceDelta') > 1.0 ? -1 : 1)*0.01;
             this.viewExtentDeltas.push(factor);
             this.reduceFloatingHeight(0.8);
+            
+            if (config.legacyInertia) {
+                this.updateDeltas(false, false, true);
+            }
+
             this.browser.callListener('map-position-zoomed', {});
         }
         
-    } else if ((event.getDragButton('left') && !modifierKey)
-        && this.config.panAllowed) { //pan
+    } else if ((event.getDragButton('left') && !modifierKey) && config.panAllowed) { //pan
             
         if (pos.getHeightMode() == 'fix') {
             var pos2 = map.convertPositionHeightMode(pos, 'float', true);
@@ -78,7 +83,7 @@ ControlModeMapObserver.prototype.drag = function(event) {
                 this.setPosition(pos);
             }
         } else {
-            sensitivity = this.config.sensitivity[0] * this.retinaFactor;
+            sensitivity = config.sensitivity[0] * this.retinaFactor;
             var fov = pos.getFov();
             var fovCorrection = (fov > 0.01 && fov < 179) ? (1.0 / Math.tan(math.radians(fov*0.5))) : 1.0;
             var azimuth = math.radians(azimuthDistance[0]);
@@ -89,14 +94,22 @@ ControlModeMapObserver.prototype.drag = function(event) {
             
             this.coordsDeltas.push(forward);
             this.reduceFloatingHeight(0.9);
+
+            if (config.legacyInertia) {
+                this.updateDeltas(true);
+            }
+
             this.browser.callListener('map-position-panned', {});
         }
-    } else if (((touches <= 1 && event.getDragButton('right')) || event.getDragButton('middle') || modifierKey) 
-               && this.config.rotationAllowed) { //rotate
+    } else if (((touches <= 1 && event.getDragButton('right')) || event.getDragButton('middle') || modifierKey)  && config.rotationAllowed) { //rotate
                    
-        sensitivity = this.config.sensitivity[1] * this.retinaFactor * (pos.getViewMode() != 'obj' ? 0.5 : 1);
-        this.orientationDeltas.push([delta[0] * sensitivity,
-            -delta[1] * sensitivity, 0]);
+        sensitivity = config.sensitivity[1] * this.retinaFactor * (pos.getViewMode() != 'obj' ? 0.5 : 1);
+        this.orientationDeltas.push([delta[0] * sensitivity, -delta[1] * sensitivity, 0]);
+
+        if (config.legacyInertia) {
+            this.updateDeltas(false, true);
+        }
+
         this.browser.callListener('map-position-rotated', {});
     }
 };
@@ -146,42 +159,7 @@ ControlModeMapObserver.prototype.wheel = function(event) {
             map.setPosition(pos);
             return;
         }
-
-        //if (this.config.navigationMode != 'azimuthal2' &&
-          //  this.config.navigationMode != 'free')  {
-
-            /*
-            var coords = pos.getCoords();
-            if (Math.abs(coords[1]) < 75) {
-                var distance = (pos.getViewExtent()*0.5) / Math.tan(math.radians(pos.getFov()*0.5));
-
-                //reduce azimuth when you are far off the planet
-                var rf = map.getReferenceFrame();
-                var srs = map.getSrsInfo(rf['navigationSrs']);
-                
-                if (srs['a']) {
-                    if (distance > (srs['a']*0.5)) {
-                        this.northResetAnimation = true;
-                    }
-                }
-            }
-            */
-
-        //}
-
-        /*
-        var viewExtent = pos.getViewExtent();
-        if (viewExtent < 75) { factor = 1 + (factor - 1) * 0.7; }
-        if (viewExtent < 65) { factor = 1 + (factor - 1) * 0.7; }
-        if (viewExtent < 55) { factor = 1 + (factor - 1) * 0.7; }
-        if (viewExtent < 45) { factor = 1 + (factor - 1) * 0.7; }
-        if (viewExtent < 35) { factor = 1 + (factor - 1) * 0.7; }
-        if (viewExtent < 25) { factor = 1 + (factor - 1) * 0.7; }
-        if (viewExtent < 15) { factor = 1 + (factor - 1) * 0.7; }
-        if (viewExtent < 10) { factor = 1 + (factor - 1) * 0.7; }
-        if (viewExtent < 5) { factor = 1 + (factor - 1) * 0.7; }
-        */
-        
+       
         this.viewExtentDeltas.push(factor);
         this.reduceFloatingHeight(0.8);
         this.browser.callListener('map-position-zoomed', {});
@@ -289,40 +267,24 @@ ControlModeMapObserver.prototype.getAzimuthAndDistance = function(dx, dy) {
 };
 
 
-ControlModeMapObserver.prototype.tick = function() {
+ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRotate, onlyLastZoom) {
     var map = this.browser.getMap();
     if (!map) {
         return;
     }
 
-
     var pos = map.getPosition(), delta, deltas;
     var update = false, azimuth, correction, i;
-    var inertia = this.config.inertia; //[0.83, 0.9, 0.7]; 
-    //var inertia = [0.95, 0.8, 0.8]; 
-    //var inertia = [0, 0, 0]; 
-
-    /*if (this.northResetAnimation) {
-        var o = pos.getOrientation();
-        o[0] *= 0.85;
-        pos.setOrientation(o);
-
-        if (Math.abs(o[0]) < 0.1) {
-            this.config.navigationMode = 'azimuthal';
-            this.northResetAnimation = false;        
-        }
-
-        update = true;
-    }*/
+    var inertia = this.config.inertia;
 
     //process coords deltas
-    if (this.coordsDeltas.length > 0) {
+    if (!onlyLastRotate && !onlyLastZoom && this.coordsDeltas.length > 0) {
         deltas = this.coordsDeltas;
         var forward = [0,0];
         var coords = pos.getCoords();
         
         //get foward vector form coord deltas    
-        for (i = 0; i < deltas.length; i++) {
+        for (i = (onlyLastPan ? (deltas.length - 1) : 0); i < deltas.length; i++) {
             delta = deltas[i];
 
             azimuth = delta[3];
@@ -339,7 +301,7 @@ ControlModeMapObserver.prototype.tick = function() {
                 i--;
             }
         }
-        
+
         var distance = Math.sqrt(forward[0]*forward[0] + forward[1]*forward[1]);
         azimuth = math.degrees(Math.atan2(forward[0], forward[1]));
     
@@ -365,12 +327,12 @@ ControlModeMapObserver.prototype.tick = function() {
     }
 
     //process coords deltas
-    if (this.orientationDeltas.length > 0) {
+    if (!onlyLastPan && !onlyLastZoom && this.orientationDeltas.length > 0) {
         deltas = this.orientationDeltas;
         var orientation = pos.getOrientation();
         
         //apply detals to current orientation    
-        for (i = 0; i < deltas.length; i++) {
+        for (i = (onlyLastRotate ? (deltas.length - 1) : 0); i < deltas.length; i++) {
             delta = deltas[i];
             orientation[0] += delta[0];  
             orientation[1] += delta[1];
@@ -393,12 +355,12 @@ ControlModeMapObserver.prototype.tick = function() {
     }
 
     //process view extents deltas
-    if (this.viewExtentDeltas.length > 0) {
+    if (!onlyLastRotate && !onlyLastPan && this.viewExtentDeltas.length > 0) {
         deltas = this.viewExtentDeltas;
         var viewExtent = pos.getViewExtent();
         
         //apply detals to current view extent    
-        for (i = 0; i < deltas.length; i++) {
+        for (i = (onlyLastZoom ? (deltas.length - 1) : 0); i < deltas.length; i++) {
             viewExtent *= deltas[i];
             deltas[i] += (1 - deltas[i]) * (1.0 - inertia[2]);
             
@@ -420,6 +382,10 @@ ControlModeMapObserver.prototype.tick = function() {
     if (update) {
         this.setPosition(pos);    
     }
+};
+
+ControlModeMapObserver.prototype.tick = function() {
+    this.updateDeltas();
 };
 
 

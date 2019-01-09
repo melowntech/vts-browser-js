@@ -32,7 +32,7 @@ var setFontMap = function(fontMap) {
 };
 
 
-var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, index2, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, fontIndex) {
+var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, index2, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, fontIndex, singleBuffer) {
     var n, font = fonts[fontIndex];
 
     if (globals.geocent && !flat) {
@@ -76,23 +76,6 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
             pos[1] = pos[1] + dir[1] * fc.step * factor * spacing;
             l = fc.lx * factor;
         } else {
-            var factorX = fc.lx * factor;
-            var factorY = fc.ly * factor;
-
-            var n2 = [n[0] * verticalShift, n[1] * verticalShift, n[2] * verticalShift];
-            var n3 = [n2[0] + n[0] * factorY, n2[1] + n[1] * factorY, n2[2] + n[2] * factorY];
-            
-            p1[0] = p1[0] + dir[0] * fc.sx * factor;
-            p1[1] = p1[1] + dir[1] * fc.sx * factor;
-            p1[2] = p1[2] + dir[2] * fc.sx * factor;
-            p1[0] = p1[0] + n[0] * (fc.sy - font.size) * factor;
-            p1[1] = p1[1] + n[1] * (fc.sy - font.size) * factor;
-            p1[2] = p1[2] + n[2] * (fc.sy - font.size) * factor;
-
-            p2[0] = p1[0] + dir[0] * factorX;
-            p2[1] = p1[1] + dir[1] * factorX;
-            p2[2] = p1[2] + dir[2] * factorX;
-
             var planeShift = fontIndex * 4000;
             var plane = fc.plane + planeShift;
 
@@ -104,72 +87,104 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                 planes[fontIndex][plane] = true;
             }
 
-            //first polygon
-            vertexBuffer[index] = p1[0] - n2[0];
-            vertexBuffer[index+1] = p1[1] - n2[1];
-            vertexBuffer[index+2] = p1[2] - n2[2];
-            vertexBuffer[index+3] = nz;
+            var factorX = fc.lx * factor;
+            var factorY = fc.ly * factor;
 
-            texcoordsBuffer[index2] = fc.u1;
-            texcoordsBuffer[index2+1] = fc.v1 +  planeShift;
-            texcoordsBuffer[index2+2] = nx;
-            texcoordsBuffer[index2+3] = ny;
+            if (singleBuffer) {
 
-            vertexBuffer[index+4] = p1[0] - n3[0];
-            vertexBuffer[index+5] = p1[1] - n3[1];
-            vertexBuffer[index+6] = p1[2] - n3[2];
-            vertexBuffer[index+7] = nz;
+                singleBuffer[index] = p1[0] + fc.sx * factor;;
+                singleBuffer[index+1] = p1[1] + (fc.sy - font.size) * factor;
+                singleBuffer[index+2] = singleBuffer[index] + factorX;
+                singleBuffer[index+3] = singleBuffer[index+1] - factorY;
+                singleBuffer[index+4] = fc.u1;
+                singleBuffer[index+5] = fc.v1 + planeShift;
+                singleBuffer[index+6] = fc.u2;
+                singleBuffer[index+7] = fc.v2 + planeShift;
 
-            texcoordsBuffer[index2+4] = fc.u1;
-            texcoordsBuffer[index2+5] = fc.v2 +  planeShift;
-            texcoordsBuffer[index2+6] = nx;
-            texcoordsBuffer[index2+7] = ny;
+                index += 8;
+ 
+            } else {
 
-            vertexBuffer[index+8] = p2[0] - n2[0];
-            vertexBuffer[index+9] = p2[1] - n2[1];
-            vertexBuffer[index+10] = p2[2] - n2[2];
-            vertexBuffer[index+11] = nz;
+                var n2 = [n[0] * verticalShift, n[1] * verticalShift, n[2] * verticalShift];
+                var n3 = [n2[0] + n[0] * factorY, n2[1] + n[1] * factorY, n2[2] + n[2] * factorY];
+                
+                p1[0] = p1[0] + dir[0] * fc.sx * factor;
+                p1[1] = p1[1] + dir[1] * fc.sx * factor;
+                p1[2] = p1[2] + dir[2] * fc.sx * factor;
+                p1[0] = p1[0] + n[0] * (fc.sy - font.size) * factor;
+                p1[1] = p1[1] + n[1] * (fc.sy - font.size) * factor;
+                p1[2] = p1[2] + n[2] * (fc.sy - font.size) * factor;
 
-            texcoordsBuffer[index2+8] = fc.u2;
-            texcoordsBuffer[index2+9] = fc.v1 +  planeShift;
-            texcoordsBuffer[index2+10] = nx;
-            texcoordsBuffer[index2+11] = ny;
+                p2[0] = p1[0] + dir[0] * factorX;
+                p2[1] = p1[1] + dir[1] * factorX;
+                p2[2] = p1[2] + dir[2] * factorX;
+
+                //first polygon
+                vertexBuffer[index] = p1[0] - n2[0];
+                vertexBuffer[index+1] = p1[1] - n2[1];
+                vertexBuffer[index+2] = p1[2] - n2[2];
+                vertexBuffer[index+3] = nz;
+
+                texcoordsBuffer[index2] = fc.u1;
+                texcoordsBuffer[index2+1] = fc.v1 +  planeShift;
+                texcoordsBuffer[index2+2] = nx;
+                texcoordsBuffer[index2+3] = ny;
+
+                vertexBuffer[index+4] = p1[0] - n3[0];
+                vertexBuffer[index+5] = p1[1] - n3[1];
+                vertexBuffer[index+6] = p1[2] - n3[2];
+                vertexBuffer[index+7] = nz;
+
+                texcoordsBuffer[index2+4] = fc.u1;
+                texcoordsBuffer[index2+5] = fc.v2 +  planeShift;
+                texcoordsBuffer[index2+6] = nx;
+                texcoordsBuffer[index2+7] = ny;
+
+                vertexBuffer[index+8] = p2[0] - n2[0];
+                vertexBuffer[index+9] = p2[1] - n2[1];
+                vertexBuffer[index+10] = p2[2] - n2[2];
+                vertexBuffer[index+11] = nz;
+
+                texcoordsBuffer[index2+8] = fc.u2;
+                texcoordsBuffer[index2+9] = fc.v1 +  planeShift;
+                texcoordsBuffer[index2+10] = nx;
+                texcoordsBuffer[index2+11] = ny;
 
 
-            //next polygon
-            vertexBuffer[index+12] = p1[0] - n3[0];
-            vertexBuffer[index+13] = p1[1] - n3[1];
-            vertexBuffer[index+14] = p1[2] - n3[2];
-            vertexBuffer[index+15] = nz;
+                //next polygon
+                vertexBuffer[index+12] = p1[0] - n3[0];
+                vertexBuffer[index+13] = p1[1] - n3[1];
+                vertexBuffer[index+14] = p1[2] - n3[2];
+                vertexBuffer[index+15] = nz;
 
-            texcoordsBuffer[index2+12] = fc.u1;
-            texcoordsBuffer[index2+13] = fc.v2 +  planeShift;
-            texcoordsBuffer[index2+14] = nx;
-            texcoordsBuffer[index2+15] = ny;
+                texcoordsBuffer[index2+12] = fc.u1;
+                texcoordsBuffer[index2+13] = fc.v2 +  planeShift;
+                texcoordsBuffer[index2+14] = nx;
+                texcoordsBuffer[index2+15] = ny;
 
-            vertexBuffer[index+16] = p2[0] - n3[0];
-            vertexBuffer[index+17] = p2[1] - n3[1];
-            vertexBuffer[index+18] = p2[2] - n3[2];
-            vertexBuffer[index+19] = nz;
+                vertexBuffer[index+16] = p2[0] - n3[0];
+                vertexBuffer[index+17] = p2[1] - n3[1];
+                vertexBuffer[index+18] = p2[2] - n3[2];
+                vertexBuffer[index+19] = nz;
 
-            texcoordsBuffer[index2+16] = fc.u2;
-            texcoordsBuffer[index2+17] = fc.v2 +  planeShift;
-            texcoordsBuffer[index2+18] = nx;
-            texcoordsBuffer[index2+19] = ny;
+                texcoordsBuffer[index2+16] = fc.u2;
+                texcoordsBuffer[index2+17] = fc.v2 +  planeShift;
+                texcoordsBuffer[index2+18] = nx;
+                texcoordsBuffer[index2+19] = ny;
 
-            vertexBuffer[index+20] = p2[0] - n2[0];
-            vertexBuffer[index+21] = p2[1] - n2[1];
-            vertexBuffer[index+22] = p2[2] - n2[2];
-            vertexBuffer[index+23] = nz;
+                vertexBuffer[index+20] = p2[0] - n2[0];
+                vertexBuffer[index+21] = p2[1] - n2[1];
+                vertexBuffer[index+22] = p2[2] - n2[2];
+                vertexBuffer[index+23] = nz;
 
-            texcoordsBuffer[index2+20] = fc.u2;
-            texcoordsBuffer[index2+21] = fc.v1 +  planeShift;
-            texcoordsBuffer[index2+22] = nx;
-            texcoordsBuffer[index2+23] = ny;
+                texcoordsBuffer[index2+20] = fc.u2;
+                texcoordsBuffer[index2+21] = fc.v1 +  planeShift;
+                texcoordsBuffer[index2+22] = nx;
+                texcoordsBuffer[index2+23] = ny;
 
-            index += 24;
-            index2 += 24;
-            //polygons += 2;
+                index += 24;
+                index2 += 24;
+            }
 
             pos[0] = pos[0] + dir[0] * fc.step * factor * spacing;
             pos[1] = pos[1] + dir[1] * fc.step * factor * spacing;
@@ -186,9 +201,8 @@ var getCharVerticesCount = function(origin) {
 };
 
 
-var addText = function(pos, dir, text, size, spacing, fonts, vertexBuffer, texcoordsBuffer, flat, index, planes, glyphsRes) {
+var addText = function(pos, dir, text, size, spacing, fonts, vertexBuffer, texcoordsBuffer, flat, index, planes, glyphsRes, singleBuffer) {
     var textVector = [0,1,0];
-    //var s = [pos[0], pos[1], pos[2]];
     var p1 = [pos[0], pos[1], pos[2]];
 
     var res = glyphsRes ? glyphsRes : Typr.U.stringToGlyphs(fonts, text);
@@ -202,7 +216,7 @@ var addText = function(pos, dir, text, size, spacing, fonts, vertexBuffer, texco
         if (font) {
             var factor = getFontFactor(size, font);
 
-            var shift = addChar(p1, dir, 0, glyph, factor, spacing, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, gfonts[i]);
+            var shift = addChar(p1, dir, 0, glyph, factor, spacing, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, gfonts[i], singleBuffer);
 
             //var gid2 = (i<gls.length-1 && gls[i+1]!=-1)  ? gls[i+1] : 0;
             //x += Typr.U.getPairAdjustment(font, gid, gid2);
