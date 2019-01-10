@@ -1234,7 +1234,7 @@ Map.prototype.addProcessingTask = function(task) {
 };
 
 Map.prototype.addProcessingTask2 = function(task) {
-    this.processingTasks.push(task);
+    this.processingTasks2.push(task);
 };
 
 

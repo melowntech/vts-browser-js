@@ -35,6 +35,7 @@ var MapGeodataView = function(map, geodata, extraInfo) {
     }
 
     this.geodataProcessor = this.surface.geodataProcessor;
+    this.processing = false;
     this.statsCounter = 0;
     this.size = 0;
     this.killed = false;
@@ -111,6 +112,7 @@ MapGeodataView.prototype.processPackedCommands = function(buffer, index) {
                 this.stats.graphsFluxGeodata[0][0]++;
                 this.stats.graphsFluxGeodata[0][1] += this.size;
                 this.ready = true;
+                this.processing = false;
 
                 index += 1 + 4;
                 break;
@@ -137,6 +139,8 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
 
     case 'addPackedCommands':
 
+        //console.log('pack size:' + message['buffer'].byteLength);
+
         if (task) {
             var index = this.processPackedCommands(message['buffer'], message.index);
 
@@ -154,69 +158,6 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
         }
 
         break;
-
-    /*
-    case 'beginGroup':
-        
-        if (task) {
-            this.currentGpuGroup = new GpuGroup(message['id'], message['bbox'], message['origin'], this.gpu, this.renderer);
-            this.gpuGroups.push(this.currentGpuGroup);
-        } else {
-            this.map.markDirty();
-            this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
-        }
-            
-        break;
-
-    case 'addRenderJob':
-
-        if (task) {
-            if (this.currentGpuGroup) {
-                var t = performance.now();
-                this.currentGpuGroup.addRenderJob(message, this.tile);
-                this.stats.renderBuild += performance.now() - t; 
-            } //else {
-                    //message = message;
-                //}
-        } else {
-            this.map.markDirty();
-            this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
-        }
-
-        break;
-
-    case 'endGroup':
-
-        if (task) {
-            if (this.currentGpuGroup) {
-                    //this.currentGpuGroup.optimize();
-                this.size += this.currentGpuGroup.size;
-            } //else {
-        } else {
-            this.map.markDirty();
-            this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
-        }
-
-        break;
-
-    case 'allProcessed':
-        this.geodataProcessor.busy = false;
-
-        if (task) {
-            this.map.markDirty();
-            this.gpuCacheItem = this.map.gpuCache.insert(this.killGeodataView.bind(this, true), this.size);
-
-            this.stats.gpuGeodata += this.size;
-            this.stats.graphsFluxGeodata[0][0]++;
-            this.stats.graphsFluxGeodata[0][1] += this.size;
-            this.ready = true;
-        } else {
-            this.map.markDirty();
-            this.map.addProcessingTask(this.onGeodataProcessorMessage.bind(this, command, message, true));
-        }
-
-        break;
-    */
 
     case 'ready':
         this.geodataProcessor.busy = false;
@@ -240,8 +181,9 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
     doNotLoad = doNotLoad || doNotUseGpu;
     
     //if (!this.ready && !doNotUseGpu && this.geodataProcessor.isReady()) {
-    if (!this.ready && !doNotLoad && this.surface.stylesheet.isReady()) {
+    if (!this.ready && !this.processing && !doNotLoad && this.surface.stylesheet.isReady()) {
         if (this.geodata.isReady(doNotLoad, priority, doNotCheckGpu) && this.geodataProcessor.isReady()) {
+            this.processing = true;
             this.killedByCache = false;
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));
             this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile, (window.devicePixelRatio || 1));

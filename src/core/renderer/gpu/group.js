@@ -371,6 +371,8 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.ready = true;
     job.reduce = data['reduce'];
 
+    //console.log('id: ' + job.eventInfo['#id']);
+
     if (job.reduce) {
         switch(job.reduce[0]) {
             case 'tilt':       job.reduce[0] = 1; break;
