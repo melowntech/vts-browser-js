@@ -20,7 +20,7 @@ var globals = {
     tileSize : 1,
     hitState : 0,
     pixelFactor : 1,
-    alwaysEventInfo : false,
+    alwaysEventInfo : true,
     metricUnits : true,
     groupOptimize : true,
     groupOrigin : [0,0,0],

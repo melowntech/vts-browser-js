@@ -76,6 +76,8 @@ function optimizeGroupMessages() {
         var job = message.job;
         var type = message.type;
         var signature = message.signature;
+
+        //console.log('command: ' + message.command + ' type:' + message.type);
         
         if (!message.hitable && !message.reduced && 
             (type >= VTS_WORKER_TYPE_FLAT_LINE && type <= VTS_WORKER_TYPE_LINE_LABEL)) {
@@ -227,6 +229,8 @@ function optimizeGroupMessages() {
         buffer.set(new Uint8Array(globals.messageBuffer[i].job), index);
         index += globals.messageBuffer[i].job.byteLength;
     }
+
+    //console.log('send:' + buffer.length);
 
     postMessage({'command' : 'addPackedCommands', 'buffer': buffer}, [buffer.buffer]);
 

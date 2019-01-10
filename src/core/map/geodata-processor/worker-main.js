@@ -500,7 +500,7 @@ self.onmessage = function (e) {
 
         postGroupMessageLite(VTS_WORKERCOMMAND_ALL_PROCESSED, 0);
             
-        if (globals.groupOptimize) {
+        if (globals.groupOptimize) {  //we need send all processed message
             optimizeGroupMessages();
         }
             
