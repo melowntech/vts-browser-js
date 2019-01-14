@@ -148,6 +148,7 @@ function optimizeGroupMessages() {
 
                     if (message2.signature == signature) {
                         message2.reduced = true;
+                        globals.messagePackSize -= message2.job.byteLength;
                         count++;
 
                         //get message2 vertices length
@@ -226,8 +227,12 @@ function optimizeGroupMessages() {
     var buffer = new Uint8Array(globals.messagePackSize), index = 0;
 
     for (var i = 0, li = globals.messageBufferIndex; i < li; i++) {
-        buffer.set(new Uint8Array(globals.messageBuffer[i].job), index);
-        index += globals.messageBuffer[i].job.byteLength;
+        var message = globals.messageBuffer[i];
+
+        if (!message.reduced) {
+            buffer.set(new Uint8Array(message.job), index);
+            index += globals.messageBuffer[i].job.byteLength;
+        }
     }
 
     //console.log('send:' + buffer.length);

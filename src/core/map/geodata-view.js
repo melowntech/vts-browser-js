@@ -78,6 +78,7 @@ MapGeodataView.prototype.killGeodataView = function(killedByCache) {
 MapGeodataView.prototype.processPackedCommands = function(buffer, index) {
 
     var maxIndex = buffer.byteLength;
+    var maxTime = this.map.config.mapMaxGeodataProcessingTime;
     var t = performance.now(), length, str, data;
     var view = new DataView(buffer.buffer);
 
@@ -118,7 +119,7 @@ MapGeodataView.prototype.processPackedCommands = function(buffer, index) {
                 break;
         }
 
-        if ((performance.now() - t) > 10) {
+        if ((performance.now() - t) > maxTime) {
             return index;
         }
 
