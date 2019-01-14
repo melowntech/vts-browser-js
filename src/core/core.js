@@ -33,6 +33,7 @@ var Core = function(element, config, coreInterface) {
         mapMaxHiresLodLevels : 2,
         mapDownloadThreads : 20,
         mapMaxProcessingTime : 1000*20,
+        mapMaxGeodataProcessingTime : 10,
         mapMobileMode : false,
         mapMobileModeAutodect : true,
         mapMobileDetailDegradation : 1,
@@ -542,7 +543,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.17.3';
+    return (full ? 'Core: ' : '') + '2.17.4';
 }
 
 

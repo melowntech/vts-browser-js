@@ -781,6 +781,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapTexelSizeFit':               this.config.mapTexelSizeFit = utils.validateNumber(value, 0.0001, Number.MAXINTEGER, 1.1); break;
     case 'mapDownloadThreads':            this.config.mapDownloadThreads = utils.validateNumber(value, 1, Number.MAXINTEGER, 6); break;
     case 'mapMaxProcessingTime':          this.config.mapMaxProcessingTime = utils.validateNumber(value, 1, Number.MAXINTEGER, 1000/20); break;
+    case 'mapMaxGeodataProcessingTime':   this.config.mapMaxGeodataProcessingTime = utils.validateNumber(value, 1, Number.MAXINTEGER, 10); break;
     case 'mapMobileMode':                 this.config.mapMobileMode = utils.validateBool(value, false); this.setupMobileMode(); break;
     case 'mapMobileModeAutodect':         this.config.mapMobileModeAutodect = utils.validateBool(value, false); break;
     case 'mapMobileDetailDegradation':    this.config.mapMobileDetailDegradation = utils.validateNumber(value, 1, Number.MAXINTEGER, 2); break;
@@ -853,6 +854,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapTexelSizeFit':               return this.config.mapTexelSizeFit;
     case 'mapDownloadThreads':            return this.config.mapDownloadThreads;
     case 'mapMaxProcessingTime':          return this.config.mapMaxProcessingTime;
+    case 'mapMaxGeodataProcessingTime':   return this.config.mapMaxGeodataProcessingTime;
     case 'mapMobileMode':                 return this.config.mapMobileMode;
     case 'mapMobileModeAutodect':         return this.config.mapMobileModeAutodect;
     case 'mapMobileDetailDegradation':    return this.config.mapMobileDetailDegradation;
