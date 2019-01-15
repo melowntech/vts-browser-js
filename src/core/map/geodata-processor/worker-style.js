@@ -416,7 +416,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
 
                     finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
 
-                    for (i = index, li = value.length; i < li; i++) {
+                    for (i = index, li = functionValue.length; i < li; i++) {
                         tmpValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[i], depth + 1);
 
                         if (typeof tmpValue !== 'number') {
