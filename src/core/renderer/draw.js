@@ -1393,7 +1393,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
         }
 
-        var p1, p2, camVec, ll, l = null;
+        var p1, p2, camVec, ll, l = null, localTilt;
 
         if (job.culling != 180) {
             p2 = job.center;
@@ -1443,8 +1443,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             job.normal = [0,0,0];
             vec3.normalize(job.center, job.normal);
                 
-            var a = -vec3.dot(camVec, job.normal);
-            if (a < Math.cos(math.radians(job.culling))) {
+            localTilt = -vec3.dot(camVec, job.normal);
+            if (localTilt < Math.cos(math.radians(job.culling))) {
                 return;
             }
         } else if (job.visibility) {
@@ -1503,6 +1503,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                             sjob.hysteresis = job.hysteresis;
                             sjob.vswitchIndex = i;
                             sjob.renderCounter = job.renderCounter;
+                            sjob.localTilt = localTilt;
                             sjob.id = job.id;
                             this.drawGpuJob(gpu, gl, renderer, sjob, screenPixelSize, advancedHitPass, ignoreFilters);
                         }
@@ -1516,10 +1517,51 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         }
 
         var s = job.stick;
-        var stickShift = 0, pp, o, depth;
+        var stickShift = 0, pp, o, depth, stickMode, stickHeight;
 
         if (s[0] != 0) {
-            stickShift = renderer.cameraTiltFator * s[0];
+            stickMode = renderer.config.mapFeatureStickMode;
+            stickHeight = s[0];
+
+            if (stickMode[0]) {
+                if (!localTilt) {
+                    localTilt = job.localTilt;
+                    //TODO
+                }
+
+                if (stickMode[0] == 2) {
+
+                    var hdelta = renderer.gridHmax - renderer.gridHmin;
+
+                    if (hdelta < 0) {
+                        hdelta = 0;
+                    }
+
+                    if (hdelta < stickHeight) {
+                        stickHeight = hdelta;
+                    }
+
+                    /*
+                    var factor = ((hdelta / renderer.viewExtent) * renderer.curSize[1]);
+                    factor = factor / s[0];
+
+                    if (factor > 1) {
+                        factor = 1;
+                    }
+
+                    localTilt *= factor;
+                    */
+                }
+
+                if (localTilt < 0) {
+                    localTilt = 0;
+                }
+               
+                stickShift = Math.pow(1-localTilt,stickMode[1]) * stickHeight;
+
+            } else {
+                stickShift = renderer.cameraTiltFator * s[0];
+            }
                 
             if (stickShift < s[1]) {
                 stickShift = 0;
@@ -1803,7 +1845,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
         files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
-        o = job.noOverlap;
+        o = job.noOverlap, localTilt;
 
     if (job.hysteresis && job.id) {
         if (job.culling != 180) {
@@ -1815,23 +1857,24 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             job.normal = [0,0,0];
             vec3.normalize(job.center, job.normal);
                 
-            var a = -vec3.dot(camVec, job.normal);
-            if (a < Math.cos(math.radians(job.culling))) {
+            localTilt = -vec3.dot(camVec, job.normal);
+            if (localTilt < Math.cos(math.radians(job.culling))) {
                 return;
             }
         }
 
-        if (o) {
+        //if (o) {
             //var x1 = pp[0]+o[0], y1 = pp[1]+o[1], 
               //  x2 = pp[0]+o[2], y2 = pp[1]+o[3]+stickShift;
 
+            /*
             if (s[0] != 0) {
                 stickShift = renderer.cameraTiltFator * s[0];
                     
                 if (stickShift < s[1]) {
                     stickShift = 0;
                 }
-            }
+            }*/
 
             /* 
             var rmap = renderer.rmap;
@@ -1850,11 +1893,52 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             if (x1 < rmap.blx && x2 > 0 && y1 <= rmap.bly && y2 > 0) {
                 return false;
             }*/
-        }
+        //}
 
         if (s[0] != 0) {
-            stickShift = renderer.cameraTiltFator * s[0];
-                
+            var stickMode = renderer.config.mapFeatureStickMode;
+            var stickHeight = s[0];
+
+            if (stickMode[0]) {
+                if (!localTilt) {
+                    localTilt = job.localTilt;
+                    //TODO
+                }
+
+                if (stickMode[0] == 2) {
+
+                    var hdelta = renderer.gridHmax - renderer.gridHmin;
+
+                    if (hdelta < 0) {
+                        hdelta = 0;
+                    }
+
+                    if (hdelta < stickHeight) {
+                        stickHeight = hdelta;
+                    }
+
+                    /*
+                    var factor = ((hdelta / renderer.viewExtent) * renderer.curSize[1]);
+                    factor = factor / s[0];
+
+                    if (factor > 1) {
+                        factor = 1;
+                    }
+
+                    localTilt *= factor;
+                    */
+                }
+
+                if (localTilt < 0) {
+                    localTilt = 0;
+                }
+               
+                stickShift = Math.pow(1-localTilt,stickMode[1]) * stickHeight;
+
+            } else {
+                stickShift = renderer.cameraTiltFator * s[0];
+            }
+              
             if (stickShift < s[1]) {
                 stickShift = 0;
             } else if (s[2] != 0) {

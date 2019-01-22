@@ -144,6 +144,8 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.drawnGeodataTilesFactor = 0;
     this.drawnGeodataTilesUsed = false;
     this.progMap = {};
+    this.gridHmax = 0;
+    this.gridHmin = 0;
 
     //hack for vts maps
     //this.vtsHack = true;

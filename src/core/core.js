@@ -67,6 +67,8 @@ var Core = function(element, config, coreInterface) {
         mapRefreshCycles : 3,
         mapSoftViewSwitch : true,
 
+        mapFeatureStickMode : [2,4],
+
         map16bitMeshes : true,
         mapOnlyOneUVs : true,
         mapIndexBuffers : true,
@@ -185,7 +187,7 @@ Core.prototype.loadMap = function(path) {
 
         this.map = new Map(this, data, path, this.config);
         this.mapInterface = new MapInterface(this.map);
-        this.setConfigParams(this.map.browserOptions);
+        this.setConfigParams(this.map.browserOptions, true);
         this.setConfigParams(this.configStorage);
 
         if (this.config.position) {
@@ -445,16 +447,16 @@ Core.prototype.onUpdate = function() {
 };
 
 
-Core.prototype.setConfigParams = function(params) {
+Core.prototype.setConfigParams = function(params, solveStorage) {
     if (typeof params === 'object' && params !== null) {
         for (var key in params) {
-            this.setConfigParam(key, params[key]);
+            this.setConfigParam(key, params[key], solveStorage);
         }
     }
 };
 
 
-Core.prototype.setConfigParam = function(key, value) {
+Core.prototype.setConfigParam = function(key, value, solveStorage) {
     if (key == 'pos' || key == 'position' || key == 'view') {
         if (this.getMap()) {
             if (key == 'view') {
@@ -482,7 +484,11 @@ Core.prototype.setConfigParam = function(key, value) {
         this.config.authorization = ((typeof value === 'string') || (typeof value === 'function')) ? value : null;   
     } else {
         if (key.indexOf('map') == 0 || key == 'mario') {
-            this.configStorage[key] = value;
+           
+            if (!solveStorage || (typeof this.configStorage[key] === 'undefined')) {
+                this.configStorage[key] = value;
+            }
+
             if (this.getMap() != null) {
                 this.getMap().setConfigParam(key, value);
             }

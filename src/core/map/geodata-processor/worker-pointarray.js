@@ -77,6 +77,9 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 reduce : getLayerPropertyValue(style, 'dynamic-reduce', pointArray, lod),
                 origin : getLayerPropertyValue(style, 'icon-origin', pointArray, lod),
                 source : getLayerPropertyValue(style, 'icon-source', pointArray, lod),
+                noOverlap : getLayerPropertyValue(style, 'icon-no-overlap', pointArray, lod),
+                noOverlapMargin : getLayerPropertyValue(style, 'icon-no-overlap-margin', pointArray, lod),
+                noOverlapFactor : getLayerPropertyValue(style, 'icon-no-overlap-factor', pointArray, lod),
                 index : 0,
                 index2 : 0
             };
@@ -178,7 +181,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     var tileX = globals.tileX;
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
-    var labelBBox, p, p1;
+    var labelBBox, iconBBox, p, p1;
 
     var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
 
@@ -230,7 +233,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 center[2] += p1[2];
 
                 if (icon) {
-                    processIcon(p1, iconData) ;//, pointArray, lod, style, zIndex);
+                    iconBBox = processIcon(p1, iconData) ;//, pointArray, lod, style, zIndex);
                 }
     
                 if (label) {
@@ -351,13 +354,29 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         globals.signatureCounter++;
         signature = (""+globals.signatureCounter);
 
+        if (iconData.noOverlap) {
+            var margin = iconData.noOverlapMargin;
+            var factorType = null, factorValue = null;
+
+            if (iconData.noOverlapFactor !== null) {
+                switch(iconData.noOverlapFactor[0]) {
+                    case 'direct':      factorType = VTS_NO_OVERLAP_DIRECT;      break;
+                    case 'div-by-dist': factorType = VTS_NO_OVERLAP_DIV_BY_DIST; break;
+                }
+
+                factorValue = iconData.noOverlapFactor[1];
+            }
+
+            var noOverlap = [iconBBox[0]-margin[0], iconBBox[1]-margin[1], iconBBox[2]+margin[0], iconBBox[3]+margin[1], factorType, factorValue];
+        }
+
         if ((iconData.singleBuffer && iconData.singleBuffer.length > 0) || (iconData.vertexBuffer && iconData.vertexBuffer.length > 0)) {
 
             postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_ICON : VTS_WORKER_TYPE_ICON2, {
                 'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
                 'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
                 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
+                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'noOverlap' : (iconData.noOverlap ? noOverlap: null),
                 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
                 'index': featureIndex, 'reduce': iconData.reduce, 'lod':(globals.autoLod ? null : globals.tileLod) },
                 (iconData.singleBuffer) ? [iconData.singleBuffer] : [iconData.vertexBuffer, iconData.originBuffer, iconData.texcoordsBuffer],
@@ -545,7 +564,7 @@ var processIcon = function(point, iconData) {
         b[14] = icon[1];
         b[15] = icon[2]+icon[4];
 
-        return;
+        return [offsetX * 0.5, offsetY * 0.5, (offsetX + width) * 0.5 + 1, (offsetY + height) *0.5];
     }
 
     var vertexBuffer = iconData.vertexBuffer;
@@ -635,6 +654,8 @@ var processIcon = function(point, iconData) {
 
     iconData.index = index;
     iconData.index2 = index2;
+
+    return [offsetX * 0.5, offsetY * 0.5, (offsetX + width) * 0.5 + 1, (offsetY + height) *0.5];
 };
 
 

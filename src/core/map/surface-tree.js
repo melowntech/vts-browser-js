@@ -1,7 +1,9 @@
 
+import {vec3 as vec3_} from '../utils/matrix';
 import MapSurfaceTile_ from './surface-tile';
 
 //get rid of compiler mess
+var vec3 = vec3_;
 var MapSurfaceTile = MapSurfaceTile_;
 
 
@@ -1020,6 +1022,11 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
         }
     }
 
+    var scanExtents = (!this.freeLayerSurface && map.config.mapFeatureStickMode[0] == 2); // && this.freeLayerSurface.geodata && draw.drawChannel == 0);
+    var hmax = -999999, hmin = 999999;
+    var renderer = map.renderer;
+    var mvp = this.camera.getMvpMatrix(), p1, p2, camVec, length, tilt, factor; 
+
     map.gpuCache.skipCostCheck = true;
 
     if (drawGrid && map.config.mapGridUnderSurface > 0) {
@@ -1031,15 +1038,45 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
             }
 
             //clear zbuffer
-            if (map.config.mapGridSurrogatez) {
+            //if (map.config.mapGridSurrogatez) {
                 map.renderer.gpu.clear(true, false);
-            }
+            //}
         }
+
 
         //draw only surface
         for (i = drawBufferIndex - 1; i >= 0; i--) {
             var item = drawBuffer[i];
             tile = item[0];
+            node = tile.metanode;
+
+            if (scanExtents && node) {
+                // TODO noramlize by distance and tilt
+
+                p2 = node.diskPos;
+                p1 = renderer.cameraPosition;
+                camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                length = vec3.normalize4(camVec);
+                tilt = -vec3.dot(camVec, node.diskNormal);
+
+                if (tilt < 0) {
+                    tilt = 0;
+                }
+
+                tilt = 1 - tilt;
+
+                factor = (renderer.camera.fovDist / length) * tilt;
+                //renderer.camera.scaleFactor2(d) * screenPixelSize
+                //pp = this.renderer.project2(tile.diskPos, mvp);                
+
+                if (node.minZ * factor < hmin) {
+                    hmin = node.minZ * factor;
+                }
+
+                if (node.maxZ * factor > hmax) {
+                    hmax = node.maxZ * factor;
+                }
+            }
 
             if (!item[1] && !(stats.gpuRenderUsed >= draw.maxGpuUsed))  {
                 drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false /*, checkGpu*/);
@@ -1056,6 +1093,35 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
         for (i = drawBufferIndex - 1; i >= 0; i--) {
             var item = drawBuffer[i];
             tile = item[0];
+            node = tile.metanode;
+
+            if (scanExtents && node) {
+                // TODO noramlize by distance and tilt
+
+                p2 = node.diskPos;
+                p1 = renderer.cameraPosition;
+                camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                length = vec3.normalize4(camVec);
+                tilt = -vec3.dot(camVec, node.diskNormal);
+
+                if (tilt < 0) {
+                    tilt = 0;
+                }
+
+                tilt = 1 - tilt;
+
+                factor = (renderer.camera.fovDist / length) * tilt;
+                //renderer.camera.scaleFactor2(d) * screenPixelSize
+                //pp = this.renderer.project2(tile.diskPos, mvp);                
+
+                if (node.minZ * factor < hmin) {
+                    hmin = node.minZ * factor;
+                }
+
+                if (node.maxZ * factor > hmax) {
+                    hmax = node.maxZ * factor;
+                }
+            }
 
             if ((drawGrid && item[1]) || stats.gpuRenderUsed >= draw.maxGpuUsed)  {
 
@@ -1068,8 +1134,11 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
                 drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, 0, false, false /*, checkGpu*/);
             }
         }
+    }
 
-
+    if (scanExtents) {
+        renderer.gridHmax = hmax;
+        renderer.gridHmin = hmin;
     }
 
     map.gpuCache.skipCostCheck = false;
