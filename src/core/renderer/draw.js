@@ -66,7 +66,7 @@ RendererDraw.prototype.drawTBall = function(position, size, shader, texture, siz
     var renderer = this.renderer;
 
     if (nocull) {
-        gl.disable(gl.CULL_FACE);
+        //gl.disable(gl.CULL_FACE);
     }
 
     var normMat = mat4.create();
@@ -94,7 +94,7 @@ RendererDraw.prototype.drawTBall = function(position, size, shader, texture, siz
     renderer.renderedPolygons += renderer.skydomeMesh.getPolygons();
 
     if (nocull) {
-        gl.enable(gl.CULL_FACE);
+        //gl.enable(gl.CULL_FACE);
     }
 };
 
@@ -260,6 +260,18 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
     }
 
     if (useState !== true) {
+        var tmpState = gpu.currentState;
+
+        gpu.setState({
+            ztest: !(depthTest !== true),
+            blend: (transparent === true),
+            zwrite: !(writeDepth === false),
+            stencil: false,
+            culling: false,
+            zequal: false
+        });
+
+        /*
         if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
@@ -276,6 +288,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
     
         gl.disable(gl.STENCIL_TEST);
         gl.disable(gl.CULL_FACE);
+        */
     }
 
     var prog = renderer.progLine4;   
@@ -289,6 +302,8 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
     renderer.plines.draw(prog, 'aPosition', totalPoints);
 
     if (useState !== true) {
+        gpu.setState(tmpState);
+        /*        
         if (depthTest !== true) {
             gl.enable(gl.DEPTH_TEST);
         }
@@ -301,7 +316,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
             gl.depthMask(true); 
         }
     
-        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -317,6 +332,18 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
     }
 
     if (useState !== true) {
+        var tmpState = gpu.currentState;
+
+        gpu.setState({
+            ztest: !(depthTest !== true),
+            blend: (transparent === true),
+            zwrite: !(writeDepth === false),
+            stencil: false,
+            culling: false,
+            zequal: false
+        });
+
+        /*
         if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
@@ -331,7 +358,7 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
             gl.depthMask(false); 
         }
     
-        gl.disable(gl.CULL_FACE);
+        gl.disable(gl.CULL_FACE);*/
     }
 
     var prog = renderer.progImage;
@@ -364,6 +391,9 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
     gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
     if (useState !== true) {
+        gpu.setState(tmpState);
+
+        /*
         if (writeDepth === false) {
             gl.depthMask(true); 
         }
@@ -376,7 +406,7 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
             gl.disable(gl.BLEND);
         }
     
-        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -387,6 +417,18 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
     var renderer = this.renderer;
 
     if (useState !== true) {
+        var tmpState = gpu.currentState;
+
+        gpu.setState({
+            ztest: !(depthTest !== true),
+            blend: (transparent === true),
+            zwrite: !(writeDepth === false),
+            stencil: false,
+            culling: false,
+            zequal: false
+        });
+
+        /*        
         if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
@@ -401,7 +443,7 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
             gl.depthMask(false); 
         }
     
-        gl.disable(gl.CULL_FACE);
+        gl.disable(gl.CULL_FACE);*/
     }
 
     var prog = renderer.progImage;
@@ -433,6 +475,9 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
     gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
     if (useState !== true) {
+        gpu.setState(tmpState);
+
+        /*
         if (writeDepth === false) {
             gl.depthMask(true); 
         }
@@ -445,7 +490,7 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
             gl.disable(gl.BLEND);
         }
     
-        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -498,6 +543,18 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
     }
 
     if (useState !== true) {
+        var tmpState = gpu.currentState;
+
+        gpu.setState({
+          ztest: !(depth == null),
+          blend: false,
+          zwrite: !(depth == null),
+          stencil: false,
+          culling: false,
+          zequal: !(depth == null)
+        });
+
+        /*
         gl.disable(gl.CULL_FACE);
     
     
@@ -506,7 +563,7 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
         } else {
             gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.DEPTH_TEST);
-        }
+        }*/
     }
 
     var prog = renderer.progImage;
@@ -591,11 +648,14 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
     }
 
     if (useState !== true) {
+        gpu.setState(tmpState);
+
+        /*
         gl.enable(gl.CULL_FACE);
     
         if (depth == null) {
             gl.enable(gl.DEPTH_TEST);
-        }
+        }*/
     }
 };
 
