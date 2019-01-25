@@ -294,6 +294,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             case 'mul':
             case 'div':
             case 'pow':
+            case 'tofixed':
             case 'atan2':
 
                 if (!Array.isArray(functionValue) || functionValue.length != 2) {
@@ -313,6 +314,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                             case 'div':    return v1 / v2;
                             case 'pow':    return Math.pow(v1, v2);
                             case 'atan2':  return Math.atan2(v1, v2);
+                            case 'tofixed': return v1.tofixed(v2);
                         }
                     }
                 }
@@ -416,7 +418,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
 
                     finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
 
-                    for (i = index, li = value.length; i < li; i++) {
+                    for (i = index, li = functionValue.length; i < li; i++) {
                         tmpValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[i], depth + 1);
 
                         if (typeof tmpValue !== 'number') {
@@ -921,13 +923,16 @@ var validateLayerPropertyValue = function(layerId, key, value) {
 
     case 'point-color':  return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
-    case 'icon':         return validateValue(layerId, key, value, 'boolean');
-    case 'icon-source':  return validateValue(layerId, key, value, 'object', 5, -Number.MAX_VALUE, Number.MAX_VALUE);
-    case 'icon-scale':   return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
-    case 'icon-offset':  return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
-    case 'icon-origin':  return validateValue(layerId, key, value, 'string');
-    case 'icon-stick':   return validateValue(layerId, key, value, 'object', 8, -Number.MAX_VALUE, Number.MAX_VALUE);
-    case 'icon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'icon':             return validateValue(layerId, key, value, 'boolean');
+    case 'icon-source':      return validateValue(layerId, key, value, 'object', 5, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'icon-scale':       return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'icon-offset':      return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'icon-origin':      return validateValue(layerId, key, value, 'string');
+    case 'icon-stick':       return validateValue(layerId, key, value, 'object', 8, -Number.MAX_VALUE, Number.MAX_VALUE);
+    case 'icon-color':       return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'icon-no-overlap':  return validateValue(layerId, key, value, 'boolean');
+    case 'icon-no-overlap-factor': return validateValue(layerId, key, value, 'object');
+    case 'icon-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
 
     case 'label':             return validateValue(layerId, key, value, 'boolean');
     case 'label-color':       return validateValue(layerId, key, value, 'object', 4, 0, 255);
@@ -1022,6 +1027,9 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'icon-origin':  return 'bottom-center';
     case 'icon-stick':   return [0,0,0,255,255,255,255,0];
     case 'icon-color':   return [255,255,255,255];
+    case 'icon-no-overlap':  return false;
+    case 'icon-no-overlap-factor': return null;
+    case 'icon-no-overlap-margin': return [5,5];
 
     case 'label':             return false;
     case 'label-font':        return ['#default'];

@@ -830,6 +830,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapIndexBuffers':               this.config.mapIndexBuffers = utils.validateBool(value, false); break;
     case 'mapSoftViewSwitch':             this.config.mapSoftViewSwitch = utils.validateBool(value, true); break;
     case 'mapAsyncImageDecode':           this.config.mapAsyncImageDecode = (utils.validateBool(value, false) && (typeof createImageBitmap !== 'undefined')) ? true : false; break;
+    case 'mapFeatureStickMode':           this.config.mapFeatureStickMode = utils.validateNumberArray(value, 2, [0,1], [Number.MAX_VALUE, Number.MAX_VALUE], [0, 1]); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -904,6 +905,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapIndexBuffers':               return this.config.mapIndexBuffers;
     case 'mapSoftViewSwitch':             return this.config.mapSoftViewSwitch;
     case 'mapAsyncImageDecode':           return this.config.mapAsyncImageDecode;
+    case 'mapFeatureStickMode':           return this.config.mapFeatureStickMode;
     case 'mario':                         return this.config.mario;
     }
 };

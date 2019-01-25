@@ -90,8 +90,7 @@ GpuTexture.prototype.createFromData = function(lx, ly, data, filter, repeat) {
 GpuTexture.prototype.createFromImage = function(image, filter, repeat, aniso) {
     var gl = this.gl;
 
-    //utils.isPowerOfTwo = (function(value) {
-    //utils.nearestPowerOfTwo = (function(value) {
+    //filter = 'trilinear'; aniso = null; this.gpu.anisoLevel = 0;
     var width = image.naturalWidth;
     var height = image.naturalHeight;
     var data = image;

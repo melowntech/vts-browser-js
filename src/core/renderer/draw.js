@@ -66,7 +66,7 @@ RendererDraw.prototype.drawTBall = function(position, size, shader, texture, siz
     var renderer = this.renderer;
 
     if (nocull) {
-        gl.disable(gl.CULL_FACE);
+        //gl.disable(gl.CULL_FACE);
     }
 
     var normMat = mat4.create();
@@ -94,7 +94,7 @@ RendererDraw.prototype.drawTBall = function(position, size, shader, texture, siz
     renderer.renderedPolygons += renderer.skydomeMesh.getPolygons();
 
     if (nocull) {
-        gl.enable(gl.CULL_FACE);
+        //gl.enable(gl.CULL_FACE);
     }
 };
 
@@ -260,6 +260,18 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
     }
 
     if (useState !== true) {
+        var tmpState = gpu.currentState;
+
+        gpu.setState({
+            ztest: !(depthTest !== true),
+            blend: (transparent === true),
+            zwrite: !(writeDepth === false),
+            stencil: false,
+            culling: false,
+            zequal: false
+        });
+
+        /*
         if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
@@ -276,6 +288,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
     
         gl.disable(gl.STENCIL_TEST);
         gl.disable(gl.CULL_FACE);
+        */
     }
 
     var prog = renderer.progLine4;   
@@ -289,6 +302,8 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
     renderer.plines.draw(prog, 'aPosition', totalPoints);
 
     if (useState !== true) {
+        gpu.setState(tmpState);
+        /*        
         if (depthTest !== true) {
             gl.enable(gl.DEPTH_TEST);
         }
@@ -301,7 +316,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
             gl.depthMask(true); 
         }
     
-        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -317,6 +332,18 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
     }
 
     if (useState !== true) {
+        var tmpState = gpu.currentState;
+
+        gpu.setState({
+            ztest: !(depthTest !== true),
+            blend: (transparent === true),
+            zwrite: !(writeDepth === false),
+            stencil: false,
+            culling: false,
+            zequal: false
+        });
+
+        /*
         if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
@@ -331,7 +358,7 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
             gl.depthMask(false); 
         }
     
-        gl.disable(gl.CULL_FACE);
+        gl.disable(gl.CULL_FACE);*/
     }
 
     var prog = renderer.progImage;
@@ -364,6 +391,9 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
     gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
     if (useState !== true) {
+        gpu.setState(tmpState);
+
+        /*
         if (writeDepth === false) {
             gl.depthMask(true); 
         }
@@ -376,7 +406,7 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
             gl.disable(gl.BLEND);
         }
     
-        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -387,6 +417,18 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
     var renderer = this.renderer;
 
     if (useState !== true) {
+        var tmpState = gpu.currentState;
+
+        gpu.setState({
+            ztest: !(depthTest !== true),
+            blend: (transparent === true),
+            zwrite: !(writeDepth === false),
+            stencil: false,
+            culling: false,
+            zequal: false
+        });
+
+        /*        
         if (depthTest !== true) {
             gl.disable(gl.DEPTH_TEST);
         }
@@ -401,7 +443,7 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
             gl.depthMask(false); 
         }
     
-        gl.disable(gl.CULL_FACE);
+        gl.disable(gl.CULL_FACE);*/
     }
 
     var prog = renderer.progImage;
@@ -433,6 +475,9 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
     gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
     if (useState !== true) {
+        gpu.setState(tmpState);
+
+        /*
         if (writeDepth === false) {
             gl.depthMask(true); 
         }
@@ -445,7 +490,7 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
             gl.disable(gl.BLEND);
         }
     
-        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -498,6 +543,18 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
     }
 
     if (useState !== true) {
+        var tmpState = gpu.currentState;
+
+        gpu.setState({
+          ztest: !(depth == null),
+          blend: false,
+          zwrite: !(depth == null),
+          stencil: false,
+          culling: false,
+          zequal: !(depth == null)
+        });
+
+        /*
         gl.disable(gl.CULL_FACE);
     
     
@@ -506,7 +563,7 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
         } else {
             gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.DEPTH_TEST);
-        }
+        }*/
     }
 
     var prog = renderer.progImage;
@@ -591,11 +648,14 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
     }
 
     if (useState !== true) {
+        gpu.setState(tmpState);
+
+        /*
         gl.enable(gl.CULL_FACE);
     
         if (depth == null) {
             gl.enable(gl.DEPTH_TEST);
-        }
+        }*/
     }
 };
 
@@ -857,6 +917,15 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         if (job.timerHide != 0) {
                             fade = job.timerHide / (job.hysteresis[1]+1);
                             fade = 1.0 - Math.min(1.0, fade);
+
+                            //for debug only
+                            /*
+                            var pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+
+                            if (pp[1] > 1000) {  
+                                pp = pp;
+                            }*/
+
                         }
                     } else {
                         if (job.timerShow != 0) {
@@ -1393,7 +1462,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
         }
 
-        var p1, p2, camVec, ll, l = null;
+        var p1, p2, camVec, ll, l = null, localTilt;
 
         if (job.culling != 180) {
             p2 = job.center;
@@ -1443,8 +1512,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             job.normal = [0,0,0];
             vec3.normalize(job.center, job.normal);
                 
-            var a = -vec3.dot(camVec, job.normal);
-            if (a < Math.cos(math.radians(job.culling))) {
+            localTilt = -vec3.dot(camVec, job.normal);
+            if (localTilt < Math.cos(math.radians(job.culling))) {
                 return;
             }
         } else if (job.visibility) {
@@ -1503,6 +1572,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                             sjob.hysteresis = job.hysteresis;
                             sjob.vswitchIndex = i;
                             sjob.renderCounter = job.renderCounter;
+                            sjob.localTilt = localTilt;
                             sjob.id = job.id;
                             this.drawGpuJob(gpu, gl, renderer, sjob, screenPixelSize, advancedHitPass, ignoreFilters);
                         }
@@ -1516,18 +1586,64 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         }
 
         var s = job.stick;
-        var stickShift = 0, pp, o, depth;
+        var stickShift = 0, pp, o, depth, stickMode, stickHeight;
 
         if (s[0] != 0) {
-            stickShift = renderer.cameraTiltFator * s[0];
+            stickMode = renderer.config.mapFeatureStickMode;
+            stickHeight = s[0];
+
+            if (stickMode[0]) {
+                if (!localTilt) {
+                    localTilt = job.localTilt;
+
+                    if (!localTilt) {
+                        p2 = job.center;
+                        p1 = renderer.cameraPosition;
+                        camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                        vec3.normalize(camVec);
+                        job.normal = [0,0,0];
+                        vec3.normalize(job.center, job.normal);
+                            
+                        localTilt = -vec3.dot(camVec, job.normal);
+                    }
+                }
+
+                if (stickMode[0] == 2) {
+
+                    var hdelta = renderer.gridHmax - renderer.gridHmin;
+
+                    if (hdelta < 0) {
+                        hdelta = 0;
+                    }
+
+                    if (hdelta < stickHeight) {
+                        stickHeight = hdelta;
+                    }
+                }
+
+                if (localTilt < 0) {
+                    localTilt = 0;
+                }
+               
+                stickShift = Math.pow(1-localTilt,stickMode[1]) * stickHeight * renderer.cameraTiltFator;
+
+            } else {
+                stickShift = renderer.cameraTiltFator * s[0];
+            }
                 
             if (stickShift < s[1]) {
                 stickShift = 0;
-            } else if (s[2] != 0) {
+            }
+
+            if (s[0] != 0 && s[2] != 0 && stickShift >= 4) {
+                stickShift += s[7];
+            }
+
+            //else if (s[2] != 0) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
                 pp[1] -= stickShift;
-            }
+            //}
         }
 
         var reduce78 = (job.reduce && (job.reduce[0] == 7 || job.reduce[0] == 8 || job.reduce[0] == 9));
@@ -1559,7 +1675,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                     }
 
                     if (job.reduce && (job.reduce[0] != 8 && job.reduce[0] != 9)) {  //not overlap code not used for reduce==8
-                        depth = o[5] / l;            
+                        depth = o[5] / l;
                     }
                 } 
             }
@@ -1656,6 +1772,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
                 this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
                                      [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
+
+                if (job.reduce) {
+                    this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                }
             }
         }
 
@@ -1803,7 +1923,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
         files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
-        o = job.noOverlap;
+        o = job.noOverlap, localTilt;
 
     if (job.hysteresis && job.id) {
         if (job.culling != 180) {
@@ -1815,23 +1935,24 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             job.normal = [0,0,0];
             vec3.normalize(job.center, job.normal);
                 
-            var a = -vec3.dot(camVec, job.normal);
-            if (a < Math.cos(math.radians(job.culling))) {
+            localTilt = -vec3.dot(camVec, job.normal);
+            if (localTilt < Math.cos(math.radians(job.culling))) {
                 return;
             }
         }
 
-        if (o) {
+        //if (o) {
             //var x1 = pp[0]+o[0], y1 = pp[1]+o[1], 
               //  x2 = pp[0]+o[2], y2 = pp[1]+o[3]+stickShift;
 
+            /*
             if (s[0] != 0) {
                 stickShift = renderer.cameraTiltFator * s[0];
                     
                 if (stickShift < s[1]) {
                     stickShift = 0;
                 }
-            }
+            }*/
 
             /* 
             var rmap = renderer.rmap;
@@ -1850,18 +1971,66 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             if (x1 < rmap.blx && x2 > 0 && y1 <= rmap.bly && y2 > 0) {
                 return false;
             }*/
-        }
+        //}
 
         if (s[0] != 0) {
-            stickShift = renderer.cameraTiltFator * s[0];
-                
+            var stickMode = renderer.config.mapFeatureStickMode;
+            var stickHeight = s[0];
+
+            if (stickMode[0]) {
+                if (!localTilt) {
+                    localTilt = job.localTilt;
+
+                    if (!localTilt) {
+                        p2 = job.center;
+                        p1 = renderer.cameraPosition;
+                        camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                        vec3.normalize(camVec);
+                        job.normal = [0,0,0];
+                        vec3.normalize(job.center, job.normal);
+                            
+                        localTilt = -vec3.dot(camVec, job.normal);
+                    }
+                }
+
+                if (stickMode[0] == 2) {
+
+                    var hdelta = renderer.gridHmax - renderer.gridHmin;
+
+                    if (hdelta < 0) {
+                        hdelta = 0;
+                    }
+
+                    if (hdelta < stickHeight) {
+                        stickHeight = hdelta;
+                    }
+                }
+
+                if (localTilt < 0) {
+                    localTilt = 0;
+                }
+               
+                stickShift = Math.pow(1-localTilt,stickMode[1]) * stickHeight * renderer.cameraTiltFator;
+
+            } else {
+                stickShift = renderer.cameraTiltFator * s[0];
+            }
+              
             if (stickShift < s[1]) {
                 stickShift = 0;
-            } else if (s[2] != 0) {
+            }
+
+            if (s[0] != 0 && s[2] != 0 && stickShift >= 4) {
+                stickShift += s[7];
+            }
+
+
+             //else if (s[2] != 0) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
                 pp[1] -= stickShift;
-            }
+            //}
+
         }
 
     }
@@ -1873,13 +2042,17 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
             this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
                                  [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
+
+            if (job.reduce) {
+                this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+            }
         }
 
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
         if (s[0] != 0 && s[2] != 0 && stickShift >= 4) {
-            this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
-            stickShift += s[7];
+            this.drawLineString([[pp[0], pp[1]+stickShift-s[7], pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
+            //stickShift += s[7];
         }
 
         for (var i = 0, li = job.subjobs.length; i < li; i++) {
@@ -1911,6 +2084,10 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
         this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
                              [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
+
+        if (job.reduce) {
+            this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+        }
     }
 
     gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);

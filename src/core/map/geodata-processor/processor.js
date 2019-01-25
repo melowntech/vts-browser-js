@@ -10,6 +10,8 @@ var MapGeodataProcessor = function(surface, listener) {
     this.waitingForStylesheet = false;
     this.stylesheet = null;
     this.fonts = {};
+    this.processCounter = 0;
+
 
     // eslint-disable-next-line
     var worker = require('worker-loader?inline&fallback=false!./worker-main');
@@ -57,7 +59,7 @@ MapGeodataProcessor.prototype.onMessage = function(message) {
     
     var command = message['command'];
 
-    //console.log("onmessage");
+    //console.log('onmessage ' + command);
 
     //if (typeof message === "string" && message == "ready") {
     if (command == 'ready') {
@@ -95,6 +97,8 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile, dpr) {
     this.ready = false;
     
     var message = {'command': command, 'data':data};
+
+    //console.log('sendCommand ' + command);
     
     if (tile && tile.id) { 
         message['lod'] = tile.id[0];
@@ -146,7 +150,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
             } else {
                 params[0] = isDef(params[0]) ? params[0] : 0.18;
                 params[1] = isDef(params[1]) ? params[1] : 0;
-                params[2] = isDef(params[2]) ? params[2] : 0;
+                params[2] = isDef(params[2]) ? params[2] : 1;
             }
             config.mapFeaturesSortByTop = true;
             break;
@@ -157,7 +161,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
             } else {
                 params[0] = isDef(params[0]) ? params[0] : 2;
                 params[1] = isDef(params[1]) ? params[1] : 1;
-                params[2] = isDef(params[2]) ? params[2] : 0;
+                params[2] = isDef(params[2]) ? params[2] : 1;
             }
             config.mapFeaturesSortByTop = true;
             break;
@@ -168,7 +172,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
             } else {
                 params[0] = (isDef(params[0]) ? params[0] : 0.5);
                 params[1] = isDef(params[1]) ? params[1] : 0;
-                params[2] = isDef(params[2]) ? params[2] : 0;
+                params[2] = isDef(params[2]) ? params[2] : 1;
                 params[3] = ppi;
                 config.mapFeaturesSortByTop = true;
             }
@@ -184,7 +188,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
             case 'scr-count2': config.mapFeaturesReduceParams = [1, 50, 0]; break;
             case 'scr-count4': config.mapFeaturesReduceParams = [0.18, 0, 1]; break;
             case 'scr-count5': config.mapFeaturesReduceParams = [2, 1, 1]; break;
-            case 'scr-count6': config.mapFeaturesReduceParams = [0.5, 0, 0, ppi]; break;
+            case 'scr-count6': config.mapFeaturesReduceParams = [0.5, 0, 1, ppi]; break;
         }
     }
 
@@ -208,6 +212,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
         }
     }
 
+    this.processCounter++;
     this.sendCommand('setFontMap', { 'map' : fontMap });
 };
 

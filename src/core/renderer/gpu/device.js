@@ -11,8 +11,9 @@ var GpuDevice = function(renderer, div, size, keepFrameBuffer, antialias, aniso)
     this.enabledAttributes = new Uint8Array(this.maxAttributesCount);
     this.noTextures = false;
     this.barycentricBuffer = null;
-
-    this.defaultState = this.createState({});
+   
+    //state of device when first initialized
+    this.defaultState = this.createState({blend:false, stencil:false, zequal: false, ztest:false, zwrite: false, culling:false}); 
     this.currentState = this.defaultState;
     this.currentOffset = 0; //used fot direct offset
 
@@ -88,7 +89,15 @@ GpuDevice.prototype.init = function() {
     gl.viewportHeight = canvas.height;
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    //gl.enable(gl.DEPTH_TEST);
+
+    //initial state
+    gl.disable(gl.BLEND);
+    gl.disable(gl.STENCIL_TEST);
+    gl.depthMask(false);
     gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LESS);
+    gl.disable(gl.CULL_FACE);
 
     //clear screen
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);

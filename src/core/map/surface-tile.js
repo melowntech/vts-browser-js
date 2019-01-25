@@ -39,6 +39,7 @@ var MapSurfaceTile = function(map, parent, id) {
     this.childrenReadyCount = 0;
     this.renderReady = false;
     this.geodataCounter = 0;
+    this.gridRenderCounter = 0; //draw grid only once
     this.texelSize = 1;
     this.texelSize2 = 1;
     this.distance = 1;
@@ -993,7 +994,15 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
 };
 
 
-MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle, onlySetBorderData) {
+MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle, onlySetBorderData, subdiv) {
+    /* if (!(subdiv || onlySetBorderData)) {
+        if (this.gridRenderCounter != this.map.draw.drawCounter) {
+            this.gridRenderCounter = this.map.draw.drawCounter;
+        } else {
+            return; //prevent rendering same grid more then on time
+        }
+    } */
+
     if ((this.texelSize == Number.POSITIVE_INFINITY || this.texelSize > 4.4) && this.metanode && this.metanode.hasChildren()) {
         return;
     }
@@ -1029,11 +1038,11 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle, onlySetB
     if ((hasPoles && !node.isPole) &&  Math.acos(angle) > Math.PI*0.1) {
         angle = Math.cos(Math.acos(angle) * 0.5); 
         
-        this.drawGrid(cameraPos, [node, [ [ll[0], ll[1]],  [middle[0], middle[1]] ] ], angle);
-        this.drawGrid(cameraPos, [node, [ [middle[0], ll[1]],  [ur[0], middle[1]] ] ], angle);
+        this.drawGrid(cameraPos, [node, [ [ll[0], ll[1]],  [middle[0], middle[1]] ] ], angle, false, true);
+        this.drawGrid(cameraPos, [node, [ [middle[0], ll[1]],  [ur[0], middle[1]] ] ], angle, false, true);
 
-        this.drawGrid(cameraPos, [node, [ [ll[0], middle[1]],  [middle[0], ur[1]] ] ], angle);
-        this.drawGrid(cameraPos, [node, [ [middle[0], middle[1]],  [ur[0], ur[1]] ] ], angle);
+        this.drawGrid(cameraPos, [node, [ [ll[0], middle[1]],  [middle[0], ur[1]] ] ], angle, false, true);
+        this.drawGrid(cameraPos, [node, [ [middle[0], middle[1]],  [ur[0], ur[1]] ] ], angle, false, true);
        
         return;
     }

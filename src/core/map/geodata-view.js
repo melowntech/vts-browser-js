@@ -95,10 +95,13 @@ MapGeodataView.prototype.processPackedCommands = function(buffer, index) {
 
                 this.currentGpuGroup = new GpuGroup(data['id'], data['bbox'], data['origin'], this.gpu, this.renderer);
                 this.gpuGroups.push(this.currentGpuGroup);
+
+                //console.log('VTS_WORKERCOMMAND_GROUP_BEGIN ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
                 break;
 
             case VTS_WORKERCOMMAND_GROUP_END:
                 this.size += this.currentGpuGroup.size; index += 1 + 4;
+                //console.log('VTS_WORKERCOMMAND_GROUP_END ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
                 break;
 
             case VTS_WORKERCOMMAND_ADD_RENDER_JOB:
@@ -115,15 +118,20 @@ MapGeodataView.prototype.processPackedCommands = function(buffer, index) {
                 this.ready = true;
                 this.processing = false;
 
+                //console.log('VTS_WORKERCOMMAND_ALL_PROCESSED ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
+
                 index += 1 + 4;
                 break;
         }
 
         if ((performance.now() - t) > maxTime) {
-            return index;
+            if (index < maxIndex) {
+                return index;
+            }
         }
 
     } while(index < maxIndex);
+
 
     this.stats.renderBuild += performance.now() - t; 
 
@@ -147,7 +155,9 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
 
             if (index < 0) {
                 this.map.markDirty();
+                //console.log('addPackedCommandsB ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
             } else {
+                //console.log('addPackedCommandsC ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
                 message.index = index;
                 return -123;
             }
@@ -156,13 +166,29 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
             message.index = 0;
             this.map.markDirty();
             this.map.addProcessingTask2(this.onGeodataProcessorMessage.bind(this, command, message, true));
+
+            //console.log('addPackedCommandsA ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
         }
 
         break;
 
     case 'ready':
+
+        if (this.geodataProcessor.processCounter > 0) {
+            this.geodataProcessor.processCounter--;
+
+            if (this.geodataProcessor.processCounter > 0) {
+                this.map.markDirty();
+                //console.log('ready2 ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
+
+                break;
+            }
+        }
+
         this.geodataProcessor.busy = false;
         this.map.markDirty();
+        //console.log('ready ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
+
             //this.ready = true;
         break;
     }
@@ -189,6 +215,7 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));
             this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile, (window.devicePixelRatio || 1));
             this.geodataProcessor.busy = true;
+            //console.log('processGeodata ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
         }
     }
 

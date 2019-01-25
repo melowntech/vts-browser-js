@@ -88,10 +88,6 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 71:
             case 103:
                 /*this.showMenu(); this.toolbarItemSelected('position'); done();*/ break; //key G pressed
-
-            case 65:
-            case 97:
-                /*this.engine.setAutorotate(1);*/ break;  //key A pressed
             }
 
             if (this.ctrlDown) {
@@ -193,6 +189,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 case 66:
                 case 98:
                     debug.drawBBoxes = !debug.drawBBoxes; break; //key B pressed
+
+                case 65:
+                case 97:
+                    debug.drawLabelBoxes = !debug.drawLabelBoxes; break; //key A pressed
 
                 case 87:
                 case 119:
@@ -352,10 +352,6 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 111:
                 debug.drawOrder = !debug.drawOrder; break; //key O pressed
 
-            case 65:
-            case 97:
-                debug.drawLabelBoxes = !debug.drawLabelBoxes; break; //key A pressed
-
             case 69:
             case 101:
                 debug.debugTextSize = (debug.debugTextSize == 2.0) ? 3.0 : 2.0; break; //key E pressed
@@ -402,6 +398,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
     }
 
     var debug = map.draw.debug;
+    var getBool = (function(a){ return (value === true || value == 'true' || value == '1') });
 
     switch(key) {
         case 'debugBBox':
@@ -423,11 +420,11 @@ InspectorInput.prototype.setParameter = function(key, value) {
             if (has('E')) debug.debugTextSize = 3.0;
             if (has('K')) debug.drawGPixelSize = true;
             break;
-        case 'debugLBox': debug.drawLabelBoxes = true; break;
-        case 'debugNoEarth': debug.drawEarth = false; break;
+        case 'debugLBox': debug.drawLabelBoxes = getBool(value); break;
+        case 'debugNoEarth': debug.drawEarth = !getBool(value); break;
         case 'debugShader': debug.drawWireframe = parseInt(value); break;
-        case 'debugHeightmap': debug.heightmapOnly = true; break;
-        case 'debugGridCells': debug.drawGridCells = true; break;
+        case 'debugHeightmap': debug.heightmapOnly = getBool(value); break;
+        case 'debugGridCells': debug.drawGridCells = getBool(value); break;
         case 'debugRadar':
             inspector.enableInspector();
             inspector.drawRadar = true;

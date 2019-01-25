@@ -331,6 +331,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
         if (divByDist) {
             r = feature[0].reduce;
             h = Math.round(-5000 + ( ( Math.log(r[1]+1) - Math.log(r[4]) ) / Math.log(101) - lb ) / ( ub-lb ) * 10000) + 5000;
+            r[5] = h; //for debug
         } else {
             h = Math.round(feature[0].reduce[1]);            
         }
@@ -487,6 +488,7 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
         if (divByDist) {
             r = feature[0].reduce;
             h = Math.round(-5000 + ( ( Math.log(r[1]+1) - Math.log(r[4]) ) / Math.log(101) - lb ) / ( ub-lb ) * 10000) + 5000;
+            r[5] = h; //for debug
         } else {
             h = Math.round(feature[0].reduce[1]);            
         }

@@ -172,6 +172,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.debugStr = 'AsyncImageDecode: ' + this.config.mapAsyncImageDecode;
     renderer.dirty = true;
     renderer.drawFog = this.debug.drawFog;
+    renderer.debug = this.debug; 
 
     if (this.config.mapForceFrameTime) {
         if (this.config.mapForceFrameTime != -1) {
@@ -487,7 +488,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
             params[0] = 2-Math.min(1.0, (camera.height - earthRadius*2) / (earthRadius*2));
         }*/
 
-        gpu.setState(this.drawAtmoState);
+        //gpu.setState(this.drawAtmoState);
         //renderer.draw.drawBall([-camera.position[0], -camera.position[1], -camera.position[2]],
           //                       earthRadius + 3000, earthRadius2 + 3000, renderer.progAtmo2, params,  cameraPosToEarthCenter, null, this.atmoColor3, this.atmoColor2, true);// this.cameraHeight > atmoSize ? 1 : -1);
         

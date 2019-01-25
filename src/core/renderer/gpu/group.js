@@ -366,6 +366,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.lod = data['lod'];
     job.zbufferOffset = data['zbuffer-offset'];
     job.hysteresis = data['hysteresis'];
+    job.noOverlap = data['noOverlap'];
     job.id = job.hysteresis ? job.hysteresis[2] : null;
     job.reduced = false;
     job.ready = true;
@@ -386,7 +387,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
             case 'scr-count6': job.reduce[0] = 9; break;
         }
 
-        if (job.reduce[0] == 7 || job.reduce[0] == 8) {
+        if (job.reduce[0] == 7 || job.reduce[0] == 8 || job.reduce[0] == 9) {
             job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
             //job.reduce[1] = Math.log(job.reduce[2]) * VTS_IMPORATANCE_INV_LOG;
             //job.reduce[1] = Math.log(job.reduce[2]) / Math.log(1.0017);
@@ -414,7 +415,6 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         job.origin = data['origin'];
         job.files = data['files'] || [];
         job.index = data['index'] || 0;
-        job.noOverlap = data['noOverlap'];
         var fonts = data['fonts'] || ['#default'];
         job.fonts = fonts;
         job.gamma = [job.outline[2] * 1.4142 / job.size, job.outline[3] * 1.4142 / job.size];
@@ -499,7 +499,19 @@ GpuGroup.prototype.addPack = function(data) {
         var subjob = job.subjobs[i];
 
         if (subjob.noOverlap) {
-            job.noOverlap = subjob.noOverlap;
+            
+            if (!job.noOverlap) {
+                job.noOverlap = subjob.noOverlap;
+            } else {
+                var o = job.noOverlap;
+                var o2 = subjob.noOverlap;
+
+                if (o2[0] < o[0]) o[0] = o2[0];
+                if (o2[1] < o[1]) o[1] = o2[1];
+                if (o2[2] > o[2]) o[2] = o2[2];
+                if (o2[3] > o[3]) o[3] = o2[3];
+            }
+
             subjob.noOverlap = null;
         }
 

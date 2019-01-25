@@ -13,6 +13,8 @@ var Camera = function(parent, fov, near, far) {
     this.orientation = [0,0,0];
     this.aspect = 1;
     this.fov = fov;
+    this.fovTan = Math.tan(fov * Math.PI / 180.0);
+    this.fovDist = 1;
     this.near = near;
     this.far = far;
     this.rotationByMatrix = false;
@@ -381,6 +383,8 @@ Camera.prototype.update = function(zoffset) {
     this.projection32.set(this.projection);
     this.modelview32.set(this.modelview);
     this.rotationview32.set(this.rotationview);
+
+    this.fovDist = (this.parent.curSize[1] *0.5) / this.fovTan;
 
     // the derived quantities are now in sync with the parameters
     this.dirty = false;
