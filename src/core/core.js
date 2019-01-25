@@ -67,7 +67,7 @@ var Core = function(element, config, coreInterface) {
         mapRefreshCycles : 3,
         mapSoftViewSwitch : true,
 
-        mapFeatureStickMode : [2,4],
+        mapFeatureStickMode : [1,1],
 
         map16bitMeshes : true,
         mapOnlyOneUVs : true,
