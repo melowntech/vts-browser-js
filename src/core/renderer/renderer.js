@@ -146,6 +146,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.progMap = {};
     this.gridHmax = 0;
     this.gridHmin = 0;
+    this.debug = {};
 
     //hack for vts maps
     //this.vtsHack = true;

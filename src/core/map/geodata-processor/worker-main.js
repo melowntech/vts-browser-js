@@ -475,12 +475,12 @@ self.onmessage = function (e) {
             globals.log = data['log'];
             processStylesheet(data['data']);
         }
-        postMessage({'command' : 'ready'});
+        //postMessage({'command' : 'ready'});
         break;
 
     case 'setFont':
         setFont(data);
-        postMessage({'command' : 'ready'});
+        //postMessage({'command' : 'ready'});
         break;
 
     case 'setFontMap':

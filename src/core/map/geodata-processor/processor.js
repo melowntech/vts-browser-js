@@ -10,6 +10,8 @@ var MapGeodataProcessor = function(surface, listener) {
     this.waitingForStylesheet = false;
     this.stylesheet = null;
     this.fonts = {};
+    this.processCounter = 0;
+
 
     // eslint-disable-next-line
     var worker = require('worker-loader?inline&fallback=false!./worker-main');
@@ -57,7 +59,7 @@ MapGeodataProcessor.prototype.onMessage = function(message) {
     
     var command = message['command'];
 
-    //console.log("onmessage");
+    //console.log('onmessage ' + command);
 
     //if (typeof message === "string" && message == "ready") {
     if (command == 'ready') {
@@ -95,6 +97,8 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile, dpr) {
     this.ready = false;
     
     var message = {'command': command, 'data':data};
+
+    //console.log('sendCommand ' + command);
     
     if (tile && tile.id) { 
         message['lod'] = tile.id[0];
@@ -208,6 +212,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
         }
     }
 
+    this.processCounter++;
     this.sendCommand('setFontMap', { 'map' : fontMap });
 };
 

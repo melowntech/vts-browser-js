@@ -172,6 +172,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.debugStr = 'AsyncImageDecode: ' + this.config.mapAsyncImageDecode;
     renderer.dirty = true;
     renderer.drawFog = this.debug.drawFog;
+    renderer.debug = this.debug; 
 
     if (this.config.mapForceFrameTime) {
         if (this.config.mapForceFrameTime != -1) {

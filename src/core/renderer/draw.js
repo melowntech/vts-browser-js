@@ -1774,7 +1774,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                                      [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
                 if (job.reduce) {
-                    this.drawText(pp[0]+o[0], pp[1]+o[3]-8, 8, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                    this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
                 }
             }
         }
@@ -2044,7 +2044,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                                  [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
             if (job.reduce) {
-                this.drawText(pp[0]+o[0], pp[1]+o[3]-8, 8, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
             }
         }
 
@@ -2086,7 +2086,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                              [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
         if (job.reduce) {
-            this.drawText(pp[0]+o[0], pp[1]+o[3]-8, 8, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+            this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
         }
     }
 
