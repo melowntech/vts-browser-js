@@ -48,6 +48,7 @@ var MapDraw = function(map) {
         drawCredits : false,
         drawOrder : false,
         drawLabelBoxes : false,
+        drawAllLabels : false,
         drawEarth : true, 
         drawGridCells : false,
         drawTileCounter : 0,
@@ -196,6 +197,8 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.cameraViewExtent2 = Math.pow(2.0, Math.max(1.0, Math.floor(Math.log(map.position.getViewExtent()) / Math.log(2))));
     renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
     renderer.drawGridCells = this.debug.drawGridCells;
+    renderer.drawAllLabels = this.debug.drawAllLabels;
+    renderer.debug = this.debug;
     renderer.fmaxDist = Number.NEGATIVE_INFINITY;
     renderer.fminDist = Number.POSITIVE_INFINITY;
 

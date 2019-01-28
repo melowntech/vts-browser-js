@@ -35,6 +35,7 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
     var tileSize = Math.floor(Math.sqrt((screenLX*screenLY) / tileCount));
     var hitMap = renderer.gmapHit, usedFeatures = 0;
     var tileFeatures, count, feature;
+    var drawAllLabels = renderer.drawAllLabels;
 
     var colors = [
         [0, 0, 255, 255],
@@ -173,7 +174,7 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
                     featureCache[index] = null;
 
                     //render job
-                    if (feature[6]) { //no-overlap 
+                    if (!drawAllLabels && feature[6]) { //no-overlap 
                         pp = feature[5];
                         o = feature[8];
                         if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob)) {
@@ -293,6 +294,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLY = renderer.curSize[1];
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
     var feature, feature2, pp, pp2, o;
+    var drawAllLabels = renderer.drawAllLabels;
 
     //get top features
     var featureCache = renderer.gmap;
@@ -404,7 +406,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                     index = hitCacheSize;
 
                     //render job
-                    if (feature[6]) { //no-overlap 
+                    if (!drawAllLabels && feature[6]) { //no-overlap 
                         pp = feature[5];
                         o = feature[8];
                         if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
@@ -450,6 +452,7 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLY = renderer.curSize[1];
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
     var feature, feature2, pp, pp2, o;
+    var drawAllLabels = renderer.drawAllLabels;
 
     //get top features
     var featureCache = renderer.gmap;
@@ -516,24 +519,20 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
                 // check                
 
                 //render job
-                if (feature[6]) { //no-overlap is always enabled
+                if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
                     pp = feature[5];
                     o = feature[8];
                     if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
                         //hitCache[hitCacheSize] = feature;
                     }
-                }
-
-                /* else {
+                } else {
                     if (feature[0].hysteresis) {
                         renderer.jobHBuffer[feature[0].id] = feature[0];
-                        renderer.jobtHBuffer[feature[0].id] = feature[0];
                     } else {
                         renderer.drawnJobs++;
                         draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
                     }
-                } */
-
+                }
             }
 
             hmapSize[i] = 0;  //zero size

@@ -46,7 +46,8 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.stencilLineState = null;
     this.drawLabelBoxes = false;
     this.drawGridCells = false;
-
+    this.drawAllLabels = false;
+    this.debug = {};
 
     this.geodataSelection = [];
     this.hoverFeatureCounter = 0;
@@ -146,7 +147,6 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.progMap = {};
     this.gridHmax = 0;
     this.gridHmin = 0;
-    this.debug = {};
 
     //hack for vts maps
     //this.vtsHack = true;

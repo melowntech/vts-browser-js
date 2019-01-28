@@ -194,6 +194,14 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 case 97:
                     debug.drawLabelBoxes = !debug.drawLabelBoxes; break; //key A pressed
 
+                case 75:
+                case 107:
+                   debug.drawAllLabels = !debug.drawAllLabels; break; //key K pressed
+
+                case 73:
+                case 105:
+                    debug.drawGridCells = !debug.drawGridCells; break; //key I pressed
+
                 case 87:
                 case 119:
                     var value = debug.drawWireframe + 1;

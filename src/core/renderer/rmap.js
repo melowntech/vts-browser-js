@@ -2,6 +2,7 @@
 
 var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.renderer = renderer;
+    this.drawAllLabels = false;
     this.maxBlockRectangles = maxBlockRectangles || 500;
     this.blockSize = blockSize;
     this.blockSizeFactor = 1/blockSize;
@@ -60,6 +61,8 @@ RendererRMap.prototype.clear = function() {
 
     }
 
+    this.drawAllLabels = this.renderer.debug.drawAllLabels;
+
     this.rectanglesCount = 0;
     this.counter = this.renderer.geoRenderCounter;
 };
@@ -107,6 +110,10 @@ RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
 RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
         rectangleIndex, t;
+
+    if (this.drawAllLabels) {
+        return true;
+    }
 
     if (x1 > x2) { t = x1; x1 = x2; x2 = t; }
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
