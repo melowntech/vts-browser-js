@@ -773,7 +773,7 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
         //check array
         if (arrayLength != null) {
-            if (Array.isArray(value) && (value.length == arrayLength || ((key == 'icon-stick' || 'label-stick') && value.length == 7) )) {
+            if (Array.isArray(value) && (value.length == arrayLength || ((key == 'icon-stick' || 'label-stick') && value.length >= 7) )) {
 
                 //validate array values
                 i = 0;
@@ -797,6 +797,10 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
                         logError('wrong-property-value[]', layerId, key, value, i);
                         return getDefaultLayerPropertyValue(key);
                     }
+                }
+
+                if ((key == 'icon-stick' || 'label-stick') && value.length == 7) {
+                    value[7] = 0;
                 }
 
                 return value;
