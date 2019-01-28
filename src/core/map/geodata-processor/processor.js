@@ -168,9 +168,9 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
 
         case 'scr-count6':
             if (!params) {
-                params = [0.5,0,0];
+                params = [0.2,0,0];
             } else {
-                params[0] = (isDef(params[0]) ? params[0] : 0.5);
+                params[0] = (isDef(params[0]) ? params[0] : 0.2);
                 params[1] = isDef(params[1]) ? params[1] : 0;
                 params[2] = isDef(params[2]) ? params[2] : 1;
                 params[3] = ppi;
@@ -188,7 +188,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
             case 'scr-count2': config.mapFeaturesReduceParams = [1, 50, 0]; break;
             case 'scr-count4': config.mapFeaturesReduceParams = [0.18, 0, 1]; break;
             case 'scr-count5': config.mapFeaturesReduceParams = [2, 1, 1]; break;
-            case 'scr-count6': config.mapFeaturesReduceParams = [0.5, 0, 1, ppi]; break;
+            case 'scr-count6': config.mapFeaturesReduceParams = [0.2, 0, 1, ppi]; break;
         }
     }
 

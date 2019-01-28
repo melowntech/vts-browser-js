@@ -387,6 +387,8 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
             case 'scr-count6': job.reduce[0] = 9; break;
         }
 
+        job.reduce[5] = 0; //zero debug value
+
         if (job.reduce[0] == 7 || job.reduce[0] == 8 || job.reduce[0] == 9) {
             job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
             //job.reduce[1] = Math.log(job.reduce[2]) * VTS_IMPORATANCE_INV_LOG;

@@ -1370,39 +1370,42 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
 
         if (job.reduce && (job.reduce[0] != 7 && job.reduce[0] != 8 && job.reduce[0] != 9)) {
-            var a;
+            var a, r = job.reduce;
 
-            if (job.reduce[0] > 4) {
+            if (r[0] > 4) {
                 
-                if (job.reduce[0] == 4) {
-                    a = Math.max(job.reduce[1], Math.floor(job.reduce[2] / Math.max(1, renderer.drawnGeodataTiles)));
+                if (r[0] == 4) {
+                    a = Math.max(r[1], Math.floor(r[2] / Math.max(1, renderer.drawnGeodataTiles)));
 
                     if (job.index >= a) {
                         return;
                     } 
+                    r[5] = a; //for debug
                 } else {
                     a = Math.pow(job.texelSize * job.tiltAngle, VTS_TILE_COUNT_FACTOR); 
-                    a = Math.max(job.reduce[1], Math.round(job.reduce[2] * (a / Math.max(0.00001, this.renderer.drawnGeodataTilesFactor))));
+                    a = Math.max(r[1], Math.round(r[2] * (a / Math.max(0.00001, this.renderer.drawnGeodataTilesFactor))));
 
                     if (job.index >= a) {
                         return;
                     } 
+                    r[5] = a; //for debug
                 }
 
             } else {
                 a = job.tiltAngle;
 
-                if (job.reduce[0] == 1) {
+                if (r[0] == 1) {
                     a = 1.0 - (Math.acos(a) * (1.0/(Math.PI*0.5)));
-                } else if (job.reduce[0] == 3) {
+                } else if (r[0] == 3) {
                     a = (Math.cos(Math.acos(a) * 2) + 1.0) * 0.5;
                 }
 
-                var indexLimit = (Math.round(job.reduce[1] + (a*job.reduce[2]))-1);
+                var indexLimit = (Math.round(r[1] + (a*r[2]))-1);
 
                 if (job.index > indexLimit) {
                     return;
                 } 
+                r[5] = indexLimit; //for debug
             }
         }
 
@@ -1648,7 +1651,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         var reduce78 = (job.reduce && (job.reduce[0] == 7 || job.reduce[0] == 8 || job.reduce[0] == 9));
 
-        if (job.noOverlap) { 
+        if (!renderer.drawAllLabels && job.noOverlap) { 
             if (!pp) {
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
             }
@@ -1786,7 +1789,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
             }
 
-            this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
+            this.drawLineString([[pp[0], pp[1]+stickShift+s[7], pp[2]], [pp[0], pp[1]+s[7], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
         }
 
         /*if (dinfo) { //debug only
@@ -2051,7 +2054,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.labelState);
 
         if (s[0] != 0 && s[2] != 0 && stickShift >= 4) {
-            this.drawLineString([[pp[0], pp[1]+stickShift-s[7], pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
+            this.drawLineString([[pp[0], pp[1]+stickShift+s[7], pp[2]], [pp[0], pp[1]+s[7], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
             //stickShift += s[7];
         }
 
@@ -2103,7 +2106,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     }
 
     if (s[0] != 0 && s[2] != 0 && stickShift >= 4) {
-        this.drawLineString([[pp[0], pp[1]+stickShift, pp[2]], [pp[0], pp[1], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
+        this.drawLineString([[pp[0], pp[1]+stickShift+s[7], pp[2]], [pp[0], pp[1]+s[7], pp[2]]], true, s[2], [s[3], s[4], s[5], ((fade !== null) ? s[6] * fade : s[6]) ], null, null, null, null, true);
     }
 
     var prog = job.program; //renderer.progIcon;
