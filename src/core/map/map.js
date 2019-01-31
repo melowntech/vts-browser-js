@@ -532,7 +532,7 @@ Map.prototype.getNamedViews = function() {
 };
 
 
-Map.prototype.setView = function(view, forceRefresh) {
+Map.prototype.setView = function(view, forceRefresh, noPosCorrection) {
     if (view == null) {
         return;
     }
@@ -569,6 +569,12 @@ Map.prototype.setView = function(view, forceRefresh) {
     this.surfaceSequence.generateBoundLayerSequence();
 
     this.refreshFreelayesInView();
+
+    if (!noPosCorrection && this.convert) {
+        var p = this.getPosition();
+        p = this.convert.convertPositionHeightMode(p, 'fix', true);
+        this.setPosition(p);
+    }
 
     this.markDirty();
 };

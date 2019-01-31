@@ -495,6 +495,10 @@ Core.prototype.setConfigParam = function(key, value, solveStorage) {
         }
 
         if (key.indexOf('renderer') == 0) {
+            if (!solveStorage || (typeof this.configStorage[key] === 'undefined')) {
+                this.configStorage[key] = value;
+            }
+
             this.setRendererConfigParam(key, value);
         }
 
@@ -527,7 +531,7 @@ Core.prototype.getConfigParam = function(key) {
 
 Core.prototype.setRendererConfigParam = function(key, value) {
     switch (key) {
-    case 'rendererAnisotropic':        this.config.rendererAnisotropic = utils.validateNumber(value, -1, 2048, 0); break;
+    case 'rendererAnisotropic':        this.config.rendererAnisotropic = utils.validateNumber(value, -1, 2048, 0); if (this.rederer) this.rederer.gpu.setAniso(this.config.rendererAnisotropic); break;
     case 'rendererAntialiasing':       this.config.rendererAntialiasing = utils.validateBool(value, true); break;
     case 'rendererAllowScreenshots':   this.config.rendererAllowScreenshots = utils.validateBool(value, false); break;
     }
@@ -549,7 +553,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.17.7';
+    return (full ? 'Core: ' : '') + '2.17.8';
 }
 
 
