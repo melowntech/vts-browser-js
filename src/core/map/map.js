@@ -570,11 +570,11 @@ Map.prototype.setView = function(view, forceRefresh, noPosCorrection) {
 
     this.refreshFreelayesInView();
 
-    if (!noPosCorrection && this.convert) {
+    /*if (!noPosCorrection && this.convert) {
         var p = this.getPosition();
         p = this.convert.convertPositionHeightMode(p, 'fix', true);
         this.setPosition(p);
-    }
+    }*/
 
     this.markDirty();
 };
