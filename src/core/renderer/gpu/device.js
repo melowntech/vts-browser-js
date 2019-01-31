@@ -93,6 +93,7 @@ GpuDevice.prototype.init = function() {
 
     //initial state
     gl.disable(gl.BLEND);
+
     gl.disable(gl.STENCIL_TEST);
     gl.depthMask(false);
     gl.enable(gl.DEPTH_TEST);
@@ -136,6 +137,19 @@ GpuDevice.prototype.resize = function(size, skipCanvas) {
     if (gl != null) {
         gl.viewportWidth = canvas.width;
         gl.viewportHeight = canvas.height;
+    }
+};
+
+
+GpuDevice.prototype.setAniso = function(aniso) {
+    if (this.anisoExt) {
+        if (this.anisoLevel) {
+            if (aniso == -1) {
+                this.anisoLevel = this.maxAniso;
+            } else {
+                this.anisoLevel = Math.min(aniso, this.maxAniso);
+            }
+        }
     }
 };
 

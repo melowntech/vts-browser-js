@@ -266,11 +266,16 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
 
         tree.traceHeight(root, params, true);
 
-        var metanode = params.metanode;
+        var metanode = params.metanode, center, center2;
 
         if (metanode != null) { // && metanode.id[0] == lod){
-            var center = metanode.bbox.center();
-            center = this.convert.convertCoords(center, 'physical', 'navigation');
+
+            if (metanode.bbox.maxSize < 8000) { // use bbox only when bbox is reasonable small
+                center = metanode.bbox.center();
+                center = this.convert.convertCoords(center, 'physical', 'navigation');
+            } else {
+                center = [0,0,nodeCoords[2]];
+            }
 
             //console.log("lod2: " + lod + " nodelod: " + metanode.id[0] + " h: " + center[2]/1.55);  
 
@@ -282,7 +287,12 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
 
             if (this.config.mapHeightLodBlend && metanode.id[0] > 0 &&
                 params.parent && params.parent.metanode) {
-                var center2 = this.convert.convertCoords(params.parent.metanode.bbox.center(), 'physical', 'navigation');
+
+                if (params.parent.metanode.bbox.maxSize < 8000) { // use bbox only when bbox is reasonable small
+                    center2 = this.convert.convertCoords(params.parent.metanode.bbox.center(), 'physical', 'navigation');
+                } else {
+                    center2 = [0,0,nodeCoords[2]];
+                }
 
                 var factor = lod - Math.floor(lod);
                 height = center[2] + (center2[2] - center[2]) * factor;

@@ -55,6 +55,8 @@ MapCamera.prototype.update = function() {
     this.height = camInfo.orbitHeight + height;
     this.terrainHeight = this.height - surfaceHeight[0];
 
+    //console.log(''+this.height + ' ' + this.terrainHeight + ' ' + surfaceHeight[0]);
+
     //get camera distance
     this.distance2 = map.position.getViewDistance();
     this.distance = Math.max(this.terrainHeight, this.distance2);
