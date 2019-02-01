@@ -867,7 +867,7 @@ InspectorLayers.prototype.applyMapView = function(jsonOnly) {
             return;
         }
         
-        map.setView(view);
+        map.setView(view, null, true);
     }
 };
 

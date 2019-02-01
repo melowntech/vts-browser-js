@@ -532,9 +532,15 @@ Map.prototype.getNamedViews = function() {
 };
 
 
-Map.prototype.setView = function(view, forceRefresh, noPosCorrection) {
+Map.prototype.setView = function(view, forceRefresh, posToFixed) {
     if (view == null) {
         return;
+    }
+
+    if (posToFixed && this.convert) {
+        var p = this.getPosition();
+        p = this.convert.convertPositionHeightMode(p, 'fix', true);
+        this.setPosition(p);
     }
     
     if (typeof view === 'string') {
@@ -569,12 +575,6 @@ Map.prototype.setView = function(view, forceRefresh, noPosCorrection) {
     this.surfaceSequence.generateBoundLayerSequence();
 
     this.refreshFreelayesInView();
-
-    /*if (!noPosCorrection && this.convert) {
-        var p = this.getPosition();
-        p = this.convert.convertPositionHeightMode(p, 'fix', true);
-        this.setPosition(p);
-    }*/
 
     this.markDirty();
 };

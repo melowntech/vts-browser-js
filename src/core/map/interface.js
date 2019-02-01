@@ -30,8 +30,8 @@ MapInterface.prototype.getPosition = function() {
 };
 
 
-MapInterface.prototype.setView = function(view) {
-    this.map.setView(view);
+MapInterface.prototype.setView = function(view, forceRefresh, posToFixed) {
+    this.map.setView(view, forceRefresh, posToFixed);
     return this;    
 };
 
