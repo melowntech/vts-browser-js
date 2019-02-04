@@ -25,6 +25,8 @@ var MapGeodataProcessor = function(surface, listener) {
     };
 
     this.processWorker.onmessage = this.onMessage.bind(this);
+
+    this.processWorker.postMessage({'command':'config', 'data': this.map.config});
 };
 
 
@@ -50,12 +52,14 @@ MapGeodataProcessor.prototype.isReady = function() {
 };
 
 
-MapGeodataProcessor.prototype.onMessage = function(message) {
+MapGeodataProcessor.prototype.onMessage = function(message, direct) {
     if (this.killed) {
         return;
     }
 
-    message = message.data;
+    if (!direct) {
+        message = message.data;
+    }
     
     var command = message['command'];
 
@@ -74,12 +78,20 @@ MapGeodataProcessor.prototype.onMessage = function(message) {
             var bitmap = bitmaps[key];
             this.renderer.getBitmap(bitmap['url'], bitmap['filter'] || 'linear', bitmap['tiled'] || false, bitmap['hash'], true);
         }
-
-        message['command']        
     }
 
     if (this.listener != null) {
-        this.listener(command, message);
+        if (command == 'packed-events') {
+            var messages = message['messages'];
+
+            for (var i = 0, li = messages.length; i < li; i++) {
+                this.onMessage(messages[i], true);
+            }
+
+            return;
+        } else {
+            this.listener(command, message);
+        }
     }
 };
 

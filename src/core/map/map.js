@@ -1247,6 +1247,18 @@ Map.prototype.addProcessingTask2 = function(task) {
     this.processingTasks2.push(task);
 };
 
+/*
+Map.prototype.updateGeodataProcessors = function(task) {
+    var processors = this.map.geodataProcessors;
+    for (var i = 0, li = processors.length; i < li; i++) {
+        var processor = processors[i];
+
+        if (!processor.ready && processor.processing) {
+            processor.
+        }
+    }
+};*/
+
 
 Map.prototype.update = function() {
     if (this.killed) {
@@ -1295,6 +1307,8 @@ Map.prototype.update = function() {
     this.stats.begin(dirty);
 
     this.loader.update();
+
+    //this.updateGeodataProcessors();
 
     this.processProcessingTasks();
 

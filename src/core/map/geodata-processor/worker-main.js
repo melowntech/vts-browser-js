@@ -8,7 +8,8 @@ import {processLineStringPass as processLineStringPass_, processLineStringGeomet
 import {processPointArrayPass as processPointArrayPass_, processPointArrayGeometry as processPointArrayGeometry_, processPointArrayVSwitchPass as processPointArrayVSwitchPass_} from './worker-pointarray.js';
 import {processPolygonPass as processPolygonPass_} from './worker-polygon.js';
 import {postGroupMessageFast as postGroupMessageFast_,
-        postGroupMessageLite as postGroupMessageLite_, optimizeGroupMessages as optimizeGroupMessages_} from './worker-message.js';
+        postGroupMessageLite as postGroupMessageLite_, optimizeGroupMessages as optimizeGroupMessages_,
+        postPackedMessage as postPackedMessage_, postPackedMessages as postPackedMessages_} from './worker-message.js';
 
 
 //get rid of compiler mess
@@ -23,14 +24,13 @@ var processPointArrayPass = processPointArrayPass_;
 var processPointArrayVSwitchPass = processPointArrayVSwitchPass_;
 var processPolygonPass = processPolygonPass_;
 var processLineStringGeometry = processLineStringGeometry_;
-var processPointArrayGeometry = processPointArrayGeometry_;
-var postGroupMessageFast = postGroupMessageFast_, 
+var processPointArrayGeometry = processPointArrayGeometry_,
     postGroupMessageLite = postGroupMessageLite_, optimizeGroupMessages = optimizeGroupMessages_;
+var postGroupMessageFast = postGroupMessageFast_, postPackedMessage = postPackedMessage_, postPackedMessages = postPackedMessages_;
 var getLayerPropertyValueInner = getLayerPropertyValueInner_;
 
 var exportedGeometries = [];
 var featureCache = new Array(1024), featureCacheIndex = 0, finalFeatureCache = new Array(1024), finalFeatureCacheIndex = 0, finalFeatureCacheIndex2 = 0;
-
 
 function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex, eventInfo) {
 
@@ -468,6 +468,10 @@ self.onmessage = function (e) {
 
     switch(command) {
 
+    case 'config':
+        globals.config = data;
+        break;
+
     case 'setStylesheet':
         if (data) {
             globals.geocent = data['geocent'];
@@ -514,11 +518,21 @@ self.onmessage = function (e) {
         //postMessage({'command' : 'allProcessed'});
 
         if (dataRaw) {
-            postMessage({'command' : 'ready', 'geodata': dataRaw}, [dataRaw]);
+            postPackedMessage({'command' : 'ready', 'geodata': dataRaw}, [dataRaw]);
         } else {
-            postMessage({'command' : 'ready'});
+            postPackedMessage({'command' : 'ready'});
         }
+
+        if (globals.config.mapPackLoaderEvents) {
+            postPackedMessages();
+        }
+
         break;
+
+    //case 'tick':
+      //  postPackedMessages();
+        //break;
+
     }
 };
 

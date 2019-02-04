@@ -70,7 +70,7 @@ var Core = function(element, config, coreInterface) {
         mapGeodataBinaryLoad : true,
         mapPackLoaderEvents : true,
         //mapParseMeshInWorker : true,
-        //mapPackGeodataEvents : true,
+        mapPackGeodataEvents : true,
 
         mapFeatureStickMode : [1,1],
 
