@@ -71,7 +71,6 @@ MapGeodata.prototype.isReady = function(doNotLoad, priority) {
                 //not loaded
                 //add to loading queue or top position in queue
 
-
                 if (typeof this.mapLoaderUrl === 'object') { //use geodata directly
                     this.geodata = JSON.stringify(this.mapLoaderUrl);
                     this.loadState = 2;
@@ -108,11 +107,14 @@ MapGeodata.prototype.onLoad = function(url, onLoaded, onError) {
     this.mapLoaderCallLoaded = onLoaded;
     this.mapLoaderCallError = onError;
 
-    //MapGeodataProcessor = function(surface, listener)
-
     this.loadState = 1;
     
-    utils.loadJSON(url, this.onLoaded.bind(this), this.onLoadError.bind(this), true, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);
+    if (this.map.config.mapGeodataBinaryLoad) {
+        this.map.loader.processLoadBinary(url, this.onLoaded.bind(this), this.onLoadError.bind(this), null, 'geodata');
+    } else {
+        utils.loadJSON(url, this.onLoaded.bind(this), this.onLoadError.bind(this), true, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);
+    }
+
     return;
 };
 

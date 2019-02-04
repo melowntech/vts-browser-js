@@ -185,6 +185,10 @@ MapGeodataView.prototype.onGeodataProcessorMessage = function(command, message, 
             }
         }
 
+        if (message['geodata']) {
+            this.geodata.geodata = message['geodata'];
+        }
+
         this.geodataProcessor.busy = false;
         this.map.markDirty();
         //console.log('ready ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
@@ -213,7 +217,13 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
             this.processing = true;
             this.killedByCache = false;
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));
-            this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile, (window.devicePixelRatio || 1));
+
+            if (this.map.config.mapGeodataBinaryLoad) {
+                this.geodataProcessor.sendCommand('processGeodataRaw', this.geodata.geodata, this.tile, (window.devicePixelRatio || 1), [this.geodata.geodata]);
+            } else {
+                this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile, (window.devicePixelRatio || 1));
+            }
+
             this.geodataProcessor.busy = true;
             //console.log('processGeodata ' + (this.tile ? JSON.stringify(this.tile.id) : '[free]'));
         }

@@ -1,5 +1,28 @@
 
 var config;
+var packedEvents = [];
+var packedTransferables = [];
+
+function postPackedMessage(message, transferables) {
+
+    if (config.mapPackLoaderEvents) {
+
+        packedEvents.push(message);
+
+        if (transferables) {
+            packedTransferables = packedTransferables.concat(transferables);
+        }
+
+    } else {
+
+        if (transferables) {
+            postMessage(message, transferables);
+        } else {
+            postMessage(message);
+        }
+
+    }
+}
 
 function loadBinary(path, onLoaded, onError, withCredentials, xhrParams, responseType, kind) {
     var xhr = new XMLHttpRequest();
@@ -16,7 +39,7 @@ function loadBinary(path, onLoaded, onError, withCredentials, xhrParams, respons
     
             if (xhr.status >= 400 || xhr.status == 0) {
                 if (onError) {
-                    onError(xhr.status);
+                    postPackedMessage({'command' : 'on-error', 'path': path, 'status':xhr.status});
                 }
                 break;
             }
@@ -25,7 +48,7 @@ function loadBinary(path, onLoaded, onError, withCredentials, xhrParams, respons
                     
             if (!abuffer) {
                 if (onError) {
-                    postMessage({'command' : 'on-error', 'path': path});
+                    postPackedMessage({'command' : 'on-error', 'path': path});
                 }
                 break;
             }
@@ -33,10 +56,10 @@ function loadBinary(path, onLoaded, onError, withCredentials, xhrParams, respons
             if (onLoaded) {
                 if (kind == 'direct-texture') {
                     createImageBitmap(abuffer).then((function(bitmap){
-                        postMessage({'command' : 'on-loaded', 'path': path, 'data': bitmap, 'filesize': abuffer.byteLength}, [bitmap]);                        
+                        postPackedMessage({'command' : 'on-loaded', 'path': path, 'data': bitmap, 'filesize': abuffer.byteLength}, [bitmap]);                        
                     }).bind(this));
                 } else {
-                    postMessage({'command' : 'on-loaded', 'path': path, 'data': abuffer}, [abuffer]);
+                    postPackedMessage({'command' : 'on-loaded', 'path': path, 'data': abuffer}, [abuffer]);
                 }
             }
     
@@ -45,7 +68,7 @@ function loadBinary(path, onLoaded, onError, withCredentials, xhrParams, respons
         default:
     
             if (onError) {
-                postMessage({'command' : 'on-error', 'path': path});
+                postPackedMessage({'command' : 'on-error', 'path': path});
             }
     
             break;
@@ -83,7 +106,22 @@ self.onmessage = function (e) {
     switch(command) {
 
         case 'config':
-            config = message['config'];
+            config = message['data'];
+            break;
+
+        case 'tick':
+
+            if (packedEvents.length > 0) {
+                if (packedTransferables.length > 0) {
+                    postMessage({'command': 'packed-events', 'messages':packedEvents}, packedTransferables);
+                } else {
+                    postMessage({'command': 'packed-events', 'messages':packedEvents});
+                }
+            }
+
+            packedEvents = [];
+            packedTransferables = [];
+
             break;
 
         case 'load-binary':

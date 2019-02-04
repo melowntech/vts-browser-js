@@ -1,5 +1,5 @@
 
-import {globals as globals_} from './worker-globals.js';
+import {globals as globals_, unint8ArrayToString as unint8ArrayToString_} from './worker-globals.js';
 import {setFont as setFont_, setFontMap as setFontMap_,} from './worker-text.js';
 import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
         processStylesheet as processStylesheet_, getFilterResult as getFilterResult_,
@@ -14,6 +14,7 @@ import {postGroupMessageFast as postGroupMessageFast_,
 //get rid of compiler mess
 var globals = globals_;
 var setFont = setFont_;
+var unint8ArrayToString = unint8ArrayToString_;
 var setFontMap = setFontMap_, makeFasterFilter = makeFasterFilter_;
 var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
     processStylesheet = processStylesheet_, getFilterResult = getFilterResult_;
@@ -461,6 +462,7 @@ self.onmessage = function (e) {
     var message = e.data;
     var command = message['command'];
     var data = message['data'];
+    var dataRaw = null;
 
     //console.log("workeronmessage: " + command);
 
@@ -489,6 +491,10 @@ self.onmessage = function (e) {
         postMessage({'command' : 'ready'});
         break;
 
+    case 'processGeodataRaw':
+        dataRaw = data;
+        data = unint8ArrayToString(data);
+
     case 'processGeodata':
         globals.tileLod = message['lod'] || 0;
         globals.tileSize = message['tileSize'] || 1;
@@ -506,7 +512,12 @@ self.onmessage = function (e) {
         }
             
         //postMessage({'command' : 'allProcessed'});
-        postMessage({'command' : 'ready'});
+
+        if (dataRaw) {
+            postMessage({'command' : 'ready', 'geodata': dataRaw}, [dataRaw]);
+        } else {
+            postMessage({'command' : 'ready'});
+        }
         break;
     }
 };

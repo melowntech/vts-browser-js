@@ -67,6 +67,10 @@ var Core = function(element, config, coreInterface) {
         mapRefreshCycles : 3,
         mapSoftViewSwitch : true,
         mapSeparateLoader : true,
+        mapGeodataBinaryLoad : true,
+        mapPackLoaderEvents : true,
+        //mapParseMeshInWorker : true,
+        //mapPackGeodataEvents : true,
 
         mapFeatureStickMode : [1,1],
 
