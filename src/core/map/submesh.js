@@ -34,7 +34,7 @@ var MapSubmesh = function(mesh, stream) {
     this.flagsPerVertexUndulation =  4;
     this.flagsTextureMode =  8;
 
-    if (stream != null) {
+    if (stream) {
         this.parseSubmesh(stream);
     }
 };

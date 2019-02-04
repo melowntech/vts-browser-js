@@ -95,6 +95,10 @@ MapLoader.prototype.onWorkerMessage = function(message, direct) {
                             task.onLoaded(message['data'], true, message['filesize']);
                             break;
 
+                        case 'direct-mesh':
+                            task.onLoaded(message['data'], false, true, message['filesize']);
+                            break;
+
                         case 'texture':
                             task.onLoaded(new Blob([message['data']]));
                             break;
@@ -143,14 +147,27 @@ MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, respon
     var withCredentials = (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false);
 
     if (this.processWorker) {
+
         switch(kind) {
             case 'texture':
                 if (this.config.mapAsyncImageDecode) {
                     responseType = 'blob';
                     kind = 'direct-texture';
                 }
+                break;
 
             case 'mesh':
+                if (this.config.mapParseMeshInWorker) {
+                    kind = 'direct-mesh';
+                }
+                break;
+        }
+
+        switch(kind) {
+            case 'texture':
+            case 'direct-texture':
+            case 'mesh':
+            case 'direct-mesh':
             case 'metadata':
             case 'geodata':
 

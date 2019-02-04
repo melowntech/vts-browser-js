@@ -208,7 +208,7 @@ MapMesh.prototype.onLoadError = function() {
 };
 
 
-MapMesh.prototype.onLoaded = function(data, task) {
+MapMesh.prototype.onLoaded = function(data, task, direct) {
     if (this.map.killed){
         return;
     }
@@ -216,16 +216,20 @@ MapMesh.prototype.onLoaded = function(data, task) {
     if (!task) {
         //this.map.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
         this.map.markDirty();
-        this.map.addProcessingTask(this.onLoaded.bind(this, data, true));
+        this.map.addProcessingTask(this.onLoaded.bind(this, data, true, direct));
         return;
     }
 
-    this.fileSize= data.byteLength;
-
-    var stream = {data: new DataView(data), buffer:data, index:0};
-
     var t = performance.now();
-    this.parseMapMesh(stream);
+
+    if (direct) {
+        this.parseWorkerData(data);
+    } else {
+        this.fileSize = data.byteLength;
+        var stream = {data: new DataView(data), buffer:data, index:0};
+        this.parseMapMesh(stream);
+    }
+
     this.map.stats.renderBuild += performance.now() - t; 
     
     this.submeshesKilled = false;
@@ -249,7 +253,41 @@ MapMesh.prototype.onLoaded = function(data, task) {
     //return this.fileSize;
 //};
 
-// Returns RAM usage in bytes.
+
+MapMesh.prototype.parseWorkerData = function (data) {
+    this.faces = data['faces'];
+    this.gpuSize = data['gpuSize'];
+    this.meanUndulation = data['meanUndulation'];
+    this.numSubmeshes = data['numSubmeshes'];
+    this.size = data['size'];
+    this.version = data['version'];
+
+    var submeshes = data['submeshes'];
+
+    for (var i = 0, li = submeshes.length; i < li; i++) {
+        var submesh = new MapSubmesh(this);
+        var submeshData = submeshes[i];
+
+        submesh.bbox.min = submeshData['bboxMin'];
+        submesh.bbox.max = submeshData['bboxMax'];
+        submesh.externalUVs = submeshData['externalUVs'];
+        submesh.faces = submeshData['faces'];
+        submesh.flags = submeshData['flags'];
+        submesh.gpuSize = submeshData['gpuSize'];
+        submesh.indices = submeshData['indices'];
+        submesh.internalUVs = submeshData['internalUVs'];
+        submesh.size = submeshData['size'];
+        submesh.surfaceReference = submeshData['surfaceReference'];
+        submesh.textureLayer = submeshData['textureLayer'];
+        submesh.textureLayer2 = submeshData['textureLayer2'];
+        submesh.vertices = submeshData['vertices'];
+
+        this.submeshes.push(submesh); 
+    }
+
+    this.bbox.updateMaxSize();
+};
+
 MapMesh.prototype.parseMapMesh = function (stream) {
 /*
     struct MapMesh {

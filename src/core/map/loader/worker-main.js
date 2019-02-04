@@ -1,11 +1,17 @@
 
-var config;
+import {globals as globals_} from './worker-globals.js';
+import {parseMesh as parseMesh_} from './worker-mesh.js';
+
+//get rid of compiler mess
+var globals = globals_;
+var parseMesh = parseMesh_;
+
 var packedEvents = [];
 var packedTransferables = [];
 
 function postPackedMessage(message, transferables) {
 
-    if (config.mapPackLoaderEvents) {
+    if (globals.config.mapPackLoaderEvents) {
 
         packedEvents.push(message);
 
@@ -58,7 +64,12 @@ function loadBinary(path, onLoaded, onError, withCredentials, xhrParams, respons
                     createImageBitmap(abuffer).then((function(bitmap){
                         postPackedMessage({'command' : 'on-loaded', 'path': path, 'data': bitmap, 'filesize': abuffer.byteLength}, [bitmap]);                        
                     }).bind(this));
+                } else if (kind == 'direct-mesh') {
+                    //debugger
+                    var data = parseMesh({data:new DataView(abuffer), index:0});
+                    postPackedMessage({'command' : 'on-loaded', 'path': path, 'data': data.mesh}, data.transferables);
                 } else {
+
                     postPackedMessage({'command' : 'on-loaded', 'path': path, 'data': abuffer}, [abuffer]);
                 }
             }
@@ -106,7 +117,7 @@ self.onmessage = function (e) {
     switch(command) {
 
         case 'config':
-            config = message['data'];
+            globals.config = message['data'];
             break;
 
         case 'tick':

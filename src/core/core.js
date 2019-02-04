@@ -32,7 +32,7 @@ var Core = function(element, config, coreInterface) {
         mapTexelSizeFit : 1.1,
         mapMaxHiresLodLevels : 2,
         mapDownloadThreads : 20,
-        mapMaxProcessingTime : 1000*20,
+        mapMaxProcessingTime : 10, //1000*20,
         mapMaxGeodataProcessingTime : 10,
         mapMobileMode : false,
         mapMobileModeAutodect : true,
@@ -69,7 +69,7 @@ var Core = function(element, config, coreInterface) {
         mapSeparateLoader : true,
         mapGeodataBinaryLoad : true,
         mapPackLoaderEvents : true,
-        //mapParseMeshInWorker : true,
+        mapParseMeshInWorker : true,
         mapPackGeodataEvents : true,
 
         mapFeatureStickMode : [1,1],
