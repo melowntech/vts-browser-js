@@ -66,6 +66,7 @@ var Core = function(element, config, coreInterface) {
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,
         mapSoftViewSwitch : true,
+        mapSeparateLoader : true,
 
         mapFeatureStickMode : [1,1],
 

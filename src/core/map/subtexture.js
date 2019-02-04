@@ -261,7 +261,8 @@ MapSubtexture.prototype.onLoad = function(header, url, onLoaded, onError) {
     }
 
     if (this.map.config.mapXhrImageLoad) {
-        utils.loadBinary(url, this.onBinaryLoaded.bind(this), onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, 'blob');
+        //utils.loadBinary(url, this.onBinaryLoaded.bind(this), onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, 'blob');
+        this.map.loader.processLoadBinary(url, this.onBinaryLoaded.bind(this), onerror, null, 'texture');
     } else {
         this.image = utils.loadImage(url, onload, onerror, (this.map.core.tokenCookieHost ? (url.indexOf(this.map.core.tokenCookieHost) != -1) : false));
     }
@@ -291,7 +292,7 @@ MapSubtexture.prototype.onLoadError = function(killBlob) {
 };
 
 
-MapSubtexture.prototype.onBinaryLoaded = function(data) {
+MapSubtexture.prototype.onBinaryLoaded = function(data, direct, filesize) {
     if (this.fastHeaderCheck && this.checkType && this.checkType != VTS_TEXTURECHECK_MEATATILE) {
         this.onHeadLoaded(null, data, null /*status*/);
         
@@ -299,6 +300,12 @@ MapSubtexture.prototype.onBinaryLoaded = function(data) {
             this.mapLoaderCallLoaded();
             return;
         }
+    }
+
+    if (direct) {
+        this.onLoaded(false, data)
+        this.fileSize = filesize;
+        return;
     }
 
     this.fileSize = data.size;
@@ -368,7 +375,8 @@ MapSubtexture.prototype.onLoadHead = function(downloadAll, url, onLoaded, onErro
     this.checkStatus = 1;
 
     if (downloadAll) {
-        utils.loadBinary(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, 'blob');
+        //utils.loadBinary(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, 'blob');
+        this.map.loader.processLoadBinary(url, onLoad, onerror, null, 'texture');
     } else {
         utils.headRequest(url, onload, onerror, (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams, 'blob');
     }

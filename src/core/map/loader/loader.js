@@ -1,7 +1,14 @@
 
+import {utils as utils_} from '../../utils/utils';
+
+//get rid of compiler mess
+var utils = utils_;
+
+
 var MapLoader = function(map, maxThreads) {
     this.map = map;
     this.core = map.core;
+    this.killed = false;
 
     this.maxThreads = maxThreads || 1;
     this.usedThreads = 0;
@@ -13,9 +20,28 @@ var MapLoader = function(map, maxThreads) {
 
     this.downloading = [];
     this.downloadingTime = [];
+    this.workerTask = {};
+
     this.lastDownloadTime = 0;
     this.downloaded = 0;
+    this.processWorker = null;
     this.updateThreadCount();
+
+    if (this.map.config.mapSeparateLoader) {
+        // eslint-disable-next-line
+        var worker = require('worker-loader?inline&fallback=false!./worker-main');
+
+        this.processWorker = new worker;
+        
+        this.processWorker.onerror = function(event){
+            throw new Error(event.message + ' (' + event.filename + ':' + event.lineno + ')');
+        };
+
+        this.processWorker.onmessage = this.onWorkerMessage.bind(this);
+
+        this.processWorker.postMessage({'command':'config', 'data': this.map.config});
+    }
+
 };
 
 
@@ -28,6 +54,101 @@ MapLoader.prototype.updateThreadCount = function() {
 
 MapLoader.prototype.setChannel = function(channel) {
     this.channel = channel;
+};
+
+
+MapLoader.prototype.onWorkerMessage = function(message) {
+    if (this.killed) {
+        return;
+    }
+
+    message = message.data;
+    
+    var command = message['command'];
+    var path = message['path'];
+
+    var task = this.workerTask[path];
+    if (task) {
+
+        switch(command) {
+            case 'on-loaded':
+
+                if (task.onLoaded) {
+
+                    switch(task.kind) {
+                        case 'direct-texture':
+                            task.onLoaded(message['data'], true, message['filesize']);
+                            break;
+
+                        case 'texture':
+                            task.onLoaded(new Blob([message['data']]));
+                            break;
+
+                        default:
+                            task.onLoaded(message['data']);
+                    }
+
+                }
+
+                break;
+
+            case 'on-error':
+                if (task.onError) {
+                    task.onError();
+                }
+
+                break;
+        }
+
+        /*
+        if (command == 'on-loaded') {
+
+            if (task.onLoaded) {
+                if (task.kind == 'texture') {
+                    task.onLoaded(new Blob([message['data']]));
+                } else {
+                    task.onLoaded(message['data']);
+                }
+            }
+
+        } else if (command == 'on-error') {
+
+            if (task.onError) {
+                task.onError();
+            }
+        }*/
+
+        delete this.workerTask[path];
+    }
+
+};
+
+
+MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, responseType, kind) {
+    var withCredentials = (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false);
+
+    if (this.processWorker) {
+        switch(kind) {
+            case 'texture':
+                if (this.map.config.mapAsyncImageDecode) {
+                    responseType = 'blob';
+                    kind = 'direct-texture';
+                }
+
+            case 'mesh':
+            case 'metadata':
+
+                this.workerTask[path] = { onLoaded: onLoaded, onError: onError, kind: kind };
+                this.processWorker.postMessage({'command':'load-binary', 'path': path, 'withCredentials':withCredentials, 'xhrParams':this.map.core.xhrParams, 'responseType':responseType, 'kind': kind});
+                break;
+
+            default:
+                utils.loadBinary(path, onLoaded, onError, withCredentials, this.map.core.xhrParams, responseType);
+        }
+
+    } else {
+        utils.loadBinary(path, onLoaded, onError, withCredentials, this.map.core.xhrParams, responseType);
+    }
 };
 
 

@@ -12,7 +12,7 @@ import MapConfig_ from './config';
 import MapConvert_ from './convert';
 import MapMeasure_ from './measure';
 import MapDraw_ from './draw';
-import MapLoader_ from './loader';
+import MapLoader_ from './loader/loader';
 import MapPosition_ from './position';
 import MapRenderSlots_ from './render-slots';
 import MapStats_ from './stats';
