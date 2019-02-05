@@ -43,9 +43,10 @@ var MapUrl = MapUrl_;
 var GpuTexture = GpuTexture_;
 
 
-var Map = function(core, mapConfig, path, config) {
+var Map = function(core, mapConfig, path, config, configStorage) {
     this.config = config || {};
     this.setConfigParams(config);
+    this.setLoaderParams(mapConfig, configStorage);
     this.core = core;
     this.proj4 = this.core.getProj4();
     this.coreConfig = core.coreConfig;
@@ -769,6 +770,34 @@ Map.prototype.getPosition = function() {
 };
 
 
+Map.prototype.setLoaderParams = function(mapConfig, configStorage) {
+    var sources = [];
+
+    if (mapConfig && mapConfig['browserOptions']) {
+        sources.push(mapConfig['browserOptions']);
+    }
+
+    if (configStorage) {
+        sources.push(configStorage);
+    }
+
+    for (var i = 0, li = sources.length; i < li; i++) {
+        var source = sources[i];
+        for (var key in source) {
+            switch(key) {
+                case 'mapSeparateLoader':
+                case 'mapGeodataBinaryLoad':
+                case 'mapPackLoaderEvents':
+                case 'mapParseMeshInWorker':
+                case 'mapPackGeodataEvents':
+                    this.setConfigParam(key, source[key]);
+                    break;
+            }
+        }
+    }
+};
+
+
 Map.prototype.setConfigParams = function(params) {
     if (typeof params === 'object' && params !== null) {
         for (var key in params) {
@@ -837,6 +866,11 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapSoftViewSwitch':             this.config.mapSoftViewSwitch = utils.validateBool(value, true); break;
     case 'mapAsyncImageDecode':           this.config.mapAsyncImageDecode = (utils.validateBool(value, false) && (typeof createImageBitmap !== 'undefined')) ? true : false; break;
     case 'mapFeatureStickMode':           this.config.mapFeatureStickMode = utils.validateNumberArray(value, 2, [0,1], [Number.MAX_VALUE, Number.MAX_VALUE], [0, 1]); break;
+    case 'mapSeparateLoader':             this.config.mapSeparateLoader = utils.validateBool(value, true); break;
+    case 'mapGeodataBinaryLoad':          this.config.mapGeodataBinaryLoad = utils.validateBool(value, true); break;
+    case 'mapPackLoaderEvents':           this.config.mapPackLoaderEvents = utils.validateBool(value, true); break;
+    case 'mapParseMeshInWorker':          this.config.mapParseMeshInWorker = utils.validateBool(value, true); break;
+    case 'mapPackGeodataEvents':          this.config.mapPackGeodataEvents = utils.validateBool(value, true); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -912,9 +946,15 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapSoftViewSwitch':             return this.config.mapSoftViewSwitch;
     case 'mapAsyncImageDecode':           return this.config.mapAsyncImageDecode;
     case 'mapFeatureStickMode':           return this.config.mapFeatureStickMode;
+    case 'mapSeparateLoader':             return this.config.mapSeparateLoader;
+    case 'mapGeodataBinaryLoad':          return this.config.mapGeodataBinaryLoad;
+    case 'mapPackLoaderEvents':           return this.config.mapPackLoaderEvents;
+    case 'mapParseMeshInWorker':          return this.config.mapParseMeshInWorker;
+    case 'mapPackGeodataEvents':          return this.config.mapPackGeodataEvents;
     case 'mario':                         return this.config.mario;
     }
 };
+
 
 Map.prototype.click = function(screenX, screenY, state) {
     this.clickEvent = [screenX, screenY, state];

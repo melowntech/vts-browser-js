@@ -171,6 +171,8 @@ MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, respon
             case 'metadata':
             case 'geodata':
 
+                //console.log("kind: " + kind + " " + "path: " + path);
+
                 this.workerTask[path] = { onLoaded: onLoaded, onError: onError, kind: kind };
                 this.processWorker.postMessage({'command':'load-binary', 'path': path, 'withCredentials':withCredentials, 'xhrParams':this.map.core.xhrParams, 'responseType':responseType, 'kind': kind});
                 break;
@@ -180,6 +182,10 @@ MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, respon
         }
 
     } else {
+        if (kind == 'texture' && this.config.mapAsyncImageDecode) {
+            responseType = 'blob';
+        }
+
         utils.loadBinary(path, onLoaded, onError, withCredentials, this.map.core.xhrParams, responseType);
     }
 };

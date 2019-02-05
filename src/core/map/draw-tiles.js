@@ -139,6 +139,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority, null, tile);
             this.map.applyCredits(tile);
         }
+
         tile.lastRenderState = null;
         return true;
     } else if (tile.lastRenderState){ //we do not have cammnds or command are not redy yet, so we can draw last state if present and ready
@@ -163,6 +164,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
     }
 
     if (tile.drawCommands[channel].length > 0) {  //command are generated but not ready, we can return from the function
+
         if (this.config.mapHeightfiledWhenUnloaded && !preventRedener) {
             tile.drawGrid(cameraPos);
             return false;
@@ -190,6 +192,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         }
         
         if (surface.glue) {
+
             var surfaces = surface.id; 
             for (i = 0, li = surfaces.length; i < li; i++) {
                 var surface2 = this.map.getSurface(surfaces[i]);
@@ -204,6 +207,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
             }
 
         } else {
+
             specificity = surface.specificity;
 
             //set credits
@@ -214,6 +218,7 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
 
 
         for (i = 0, li = submeshes.length; i < li; i++) {
+
             var submesh = submeshes[i];
             
             //debug bbox
@@ -468,10 +473,11 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                 draw.processDrawCommands(cameraPos, tile.drawCommands[channel], priority, null, tile);
                 this.map.applyCredits(tile);
             }
-            
+
             tile.lastRenderState = null;
             ret = true;
         } else if (tile.lastRenderState) {
+
             if (this.draw.areDrawCommandsReady(tile.lastRenderState.drawCommands[channel], priority, preventLoad, doNotCheckGpu)) {
                 if (!preventRedener) {
                     draw.processDrawCommands(cameraPos, tile.lastRenderState.drawCommands[channel], priority, true, tile);
@@ -480,7 +486,9 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
                 ret = true;
             } //else ret = false
         } else {
+
             if (this.config.mapHeightfiledWhenUnloaded && !preventRedener) {
+
                 //node.drawPlane(cameraPos, tile);
                 tile.drawGrid(cameraPos);
                 ret = !(tile.drawCommands[channel].length > 0);
@@ -488,9 +496,10 @@ MapDrawTiles.prototype.drawMeshTile = function(tile, node, cameraPos, pixelSize,
         }
         
     } else {
-        
+
         if (!tile.lastRenderState && this.config.mapHeightfiledWhenUnloaded && !preventRedener) {
             //node.drawPlane(cameraPos, tile);
+
             tile.drawGrid(cameraPos);
             ret = !(tile.drawCommands[channel].length > 0);
         }        

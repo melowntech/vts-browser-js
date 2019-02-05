@@ -349,6 +349,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift, storeTilesOnly) {
 
                                     //are draw buffers ready? preventRender=true, preventLoad=false, doNotCheckGpu=true
                                     if (drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false, true)) {
+                                        
                                         readyCount++;
                                         //child.updateTexelSize();
                                         childrenBuffer.push(child);

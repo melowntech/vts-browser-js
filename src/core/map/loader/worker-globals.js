@@ -1,0 +1,4 @@
+
+var globals = {};
+
+export {globals};

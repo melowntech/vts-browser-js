@@ -66,6 +66,7 @@ var Core = function(element, config, coreInterface) {
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,
         mapSoftViewSwitch : true,
+
         mapSeparateLoader : true,
         mapGeodataBinaryLoad : true,
         mapPackLoaderEvents : true,
@@ -190,7 +191,7 @@ Core.prototype.loadMap = function(path) {
     
         this.callListener('map-mapconfig-loaded', data);
 
-        this.map = new Map(this, data, path, this.config);
+        this.map = new Map(this, data, path, this.config, this.configStorage);
         this.mapInterface = new MapInterface(this.map);
         this.setConfigParams(this.map.browserOptions, true);
         this.setConfigParams(this.configStorage);
@@ -558,7 +559,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.17.10';
+    return (full ? 'Core: ' : '') + '2.18.0';
 }
 
 

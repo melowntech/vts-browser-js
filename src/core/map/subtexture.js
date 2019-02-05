@@ -166,12 +166,13 @@ MapSubtexture.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, t
             this.map.resourcesCache.updateItem(this.cacheItem);
         }
 
+        /*
         if (((this.type == VTS_TEXTURETYPE_HEIGHT && !this.imageData) || (this.type != VTS_TEXTURETYPE_HEIGHT && !this.gpuTexture)) &&
               this.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
             //console.log("testure resource build overflow");
             this.map.markDirty();
             return false;
-        }
+        }*/
 
         if (doNotCheckGpu) {
             if (this.type == VTS_TEXTURETYPE_HEIGHT) {

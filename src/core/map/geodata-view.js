@@ -218,10 +218,12 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
             this.killedByCache = false;
             this.geodataProcessor.setListener(this.onGeodataProcessorMessage.bind(this));
 
-            if (this.map.config.mapGeodataBinaryLoad) {
-                this.geodataProcessor.sendCommand('processGeodataRaw', this.geodata.geodata, this.tile, (window.devicePixelRatio || 1), [this.geodata.geodata]);
+            var geodata = this.geodata.geodata;
+
+            if (this.map.config.mapGeodataBinaryLoad && (typeof geodata !== 'string')) {
+                this.geodataProcessor.sendCommand('processGeodataRaw', geodata, this.tile, (window.devicePixelRatio || 1), [geodata]);
             } else {
-                this.geodataProcessor.sendCommand('processGeodata', this.geodata.geodata, this.tile, (window.devicePixelRatio || 1));
+                this.geodataProcessor.sendCommand('processGeodata', geodata, this.tile, (window.devicePixelRatio || 1));
             }
 
             this.geodataProcessor.busy = true;

@@ -129,10 +129,10 @@ MapMesh.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
                 return false;
             }
 
-            if (this.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
+            /*if (this.stats.renderBuild > this.map.config.mapMaxProcessingTime) {
                 this.map.markDirty();
                 return false;
-            }
+            }*/
 
             if (doNotUseGpu) {
                 return false;

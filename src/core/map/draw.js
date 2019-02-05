@@ -647,7 +647,6 @@ MapDraw.prototype.areDrawCommandsReady = function(commands, priority, doNotLoad,
             if (!(meshReady && textureReady) ) {
                 ready = false;   
             }
-
                
             break;
 
@@ -835,8 +834,6 @@ MapDraw.prototype.updateFogDensity = function() {
     
     this.fogDensity = density;
     this.renderer.fogDensity = density; 
-
-    //console.log("fden: " + density);
 };
 
 
