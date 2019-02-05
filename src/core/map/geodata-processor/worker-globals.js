@@ -318,4 +318,49 @@ function unint8ArrayToString(array) {
 }
 */
 
-export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, simpleFmtCall, getHash, stringToUint8Array};
+
+var textDecoderUtf8 = (typeof TextDecoder !== 'undefined') ? (new TextDecoder('utf-8')) : null;
+
+function unint8ArrayToString(array) {
+    if (textDecoderUtf8) {
+        return textDecoderUtf8.decode(array);
+    } else {
+//        return String.fromCharCode.apply(null, new Uint8Array(array.buffer));
+
+        /*
+        var buff = new Uint16Array(array.buffer, array.byteOffset, array.byteLength);
+        var getChar = String.fromCharCode;
+        //var buff2 = new Array(buff.length);
+        var str = '';
+
+        for (var i = 0, li = buff.length; i < li; i++) {
+            //buff2[i] = getChar(buff[i]);
+            str += getChar(buff[i]);
+        }
+
+        return str;
+        //return buff2.join('');
+        */
+
+        var s = '';
+        //var code_points2 = new Uint8Array(array.buffer, array.byteOffset, array.byteLength);
+        var code_points2 = new Uint8Array(array.byteLength);
+        code_points2.set(array);
+        var code_points = new Uint32Array(code_points2.buffer);
+
+        for (var i = 0, li = code_points.length; i < li; ++i) {
+          var cp = code_points[i];
+          if (cp <= 0xFFFF) {
+            s += String.fromCharCode(cp);
+          } else {
+            cp -= 0x10000;
+            s += String.fromCharCode((cp >> 10) + 0xD800,
+                                     (cp & 0x3FF) + 0xDC00);
+          }
+        }
+        return s;
+
+    }
+}
+
+export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, simpleFmtCall, getHash, stringToUint8Array, unint8ArrayToString};

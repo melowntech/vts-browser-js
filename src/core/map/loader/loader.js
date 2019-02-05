@@ -1,7 +1,15 @@
 
+import {utils as utils_} from '../../utils/utils';
+
+//get rid of compiler mess
+var utils = utils_;
+
+
 var MapLoader = function(map, maxThreads) {
     this.map = map;
     this.core = map.core;
+    this.killed = false;
+    this.config = map.config;
 
     this.maxThreads = maxThreads || 1;
     this.usedThreads = 0;
@@ -13,14 +21,33 @@ var MapLoader = function(map, maxThreads) {
 
     this.downloading = [];
     this.downloadingTime = [];
+    this.workerTask = {};
+
     this.lastDownloadTime = 0;
     this.downloaded = 0;
+    this.processWorker = null;
     this.updateThreadCount();
+
+    if (this.config.mapSeparateLoader) {
+        // eslint-disable-next-line
+        var worker = require('worker-loader?inline&fallback=false!./worker-main');
+
+        this.processWorker = new worker;
+        
+        this.processWorker.onerror = function(event){
+            throw new Error(event.message + ' (' + event.filename + ':' + event.lineno + ')');
+        };
+
+        this.processWorker.onmessage = this.onWorkerMessage.bind(this);
+
+        this.processWorker.postMessage({'command':'config', 'data': this.config});
+    }
+
 };
 
 
 MapLoader.prototype.updateThreadCount = function() {
-    this.maxThreads = this.map.config.mapDownloadThreads;
+    this.maxThreads = this.config.mapDownloadThreads;
     this.maxPending = Math.max(20, this.maxThreads * 2);
     this.fadeout = (this.maxPending-1) / this.maxPending;
 };
@@ -28,6 +55,139 @@ MapLoader.prototype.updateThreadCount = function() {
 
 MapLoader.prototype.setChannel = function(channel) {
     this.channel = channel;
+};
+
+
+MapLoader.prototype.onWorkerMessage = function(message, direct) {
+    if (this.killed) {
+        return;
+    }
+
+    if (!direct) {
+        message = message.data;
+    }
+    
+    var command = message['command'];
+
+    if (command == 'packed-events') {
+        var messages = message['messages'];
+
+        for (var i = 0, li = messages.length; i < li; i++) {
+            this.onWorkerMessage(messages[i], true);
+        }
+
+        return;
+    }
+
+    var path = message['path'];
+
+    var task = this.workerTask[path];
+    if (task) {
+
+        switch(command) {
+
+            case 'on-loaded':
+
+                if (task.onLoaded) {
+
+                    switch(task.kind) {
+                        case 'direct-texture':
+                            task.onLoaded(message['data'], true, message['filesize']);
+                            break;
+
+                        case 'direct-mesh':
+                            task.onLoaded(message['data'], false, true, message['filesize']);
+                            break;
+
+                        case 'texture':
+                            task.onLoaded(new Blob([message['data']]));
+                            break;
+
+                        default:
+                            task.onLoaded(message['data']);
+                    }
+
+                }
+
+                break;
+
+            case 'on-error':
+                if (task.onError) {
+                    task.onError();
+                }
+
+                break;
+        }
+
+        /*
+        if (command == 'on-loaded') {
+
+            if (task.onLoaded) {
+                if (task.kind == 'texture') {
+                    task.onLoaded(new Blob([message['data']]));
+                } else {
+                    task.onLoaded(message['data']);
+                }
+            }
+
+        } else if (command == 'on-error') {
+
+            if (task.onError) {
+                task.onError();
+            }
+        }*/
+
+        delete this.workerTask[path];
+    }
+
+};
+
+
+MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, responseType, kind) {
+    var withCredentials = (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false);
+
+    if (this.processWorker) {
+
+        switch(kind) {
+            case 'texture':
+                if (this.config.mapAsyncImageDecode) {
+                    responseType = 'blob';
+                    kind = 'direct-texture';
+                }
+                break;
+
+            case 'mesh':
+                if (this.config.mapParseMeshInWorker) {
+                    kind = 'direct-mesh';
+                }
+                break;
+        }
+
+        switch(kind) {
+            case 'texture':
+            case 'direct-texture':
+            case 'mesh':
+            case 'direct-mesh':
+            case 'metadata':
+            case 'geodata':
+
+                //console.log("kind: " + kind + " " + "path: " + path);
+
+                this.workerTask[path] = { onLoaded: onLoaded, onError: onError, kind: kind };
+                this.processWorker.postMessage({'command':'load-binary', 'path': path, 'withCredentials':withCredentials, 'xhrParams':this.map.core.xhrParams, 'responseType':responseType, 'kind': kind});
+                break;
+
+            default:
+                utils.loadBinary(path, onLoaded, onError, withCredentials, this.map.core.xhrParams, responseType);
+        }
+
+    } else {
+        if (kind == 'texture' && this.config.mapAsyncImageDecode) {
+            responseType = 'blob';
+        }
+
+        utils.loadBinary(path, onLoaded, onError, withCredentials, this.map.core.xhrParams, responseType);
+    }
 };
 
 
@@ -111,7 +271,7 @@ MapLoader.prototype.onLoaded = function(item) {
     this.lastDownloadTime = timer;
     this.usedThreads--;
     this.map.markDirty();
-    this.update();
+    this.update(true);
     stats.loadedCount++;
     stats.loadLast = timer;
 };
@@ -142,7 +302,7 @@ MapLoader.prototype.onLoadError = function(item) {
     this.lastDownloadTime = timer;
     this.usedThreads--;
     this.map.markDirty();
-    this.update();
+    this.update(true);
     stats.loadErrorCount++;
     stats.loadLast = timer;
 };
@@ -174,9 +334,13 @@ MapLoader.prototype.updateChannel = function(channel) {
 };
 
 
-MapLoader.prototype.update = function() {
+MapLoader.prototype.update = function(skipTick) {
     if (this.map.loaderSuspended || this.core.contextLost) {
         return;
+    }
+
+    if (!skipTick && this.processWorker && this.config.mapPackLoaderEvents && this.downloading.length) {
+        this.processWorker.postMessage({'command':'tick'});
     }
 
     for (var i = this.pending.length - 1; i >= 0; i--) {

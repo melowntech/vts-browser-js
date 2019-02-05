@@ -159,7 +159,8 @@ MapMetatile.prototype.onLoad = function(url, onLoaded, onError) {
     this.mapLoaderCallLoaded = onLoaded;
     this.mapLoaderCallError = onError;
 
-    utils.loadBinary(url, this.onLoaded.bind(this), this.onLoadError.bind(this), (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);
+    this.map.loader.processLoadBinary(url, this.onLoaded.bind(this), this.onLoadError.bind(this), null, 'metadata');
+    //utils.loadBinary(url, this.onLoaded.bind(this), this.onLoadError.bind(this), (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false), this.map.core.xhrParams);
     this.loadState = 1;
 };
 

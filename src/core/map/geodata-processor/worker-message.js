@@ -5,6 +5,30 @@ import {globals as globals_, stringToUint8Array as stringToUint8Array_ } from '.
 var globals = globals_, stringToUint8Array = stringToUint8Array_;
 var tmpVertexBuffer = new Uint8Array(65536*4*4*4*4);
 var tmpVertexBuffer2 = new Uint8Array(65536*4*4*4*4);
+var packedEvents = [];
+var packedTransferables = [];
+
+
+function postPackedMessage(message, transferables) {
+
+    if (globals.config.mapPackLoaderEvents) {
+
+        packedEvents.push(message);
+
+        if (transferables) {
+            packedTransferables = packedTransferables.concat(transferables);
+        }
+
+    } else {
+
+        if (transferables) {
+            postMessage(message, transferables);
+        } else {
+            postMessage(message);
+        }
+    }
+}
+
 
 function postGroupMessageFast(command, type, message, buffers, signature) {
 
@@ -31,6 +55,7 @@ function postGroupMessageFast(command, type, message, buffers, signature) {
 
     postGroupMessageDirect(command, type, buff.buffer, index2, signature, message['hitable'], message['totalPoints'], (type == VTS_WORKER_TYPE_LINE_LABEL) ? message : null);
 }
+
 
 function postGroupMessageLite(command, type, number) {
     var messageSize = 1+1+4, index = 0;
@@ -237,12 +262,26 @@ function optimizeGroupMessages() {
 
     //console.log('send:' + buffer.length);
 
-    postMessage({'command' : 'addPackedCommands', 'buffer': buffer}, [buffer.buffer]);
+    postPackedMessage({'command' : 'addPackedCommands', 'buffer': buffer}, [buffer.buffer]);
 
     globals.messageBufferIndex = 0;
     globals.messagePackSize = 0;
 } 
 
 
-export {optimizeGroupMessages, postGroupMessageFast, postGroupMessageLite};
+function postPackedMessages() {
+    if (packedEvents.length > 0) {
+        if (packedTransferables.length > 0) {
+            postMessage({'command': 'packed-events', 'messages':packedEvents}, packedTransferables);
+        } else {
+            postMessage({'command': 'packed-events', 'messages':packedEvents});
+        }
+
+        packedEvents = [];
+        packedTransferables = [];
+    }
+}
+
+
+export {optimizeGroupMessages, postGroupMessageFast, postGroupMessageLite, postPackedMessage, postPackedMessages};
 
