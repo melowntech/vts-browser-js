@@ -342,10 +342,7 @@ MapMesh.prototype.parseMapMesh = function (stream) {
             this.faces += submesh.faces;
 
             //aproximate size
-            var varSize = this.use16bit ? 2 : 4;
-            this.gpuSize += (submesh.vertices ? submesh.vertices.length : 0) * 3 * varSize +
-                            (submesh.internalUVs ? submesh.internalUVs.length : 0) * 2 * varSize +
-                            (submesh.externalUVs ? submesh.externalUVs.length : 0) * 2 * varSize;
+            this.gpuSize += submesh.size;
         }
     }
     

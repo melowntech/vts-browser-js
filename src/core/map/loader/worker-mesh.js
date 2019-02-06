@@ -54,6 +54,7 @@ function parseMesh(stream) {
     mesh.submeshes = [];
     mesh.gpuSize = 0; 
     mesh.faces = 0;
+    mesh.size = 0;
 
     var use16bit = globals.config.map16bitMeshes;
 
@@ -65,10 +66,7 @@ function parseMesh(stream) {
             mesh.faces += submesh.faces;
 
             //aproximate size
-            var varSize = use16bit ? 2 : 4;
-            submesh.gpuSize += (submesh.vertices ? submesh.vertices.length : 0) * 3 * varSize +
-                            (submesh.internalUVs ? submesh.internalUVs.length : 0) * 2 * varSize +
-                            (submesh.externalUVs ? submesh.externalUVs.length : 0) * 2 * varSize;
+            mesh.gpuSize += submesh.size;
         }
     }
     
