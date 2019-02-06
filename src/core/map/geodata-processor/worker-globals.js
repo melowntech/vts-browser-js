@@ -321,26 +321,11 @@ function unint8ArrayToString(array) {
 
 var textDecoderUtf8 = (typeof TextDecoder !== 'undefined') ? (new TextDecoder('utf-8')) : null;
 
-function unint8ArrayToString(array) {
-    if (textDecoderUtf8) {
+function unint8ArrayToString(array, skip) {
+    if (textDecoderUtf8 && !skip) {
         return textDecoderUtf8.decode(array);
     } else {
-//        return String.fromCharCode.apply(null, new Uint8Array(array.buffer));
-
-        /*
-        var buff = new Uint16Array(array.buffer, array.byteOffset, array.byteLength);
-        var getChar = String.fromCharCode;
-        //var buff2 = new Array(buff.length);
-        var str = '';
-
-        for (var i = 0, li = buff.length; i < li; i++) {
-            //buff2[i] = getChar(buff[i]);
-            str += getChar(buff[i]);
-        }
-
-        return str;
-        //return buff2.join('');
-        */
+        // return String.fromCharCode.apply(null, new Uint8Array(array.buffer)); //works only for small strings
 
         var s = '';
         //var code_points2 = new Uint8Array(array.buffer, array.byteOffset, array.byteLength);
@@ -363,4 +348,47 @@ function unint8ArrayToString(array) {
     }
 }
 
-export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, simpleFmtCall, getHash, stringToUint8Array, unint8ArrayToString};
+
+function Utf8ArrayToStr(array, skip) {  //more universal
+    if (textDecoderUtf8 && !skip) {
+        return textDecoderUtf8.decode(array);
+    } else {
+
+        var out, i, len, c;
+        var char2, char3;
+
+        array = new Uint8Array(array);
+
+        out = "";
+        len = array.length;
+        i = 0;
+
+        while(i < len) {
+            c = array[i++];
+
+            switch(c >> 4) { 
+              case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+                // 0xxxxxxx
+                out += String.fromCharCode(c);
+                break;
+              case 12: case 13:
+                // 110x xxxx   10xx xxxx
+                char2 = array[i++];
+                out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
+                break;
+              case 14:
+                // 1110 xxxx  10xx xxxx  10xx xxxx
+                char2 = array[i++];
+                char3 = array[i++];
+                out += String.fromCharCode(((c & 0x0F) << 12) |
+                               ((char2 & 0x3F) << 6) |
+                               ((char3 & 0x3F) << 0));
+                break;
+            }
+        }
+
+        return out;
+    }
+}
+
+export {globals, clamp, vec3Normalize, vec3Length, vec3Cross, simpleFmtCall, getHash, stringToUint8Array, unint8ArrayToString, Utf8ArrayToStr};
