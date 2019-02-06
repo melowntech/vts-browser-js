@@ -62,7 +62,7 @@ function loadBinary(path, onLoaded, onError, withCredentials, xhrParams, respons
             if (onLoaded) {
                 if (kind == 'direct-texture') {
                     createImageBitmap(abuffer).then((function(bitmap){
-                        postPackedMessage({'command' : 'on-loaded', 'path': path, 'data': bitmap, 'filesize': abuffer.byteLength}, [bitmap]);                        
+                        postPackedMessage({'command' : 'on-loaded', 'path': path, 'data': bitmap, 'filesize': abuffer.size}, [bitmap]);                        
                     }).bind(this));
                 } else if (kind == 'direct-mesh') {
                     //debugger
