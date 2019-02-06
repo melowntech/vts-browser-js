@@ -1,5 +1,5 @@
 
-import {globals as globals_, unint8ArrayToString as unint8ArrayToString_} from './worker-globals.js';
+import {globals as globals_, unint8ArrayToString as unint8ArrayToString_, Utf8ArrayToStr as Utf8ArrayToStr_} from './worker-globals.js';
 import {setFont as setFont_, setFontMap as setFontMap_,} from './worker-text.js';
 import {getLayer as getLayer_, getLayerPropertyValue as getLayerPropertyValue_,
         processStylesheet as processStylesheet_, getFilterResult as getFilterResult_,
@@ -15,7 +15,7 @@ import {postGroupMessageFast as postGroupMessageFast_,
 //get rid of compiler mess
 var globals = globals_;
 var setFont = setFont_;
-var unint8ArrayToString = unint8ArrayToString_;
+var unint8ArrayToString = unint8ArrayToString_, Utf8ArrayToStr = Utf8ArrayToStr_;
 var setFontMap = setFontMap_, makeFasterFilter = makeFasterFilter_;
 var getLayer = getLayer_, getLayerPropertyValue = getLayerPropertyValue_,
     processStylesheet = processStylesheet_, getFilterResult = getFilterResult_;
@@ -497,7 +497,7 @@ self.onmessage = function (e) {
 
     case 'processGeodataRaw':
         dataRaw = data;
-        data = unint8ArrayToString(data);
+        data = Utf8ArrayToStr(data);
 
     case 'processGeodata':
         globals.tileLod = message['lod'] || 0;
@@ -505,6 +505,7 @@ self.onmessage = function (e) {
         globals.pixelSize = message['pixelSize'] || 1;
         globals.pixelFactor = message['dpr'] || 1;
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
+
         data = JSON.parse(data);            
         exportedGeometries = [];
         processGeodata(data, globals.tileLod);
