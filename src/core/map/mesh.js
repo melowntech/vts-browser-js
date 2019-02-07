@@ -408,7 +408,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         if (drawWireframe > 0) {
             switch (drawWireframe) {
             case 2: program = renderer.progWireframeTile2;  break;
-            case 3: program = renderer.progFlatShadeTile;  break;
+            case 3: program = renderer.progFlatShadeTileSE; break;
+
             case 1:
     
                 switch(type) {
@@ -483,6 +484,26 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     }
 
     renderer.gpu.useProgram(program, attributes, gpuMask);
+ 
+    if (drawWireframe == 3) {
+
+        var m = this.mBuffer;
+
+        m[0] = submesh.bbox.min[0];
+        m[1] = submesh.bbox.min[1];
+        m[2] = submesh.bbox.min[2];
+
+        m[3] = submesh.bbox.side(0);
+        m[4] = submesh.bbox.side(1);
+        m[5] = submesh.bbox.side(2);
+
+        m[14] = renderer.earthRadius;
+        m[15] = renderer.earthERatio;
+
+        program.setMat4('uParams', m);
+
+    }
+
 
     if (texture) {
         var gpuTexture = texture.getGpuTexture();

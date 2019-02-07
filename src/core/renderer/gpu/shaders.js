@@ -1196,6 +1196,59 @@ GpuShaders.tileShadedFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = mix(uFogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);  gl_FragColor.w = uMaterial[3][1];\n'+
     '}';
 
+
+//flat shade tile mesh with height over elipsoid    a=6378137.0 b=6356752.3142
+GpuShaders.tileFlatShadeVertexShaderSE =
+    'attribute vec3 aPosition;\n'+
+    'attribute vec2 aTexCoord;\n'+
+    'attribute vec3 aBarycentric;\n'+
+    'uniform mat4 uMV, uProj, uParams;\n'+    // mesh pos, mesh size, h1 + factor, h2 + factor, polar rasis, elips factor
+    'uniform float uFogDensity;\n'+
+    'varying vec2 vTexCoord;\n'+
+    'varying vec3 vBarycentric;\n'+
+    'varying vec3 vColor;\n'+
+    'void main() {\n'+
+        'vec3 geoPos = aPosition*vec3(uParams[0][3],uParams[1][0],uParams[1][1])+vec3(uParams[0][0],uParams[0][1],uParams[0][2]);\n'+
+        'geoPos.z *= uParams[3][3];\n'+
+        'float l = length(geoPos);\n'+
+        'vec3 v = geoPos * l;\n'+
+        'float h = l - uParams[3][2];\n'+
+        //'float h2 = clamp(1.0,-1.0, h/5255.0 );\n'+
+        'float h2 = clamp(1.0,-1.0, h/8800.0 );\n'+
+        //'h2 = mod(h,1000.0) / 1000.0;\n'+
+        'if (h2 > 0.0){ vColor = mix(vec3(0.0,0.1,0.0),vec3(0.0,0.0,0.1),h2); } else { vColor = mix(vec3(0.1,0.0,0.0),vec3(0.0,0.0,0.1),-h2); }\n'+
+        'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
+
+        'camSpacePos.xyz += v * (h - (h * 2.0));\n'+
+
+        'gl_Position = uProj * camSpacePos;\n'+
+        //'float camDist = length(camSpacePos.xyz);\n'+
+        //'vFogFactor = exp(uFogDensity * camDist);\n'+
+        'vTexCoord = aTexCoord;\n'+
+        'vBarycentric = camSpacePos.xyz;\n'+
+    '}';
+
+
+GpuShaders.tileFlatShadeFragmentShaderSE = 'precision mediump float;\n'+
+    '#extension GL_OES_standard_derivatives : enable\n'+
+    'uniform sampler2D uSampler;\n'+
+    'varying vec2 vTexCoord;\n'+
+    'varying vec3 vBarycentric;\n'+
+    'varying vec3 vColor;\n'+
+    'void main() {\n'+
+        '#ifdef GL_OES_standard_derivatives\n'+
+            'vec3 nx = dFdx(vBarycentric);\n'+
+            'vec3 ny = dFdy(vBarycentric);\n'+
+            'vec3 normal=normalize(cross(nx,ny));\n'+
+            'gl_FragColor = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
+            //'gl_FragColor = vec4(vColor*(max(0.0,normal.z*(255.0/255.0))+(32.0/255.0)),1.0);\n'+
+            //'gl_FragColor = vec4(vColor,1.0);\n'+
+        '#else\n'+
+            'gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n'+
+        '#endif\n'+
+    '}';
+
+
 //flat shade tile mesh
 GpuShaders.tileFlatShadeVertexShader =
     'attribute vec3 aPosition;\n'+
