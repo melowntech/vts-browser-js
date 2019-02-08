@@ -408,7 +408,11 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         if (drawWireframe > 0) {
             switch (drawWireframe) {
             case 2: program = renderer.progWireframeTile2;  break;
-            case 3: program = renderer.progFlatShadeTileSE; break;
+            case 3: program = renderer.progFlatShadeTileSE; 
+
+                    texcoords2Attr = 'aTexCoord2';
+                    attributes = ['aPosition', 'aTexCoord2', 'aBarycentric'];
+                    break;
 
             case 1:
     
@@ -485,26 +489,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
     renderer.gpu.useProgram(program, attributes, gpuMask);
  
-    if (drawWireframe == 3) {
-
-        var m = this.mBuffer;
-
-        m[0] = submesh.bbox.min[0];
-        m[1] = submesh.bbox.min[1];
-        m[2] = submesh.bbox.min[2];
-
-        m[3] = submesh.bbox.side(0);
-        m[4] = submesh.bbox.side(1);
-        m[5] = submesh.bbox.side(2);
-
-        m[14] = renderer.earthRadius;
-        m[15] = renderer.earthERatio;
-
-        program.setMat4('uParams', m);
-
-    }
-
-
     if (texture) {
         var gpuTexture = texture.getGpuTexture();
         
@@ -528,7 +512,42 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     }
 
     var mv = this.mBuffer, m = this.mBuffer2, v = this.vBuffer;
-    mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrix(cameraPos, m), mv);
+
+    if (drawWireframe == 3) {
+
+        var m = this.mBuffer;
+        var se = renderer.superElevation;
+
+        m[0] = submesh.bbox.min[0];
+        m[1] = submesh.bbox.min[1];
+        m[2] = submesh.bbox.min[2];
+
+        m[3] = submesh.bbox.side(0);
+        m[4] = submesh.bbox.side(1);
+        m[5] = submesh.bbox.side(2);
+
+        m[6] = cameraPos[0];
+        m[7] = cameraPos[1];
+        m[8] = cameraPos[2];
+
+        m[9] = se[0]; // h1
+        m[10] = se[1]; // f1
+        m[11] = se[2]; // h2
+        m[12] = se[6]; // inv dh
+        m[13] = se[5]; // df
+
+        m[14] = renderer.earthRadius;
+        m[15] = renderer.earthERatio;
+
+        program.setMat4('uParams', m);
+
+        mv = renderer.camera.getModelviewFMatrix(); 
+
+    } else {
+        mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrix(cameraPos, m), mv);
+    }
+
+
     var proj = renderer.camera.getProjectionFMatrix();
 
     program.setMat4('uMV', mv);

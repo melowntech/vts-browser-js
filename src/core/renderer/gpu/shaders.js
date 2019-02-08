@@ -1200,31 +1200,38 @@ GpuShaders.tileShadedFragmentShader = 'precision mediump float;\n'+
 //flat shade tile mesh with height over elipsoid    a=6378137.0 b=6356752.3142
 GpuShaders.tileFlatShadeVertexShaderSE =
     'attribute vec3 aPosition;\n'+
-    'attribute vec2 aTexCoord;\n'+
+    'attribute vec2 aTexCoord2;\n'+
     'attribute vec3 aBarycentric;\n'+
-    'uniform mat4 uMV, uProj, uParams;\n'+    // mesh pos, mesh size, h1 + factor, h2 + factor, polar rasis, elips factor
+    'uniform mat4 uMV, uProj, uParams;\n'+    // mesh pos, mesh size, campos, h1, f1, h2, dh, df, polar radius, elips factor
     'uniform float uFogDensity;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying vec3 vBarycentric;\n'+
     'varying vec3 vColor;\n'+
     'void main() {\n'+
         'vec3 geoPos = aPosition*vec3(uParams[0][3],uParams[1][0],uParams[1][1])+vec3(uParams[0][0],uParams[0][1],uParams[0][2]);\n'+
+        'vec3 geoPos2 = geoPos - vec3(uParams[1][2], uParams[1][3], uParams[2][0]);\n'+
         'geoPos.z *= uParams[3][3];\n'+
         'float l = length(geoPos);\n'+
-        'vec3 v = geoPos * l;\n'+
+        'vec3 v = geoPos * (1.0/(l+0.0001));\n'+
         'float h = l - uParams[3][2];\n'+
         //'float h2 = clamp(1.0,-1.0, h/5255.0 );\n'+
-        'float h2 = clamp(1.0,-1.0, h/8800.0 );\n'+
+        //'float h2 = clamp(1.0,-1.0, h/8800.0 );\n'+
         //'h2 = mod(h,1000.0) / 1000.0;\n'+
-        'if (h2 > 0.0){ vColor = mix(vec3(0.0,0.1,0.0),vec3(0.0,0.0,0.1),h2); } else { vColor = mix(vec3(0.1,0.0,0.0),vec3(0.0,0.0,0.1),-h2); }\n'+
-        'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
+        //'if (h2 > 0.0){ vColor = mix(vec3(0.0,0.1,0.0),vec3(0.0,0.0,0.1),h2); } else { vColor = mix(vec3(0.1,0.0,0.0),vec3(0.0,0.0,0.1),-h2); }\n'+
 
-        'camSpacePos.xyz += v * (h - (h * 2.0));\n'+
+        'float h2 = clamp(h, uParams[2][1], uParams[2][3]);\n'+
+        'float h3 = h;\n'+
+        'h *= (uParams[2][2] + ((h2 - uParams[2][1]) * uParams[3][0]) * uParams[3][1]);\n'+
+
+        'geoPos2.xyz += v * (h - h3);\n'+
+
+
+        'vec4 camSpacePos = uMV * vec4(geoPos2, 1.0);\n'+
 
         'gl_Position = uProj * camSpacePos;\n'+
         //'float camDist = length(camSpacePos.xyz);\n'+
         //'vFogFactor = exp(uFogDensity * camDist);\n'+
-        'vTexCoord = aTexCoord;\n'+
+        'vTexCoord = aTexCoord2;\n'+
         'vBarycentric = camSpacePos.xyz;\n'+
     '}';
 
@@ -1240,7 +1247,10 @@ GpuShaders.tileFlatShadeFragmentShaderSE = 'precision mediump float;\n'+
             'vec3 nx = dFdx(vBarycentric);\n'+
             'vec3 ny = dFdy(vBarycentric);\n'+
             'vec3 normal=normalize(cross(nx,ny));\n'+
-            'gl_FragColor = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
+
+            'gl_FragColor=texture2D(uSampler, vTexCoord.xy );\n'+
+
+            //'gl_FragColor = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
             //'gl_FragColor = vec4(vColor*(max(0.0,normal.z*(255.0/255.0))+(32.0/255.0)),1.0);\n'+
             //'gl_FragColor = vec4(vColor,1.0);\n'+
         '#else\n'+

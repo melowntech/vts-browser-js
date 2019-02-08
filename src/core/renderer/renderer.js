@@ -158,6 +158,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     //debug
     this.lastHitPosition = [0,0,100];
     this.logTilePos = null;
+    this.setSuperElevation(1000,3,4000,1);
 
     window.addEventListener('resize', (this.onResize).bind(this), false);
 
@@ -265,6 +266,27 @@ Renderer.prototype.project2 = function(point, mvp, cameraPos) {
     } else {
         return [0, 0, 0];
     }
+};
+
+
+Renderer.prototype.setSuperElevation = function(h1, f1, h2, f2) {
+    if (h1 == h2) { h2 = h1 + 1; }
+    this.superElevation = [h1, f1, h2, f2, h2-h1, f2-f1, 1.0 / (h2-h1)];
+};
+
+
+Renderer.prototype.getSuperElevatedHeight = function(height) {
+    var se = this.superElevation, h = height;
+
+    if (h < se[0]) {  // 0 - h1, 1 - f1, 2 - h2, 3 - f2, 4 - dh, 5 - df, 6 - invdh
+        h = se[0];
+    }
+
+    if (h > se[2]) {
+        h = se[2];
+    }
+
+    return height * (se[1] + ((h - se[0]) * se[6]) * se[5]);
 };
 
 
