@@ -163,11 +163,11 @@ MapGeodata.prototype.onLoaded = function(data) {
 };
 
 // Returns RAM usage in bytes.
-//MapGeodata.prototype.size = function () {
+//MapGeodata.prototype.getSize = function () {
   //  return this.size;
 //};
 
-//MapGeodata.prototype.fileSize = function () {
+//MapGeodata.prototype.getFileSize = function () {
   //  return this.fileSize;
 //};
 

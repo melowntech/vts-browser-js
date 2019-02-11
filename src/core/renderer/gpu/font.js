@@ -32,7 +32,7 @@ GpuFont.prototype.kill = function() {
 };
 
 // Returns GPU RAM used, in bytes.
-GpuFont.prototype.size = function(){ return this.size; };
+GpuFont.prototype.getSize = function(){ return this.size; };
 
 
 GpuFont.prototype.load = function(path) {

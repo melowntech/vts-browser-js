@@ -76,7 +76,7 @@ MapMesh.prototype.killGpuSubmeshes = function(killedByCache) {
     var size = 0;
     for (var i = 0, li = this.gpuSubmeshes.length; i < li; i++) {
         this.gpuSubmeshes[i].kill();
-        size += this.gpuSubmeshes[i].size;
+        size += this.gpuSubmeshes[i].getSize();
     }
 
     if (li > 0) {
@@ -245,7 +245,7 @@ MapMesh.prototype.onLoaded = function(data, task, direct) {
 
 
 // Returns RAM usage in bytes.
-//MapMesh.prototype.size = function () {
+//MapMesh.prototype.getSize = function () {
   //  return this.size;
 //};
 
@@ -261,6 +261,7 @@ MapMesh.prototype.parseWorkerData = function (data) {
     this.numSubmeshes = data['numSubmeshes'];
     this.size = data['size'];
     this.version = data['version'];
+    this.submeshes = [];
 
     var submeshes = data['submeshes'];
 
@@ -338,11 +339,11 @@ MapMesh.prototype.parseMapMesh = function (stream) {
         var submesh = new MapSubmesh(this, stream);
         if (submesh.valid) {
             this.submeshes.push(submesh); 
-            this.size += submesh.size;
+            this.size += submesh.getSize();
             this.faces += submesh.faces;
 
             //aproximate size
-            this.gpuSize += submesh.size;
+            this.gpuSize += submesh.getSize();
         }
     }
     
@@ -363,7 +364,7 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
 
     for (var i = 0, li = this.submeshes.length; i < li; i++) {
         this.gpuSubmeshes[i] = this.submeshes[i].buildGpuMesh();
-        size += this.gpuSubmeshes[i].size;
+        size += this.gpuSubmeshes[i].getSize();
     }
 
     this.stats.gpuMeshes += size;
@@ -408,7 +409,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         if (drawWireframe > 0) {
             switch (drawWireframe) {
             case 2: program = renderer.progWireframeTile2;  break;
-            case 3: program = renderer.progFlatShadeTileSE; 
+            case 3: program = renderer.progFlatShadeTile;   break;
+            case 4: program = renderer.progFlatShadeTileSE; 
 
                     texcoords2Attr = 'aTexCoord2';
                     attributes = ['aPosition', 'aTexCoord2', 'aBarycentric'];
@@ -495,7 +497,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         if (gpuTexture) {
             if (texture.statsCoutner != this.stats.counter) {
                 texture.statsCoutner = this.stats.counter;
-                this.stats.gpuRenderUsed += gpuTexture.size;
+                this.stats.gpuRenderUsed += gpuTexture.getSize();
             }
             
             renderer.gpu.bindTexture(gpuTexture);
@@ -513,7 +515,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
     var mv = this.mBuffer, m = this.mBuffer2, v = this.vBuffer;
 
-    if (drawWireframe == 3) {
+    if (drawWireframe == 4) {
 
         var m = this.mBuffer;
         var se = renderer.superElevation;
@@ -607,7 +609,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
     if (submesh.statsCoutner != this.stats.counter) {
         submesh.statsCoutner = this.stats.counter;
-        this.stats.gpuRenderUsed += gpuSubmesh.size;
+        this.stats.gpuRenderUsed += gpuSubmesh.getSize();
     } 
 
     gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null);

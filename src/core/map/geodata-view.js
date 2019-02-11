@@ -294,7 +294,7 @@ MapGeodataView.prototype.draw = function(cameraPos) {
     return this.ready;
 };
 
-//MapGeodataView.prototype.size = function() {
+//MapGeodataView.prototype.getSize = function() {
     //return this.size;
 //};
 

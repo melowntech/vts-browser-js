@@ -31,7 +31,7 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
 
     this.size = 0;
     this.polygons = 0;
-};7
+};
 
 //destructor
 GpuGroup.prototype.kill = function() {
@@ -85,7 +85,7 @@ GpuGroup.prototype.kill = function() {
 };
 
 
-GpuGroup.prototype.size = function() {
+GpuGroup.prototype.getSize = function() {
     return this.size;
 };
 

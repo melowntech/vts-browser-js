@@ -213,6 +213,11 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                     debug.drawWireframe = debug.drawWireframe != 3 ? 3 : 0;
                     break; //key F pressed
 
+                case 85:
+                case 117:
+                    debug.drawWireframe = debug.drawWireframe != 4 ? 4 : 0;
+                    break; //key U pressed
+
                 case 77:
                 case 109:
                     map.loaderSuspended = !map.loaderSuspended;            

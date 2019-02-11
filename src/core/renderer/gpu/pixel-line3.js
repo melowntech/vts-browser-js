@@ -152,10 +152,10 @@ GpuPixelLine3.prototype.draw = function(program, attrPosition, points) {
 };
 
 // Returns GPU RAM used, in bytes.
-GpuPixelLine3.prototype.size = function(){ return this.size; };
+GpuPixelLine3.prototype.getSize = function(){ return this.size; };
 
 
-GpuPixelLine3.prototype.bbox = function(){ return this.bbox; };
+GpuPixelLine3.prototype.getBbox = function(){ return this.bbox; };
 
 
 GpuPixelLine3.prototype.getPolygons = function(){ return this.polygons; };

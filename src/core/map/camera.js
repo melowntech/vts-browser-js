@@ -45,7 +45,7 @@ MapCamera.prototype.update = function() {
         height += surfaceHeight[0];
     }
 
-    if (map.draw.debug.drawWireframe == 3) {
+    if (map.draw.debug.drawWireframe == 4) {
         height = map.renderer.getSuperElevatedHeight(height);
     }
 
