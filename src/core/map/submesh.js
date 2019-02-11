@@ -45,6 +45,7 @@ MapSubmesh.prototype.kill = function () {
     this.vertices = null;
     this.internalUVs = null;
     this.externalUVs = null;
+    this.indices = null;
 };
 
 
@@ -773,12 +774,12 @@ struct FacesBlock {
 
 
 // Returns RAM usage in bytes.
-MapSubmesh.prototype.size = function () {
+MapSubmesh.prototype.getSize = function () {
     return this.size;
 };
 
 
-MapSubmesh.prototype.fileSize = function () {
+MapSubmesh.prototype.getFileSize = function () {
     return this.fileSize;
 };
 

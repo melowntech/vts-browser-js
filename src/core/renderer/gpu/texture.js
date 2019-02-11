@@ -34,7 +34,7 @@ GpuTexture.prototype.kill = function() {
 };
 
 // Returns GPU RAM used, in bytes.
-GpuTexture.prototype.size = function() {
+GpuTexture.prototype.getSize = function() {
     return this.size;
 };
 

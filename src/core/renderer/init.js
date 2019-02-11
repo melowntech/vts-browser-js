@@ -57,6 +57,7 @@ RendererInit.prototype.initShaders = function() {
     renderer.progWireframeTile2 = new GpuProgram(gpu, shaders.tileWireframeVertexShader, shaders.tileWireframe2FragmentShader);
     renderer.progWireframeTile3 = new GpuProgram(gpu, shaders.tileWireframe3VertexShader, shaders.tileWireframeFragmentShader);
     renderer.progFlatShadeTile = new GpuProgram(gpu, shaders.tileFlatShadeVertexShader, shaders.tileFlatShadeFragmentShader);
+    renderer.progFlatShadeTileSE = new GpuProgram(gpu, shaders.tileFlatShadeVertexShaderSE, shaders.tileFlatShadeFragmentShaderSE);
     renderer.progHeightmap = new GpuProgram(gpu, shaders.heightmapVertexShader, shaders.heightmapFragmentShader);
     renderer.progPlane = new GpuProgram(gpu, shaders.planeVertexShader, shaders.planeFragmentShader); //flat
     renderer.progPlane2 = new GpuProgram(gpu, shaders.planeVertex2Shader, shaders.planeFragment2Shader); //poles

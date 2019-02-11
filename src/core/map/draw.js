@@ -473,7 +473,10 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
         var earthRadius =  navigationSrsInfo['a'];
         var earthRadius2 =  navigationSrsInfo['b'];
         var atmoSize = this.atmoHeight;
-        
+        renderer.earthRadius = earthRadius;
+        renderer.earthRadius2 = earthRadius2;
+        renderer.earthERatio = earthRadius / earthRadius2;
+
         var cameraPosToEarthCenter = [0,0,0,0];
         vec3.normalize(camera.position, cameraPosToEarthCenter);
 

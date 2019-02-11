@@ -133,11 +133,11 @@ MapStylesheet.prototype.onLoaded = function(data) {
 
 
 // Returns RAM usage in bytes.
-//MapStylesheet.prototype.size = function () {
+//MapStylesheet.prototype.getSize = function () {
   //  return this.size;
 //};
 
-//MapStylesheet.prototype.fileSize = function () {
+//MapStylesheet.prototype.getFileSize = function () {
   //  return this.fileSize;
 //};
 

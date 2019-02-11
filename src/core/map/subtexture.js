@@ -479,13 +479,14 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
 MapSubtexture.prototype.buildGpuTexture = function () {
     this.gpuTexture = new GpuTexture(this.map.renderer.gpu, null, this.map.core);
     this.gpuTexture.createFromImage(this.image, (this.type == VTS_TEXTURETYPE_CLASS) ? 'nearest' : 'linear', false);
-    this.stats.gpuTextures += this.gpuTexture.size;
+    this.gpuSize = this.gpuTexture.getSize();
+
+    this.stats.gpuTextures += this.gpuSize;
 
     this.stats.graphsFluxTexture[0][0]++;
-    this.stats.graphsFluxTexture[0][1] += this.gpuTexture.size;
+    this.stats.graphsFluxTexture[0][1] += this.gpuSize;
 
-    this.gpuCacheItem = this.map.gpuCache.insert(this.killGpuTexture.bind(this, true), this.gpuTexture.size);
-    this.gpuSize = this.gpuTexture.size;
+    this.gpuCacheItem = this.map.gpuCache.insert(this.killGpuTexture.bind(this, true), this.gpuSize);
 };
 
 

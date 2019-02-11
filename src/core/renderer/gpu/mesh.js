@@ -10,6 +10,7 @@ var GpuMesh = function(gpu, meshData, fileSize, core, direct, use16bit, vertices
     this.uv2Buffer = null;
     this.use16bit = use16bit ? true : false;
     this.verticesUnnormalized = verticesUnnormalized ? true : false;
+    this.size = 0;
 
     var vertices = meshData.vertices;
     var uvs = meshData.uvs;
@@ -168,10 +169,10 @@ GpuMesh.prototype.draw = function(program, attrVertex, attrUV, attrUV2, attrBary
 
 
 // Returns GPU RAM used, in bytes.
-GpuMesh.prototype.size = function(){ return this.size; };
+GpuMesh.prototype.getSize = function(){ return this.size; };
 
 
-GpuMesh.prototype.bbox = function(){ return this.bbox; };
+GpuMesh.prototype.getBBox = function(){ return this.bbox; };
 
 
 GpuMesh.prototype.getPolygons = function(){ return this.polygons; };
