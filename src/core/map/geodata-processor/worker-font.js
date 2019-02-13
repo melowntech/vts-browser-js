@@ -1287,15 +1287,17 @@ Typr.U.stringToGlyphs = function(fonts, str) {
 
     var indices = bidiResult.indices;
     var gls2 = gls.slice();
-    var codes2 = gls.slice();
+    var codes2 = codes.slice();
+    var gfonts2 = gfonts.slice();
 
     for (i = 0, li = gls.length; i < li; i++) {
         c = indices[i];
         gls2[i] = gls[c];
         codes2[i] = codes[c];
+        gfonts2[i] = gfonts[c];
     }
 
-    return [gls2, gfonts, codes2];
+    return [gls2, gfonts2, codes2];
 }
 
 
