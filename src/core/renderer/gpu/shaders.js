@@ -378,9 +378,10 @@ GpuShaders.icon2VertexShader =
         '}'+
     '}';
 
+
 GpuShaders.icon3VertexShader =
     'attribute vec2 aPosition;\n'+
-    'uniform mat4 uMVP;\n'+
+    'uniform mat4 uProjectionMatrix;\n'+
     'uniform vec4 uScale;\n'+
     'uniform vec3 uOrigin;\n'+
     'uniform vec4 uData[DSIZE];\n'+
@@ -401,13 +402,12 @@ GpuShaders.icon3VertexShader =
         'float file = floor(v.w/4.0);\n'+
         'vTexCoord.y = mod(v.w,4.0);\n'+
         'if (file != floor(uFile)) {\n'+
-            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+            'gl_Position = uProjectionMatrix * vec4(2.0, 0.0, 0.0, 2.0);\n'+
         '}else{\n'+
-            'vec4 pos = (uMVP * vec4(uOrigin.xyz, 1.0));\n'+
-            'gl_Position = pos + vec4(v.x*uScale.x*pos.w, (v.y+uScale.w)*uScale.y*pos.w, 0.0, 0.0);\n'+
+            'vec4 pos = (uProjectionMatrix * vec4(uOrigin.xyz, 1.0));\n'+
+            'gl_Position = pos + vec4(v.x*uScale.x*pos.w, v.y*uScale.y*pos.w, 0.0, 0.0);\n'+
         '}'+
     '}';
-
 
 GpuShaders.textFragmentShader = 'precision mediump float;\n'+
     'uniform sampler2D uSampler;\n'+
@@ -1413,11 +1413,14 @@ GpuShaders.imageVertexShader = '\n'+
         //"gl_Position=uProjectionMatrix*vec4(floor(uData[i][0]+0.1),floor(uData[i][1]+0.1),0.0,1.0);\n"+
         //IE11 :(
 
-        'if(i==0) gl_Position=uProjectionMatrix*vec4(floor(uData[0][0]+0.1),floor(uData[0][1]+0.1),uDepth,1.0), vTexcoords=vec2(uData[0][2], uData[0][3]);\n'+
-        'if(i==1) gl_Position=uProjectionMatrix*vec4(floor(uData[1][0]+0.1),floor(uData[1][1]+0.1),uDepth,1.0), vTexcoords=vec2(uData[1][2], uData[1][3]);\n'+
-        'if(i==2) gl_Position=uProjectionMatrix*vec4(floor(uData[2][0]+0.1),floor(uData[2][1]+0.1),uDepth,1.0), vTexcoords=vec2(uData[2][2], uData[2][3]);\n'+
-        'if(i==3) gl_Position=uProjectionMatrix*vec4(floor(uData[3][0]+0.1),floor(uData[3][1]+0.1),uDepth,1.0), vTexcoords=vec2(uData[3][2], uData[3][3]);\n'+
+        'vec4 p;\n'+
 
+        'if(i==0) p = vec4(floor(uData[0][0]+0.1),floor(uData[0][1]+0.1),uDepth,1.0), vTexcoords=vec2(uData[0][2], uData[0][3]);\n'+
+        'if(i==1) p = vec4(floor(uData[1][0]+0.1),floor(uData[1][1]+0.1),uDepth,1.0), vTexcoords=vec2(uData[1][2], uData[1][3]);\n'+
+        'if(i==2) p = vec4(floor(uData[2][0]+0.1),floor(uData[2][1]+0.1),uDepth,1.0), vTexcoords=vec2(uData[2][2], uData[2][3]);\n'+
+        'if(i==3) p = vec4(floor(uData[3][0]+0.1),floor(uData[3][1]+0.1),uDepth,1.0), vTexcoords=vec2(uData[3][2], uData[3][3]);\n'+
+
+        'gl_Position=uProjectionMatrix*p;\n'+
         'vec4 c=uColor;\n'+
         'c.w*=1.0;\n'+
         'vColor=c;\n'+

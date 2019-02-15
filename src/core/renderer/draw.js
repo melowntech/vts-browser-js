@@ -2191,11 +2191,20 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             if (bl > 64) { vbuff = renderer.textQuads32; prog = renderer.progLabel32; }
             else { vbuff = renderer.textQuads16; prog = renderer.progLabel16; }
 
+            if (job.updatePos) {
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+                pp[1] -= stickShift;
+                pp[2] = pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2);
+            }
+
             gpu.useProgram(prog, ['aPosition']);
             prog.setSampler('uSampler', 0);
-            prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+            //prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+            prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
+
             prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], 1, stickShift*2]);
-            prog.setVec3('uOrigin', job.center2); //job.origin);
+            //prog.setVec3('uOrigin', job.origin);
+            prog.setVec3('uOrigin', pp);
             prog.setVec4('uColor', hitmapRender ? color : color2);
             prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
             lj = hitmapRender ? 1 : 2;
