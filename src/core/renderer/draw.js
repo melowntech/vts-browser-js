@@ -2204,7 +2204,11 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
             prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], 1, stickShift*2]);
             //prog.setVec3('uOrigin', job.origin);
-            prog.setVec3('uOrigin', pp);
+            //if (renderer.moving) {
+                prog.setVec3('uOrigin', pp);
+            //} else {
+            //prog.setVec3('uOrigin', [Math.round(pp[0]),Math.round(pp[1]), pp[2]]);
+            //}
             prog.setVec4('uColor', hitmapRender ? color : color2);
             prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
             lj = hitmapRender ? 1 : 2;

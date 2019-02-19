@@ -181,6 +181,9 @@ struct Metanode {
         this.maxZ = streamData.getFloat32(stream.index, true); stream.index += 4;
         this.surrogatez = streamData.getFloat32(stream.index, true); stream.index += 4;
 
+        this.minZ2 = this.minZ;
+        this.maxZ2 = this.maxZ;
+
         //if (!(this.minZ > this.maxZ || this.surrogatez == Number.NEGATIVE_INFINITY)) {
           //  this.surrogatezHeight = this.surrogatez; //have to converted to nav srs height
         //}

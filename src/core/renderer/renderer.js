@@ -147,6 +147,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.progMap = {};
     this.gridHmax = 0;
     this.gridHmin = 0;
+    this.seCounter = 0;
 
     //hack for vts maps
     //this.vtsHack = true;
@@ -276,6 +277,7 @@ Renderer.prototype.project2 = function(point, mvp, cameraPos) {
 Renderer.prototype.setSuperElevation = function(h1, f1, h2, f2) {
     if (h1 == h2) { h2 = h1 + 1; }
     this.superElevation = [h1, f1, h2, f2, h2-h1, f2-f1, 1.0 / (h2-h1)];
+    this.seCounter++;
 };
 
 

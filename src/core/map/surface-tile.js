@@ -307,6 +307,7 @@ MapSurfaceTile.prototype.removeChild = function(tile) {
 
 
 MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad) {
+
     //has map view changed?
     if (this.map.viewCounter != this.viewCoutner) {
         this.viewSwitched();
@@ -360,6 +361,23 @@ MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad)
         } else {
             this.resourceSurface = this.surface;
         }
+    }
+
+    if (this.map.renderer.debug.drawWireframe == 4 && this.seCounter != this.map.renderer.seCounter) {
+        var renderer = this.map.renderer;
+        this.seCounter = renderer.seCounter;
+
+        var node = this.metanode;
+        node.minZ = renderer.getSuperElevatedHeight(node.minZ2);
+        node.maxZ = renderer.getSuperElevatedHeight(node.maxZ2);
+
+        this.gridPoints = null;
+        node.border = null;
+        node.border2 = null;
+        node.border3 = null;
+        node.borderReady = false;
+
+        node.generateCullingHelpers();
     }
 
     return true;
