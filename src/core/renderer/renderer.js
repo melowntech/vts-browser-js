@@ -274,6 +274,13 @@ Renderer.prototype.project2 = function(point, mvp, cameraPos) {
 };
 
 
+Renderer.prototype.setSuperElevationState = function(state) {
+    if (this.useSuperElevation != state) {
+        this.useSuperElevation = state;
+        this.seCounter++;
+    }
+};
+
 Renderer.prototype.setSuperElevation = function(h1, f1, h2, f2) {
     if (h1 == h2) { h2 = h1 + 1; }
     this.superElevation = [h1, f1, h2, f2, h2-h1, f2-f1, 1.0 / (h2-h1)];

@@ -363,7 +363,7 @@ MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad)
         }
     }
 
-    if (this.map.renderer.debug.drawWireframe == 4 && this.seCounter != this.map.renderer.seCounter) {
+    if (this.map.renderer.useSuperElevation && this.seCounter != this.map.renderer.seCounter) {
         var renderer = this.map.renderer;
         this.seCounter = renderer.seCounter;
 

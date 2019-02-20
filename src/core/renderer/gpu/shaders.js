@@ -1201,7 +1201,7 @@ GpuShaders.tileShadedFragmentShader = 'precision mediump float;\n'+
 GpuShaders.tileFlatShadeVertexShaderSE =
     'attribute vec3 aPosition;\n'+
     'attribute vec2 aTexCoord2;\n'+
-    'attribute vec3 aBarycentric;\n'+
+    //'attribute vec3 aBarycentric;\n'+
     'uniform mat4 uMV, uProj, uParams;\n'+    // mesh pos, mesh size, campos, h1, f1, h2, dh, df, polar radius, elips factor
     'uniform float uFogDensity;\n'+
     'varying vec2 vTexCoord;\n'+
@@ -1224,7 +1224,6 @@ GpuShaders.tileFlatShadeVertexShaderSE =
         'h *= (uParams[2][2] + ((h2 - uParams[2][1]) * uParams[3][0]) * uParams[3][1]);\n'+
 
         'geoPos2.xyz += v * (h - h3);\n'+
-
 
         'vec4 camSpacePos = uMV * vec4(geoPos2, 1.0);\n'+
 

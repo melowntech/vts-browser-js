@@ -215,7 +215,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 85:
                 case 117:
-                    debug.drawWireframe = debug.drawWireframe != 4 ? 4 : 0;
+                    map.renderer.setSuperElevationState(!map.renderer.useSuperElevation);
                     break; //key U pressed
 
                 case 77:

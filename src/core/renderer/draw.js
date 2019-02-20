@@ -1466,12 +1466,16 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         }
 
         var p1, p2, camVec, ll, l = null, localTilt;
-        
-        if (renderer.debug.drawWireframe == 4) {
-            job.center2 = renderer.transformPointBySE(job.center);
+
+        if (renderer.useSuperElevation) {
+            if (job.seCounter != renderer.seCounter) {
+                job.seCounter = renderer.seCounter;
+                job.center2 = renderer.transformPointBySE(job.center);
+            }
         } else {
             job.center2 = job.center;
         }
+
 
         if (job.culling != 180) {
             p2 = job.center2;
@@ -1934,8 +1938,11 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
         o = job.noOverlap, localTilt;
 
-    if (renderer.debug.drawWireframe == 4) {
-        job.center2 = renderer.transformPointBySE(job.center);
+    if (renderer.useSuperElevation) {
+        if (job.seCounter != renderer.seCounter) {
+            job.seCounter = renderer.seCounter;
+            job.center2 = renderer.transformPointBySE(job.center);
+        }
     } else {
         job.center2 = job.center;
     }

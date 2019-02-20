@@ -398,6 +398,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var texcoordsAttr = null;
     var texcoords2Attr = null;
     var drawWireframe = draw.debug.drawWireframe;
+    var useSuperElevation = renderer.useSuperElevation;
     var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
 
     if (type == VTS_MATERIAL_DEPTH) {
@@ -410,11 +411,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             switch (drawWireframe) {
             case 2: program = renderer.progWireframeTile2;  break;
             case 3: program = renderer.progFlatShadeTile;   break;
-            case 4: program = renderer.progFlatShadeTileSE; 
-
-                    texcoords2Attr = 'aTexCoord2';
-                    attributes = ['aPosition', 'aTexCoord2', 'aBarycentric'];
-                    break;
 
             case 1:
     
@@ -451,7 +447,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             case VTS_MATERIAL_EXTERNAL:
             case VTS_MATERIAL_EXTERNAL_NOFOG:
 
-                program = renderer.progTile2;
+                program = useSuperElevation ? renderer.progFlatShadeTileSE : renderer.progTile2;
                     
                 if (texture) {
                     gpuMask = texture.getGpuMaskTexture();
@@ -515,7 +511,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
     var mv = this.mBuffer, m = this.mBuffer2, v = this.vBuffer;
 
-    if (drawWireframe == 4) {
+    if (useSuperElevation) {
 
         var m = this.mBuffer;
         var se = renderer.superElevation;
@@ -560,7 +556,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         program.setMat4('uProj', proj);
     }
 
-    if (drawWireframe == 0) {
+    if (!useSuperElevation && drawWireframe == 0) {
         var cv = this.map.camera.vector2, c = draw.atmoColor, t, bmin = submesh.bbox.min, bmax = submesh.bbox.max;
 
         switch(type) {
