@@ -423,27 +423,25 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
     'uniform sampler2D uSampler;\n'+
     'uniform vec4 uColor;\n'+
     'uniform vec2 uParams;\n'+
-    'const vec4 uColor1 = vec4(1.0, 1.0, 1.0, 1.0);\n'+
-    'const vec4 uColor2 = vec4(0.0, 0.0, 0.0, 1.0);\n'+
     'varying vec2 vTexCoord;\n'+
     'float round(float x) { return floor(x + 0.5); }\n'+
 
     'void main() {\n'+
-        'vec4 mask;\n'+
-        'int i=int(floor(vTexCoord.y));\n'+
-        'if (i == 0) mask=vec4(1.0,0.0,0.0,0.0);else\n'+
-        'if (i == 1) mask=vec4(0.0,1.0,0.0,0.0);else\n'+
-        'if (i == 2) mask=vec4(0.0,0.0,1.0,0.0);\n'+
-        'if (i == 3) mask=vec4(0.0,0.0,0.0,1.0);\n'+
-        
         'vec2 uv=(vTexCoord);\n'+
         'uv.y=fract(uv.y);\n'+
-        'vec4 c=vec4(dot(mask, texture2D(uSampler, uv)));\n'+
-        //'c.w=1.0;\n'+
+        'vec4 c=texture2D(uSampler, uv);\n'+
+
+        'float r = 0.0;\n'+
+        'int i=int(floor(vTexCoord.y));\n'+
+
+        'if (i == 0) r=c.x;else\n'+
+        'if (i == 1) r=c.y;else\n'+
+        'if (i == 2) r=c.z;else\n'+
+        'if (i == 3) r=c.w;\n'+
         
         'float u_buffer = uParams[0];\n'+
         'float u_gamma = uParams[1];\n'+
-        'float alpha = uColor.a * smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, c.r);\n'+
+        'float alpha = uColor.a * smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, r);\n'+
 
         'if(alpha < 0.01){ discard; }\n'+
         'gl_FragColor = vec4(uColor.rgb, alpha);\n'+
@@ -1066,16 +1064,38 @@ GpuShaders.tileVertexShader =
         'varying vec3 vTexCoord;\n'+  //u,v,fogFactor
 
     '#endif\n'+
+
                                              //0-3                            4-7          8-11            12-15 
     'uniform mat4 uMV, uProj, uParams;\n'+  //[zfactor, fogDensity, scale.xy][camVec.xyzw][transform.xyzw][scale.z, trans.xyz]
 
+    '#ifdef applySE\n'+
+        'uniform mat4 uParamsSE;\n'+
+    '#endif\n'+
+
     'void main() {\n'+
-        'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
-        'vec3 worldPos = vec3(aPosition.x * uParams[0][2] + uParams[3][1], aPosition.y * uParams[0][3] + uParams[3][2], aPosition.z * uParams[3][0] + uParams[3][3]);\n'+
+
+        '#ifdef applySE\n'+
+            'vec3 geoPos = aPosition*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1])+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
+            'vec3 geoPos2 = geoPos - vec3(uParamsSE[1][2], uParamsSE[1][3], uParamsSE[2][0]);\n'+
+            'geoPos.z *= uParamsSE[3][3];\n'+
+            'float ll = length(geoPos);\n'+
+            'vec3 v = geoPos * (1.0/(ll+0.0001));\n'+
+            'float h = ll - uParamsSE[3][2];\n'+
+            'float h2 = clamp(h, uParamsSE[2][1], uParamsSE[2][3]);\n'+
+            'float h3 = h;\n'+
+            'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
+            'geoPos2.xyz += v * (h - h3);\n'+
+            'vec4 camSpacePos = uMV * vec4(geoPos2, 1.0);\n'+
+            'float l = dot(v, vec3(uParams[1][0],uParams[1][1],uParams[1][2]));\n'+
+        '#else\n'+
+            'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
+            'vec3 worldPos = vec3(aPosition.x * uParams[0][2] + uParams[3][1], aPosition.y * uParams[0][3] + uParams[3][2], aPosition.z * uParams[3][0] + uParams[3][3]);\n'+
+            'float l = dot(normalize(worldPos.xyz), vec3(uParams[1][0],uParams[1][1],uParams[1][2]));\n'+
+        '#endif\n'+
+
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
         'float fogFactor = 1.0-exp(uParams[0][1] * camDist);\n'+
-        'float l = dot(normalize(worldPos.xyz), vec3(uParams[1][0],uParams[1][1],uParams[1][2]));\n'+
         'fogFactor = clamp((1.0-abs(l))*uParams[1][3] + fogFactor, 0.0, 1.0);\n'+
 
         '#ifdef onlyFog\n'+

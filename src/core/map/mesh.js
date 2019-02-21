@@ -439,7 +439,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             switch(type) {
             case VTS_MATERIAL_INTERNAL:
             case VTS_MATERIAL_INTERNAL_NOFOG:
-                program = renderer.progTile;
+                program = useSuperElevation ? renderer.progTileSE : renderer.progTile;
                 texcoordsAttr = 'aTexCoord';
                 attributes.push('aTexCoord');
                 break;
@@ -447,12 +447,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             case VTS_MATERIAL_EXTERNAL:
             case VTS_MATERIAL_EXTERNAL_NOFOG:
 
-                program = useSuperElevation ? renderer.progFlatShadeTileSE : renderer.progTile2;
+                program = useSuperElevation ? renderer.progTile2SE : renderer.progTile2;
                     
                 if (texture) {
                     gpuMask = texture.getGpuMaskTexture();
                     if (gpuMask) {
-                        program = renderer.progTile3;
+                        program = useSuperElevation ? renderer.progTile3SE : renderer.progTile3;
                     }
                 } 
                 
@@ -537,7 +537,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         m[14] = renderer.earthRadius;
         m[15] = renderer.earthERatio;
 
-        program.setMat4('uParams', m);
+        program.setMat4('uParamsSE', m);
 
         mv = renderer.camera.getModelviewFMatrix(); 
 
@@ -556,7 +556,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         program.setMat4('uProj', proj);
     }
 
-    if (!useSuperElevation && drawWireframe == 0) {
+    if (drawWireframe == 0) {
         var cv = this.map.camera.vector2, c = draw.atmoColor, t, bmin = submesh.bbox.min, bmax = submesh.bbox.max;
 
         switch(type) {
@@ -609,6 +609,17 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     } 
 
     gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null);
+
+    /*
+    //TODO: write
+    var gl = gpuSubmesh.gl;
+
+    if (gpuSubmesh.indexBuffer) {
+        gl.drawElements(gl.LINES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    }  else {
+        gl.drawArrays(gl.LINES, 0, this.vertexBuffer.numItems);
+    }
+    */
 
     this.stats.drawnFaces += this.faces;
     this.stats.drawCalls ++;

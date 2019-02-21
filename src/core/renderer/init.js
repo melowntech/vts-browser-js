@@ -51,6 +51,10 @@ RendererInit.prototype.initShaders = function() {
     renderer.progTile3 = new GpuProgram(gpu, '#define externalTex\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
     renderer.progFogTile = new GpuProgram(gpu, '#define onlyFog\n' + shaders.tileVertexShader, '#define onlyFog\n' + shaders.tileFragmentShader);
 
+    renderer.progTileSE = new GpuProgram(gpu, '#define applySE\n' + shaders.tileVertexShader, shaders.tileFragmentShader);
+    renderer.progTile2SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+    renderer.progTile3SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+
     renderer.progShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileShadedFragmentShader);
     renderer.progTShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileTShadedFragmentShader);
     renderer.progWireframeTile = new GpuProgram(gpu, shaders.tileWireframeVertexShader, shaders.tileWireframeFragmentShader);
