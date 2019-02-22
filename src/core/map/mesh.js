@@ -548,10 +548,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             m[12] = bmax[2] - bmin[2], m[13] = bmin[0], m[14] = bmin[1], m[15] = bmin[2];
 
             program.setMat4('uParams', m);
-                                /*[draw.zFactor, (type == VTS_MATERIAL_INTERNAL_NOFOG) ? 0 : draw.fogDensity, bmax[0] - bmin[0], bmax[1] - bmin[1],
-                                        v[0], v[1], v[2], v[3],
-                                        0,0,0,0,
-                                        bmax[2] - bmin[2], bmin[0], bmin[1], bmin[2]]);*/
 
             v[0] = c[0], v[1] = c[1], v[2] = c[2];
             program.setVec4('uParams2', v);
@@ -569,11 +565,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             m[12] = bmax[2] - bmin[2], m[13] = bmin[0], m[14] = bmin[1], m[15] = bmin[2];
 
             program.setMat4('uParams', m);
-
-            /* [draw.zFactor, (type == VTS_MATERIAL_EXTERNAL) ? draw.fogDensity : 0, bmax[0] - bmin[0], bmax[1] - bmin[1],
-                                        v[0], v[1], v[2], v[3],
-                                        t[0], t[1], t[2], t[3],
-                                        bmax[2] - bmin[2], bmin[0], bmin[1], bmin[2]]);*/
 
             v[0] = c[0], v[1] = c[1], v[2] = c[2]; v[3] = (type == VTS_MATERIAL_EXTERNAL) ? 1 : alpha;
             program.setVec4('uParams2', v);
@@ -606,7 +597,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         var gl = gpuSubmesh.gl;
 
         if (gpuSubmesh.indexBuffer) {
-            //gl.drawElements(gl.LINE_LOOP, gpuSubmesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
             for (var i = 0, li = gpuSubmesh.indexBuffer.numItems*2; i < li; i+=3) {
                 gl.drawElements(gl.LINE_LOOP, 3, gl.UNSIGNED_SHORT, i);
             }

@@ -181,9 +181,6 @@ struct Metanode {
         this.maxZ = streamData.getFloat32(stream.index, true); stream.index += 4;
         this.surrogatez = streamData.getFloat32(stream.index, true); stream.index += 4;
 
-        this.minZ2 = this.minZ;
-        this.maxZ2 = this.maxZ;
-
         //if (!(this.minZ > this.maxZ || this.surrogatez == Number.NEGATIVE_INFINITY)) {
           //  this.surrogatezHeight = this.surrogatez; //have to converted to nav srs height
         //}
@@ -212,6 +209,10 @@ struct Metanode {
         this.maxZ = this.maxHeight;
         this.surrogatez =this.minHeight;
     }
+
+    this.minZ2 = this.minZ;
+    this.maxZ2 = this.maxZ;
+
     
     if (this.metatile.version >= 3) {
         if (this.metatile.flags & (1<<7)) {
@@ -240,6 +241,8 @@ MapMetanode.prototype.clone = function() {
     node.maxHeight = this.maxHeight;
     node.minZ = this.minZ;
     node.maxZ = this.maxZ;
+    node.minZ2 = this.minZ2;
+    node.maxZ2 = this.maxZ2;
     node.llx = this.llx;
     node.lly = this.lly;
     node.urx = this.urx;

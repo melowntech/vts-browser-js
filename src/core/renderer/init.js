@@ -57,9 +57,6 @@ RendererInit.prototype.initShaders = function() {
 
     renderer.progShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileShadedFragmentShader);
     renderer.progTShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileTShadedFragmentShader);
-    renderer.progWireframeTile = new GpuProgram(gpu, shaders.tileWireframeVertexShader, shaders.tileWireframeFragmentShader);
-    renderer.progWireframeTile2 = new GpuProgram(gpu, shaders.tileWireframeVertexShader, shaders.tileWireframe2FragmentShader);
-    renderer.progWireframeTile3 = new GpuProgram(gpu, shaders.tileWireframe3VertexShader, shaders.tileWireframeFragmentShader);
     renderer.progFlatShadeTile = new GpuProgram(gpu, shaders.tileFlatShadeVertexShader, shaders.tileFlatShadeFragmentShader);
     renderer.progFlatShadeTileSE = new GpuProgram(gpu, shaders.tileFlatShadeVertexShaderSE, shaders.tileFlatShadeFragmentShader);
     renderer.progWireFrameBasic = new GpuProgram(gpu, shaders.tileFlatShadeVertexShader, shaders.tileWireFrameBasicShader);
@@ -83,6 +80,9 @@ RendererInit.prototype.initShaders = function() {
     renderer.progBBox2 = new GpuProgram(gpu, shaders.bbox2VertexShader, shaders.bboxFragmentShader);
 
     renderer.progLine = new GpuProgram(gpu, shaders.lineVertexShader, shaders.lineFragmentShader); //line
+    renderer.progLineSE = new GpuProgram(gpu, '#define applySE\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //line SE
+
+
     renderer.progELine = new GpuProgram(gpu, shaders.elineVertexShader, shaders.elineFragmentShader); //line elements 
     renderer.progLine3 = new GpuProgram(gpu, shaders.line3VertexShader, shaders.lineFragmentShader); //pixel line
     renderer.progELine3 = new GpuProgram(gpu, shaders.eline3VertexShader, shaders.elineFragmentShader); //pixel line elements

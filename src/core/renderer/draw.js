@@ -1135,6 +1135,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
     var screenPixelSize2, color = job.color;
+    var useSuperElevation = renderer.useSuperElevation;
 
     if (hitmapRender) {
         var c = renderer.hoverFeatureCounter;
@@ -1155,6 +1156,39 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         prog.setVec4('uColor', color);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+
+        if (useSuperElevation) {
+
+            var m = this.mBuffer;
+            var se = renderer.superElevation;
+
+            m[0] = submesh.bbox.min[0];
+            m[1] = submesh.bbox.min[1];
+            m[2] = submesh.bbox.min[2];
+
+            m[3] = submesh.bbox.side(0);
+            m[4] = submesh.bbox.side(1);
+            m[5] = submesh.bbox.side(2);
+
+            m[6] = cameraPos[0];
+            m[7] = cameraPos[1];
+            m[8] = cameraPos[2];
+
+            m[9] = se[0]; // h1
+            m[10] = se[1]; // f1
+            m[11] = se[2]; // h2
+            m[12] = se[6]; // inv dh
+            m[13] = se[5]; // df
+
+            m[14] = renderer.earthRadius;
+            m[15] = renderer.earthERatio;
+
+            program.setMat4('uParamsSE', m);
+
+            //mv = renderer.camera.getModelviewFMatrix(); 
+        } else {            
+
+        }
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
 

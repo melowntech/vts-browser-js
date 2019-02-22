@@ -77,7 +77,7 @@ var Core = function(element, config, coreInterface) {
 
         map16bitMeshes : true,
         mapOnlyOneUVs : true,
-        mapIndexBuffers : false,
+        mapIndexBuffers : true,
         mapAsyncImageDecode : true,
 
         mapFeatureGridCells : 31,

@@ -28,8 +28,29 @@ GpuShaders.bboxFragmentShader = 'precision mediump float;\n'+
 GpuShaders.lineVertexShader = //line
     'attribute vec3 aPosition;\n'+
     'uniform mat4 uMVP;\n'+
-    'void main(){ \n'+
-        'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+
+    '#ifdef applySE\n'+
+        'uniform mat4 uParamsSE;\n'+
+    '#endif\n'+
+
+    'void main() {\n'+
+
+        '#ifdef applySE\n'+
+            'vec3 geoPos = aPosition*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1])+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
+            'vec3 geoPos2 = geoPos - vec3(uParamsSE[1][2], uParamsSE[1][3], uParamsSE[2][0]);\n'+
+            'geoPos.z *= uParamsSE[3][3];\n'+
+            'float ll = length(geoPos);\n'+
+            'vec3 v = geoPos * (1.0/(ll+0.0001));\n'+
+            'float h = ll - uParamsSE[3][2];\n'+
+            'float h2 = clamp(h, uParamsSE[2][1], uParamsSE[2][3]);\n'+
+            'float h3 = h;\n'+
+            'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
+            'geoPos2.xyz += v * (h - h3);\n'+
+            'gl_Position = uMVP * vec4(geoPos2, 1.0);\n'+
+        '#else\n'+
+            'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+        '#endif\n'+
+        
     '}';
 
 
@@ -1294,89 +1315,6 @@ GpuShaders.tileFlatShadeFragmentShader = 'precision mediump float;\n'+
         '#else\n'+
             'gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n'+
         '#endif\n'+
-    '}';
-
-//textured wire frame tile mesh
-GpuShaders.tileWireframeVertexShader =
-    'attribute vec3 aPosition;\n'+
-    'attribute vec2 aTexCoord;\n'+
-    'attribute vec3 aBarycentric;\n'+
-    'uniform mat4 uMV, uProj;\n'+
-    'uniform float uFogDensity;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'varying float vFogFactor;\n'+
-    'void main() {\n'+
-        'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
-        'gl_Position = uProj * camSpacePos;\n'+
-        'float camDist = length(camSpacePos.xyz);\n'+
-        'vFogFactor = exp(uFogDensity * camDist);\n'+
-        'vTexCoord = aTexCoord;\n'+
-        'vBarycentric = aBarycentric;\n'+
-    '}';
-
-
-GpuShaders.tileWireframeFragmentShader = 'precision mediump float;\n'+
-    '#extension GL_OES_standard_derivatives : enable\n'+
-    'uniform sampler2D uSampler;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'varying float vFogFactor;\n'+
-    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
-    //'const vec4 uFogColor = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
-    'float edgeFactor(){\n'+
-        '#ifdef GL_OES_standard_derivatives\n'+
-            'vec3 d = fwidth(vBarycentric);\n'+
-            'vec3 a3 = smoothstep(vec3(0.0), d*1.0, vBarycentric);\n'+
-            'return min(min(a3.x, a3.y), a3.z);\n'+
-        '#else\n'+
-            'float a = min(min(vBarycentric.x, vBarycentric.y), vBarycentric.z);\n'+
-            'return a > 0.1 ? 1.0 : smoothstep(0.0,1.0,a*10.0);\n'+
-        '#endif\n'+
-    '}\n'+
-    'void main() {\n'+
-        'gl_FragColor = mix(uFogColor, vec4( mix(vec3(0.0), texture2D(uSampler, vTexCoord).rgb, edgeFactor()) , 1.0), vFogFactor);\n'+
-    '}';
-
-
-GpuShaders.tileWireframe2FragmentShader = 'precision mediump float;\n'+
-    '#extension GL_OES_standard_derivatives : enable\n'+
-    'uniform sampler2D uSampler;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'varying float vFogFactor;\n'+
-    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
-    'float edgeFactor(){\n'+
-        '#ifdef GL_OES_standard_derivatives\n'+
-            'vec3 d = fwidth(vBarycentric);\n'+
-            'vec3 a3 = smoothstep(vec3(0.0), d*1.0, vBarycentric);\n'+
-            'return min(min(a3.x, a3.y), a3.z);\n'+
-        '#else\n'+
-            'float a = min(min(vBarycentric.x, vBarycentric.y), vBarycentric.z);\n'+
-            'return a > 0.1 ? 1.0 : smoothstep(0.0,1.0,a*10.0);\n'+
-        '#endif\n'+
-    '}\n'+
-    'void main() {\n'+
-        'if (edgeFactor() < 0.5){ gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); } else { discard; }'+ 
-    '}';
-
-//textured wire frame tile mesh
-GpuShaders.tileWireframe3VertexShader =
-    'attribute vec3 aPosition;\n'+
-    'attribute vec2 aTexCoord2;\n'+
-    'attribute vec3 aBarycentric;\n'+
-    'uniform mat4 uMV, uProj;\n'+
-    'uniform float uFogDensity;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'varying float vFogFactor;\n'+
-    'void main() {\n'+
-        'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
-        'gl_Position = uProj * camSpacePos;\n'+
-        'float camDist = length(camSpacePos.xyz);\n'+
-        'vFogFactor = exp(uFogDensity * camDist);\n'+
-        'vTexCoord = aTexCoord2;\n'+
-        'vBarycentric = aBarycentric;\n'+
     '}';
 
 //depth encoded tile mesh
