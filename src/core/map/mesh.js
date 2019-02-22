@@ -407,34 +407,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     } else if (type == VTS_MATERIAL_FLAT) {
         program = renderer.progFlatShadeTile;
     } else {
-        if (drawWireframe > 0) {
-            switch (drawWireframe) {
-            case 2: program = renderer.progWireframeTile2;  break;
-            case 3: program = renderer.progFlatShadeTile;   break;
+        if (drawWireframe > 0 && type == VTS_MATERIAL_FOG) {
+            return;
+        }
 
-            case 1:
-    
-                switch(type) {
-                case VTS_MATERIAL_INTERNAL:
-                case VTS_MATERIAL_INTERNAL_NOFOG:
-                    program = renderer.progWireframeTile;
-                    texcoordsAttr = 'aTexCoord';
-                    attributes.push('aTexCoord');
-                    break;
-    
-                case VTS_MATERIAL_EXTERNAL:
-                case VTS_MATERIAL_EXTERNAL_NOFOG:
-                    program = renderer.progWireframeTile3;
-                    texcoords2Attr = 'aTexCoord2';
-                    attributes.push('aTexCoord2');
-                    break;
-    
-                case VTS_MATERIAL_FOG:
-                    return;
-                }
-    
-                break;
-            }
+        if (drawWireframe == 1 || drawWireframe == 3) {
+            program = useSuperElevation ? renderer.progFlatShadeTileSE : renderer.progFlatShadeTile;
         } else {
             switch(type) {
             case VTS_MATERIAL_INTERNAL:
@@ -608,18 +586,36 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         this.stats.gpuRenderUsed += gpuSubmesh.getSize();
     } 
 
-    gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null);
+    gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null, (drawWireframe == 2));
 
-    /*
-    //TODO: write
-    var gl = gpuSubmesh.gl;
 
-    if (gpuSubmesh.indexBuffer) {
-        gl.drawElements(gl.LINES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-    }  else {
-        gl.drawArrays(gl.LINES, 0, this.vertexBuffer.numItems);
+    if (drawWireframe == 1 || drawWireframe == 2) { //very slow debug only
+
+        program = useSuperElevation ? renderer.progWireFrameBasicSE : renderer.progWireFrameBasic;
+        renderer.gpu.useProgram(program, attributes, gpuMask);
+
+        if (useSuperElevation) {
+            program.setMat4('uParamsSE', m);
+        }
+
+        program.setMat4('uMV', mv);
+        program.setVec4('uColor', [0,0,0,1]);
+
+        program.setMat4('uProj', proj, renderer.getZoffsetFactor([-0.001,0,0]));
+
+        var gl = gpuSubmesh.gl;
+
+        if (gpuSubmesh.indexBuffer) {
+            //gl.drawElements(gl.LINE_LOOP, gpuSubmesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+            for (var i = 0, li = gpuSubmesh.indexBuffer.numItems*2; i < li; i+=3) {
+                gl.drawElements(gl.LINE_LOOP, 3, gl.UNSIGNED_SHORT, i);
+            }
+        }  else {
+            for (var i = 0, li = gpuSubmesh.vertexBuffer.numItems*2; i < li; i+=3) {
+                gl.drawArrays(gl.LINE_LOOP, i, 3);
+            }
+        }
     }
-    */
 
     this.stats.drawnFaces += this.faces;
     this.stats.drawCalls ++;

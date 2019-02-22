@@ -204,8 +204,13 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 87:
                 case 119:
-                    var value = debug.drawWireframe + 1;
-                    debug.drawWireframe = value > 2 ? 0 : value;
+                    
+                    if (debug.drawWireframe == 3) {
+                        debug.drawWireframe = 1;
+                    } else {
+                        var value = debug.drawWireframe + 1;
+                        debug.drawWireframe = value > 2 ? 0 : value;
+                    }
                     break; //key W pressed
 
                 case 70:
