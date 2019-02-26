@@ -502,9 +502,9 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         m[4] = submesh.bbox.side(1);
         m[5] = submesh.bbox.side(2);
 
-        m[6] = cameraPos[0];
-        m[7] = cameraPos[1];
-        m[8] = cameraPos[2];
+        //m[6] = 0;
+        //m[7] = 0;
+        //m[8] = 0;
 
         m[9] = se[0]; // h1
         m[10] = se[1]; // f1
@@ -517,7 +517,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
         program.setMat4('uParamsSE', m);
 
-        mv = renderer.camera.getModelviewFMatrix(); 
+        //mv = renderer.camera.getModelviewFMatrix(); 
+        mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrixSE(cameraPos, m), mv);
 
     } else {
         mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrix(cameraPos, m), mv);

@@ -17,6 +17,9 @@ var RendererDraw = function(renderer) {
     this.gpu = renderer.gpu;
     this.gl = renderer.gpu.gl;
     this.rmap = renderer.rmap;
+    this.mBuffer = new Float32Array(16);
+    this.mBuffer2 = new Float32Array(16);
+    this.vBuffer = new Float32Array(4);
 };
 
 
@@ -270,28 +273,9 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
             culling: false,
             zequal: false
         });
-
-        /*
-        if (depthTest !== true) {
-            gl.disable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            gl.enable(gl.BLEND);
-        }
-    
-        if (writeDepth === false) {
-            gl.depthMask(false); 
-        }
-    
-        gl.disable(gl.STENCIL_TEST);
-        gl.disable(gl.CULL_FACE);
-        */
     }
 
-    var prog = renderer.progLine4;   
+    var prog = renderer.useSuperElevation ? renderer.progLine4SE : renderer.progLine4;
 
     gpu.useProgram(prog, ['aPosition']);
     prog.setMat4('uMVP', renderer.imageProjectionMatrix, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
@@ -303,20 +287,6 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
 
     if (useState !== true) {
         gpu.setState(tmpState);
-        /*        
-        if (depthTest !== true) {
-            gl.enable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.disable(gl.BLEND);
-        }
-    
-        if (writeDepth === false) {
-            gl.depthMask(true); 
-        }
-    
-        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -342,23 +312,6 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
             culling: false,
             zequal: false
         });
-
-        /*
-        if (depthTest !== true) {
-            gl.disable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            gl.enable(gl.BLEND);
-        }
-    
-        if (writeDepth === false) {
-            gl.depthMask(false); 
-        }
-    
-        gl.disable(gl.CULL_FACE);*/
     }
 
     var prog = renderer.progImage;
@@ -392,21 +345,6 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
 
     if (useState !== true) {
         gpu.setState(tmpState);
-
-        /*
-        if (writeDepth === false) {
-            gl.depthMask(true); 
-        }
-    
-        if (depthTest !== true) {
-            gl.enable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.disable(gl.BLEND);
-        }
-    
-        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -427,23 +365,6 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
             culling: false,
             zequal: false
         });
-
-        /*        
-        if (depthTest !== true) {
-            gl.disable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            gl.enable(gl.BLEND);
-        }
-    
-        if (writeDepth === false) {
-            gl.depthMask(false); 
-        }
-    
-        gl.disable(gl.CULL_FACE);*/
     }
 
     var prog = renderer.progImage;
@@ -476,21 +397,6 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
 
     if (useState !== true) {
         gpu.setState(tmpState);
-
-        /*
-        if (writeDepth === false) {
-            gl.depthMask(true); 
-        }
-    
-        if (depthTest !== true) {
-            gl.enable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.disable(gl.BLEND);
-        }
-    
-        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -553,17 +459,6 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
           culling: false,
           zequal: !(depth == null)
         });
-
-        /*
-        gl.disable(gl.CULL_FACE);
-    
-    
-        if (depth == null) {
-            gl.disable(gl.DEPTH_TEST);
-        } else {
-            gl.depthFunc(gl.LEQUAL);
-            gl.enable(gl.DEPTH_TEST);
-        }*/
     }
 
     var prog = renderer.progImage;
@@ -649,13 +544,6 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
 
     if (useState !== true) {
         gpu.setState(tmpState);
-
-        /*
-        gl.enable(gl.CULL_FACE);
-    
-        if (depth == null) {
-            gl.enable(gl.DEPTH_TEST);
-        }*/
     }
 };
 
@@ -1151,28 +1039,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         var debugWires = (gpu === 0); //just generate false value to avoid compiler warnings;
 
-        prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
-        gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
-
-        prog.setVec4('uColor', color);
-        prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
-
         if (useSuperElevation) {
 
             var m = this.mBuffer;
             var se = renderer.superElevation;
 
-            m[0] = submesh.bbox.min[0];
-            m[1] = submesh.bbox.min[1];
-            m[2] = submesh.bbox.min[2];
+            m[0] = job.bbox.min[0];
+            m[1] = job.bbox.min[1];
+            m[2] = job.bbox.min[2];
 
-            m[3] = submesh.bbox.side(0);
-            m[4] = submesh.bbox.side(1);
-            m[5] = submesh.bbox.side(2);
-
-            m[6] = cameraPos[0];
-            m[7] = cameraPos[1];
-            m[8] = cameraPos[2];
+            m[3] = 1;
+            m[4] = 1;
+            m[5] = 1;
 
             m[9] = se[0]; // h1
             m[10] = se[1]; // f1
@@ -1183,12 +1061,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             m[14] = renderer.earthRadius;
             m[15] = renderer.earthERatio;
 
-            program.setMat4('uParamsSE', m);
+            prog = advancedHitPass ? job.program2 : renderer.progLineSE;
+            gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
+            prog.setMat4('uParamsSE', m);
 
-            //mv = renderer.camera.getModelviewFMatrix(); 
         } else {            
 
+            prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
+            gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
         }
+
+        prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+        prog.setVec4('uColor', color);
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
 
@@ -1218,7 +1102,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_PIXEL_LINE:
     case VTS_JOB_PIXEL_TLINE:
         gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
-            
+
         prog = advancedHitPass ? job.program2 : job.program;
         texture = null;
         var textureParams = [0,0,0,0];
@@ -1288,7 +1172,35 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             screenPixelSize2 = [ screenPixelSize[0] * renderer.curSize[1], screenPixelSize[1] * renderer.curSize[1]];
         }
 
-        gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
+        if (useSuperElevation) {
+            prog = advancedHitPass ? job.program2 : renderer.progLine3SE;
+
+            var m = this.mBuffer;
+            var se = renderer.superElevation;
+
+            m[0] = job.bbox.min[0];
+            m[1] = job.bbox.min[1];
+            m[2] = job.bbox.min[2];
+
+            m[3] = 1;
+            m[4] = 1;
+            m[5] = 1;
+
+            m[9] = se[0]; // h1
+            m[10] = se[1]; // f1
+            m[11] = se[2]; // h2
+            m[12] = se[6]; // inv dh
+            m[13] = se[5]; // df
+
+            m[14] = renderer.earthRadius;
+            m[15] = renderer.earthERatio;
+
+            gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
+            prog.setMat4('uParamsSE', m);
+
+        } else {
+            gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
+        }           
 
         prog.setVec4('uColor', color);
         prog.setVec2('uScale', screenPixelSize2);
@@ -2213,10 +2125,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
 
             prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
-
             prog.setMat4('uData', job.singleBuffer );
-
-            //prog.setVec4('uColor', hitmapRender ? color : color2);
             prog.setVec4('uColor', color);
             prog.setFloat('uDepth', depth);
 
@@ -2240,16 +2149,10 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
             gpu.useProgram(prog, ['aPosition']);
             prog.setSampler('uSampler', 0);
-            //prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
             prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
 
             prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], 1, stickShift*2]);
-            //prog.setVec3('uOrigin', job.origin);
-            //if (renderer.moving) {
-                prog.setVec3('uOrigin', pp);
-            //} else {
-            //prog.setVec3('uOrigin', [Math.round(pp[0]),Math.round(pp[1]), pp[2]]);
-            //}
+            prog.setVec3('uOrigin', pp);
             prog.setVec4('uColor', hitmapRender ? color : color2);
             prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
             lj = hitmapRender ? 1 : 2;

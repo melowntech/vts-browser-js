@@ -135,6 +135,7 @@ GpuGroup.prototype.addLineJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+    job.bbox = this.bbox;
 
     if (!job.program.isReady()) {
         return;
@@ -208,6 +209,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+    job.bbox = this.bbox;
 
     if (data['texture'] != null) {
         var texture = data['texture'];

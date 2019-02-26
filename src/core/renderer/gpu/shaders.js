@@ -25,19 +25,78 @@ GpuShaders.bboxFragmentShader = 'precision mediump float;\n'+
     '}';
 
 
-GpuShaders.lineVertexShader = //line
-    'attribute vec3 aPosition;\n'+
+GpuShaders.line3VertexShader = //pixel line
+    'attribute vec4 aPosition;\n'+
+    'attribute vec4 aNormal;\n'+
     'uniform mat4 uMVP;\n'+
+    'uniform vec2 uScale;\n'+
+    'void main(){ \n'+
+        'vec4 pp0 = (uMVP * vec4(aPosition.xyz, 1.0));\n'+
+        'if (aNormal.w == 0.0) {\n'+
+            'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
+        '} else {\n'+
+            'vec2 pp1 = pp0.xy / pp0.w;\n'+
+            'vec4 pp3 = (uMVP * vec4(aNormal.xyz, 1.0));\n'+
+            'vec2 pp2 = pp3.xy / pp3.w;\n'+
+            'vec2 n = normalize(pp2 - pp1);\n'+
+            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
+        '}\n'+
+    '}';
+
+
+GpuShaders.lineVertexShader = //line
+    'uniform mat4 uMVP;\n'+
+
+    '#ifdef pixelLine\n'+
+        'attribute vec4 aPosition;\n'+
+        'attribute vec4 aNormal;\n'+
+
+        '#ifdef dataPoints\n'+
+            'uniform vec3 uScale;\n'+
+        '#else\n'+
+            'uniform vec2 uScale;\n'+
+        '#endif\n'+
+    '#else\n'+
+        'attribute vec3 aPosition;\n'+
+    '#endif\n'+
 
     '#ifdef applySE\n'+
         'uniform mat4 uParamsSE;\n'+
     '#endif\n'+
 
+    '#ifdef withElements\n'+
+        'attribute float aElement;\n'+
+        'varying float vElement;\n'+
+    '#endif\n'+
+
+    '#ifdef dataPoints\n'+
+       'uniform vec3 uPoints[32];\n'+
+    '#endif\n'+
+
     'void main() {\n'+
 
+        '#ifdef withElements\n'+
+            'vElement = aElement;\n'+
+        '#endif\n'+
+
+        '#ifdef dataPoints\n'+
+            'vec3 p1 = uPoints[int(aPosition.x)];\n'+
+        '#else\n'+
+            'vec3 p1 = aPosition.xyz;\n'+
+        '#endif\n'+
+
+        '#ifdef pixelLine\n'+
+            '#ifdef dataPoints\n'+
+                'vec3 p2 = uPoints[int(aPosition.y)];\n'+
+            '#else\n'+
+                'vec3 p2 = aNormal.xyz;\n'+
+            '#endif\n'+
+        '#endif\n'+
+
+
         '#ifdef applySE\n'+
-            'vec3 geoPos = aPosition*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1])+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
-            'vec3 geoPos2 = geoPos - vec3(uParamsSE[1][2], uParamsSE[1][3], uParamsSE[2][0]);\n'+
+            'vec3 geoPos2 = p1.xyz*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1]);\n'+
+            'vec3 geoPos = geoPos2+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
             'geoPos.z *= uParamsSE[3][3];\n'+
             'float ll = length(geoPos);\n'+
             'vec3 v = geoPos * (1.0/(ll+0.0001));\n'+
@@ -46,18 +105,130 @@ GpuShaders.lineVertexShader = //line
             'float h3 = h;\n'+
             'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
             'geoPos2.xyz += v * (h - h3);\n'+
-            'gl_Position = uMVP * vec4(geoPos2, 1.0);\n'+
+
+            '#ifdef pixelLine\n'+
+
+                'vec4 pp0 = uMVP * vec4(geoPos2, 1.0);\n'+
+
+                '#ifdef dataPoints\n'+
+
+                    'if (p1.y < 0.0) {\n'+
+                        'if (p1.y == -1.0) {\n'+
+                            'gl_Position = pp0;\n'+
+                        '} else {\n'+
+                            'gl_Position = pp0 + vec4((vec3(-sin(p1.z)*uScale.x*uScale.z, cos(p1.z)*uScale.y*uScale.z, 0.0)), 0.0);\n'+
+                        '}\n'+
+                    '} else {\n'+
+                        'geoPos2 = p2.xyz*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1]);\n'+
+                        'geoPos = geoPos2+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
+                        'geoPos.z *= uParamsSE[3][3];\n'+
+                        'll = length(geoPos);\n'+
+                        'v = geoPos * (1.0/(ll+0.0001));\n'+
+                        'h = ll - uParamsSE[3][2];\n'+
+                        'h2 = clamp(h, uParamsSE[2][1], uParamsSE[2][3]);\n'+
+                        'h3 = h;\n'+
+                        'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
+                        'geoPos2.xyz += v * (h - h3);\n'+
+
+                        'vec4 pp3 = uMVP * vec4(geoPos2, 1.0);\n'+
+                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
+                        'vec2 pp2 = pp3.xy / pp3.w;\n'+
+                        'vec2 n = normalize(pp2 - pp1);\n'+
+                        'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n'+
+                    '}\n'+
+
+                '#else\n'+
+
+                    'if (aNormal.w == 0.0) {\n'+
+                        'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
+                    '} else {\n'+
+                        'geoPos2 = p2.xyz*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1]);\n'+
+                        'geoPos = geoPos2+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
+                        'geoPos.z *= uParamsSE[3][3];\n'+
+                        'll = length(geoPos);\n'+
+                        'v = geoPos * (1.0/(ll+0.0001));\n'+
+                        'h = ll - uParamsSE[3][2];\n'+
+                        'h2 = clamp(h, uParamsSE[2][1], uParamsSE[2][3]);\n'+
+                        'h3 = h;\n'+
+                        'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
+                        'geoPos2.xyz += v * (h - h3);\n'+
+
+                        'vec4 pp3 = uMVP * vec4(geoPos2, 1.0);\n'+
+                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
+                        'vec2 pp2 = pp3.xy / pp3.w;\n'+
+                        'vec2 n = normalize(pp2 - pp1);\n'+
+                        'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
+                    '}\n'+
+
+                '#endif\n'+
+
+            '#else\n'+
+                'gl_Position = uMVP * vec4(geoPos2, 1.0);\n'+
+            '#endif\n'+
+
         '#else\n'+
-            'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+
+
+            '#ifdef pixelLine\n'+
+
+                'vec4 pp0 = (uMVP * vec4(p1.xyz, 1.0));\n'+
+
+                '#ifdef dataPoints\n'+
+
+                    'if (p1.y < 0.0) {\n'+
+                        'if (p1.y == -1.0) {\n'+
+                            'gl_Position = pp0;\n'+
+                        '} else {\n'+
+                            'gl_Position = pp0 + vec4((vec3(-sin(p1.z)*uScale.x*uScale.z, cos(p1.z)*uScale.y*uScale.z, 0.0)), 0.0);\n'+
+                        '}\n'+
+                    '} else {\n'+
+                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
+                        'vec4 pp3 = (uMVP * vec4(p2.xyz, 1.0));\n'+
+                        'vec2 pp2 = pp3.xy / pp3.w;\n'+
+                        'vec2 n = normalize(pp2 - pp1);\n'+
+                        'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n'+
+                    '}\n'+
+
+                '#else\n'+
+
+                    'if (aNormal.w == 0.0) {\n'+
+                        'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
+                    '} else {\n'+
+                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
+                        'vec4 pp3 = (uMVP * vec4(p2.xyz, 1.0));\n'+
+                        'vec2 pp2 = pp3.xy / pp3.w;\n'+
+                        'vec2 n = normalize(pp2 - pp1);\n'+
+                        'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
+                    '}\n'+
+
+                '#endif\n'+
+
+            '#else\n'+
+                'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+            '#endif\n'+
+
         '#endif\n'+
         
     '}';
 
 
 GpuShaders.lineFragmentShader = 'precision mediump float;\n'+ //line
+
     'uniform vec4 uColor;\n'+
+
+    '#ifdef withElements\n'+
+        'varying float vElement;\n'+
+    '#endif\n'+
+
     'void main() {\n'+
-        'gl_FragColor = uColor;\n'+
+
+        '#ifdef withElements\n'+
+            'gl_FragColor.xyz = fract(vec3(1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vElement) + (-0.5/255.0);\n'+
+            'gl_FragColor.w = 1.0;\n'+
+        '#else\n'+
+            'gl_FragColor = uColor;\n'+
+        '#endif\n'+
+
     '}';
 
 
@@ -90,6 +261,7 @@ GpuShaders.lineWireframeFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = vec4( mix(vec3(0.0), uColor.rgb, edgeFactor()) , uColor.a);\n'+
     '}';
 
+/*
 GpuShaders.elineVertexShader = //line elements
     'attribute vec3 aPosition;\n'+
     'attribute float aElement;\n'+
@@ -108,8 +280,8 @@ GpuShaders.elineFragmentShader = 'precision mediump float;\n'+ //line elements
         'gl_FragColor.xyz = fract(vec3(1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vElement) + (-0.5/255.0);\n'+
         'gl_FragColor.w = 1.0;\n'+
     '}';
-
-
+*/
+/*
 GpuShaders.line3VertexShader = //pixel line
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
@@ -148,7 +320,8 @@ GpuShaders.eline3VertexShader = //pixel line elements
             'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
         '}\n'+
     '}';
-
+*/
+/*
 GpuShaders.line4VertexShader = //direct linestring pixel line
     'attribute vec3 aPosition;\n'+
     'uniform mat4 uMVP;\n'+
@@ -170,7 +343,7 @@ GpuShaders.line4VertexShader = //direct linestring pixel line
             'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n'+
         '}\n'+
     '}';
-
+*/
 GpuShaders.tlineVertexShader = // textured line
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
@@ -1096,8 +1269,8 @@ GpuShaders.tileVertexShader =
     'void main() {\n'+
 
         '#ifdef applySE\n'+
-            'vec3 geoPos = aPosition*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1])+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
-            'vec3 geoPos2 = geoPos - vec3(uParamsSE[1][2], uParamsSE[1][3], uParamsSE[2][0]);\n'+
+            'vec3 geoPos2 = aPosition*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1]);\n'+
+            'vec3 geoPos = geoPos2+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
             'geoPos.z *= uParamsSE[3][3];\n'+
             'float ll = length(geoPos);\n'+
             'vec3 v = geoPos * (1.0/(ll+0.0001));\n'+

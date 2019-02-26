@@ -81,12 +81,17 @@ RendererInit.prototype.initShaders = function() {
 
     renderer.progLine = new GpuProgram(gpu, shaders.lineVertexShader, shaders.lineFragmentShader); //line
     renderer.progLineSE = new GpuProgram(gpu, '#define applySE\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //line SE
+    renderer.progELine = new GpuProgram(gpu, '#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //line elements 
+    renderer.progELineSE = new GpuProgram(gpu, '#define applySE\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //line SE elements 
 
+    renderer.progLine3 = new GpuProgram(gpu, '#define pixelLine\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //pixel line
+    renderer.progELine3 = new GpuProgram(gpu, '#define pixelLine\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //pixel line elements
+    renderer.progLine3SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //pixel line SE
+    renderer.progELine3SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //pixel line SE elements
 
-    renderer.progELine = new GpuProgram(gpu, shaders.elineVertexShader, shaders.elineFragmentShader); //line elements 
-    renderer.progLine3 = new GpuProgram(gpu, shaders.line3VertexShader, shaders.lineFragmentShader); //pixel line
-    renderer.progELine3 = new GpuProgram(gpu, shaders.eline3VertexShader, shaders.elineFragmentShader); //pixel line elements
-    renderer.progLine4 = new GpuProgram(gpu, shaders.line4VertexShader, shaders.lineFragmentShader); //direct linestring pixel line
+    renderer.progLine4 = new GpuProgram(gpu, '#define pixelLine\n#define dataPoints\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //direct linestring pixel line
+    renderer.progLine4SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n#define dataPoints\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //direct linestring pixel line SE
+
     renderer.progRLine = new GpuProgram(gpu, shaders.rlineVertexShader, shaders.lineFragmentShader); //dynamic width line
     renderer.progERLine = new GpuProgram(gpu, shaders.erlineVertexShader, shaders.elineFragmentShader); //dynamic width line elements
     renderer.progTLine = new GpuProgram(gpu, shaders.tlineVertexShader, shaders.tlineFragmentShader); //textured line
