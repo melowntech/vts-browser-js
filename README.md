@@ -60,7 +60,7 @@ The open-source [CesiumJS](https://cesiumjs.org) is an excellent JavaScript 3D m
 | Open-source backend components | yes | no |
 | Backend data-fusion capabilities | yes | no |
 | Support for international writing systems | yes | limited |
-| Compact-size library (gzipped and minified) | 163&nbsp;KB | 577&nbsp;KB&nbsp;+&nbsp;Workers |
+| Compact-size library (gzipped and minified) | 221&nbsp;KB | 577&nbsp;KB&nbsp;+&nbsp;Workers |
 
 ## Live Demos
 

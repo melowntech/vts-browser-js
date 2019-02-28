@@ -302,6 +302,29 @@ Renderer.prototype.getSuperElevatedHeight = function(height) {
     return height * (se[1] + ((h - se[0]) * se[6]) * se[5]);
 };
 
+Renderer.prototype.getUnsuperElevatedHeight = function(height) {
+    var se = this.superElevation, s = height;
+
+    if (se[1] == se[3]) {
+        return s / se[1];
+    }
+
+    if (s <= se[0] * se[1]) {  // 0 - h1, 1 - f1, 2 - h2, 3 - f2, 4 - dh, 5 - df, 6 - invdh
+        return s / se[1];
+    }
+
+    if (s >= se[2] * se[3]) {
+        return s / se[3];
+    }
+
+
+    var h1 = se[0], f1 = se[1], h2 = se[2], f2 = se[3], 
+
+    // and f1!=f2 and h1!=h2
+
+    return -(Math.sqrt(-2*f2*(f1*h1*h2 + 2*h1*s - 2*h2*s) + f1*(f1*h2*h2 + 4*h1*s - 4*h2*s) + f2*f2*h1*h1) - f1*h2 + f2*h1)/(2*(f1 - f2));
+};
+
 
 Renderer.prototype.getEllipsoidHeight = function(pos, shift) {
     var p, p2;

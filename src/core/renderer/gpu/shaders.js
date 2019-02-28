@@ -53,6 +53,7 @@ GpuShaders.lineVertexShader = //line
 
         '#ifdef dataPoints\n'+
             'uniform vec3 uScale;\n'+
+            'uniform vec3 uPoints[32];\n'+
         '#else\n'+
             'uniform vec2 uScale;\n'+
         '#endif\n'+
@@ -67,10 +68,6 @@ GpuShaders.lineVertexShader = //line
     '#ifdef withElements\n'+
         'attribute float aElement;\n'+
         'varying float vElement;\n'+
-    '#endif\n'+
-
-    '#ifdef dataPoints\n'+
-       'uniform vec3 uPoints[32];\n'+
     '#endif\n'+
 
     'void main() {\n'+
@@ -182,8 +179,8 @@ GpuShaders.lineVertexShader = //line
                             'gl_Position = pp0 + vec4((vec3(-sin(p1.z)*uScale.x*uScale.z, cos(p1.z)*uScale.y*uScale.z, 0.0)), 0.0);\n'+
                         '}\n'+
                     '} else {\n'+
-                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
                         'vec4 pp3 = (uMVP * vec4(p2.xyz, 1.0));\n'+
+                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
                         'vec2 pp2 = pp3.xy / pp3.w;\n'+
                         'vec2 n = normalize(pp2 - pp1);\n'+
                         'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n'+
@@ -194,8 +191,8 @@ GpuShaders.lineVertexShader = //line
                     'if (aNormal.w == 0.0) {\n'+
                         'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
                     '} else {\n'+
-                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
                         'vec4 pp3 = (uMVP * vec4(p2.xyz, 1.0));\n'+
+                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
                         'vec2 pp2 = pp3.xy / pp3.w;\n'+
                         'vec2 n = normalize(pp2 - pp1);\n'+
                         'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
