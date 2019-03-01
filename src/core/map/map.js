@@ -1092,6 +1092,10 @@ Map.prototype.getHitCoords = function(screenX, screenY, mode, lod) {
 
     var navCoords = this.convert.convertCoords(worldPos, 'physical', 'navigation');
 
+    if (this.renderer.useSuperElevation) {
+        navCoords[2] = this.renderer.getUnsuperElevatedHeight(navCoords[2]);
+    }
+
     if (mode == 'float') {
         lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(navCoords, 100, this.config.mapNavSamplesPerViewExtent);
         var surfaceHeight = this.measure.getSurfaceHeight(navCoords, lod);

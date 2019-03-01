@@ -303,6 +303,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+    job.bbox = this.bbox;
 
     job.files = data['files'] || [];
     var fonts = data['fonts'] || ['#default'];

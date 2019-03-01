@@ -275,7 +275,7 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
         });
     }
 
-    var prog = renderer.useSuperElevation ? renderer.progLine4SE : renderer.progLine4;
+    var prog = renderer.progLine4;
 
     gpu.useProgram(prog, ['aPosition']);
     prog.setMat4('uMVP', renderer.imageProjectionMatrix, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
@@ -1259,9 +1259,33 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             texture = renderer.whiteTexture;
         }
 
-        prog = job.program; //renderer.progText;
-
+        prog = renderer.useSuperElevation ? renderer.progText2SE : job.program;
         gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+
+        if (useSuperElevation) {
+            var m = this.mBuffer;
+            var se = renderer.superElevation;
+
+            m[0] = job.bbox.min[0];
+            m[1] = job.bbox.min[1];
+            m[2] = job.bbox.min[2];
+
+            m[3] = 1;
+            m[4] = 1;
+            m[5] = 1;
+
+            m[9] = se[0]; // h1
+            m[10] = se[1]; // f1
+            m[11] = se[2]; // h2
+            m[12] = se[6]; // inv dh
+            m[13] = se[5]; // df
+
+            m[14] = renderer.earthRadius;
+            m[15] = renderer.earthERatio;
+
+            prog.setMat4('uParamsSE', m);
+        }  
+
         prog.setSampler('uSampler', 0);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uVec', renderer.labelVector);

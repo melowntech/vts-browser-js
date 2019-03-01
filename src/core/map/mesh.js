@@ -402,7 +402,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
 
     if (type == VTS_MATERIAL_DEPTH) {
-        program = renderer.progDepthTile;
+        program = useSuperElevation ? renderer.progDepthTileSE : renderer.progDepthTile;
         //texcoordsAttr = "aTexCoord";
     } else if (type == VTS_MATERIAL_FLAT) {
         program = renderer.progFlatShadeTile;

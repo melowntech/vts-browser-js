@@ -24,23 +24,9 @@ GpuShaders.bboxFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n'+
     '}';
 
-
-GpuShaders.line3VertexShader = //pixel line
+GpuShaders.text2VertexShader =
     'attribute vec4 aPosition;\n'+
-    'attribute vec4 aNormal;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec2 uScale;\n'+
     'void main(){ \n'+
-        'vec4 pp0 = (uMVP * vec4(aPosition.xyz, 1.0));\n'+
-        'if (aNormal.w == 0.0) {\n'+
-            'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
-        '} else {\n'+
-            'vec2 pp1 = pp0.xy / pp0.w;\n'+
-            'vec4 pp3 = (uMVP * vec4(aNormal.xyz, 1.0));\n'+
-            'vec2 pp2 = pp3.xy / pp3.w;\n'+
-            'vec2 n = normalize(pp2 - pp1);\n'+
-            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
-        '}\n'+
     '}';
 
 
@@ -58,7 +44,22 @@ GpuShaders.lineVertexShader = //line
             'uniform vec2 uScale;\n'+
         '#endif\n'+
     '#else\n'+
-        'attribute vec3 aPosition;\n'+
+
+        '#ifdef lineLabel\n'+
+            'attribute vec4 aPosition;\n'+
+            'attribute vec4 aTexCoord;\n'+
+            'uniform vec4 uVec;\n'+
+            'uniform float uFile;\n'+
+            'varying vec2 vTexCoord;\n'+
+        '#else\n'+
+            'attribute vec3 aPosition;\n'+
+        '#endif\n'+
+
+        '#ifdef dynamicWidth\n'+
+            'attribute vec4 aNormal;\n'+
+            'uniform vec4 uParams;\n'+
+        '#endif\n'+
+
     '#endif\n'+
 
     '#ifdef applySE\n'+
@@ -90,7 +91,6 @@ GpuShaders.lineVertexShader = //line
             '#endif\n'+
         '#endif\n'+
 
-
         '#ifdef applySE\n'+
             'vec3 geoPos2 = p1.xyz*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1]);\n'+
             'vec3 geoPos = geoPos2+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
@@ -107,64 +107,53 @@ GpuShaders.lineVertexShader = //line
 
                 'vec4 pp0 = uMVP * vec4(geoPos2, 1.0);\n'+
 
-                '#ifdef dataPoints\n'+
+                'if (aNormal.w == 0.0) {\n'+
+                    'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
+                '} else {\n'+
+                    'geoPos2 = p2.xyz*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1]);\n'+
+                    'geoPos = geoPos2+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
+                    'geoPos.z *= uParamsSE[3][3];\n'+
+                    'll = length(geoPos);\n'+
+                    'v = geoPos * (1.0/(ll+0.0001));\n'+
+                    'h = ll - uParamsSE[3][2];\n'+
+                    'h2 = clamp(h, uParamsSE[2][1], uParamsSE[2][3]);\n'+
+                    'h3 = h;\n'+
+                    'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
+                    'geoPos2.xyz += v * (h - h3);\n'+
 
-                    'if (p1.y < 0.0) {\n'+
-                        'if (p1.y == -1.0) {\n'+
-                            'gl_Position = pp0;\n'+
-                        '} else {\n'+
-                            'gl_Position = pp0 + vec4((vec3(-sin(p1.z)*uScale.x*uScale.z, cos(p1.z)*uScale.y*uScale.z, 0.0)), 0.0);\n'+
+                    'vec4 pp3 = uMVP * vec4(geoPos2, 1.0);\n'+
+                    'vec2 pp1 = pp0.xy / pp0.w;\n'+
+                    'vec2 pp2 = pp3.xy / pp3.w;\n'+
+                    'vec2 n = normalize(pp2 - pp1);\n'+
+                    'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
+                '}\n'+
+
+            '#else\n'+
+
+                '#ifdef lineLabel\n'+
+
+                    'vTexCoord = aTexCoord.xy;\n'+
+                    'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
+                        'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                    '}else{\n'+
+                        'float file = floor(aTexCoord.y/4.0);\n'+
+                        'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
+                        'if (file != floor(uFile)) {\n'+
+                            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                        '}else{\n'+
+                            'gl_Position = uMVP * vec4(geoPos2, 1.0);\n'+
                         '}\n'+
-                    '} else {\n'+
-                        'geoPos2 = p2.xyz*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1]);\n'+
-                        'geoPos = geoPos2+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
-                        'geoPos.z *= uParamsSE[3][3];\n'+
-                        'll = length(geoPos);\n'+
-                        'v = geoPos * (1.0/(ll+0.0001));\n'+
-                        'h = ll - uParamsSE[3][2];\n'+
-                        'h2 = clamp(h, uParamsSE[2][1], uParamsSE[2][3]);\n'+
-                        'h3 = h;\n'+
-                        'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
-                        'geoPos2.xyz += v * (h - h3);\n'+
-
-                        'vec4 pp3 = uMVP * vec4(geoPos2, 1.0);\n'+
-                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
-                        'vec2 pp2 = pp3.xy / pp3.w;\n'+
-                        'vec2 n = normalize(pp2 - pp1);\n'+
-                        'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n'+
                     '}\n'+
 
                 '#else\n'+
 
-                    'if (aNormal.w == 0.0) {\n'+
-                        'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
-                    '} else {\n'+
-                        'geoPos2 = p2.xyz*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1]);\n'+
-                        'geoPos = geoPos2+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
-                        'geoPos.z *= uParamsSE[3][3];\n'+
-                        'll = length(geoPos);\n'+
-                        'v = geoPos * (1.0/(ll+0.0001));\n'+
-                        'h = ll - uParamsSE[3][2];\n'+
-                        'h2 = clamp(h, uParamsSE[2][1], uParamsSE[2][3]);\n'+
-                        'h3 = h;\n'+
-                        'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
-                        'geoPos2.xyz += v * (h - h3);\n'+
-
-                        'vec4 pp3 = uMVP * vec4(geoPos2, 1.0);\n'+
-                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
-                        'vec2 pp2 = pp3.xy / pp3.w;\n'+
-                        'vec2 n = normalize(pp2 - pp1);\n'+
-                        'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
-                    '}\n'+
+                    'gl_Position = uMVP * vec4(geoPos2, 1.0);\n'+
 
                 '#endif\n'+
 
-            '#else\n'+
-                'gl_Position = uMVP * vec4(geoPos2, 1.0);\n'+
             '#endif\n'+
 
         '#else\n'+
-
 
             '#ifdef pixelLine\n'+
 
@@ -201,7 +190,32 @@ GpuShaders.lineVertexShader = //line
                 '#endif\n'+
 
             '#else\n'+
-                'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+
+                '#ifdef lineLabel\n'+
+
+                    'vTexCoord = aTexCoord.xy;\n'+
+                    'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
+                        'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                    '}else{\n'+
+                        'float file = floor(aTexCoord.y/4.0);\n'+
+                        'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
+                        'if (file != floor(uFile)) {\n'+
+                            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                        '}else{\n'+
+                            'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
+                        '}\n'+
+                    '}\n'+
+
+                '#else\n'+
+
+                    '#ifdef dynamicWidth\n'+
+                        'gl_Position = uMVP * vec4(aPosition.xyz + aNormal.xyz*(abs(aNormal.w)*uParams[3]), 1.0);\n'+
+                    '#else\n'+
+                        'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+                    '#endif\n'+
+
+                '#endif\n'+
+
             '#endif\n'+
 
         '#endif\n'+
@@ -228,119 +242,6 @@ GpuShaders.lineFragmentShader = 'precision mediump float;\n'+ //line
 
     '}';
 
-
-//line with wireframe for debugging
-GpuShaders.lineWireframeVertexShader =
-    'attribute vec3 aPosition;\n'+
-    'attribute vec3 aBarycentric;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'uniform mat4 uMVP;\n'+
-    'void main(){ \n'+
-        'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
-        'vBarycentric = aBarycentric;\n'+
-    '}';
-
-GpuShaders.lineWireframeFragmentShader = 'precision mediump float;\n'+ 
-    '#extension GL_OES_standard_derivatives : enable\n'+
-    'uniform vec4 uColor;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'float edgeFactor(){\n'+
-        '#ifdef GL_OES_standard_derivatives\n'+
-            'vec3 d = fwidth(vBarycentric);\n'+
-            'vec3 a3 = smoothstep(vec3(0.0), d*1.0, vBarycentric);\n'+
-            'return min(min(a3.x, a3.y), a3.z);\n'+
-        '#else\n'+
-            'float a = min(min(vBarycentric.x, vBarycentric.y), vBarycentric.z);\n'+
-            'return a > 0.1 ? 1.0 : smoothstep(0.0,1.0,a*10.0);\n'+
-        '#endif\n'+
-    '}\n'+
-    'void main() {\n'+
-        'gl_FragColor = vec4( mix(vec3(0.0), uColor.rgb, edgeFactor()) , uColor.a);\n'+
-    '}';
-
-/*
-GpuShaders.elineVertexShader = //line elements
-    'attribute vec3 aPosition;\n'+
-    'attribute float aElement;\n'+
-    'uniform mat4 uMVP;\n'+
-    'varying float vElement;\n'+
-    'void main(){ \n'+
-        'vElement = aElement;\n'+
-        'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
-    '}';
-
-
-GpuShaders.elineFragmentShader = 'precision mediump float;\n'+ //line elements
-    'uniform vec4 uColor;\n'+
-    'varying float vElement;\n'+
-    'void main() {\n'+
-        'gl_FragColor.xyz = fract(vec3(1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vElement) + (-0.5/255.0);\n'+
-        'gl_FragColor.w = 1.0;\n'+
-    '}';
-*/
-/*
-GpuShaders.line3VertexShader = //pixel line
-    'attribute vec4 aPosition;\n'+
-    'attribute vec4 aNormal;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec2 uScale;\n'+
-    'void main(){ \n'+
-        'vec4 pp0 = (uMVP * vec4(aPosition.xyz, 1.0));\n'+
-        'if (aNormal.w == 0.0) {\n'+
-            'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
-        '} else {\n'+
-            'vec2 pp1 = pp0.xy / pp0.w;\n'+
-            'vec4 pp3 = (uMVP * vec4(aNormal.xyz, 1.0));\n'+
-            'vec2 pp2 = pp3.xy / pp3.w;\n'+
-            'vec2 n = normalize(pp2 - pp1);\n'+
-            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
-        '}\n'+
-    '}';
-
-GpuShaders.eline3VertexShader = //pixel line elements
-    'attribute vec4 aPosition;\n'+
-    'attribute vec4 aNormal;\n'+
-    'attribute float aElement;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec2 uScale;\n'+
-    'varying float vElement;\n'+
-    'void main(){ \n'+
-        'vec4 pp0 = (uMVP * vec4(aPosition.xyz, 1.0));\n'+
-        'vElement = aElement;\n'+
-        'if (aNormal.w == 0.0) {\n'+
-            'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
-        '} else {\n'+
-            'vec2 pp1 = pp0.xy / pp0.w;\n'+
-            'vec4 pp3 = (uMVP * vec4(aNormal.xyz, 1.0));\n'+
-            'vec2 pp2 = pp3.xy / pp3.w;\n'+
-            'vec2 n = normalize(pp2 - pp1);\n'+
-            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
-        '}\n'+
-    '}';
-*/
-/*
-GpuShaders.line4VertexShader = //direct linestring pixel line
-    'attribute vec3 aPosition;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec3 uScale;\n'+
-    'uniform vec3 uPoints[32];\n'+
-    'void main(){ \n'+
-        'vec4 pp0 = (uMVP * vec4(uPoints[int(aPosition.x)], 1.0));\n'+
-        'if (aPosition.y < 0.0) {\n'+
-            'if (aPosition.y == -1.0) {\n'+
-                'gl_Position = pp0;\n'+
-            '} else {\n'+
-                'gl_Position = pp0 + vec4((vec3(-sin(aPosition.z)*uScale.x*uScale.z, cos(aPosition.z)*uScale.y*uScale.z, 0.0)), 0.0);\n'+
-            '}\n'+
-        '} else {\n'+
-            'vec2 pp1 = pp0.xy / pp0.w;\n'+
-            'vec4 pp3 = (uMVP * vec4(uPoints[int(aPosition.y)], 1.0));\n'+
-            'vec2 pp2 = pp3.xy / pp3.w;\n'+
-            'vec2 n = normalize(pp2 - pp1);\n'+
-            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n'+
-        '}\n'+
-    '}';
-*/
 GpuShaders.tlineVertexShader = // textured line
     'attribute vec4 aPosition;\n'+
     'attribute vec4 aNormal;\n'+
@@ -360,32 +261,6 @@ GpuShaders.tlineVertexShader = // textured line
         'gl_Position = uMVP * p;\n'+
     '}';
 
-GpuShaders.rlineVertexShader =  // dynamic width line
-    'attribute vec4 aPosition;\n'+
-    'attribute vec4 aNormal;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec2 uScale;\n'+
-    'uniform vec4 uParams;\n'+
-    'void main(){ \n'+
-        'vec4 p=vec4(aPosition.xyz, 1.0);\n'+
-        'p.xyz+=aNormal.xyz*(abs(aNormal.w)*uParams[3]);\n'+
-        'gl_Position = uMVP * p;\n'+
-    '}';
-
-GpuShaders.erlineVertexShader = // dynamic width line elements
-    'attribute vec4 aPosition;\n'+
-    'attribute vec4 aNormal;\n'+
-    'attribute float aElement;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec2 uScale;\n'+
-    'uniform vec4 uParams;\n'+
-    'varying float vElement;\n'+
-    'void main(){ \n'+
-        'vec4 p=vec4(aPosition.xyz, 1.0);\n'+
-        'p.xyz+=aNormal.xyz*(abs(aNormal.w)*uParams[3]);\n'+
-        'vElement = aElement;\n'+
-        'gl_Position = uMVP * p;\n'+
-    '}';
 
 GpuShaders.etlineVertexShader = // textured line elements
     'attribute vec4 aPosition;\n'+
@@ -494,44 +369,6 @@ GpuShaders.polygonFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = vColor;\n'+
     '}';
 
-
-GpuShaders.textVertexShader =
-    'attribute vec4 aPosition;\n'+
-    'attribute vec4 aTexCoord;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec4 uVec;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'void main(){ \n'+
-        'vTexCoord = aTexCoord.xy;\n'+
-        'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
-            'gl_Position = uMVP * vec4(2.0, 0.0, 0.0, 1.0);\n'+
-        '}else{\n'+
-            'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
-        '}\n'+
-    '}';
-
-
-GpuShaders.text2VertexShader =
-    'attribute vec4 aPosition;\n'+
-    'attribute vec4 aTexCoord;\n'+
-    'uniform mat4 uMVP;\n'+
-    'uniform vec4 uVec;\n'+
-    'uniform float uFile;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'void main(){ \n'+
-        'vTexCoord = aTexCoord.xy;\n'+
-        'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
-            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
-        '}else{\n'+
-            'float file = floor(aTexCoord.y/4.0);\n'+
-            'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
-            'if (file != floor(uFile)) {\n'+
-                'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
-            '}else{\n'+
-                'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
-            '}\n'+
-        '}\n'+
-    '}';
 
 GpuShaders.iconVertexShader =
     'attribute vec4 aPosition;\n'+
@@ -1238,6 +1075,7 @@ GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
         '#endif\n'+
     '}';
 
+
 //textured tile mesh
 GpuShaders.tileVertexShader =
     'attribute vec3 aPosition;\n'+
@@ -1254,6 +1092,15 @@ GpuShaders.tileVertexShader =
     
         'varying vec3 vTexCoord;\n'+  //u,v,fogFactor
 
+    '#endif\n'+
+
+    '#ifdef depth\n'+
+        'varying float vDepth;\n'+
+    '#endif\n'+
+
+    '#ifdef flatShade\n'+
+        'attribute vec3 aBarycentric;\n'+
+        'varying vec3 vBarycentric;\n'+
     '#endif\n'+
 
                                              //0-3                            4-7          8-11            12-15 
@@ -1286,6 +1133,15 @@ GpuShaders.tileVertexShader =
 
         'gl_Position = uProj * camSpacePos;\n'+
         'float camDist = length(camSpacePos.xyz);\n'+
+
+        '#ifdef depth\n'+
+            'vDepth = camDist;\n'+
+        '#endif\n'+
+
+        '#ifdef flatShade\n'+
+            'vBarycentric = camSpacePos.xyz;\n'+
+        '#endif\n'+
+
         'float fogFactor = 1.0-exp(uParams[0][1] * camDist);\n'+
         'fogFactor = clamp((1.0-abs(l))*uParams[1][3] + fogFactor, 0.0, 1.0);\n'+
 
@@ -1318,35 +1174,65 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
 
     '#endif\n'+
 
+    '#ifdef depth\n'+
+        'varying float vDepth;\n'+
+    '#endif\n'+
+
+    '#ifdef flatShade\n'+
+        '#extension GL_OES_standard_derivatives : enable\n'+
+        'varying vec3 vBarycentric;\n'+
+    '#endif\n'+
+
     'uniform vec4 uParams2;\n'+        
     'void main() {\n'+
-        'vec4 fogColor = vec4(uParams2.xyz, 1.0);\n'+
 
-        '#ifdef onlyFog\n'+
-            'gl_FragColor = vec4(fogColor.xyz, vFogFactor);\n'+
+        '#ifdef flatShade\n'+
+
+            '#ifdef GL_OES_standard_derivatives\n'+
+                'vec3 nx = dFdx(vBarycentric);\n'+
+                'vec3 ny = dFdy(vBarycentric);\n'+
+                'vec3 normal=normalize(cross(nx,ny));\n'+
+                'gl_FragColor = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
+            '#else\n'+
+                'gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n'+
+            '#endif\n'+
+
         '#else\n'+
 
-            '#ifdef externalTex\n'+
-                'vec4 c = texture2D(uSampler, vTexCoord.xy);\n'+'__FILTER__' +
-                'vec4 cc = mix(c, fogColor, vTexCoord.z);\n'+
-                '#ifdef mask\n'+
-                    'vec4 c2 = texture2D(uSampler2, vTexCoord.xy);\n'+
-                    'cc.w = c.w * uParams2.z * c2.x;\n'+
+            'vec4 fogColor = vec4(uParams2.xyz, 1.0);\n'+
+
+            '#ifdef onlyFog\n'+
+                'gl_FragColor = vec4(fogColor.xyz, vFogFactor);\n'+
+            '#else\n'+
+
+                '#ifdef depth\n'+
+                    'gl_FragColor = fract(vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vDepth) + (-0.5/255.0);\n'+
                 '#else\n'+
-                    'cc.w = c.w * uParams2.z;\n'+
+
+                    '#ifdef externalTex\n'+
+                        'vec4 c = texture2D(uSampler, vTexCoord.xy);\n'+'__FILTER__' +
+                        'vec4 cc = mix(c, fogColor, vTexCoord.z);\n'+
+                        '#ifdef mask\n'+
+                            'vec4 c2 = texture2D(uSampler2, vTexCoord.xy);\n'+
+                            'cc.w = c.w * uParams2.z * c2.x;\n'+
+                        '#else\n'+
+                            'cc.w = c.w * uParams2.z;\n'+
+                        '#endif\n'+
+
+                        'gl_FragColor = cc;\n'+
+                    '#else\n'+
+                        'gl_FragColor = mix(texture2D(uSampler, vTexCoord.xy), fogColor, vTexCoord.z);\n'+
+                    '#endif\n'+
+
                 '#endif\n'+
 
-                'gl_FragColor = cc;\n'+
-            '#else\n'+
-                'gl_FragColor = mix(texture2D(uSampler, vTexCoord.xy), fogColor, vTexCoord.z);\n'+
             '#endif\n'+
 
         '#endif\n'+
     '}';
 
 
-//textured shaded tile mesh
-GpuShaders.tileTShadedVertexShader =
+GpuShaders.shadedMeshVertexShader =
     'attribute vec3 aPosition;\n'+
     'attribute vec2 aTexCoord;\n'+
     'attribute vec3 aNormal;\n'+
@@ -1368,14 +1254,16 @@ GpuShaders.tileTShadedVertexShader =
     '}';
 
 
-GpuShaders.tileTShadedFragmentShader = 'precision mediump float;\n'+
-    'uniform sampler2D uSampler;\n'+
-    'varying vec2 vTexCoord;\n'+
+GpuShaders.shadedMeshFragmentShader = 'precision mediump float;\n'+
+    '#ifdef textured\n'+
+        'uniform sampler2D uSampler;\n'+
+        'varying vec2 vTexCoord;\n'+
+    '#endif\n'+
     'varying vec4 vPosition;\n'+
     'varying vec3 vNormal;\n'+
     'uniform mat4 uMaterial;\n'+
     'varying float vFogFactor;\n'+
-    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
+    'uniform vec4 uFogColor;\n'+
     'void main() {\n'+
         'vec3 ldir = normalize(-vPosition.xyz);\n'+
         'vec3 normal = normalize(vNormal);\n'+
@@ -1384,128 +1272,21 @@ GpuShaders.tileTShadedFragmentShader = 'precision mediump float;\n'+
         'float specW = min(1.0, pow(max(dot(refDir, eyeDir), 0.0), uMaterial[3][0]));\n'+
         'float diffW = min(1.0, max(dot(normal, ldir), 0.0));\n'+
         'vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n'+
-        'vec4 tcolor = texture2D(uSampler, vTexCoord);\n'+
-        'gl_FragColor = mix(uFogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor); gl_FragColor.w *= uMaterial[3][1];\n'+
+        '#ifdef textured\n'+
+            'vec4 tcolor = texture2D(uSampler, vTexCoord);\n'+
+            'gl_FragColor = mix(uFogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor); gl_FragColor.w *= uMaterial[3][1];\n'+
+        '#else\n'+
+            'gl_FragColor = mix(uFogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);  gl_FragColor.w = uMaterial[3][1];\n'+
+        '#endif\n'+
+
     '}';
-
-
-GpuShaders.tileShadedFragmentShader = 'precision mediump float;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec4 vPosition;\n'+
-    'varying vec3 vNormal;\n'+
-    'uniform mat4 uMaterial;\n'+
-    'varying float vFogFactor;\n'+
-    'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
-    'void main() {\n'+
-        'vec3 ldir = normalize(-vPosition.xyz);\n'+
-        'vec3 normal = normalize(vNormal);\n'+
-        'vec3 eyeDir = ldir;\n'+
-        'vec3 refDir = reflect(-ldir, normal);\n'+
-        'float specW = min(1.0,pow(max(dot(refDir, eyeDir), 0.0), uMaterial[3][0]));\n'+
-        'float diffW = min(1.0,max(dot(normal, ldir), 0.0));\n'+
-        'vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n'+
-        'gl_FragColor = mix(uFogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0), vFogFactor);  gl_FragColor.w = uMaterial[3][1];\n'+
-    '}';
-
-
-//flat shade tile mesh with SE
-GpuShaders.tileFlatShadeVertexShaderSE =
-    'attribute vec3 aPosition;\n'+
-    'attribute vec2 aTexCoord;\n'+
-    'attribute vec3 aBarycentric;\n'+
-    'uniform mat4 uMV, uProj, uParamsSE;\n'+
-    'uniform float uFogDensity;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'varying float vFogFactor;\n'+
-    'void main() {\n'+
-        'vec3 geoPos = aPosition*vec3(uParamsSE[0][3],uParamsSE[1][0],uParamsSE[1][1])+vec3(uParamsSE[0][0],uParamsSE[0][1],uParamsSE[0][2]);\n'+
-        'vec3 geoPos2 = geoPos - vec3(uParamsSE[1][2], uParamsSE[1][3], uParamsSE[2][0]);\n'+
-        'geoPos.z *= uParamsSE[3][3];\n'+
-        'float l = length(geoPos);\n'+
-        'vec3 v = geoPos * (1.0/(l+0.0001));\n'+
-        'float h = l - uParamsSE[3][2];\n'+
-        'float h2 = clamp(h, uParamsSE[2][1], uParamsSE[2][3]);\n'+
-        'float h3 = h;\n'+
-        'h *= (uParamsSE[2][2] + ((h2 - uParamsSE[2][1]) * uParamsSE[3][0]) * uParamsSE[3][1]);\n'+
-        'geoPos2.xyz += v * (h - h3);\n'+
-        'vec4 camSpacePos = uMV * vec4(geoPos2, 1.0);\n'+
-
-        'gl_Position = uProj * camSpacePos;\n'+
-        'float camDist = length(camSpacePos.xyz);\n'+
-        'vFogFactor = exp(uFogDensity * camDist);\n'+
-        'vTexCoord = aTexCoord;\n'+
-        'vBarycentric = camSpacePos.xyz;\n'+
-    '}';
-
 
 GpuShaders.tileWireFrameBasicShader = 'precision mediump float;\n'+
-    '#extension GL_OES_standard_derivatives : enable\n'+
-    'uniform sampler2D uSampler;\n'+
     'uniform vec4 uColor;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'varying float vFogFactor;\n'+
     'void main() {\n'+
         'gl_FragColor = uColor;\n'+
     '}';
 
-//flat shade tile mesh
-GpuShaders.tileFlatShadeVertexShader =
-    'attribute vec3 aPosition;\n'+
-    'attribute vec2 aTexCoord;\n'+
-    'attribute vec3 aBarycentric;\n'+
-    'uniform mat4 uMV, uProj;\n'+
-    'uniform float uFogDensity;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'varying float vFogFactor;\n'+
-    'void main() {\n'+
-        'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
-        'gl_Position = uProj * camSpacePos;\n'+
-        'float camDist = length(camSpacePos.xyz);\n'+
-        'vFogFactor = exp(uFogDensity * camDist);\n'+
-        'vTexCoord = aTexCoord;\n'+
-        'vBarycentric = camSpacePos.xyz;\n'+
-    '}';
-
-
-GpuShaders.tileFlatShadeFragmentShader = 'precision mediump float;\n'+
-    '#extension GL_OES_standard_derivatives : enable\n'+
-    'uniform sampler2D uSampler;\n'+
-    'varying vec2 vTexCoord;\n'+
-    'varying vec3 vBarycentric;\n'+
-    'varying float vFogFactor;\n'+
-    'void main() {\n'+
-        '#ifdef GL_OES_standard_derivatives\n'+
-            'vec3 nx = dFdx(vBarycentric);\n'+
-            'vec3 ny = dFdy(vBarycentric);\n'+
-            'vec3 normal=normalize(cross(nx,ny));\n'+
-            'gl_FragColor = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
-        '#else\n'+
-            'gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n'+
-        '#endif\n'+
-    '}';
-
-//depth encoded tile mesh
-GpuShaders.tileDepthVertexShader =
-    'attribute vec3 aPosition;\n'+
-    'uniform mat4 uMV, uProj;\n'+
-    'varying float vDepth;\n'+
-    'void main() {\n'+
-        'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
-        'gl_Position = uProj * camSpacePos;\n'+
-        'float camDist = length(camSpacePos.xyz);\n'+
-        'vDepth = camDist;\n'+
-    '}';
-
-
-GpuShaders.tileDepthFragmentShader = 'precision mediump float;\n'+
-    'uniform sampler2D uSampler;\n'+
-    'varying float vDepth;\n'+
-    'void main() {\n'+
-        'gl_FragColor = fract(vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vDepth) + (-0.5/255.0);\n'+
-    '}';
 
 //used for 2d images
 GpuShaders.imageVertexShader = '\n'+

@@ -212,6 +212,7 @@ MapConvert.prototype.getPositionCameraCoords = function(position, heightMode) {
     }
 };
 
+
 MapConvert.prototype.getPositionNavCoordsFromPublic = function(position, lod) {
     var coords = position.getCoords();
 
@@ -247,7 +248,7 @@ MapConvert.prototype.getPositionPhysCoords = function(position, lod, includeSE) 
     }
 
     if (this.renderer.useSuperElevation && includeSE) {
-        coords[2] = getSuperElevatedHeight(coords[2]);
+        coords[2] = this.renderer.getSuperElevatedHeight(coords[2]);
     }
 
     return this.convertCoords(coords, 'navigation', 'physical');
@@ -264,7 +265,7 @@ MapConvert.prototype.getPositionCameraSpaceCoords = function(position, lod) {
     }
 
     if (this.renderer.useSuperElevation) {
-        coords[2] = getSuperElevatedHeight(coords[2]);
+        coords[2] = this.renderer.getSuperElevatedHeight(coords[2]);
     }
 
     var worldPos = this.convertCoords(coords, 'navigation', 'physical');
@@ -295,6 +296,7 @@ MapConvert.prototype.getPositionCanvasCoords = function(position, lod, physical,
     return this.map.renderer.project2(worldPos, this.map.camera.getMvpMatrix());
 };
 
+
 MapConvert.prototype.convertCoordsFromPhysToNav = function(coords, mode, lod, containsSE) {
     coords = this.convertCoords(coords, 'physical', 'navigation');
 
@@ -310,6 +312,7 @@ MapConvert.prototype.convertCoordsFromPhysToNav = function(coords, mode, lod, co
 
     return coords;
 };
+
 
 MapConvert.prototype.getGeodesicLinePoints = function(coords, coords2, height, density) {
     var geod, r, length, azimuth, minStep, d;

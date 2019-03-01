@@ -190,19 +190,24 @@ MapInterface.prototype.convertCoordsFromPublicToNav = function(pos, mode, lod) {
 };
 
 
-MapInterface.prototype.convertCoordsFromPhysToPublic = function(pos) {
-    return this.map.convert.convertCoords(pos, 'physical', 'public');
+MapInterface.prototype.convertCoordsFromPhysToPublic = function(pos, containsSE) {
+    if (containsSE && this.map.renderer.useSuperElevation) {
+        var p = this.map.renderer.transformPointBySE(pos);
+        return this.map.convert.convertCoords(p, 'physical', 'public');
+    } else {
+        return this.map.convert.convertCoords(pos, 'physical', 'public');
+    }
 };
 
 
-MapInterface.prototype.convertCoordsFromNavToPhys = function(pos, mode, lod) {
+MapInterface.prototype.convertCoordsFromNavToPhys = function(pos, mode, lod, includeSE) {
     var p = ['obj', pos[0], pos[1], mode, pos[2], 0, 0, 0, 10, 45 ];
-    return this.map.convert.getPositionPhysCoords((new MapPosition(p)), lod);
+    return this.map.convert.getPositionPhysCoords((new MapPosition(p)), lod, includeSE);
 };
 
 
-MapInterface.prototype.convertCoordsFromPhysToNav = function(pos, mode, lod) {
-    return this.map.convert.convertCoordsFromPhysToNav(pos, mode, lod);
+MapInterface.prototype.convertCoordsFromPhysToNav = function(pos, mode, lod, containsSE) {
+    return this.map.convert.convertCoordsFromPhysToNav(pos, mode, lod, containsSE);
 };
 
 
@@ -212,9 +217,9 @@ MapInterface.prototype.convertCoordsFromNavToCanvas = function(pos, mode, lod) {
 };
 
 
-MapInterface.prototype.convertCoordsFromPhysToCanvas = function(pos) {
+MapInterface.prototype.convertCoordsFromPhysToCanvas = function(pos, containsSE) {
     var p = ['obj', pos[0], pos[1], 'fix', pos[2], 0, 0, 0, 10, 45 ];
-    return this.map.convert.getPositionCanvasCoords((new MapPosition(p)), null, true);
+    return this.map.convert.getPositionCanvasCoords((new MapPosition(p)), null, true, containsSE);
 };
 
 

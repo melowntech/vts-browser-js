@@ -318,7 +318,7 @@ Renderer.prototype.getUnsuperElevatedHeight = function(height) {
     }
 
 
-    var h1 = se[0], f1 = se[1], h2 = se[2], f2 = se[3], 
+    var h1 = se[0], f1 = se[1], h2 = se[2], f2 = se[3];
 
     // and f1!=f2 and h1!=h2
 
