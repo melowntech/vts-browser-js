@@ -43,7 +43,9 @@ var MapSurface = function(map, json, type) {
     this.monoGeodataView = null;
     this.monoGeodataCounter = -1;
     this.creditsNumbers = [];
-    
+    this.surfaceCounter = map.surfaceCounter;
+    map.surfaceCounter++;
+
     this.style = null;
     this.stylesheet = null;
     this.originalStyle = null;

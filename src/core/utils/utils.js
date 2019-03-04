@@ -161,9 +161,11 @@ utils.nearestPowerOfTwo = (function(value) {
     return Math.pow(2, Math.round(Math.log(value) / Math.LN2));
 });   
 
+
 utils.fitToPowerOfTwo = (function(value) {
     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 });   
+
 
 utils.getHash = function(str) {
     if (!str || str.length === 0) {
@@ -180,9 +182,86 @@ utils.getHash = function(str) {
     return hash;
 };
 
+
+utils.convertRGB2YCbCr = function(r, g, b) {
+  return [( .299 * r + .587 * g  +  0.114 * b) + 0,
+          ( -.169 * r + -.331 * g +  0.500 * b) + 128,
+          ( .500 * r + -.419 * g +  -0.081 * b) + 128];
+};
+
+
+utils.convertYCbCr2RGB = function(y, cb, cr) {
+  return [1 * y +  0 * (cb-128)      +  1.4 * (cr-128),
+          1 * y +  -.343 * (cb-128)  +  -.711 * (cr-128),
+          1 * y +  1.765 * (cb-128)  +  0 * (cr-128)];
+};
+
+
+utils.convertHSL2RGB = function(h, s, l){
+   var r, g, b, m, c, x;
+
+    h /= 60;
+    if (h < 0) h = 6 - (-h % 6);
+    h %= 6;
+
+    s = Math.max(0, Math.min(1, s / 100));
+    l = Math.max(0, Math.min(1, l / 100));
+
+    c = (1 - Math.abs((2 * l) - 1)) * s;
+    x = c * (1 - Math.abs((h % 2) - 1));
+
+    if (h < 1) {
+        r = c, g = x, b = 0;
+    } else if (h < 2) {
+        r = x, g = c, b = 0;
+    } else if (h < 3) {
+        r = 0, g = c, b = x;
+    } else if (h < 4) {
+        r = 0, g = x, b = c;
+    } else if (h < 5) {
+        r = x, g = 0, b = c;
+    } else {
+        r = c, g = 0, b = x;
+    }
+
+    m = l - c / 2
+    
+    return [(r + m),
+            (g + m),
+            (b + m)];
+}
+
+
+utils.getHashColor = function(str) {
+    var h = utils.getHash(str);
+    var c = utils.convertRGB2YCbCr(h&255,(h>>8)&255,(h>>16)&255);
+    c[0] = math.clamp(c[0], 50, 200);
+    return utils.convertRGB2YCbCr(c[0],c[1],c[2]);
+};
+
+
+utils.getHashColor2 = function(counter) {
+    var h = Math.floor(counter / 18);
+    var l = 50;
+
+    if (h >= 1) {
+        if (h % 2) {
+            l = 50 + ((l * 10) % 30);
+        } else {
+            l = 50 - (((l-1) * 10) % 30);
+        }
+     }
+
+    h = (counter % 18) * 20;
+
+    return utils.convertHSL2RGB(h,100,l);
+};
+
+
 utils.loadText = function(path, onLoaded, onError, withCredentials, xhrParams) {
     utils.loadJSON(path, onLoaded, onError, true, withCredentials, xhrParams);
 };
+
 
 utils.loadXML = function(path, onLoaded, onError, withCredentials, xhrParams) {
     var onLoaded2 = (function(data){
@@ -195,6 +274,7 @@ utils.loadXML = function(path, onLoaded, onError, withCredentials, xhrParams) {
 
     utils.loadJSON(path, onLoaded2, onError, true, withCredentials, xhrParams);
 };
+
 
 utils.loadJSON = function(path, onLoaded, onError, skipParse, withCredentials, xhrParams) {
     var xhr = new XMLHttpRequest();

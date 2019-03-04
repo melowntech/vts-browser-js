@@ -1828,7 +1828,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             prog.setMat4('uData', b );
 
             prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
-            prog.setFloat('uDepth', depth != null ? depth : 0);
+            prog.setFloat('uDepth', pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2));
 
             gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
             
@@ -2119,10 +2119,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             if (job.updatePos) {
                 pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
                 pp[1] -= stickShift;
-                pp[2] = pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2);
             }
-
-            depth = pp[2];
 
             var b2 = job.singleBuffer2;
 
@@ -2151,7 +2148,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
             prog.setMat4('uData', job.singleBuffer );
             prog.setVec4('uColor', color);
-            prog.setFloat('uDepth', depth);
+            prog.setFloat('uDepth', pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2));
 
             gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -2168,7 +2165,6 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             if (job.updatePos) {
                 pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
                 pp[1] -= stickShift;
-                pp[2] = pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2);
             }
 
             gpu.useProgram(prog, ['aPosition']);
@@ -2176,7 +2172,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
 
             prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], 1, stickShift*2]);
-            prog.setVec3('uOrigin', pp);
+            prog.setVec3('uOrigin', [pp[0],pp[1],pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2)]);
             prog.setVec4('uColor', hitmapRender ? color : color2);
             prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
             lj = hitmapRender ? 1 : 2;

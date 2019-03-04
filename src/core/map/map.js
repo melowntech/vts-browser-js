@@ -83,6 +83,7 @@ var Map = function(core, mapConfig, path, config, configStorage) {
     this.namedViews = [];
     this.viewCounter = 0;
     this.srsReady = false;
+    this.surfaceCounter = 0;
 
     this.freeLayerSequence = [];
     this.freeLayersHaveGeodata = false;
@@ -565,7 +566,32 @@ Map.prototype.setView = function(view, forceRefresh, posToFixed) {
         }
     }
 
-    var string = JSON.stringify(view);
+    //construct view string without options
+    var string = {};
+
+    if (view.surfaces) {
+        string.surfaces = view.surfaces;
+    }
+
+    if (view.freeLayers) {
+        string.freeLayers = view.freeLayers;
+    }
+
+    string = JSON.stringify(string);
+
+    //process options
+    if (view.options) {
+        var renderer = this.renderer;
+        var se = view.options.superelevation;
+
+        if (se && se[0] && se[1] && se[0].length >=2 && se[1].length >=2) {
+            renderer.setSuperElevationState(true);
+            renderer.setSuperElevation(se[0][0], se[1][0], se[0][1], se[1][1]);
+        } else {
+            renderer.setSuperElevationState(false);
+        }
+    }
+
     if (string != this.currentViewString || forceRefresh) {
         this.currentView.parse(view);
         this.currentViewString = string;

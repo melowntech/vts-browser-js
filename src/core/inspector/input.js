@@ -362,6 +362,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 115:
                 debug.drawSurfaces = !debug.drawSurfaces; break; //key S pressed
 
+            case 90:
+            case 122:
+                debug.drawSurfaces2 = !debug.drawSurfaces2; break; //key Z pressed
+
             case 67:
             case 99:
                 debug.drawCredits = !debug.drawCredits; break; //key C pressed
@@ -433,6 +437,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
             if (has('I')) debug.drawIndices = true;
             if (has('B')) debug.drawBoundLayers = true;
             if (has('S')) debug.drawSurfaces = true;
+            if (has('Z')) debug.drawSurfaces2 = true;
             if (has('C')) debug.drawCredits = true;
             if (has('O')) debug.drawOrder = true;
             if (has('E')) debug.debugTextSize = 3.0;
