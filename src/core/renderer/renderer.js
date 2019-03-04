@@ -627,6 +627,7 @@ Renderer.prototype.getZoffsetFactor = function(params) {
     return (params[0] + params[1]*this.distanceFactor + params[2]*this.tiltFactor)*0.0001;
 };
 
+
 Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
     var gl = this.gpu.gl;
 
@@ -715,6 +716,7 @@ Renderer.prototype.getBitmap = function(url, filter, tiled, hash, useHash) {
 
     return texture;
 };
+
 
 Renderer.prototype.getFont = function(url) {
     var font = this.fonts[url];
