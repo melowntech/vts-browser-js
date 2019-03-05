@@ -1657,7 +1657,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    if (job.reduce && (job.reduce[0] != 8 && job.reduce[0] != 9)) {  //not overlap code not used for reduce==8
+                    if (!job.reduce || (job.reduce && (job.reduce[0] != 8 && job.reduce[0] != 9))) {  //not overlap code not used for reduce==8
                         depth = o[5] / l;
                     }
                 } 
