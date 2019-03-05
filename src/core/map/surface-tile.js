@@ -44,6 +44,7 @@ var MapSurfaceTile = function(map, parent, id) {
     this.texelSize2 = 1;
     this.distance = 1;
     this.tiltAngle = 1;
+    this.seCounter = 0;
 
     this.metanode = null;  //[metanode, cacheItem]
     this.lastMetanode = null;
@@ -307,6 +308,7 @@ MapSurfaceTile.prototype.removeChild = function(tile) {
 
 
 MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad) {
+
     //has map view changed?
     if (this.map.viewCounter != this.viewCoutner) {
         this.viewSwitched();
@@ -359,6 +361,30 @@ MapSurfaceTile.prototype.isMetanodeReady = function(tree, priority, preventLoad)
             }
         } else {
             this.resourceSurface = this.surface;
+        }
+    }
+
+    if (this.seCounter != this.map.renderer.seCounter) {
+        var renderer = this.map.renderer;
+        this.seCounter = renderer.seCounter;
+        var node = this.metanode;
+
+        if (renderer.useSuperElevation) {
+            node.minZ = renderer.getSuperElevatedHeight(node.minZ2);
+            node.maxZ = renderer.getSuperElevatedHeight(node.maxZ2);
+        } else {
+            node.minZ = node.minZ2;
+            node.maxZ = node.maxZ2;
+        }
+
+        if (renderer.seCounter > 0) {
+            this.gridPoints = null;
+            node.border = null;
+            node.border2 = null;
+            node.border3 = null;
+            node.borderReady = false;
+     
+            node.generateCullingHelpers();
         }
     }
 

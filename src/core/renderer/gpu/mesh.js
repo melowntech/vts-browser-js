@@ -104,7 +104,7 @@ GpuMesh.prototype.kill = function() {
 };
 
 // Draws the mesh, given the two vertex shader attributes locations.
-GpuMesh.prototype.draw = function(program, attrVertex, attrUV, attrUV2, attrBarycenteric) {
+GpuMesh.prototype.draw = function(program, attrVertex, attrUV, attrUV2, attrBarycenteric, skipDraw) {
     var gl = this.gl;
     if (gl == null || !this.valid) {
         return;
@@ -161,9 +161,9 @@ GpuMesh.prototype.draw = function(program, attrVertex, attrUV, attrUV2, attrBary
     if (this.indexBuffer) {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
-        gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+        if (!skipDraw) gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
     }  else {
-        gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffer.numItems);
+        if (!skipDraw) gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffer.numItems);
     }
 };
 

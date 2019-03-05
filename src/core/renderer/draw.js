@@ -17,6 +17,9 @@ var RendererDraw = function(renderer) {
     this.gpu = renderer.gpu;
     this.gl = renderer.gpu.gl;
     this.rmap = renderer.rmap;
+    this.mBuffer = new Float32Array(16);
+    this.mBuffer2 = new Float32Array(16);
+    this.vBuffer = new Float32Array(4);
 };
 
 
@@ -270,28 +273,9 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
             culling: false,
             zequal: false
         });
-
-        /*
-        if (depthTest !== true) {
-            gl.disable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            gl.enable(gl.BLEND);
-        }
-    
-        if (writeDepth === false) {
-            gl.depthMask(false); 
-        }
-    
-        gl.disable(gl.STENCIL_TEST);
-        gl.disable(gl.CULL_FACE);
-        */
     }
 
-    var prog = renderer.progLine4;   
+    var prog = renderer.progLine4;
 
     gpu.useProgram(prog, ['aPosition']);
     prog.setMat4('uMVP', renderer.imageProjectionMatrix, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
@@ -303,20 +287,6 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
 
     if (useState !== true) {
         gpu.setState(tmpState);
-        /*        
-        if (depthTest !== true) {
-            gl.enable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.disable(gl.BLEND);
-        }
-    
-        if (writeDepth === false) {
-            gl.depthMask(true); 
-        }
-    
-        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -342,23 +312,6 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
             culling: false,
             zequal: false
         });
-
-        /*
-        if (depthTest !== true) {
-            gl.disable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            gl.enable(gl.BLEND);
-        }
-    
-        if (writeDepth === false) {
-            gl.depthMask(false); 
-        }
-    
-        gl.disable(gl.CULL_FACE);*/
     }
 
     var prog = renderer.progImage;
@@ -392,21 +345,6 @@ RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth,
 
     if (useState !== true) {
         gpu.setState(tmpState);
-
-        /*
-        if (writeDepth === false) {
-            gl.depthMask(true); 
-        }
-    
-        if (depthTest !== true) {
-            gl.enable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.disable(gl.BLEND);
-        }
-    
-        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -427,23 +365,6 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
             culling: false,
             zequal: false
         });
-
-        /*        
-        if (depthTest !== true) {
-            gl.disable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            gl.enable(gl.BLEND);
-        }
-    
-        if (writeDepth === false) {
-            gl.depthMask(false); 
-        }
-    
-        gl.disable(gl.CULL_FACE);*/
     }
 
     var prog = renderer.progImage;
@@ -476,21 +397,6 @@ RendererDraw.prototype.drawBillboard = function(mvp, texture, color, depthOffset
 
     if (useState !== true) {
         gpu.setState(tmpState);
-
-        /*
-        if (writeDepth === false) {
-            gl.depthMask(true); 
-        }
-    
-        if (depthTest !== true) {
-            gl.enable(gl.DEPTH_TEST);
-        }
-    
-        if (transparent) {
-            gl.disable(gl.BLEND);
-        }
-    
-        gl.enable(gl.CULL_FACE);*/
     }
 };
 
@@ -553,17 +459,6 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
           culling: false,
           zequal: !(depth == null)
         });
-
-        /*
-        gl.disable(gl.CULL_FACE);
-    
-    
-        if (depth == null) {
-            gl.disable(gl.DEPTH_TEST);
-        } else {
-            gl.depthFunc(gl.LEQUAL);
-            gl.enable(gl.DEPTH_TEST);
-        }*/
     }
 
     var prog = renderer.progImage;
@@ -649,13 +544,6 @@ RendererDraw.prototype.drawText = function(x, y, size, text, color, depth, useSt
 
     if (useState !== true) {
         gpu.setState(tmpState);
-
-        /*
-        gl.enable(gl.CULL_FACE);
-    
-        if (depth == null) {
-            gl.enable(gl.DEPTH_TEST);
-        }*/
     }
 };
 
@@ -1135,6 +1023,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
     var hitmapRender = job.hitable && renderer.onlyHitLayers;
     var screenPixelSize2, color = job.color;
+    var useSuperElevation = renderer.useSuperElevation;
 
     if (hitmapRender) {
         var c = renderer.hoverFeatureCounter;
@@ -1150,11 +1039,40 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         var debugWires = (gpu === 0); //just generate false value to avoid compiler warnings;
 
-        prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
-        gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
+        if (useSuperElevation) {
 
-        prog.setVec4('uColor', color);
+            var m = this.mBuffer;
+            var se = renderer.superElevation;
+
+            m[0] = job.bbox.min[0];
+            m[1] = job.bbox.min[1];
+            m[2] = job.bbox.min[2];
+
+            m[3] = 1;
+            m[4] = 1;
+            m[5] = 1;
+
+            m[9] = se[0]; // h1
+            m[10] = se[1]; // f1
+            m[11] = se[2]; // h2
+            m[12] = se[6]; // inv dh
+            m[13] = se[5]; // df
+
+            m[14] = renderer.earthRadius;
+            m[15] = renderer.earthERatio;
+
+            prog = advancedHitPass ? job.program2 : renderer.progLineSE;
+            gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
+            prog.setMat4('uParamsSE', m);
+
+        } else {            
+
+            prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
+            gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
+        }
+
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+        prog.setVec4('uColor', color);
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
 
@@ -1184,7 +1102,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_PIXEL_LINE:
     case VTS_JOB_PIXEL_TLINE:
         gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
-            
+
         prog = advancedHitPass ? job.program2 : job.program;
         texture = null;
         var textureParams = [0,0,0,0];
@@ -1254,7 +1172,35 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             screenPixelSize2 = [ screenPixelSize[0] * renderer.curSize[1], screenPixelSize[1] * renderer.curSize[1]];
         }
 
-        gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
+        if (useSuperElevation) {
+            prog = advancedHitPass ? job.program2 : renderer.progLine3SE;
+
+            var m = this.mBuffer;
+            var se = renderer.superElevation;
+
+            m[0] = job.bbox.min[0];
+            m[1] = job.bbox.min[1];
+            m[2] = job.bbox.min[2];
+
+            m[3] = 1;
+            m[4] = 1;
+            m[5] = 1;
+
+            m[9] = se[0]; // h1
+            m[10] = se[1]; // f1
+            m[11] = se[2]; // h2
+            m[12] = se[6]; // inv dh
+            m[13] = se[5]; // df
+
+            m[14] = renderer.earthRadius;
+            m[15] = renderer.earthERatio;
+
+            gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
+            prog.setMat4('uParamsSE', m);
+
+        } else {
+            gpu.useProgram(prog, advancedHitPass ? ['aPosition','aNormal','aElement'] : ['aPosition','aNormal']);
+        }           
 
         prog.setVec4('uColor', color);
         prog.setVec2('uScale', screenPixelSize2);
@@ -1313,9 +1259,33 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             texture = renderer.whiteTexture;
         }
 
-        prog = job.program; //renderer.progText;
-
+        prog = renderer.useSuperElevation ? renderer.progText2SE : job.program;
         gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
+
+        if (useSuperElevation) {
+            var m = this.mBuffer;
+            var se = renderer.superElevation;
+
+            m[0] = job.bbox.min[0];
+            m[1] = job.bbox.min[1];
+            m[2] = job.bbox.min[2];
+
+            m[3] = 1;
+            m[4] = 1;
+            m[5] = 1;
+
+            m[9] = se[0]; // h1
+            m[10] = se[1]; // f1
+            m[11] = se[2]; // h2
+            m[12] = se[6]; // inv dh
+            m[13] = se[5]; // df
+
+            m[14] = renderer.earthRadius;
+            m[15] = renderer.earthERatio;
+
+            prog.setMat4('uParamsSE', m);
+        }  
+
         prog.setSampler('uSampler', 0);
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uVec', renderer.labelVector);
@@ -1467,8 +1437,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         var p1, p2, camVec, ll, l = null, localTilt;
 
+        if (renderer.useSuperElevation) {
+            if (job.seCounter != renderer.seCounter) {
+                job.seCounter = renderer.seCounter;
+                job.center2 = renderer.transformPointBySE(job.center);
+            }
+        } else {
+            job.center2 = job.center;
+        }
+
+
         if (job.culling != 180) {
-            p2 = job.center;
+            p2 = job.center2;
             p1 = renderer.cameraPosition;
             camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
 
@@ -1513,7 +1493,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
                 
             job.normal = [0,0,0];
-            vec3.normalize(job.center, job.normal);
+            vec3.normalize(job.center2, job.normal);
                 
             localTilt = -vec3.dot(camVec, job.normal);
             if (localTilt < Math.cos(math.radians(job.culling))) {
@@ -1521,7 +1501,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
         } else if (job.visibility) {
 
-            p2 = job.center;
+            p2 = job.center2;
             p1 = renderer.cameraPosition;
             camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
             l = vec3.length(camVec);
@@ -1600,12 +1580,12 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                     localTilt = job.localTilt;
 
                     if (!localTilt) {
-                        p2 = job.center;
+                        p2 = job.center2;
                         p1 = renderer.cameraPosition;
                         camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
                         vec3.normalize(camVec);
                         job.normal = [0,0,0];
-                        vec3.normalize(job.center, job.normal);
+                        vec3.normalize(job.center2, job.normal);
                             
                         localTilt = -vec3.dot(camVec, job.normal);
                     }
@@ -1643,7 +1623,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
 
             //else if (s[2] != 0) {
-                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
                 pp[1] -= stickShift;
             //}
@@ -1653,7 +1633,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (!renderer.drawAllLabels && job.noOverlap) { 
             if (!pp) {
-                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
             }
 
             o = job.noOverlap, depth = pp[2];
@@ -1671,13 +1651,13 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                     depth = o[5];
                 } else {
                     if (l === null) {
-                        p2 = job.center;
+                        p2 = job.center2;
                         p1 = renderer.cameraPosition;
                         camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    if (job.reduce && (job.reduce[0] != 8 && job.reduce[0] != 9)) {  //not overlap code not used for reduce==8
+                    if (!job.reduce || (job.reduce && (job.reduce[0] != 8 && job.reduce[0] != 9))) {  //not overlap code not used for reduce==8
                         depth = o[5] / l;
                     }
                 } 
@@ -1692,7 +1672,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 if (renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
                     if (l === null) {
-                        p2 = job.center;
+                        p2 = job.center2;
                         p1 = renderer.cameraPosition;
                         camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
                         l = vec3.length(camVec) + 0.0001;
@@ -1720,7 +1700,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         } else {
             if (reduce78) {
                 if (!pp) {
-                    pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                    pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
                 }
 
                 job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
@@ -1731,7 +1711,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 if (renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
                     if (l === null) {
-                        p2 = job.center;
+                        p2 = job.center2;
                         p1 = renderer.cameraPosition;
                         camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
                         l = vec3.length(camVec) + 0.0001;
@@ -1752,7 +1732,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (job.hysteresis && job.id) {
             if (!pp) {
-                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
             }
 
             job.lastSubJob = [job, stickShift, texture, files, color, pp];
@@ -1769,7 +1749,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             if (o) {
                 if (!pp) {
-                    pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                    pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
                 }
 
                 gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
@@ -1786,7 +1766,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (s[0] != 0 && s[2] != 0) {
             if (!pp) {
-                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
             }
 
             this.drawLineString([[pp[0], pp[1]+stickShift+s[7], pp[2]], [pp[0], pp[1]+s[7], pp[2]]], true, s[2], [s[3], s[4], s[5], s[6]], null, null, null, null, true);
@@ -1794,7 +1774,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         /*if (dinfo) { //debug only
             if (!pp) {
-                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
             }
 
             var stmp = "" + dinfo[0].toFixed(0) + " " + dinfo[1].toFixed(0) + " " + dinfo[2].toFixed(0) + " " + dinfo[3].toFixed(0) + " " + dinfo[4].toFixed(0);
@@ -1803,7 +1783,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (job.singleBuffer) {
             if (!pp) {
-                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
             }
             
             var b = job.singleBuffer;
@@ -1848,7 +1828,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             prog.setMat4('uData', b );
 
             prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
-            prog.setFloat('uDepth', depth != null ? depth : 0);
+            prog.setFloat('uDepth', pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2));
 
             gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
             
@@ -1928,15 +1908,24 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
         o = job.noOverlap, localTilt;
 
+    if (renderer.useSuperElevation) {
+        if (job.seCounter != renderer.seCounter) {
+            job.seCounter = renderer.seCounter;
+            job.center2 = renderer.transformPointBySE(job.center);
+        }
+    } else {
+        job.center2 = job.center;
+    }
+
     if (job.hysteresis && job.id) {
         if (job.culling != 180) {
-            var p2 = job.center;
+            var p2 = job.center2;
             var p1 = renderer.cameraPosition;
             var camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
             vec3.normalize(camVec);
                 
             job.normal = [0,0,0];
-            vec3.normalize(job.center, job.normal);
+            vec3.normalize(job.center2, job.normal);
                 
             localTilt = -vec3.dot(camVec, job.normal);
             if (localTilt < Math.cos(math.radians(job.culling))) {
@@ -1985,12 +1974,12 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                     localTilt = job.localTilt;
 
                     if (!localTilt) {
-                        p2 = job.center;
+                        p2 = job.center2;
                         p1 = renderer.cameraPosition;
                         camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
                         vec3.normalize(camVec);
                         job.normal = [0,0,0];
-                        vec3.normalize(job.center, job.normal);
+                        vec3.normalize(job.center2, job.normal);
                             
                         localTilt = -vec3.dot(camVec, job.normal);
                     }
@@ -2029,7 +2018,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
 
              //else if (s[2] != 0) {
-                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
                 pp[0] = Math.round(pp[0]);
                 pp[1] -= stickShift;
             //}
@@ -2128,12 +2117,9 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             }
 
             if (job.updatePos) {
-                pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
                 pp[1] -= stickShift;
-                pp[2] = pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2);
             }
-
-            depth = pp[2];
 
             var b2 = job.singleBuffer2;
 
@@ -2160,12 +2146,9 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
 
             prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
-
             prog.setMat4('uData', job.singleBuffer );
-
-            //prog.setVec4('uColor', hitmapRender ? color : color2);
             prog.setVec4('uColor', color);
-            prog.setFloat('uDepth', depth);
+            prog.setFloat('uDepth', pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2));
 
             gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -2179,11 +2162,17 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             if (bl > 64) { vbuff = renderer.textQuads32; prog = renderer.progLabel32; }
             else { vbuff = renderer.textQuads16; prog = renderer.progLabel16; }
 
+            if (job.updatePos) {
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+                pp[1] -= stickShift;
+            }
+
             gpu.useProgram(prog, ['aPosition']);
             prog.setSampler('uSampler', 0);
-            prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+            prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
+
             prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], 1, stickShift*2]);
-            prog.setVec3('uOrigin', job.origin);
+            prog.setVec3('uOrigin', [pp[0],pp[1],pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2)]);
             prog.setVec4('uColor', hitmapRender ? color : color2);
             prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
             lj = hitmapRender ? 1 : 2;

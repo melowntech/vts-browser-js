@@ -135,6 +135,7 @@ GpuGroup.prototype.addLineJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+    job.bbox = this.bbox;
 
     if (!job.program.isReady()) {
         return;
@@ -208,6 +209,7 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+    job.bbox = this.bbox;
 
     if (data['texture'] != null) {
         var texture = data['texture'];
@@ -301,6 +303,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;
+    job.bbox = this.bbox;
 
     job.files = data['files'] || [];
     var fonts = data['fonts'] || ['#default'];
@@ -397,7 +400,11 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
             if (this.renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
                 job.reduce[1] = job.reduce[2];
             } else {
-                job.reduce[1] = Math.floor((Math.log(job.reduce[2] * 500) / Math.log(1.0017)) + 5000);
+                if (job.reduce[0] == 9) {
+                    job.reduce[1] = job.reduce[2];
+                } else {
+                    job.reduce[1] = Math.floor((Math.log(job.reduce[2] * 500) / Math.log(1.0017)) + 5000);
+                }
             }
         }
     }

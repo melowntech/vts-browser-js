@@ -11,6 +11,7 @@ var GeographicLib = GeographicLib_;
 
 var MapConvert = function(map) {
     this.map = map;
+    this.renderer = map.renderer;
     this.config = map.config;
     this.measure = map.measure;
     this.isProjected = this.map.getNavigationSrs().isProjected();
@@ -211,6 +212,7 @@ MapConvert.prototype.getPositionCameraCoords = function(position, heightMode) {
     }
 };
 
+
 MapConvert.prototype.getPositionNavCoordsFromPublic = function(position, lod) {
     var coords = position.getCoords();
 
@@ -236,13 +238,17 @@ MapConvert.prototype.getPositionPublicCoords = function(position, lod) {
 };
 
 
-MapConvert.prototype.getPositionPhysCoords = function(position, lod) {
+MapConvert.prototype.getPositionPhysCoords = function(position, lod, includeSE) {
     var coords = position.getCoords();
 
     if (position.getHeightMode() == 'float') {
         lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(position.getCoords(), position.getViewExtent(), this.config.mapNavSamplesPerViewExtent);
         var surfaceHeight = this.measure.getSurfaceHeight(position.getCoords(), lod);
         coords[2] += surfaceHeight[0]; 
+    }
+
+    if (this.renderer.useSuperElevation && includeSE) {
+        coords[2] = this.renderer.getSuperElevatedHeight(coords[2]);
     }
 
     return this.convertCoords(coords, 'navigation', 'physical');
@@ -258,6 +264,10 @@ MapConvert.prototype.getPositionCameraSpaceCoords = function(position, lod) {
         coords[2] += surfaceHeight[0]; 
     }
 
+    if (this.renderer.useSuperElevation) {
+        coords[2] = this.renderer.getSuperElevatedHeight(coords[2]);
+    }
+
     var worldPos = this.convertCoords(coords, 'navigation', 'physical');
     var camPos = this.map.camera.position;
     worldPos[0] -= camPos[0];
@@ -268,14 +278,17 @@ MapConvert.prototype.getPositionCameraSpaceCoords = function(position, lod) {
 };
 
 
-MapConvert.prototype.getPositionCanvasCoords = function(position, lod, physical) {
+MapConvert.prototype.getPositionCanvasCoords = function(position, lod, physical, containsSE) {
     var worldPos;
     if (physical) {
         var camPos = this.map.camera.position;
         var coords = position.getCoords();
-        worldPos = [coords[0] - camPos[0],
-            coords[1] - camPos[1],
-            coords[2] - camPos[2]];
+
+        if (this.renderer.useSuperElevation && !containsSE) {
+            coords = this.renderer.transformPointBySE(coords);
+        }
+
+        worldPos = [coords[0] - camPos[0], coords[1] - camPos[1], coords[2] - camPos[2]];
     } else {
         worldPos = this.getPositionCameraSpaceCoords(position, lod);
     }
@@ -283,17 +296,23 @@ MapConvert.prototype.getPositionCanvasCoords = function(position, lod, physical)
     return this.map.renderer.project2(worldPos, this.map.camera.getMvpMatrix());
 };
 
-MapConvert.prototype.convertCoordsFromPhysToNav = function(coords, mode, lod) {
+
+MapConvert.prototype.convertCoordsFromPhysToNav = function(coords, mode, lod, containsSE) {
     coords = this.convertCoords(coords, 'physical', 'navigation');
+
+    if (this.renderer.useSuperElevation && containsSE) {
+        coords[2] = this.renderer.getUnsuperElevatedHeight(coords[2]);
+    }
 
     if (mode == 'float') {
         lod =  (lod != null) ? lod : this.measure.getOptimalHeightLod(coords, 10, this.config.mapNavSamplesPerViewExtent);
         var surfaceHeight = this.measure.getSurfaceHeight(coords, lod);
         coords[2] -= surfaceHeight[0]; 
-    }
+    } 
 
     return coords;
 };
+
 
 MapConvert.prototype.getGeodesicLinePoints = function(coords, coords2, height, density) {
     var geod, r, length, azimuth, minStep, d;

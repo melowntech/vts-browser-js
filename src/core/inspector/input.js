@@ -204,8 +204,13 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 87:
                 case 119:
-                    var value = debug.drawWireframe + 1;
-                    debug.drawWireframe = value > 2 ? 0 : value;
+                    
+                    if (debug.drawWireframe == 3) {
+                        debug.drawWireframe = 1;
+                    } else {
+                        var value = debug.drawWireframe + 1;
+                        debug.drawWireframe = value > 2 ? 0 : value;
+                    }
                     break; //key W pressed
 
                 case 70:
@@ -215,7 +220,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 85:
                 case 117:
-                    debug.drawWireframe = debug.drawWireframe != 4 ? 4 : 0;
+                    map.renderer.setSuperElevationState(!map.renderer.useSuperElevation);
                     break; //key U pressed
 
                 case 77:
@@ -357,6 +362,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 115:
                 debug.drawSurfaces = !debug.drawSurfaces; break; //key S pressed
 
+            case 90:
+            case 122:
+                debug.drawSurfaces2 = !debug.drawSurfaces2; break; //key Z pressed
+
             case 67:
             case 99:
                 debug.drawCredits = !debug.drawCredits; break; //key C pressed
@@ -428,6 +437,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
             if (has('I')) debug.drawIndices = true;
             if (has('B')) debug.drawBoundLayers = true;
             if (has('S')) debug.drawSurfaces = true;
+            if (has('Z')) debug.drawSurfaces2 = true;
             if (has('C')) debug.drawCredits = true;
             if (has('O')) debug.drawOrder = true;
             if (has('E')) debug.debugTextSize = 3.0;

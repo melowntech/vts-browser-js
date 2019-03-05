@@ -804,7 +804,7 @@ MapSubmesh.prototype.getWorldMatrix = function(geoPos, matrix) {
 
     var m = matrix;
 
-    if (m != null) {
+    if (m) {
         m[0] = this.bbox.side(0); m[1] = 0; m[2] = 0; m[3] = 0;
         m[4] = 0; m[5] = this.bbox.side(1); m[6] = 0; m[7] = 0;
         m[8] = 0; m[9] = 0; m[10] = this.bbox.side(2); m[11] = 0;
@@ -814,6 +814,22 @@ MapSubmesh.prototype.getWorldMatrix = function(geoPos, matrix) {
 
         mat4.multiply( math.translationMatrix(this.bbox.min[0] - geoPos[0], this.bbox.min[1] - geoPos[1], this.bbox.min[2] - geoPos[2]),
                        math.scaleMatrix(this.bbox.side(0), this.bbox.side(1), this.bbox.side(2)), m);
+    }
+
+    return m;
+};
+
+
+MapSubmesh.prototype.getWorldMatrixSE = function(geoPos, matrix) {
+    var m = matrix;
+
+    if (m) {
+        m[0] = 1; m[1] = 0; m[2] = 0; m[3] = 0;
+        m[4] = 0; m[5] = 1; m[6] = 0; m[7] = 0;
+        m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
+        m[12] = this.bbox.min[0] - geoPos[0]; m[13] = this.bbox.min[1] - geoPos[1]; m[14] = this.bbox.min[2] - geoPos[2]; m[15] = 1;
+    } else {
+        m = math.translationMatrix(this.bbox.min[0] - geoPos[0], this.bbox.min[1] - geoPos[1], this.bbox.min[2] - geoPos[2]);
     }
 
     return m;

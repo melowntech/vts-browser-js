@@ -147,6 +147,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.progMap = {};
     this.gridHmax = 0;
     this.gridHmin = 0;
+    this.seCounter = 0;
 
     //hack for vts maps
     //this.vtsHack = true;
@@ -155,10 +156,14 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     //reduce garbage collection
     this.updateCameraMatrix = mat4.create();
 
+    this.seTmpVec = [0,0,0];
+    this.seTmpVec2 = [0,0,0];
+    this.seTmpVec3 = [0,0,0];
+
     //debug
     this.lastHitPosition = [0,0,100];
     this.logTilePos = null;
-    this.setSuperElevation(1000,3,4000,1);
+    this.setSuperElevation(0,2,4000,1.5);
 
     window.addEventListener('resize', (this.onResize).bind(this), false);
 
@@ -269,9 +274,17 @@ Renderer.prototype.project2 = function(point, mvp, cameraPos) {
 };
 
 
+Renderer.prototype.setSuperElevationState = function(state) {
+    if (this.useSuperElevation != state) {
+        this.useSuperElevation = state;
+        this.seCounter++;
+    }
+};
+
 Renderer.prototype.setSuperElevation = function(h1, f1, h2, f2) {
     if (h1 == h2) { h2 = h1 + 1; }
     this.superElevation = [h1, f1, h2, f2, h2-h1, f2-f1, 1.0 / (h2-h1)];
+    this.seCounter++;
 };
 
 
@@ -287,6 +300,77 @@ Renderer.prototype.getSuperElevatedHeight = function(height) {
     }
 
     return height * (se[1] + ((h - se[0]) * se[6]) * se[5]);
+};
+
+Renderer.prototype.getUnsuperElevatedHeight = function(height) {
+    var se = this.superElevation, s = height;
+
+    if (se[1] == se[3]) {
+        return s / se[1];
+    }
+
+    if (s <= se[0] * se[1]) {  // 0 - h1, 1 - f1, 2 - h2, 3 - f2, 4 - dh, 5 - df, 6 - invdh
+        return s / se[1];
+    }
+
+    if (s >= se[2] * se[3]) {
+        return s / se[3];
+    }
+
+
+    var h1 = se[0], f1 = se[1], h2 = se[2], f2 = se[3];
+
+    // and f1!=f2 and h1!=h2
+
+    return -(Math.sqrt(-2*f2*(f1*h1*h2 + 2*h1*s - 2*h2*s) + f1*(f1*h2*h2 + 4*h1*s - 4*h2*s) + f2*f2*h1*h1) - f1*h2 + f2*h1)/(2*(f1 - f2));
+};
+
+
+Renderer.prototype.getEllipsoidHeight = function(pos, shift) {
+    var p, p2;
+    this.seTmpVec3 = [0,0,0];
+
+    if (shift) {
+        p = this.seTmpVec;
+        p2 = [pos[0] + shift[0], pos[1] + shift[1], (pos[2] + shift[2]) * this.earthERatio];
+    } else {
+        p = pos;
+        p2 = [p[0], p[1], p[2] * this.earthERatio];
+    }
+
+    var l = Math.sqrt(p2[0] * p2[0] + p2[1] * p2[1] + p2[2] * p2[2]);
+
+    return l - this.earthRadius;
+};
+
+
+Renderer.prototype.transformPointBySE = function(pos, shift) {
+    var p = pos, p2;
+    this.seTmpVec3 = [0,0,0];
+
+    if (shift) {
+        p2 = [pos[0] + shift[0], pos[1] + shift[1], (pos[2] + shift[2]) * this.earthERatio];
+    } else {
+        p2 = [p[0], p[1], p[2] * this.earthERatio];
+    }
+
+    var l = Math.sqrt(p2[0] * p2[0] + p2[1] * p2[1] + p2[2] * p2[2]);
+    var v = this.seTmpVec2;
+
+    var m = (1.0/(l+0.0001));
+    v[0] = p2[0] * m;
+    v[1] = p2[1] * m;
+    v[2] = p2[2] * m;
+
+    var h = l - this.earthRadius;
+    var h2 = this.getSuperElevatedHeight(h);
+    m = (h2 - h);
+
+    p2[0] = p[0] + v[0] * m;
+    p2[1] = p[1] + v[1] * m;
+    p2[2] = p[2] + v[2] * m;
+
+    return p2;
 };
 
 
@@ -543,6 +627,7 @@ Renderer.prototype.getZoffsetFactor = function(params) {
     return (params[0] + params[1]*this.distanceFactor + params[2]*this.tiltFactor)*0.0001;
 };
 
+
 Renderer.prototype.saveScreenshot = function(output, filename, filetype) {
     var gl = this.gpu.gl;
 
@@ -631,6 +716,7 @@ Renderer.prototype.getBitmap = function(url, filter, tiled, hash, useHash) {
 
     return texture;
 };
+
 
 Renderer.prototype.getFont = function(url) {
     var font = this.fonts[url];

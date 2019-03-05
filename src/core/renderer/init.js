@@ -51,13 +51,23 @@ RendererInit.prototype.initShaders = function() {
     renderer.progTile3 = new GpuProgram(gpu, '#define externalTex\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
     renderer.progFogTile = new GpuProgram(gpu, '#define onlyFog\n' + shaders.tileVertexShader, '#define onlyFog\n' + shaders.tileFragmentShader);
 
-    renderer.progShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileShadedFragmentShader);
-    renderer.progTShadedTile = new GpuProgram(gpu, shaders.tileTShadedVertexShader, shaders.tileTShadedFragmentShader);
-    renderer.progWireframeTile = new GpuProgram(gpu, shaders.tileWireframeVertexShader, shaders.tileWireframeFragmentShader);
-    renderer.progWireframeTile2 = new GpuProgram(gpu, shaders.tileWireframeVertexShader, shaders.tileWireframe2FragmentShader);
-    renderer.progWireframeTile3 = new GpuProgram(gpu, shaders.tileWireframe3VertexShader, shaders.tileWireframeFragmentShader);
-    renderer.progFlatShadeTile = new GpuProgram(gpu, shaders.tileFlatShadeVertexShader, shaders.tileFlatShadeFragmentShader);
-    renderer.progFlatShadeTileSE = new GpuProgram(gpu, shaders.tileFlatShadeVertexShaderSE, shaders.tileFlatShadeFragmentShaderSE);
+    renderer.progTileSE = new GpuProgram(gpu, '#define applySE\n' + shaders.tileVertexShader, shaders.tileFragmentShader);
+    renderer.progTile2SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+    renderer.progTile3SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+
+    renderer.progFlatShadeTile = new GpuProgram(gpu, '#define flatShade\n' + shaders.tileVertexShader, '#define flatShade\n' + shaders.tileFragmentShader);
+    renderer.progFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShade\n' + shaders.tileVertexShader, '#define flatShade\n' + shaders.tileFragmentShader);
+
+    renderer.progDepthTile = new GpuProgram(gpu, '#define depth\n' + shaders.tileVertexShader, '#define depth\n' + shaders.tileFragmentShader);
+    renderer.progDepthTileSE = new GpuProgram(gpu, '#define applySE\n#define depth\n' + shaders.tileVertexShader, '#define depth\n' + shaders.tileFragmentShader);
+    renderer.progDepthHeightmap = new GpuProgram(gpu, shaders.heightmapDepthVertexShader, shaders.heightmapDepthFragmentShader);
+
+    renderer.progShadedTile = new GpuProgram(gpu, shaders.shadedMeshVertexShader, shaders.shadedMeshFragmentShader);
+    renderer.progTShadedTile = new GpuProgram(gpu, shaders.shadedMeshVertexShader, '#define textured\n' + shaders.shadedMeshFragmentShader);
+
+    renderer.progWireFrameBasic = new GpuProgram(gpu, shaders.tileVertexShader, shaders.tileWireFrameBasicShader);
+    renderer.progWireFrameBasicSE = new GpuProgram(gpu, '#define applySE\n' + shaders.tileVertexShader, shaders.tileWireFrameBasicShader);
+
     renderer.progHeightmap = new GpuProgram(gpu, shaders.heightmapVertexShader, shaders.heightmapFragmentShader);
     renderer.progPlane = new GpuProgram(gpu, shaders.planeVertexShader, shaders.planeFragmentShader); //flat
     renderer.progPlane2 = new GpuProgram(gpu, shaders.planeVertex2Shader, shaders.planeFragment2Shader); //poles
@@ -69,30 +79,36 @@ RendererInit.prototype.initShaders = function() {
     renderer.progAtmo2 = new GpuProgram(gpu, shaders.atmoVertexShader, shaders.atmoFragmentShader);
     renderer.progAtmo = new GpuProgram(gpu, shaders.atmoVertexShader3, shaders.atmoFragmentShader3);
 
-    renderer.progDepthTile = new GpuProgram(gpu, shaders.tileDepthVertexShader, shaders.tileDepthFragmentShader);
-    renderer.progDepthHeightmap = new GpuProgram(gpu, shaders.heightmapDepthVertexShader, shaders.heightmapDepthFragmentShader);
-
     renderer.progBBox = new GpuProgram(gpu, shaders.bboxVertexShader, shaders.bboxFragmentShader);
     renderer.progBBox2 = new GpuProgram(gpu, shaders.bbox2VertexShader, shaders.bboxFragmentShader);
 
     renderer.progLine = new GpuProgram(gpu, shaders.lineVertexShader, shaders.lineFragmentShader); //line
-    renderer.progELine = new GpuProgram(gpu, shaders.elineVertexShader, shaders.elineFragmentShader); //line elements 
-    renderer.progLine3 = new GpuProgram(gpu, shaders.line3VertexShader, shaders.lineFragmentShader); //pixel line
-    renderer.progELine3 = new GpuProgram(gpu, shaders.eline3VertexShader, shaders.elineFragmentShader); //pixel line elements
-    renderer.progLine4 = new GpuProgram(gpu, shaders.line4VertexShader, shaders.lineFragmentShader); //direct linestring pixel line
-    renderer.progRLine = new GpuProgram(gpu, shaders.rlineVertexShader, shaders.lineFragmentShader); //dynamic width line
-    renderer.progERLine = new GpuProgram(gpu, shaders.erlineVertexShader, shaders.elineFragmentShader); //dynamic width line elements
+    renderer.progLineSE = new GpuProgram(gpu, '#define applySE\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //line SE
+    renderer.progELine = new GpuProgram(gpu, '#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //line elements 
+    renderer.progELineSE = new GpuProgram(gpu, '#define applySE\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //line SE elements 
+    renderer.progLine3 = new GpuProgram(gpu, '#define pixelLine\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //pixel line
+    renderer.progELine3 = new GpuProgram(gpu, '#define pixelLine\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //pixel line elements
+    renderer.progLine3SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //pixel line SE
+    renderer.progELine3SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //pixel line SE elements
+    renderer.progLine4 = new GpuProgram(gpu, '#define pixelLine\n#define dataPoints\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //direct linestring pixel line
+    renderer.progLine4SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n#define dataPoints\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //direct linestring pixel line SE
+    renderer.progRLine = new GpuProgram(gpu, '#define dynamicWidth\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //dynamic width line
+    renderer.progRLineSE = new GpuProgram(gpu, '#define applySE\n#define dynamicWidth\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //dynamic width line
+    renderer.progERLine = new GpuProgram(gpu, '#define dynamicWidth\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //dynamic width line elements
+    renderer.progERLineSE = new GpuProgram(gpu, '#define applySE\n#define dynamicWidth\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //dynamic width line elements
+
     renderer.progTLine = new GpuProgram(gpu, shaders.tlineVertexShader, shaders.tlineFragmentShader); //textured line
     renderer.progTPLine = new GpuProgram(gpu, shaders.tplineVertexShader, shaders.tlineFragmentShader); //textured pixed line
     renderer.progTBLine = new GpuProgram(gpu, shaders.tlineVertexShader, shaders.tblineFragmentShader); //textured line with background color
     renderer.progTPBLine = new GpuProgram(gpu, shaders.tplineVertexShader, shaders.tblineFragmentShader); //textured pixel line with background color
     renderer.progETLine = new GpuProgram(gpu, shaders.etlineVertexShader, shaders.elineFragmentShader); //textured line elements
     renderer.progETPLine = new GpuProgram(gpu, shaders.etplineVertexShader, shaders.elineFragmentShader); //textured pixed line elements
-    renderer.progLineWireframe = new GpuProgram(gpu, shaders.lineWireframeVertexShader, shaders.lineWireframeFragmentShader); //line with wireframe for debugging
+    //renderer.progLineWireframe = new GpuProgram(gpu, shaders.lineWireframeVertexShader, shaders.lineWireframeFragmentShader); //line with wireframe for debugging
+
+    renderer.progText2 = new GpuProgram(gpu, '#define lineLabel\n' + shaders.lineVertexShader, shaders.text2FragmentShader); //line label 
+    renderer.progText2SE = new GpuProgram(gpu, '#define applySE\n#define lineLabel\n' + shaders.lineVertexShader, shaders.text2FragmentShader); //line label 
 
     renderer.progPolygon = new GpuProgram(gpu, shaders.polygonVertexShader, shaders.polygonFragmentShader);
-    renderer.progText = new GpuProgram(gpu, shaders.textVertexShader, shaders.textFragmentShader);
-    renderer.progText2 = new GpuProgram(gpu, shaders.text2VertexShader, shaders.text2FragmentShader); //line label
     renderer.progImage = new GpuProgram(gpu, shaders.imageVertexShader, shaders.imageFragmentShader);
     renderer.progIcon = new GpuProgram(gpu, shaders.iconVertexShader, shaders.textFragmentShader); //label or icon
     renderer.progIcon2 = new GpuProgram(gpu, shaders.icon2VertexShader, shaders.text2FragmentShader); //label

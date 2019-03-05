@@ -83,6 +83,19 @@ UIElement.prototype.getRect = function() {
 };
 
 
+UIElement.prototype.getPageRect = function() {
+    var rect = this.element.getBoundingClientRect();
+    var offsetX = window.pageXOffset || 0;
+    var offsetY = window.pageYOffset || 0;
+    return {
+        'left' : (rect.left + offsetX), 
+        'top' : (rect.top + offsetY), 
+        'width' : rect.width, 
+        'height' : rect.height 
+    };
+};
+
+
 UIElement.prototype.setHtml = function(html) {
     this.element.innerHTML = html;
     

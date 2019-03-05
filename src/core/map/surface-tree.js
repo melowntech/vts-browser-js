@@ -195,6 +195,8 @@ MapSurfaceTree.prototype.updateNodeHeightExtents = function(tile, node) {
                 node.maxHeight = parentNode.maxHeight;
                 node.minZ = parentNode.minZ;
                 node.maxZ = parentNode.maxZ;
+                node.minZ2 = parentNode.minZ2;
+                node.maxZ2 = parentNode.maxZ2;
                 node.generateCullingHelpers();
                 break;
             }

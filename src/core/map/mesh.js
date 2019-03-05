@@ -398,52 +398,26 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var texcoordsAttr = null;
     var texcoords2Attr = null;
     var drawWireframe = draw.debug.drawWireframe;
+    var useSuperElevation = renderer.useSuperElevation;
     var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
 
     if (type == VTS_MATERIAL_DEPTH) {
-        program = renderer.progDepthTile;
+        program = useSuperElevation ? renderer.progDepthTileSE : renderer.progDepthTile;
         //texcoordsAttr = "aTexCoord";
     } else if (type == VTS_MATERIAL_FLAT) {
         program = renderer.progFlatShadeTile;
     } else {
-        if (drawWireframe > 0) {
-            switch (drawWireframe) {
-            case 2: program = renderer.progWireframeTile2;  break;
-            case 3: program = renderer.progFlatShadeTile;   break;
-            case 4: program = renderer.progFlatShadeTileSE; 
+        if (drawWireframe > 0 && type == VTS_MATERIAL_FOG) {
+            return;
+        }
 
-                    texcoords2Attr = 'aTexCoord2';
-                    attributes = ['aPosition', 'aTexCoord2', 'aBarycentric'];
-                    break;
-
-            case 1:
-    
-                switch(type) {
-                case VTS_MATERIAL_INTERNAL:
-                case VTS_MATERIAL_INTERNAL_NOFOG:
-                    program = renderer.progWireframeTile;
-                    texcoordsAttr = 'aTexCoord';
-                    attributes.push('aTexCoord');
-                    break;
-    
-                case VTS_MATERIAL_EXTERNAL:
-                case VTS_MATERIAL_EXTERNAL_NOFOG:
-                    program = renderer.progWireframeTile3;
-                    texcoords2Attr = 'aTexCoord2';
-                    attributes.push('aTexCoord2');
-                    break;
-    
-                case VTS_MATERIAL_FOG:
-                    return;
-                }
-    
-                break;
-            }
+        if (drawWireframe == 1 || drawWireframe == 3) {
+            program = useSuperElevation ? renderer.progFlatShadeTileSE : renderer.progFlatShadeTile;
         } else {
             switch(type) {
             case VTS_MATERIAL_INTERNAL:
             case VTS_MATERIAL_INTERNAL_NOFOG:
-                program = renderer.progTile;
+                program = useSuperElevation ? renderer.progTileSE : renderer.progTile;
                 texcoordsAttr = 'aTexCoord';
                 attributes.push('aTexCoord');
                 break;
@@ -451,12 +425,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             case VTS_MATERIAL_EXTERNAL:
             case VTS_MATERIAL_EXTERNAL_NOFOG:
 
-                program = renderer.progTile2;
+                program = useSuperElevation ? renderer.progTile2SE : renderer.progTile2;
                     
                 if (texture) {
                     gpuMask = texture.getGpuMaskTexture();
                     if (gpuMask) {
-                        program = renderer.progTile3;
+                        program = useSuperElevation ? renderer.progTile3SE : renderer.progTile3;
                     }
                 } 
                 
@@ -515,7 +489,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
     var mv = this.mBuffer, m = this.mBuffer2, v = this.vBuffer;
 
-    if (drawWireframe == 4) {
+    if (useSuperElevation) {
 
         var m = this.mBuffer;
         var se = renderer.superElevation;
@@ -528,9 +502,9 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         m[4] = submesh.bbox.side(1);
         m[5] = submesh.bbox.side(2);
 
-        m[6] = cameraPos[0];
-        m[7] = cameraPos[1];
-        m[8] = cameraPos[2];
+        //m[6] = 0;
+        //m[7] = 0;
+        //m[8] = 0;
 
         m[9] = se[0]; // h1
         m[10] = se[1]; // f1
@@ -541,9 +515,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         m[14] = renderer.earthRadius;
         m[15] = renderer.earthERatio;
 
-        program.setMat4('uParams', m);
+        program.setMat4('uParamsSE', m);
 
-        mv = renderer.camera.getModelviewFMatrix(); 
+        //mv = renderer.camera.getModelviewFMatrix(); 
+        mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrixSE(cameraPos, m), mv);
 
     } else {
         mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrix(cameraPos, m), mv);
@@ -574,10 +549,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             m[12] = bmax[2] - bmin[2], m[13] = bmin[0], m[14] = bmin[1], m[15] = bmin[2];
 
             program.setMat4('uParams', m);
-                                /*[draw.zFactor, (type == VTS_MATERIAL_INTERNAL_NOFOG) ? 0 : draw.fogDensity, bmax[0] - bmin[0], bmax[1] - bmin[1],
-                                        v[0], v[1], v[2], v[3],
-                                        0,0,0,0,
-                                        bmax[2] - bmin[2], bmin[0], bmin[1], bmin[2]]);*/
 
             v[0] = c[0], v[1] = c[1], v[2] = c[2];
             program.setVec4('uParams2', v);
@@ -596,11 +567,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
             program.setMat4('uParams', m);
 
-            /* [draw.zFactor, (type == VTS_MATERIAL_EXTERNAL) ? draw.fogDensity : 0, bmax[0] - bmin[0], bmax[1] - bmin[1],
-                                        v[0], v[1], v[2], v[3],
-                                        t[0], t[1], t[2], t[3],
-                                        bmax[2] - bmin[2], bmin[0], bmin[1], bmin[2]]);*/
-
             v[0] = c[0], v[1] = c[1], v[2] = c[2]; v[3] = (type == VTS_MATERIAL_EXTERNAL) ? 1 : alpha;
             program.setVec4('uParams2', v);
             break;
@@ -612,7 +578,35 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         this.stats.gpuRenderUsed += gpuSubmesh.getSize();
     } 
 
-    gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null);
+    gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null, (drawWireframe == 2));
+
+
+    if (drawWireframe == 1 || drawWireframe == 2) { //very slow debug only
+
+        program = useSuperElevation ? renderer.progWireFrameBasicSE : renderer.progWireFrameBasic;
+        renderer.gpu.useProgram(program, attributes, gpuMask);
+
+        if (useSuperElevation) {
+            program.setMat4('uParamsSE', m);
+        }
+
+        program.setMat4('uMV', mv);
+        program.setVec4('uColor', [0,0,0,1]);
+
+        program.setMat4('uProj', proj, renderer.getZoffsetFactor([-0.001,0,0]));
+
+        var gl = gpuSubmesh.gl;
+
+        if (gpuSubmesh.indexBuffer) {
+            for (var i = 0, li = gpuSubmesh.indexBuffer.numItems*2; i < li; i+=3) {
+                gl.drawElements(gl.LINE_LOOP, 3, gl.UNSIGNED_SHORT, i);
+            }
+        }  else {
+            for (var i = 0, li = gpuSubmesh.vertexBuffer.numItems*2; i < li; i+=3) {
+                gl.drawArrays(gl.LINE_LOOP, i, 3);
+            }
+        }
+    }
 
     this.stats.drawnFaces += this.faces;
     this.stats.drawCalls ++;

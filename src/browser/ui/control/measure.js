@@ -162,6 +162,10 @@ UIControlMeasure.prototype.onMouseClick = function(event) {
     }
 
     var coords = event.getMouseCoords();
+    var rect = this.ui.getMapElement().getPageRect();
+    coords[0] -= rect['left'];
+    coords[1] -= rect['top'];
+
     var clickCoords = map.getHitCoords(coords[0], coords[1], 'fix');
 
     map.redraw();
@@ -264,6 +268,10 @@ UIControlMeasure.prototype.onMouseMove = function(event) {
     }
 
     var coords = event.getMouseCoords();
+    var rect = this.ui.getMapElement().getPageRect();
+    coords[0] -= rect['left'];
+    coords[1] -= rect['top'];
+
     var clickCoords = map.getHitCoords(coords[0], coords[1], 'fix');
 
     if (!clickCoords) {
