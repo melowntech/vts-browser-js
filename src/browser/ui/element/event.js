@@ -95,14 +95,15 @@ UIEvent.prototype.getMouseCoords = function(absolute) {
 
 
 UIEvent.prototype.getEventCoords = function(event, absolute) {
-    if (this.element.getBoundingClientRect == null || absolute) {
+//    if (this.element.getBoundingClientRect == null || absolute) {
+    if (this.element.getPageRect == null || absolute) {
         return [ event['clientX'],
-            event['clientY'] ];
+                 event['clientY'] ];
     } else {
-        var rect = this.element.getBoundingClientRect();
+        var rect = this.element.getPageRect();
 
-        return [ event['clientX'] - rect.left,
-            event['clientY'] - rect.top ];
+        return [ event['pageX'] - rect.left,
+                 event['pageY'] - rect.top ];
     }
 };
 
@@ -112,7 +113,7 @@ UIEvent.prototype.getDragDelta = function() {
     case 'drag':
 
         return [ this.event['deltaX'],
-            this.event['deltaY'] ];
+                 this.event['deltaY'] ];
     }
 
     return [0,0];
@@ -262,14 +263,14 @@ UIEvent.prototype.getTouchCoords = function(index, absolute) {
             break;
         }
 
-        if (this.element.getBoundingClientRect == null || absolute) {
+        if (this.element.getPageRect == null || absolute) {
             return [ event['clientX'],
-                event['clientY'] ];
+                     event['clientY'] ];
         } else {
-            var rect = this.element.getBoundingClientRect();
+            var rect = this.element.getPageRect();
 
-            return [ event['clientX'] - rect.left,
-                event['clientY'] - rect.top ];
+            return [ event['pageX'] - rect.left,
+                     event['pageY'] - rect.top ];
         }
     }
 

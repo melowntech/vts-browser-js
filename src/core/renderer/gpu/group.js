@@ -388,22 +388,25 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
             case 'scr-count4': job.reduce[0] = 7; break;
             case 'scr-count5': job.reduce[0] = 8; break;
             case 'scr-count6': job.reduce[0] = 9; break;
+            case 'scr-count7': job.reduce[0] = 10; break;
         }
 
         job.reduce[5] = 0; //zero debug value
 
-        if (job.reduce[0] == 7 || job.reduce[0] == 8 || job.reduce[0] == 9) {
+        if (job.reduce[0] == 7 || job.reduce[0] == 8 || job.reduce[0] == 9 || job.reduce[0] == 10) {
             job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
-            //job.reduce[1] = Math.log(job.reduce[2]) * VTS_IMPORATANCE_INV_LOG;
-            //job.reduce[1] = Math.log(job.reduce[2]) / Math.log(1.0017);
 
-            if (this.renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
+            if (job.reduce[0] == 10) {
                 job.reduce[1] = job.reduce[2];
             } else {
-                if (job.reduce[0] == 9) {
+                if (this.renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
                     job.reduce[1] = job.reduce[2];
                 } else {
-                    job.reduce[1] = Math.floor((Math.log(job.reduce[2] * 500) / Math.log(1.0017)) + 5000);
+                    if (job.reduce[0] == 9) {
+                        job.reduce[1] = job.reduce[2];
+                    } else {
+                        job.reduce[1] = Math.floor((Math.log(job.reduce[2] * 500) / Math.log(1.0017)) + 5000);
+                    }
                 }
             }
         }
