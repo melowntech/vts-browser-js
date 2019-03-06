@@ -689,6 +689,9 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 case 3: //scr-count6
                     processGMap5(gpu, gl, renderer, screenPixelSize, this);
                     break;
+                case 4: //scr-count7
+                    processGMap6(gpu, gl, renderer, screenPixelSize, this);
+                    break;
             }
             renderer.gmapIndex = 0;
         }

@@ -905,6 +905,7 @@ Map.prototype.setConfigParam = function(key, value) {
         if (value == 'gridcells') value = 'scr-count4';
         if (value == 'singlepass') value = 'scr-count5';
         if (value == 'margin') value = 'scr-count6';
+        //if (value == 'margin') value = 'scr-count7';
         this.config.mapFeaturesReduceMode = value;
         break;
 

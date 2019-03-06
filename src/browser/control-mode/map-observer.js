@@ -183,10 +183,6 @@ ControlModeMapObserver.prototype.doubleclick = function(event) {
     }
 
     var coords = event.getMouseCoords();
-    var rect = this.browser.ui.getMapElement().getPageRect();
-    coords[0] -= rect['left'];
-    coords[1] -= rect['top'];
-
     var canvasSize = this.browser.getRenderer().getCanvasSize();
 
     if (coords[0] < 0 || coords[1] < 0 || coords[0] >= canvasSize[0] || coords[1] >= canvasSize[1]) {
