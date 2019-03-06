@@ -281,10 +281,32 @@ Renderer.prototype.setSuperElevationState = function(state) {
     }
 };
 
+
+Renderer.prototype.getSuperElevationState = function() {
+    return this.useSuperElevation;
+};
+
+
 Renderer.prototype.setSuperElevation = function(h1, f1, h2, f2) {
+    if (f1 == 1 && f2 == 1) {
+        if (this.useSuperElevation != false) {
+            this.useSuperElevation = false;
+            this.seCounter++;
+        }
+
+        if (h1 == h2) { h2 = h1 + 1; }
+        this.superElevation = [h1, f1, h2, f2, h2-h1, f2-f1, 1.0 / (h2-h1)];
+        return;
+    }
+
     if (h1 == h2) { h2 = h1 + 1; }
     this.superElevation = [h1, f1, h2, f2, h2-h1, f2-f1, 1.0 / (h2-h1)];
     this.seCounter++;
+};
+
+
+Renderer.prototype.getSuperElevation = function() {
+    return this.superElevation.slice();
 };
 
 

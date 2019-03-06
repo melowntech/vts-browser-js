@@ -180,7 +180,7 @@ MapConfig.prototype.parseViews = function() {
 
     view = new MapView(this.map, view);
 
-    this.map.initialView = JSON.parse(JSON.stringify(view));
+    this.map.initialView = view.getInfo();
     return true;
 };
 

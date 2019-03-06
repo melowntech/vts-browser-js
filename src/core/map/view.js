@@ -1,6 +1,6 @@
 
 var MapView = function(map, json) {
-    //this.map = map;
+    this.map = map;
     //this.id = json["id"] || null;
     this.parse(json);
 };
@@ -34,12 +34,23 @@ MapView.prototype.parse = function(json) {
 
 
 MapView.prototype.getInfo = function() {
-    return {
+    var view = {
         //'description' : JSON.parse(JSON.stringify(this.description)),
         'surfaces' : JSON.parse(JSON.stringify(this.surfaces)),
-        //"boundLayers" : JSON.parse(JSON.stringify(this.boundLayers)),
-        'freeLayers' : JSON.parse(JSON.stringify(this.freeLayers))
+        'freeLayers' : JSON.parse(JSON.stringify(this.freeLayers)),
     };
+
+    var renderer = this.map.renderer;
+
+    if (this.map.renderer.getSuperElevationState()) {
+        var se = this.map.renderer.getSuperElevation();
+
+        view['options'] = {
+            'superelevation' : [[se[0],se[2]],[se[1],se[3]]]
+        }
+    }
+
+    return view;
 };
 
 
