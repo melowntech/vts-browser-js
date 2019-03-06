@@ -579,9 +579,10 @@ Map.prototype.setView = function(view, forceRefresh, posToFixed) {
 
     string = JSON.stringify(string);
 
+    var renderer = this.renderer;
+
     //process options
     if (view.options) {
-        var renderer = this.renderer;
         var se = view.options.superelevation;
 
         if (se && se[0] && se[1] && se[0].length >=2 && se[1].length >=2) {
@@ -590,6 +591,8 @@ Map.prototype.setView = function(view, forceRefresh, posToFixed) {
         } else {
             renderer.setSuperElevationState(false);
         }
+    } else {
+        renderer.setSuperElevationState(false);        
     }
 
     if (string != this.currentViewString || forceRefresh) {
