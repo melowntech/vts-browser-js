@@ -541,5 +541,154 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 }
 
 
-export {processGMap, processGMap4, processGMap5};
+function radixSortUint32(renderer, input, inputSize) {
+    var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
+    var output = renderer.radixOutputBufferUint32, val;
+    //renderer.radixOutputBufferFloat32;
+
+    // count all bytes in one pass
+    for (var i = 0; i < inputSize; i++) {
+        val = input[i];
+        count[val & 0xFF]++;
+        count[((val >> 8) & 0xFF) + 256]++;
+        count[((val >> 16) & 0xFF) + 512]++;
+        count[((val >> 24) & 0xFF) + 768]++;
+    }
+
+    // create summed array
+    for (var j = 0; j < 4; j++) {
+        var t = 0, sum = 0, offset = j * 256;
+
+        for (i = 0; i < 256; i++) {
+            t = count[i + offset];
+            count[i + offset] = sum;
+            sum += t;
+        }
+    }
+
+    for (i = 0; i < inputSize; i++) {
+        val = input[i];
+        output[count[val & 0xFF]++] = val;
+    }
+    for (i = 0; i < inputSize; i++) {
+        val = output[i];
+        input[count[((val >> 8) & 0xFF) + 256]++] = val;
+    }
+    for (i = 0; i < inputSize; i++) {
+        val = input[i];
+        output[count[((val >> 16) & 0xFF) + 512]++] = val;
+    }
+    for (i = 0; i < inputSize; i++) {
+        val = output[i];
+        input[count[((val >> 24) & 0xFF) + 768]++] = val;
+    }
+
+    return input;
+}
+
+
+function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
+    if (!renderer.config.mapFeaturesReduceParams) {
+        return;
+    }
+
+    var ppi = 96 * (window.devicePixelRatio || 1);
+
+    var maxRadius = renderer.config.mapFeaturesReduceParams[0] * ppi; //mapFeatureRadius
+    var maxHitcount = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //mapFeatureMaxOverlays
+
+    var screenLX = renderer.curSize[0];
+    var screenLY = renderer.curSize[1];
+    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
+    var feature, feature2, pp, pp2, o;
+    var drawAllLabels = renderer.drawAllLabels;
+
+    //get top features
+    var featureCache = renderer.gmap;
+    var featureCacheSize = renderer.gmapIndex;
+
+    var hcache = renderer.gmap2;
+    var hcacheSize = 1;
+    var hmap = renderer.gmap3;
+    var hmapSize = renderer.gmap3Size;
+    var hmap = renderer.gmap3;
+
+
+    var hmin = 10000;
+    var hmax = 0, h, r;
+
+    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
+
+    if (divByDist) { // imp / dists
+        if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
+            return;
+        }
+
+        var ub = 1 - Math.log(renderer.fminDist) / Math.log(101);
+        var lb = -Math.log(renderer.fmaxDist) / Math.log(101); 
+    }
+
+    //filter features and sort them by importance
+    for (i = 0, li = featureCacheSize; i < li; i++) {
+        feature = featureCache[i];
+        if (!feature) {
+            continue;
+        }
+
+        pp = feature[5];
+
+        if (divByDist) {
+            r = feature[0].reduce;
+            h = Math.round(-5000 + ( ( Math.log(r[1]+1) - Math.log(r[4]) ) / Math.log(101) - lb ) / ( ub-lb ) * 10000) + 5000;
+            r[5] = h; //for debug
+        } else {
+            h = Math.round(feature[0].reduce[1]);            
+        }
+
+        if (h < 0) h = 0;
+        if (h >= 10000) h = 9999;
+        if (h < hmin) hmin = h;
+        if (h > hmax) hmax = h;
+
+        hmap[h][hmapSize[h]++] = feature;
+    }
+
+    var j, lj;
+
+    for (i = hmax, li = hmin; i >= 0; i--) {
+
+        if (hmapSize[i] > 0) {
+            var features = hmap[i];
+
+            for (j = 0, lj = hmapSize[i]; j < lj; j++) {
+                feature = features[j];
+
+                pp = feature[5];
+
+                // check                
+
+                //render job
+                if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
+                    pp = feature[5];
+                    o = feature[8];
+                    if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                        //hitCache[hitCacheSize] = feature;
+                    }
+                } else {
+                    if (feature[0].hysteresis) {
+                        renderer.jobHBuffer[feature[0].id] = feature[0];
+                    } else {
+                        renderer.drawnJobs++;
+                        draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+                    }
+                }
+            }
+
+            hmapSize[i] = 0;  //zero size
+        }
+    }
+}
+
+
+export {processGMap, processGMap4, processGMap5, processGMap6};
 
