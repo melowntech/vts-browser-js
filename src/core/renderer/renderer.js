@@ -129,6 +129,11 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
         this.gmap3Size[i] = 0;
     }
 
+    this.radixCountBuffer16 = new Uint16Array(256*4);
+    this.radixCountBuffer32 = new Uint32Array(256*4);
+    this.radixOutputBufferUint32 = new Uint32Array(256*256);
+    this.radixOutputBufferFloat32 = new Uint32Array(256*256);
+
     this.layerGroupVisible = [];
     this.bitmaps = {};
     

@@ -280,7 +280,7 @@ UIElement.prototype.onDragBegin = function(touchUsed, event) {
 
     if (!this.dragging) {
         this.dragging = true;
-        var pos = event.getMouseCoords(true);
+        var pos = event.getMouseCoords();//true);
         this.dragStartPos = [pos[0], pos[1]];
         this.dragCurrentPos = [pos[0], pos[1]];
         this.dragLastPos = [pos[0], pos[1]];
@@ -303,7 +303,9 @@ UIElement.prototype.onDragBegin = function(touchUsed, event) {
 
         this.fire('dragstart', {
             'clientX' : pos[0],
-            'clientY' : pos[1]
+            'clientY' : pos[1],
+            'pageX' : pos[0],
+            'pageY' : pos[1]
         });
     } else {
         this.dragLastPos = event.getMouseCoords();
@@ -455,6 +457,8 @@ UIElement.prototype.onDragMove = function(touchUsed, event) {
     this.fire('drag', {
         'clientX' : pos[0],
         'clientY' : pos[1],
+        'pageX' : pos[0],
+        'pageY' : pos[1],
         'deltaX' : pos[0] - this.dragLastPos[0],
         'deltaY' : pos[1] - this.dragLastPos[1],
         'left' : this.dragButtons['left'],
@@ -530,6 +534,8 @@ UIElement.prototype.onDragEnd = function(touchUsed, event) {
             this.fire('dragend', {
                 'clientX' : pos[0],
                 'clientY' : pos[1],
+                'pageX' : pos[0],
+                'pageY' : pos[1],
                 'left' : left,
                 'right' : right,
                 'middle' : middle
