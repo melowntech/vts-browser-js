@@ -1,7 +1,7 @@
 
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
-import {processGMap as processGMap_, processGMap4 as processGMap4_, processGMap5 as processGMap5_ } from './gmap';
+import {processGMap as processGMap_, processGMap4 as processGMap4_, processGMap5 as processGMap5_, processGMap6 as processGMap6_ } from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
@@ -9,6 +9,7 @@ var math = math_;
 var processGMap = processGMap_;
 var processGMap4 = processGMap4_;
 var processGMap5 = processGMap5_;
+var processGMap6 = processGMap6_;
 
 
 var RendererDraw = function(renderer) {
@@ -687,7 +688,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                     processGMap4(gpu, gl, renderer, screenPixelSize, this);
                     break;
                 case 3: //scr-count6
-                    processGMap5(gpu, gl, renderer, screenPixelSize, this);
+                    processGMap6(gpu, gl, renderer, screenPixelSize, this);
                     break;
                 case 4: //scr-count7
                     processGMap6(gpu, gl, renderer, screenPixelSize, this);

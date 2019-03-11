@@ -131,8 +131,11 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
     this.radixCountBuffer16 = new Uint16Array(256*4);
     this.radixCountBuffer32 = new Uint32Array(256*4);
-    this.radixOutputBufferUint32 = new Uint32Array(256*256);
-    this.radixOutputBufferFloat32 = new Uint32Array(256*256);
+    //this.radixOutputBufferUint32 = new Uint32Array(256*256);
+    //this.radixOutputBufferFloat32 = new Uint32Array(256*256);
+
+    this.buffFloat32 = new Float32Array(1);
+    this.buffUint32 = new Uint32Array(this.buffFloat32.buffer);
 
     this.layerGroupVisible = [];
     this.bitmaps = {};
