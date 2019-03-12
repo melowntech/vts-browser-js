@@ -138,7 +138,7 @@ var getLayerPropertyValue = function(layer, key, feature, lod) {
 
 
 var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth) {
-    var index = 0, i, li, finalValue, root, v1, v2, v3;
+    var index = 0, i, li, finalValue, root, v1, v2, v3, v4;
     var tmpValue;
 
     
@@ -339,6 +339,51 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 }
 
                 break;
+
+            case 'logScale':
+
+                if (!Array.isArray(functionValue) || functionValue.length < 2) {
+                    functionError = true;
+                } else {
+
+                    v1 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
+                    v2 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[1], depth + 1);
+                    v3 = 0, v4 = 100;
+
+                    if (functionValue.length > 2) {
+                        v3 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[2], depth + 1);                        
+
+                        if (typeof v3 !== 'number') {
+                            functionError = true;
+                        }
+                    }
+
+                    if (functionValue.length > 3) {
+                        v4 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[3], depth + 1);                        
+
+                        if (typeof v4 !== 'number') {
+                            functionError = true;
+                        }
+                    }
+
+                    if (functionError || typeof v1 !== 'number' || typeof v2 !== 'number') {
+                        functionError = true;
+                    } else {
+                        var imax = v4, imin = v3, smax = v2, s = v1, p, i;
+
+                        if (s > smax) s = smax; 
+
+                        p = (imax - imin) / Math.log(smax + 1);
+                        i = p * Math.log(s + 1) + imin;
+
+                        //console.log('' + feature.properties.name + ' ' + i);
+
+                        return i;
+                    }
+                }
+
+                break;
+
 
             case 'sgn':
             case 'sin':
@@ -984,6 +1029,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'next-pass':   return validateValue(layerId, key, value, 'object');
 
     case 'importance-source':  return validateValue(layerId, key, value, 'string');
+    case 'importance-weight':  return validateValue(layerId, key, value, 'number', null, 0, Number.MAX_VALUE);
 
     }
 
@@ -1082,7 +1128,8 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'culling':         return 180;
     case 'next-pass':       return null;
 
-    case 'importance-source':  '';
+    case 'importance-source':  return null; //''
+    case 'importance-weight':  return 1;
     }
 };
 
@@ -1099,40 +1146,40 @@ function getFilterResult(filter, feature, featureType, group, layer, key, lod, d
     }
 
     switch(filter[0]) {
-    case 'all': 
-        for (i = 1, li = filter.length; i < li; i++) {
-            result = getFilterResult(filter[i], feature, featureType, group, layer, key, lod, depth + 1, fast);
+        case 'all': 
+            for (i = 1, li = filter.length; i < li; i++) {
+                result = getFilterResult(filter[i], feature, featureType, group, layer, key, lod, depth + 1, fast);
 
-            if (!result) {
-                return false;
+                if (!result) {
+                    return false;
+                }
             }
-        }
-           
-        return true;                         
+               
+            return true;                         
 
-    case 'any':
-        for (i = 1, li = filter.length; i < li; i++) {
-            result = getFilterResult(filter[i], feature, featureType, group, key, lod, depth + 1, fast);
+        case 'any':
+            for (i = 1, li = filter.length; i < li; i++) {
+                result = getFilterResult(filter[i], feature, featureType, group, key, lod, depth + 1, fast);
 
-            if (result) {
-                return true;
+                if (result) {
+                    return true;
+                }
             }
-        }
-           
-        return false;                         
+               
+            return false;                         
 
-    case 'none':
-        for (i = 1, li = filter.length; i < li; i++) {
-            result = getFilterResult(filter[i], feature, featureType, group, key, lod, depth + 1, fast);
+        case 'none':
+            for (i = 1, li = filter.length; i < li; i++) {
+                result = getFilterResult(filter[i], feature, featureType, group, key, lod, depth + 1, fast);
 
-            if (result) {
-                return false;
+                if (result) {
+                    return false;
+                }
             }
-        }
-           
-        return true;
+               
+            return true;
                               
-    case 'skip': return false; 
+        case 'skip': return false; 
     }
 
     var value, value2;

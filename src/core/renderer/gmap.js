@@ -543,7 +543,7 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 
 function radixSortFeatures(renderer, input, inputSize, tmp) {
     var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
-    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i;
+    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, distanceFactor = 2;
 
     if (count.fill) {
         count.fill(0);
@@ -555,11 +555,14 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
 
     // count all bytes in one pass
     for (i = 0; i < inputSize; i++) {
-        item = input[i][0];
-        bfloat32[0] = item.reduce[1];
+        //item = input[i][0];
+        r = item.reduce;
+        bfloat32[0] = r[1];
         val = bunit32[0];
-        item.reduce[5] = val;
-        item.reduce[6] = val;
+        val = r[1] - distanceFactor * Math.log(r[4])
+
+        r[5] = val;
+        r[6] = val;
         count[val & 0xFF]++;
         count[((val >> 8) & 0xFF) + 256]++;
         count[((val >> 16) & 0xFF) + 512]++;
