@@ -310,7 +310,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     var hmin = 10000;
     var hmax = 0, h, r;
 
-    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
+    var divByDist = (renderer.config.mapFeaturesReduceFactor >= 1);
 
     if (divByDist) { // imp / dists
         if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
@@ -445,9 +445,6 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 
     var ppi = 96 * (window.devicePixelRatio || 1);
 
-    var maxRadius = renderer.config.mapFeaturesReduceParams[0] * ppi; //mapFeatureRadius
-    var maxHitcount = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //mapFeatureMaxOverlays
-
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
@@ -468,7 +465,7 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
     var hmin = 10000;
     var hmax = 0, h, r;
 
-    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
+    var divByDist = (renderer.config.mapFeaturesReduceFactor >= 1);
 
     if (divByDist) { // imp / dists
         if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
@@ -554,19 +551,28 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
     }
 
     // count all bytes in one pass
-    for (i = 0; i < inputSize; i++) {
-        //item = input[i][0];
-        r = item.reduce;
-        bfloat32[0] = r[1];
-        val = bunit32[0];
-        val = r[1] - distanceFactor * Math.log(r[4])
-
-        r[5] = val;
-        r[6] = val;
-        count[val & 0xFF]++;
-        count[((val >> 8) & 0xFF) + 256]++;
-        count[((val >> 16) & 0xFF) + 512]++;
-        count[((val >> 24) & 0xFF) + 768]++;
+    if (renderer.config.mapFeaturesReduceFactor >= 1) {
+        for (i = 0; i < inputSize; i++) {
+            r = input[i][0].reduce;
+            bfloat32[0] = r[3] - distanceFactor * Math.log(r[4]);;
+            val = bunit32[0];
+            r[5] = val;
+            count[val & 0xFF]++;
+            count[((val >> 8) & 0xFF) + 256]++;
+            count[((val >> 16) & 0xFF) + 512]++;
+            count[((val >> 24) & 0xFF) + 768]++;
+        }
+    } else {
+        for (i = 0; i < inputSize; i++) {
+            r = input[i][0].reduce;
+            bfloat32[0] = r[3];
+            val = bunit32[0];
+            r[5] = val;
+            count[val & 0xFF]++;
+            count[((val >> 8) & 0xFF) + 256]++;
+            count[((val >> 16) & 0xFF) + 512]++;
+            count[((val >> 24) & 0xFF) + 768]++;
+        }
     }
 
     // create summed array
@@ -582,28 +588,28 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
 
     for (i = 0; i < inputSize; i++) {
         item = input[i];
-        val = item[0].reduce[6];
+        val = item[0].reduce[5];
         tmp[count[val & 0xFF]++] = item;
     }
     for (i = 0; i < inputSize; i++) {
         item = tmp[i];
-        val = item[0].reduce[6];
+        val = item[0].reduce[5];
         input[count[((val >> 8) & 0xFF) + 256]++] = item;
     }
     for (i = 0; i < inputSize; i++) {
         item = input[i];
-        val = item[0].reduce[6];
+        val = item[0].reduce[5];
         tmp[count[((val >> 16) & 0xFF) + 512]++] = item;
     }
     for (i = 0; i < inputSize; i++) {
         item = tmp[i];
-        val = item[0].reduce[6];
+        val = item[0].reduce[5];
         input[count[((val >> 24) & 0xFF) + 768]++] = item;
     }
 
     if (i == -123) { //debug
         for (i = 0; i < inputSize; i++) {
-            val = input[i][0].reduce[6];
+            val = input[i][0].reduce[5];
             console.log('' + val +  ' ' + input[i][0].id);
         }
     }
@@ -617,15 +623,13 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
         return;
     }
 
+    var featuresPerSquareInch = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //labelsPerSquareInch
     var ppi = 96 * (window.devicePixelRatio || 1);
-
-    var maxRadius = renderer.config.mapFeaturesReduceParams[0] * ppi; //mapFeatureRadius
-    var maxHitcount = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //mapFeatureMaxOverlays
-
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
+    var maxFeatures = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
-    var feature, feature2, pp, pp2, o;
+    var feature, feature2, pp, pp2, o, featureCount = 0;
     var drawAllLabels = renderer.drawAllLabels;
 
     //get top features
@@ -648,8 +652,13 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
             pp = feature[5];
             o = feature[8];
             if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                //hitCache[hitCacheSize] = feature;
+                featureCount++;
             }
+
+            if (featureCount >= maxFeatures) {
+                return;
+            }
+
         } else {
             if (feature[0].hysteresis) {
                 renderer.jobHBuffer[feature[0].id] = feature[0];
