@@ -554,7 +554,9 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
     if (renderer.config.mapFeaturesReduceFactor >= 1) {
         for (i = 0; i < inputSize; i++) {
             r = input[i][0].reduce;
-            bfloat32[0] = r[3] - distanceFactor * Math.log(r[4]);;
+            val = r[3] - distanceFactor * Math.log(r[4]);
+            if (val < 0) val = 0;
+            bfloat32[0] = val;
             val = bunit32[0];
             r[5] = val;
             count[val & 0xFF]++;
