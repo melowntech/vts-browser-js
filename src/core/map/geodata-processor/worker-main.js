@@ -34,6 +34,8 @@ var featureCache = new Array(1024), featureCacheIndex = 0, finalFeatureCache = n
 
 function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex, eventInfo) {
 
+    globals.stylesheetLocals = {};
+
     switch(type) {
     case 'line-string':
         if (getLayerPropertyValue(layer, 'point', feature, lod) ||
