@@ -438,7 +438,11 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 functionValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue, depth + 1);
 
                 if (typeof functionValue !== 'string') {
-                    functionError = true;
+                    if (typeof functionValue === 'number') {
+                        return functionValue;
+                    } else {
+                        functionError = true;
+                    }
                 } else {
                     switch (functionName) {
                         case 'strlen':     return functionValue.length;

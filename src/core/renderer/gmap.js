@@ -643,7 +643,7 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
     radixSortFeatures(renderer, featureCache, featureCacheSize, featureCache2);
 
     for (i = featureCacheSize - 1; i >= 0; i--) {
-        feature = featureCache2[i];
+        feature = featureCache[i];
 
         pp = feature[5];
 
