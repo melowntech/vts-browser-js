@@ -34,16 +34,17 @@ var setFontMap = function(fontMap) {
 
 var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, index2, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, fontIndex, singleBuffer) {
     var n, font = fonts[fontIndex];
+    var up = [0,0,0];
 
     if (globals.geocent && !flat) {
         n = [0,0,0];
-        var nn = [0,0,0];
-        
-        vec3Normalize(globals.bboxMin, nn);
-        vec3Cross(nn, dir, n);
+        vec3Normalize(globals.bboxMin, up);
+        vec3Cross(up, dir, n);
     } else {
         n = [-dir[1],dir[0],0];
     }
+
+    vec3Cross(dir, n, up);
 
     var p1 = [pos[0], pos[1], pos[2]];
     var p2 = [p1[0], p1[1], p1[2]];
@@ -92,17 +93,52 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
 
             if (singleBuffer) {
 
-                singleBuffer[index] = p1[0] + fc.sx * factor;;
-                singleBuffer[index+1] = p1[1] + (fc.sy - font.size) * factor;
-                singleBuffer[index+2] = singleBuffer[index] + factorX;
-                singleBuffer[index+3] = singleBuffer[index+1] - factorY;
-                singleBuffer[index+4] = fc.u1;
-                singleBuffer[index+5] = fc.v1 + planeShift;
-                singleBuffer[index+6] = fc.u2;
-                singleBuffer[index+7] = fc.v2 + planeShift;
+                if (globals.procesLineLabel) {
 
-                index += 8;
- 
+                    p1[0] = p1[0] + dir[0] * fc.sx * factor;
+                    p1[1] = p1[1] + dir[1] * fc.sx * factor;
+                    p1[2] = p1[2] + dir[2] * fc.sx * factor;
+                    p1[0] = p1[0] + n[0] * (fc.sy - font.size) * factor;
+                    p1[1] = p1[1] + n[1] * (fc.sy - font.size) * factor;
+                    p1[2] = p1[2] + n[2] * (fc.sy - font.size) * factor;
+
+                    singleBuffer[index] = p1[0];
+                    singleBuffer[index+1] = p1[1];
+                    singleBuffer[index+2] = p1[2];
+
+                    var m = [ [dir[0], dir[1], dir[2]], 
+                              [n[0], n[1], n[2]], 
+                              [up[0], up[1], up[2]] ];
+
+                    singleBuffer[index+3] = Math.sqrt(1.0 + m[0][0] + m[1][1] + m[2][2]) / 2.0; // w
+                    var  w4 = (4.0 * w);
+                    singleBuffer[index+4] = (m[2][1] - m[1][2]) / w4 ;  //x
+                    singleBuffer[index+5] = (m[0][2] - m[2][0]) / w4 ;  //y
+                    singleBuffer[index+6] = (m[1][0] - m[0][1]) / w4 ;  //z
+
+                    
+
+
+                    singleBuffer[index+7] = factorX;
+                    singleBuffer[index+8] = factorY;
+                    singleBuffer[index+9] = fc.u1;
+                    singleBuffer[index+10] = fc.v1 + planeShift;
+                    singleBuffer[index+11] = fc.u2;
+                    singleBuffer[index+12] = fc.v2 + planeShift;
+
+                } else {
+                    singleBuffer[index] = p1[0] + fc.sx * factor;
+                    singleBuffer[index+1] = p1[1] + (fc.sy - font.size) * factor;
+                    singleBuffer[index+2] = singleBuffer[index] + factorX;
+                    singleBuffer[index+3] = singleBuffer[index+1] - factorY;
+                    singleBuffer[index+4] = fc.u1;
+                    singleBuffer[index+5] = fc.v1 + planeShift;
+                    singleBuffer[index+6] = fc.u2;
+                    singleBuffer[index+7] = fc.v2 + planeShift;
+
+                    index += 8;
+                }
+
             } else {
 
                 var n2 = [n[0] * verticalShift, n[1] * verticalShift, n[2] * verticalShift];

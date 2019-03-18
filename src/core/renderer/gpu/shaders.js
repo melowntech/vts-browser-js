@@ -425,10 +425,11 @@ GpuShaders.icon3VertexShader =
         'if (corner==1) v = vec4(data.z, data.y, data2.z, data2.y);\n'+
         'if (corner==2) v = vec4(data.z, data.w, data2.z, data2.w);\n'+
         'if (corner==3) v = vec4(data.x, data.w, data2.x, data2.w);\n'+
-//        'vTexCoord = vec2(v.z, v.w) * uScale[2];\n'+
         'vTexCoord = vec2(v.z, v.w);\n'+
         'float file = floor(v.w/4.0);\n'+
-        'vTexCoord.y = mod(v.w,4.0);\n'+
+        //'vTexCoord.y = mod(v.w,4.0);\n'+
+        'vTexCoord.y = (v.w-file*4.0);\n'+
+
         'if (file != floor(uFile)) {\n'+
             'gl_Position = uProjectionMatrix * vec4(2.0, 0.0, 0.0, 2.0);\n'+
         '}else{\n'+
