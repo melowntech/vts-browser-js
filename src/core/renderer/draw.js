@@ -611,6 +611,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var onlyAdvancedHitLayers = renderer.onlyAdvancedHitLayers;
     var geoRenderCounter = renderer.geoRenderCounter;
     var job, key, hitmapRender = renderer.onlyHitLayers;
+    //var logDebugInfo = false;
 
     if (clearStencilPasses.length > 0) {
         clearPass = clearStencilPasses[0];
@@ -675,6 +676,13 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 job = buffer[j];
                 this.drawGpuJob(gpu, gl, renderer, job, screenPixelSize);
             }
+
+            /*if (logDebugInfo) {
+                for (j = 0; j < lj; j++) {
+                    job = buffer[j];
+                    console.log('' + j + ' ' + job.id);
+                }
+            }*/
         }
     
         renderer.jobsTimer3 = performance.now();
@@ -1343,7 +1351,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_VSPOINT:
 
 
-        if (job.reduce && (job.reduce[0] != 7 && job.reduce[0] != 8 && job.reduce[0] != 9)) {
+        if (job.reduce && !(job.reduce[0] >= 7 && job.reduce[0] <= 10)) {
             var a, r = job.reduce;
 
             if (r[0] > 4) {
@@ -1661,7 +1669,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    if (!job.reduce || (job.reduce && (job.reduce[0] != 8 && job.reduce[0] != 9))) {  //not overlap code not used for reduce==8
+                    if (!job.reduce || (job.reduce && !(job.reduce[0] >= 8 && job.reduce[0] <= 10))) {  //not overlap code not used for reduce==8
                         depth = o[5] / l;
                     }
                 } 
@@ -1670,7 +1678,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
 
             if (reduce78) {
-                renderer.gmapUseVersion = (job.reduce[0] == 8 || job.reduce[0] == 9 || job.reduce[0] == 10) ? (job.reduce[0] - 6) : 1;
+                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 10) ? (job.reduce[0] - 6) : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
 
@@ -1709,7 +1717,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
 
-                renderer.gmapUseVersion = (job.reduce[0] == 8 || job.reduce[0] == 9 || job.reduce[0] == 10) ? (job.reduce[0] - 6) : 1;
+                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 10) ? (job.reduce[0] - 6) : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
 
@@ -1762,7 +1770,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 if (job.reduce) {
                     if (job.reduce[0] == 10) {
-                        this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                        this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2), [1,0,0,1], 0.5);
                     } else {
                         this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
                     }
@@ -2045,7 +2053,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
             if (job.reduce) {
                 if (job.reduce[0] == 10) {
-                    this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                    this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2), [1,0,0,1], 0.5);
                 } else {
                     this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
                 }
@@ -2091,7 +2099,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
         if (job.reduce) {
             if (job.reduce[0] == 10) {
-                this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2), [1,0,0,1], 0.5);
             } else {
                 this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
             }

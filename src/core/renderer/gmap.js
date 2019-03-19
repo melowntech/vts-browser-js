@@ -540,7 +540,8 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 
 function radixSortFeatures(renderer, input, inputSize, tmp) {
     var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
-    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, distanceFactor = 2;
+    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r;
+    var distanceFactor = renderer.config.mapFeaturesReduceFactor;
 
     if (count.fill) {
         count.fill(0);
@@ -551,11 +552,12 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
     }
 
     // count all bytes in one pass
-    if (renderer.config.mapFeaturesReduceFactor >= 1) {
+    if (distanceFactor >= 1) {
         for (i = 0; i < inputSize; i++) {
             r = input[i][0].reduce;
             val = r[3] - distanceFactor * Math.log(r[4]);
             if (val < 0) val = 0;
+            r[6] = val;
             bfloat32[0] = val;
             val = bunit32[0];
             r[5] = val;
@@ -634,10 +636,16 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
     var feature, feature2, pp, pp2, o, featureCount = 0;
     var drawAllLabels = renderer.drawAllLabels;
 
+    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures;
+
     //get top features
     var featureCache = renderer.gmap;
     var featureCacheSize = renderer.gmapIndex;
     var featureCache2 = renderer.gmap2;
+
+    if (drawAllLabels) {
+        maxFeatures = featureCacheSize;
+    }
 
     //filter features and sort them by importance
     radixSortFeatures(renderer, featureCache, featureCacheSize, featureCache2);
