@@ -552,12 +552,13 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
     }
 
     // count all bytes in one pass
-    if (distanceFactor >= 1) {
+    if (distanceFactor != 0) {
         for (i = 0; i < inputSize; i++) {
             r = input[i][0].reduce;
             val = r[3] - distanceFactor * Math.log(r[4]);
-            if (val < 0) val = 0;
             r[6] = val;
+            val += 10000;
+            if (val < 0) val = 0;
             bfloat32[0] = val;
             val = bunit32[0];
             r[5] = val;

@@ -437,13 +437,26 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                 if (layer && layer.shaderFilter) {
                     var id = (gpuMask) ? 'progTile3' : 'progTile2';
                     var renderer = this.map.renderer;
+
+                    if (useSuperElevation) {
+                        id += 'se';
+                    }
+
                     id += layer.shaderFilter;
 
                     program = renderer.progMap[id];
 
                     if (!program) {
-                        var gpu = renderer.gpu, pixelShader = gpuMask ? GpuShaders.tile3FragmentShader : GpuShaders.tile2FragmentShader;
-                        program = new GpuProgram(gpu, GpuShaders.tile2VertexShader, pixelShader.replace('__FILTER__', layer.shaderFilter));
+                        var gpu = renderer.gpu, pixelShader;
+
+                        if (gpuMask) {
+                            pixelShader = '#define externalTex\n#define mask\n' + GpuShaders.tileFragmentShader;
+                        } else {
+                            pixelShader = '#define externalTex\n' + GpuShaders.tileFragmentShader;
+                        }
+ 
+                        //program = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + GpuShaders.tileVertexShader, pixelShader.replace('__FILTER__', layer.shaderFilter));
+                        program = new GpuProgram(gpu, '#define externalTex\n' + ((useSuperElevation) ? '#define applySE\n' : '') + GpuShaders.tileVertexShader, pixelShader.replace('__FILTER__', layer.shaderFilter));
                         renderer.progMap[id] = program;
                     }
                 }
