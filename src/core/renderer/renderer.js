@@ -21,6 +21,7 @@ var RenderRMap = RenderRMap_;
 var Renderer = function(core, div, onUpdate, onResize, config) {
     this.config = config || {};
     this.core = core;
+    this.marginFlags = 0;
     this.progTile = null;
     this.progHeightmap = null;
     this.progSkydome = null;

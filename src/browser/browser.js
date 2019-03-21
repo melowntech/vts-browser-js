@@ -323,6 +323,7 @@ Browser.prototype.initConfig = function() {
         searchValue : null,
         geojson : null,
         tiltConstrainThreshold : [0.5,1],
+        bigScreenMargins : false, //75,
         minViewExtent : 20, //75,
         maxViewExtent : Number.MAXINTEGER,
         autoRotate : 0,
@@ -406,6 +407,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'sensitivity':            this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
     case 'inertia':                this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
     case 'legacyInertia':          this.config.legacyInertia = utils.validateBool(value, false); break;
+    case 'bigScreenMargins':       this.config.bigScreenMargins = utils.validateBool(value, false); break;
     case 'tiltConstrainThreshold': this.config.tiltConstrainThreshold = utils.validateNumberArray(value, 2, [0.5,1], [-Number.MAXINTEGER, -Number.MAXINTEGER], [Number.MAXINTEGER, Number.MAXINTEGER]); break;
     case 'geodata':                this.config.geodata = value; break;
     case 'geojson':                this.config.geojson = value; break;
@@ -477,6 +479,7 @@ Browser.prototype.getConfigParam = function(key) {
     case 'sensitivity':          return this.config.sensitivity;
     case 'inertia':              return this.config.inertia;
     case 'legacyInertia':        return this.config.legacyInertia;
+    case 'bigScreenMargins':     return this.config.bigScreenMargins;
     case 'navigationMode':       return this.config.navigationMode;
     case 'constrainCamera':      return this.config.constrainCamera;
     case 'positionInUrl':        return this.config.positionInUrl;
