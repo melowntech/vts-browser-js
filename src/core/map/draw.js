@@ -733,10 +733,10 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                         material = VTS_MATERIAL_FLAT;
                         break; 
                     }
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha, command.layer);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha, command.layer, command.surface);
                 } else {
                     //tile.renderHappen = true;
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha, command.layer);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha, command.layer, command.surface);
                 }
 
             }
@@ -875,7 +875,9 @@ MapDraw.prototype.setupDetailDegradation = function(degradeMore) {
         factor += degradeMore;        
     }
 
-    this.texelSizeFit = this.config.mapTexelSizeFit * Math.pow(2,factor);      
+    var dpiRatio = (window.devicePixelRatio || 1);
+
+    this.texelSizeFit = this.config.mapTexelSizeFit * Math.pow(2,factor) * dpiRatio;      
 };
 
 

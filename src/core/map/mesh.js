@@ -378,7 +378,7 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
 };
 
 
-MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer) {
+MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer, surface) {
     if (this.gpuSubmeshes[index] == null && this.submeshes[index] != null && !this.submeshes[index].killed) {
         this.gpuSubmeshes[index] = this.submeshes[index].buildGpuMesh();
     }
@@ -434,30 +434,42 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                     }
                 } 
                 
-                if (layer && layer.shaderFilter) {
-                    var id = (gpuMask) ? 'progTile3' : 'progTile2';
-                    var renderer = this.map.renderer;
+                if (layer && (layer.shaderFilters || layer.shaderFilter)) {
+                    var filter;
 
-                    if (useSuperElevation) {
-                        id += 'se';
+                    if (surface && layer.shaderFilters) {
+                        filter = layer.shaderFilters[surface.id];
                     }
 
-                    id += layer.shaderFilter;
+                    if (!filter) {
+                        filter = layer.shaderFilter;
+                    }
 
-                    program = renderer.progMap[id];
+                    if (filter) {
+                        var id = (gpuMask) ? 'progTile3' : 'progTile2';
+                        var renderer = this.map.renderer;
 
-                    if (!program) {
-                        var gpu = renderer.gpu, pixelShader;
-
-                        if (gpuMask) {
-                            pixelShader = '#define externalTex\n#define mask\n' + GpuShaders.tileFragmentShader;
-                        } else {
-                            pixelShader = '#define externalTex\n' + GpuShaders.tileFragmentShader;
+                        if (useSuperElevation) {
+                            id += 'se';
                         }
- 
-                        //program = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + GpuShaders.tileVertexShader, pixelShader.replace('__FILTER__', layer.shaderFilter));
-                        program = new GpuProgram(gpu, '#define externalTex\n' + ((useSuperElevation) ? '#define applySE\n' : '') + GpuShaders.tileVertexShader, pixelShader.replace('__FILTER__', layer.shaderFilter));
-                        renderer.progMap[id] = program;
+
+                        id += filter;
+
+                        program = renderer.progMap[id];
+
+                        if (!program) {
+                            var gpu = renderer.gpu, pixelShader;
+
+                            if (gpuMask) {
+                                pixelShader = '#define externalTex\n#define mask\n' + GpuShaders.tileFragmentShader;
+                            } else {
+                                pixelShader = '#define externalTex\n' + GpuShaders.tileFragmentShader;
+                            }
+     
+                            //program = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + GpuShaders.tileVertexShader, pixelShader.replace('__FILTER__', layer.shaderFilter));
+                            program = new GpuProgram(gpu, '#define externalTex\n' + ((useSuperElevation) ? '#define applySE\n' : '') + GpuShaders.tileVertexShader, pixelShader.replace('__FILTER__', filter));
+                            renderer.progMap[id] = program;
+                        }
                     }
                 }
                     

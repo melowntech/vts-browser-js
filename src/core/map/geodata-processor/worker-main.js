@@ -508,6 +508,9 @@ self.onmessage = function (e) {
         globals.pixelSize = message['pixelSize'] || 1;
         globals.pixelFactor = message['dpr'] || 1;
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
+        globals.pixelsPerMM = (globals.pixelFactor / 96) / 2.54;
+        globals.invPixelsPerMM = 1.0 / globals.pixelsPerMM;
+
 
         data = JSON.parse(data);            
         exportedGeometries = [];

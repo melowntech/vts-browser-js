@@ -937,6 +937,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
     this.processDrawBuffer(draw, drawTiles, cameraPos, map, stats, drawGrid, grids, replay, drawBuffer, drawBufferIndex);
 };
 
+
 MapSurfaceTree.prototype.processDrawBuffer = function(draw, drawTiles, cameraPos, map, stats, drawGrid, grids, replay, drawBuffer, drawBufferIndex, noGrid) {
 
     if (replay.storeTiles || replay.storeFreeTiles) { //used only in inspectors
@@ -1052,6 +1053,7 @@ MapSurfaceTree.prototype.processDrawBuffer = function(draw, drawTiles, cameraPos
 
 };
 
+
 MapSurfaceTree.prototype.storeDrawBufferGeometry = function(drawBufferIndex) {
     var map = this.map;
     var drawBuffer = map.draw.drawBuffer;
@@ -1100,6 +1102,7 @@ MapSurfaceTree.prototype.storeGeometry = function(array, length) {
         }
     }
 };
+
 
 MapSurfaceTree.prototype.traceHeight = function(tile, params, nodeOnly) {
     if (!tile) {
@@ -1332,6 +1335,7 @@ MapSurfaceTree.prototype.getNodeById = function(id, preventLoad) {
         //return;
     }*/
 };
+
 
 MapSurfaceTree.prototype.getRenderedNodeById = function(id, drawCounter) {
     var tile = this.surfaceTree;

@@ -24,6 +24,7 @@ var MapBoundLayer = function(map, json, id) {
     this.baseUrlOrigin = this.map.url.baseUrlOrigin;
     this.ready = false;
     this.dataType = VTS_TEXTURETYPE_COLOR;
+    this.shaderFilters = null;
 
     //hack
     if (id == 'esri-world-imagery') {

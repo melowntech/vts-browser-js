@@ -704,6 +704,49 @@ var logError = function(errorType, layerId, key, value, index, subkey) {
 };
 
 
+var getUnitsNormalizedValue = function(value, screen, fallbackUnits) {
+    if (typeof value === 'string') {
+        if (value == '0' || value.length == 0) return 0;
+
+        value = value.trim();
+
+        if (value.length >= 2) {
+
+            var factor = 1, pf = globals.pixelsPerMM, ipf = globals.invPixelsPerMM;
+
+            switch(value.substr(-2, 2)) {
+                case 'km': factor = screen ? pf * 1000 * 1000 : 1000; break;
+                case 'cm': factor = screen ? pf * 10 : 1/100; break;
+                case 'mm': factor = screen ? pf : 1/1000; break;
+                case 'px': factor = screen ? 1 : ipf * 1/1000; break;
+                case 'pi': factor = screen ? pf * 2.54 * 1/6 : ipf * 1/1000 * 2.54 * 1/6; break;
+                case 'in': factor = screen ? pf * 2.54 : ipf * 1/1000 * 2.54; break;
+
+                default:
+
+                    if (value.charAt(value.length - 1) == 'm') {
+                        return (screen ? pf * 1000 : 1) * parseFloat(value.substr(0, value.length - 1));
+                    } else {
+                        return parseFloat(value);
+                    }
+
+            }
+
+            return factor * parseFloat(value.substr(0, value.length - 2));
+
+        } else {
+
+            //fallbackUnits
+
+            return parseFloat(value);
+        }
+
+    } else if (typeof value === 'number') {
+        return value;
+    }
+}
+
+
 var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
     var i, li;
 
