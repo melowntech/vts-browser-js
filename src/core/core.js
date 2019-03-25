@@ -87,6 +87,7 @@ var Core = function(element, config, coreInterface) {
         mapFeaturesReduceMode : 'scr-count1', //have to be 'scr-count1' because of legacy https://rigel.mlwn.se/store/map-config/high-terrain/
         mapFeaturesReduceParams : null,
         mapFeaturesReduceFactor : 1,
+        mapFeaturesReduceFactor2 : 1,
 
         mapDegradeHorizon : false,
         mapDegradeHorizonParams : [1, 1500, 97500, 3500], //[1, 3000, 15000, 7000],

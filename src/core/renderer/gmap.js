@@ -540,8 +540,15 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 
 function radixSortFeatures(renderer, input, inputSize, tmp) {
     var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
-    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r;
+    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, pp;
     var distanceFactor = renderer.config.mapFeaturesReduceFactor;
+    var screenDistanceFactor = renderer.config.mapFeaturesReduceFactor2 * 0.5, e100 = 1.0/Math.exp(100);
+    var centerOffset = renderer.config.mapFeaturesReduceFactor3;
+
+    var sx = renderer.curSize[0], sy = renderer.curSize[1];
+    var cx = sx * 0.5, cy = sy * 0.5;
+    var invcx = 1.0 / (cx+0.0001), invcy = 1.0 / (cy+0.0001), dx, dy, yy;
+    var invsy = 1.0 / (sy+0.0001);
 
     if (count.fill) {
         count.fill(0);
@@ -552,32 +559,27 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
     }
 
     // count all bytes in one pass
-    if (distanceFactor != 0) {
-        for (i = 0; i < inputSize; i++) {
-            r = input[i][0].reduce;
-            val = r[3] - distanceFactor * Math.log(r[4]);
-            r[6] = val;
-            val += 10000;
-            if (val < 0) val = 0;
-            bfloat32[0] = val;
-            val = bunit32[0];
-            r[5] = val;
-            count[val & 0xFF]++;
-            count[((val >> 8) & 0xFF) + 256]++;
-            count[((val >> 16) & 0xFF) + 512]++;
-            count[((val >> 24) & 0xFF) + 768]++;
-        }
-    } else {
-        for (i = 0; i < inputSize; i++) {
-            r = input[i][0].reduce;
-            bfloat32[0] = r[3];
-            val = bunit32[0];
-            r[5] = val;
-            count[val & 0xFF]++;
-            count[((val >> 8) & 0xFF) + 256]++;
-            count[((val >> 16) & 0xFF) + 512]++;
-            count[((val >> 24) & 0xFF) + 768]++;
-        }
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        r = item[0].reduce;
+        pp = item[5];
+
+        yy = Math.pow(pp[1] * invsy, centerOffset) * sy;
+
+        dx = (cx - pp[0]) * invcx;
+        dy = (cy - yy) * invcx;
+
+        val = r[3] - distanceFactor * Math.log(r[4]) - screenDistanceFactor * Math.log(dx*dx + dy*dy + e100);
+        r[6] = val;
+        val += 10000;
+        if (val < 0) val = 0;
+        bfloat32[0] = val;
+        val = bunit32[0];
+        r[5] = val;
+        count[val & 0xFF]++;
+        count[((val >> 8) & 0xFF) + 256]++;
+        count[((val >> 16) & 0xFF) + 512]++;
+        count[((val >> 24) & 0xFF) + 768]++;
     }
 
     // create summed array
@@ -653,8 +655,6 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
 
     for (i = featureCacheSize - 1; i >= 0; i--) {
         feature = featureCache[i];
-
-        pp = feature[5];
 
         // check                
 
