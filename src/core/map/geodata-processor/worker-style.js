@@ -107,6 +107,11 @@ var getLayerExpresionValue = function(layer, value, feature, lod, key, depth) {
 };
 
 
+var hasLayerProperty = function(layer, key) {
+    return (typeof layer[key] !== 'undefined');
+};
+
+
 var getLayerPropertyValue = function(layer, key, feature, lod) {
     var value = getLayerPropertyValueInner(layer, key, feature, lod);
     return validateLayerPropertyValue(layer['$$layer-id'], key, value);
@@ -133,6 +138,7 @@ var getLayerPropertyValueInnerString = function(layer, key, feature, lod, value,
                 case '#pixelSize': return globals.pixelSize;
                 case '#metric':    return globals.metricUnits;
                 case '#dpr':       return globals.pixelFactor;
+                case '#language':  return globals.language;
             }
             break;
     }
@@ -719,7 +725,8 @@ var getUnitsNormalizedValue = function(value, screen, fallbackUnits) {
                 case 'cm': factor = screen ? pf * 10 : 1/100; break;
                 case 'mm': factor = screen ? pf : 1/1000; break;
                 case 'px': factor = screen ? 1 : ipf * 1/1000; break;
-                case 'pi': factor = screen ? pf * 2.54 * 1/6 : ipf * 1/1000 * 2.54 * 1/6; break;
+                case 'pc': factor = screen ? pf * 2.54 * 1/6 : ipf * 1/1000 * 2.54 * 1/6; break;
+                case 'pt': factor = screen ? pf * 2.54 * 1/72 : ipf * 1/1000 * 2.54 * 1/72; break;
                 case 'in': factor = screen ? pf * 2.54 : ipf * 1/1000 * 2.54; break;
 
                 default:
@@ -906,6 +913,17 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
 
     case 'string':
 
+        if (key == 'line-type' || key == 'point-type') {
+            switch(value) {
+            case 'screen':
+            case 'flat':
+            case 'screen-flat': return value;
+            default:
+                logError('wrong-property-value', layerId, key, value);
+                return getDefaultLayerPropertyValue(key);
+            }
+        }
+
         //validate line Layer enum
         if (key == 'line-style') {
             switch(value) {
@@ -995,6 +1013,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'dynamic-reduce':  return validateValue(layerId, key, value, 'object');
 
     case 'line':              return validateValue(layerId, key, value, 'boolean');
+    case 'line-type':         return validateValue(layerId, key, value, 'string');
     case 'line-flat':         return validateValue(layerId, key, value, 'boolean');
     case 'line-width':        return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'line-width-units':  return validateValue(layerId, key, value, 'string');
@@ -1013,6 +1032,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'line-label-line-height': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
 
     case 'point':        return validateValue(layerId, key, value, 'boolean');
+    case 'point-type':   return validateValue(layerId, key, value, 'string');
     case 'point-flat':   return validateValue(layerId, key, value, 'boolean');
     case 'point-radius': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'point-Layer':  return validateValue(layerId, key, value, 'string');
@@ -1092,6 +1112,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'dynamic-reduce':   return null;
 
     case 'line':             return false;
+    case 'line-type':        return 'screen';
     case 'line-flat':        return false;
     case 'line-width':       return 1;
     case 'line-width-units': return 'meters';
@@ -1112,6 +1133,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'line-label-line-height': return 1;
 
     case 'point':        return false;
+    case 'point-type':   return 'screen';
     case 'point-flat':   return false;
     case 'point-radius': return 1;
     case 'point-Layer':  return 'solid';
@@ -1542,4 +1564,4 @@ var processStylesheet = function(stylesheetLayersData) {
 };
 
 
-export {getFilterResult, processStylesheet, getLayer, getLayerPropertyValue, getLayerExpresionValue, getLayerPropertyValueInner, makeFasterFilter};
+export {getFilterResult, processStylesheet, getLayer, getLayerPropertyValue, getLayerExpresionValue, getLayerPropertyValueInner, makeFasterFilter, hasLayerProperty};

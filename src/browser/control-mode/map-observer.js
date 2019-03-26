@@ -280,7 +280,8 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
 
     var pos = map.getPosition(), delta, deltas;
     var update = false, azimuth, correction, i;
-    var inertia = this.config.inertia;
+    var inertia = this.config.inertia, stats = map.getStats();
+    var timeFactor = this.config.timeNormalizedInertia ? ((1000/(stats['frameTime'] + 0.000001))/60) : 1;  //normalize to 60 fps
 
     //process coords deltas
     if (!onlyLastRotate && !onlyLastZoom && this.coordsDeltas.length > 0) {
@@ -298,7 +299,7 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
             forward[0] += Math.sin(azimuth) * delta[2];  
             forward[1] += Math.cos(azimuth) * delta[2];
 
-            delta[2] *= inertia[0];
+            delta[2] *= inertia[0] * timeFactor;
 
             //remove zero deltas
             if (delta[2] < 0.01) {
@@ -342,9 +343,9 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
             orientation[0] += delta[0];  
             orientation[1] += delta[1];
             orientation[2] += delta[2];
-            delta[0] *= inertia[1];
-            delta[1] *= inertia[1];
-            delta[2] *= inertia[1];
+            delta[0] *= inertia[1] * timeFactor;
+            delta[1] *= inertia[1] * timeFactor;
+            delta[2] *= inertia[1] * timeFactor;
             
             //remove zero deltas
             if (delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2] < 0.1) {
@@ -367,7 +368,7 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
         //apply detals to current view extent    
         for (i = (onlyLastZoom ? (deltas.length - 1) : 0); i < deltas.length; i++) {
             viewExtent *= deltas[i];
-            deltas[i] += (1 - deltas[i]) * (1.0 - inertia[2]);
+            deltas[i] += (1 - deltas[i]) * (1.0 - (inertia[2] * timeFactor));
             
             //remove zero deltas
             if (Math.abs(1 - deltas[i]) < 0.001) {

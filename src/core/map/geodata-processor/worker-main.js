@@ -482,6 +482,7 @@ self.onmessage = function (e) {
             globals.reduceMode = data['reduceMode'];
             globals.reduceParams = data['reduceParams'];
             globals.log = data['log'];
+            globals.language = message['language'];
             processStylesheet(data['data']);
         }
         //postMessage({'command' : 'ready'});
@@ -510,7 +511,6 @@ self.onmessage = function (e) {
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
         globals.pixelsPerMM = (globals.pixelFactor / 96) / 2.54;
         globals.invPixelsPerMM = 1.0 / globals.pixelsPerMM;
-
 
         data = JSON.parse(data);            
         exportedGeometries = [];

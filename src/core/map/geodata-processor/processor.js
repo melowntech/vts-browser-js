@@ -204,9 +204,11 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
 
     //this.setFont('#default', this.renderer.font);
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data,
-                                        'geocent' : (!this.map.getNavigationSrs().isProjected()), 'metric': config.mapMetricUnits,
+                                        'geocent' : (!this.map.getNavigationSrs().isProjected()),
+                                        'metric': config.mapMetricUnits,
                                         'reduceMode': rmode,
                                         'reduceParams': config.mapFeaturesReduceParams,
+                                        'language': (navigator.language || navigator.userLanguage),
                                         'log': config.mapLogGeodataStyles } );
 
     var fonts = stylesheet.fonts;

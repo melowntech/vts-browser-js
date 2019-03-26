@@ -459,7 +459,9 @@ MapInterface.prototype.getStats = function(switches) {
         'busyWorkers' : busyWorkers,
         'dirty' : this.map.dirty,
         'drawnTiles' : this.map.stats.drawnTiles,
-        'drawnGeodataTiles' : this.map.stats.drawnGeodataTiles
+        'drawnGeodataTiles' : this.map.stats.drawnGeodataTiles,
+        'renderTime' : this.map.stats.rendererTime,
+        'frameTime' : this.map.stats.frameTime
     };
 };
 

@@ -2,7 +2,7 @@
 import {globals as globals_, vec3Normalize as vec3Normalize_,
         vec3Cross as vec3Cross_} from './worker-globals.js';
 import {getLayerPropertyValue as getLayerPropertyValue_,
-        getLayerExpresionValue as getLayerExpresionValue_} from './worker-style.js';
+        getLayerExpresionValue as getLayerExpresionValue_, hasLayerProperty as hasLayerProperty_} from './worker-style.js';
 import {addStreetTextOnPath as addStreetTextOnPath_, getTextGlyphs as getTextGlyphs_,
         areTextCharactersAvailable as areTextCharactersAvailable_,
         getCharVerticesCount as getCharVerticesCount_, getFonts as getFonts_, getFontsStorage as getFontsStorage_} from './worker-text.js';
@@ -12,7 +12,7 @@ import {postGroupMessageFast as postGroupMessageFast_} from './worker-message.js
 var globals = globals_, vec3Normalize = vec3Normalize_,
     vec3Cross = vec3Cross_;
 var getLayerPropertyValue = getLayerPropertyValue_,
-    getLayerExpresionValue = getLayerExpresionValue_;
+    getLayerExpresionValue = getLayerExpresionValue_, hasLayerProperty = hasLayerProperty_;
 var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
     getCharVerticesCount = getCharVerticesCount_, getFonts = getFonts_, getFontsStorage = getFontsStorage_;
 var postGroupMessageFast = postGroupMessageFast_, getTextGlyphs = getTextGlyphs_;
@@ -42,7 +42,12 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
 
     var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', lineString, lod);
 
-    var lineFlat = getLayerPropertyValue(style, 'line-flat', lineString, lod);
+    if (hasLayerProperty(style,'line-type')) {
+
+    } else {
+        var lineFlat = getLayerPropertyValue(style, 'line-flat', lineString, lod);
+    }
+
     var lineColor = getLayerPropertyValue(style, 'line-color', lineString, lod);
     var lineWidth = 0.5 * getLayerPropertyValue(style, 'line-width', lineString, lod);
     var lineWidthUnits = getLayerPropertyValue(style, 'line-width-units', lineString, lod);

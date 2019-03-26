@@ -207,16 +207,33 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
 
                         alpha = 1;
                         if (typeof item['alpha'] !== 'undefined') {
-                            alpha = item['alpha'];
+                            alpha = parseFloat(item['alpha']);
                         }
 
                         surface.boundLayerSequence.push([layer, alpha]);
 
+                        if (item['shaderVarFlatShade']) {
+                            if (!layer.shaderFilters) {
+                                layer.shaderFilters = {};
+                            }
+                            
+                            if (!layer.shaderFilters[surface.id]) {
+                                layer.shaderFilters[surface.id] = {};
+                            }
+
+                            layer.shaderFilters[surface.id].varFlatShade = item['shaderVarFlatShade'];
+                        }
+
                         if (item['shaderFilter']) {
                             if (!layer.shaderFilters) {
                                 layer.shaderFilters = {};
-                                layer.shaderFilters[surface.id] = item['shaderFilter'];
                             }
+                            
+                            if (!layer.shaderFilters[surface.id]) {
+                                layer.shaderFilters[surface.id] = {};
+                            }
+
+                            layer.shaderFilters[surface.id].filter = item['shaderFilter'];
                         }
                     }
                 }
@@ -249,16 +266,33 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
     
                             alpha = 1;
                             if (typeof item['alpha'] !== 'undefined') {
-                                alpha = item['alpha'];
+                                alpha = parseFloat(item['alpha']);
                             }
     
                             freeLayer.boundLayerSequence.push([layer, alpha]);
 
+                            if (item['shaderVarFlatShade']) {
+                                if (!layer.shaderFilters) {
+                                    layer.shaderFilters = {};
+                                }
+                                
+                                if (!layer.shaderFilters[surface.id]) {
+                                    layer.shaderFilters[surface.id] = {};
+                                }
+
+                                layer.shaderFilters[surface.id].varFlatShade = item['shaderVarFlatShade'];
+                            }
+
                             if (item['shaderFilter']) {
                                 if (!layer.shaderFilters) {
                                     layer.shaderFilters = {};
-                                    layer.shaderFilters[surface.id] = item['shaderFilter'];
                                 }
+                                
+                                if (!layer.shaderFilters[surface.id]) {
+                                    layer.shaderFilters[surface.id] = {};
+                                }
+
+                                layer.shaderFilters[surface.id].filter = item['shaderFilter'];
                             }
                         }
                     }
