@@ -1508,9 +1508,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             vec3.normalize(job.center2, job.normal);
                 
             localTilt = -vec3.dot(camVec, job.normal);
+
             if (localTilt < Math.cos(math.radians(job.culling))) {
                 return;
             }
+            
+            /*
+            localTilt = math.degrees(Math.acos(localTilt));
+
+            if (localTilt > job.culling) {
+                return;
+            }*/
+
         } else if (job.visibility) {
 
             p2 = job.center2;

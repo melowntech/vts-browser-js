@@ -562,14 +562,14 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
     for (i = 0; i < inputSize; i++) {
         item = input[i];
         r = item[0].reduce;
-        pp = item[5];
 
-        yy = Math.pow(pp[1] * invsy, centerOffset) * sy;
+        // optical center
+        //pp = item[5]; 
+        //yy = Math.pow(pp[1] * invsy, centerOffset) * sy;
+        //dx = (cx - pp[0]) * invcx;
+        //dy = (cy - yy) * invcx;
 
-        dx = (cx - pp[0]) * invcx;
-        dy = (cy - yy) * invcx;
-
-        val = r[3] - distanceFactor * Math.log(r[4]) - screenDistanceFactor * Math.log(dx*dx + dy*dy + e100);
+        val = r[3] - distanceFactor * Math.log(r[4]); // - screenDistanceFactor * Math.log(dx*dx + dy*dy + e100);
         r[6] = val;
         val += 10000;
         if (val < 0) val = 0;

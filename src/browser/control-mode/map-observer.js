@@ -283,6 +283,8 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
     var inertia = this.config.inertia, stats = map.getStats();
     var timeFactor = this.config.timeNormalizedInertia ? ((1000/(stats['frameTime'] + 0.000001))/60) : 1;  //normalize to 60 fps
 
+    //console.log(''+timeFactor);
+
     //process coords deltas
     if (!onlyLastRotate && !onlyLastZoom && this.coordsDeltas.length > 0) {
         deltas = this.coordsDeltas;
