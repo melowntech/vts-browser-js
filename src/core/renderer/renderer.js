@@ -49,6 +49,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.drawGridCells = false;
     this.drawAllLabels = false;
     this.debug = {};
+    this.mapHack = null;
 
     this.geodataSelection = [];
     this.hoverFeatureCounter = 0;
@@ -527,6 +528,7 @@ Renderer.prototype.switchToFramebuffer = function(type, texture) {
     
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
     
+        gl.viewport(0, 0, width, height);
         this.gpu.setFramebuffer(null);
     
         this.camera.setAspect(width / height);
@@ -651,6 +653,22 @@ Renderer.prototype.hitTest = function(screenX, screenY) {
     this.lastHitPosition = [cameraPos[0] + screenRay[0]*depth, cameraPos[1] + screenRay[1]*depth, cameraPos[2] + screenRay[2]*depth];
 
     return [this.lastHitPosition[0], this.lastHitPosition[1], this.lastHitPosition[2], surfaceHit, screenRay, depth, cameraPos];
+};
+
+
+Renderer.prototype.getDepth = function(screenX, screenY) {
+    var x = Math.floor(screenX * (this.hitmapSize / this.curSize[0]));
+    var y = Math.floor(screenY * (this.hitmapSize / this.curSize[1]));
+
+    //get pixel value from framebuffer
+    var pixel = this.hitmapTexture.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1);
+
+    //convert rgb values into depth
+    var depth = (pixel[0] * (1.0/255)) + (pixel[1]) + (pixel[2]*255.0) + (pixel[3]*65025.0);// + (pixel[3]*16581375.0);
+
+    var surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
+
+    return [surfaceHit, depth];
 };
 
 

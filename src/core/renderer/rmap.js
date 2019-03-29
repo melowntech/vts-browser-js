@@ -115,7 +115,7 @@ RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
     return true;
 }
 
-RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
+RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, checkDepthMap) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
         rectangleIndex, t;
 
@@ -206,6 +206,20 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
     //remove rectangles
     for (var key in removeList) {
         this.removeRectangle(parseInt(key));
+    }
+
+    if (checkDepthMap) {
+        var depth = this.renderer.mapHack.getScreenDepth(checkDepthMap[0], checkDepthMap[1]);
+        var reduce = checkDepthMap[2];
+
+        if (depth[0]) {
+            var delta = depth[1] - reduce[4];
+            reduce[7] = delta;
+
+            if (!this.renderer.drawHiddenLabels && delta < checkDepthMap[3]) {
+                return;
+            }
+        }
     }
 
     //there is no collision so we can store rectangle

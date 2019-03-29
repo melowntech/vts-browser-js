@@ -200,7 +200,8 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 73:
                 case 105:
-                    debug.drawGridCells = !debug.drawGridCells; break; //key I pressed
+                    debug.drawHiddenLabels = !debug.drawHiddenLabels; break; //key I pressed
+                    //debug.drawGridCells = !debug.drawGridCells; break; //key I pressed
 
                 case 87:
                 case 119:

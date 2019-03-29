@@ -542,8 +542,10 @@ function radixSortFeatures(renderer, input, inputSize, tmp) {
     var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
     var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, pp;
     var distanceFactor = renderer.config.mapFeaturesReduceFactor;
-    var screenDistanceFactor = renderer.config.mapFeaturesReduceFactor2 * 0.5, e100 = 1.0/Math.exp(100);
-    var centerOffset = renderer.config.mapFeaturesReduceFactor3;
+    //var screenDistanceFactor = renderer.config.mapFeaturesReduceFactor2 * 0.5, e100 = 1.0/Math.exp(100);
+    //var centerOffset = renderer.config.mapFeaturesReduceFactor3;
+
+    var depthTest = true;
 
     var sx = renderer.curSize[0], sy = renderer.curSize[1];
     var cx = sx * 0.5, cy = sy * 0.5;
@@ -639,6 +641,12 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
     var feature, feature2, pp, pp2, o, featureCount = 0;
     var drawAllLabels = renderer.drawAllLabels;
 
+    var depthTest = (renderer.config.mapFeaturesReduceFactor2 != 0);
+    var depthOffset = -renderer.config.mapFeaturesReduceFactor3;
+
+    //var depthTest = true;
+
+
     renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures;
 
     //get top features
@@ -662,8 +670,15 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
         if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
             pp = feature[5];
             o = feature[8];
-            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                featureCount++;
+            
+            if (depthTest) {
+                if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true, [pp[0],pp[1]+feature[1],feature[0].reduce,depthOffset])) {
+                    featureCount++;
+                }
+            } else {
+                if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                    featureCount++;
+                }
             }
 
             if (featureCount >= maxFeatures) {

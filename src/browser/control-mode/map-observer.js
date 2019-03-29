@@ -282,6 +282,7 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
     var update = false, azimuth, correction, i;
     var inertia = this.config.inertia, stats = map.getStats();
     var timeFactor = this.config.timeNormalizedInertia ? ((1000/(stats['frameTime'] + 0.000001))/60) : 1;  //normalize to 60 fps
+    var invTimeFactor = this.config.timeNormalizedInertia ? 1.0/(timeFactor+0.00001) : 1;
 
     //console.log(''+timeFactor);
 
@@ -298,8 +299,8 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
             azimuth = delta[3];
             azimuth = math.radians(azimuth);
 
-            forward[0] += Math.sin(azimuth) * delta[2];  
-            forward[1] += Math.cos(azimuth) * delta[2];
+            forward[0] += Math.sin(azimuth) * (delta[2] * invTimeFactor);  
+            forward[1] += Math.cos(azimuth) * (delta[2] * invTimeFactor);
 
             delta[2] *= inertia[0] * timeFactor;
 
@@ -342,9 +343,10 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
         //apply detals to current orientation    
         for (i = (onlyLastRotate ? (deltas.length - 1) : 0); i < deltas.length; i++) {
             delta = deltas[i];
-            orientation[0] += delta[0];  
-            orientation[1] += delta[1];
-            orientation[2] += delta[2];
+            orientation[0] += delta[0] * invTimeFactor;  
+            orientation[1] += delta[1] * invTimeFactor;
+            orientation[2] += delta[2] * invTimeFactor;
+
             delta[0] *= inertia[1] * timeFactor;
             delta[1] *= inertia[1] * timeFactor;
             delta[2] *= inertia[1] * timeFactor;
@@ -369,9 +371,12 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
         
         //apply detals to current view extent    
         for (i = (onlyLastZoom ? (deltas.length - 1) : 0); i < deltas.length; i++) {
-            viewExtent *= deltas[i];
+            //viewExtent *= deltas[i];
+            viewExtent *= Math.pow(deltas[i], invTimeFactor);
             deltas[i] += (1 - deltas[i]) * (1.0 - (inertia[2] * timeFactor));
             
+            //deltas[i] *= Math.pow(deltas[i], Math.pow(inertia[2], timeFactor));
+
             //remove zero deltas
             if (Math.abs(1 - deltas[i]) < 0.001) {
                 deltas.splice(i, 1);
