@@ -7,6 +7,7 @@ import {addStreetTextOnPath as addStreetTextOnPath_, getTextGlyphs as getTextGly
         areTextCharactersAvailable as areTextCharactersAvailable_,
         getCharVerticesCount as getCharVerticesCount_, getFonts as getFonts_, getFontsStorage as getFontsStorage_} from './worker-text.js';
 import {postGroupMessageFast as postGroupMessageFast_} from './worker-message.js';
+import {checkDPoints as checkDPoints_} from './worker-pointarray.js';
 
 //get rid of compiler mess
 var globals = globals_, vec3Normalize = vec3Normalize_,
@@ -16,16 +17,23 @@ var getLayerPropertyValue = getLayerPropertyValue_,
 var addStreetTextOnPath = addStreetTextOnPath_, areTextCharactersAvailable = areTextCharactersAvailable_,
     getCharVerticesCount = getCharVerticesCount_, getFonts = getFonts_, getFontsStorage = getFontsStorage_;
 var postGroupMessageFast = postGroupMessageFast_, getTextGlyphs = getTextGlyphs_;
+var checkDPoints = checkDPoints_;
 
+
+var getLineInfo = function(lineString, lod, style, featureIndex, zIndex, eventInfo) {
+
+};
 
 var processLineStringPass = function(lineString, lod, style, featureIndex, zIndex, eventInfo) {
-    var lines = (lineString['lines'] || lineString['d-lines'])  || [];
 
-    if (lines.length == 0) {
+    checkDPoints(lineString);
+
+    var lines = lineString['lines'];
+
+    if (!lines || lines.length == 0) {
         return;
     }
 
-    var dlines = (lineString['d-lines']) ? true : false;
     var line = getLayerPropertyValue(style, 'line', lineString, lod);
     var lineLabel = getLayerPropertyValue(style, 'line-label', lineString, lod);
 
@@ -168,31 +176,17 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
         //add lines
         for (i = 0, li = points.length - 1; i < li; i++) {
     
-            if (dlines) {
-                p2 = points[i+1];
-                p2 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-    
-                if (forceOrigin) {
-                    p2 = [p2[0] - tileX, p2[1] - tileY, p2[2]];
-                }
-    
-                if (forceScale != null) {
-                    p2 = [p2[0] * forceScale[0], p2[1] * forceScale[1], p2[2] * forceScale[2]];
-                }
-    
-            } else {
-                p1 = points[i];
-                p2 = points[i+1];
-    
-                if (forceOrigin) {
-                    p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
-                    p2 = [p2[0] - tileX, p2[1] - tileY, p2[2]];
-                }
-    
-                if (forceScale != null) {
-                    p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
-                    p2 = [p2[0] * forceScale[0], p2[1] * forceScale[1], p2[2] * forceScale[2]];
-                }
+            p1 = points[i];
+            p2 = points[i+1];
+
+            if (forceOrigin) {
+                p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+                p2 = [p2[0] - tileX, p2[1] - tileY, p2[2]];
+            }
+
+            if (forceScale != null) {
+                p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+                p2 = [p2[0] * forceScale[0], p2[1] * forceScale[1], p2[2] * forceScale[2]];
             }
     
             if (advancedHit) {
@@ -833,12 +827,7 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
             }
     
             if ((i + 1) < li) {
-                if (dlines) {
-                    p2 = points[i+1];
-                    p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-                } else {
-                    p1 = points[i+1];
-                }
+                p1 = points[i+1];
             }
         }
 
@@ -1010,15 +999,16 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 };
 
 var processLineStringGeometry = function(lineString) {
-    var lines = (lineString['lines'] || lineString['d-lines'])  || [];
 
-    if (lines.length == 0) {
+    checkDPoints(lineString);
+
+    var lines = lineString['lines'];
+
+    if (lines || lines.length == 0) {
         return;
     }
 
     //debugger
-
-    var dlines = (lineString['d-lines']) ? true : false;
     var totalPoints = 0;
     var indicesBuffer = new Uint32Array(lines.length);
 
@@ -1068,12 +1058,7 @@ var processLineStringGeometry = function(lineString) {
                 break;
             }
     
-            if (dlines) {
-                p2 = points[j+1];
-                p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-            } else {
-                p1 = points[j+1];
-            }   
+            p1 = points[j+1];
         }
     }
 

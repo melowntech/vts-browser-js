@@ -217,7 +217,7 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
             reduce[7] = delta;
 
             if (!this.renderer.drawHiddenLabels && delta < checkDepthMap[3]) {
-                return;
+                return false;
             }
         }
     }

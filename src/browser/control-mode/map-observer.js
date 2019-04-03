@@ -281,8 +281,19 @@ ControlModeMapObserver.prototype.updateDeltas = function(onlyLastPan, onlyLastRo
     var pos = map.getPosition(), delta, deltas;
     var update = false, azimuth, correction, i;
     var inertia = this.config.inertia, stats = map.getStats();
-    var timeFactor = this.config.timeNormalizedInertia ? ((1000/(stats['frameTime'] + 0.000001))/60) : 1;  //normalize to 60 fps
-    var invTimeFactor = this.config.timeNormalizedInertia ? 1.0/(timeFactor+0.00001) : 1;
+    var timeFactor = 1;
+    var invTimeFactor = 1;
+
+    if (this.config.timeNormalizedInertia) {
+        var fps = (1000/(map.getStats()['frameTime'] + 0.000001));
+
+        if (fps < 1) {
+            fps = 60;
+        }
+
+        timeFactor = (fps/60);  //normalized to 60 fps
+        invTimeFactor = 1.0/timeFactor;
+    }
 
     //console.log(''+timeFactor);
 

@@ -347,6 +347,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 break;
 
             case 'logScale':
+            case 'log-scale':
 
                 if (!Array.isArray(functionValue) || functionValue.length < 2) {
                     functionError = true;
@@ -381,8 +382,6 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
 
                         p = (imax - imin) / Math.log(smax + 1);
                         i = p * Math.log(s + 1) + imin;
-
-                        //console.log('' + feature.properties.name + ' ' + i);
 
                         return i;
                     }
@@ -784,10 +783,18 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
         }
 
         //check reduce
-        if (key == 'reduce' || key == 'dynamic-reduce' || key == 'label-no-overlap-factor') {
+        if (key == 'reduce' || key == 'dynamic-reduce' || key == 'label-no-overlap-factor' || key == 'line-points') {
             if (Array.isArray(value) && value.length > 0 && (typeof value[0] === 'string')) {
 
-                if (key == 'dynamic-reduce') {
+                if (key == 'line-points') {
+
+                    if (!(value[0] == 'vertices' || value[0] == 'by-length' || value[0] == 'by-ratio' || value[0] == 'endpoints' ||
+                          value[0] == 'start' || value[0] == 'end' || value[0] == 'middle' || value[0] == 'midpoint')) {
+                        logError('wrong-property-value', layerId, key, value);
+                        return getDefaultLayerPropertyValue(key);
+                    } 
+
+                } else if (key == 'dynamic-reduce') {
                     if (value[0] == 'by-extenal-param') {
                         value[0] = globals.reduceMode;
                     }
@@ -1011,6 +1018,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'inherit' :        return validateValue(layerId, key, value, 'string');
     case 'reduce':          return validateValue(layerId, key, value, 'object');
     case 'dynamic-reduce':  return validateValue(layerId, key, value, 'object');
+    case 'line-points':     return validateValue(layerId, key, value, 'object');
 
     case 'line':              return validateValue(layerId, key, value, 'boolean');
     case 'line-type':         return validateValue(layerId, key, value, 'string');
@@ -1110,6 +1118,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'filter':           return null;
     case 'reduce':           return null;
     case 'dynamic-reduce':   return null;
+    case 'line-points':      return ['vertices',0,0];
 
     case 'line':             return false;
     case 'line-type':        return 'screen';

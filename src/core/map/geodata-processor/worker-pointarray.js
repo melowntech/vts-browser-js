@@ -15,21 +15,61 @@ var addText = addText_, getSplitIndex = getSplitIndex_, getTextGlyphs = getTextG
 var postGroupMessageFast = postGroupMessageFast_;
 
 
-var processPointArrayPass = function(pointArray, lod, style, featureIndex, zIndex, eventInfo) {
+var checkDPoints = function(pointArray) {
     var pointsGroups = []; 
-    var i, li, dpoints = false;
+    var i, li, g, gl, points, p, pp;
 
-    if (pointArray['lines'] || pointArray['d-lines']) {  //use lines as points
-        pointsGroups = pointArray['lines'] || pointArray['d-lines'];
-        dpoints = (pointArray['d-lines']) ? true : false;
-    } else {
-        if (pointArray['points'] || pointArray['d-points']) {
-            pointsGroups = [(pointArray['points'] || pointArray['d-points'])];
-            dpoints = (pointArray['d-points']) ? true : false;
+    if (pointArray['d-points'] || pointArray['d-lines']) {  //converty d-lines/points to lines/points
+        pointsGroups = pointArray['d-points'] || pointArray['d-lines'];
+
+        if (Array.isArray(pointsGroups) && points.length > 0) {
+
+            for (g = 0, gl = pointsGroups; g < gl; g++) {
+                points = pointsGroups[g];
+                
+                if (Array.isArray(points) && points.length > 0) {
+                    p = points[0];
+                    
+                    p[0] = (p[0] >> 1) ^ (-(p[0] & 1));
+                    p[1] = (p[1] >> 1) ^ (-(p[1] & 1));
+                    p[2] = (p[2] >> 1) ^ (-(p[2] & 1));
+
+                    for (i = 1, li = points.length; i < li; i++) {
+                        p = points[i-1];
+                        pp = points[i];
+
+                        pp[0] = ((pp[0] >> 1) ^ (-(pp[0] & 1))) + p[0];
+                        pp[1] = ((pp[1] >> 1) ^ (-(pp[1] & 1))) + p[1];
+                        pp[2] = ((pp[2] >> 1) ^ (-(pp[2] & 1))) + p[2];
+                    }
+                }
+            }
+        }
+
+        if (pointArray['d-points']) {
+            pointArray['points'] = pointArray['d-points'];
+            delete pointArray['d-points'];
+        } else {
+            pointArray['lines'] = pointArray['d-lines'];
+            delete pointArray['d-lines'];
         }
     }
+};
+
+
+var processPointArrayPass = function(pointArray, lod, style, featureIndex, zIndex, eventInfo) {
+    var pointsGroups = []; 
+    var i, li, g, gl, points, p, pp;
+
+    checkDPoints(pointArray);
+
+    if (pointArray['lines']) {  //use lines as points
+        pointsGroups = pointArray['lines'];
+    } else {
+        pointsGroups = [pointArray['points']];
+    }
     
-    if (pointsGroups.length == 0) {
+    if (!pointsGroups || pointsGroups.length == 0) {
         return;
     }
 
@@ -43,6 +83,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     var enterEvent = getLayerPropertyValue(style, 'enter-event', pointArray, lod);
     var leaveEvent = getLayerPropertyValue(style, 'leave-event', pointArray, lod);
     var advancedHit = getLayerPropertyValue(style, 'advanced-event', pointArray, lod);
+    var linePoints = getLayerPropertyValue(style, 'line-points', pointArray, lod);
 
     var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', pointArray, lod);
 
@@ -51,7 +92,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     var pointColor = getLayerPropertyValue(style, 'point-color', pointArray, lod);
     var pointRadius = 0.5 * getLayerPropertyValue(style, 'point-radius', pointArray, lod);
 
-    var source, bufferSize, bufferSize2, points, g, gl, totalPoints = 0;
+    var source, bufferSize, bufferSize2, totalPoints = 0;
     //zIndex = (zIndex !== null) ? zIndex : getLayerPropertyValue(style, "z-index", pointArray, lod);
 
     for (g = 0, gl = pointsGroups.length; g < gl; g++) {
@@ -181,9 +222,235 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     var tileX = globals.tileX;
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
-    var labelBBox, iconBBox, p, p1;
+    var labelBBox, iconBBox, p, p1, p2, pp;
 
-    var pointsVertices, vertexBuffer, pointsNormals, normalBuffer;
+    var generatePoint = (function() {
+
+        if (icon) {
+            iconBBox = processIcon(pp, iconData) ;//, pointArray, lod, style, zIndex);
+        }
+
+        if (label) {
+            labelBBox = processLabel(pp, labelData); //, pointArray, lod, style, zIndex);
+        }
+
+        if (point) {
+
+            for (var j = 0; j < circleSides; j++) {
+
+                if (pointFlat) {
+
+                    //add polygon
+                    vertexBuffer[index] = pp[0];
+                    vertexBuffer[index+1] = pp[1];
+                    vertexBuffer[index+2] = pp[2];
+
+                    vertexBuffer[index+3] = pp[0] + circleBuffer[j][0] * pointRadius;
+                    vertexBuffer[index+4] = pp[1] + circleBuffer[j][1] * pointRadius;
+                    vertexBuffer[index+5] = pp[2];
+
+                    vertexBuffer[index+6] = pp[0] + circleBuffer[j+1][0] * pointRadius;
+                    vertexBuffer[index+7] = pp[1] + circleBuffer[j+1][1] * pointRadius;
+                    vertexBuffer[index+8] = pp[2];
+
+                    index += 9;
+
+                } else {
+
+                    //add polygon
+                    vertexBuffer[index] = pp[0];
+                    vertexBuffer[index+1] = pp[1];
+                    vertexBuffer[index+2] = pp[2];
+                    vertexBuffer[index+3] = 0;
+                    normalBuffer[index2] = 0;
+                    normalBuffer[index2+1] = 0;
+                    normalBuffer[index2+2] = 0;
+                    normalBuffer[index2+3] = 0;
+
+                    vertexBuffer[index+4] = pp[0];
+                    vertexBuffer[index+5] = pp[1];
+                    vertexBuffer[index+6] = pp[2];
+                    vertexBuffer[index+7] = 0;
+                    normalBuffer[index2+4] = circleBuffer[j][0] * pointRadius;
+                    normalBuffer[index2+5] = circleBuffer[j][1] * pointRadius;
+                    normalBuffer[index2+6] = 0;
+                    normalBuffer[index2+7] = 0;
+
+                    vertexBuffer[index+8] = pp[0];
+                    vertexBuffer[index+9] = pp[1];
+                    vertexBuffer[index+10] = pp[2];
+                    vertexBuffer[index+11] = 0;
+                    normalBuffer[index2+8] = circleBuffer[j+1][0] * pointRadius;
+                    normalBuffer[index2+9] = circleBuffer[j+1][1] * pointRadius;
+                    normalBuffer[index2+10] = 0;
+                    normalBuffer[index2+11] = 0;
+
+                    index += 12;
+                    index2 += 12;
+                }
+            }
+        }
+    });
+
+
+    var getLinePoint = (function(length) {
+
+        var l1 = 0;
+        var l2 = 0;
+
+        p = points[0];
+        p1 = [p[0], p[1], p[2]];
+
+        if (forceOrigin) {
+            p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+        }
+
+        if (forceScale != null) {
+            p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+        }
+
+        if (length == 0) {
+            return p1;
+        }
+
+        for (var k = 0, lk = points.length - 1; k < lk; k++) {
+            p = points[k+1];
+            p2 = [p[0], p[1], p[2]];
+
+            if (forceOrigin) {
+                p2 = [p2[0] - tileX, p2[1] - tileY, p2[2]];
+            }
+
+            if (forceScale != null) {
+                p2 = [p2[0] * forceScale[0], p2[1] * forceScale[1], p2[2] * forceScale[2]];
+            }
+
+            var dx = p2[0] - p1[0], dy = p2[1] - p1[1], dz = p2[2] - p1[2]; 
+            var l = Math.sqrt(dx*dx+dy*dy+dz*dz);
+
+            l1 = l2;
+            l2 += l;
+
+            if (length >= l1 && length <= l2) {
+                var d = (length - l1) / l;
+
+                return [p1[0] + dx * d,  p1[1] + dy * d, p1[2] + dz * d];
+            }
+
+            p1 = p2;
+        }
+
+    });
+
+    var pointsBuffer = new Array(2048), pointsBufferLength = 0;
+
+
+    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
+        points = pointsGroups[g];
+        
+        if (Array.isArray(points) && points.length > 0) {
+
+            var totalLength = 0, lengths = null;
+
+            if (linePoints[0] != 'vertices') {
+                lengths = new Array(points.length);
+                lengths[0] = 0;
+            }
+
+            //add ponints
+            for (i = 0, li = points.length; i < li; i++) {
+                p = points[i];
+                p1 = [p[0], p[1], p[2]];
+
+                if (forceOrigin) {
+                    p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+                }
+        
+                if (forceScale != null) {
+                    p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+                }
+                
+                if (i + 1 < li) {
+                    p = points[i+1];
+                    p2 = [p[0], p[1], p[2]];
+
+                    if (forceOrigin) {
+                        p2 = [p2[0] - tileX, p2[1] - tileY, p2[2]];
+                    }
+            
+                    if (forceScale != null) {
+                        p2 = [p2[0] * forceScale[0], p2[1] * forceScale[1], p2[2] * forceScale[2]];
+                    }
+
+                    var dx = p2[0] - p1[0], dy = p2[1] - p1[1], dz = p2[2] - p1[2]; 
+                    var l = Math.sqrt(dx*dx+dy*dy+dz*dz);
+
+                    if (lengths) {
+                        lengths[i] = l;
+                    }
+
+                    totalLength += l;
+                }
+        
+                center[0] += p1[0];
+                center[1] += p1[1];
+                center[2] += p1[2];
+
+                if (linePoints[0] == 'vertices') {
+                    pointsBuffer[pointsBufferLength] = p1;
+                    pointsBufferLength++;
+                }
+            }
+
+            if (linePoints[0] == 'by-length' || linePoints[0] == 'by-ratio') {
+                var period = linePoints[1];
+                var offset = linePoints[2] || 0;
+
+                if (linePoints[0] == 'by-ratio') {
+                    period *= totalLength;
+                    offset *= totalLength;
+                }
+
+                if (period <= 0) {
+                    pointsBuffer[pointsBufferLength] = getLinePoint(offset);
+                    if (pointsBuffer[pointsBufferLength]) {
+                        pointsBufferLength++;
+                    }
+                } else {
+                    for (i = offset; i < totalLength; i += period) {
+                        pointsBuffer[pointsBufferLength] = getLinePoint(i);
+                        if (pointsBuffer[pointsBufferLength]) {
+                            pointsBufferLength++;
+                        }
+                    }
+                }
+            }
+
+            if (linePoints[0] == 'start') {
+                pointsBuffer[pointsBufferLength] = getLinePoint(0);
+                pointsBufferLength++;
+            }
+
+            if (linePoints[0] == 'end') {
+                pointsBuffer[pointsBufferLength] = getLinePoint(totalLength);
+                pointsBufferLength++;
+            }
+
+            if (linePoints[0] == 'endpoints') {
+                pointsBuffer[pointsBufferLength] = getLinePoint(0);
+                pointsBufferLength++;
+                pointsBuffer[pointsBufferLength] = getLinePoint(totalLength);
+                pointsBufferLength++;
+            }
+
+            if (linePoints[0] == 'middle' || linePoints[0] == 'midpoint') {
+                pointsBuffer[pointsBufferLength] = getLinePoint(totalLength * 0.5);
+                pointsBufferLength++;
+            }
+        }
+    }
+
+    var pointsVertices, vertexBuffer, pointsNormals, normalBuffer, bufferPoints = pointsBufferLength;
 
     if (point) {
         var circleBuffer = [];
@@ -201,115 +468,19 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         //allocate buffers
         if (!pointFlat) {
             pointsVertices = circleSides * 3 * 4;
-            vertexBuffer = new Float32Array(totalPoints * pointsVertices);
+            vertexBuffer = new Float32Array(bufferPoints * pointsVertices);
             pointsNormals = circleSides * 3 * 4;
-            normalBuffer = new Float32Array(totalPoints * pointsNormals);
+            normalBuffer = new Float32Array(bufferPoints * pointsNormals);
         } else {
             pointsVertices = circleSides * 3 * 3;
-            vertexBuffer = new Float32Array(totalPoints * pointsVertices);
+            vertexBuffer = new Float32Array(bufferPoints * pointsVertices);
         }
     }
 
-    for (g = 0, gl = pointsGroups.length; g < gl; g++) {
-        points = pointsGroups[g];
-        
-        if (Array.isArray(points) && points.length > 0) {
-            p = points[0];
-            p1 = [p[0], p[1], p[2]];
-       
-            //add ponints
-            for (i = 0, li = points.length; i < li; i++) {
-        
-                if (forceOrigin) {
-                    p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
-                }
-        
-                if (forceScale != null) {
-                    p1 = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
-                }
-        
-                center[0] += p1[0];
-                center[1] += p1[1];
-                center[2] += p1[2];
-
-                if (icon) {
-                    iconBBox = processIcon(p1, iconData) ;//, pointArray, lod, style, zIndex);
-                }
-    
-                if (label) {
-                    labelBBox = processLabel(p1, labelData); //, pointArray, lod, style, zIndex);
-                }
-
-                if (point) {
-        
-                    for (var j = 0; j < circleSides; j++) {
-
-       
-                        if (pointFlat) {
-        
-                            //add polygon
-                            vertexBuffer[index] = p1[0];
-                            vertexBuffer[index+1] = p1[1];
-                            vertexBuffer[index+2] = p1[2];
-        
-                            vertexBuffer[index+3] = p1[0] + circleBuffer[j][0] * pointRadius;
-                            vertexBuffer[index+4] = p1[1] + circleBuffer[j][1] * pointRadius;
-                            vertexBuffer[index+5] = p1[2];
-        
-                            vertexBuffer[index+6] = p1[0] + circleBuffer[j+1][0] * pointRadius;
-                            vertexBuffer[index+7] = p1[1] + circleBuffer[j+1][1] * pointRadius;
-                            vertexBuffer[index+8] = p1[2];
-
-                            index += 9;
-        
-                        } else {
-        
-                            //add polygon
-                            vertexBuffer[index] = p1[0];
-                            vertexBuffer[index+1] = p1[1];
-                            vertexBuffer[index+2] = p1[2];
-                            vertexBuffer[index+3] = 0;
-                            normalBuffer[index2] = 0;
-                            normalBuffer[index2+1] = 0;
-                            normalBuffer[index2+2] = 0;
-                            normalBuffer[index2+3] = 0;
-        
-                            vertexBuffer[index+4] = p1[0];
-                            vertexBuffer[index+5] = p1[1];
-                            vertexBuffer[index+6] = p1[2];
-                            vertexBuffer[index+7] = 0;
-                            normalBuffer[index2+4] = circleBuffer[j][0] * pointRadius;
-                            normalBuffer[index2+5] = circleBuffer[j][1] * pointRadius;
-                            normalBuffer[index2+6] = 0;
-                            normalBuffer[index2+7] = 0;
-        
-                            vertexBuffer[index+8] = p1[0];
-                            vertexBuffer[index+9] = p1[1];
-                            vertexBuffer[index+10] = p1[2];
-                            vertexBuffer[index+11] = 0;
-                            normalBuffer[index2+8] = circleBuffer[j+1][0] * pointRadius;
-                            normalBuffer[index2+9] = circleBuffer[j+1][1] * pointRadius;
-                            normalBuffer[index2+10] = 0;
-                            normalBuffer[index2+11] = 0;
-        
-                            index += 12;
-                            index2 += 12;
-                        }
-                    }
-                }
-        
-                if ((i + 1) < li) {
-                    if (dpoints) {
-                        var p2 = points[i+1];
-                        p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-                    } else {
-                        p1 = points[i+1];
-                    }
-                }
-            }
-        }
+    for (i = 0; i < pointsBufferLength; i++) {
+        pp = pointsBuffer[i];
+        generatePoint();
     }
-   
 
     if (totalPoints > 0) {
         center[0] /= totalPoints;
@@ -424,21 +595,20 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
 var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex, zIndex, eventInfo) {
     var pointsGroups = []; 
-    var i, li, dpoints = false;
+    var i, li;
 
-    if (pointArray['lines'] || pointArray['d-lines']) {  //use lines as points
-        pointsGroups = pointArray['lines'] || pointArray['d-lines'];
-        dpoints = (pointArray['d-lines']) ? true : false;
+    checkDPoints(pointArray);
+
+    if (pointArray['lines']) {  //use lines as points
+        pointsGroups = pointArray['lines'];
     } else {
-        if (pointArray['points'] || pointArray['d-points']) {
-            pointsGroups = [(pointArray['points'] || pointArray['d-points'])];
-            dpoints = (pointArray['d-points']) ? true : false;
-        }
+        pointsGroups = [pointArray['points']];
     }
     
-    if (pointsGroups.length == 0) {
+    if (!pointsGroups || pointsGroups.length == 0) {
         return;
     }
+
 
     var visibility = getLayerPropertyValue(style, 'visibility-rel', pointArray, lod) || 
                      getLayerPropertyValue(style, 'visibility-abs', pointArray, lod) ||
@@ -467,11 +637,11 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
         points = pointsGroups[g];
         
         if (Array.isArray(points) && points.length > 0) {
-            p = points[0];
-            p1 = [p[0], p[1], p[2]];
        
             //add ponints
             for (i = 0, li = points.length; i < li; i++) {
+                p = points[i];
+                p1 = [p[0], p[1], p[2]];
         
                 if (forceOrigin) {
                     p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
@@ -484,15 +654,6 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
                 center[0] += p1[0];
                 center[1] += p1[1];
                 center[2] += p1[2];
-       
-                if ((i + 1) < li) {
-                    if (dpoints) {
-                        var p2 = points[i+1];
-                        p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-                    } else {
-                        p1 = points[i+1];
-                    }
-                }
             }
         }
     }
@@ -800,46 +961,70 @@ var processLabel = function(point, labelData) {
 };
 
 var processPointArrayGeometry = function(pointArray) {
-    var i, li, dpoints = false;
+    var i, li;
 
-    if (pointArray['points'] || pointArray['d-points']) {
-        points = (pointArray['points'] || pointArray['d-points']);
-        dpoints = (pointArray['d-points']) ? true : false;
+    checkDPoints(pointArray);
 
-        if (!(Array.isArray(points) && points.length > 0)) {
-            return;
+    if (pointArray['lines']) {  //use lines as points
+        pointsGroups = pointArray['lines'];
+    } else {
+        pointsGroups = [pointArray['points']];
+    }
+    
+    if (!pointsGroups || pointsGroups.length == 0) {
+        return;
+    }
+
+    var totalPoints = 0;
+    var indicesBuffer = new Uint32Array(pointsGroups.length);
+
+    for (i = 0; i < pointsGroups.length; i++) {
+        indicesBuffer[i] = totalPoints;
+
+        if (Array.isArray(pointsGroups[i])) {
+            totalPoints += pointsGroups[i].length;
         }
     }
 
-    var index = 0;
+    var geometryBuffer = new Float64Array(totalPoints * 3);
+
+    /*var forceOrigin = globals.forceOrigin;
+    var tileX = globals.tileX;
+    var tileY = globals.tileY;*/
     var forceScale = globals.forceScale;
+    var index = 0, p1, p2, pp, p;
 
-    var geometryBuffer = new Float64Array(points.length);
-
-    var p = points[0], pp;
-    var p1 = [p[0], p[1], p[2]], p2;
-
-    //add ponints
-    for (i = 0, li = points.length; i < li; i++) {
-
-        if (forceScale != null) {
-            pp = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+    for (var i = 0; i < pointsGroups.length; i++) {
+        if (!Array.isArray(pointsGroups[i]) || !pointsGroups[i].length) {
+            continue;
         }
+        
+        var points = pointsGroups[i];
+   
+        p = points[0];
+        p1 = [p[0], p[1], p[2]];
+    
+        //add lines
+        for (var j = 0, lj = points.length; j < lj; j++) {
 
-        geometryBuffer[index] = pp[0];
-        geometryBuffer[index+1] = pp[1];
-        geometryBuffer[index+2] = pp[2];
-        index += 3;
+            /*if (forceOrigin) {
+                pp = [p1[0] - tileX, p1[1] - tileY, p1[2]];
+            }*/
+    
+            if (forceScale != null) {
+                pp = [p1[0] * forceScale[0], p1[1] * forceScale[1], p1[2] * forceScale[2]];
+            }
 
-        if (i >= (li - 1)) {
-            break;
-        }
+            geometryBuffer[index] = pp[0];
+            geometryBuffer[index+1] = pp[1];
+            geometryBuffer[index+2] = pp[2];
+            index += 3;
 
-        if (dpoints) {
-            p2 = points[i+1];
-            p1 = [p1[0] + p2[0], p1[1] + p2[1], p1[2] + p2[2]];
-        } else {
-            p1 = points[i+1];
+            if (j == (lj - 1)) {
+                break;
+            }
+    
+            p1 = points[j+1];
         }
     }
 
@@ -848,6 +1033,6 @@ var processPointArrayGeometry = function(pointArray) {
         'id':pointArray['id'] }, [geometryBuffer, indicesBuffer], (""+globals.signatureCounter));
 };
 
-export {processPointArrayPass, processPointArrayGeometry, processPointArrayVSwitchPass};
+export {processPointArrayPass, processPointArrayGeometry, processPointArrayVSwitchPass, checkDPoints};
 
 
