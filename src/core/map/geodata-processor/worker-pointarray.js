@@ -92,7 +92,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     var pointColor = getLayerPropertyValue(style, 'point-color', pointArray, lod);
     var pointRadius = 0.5 * getLayerPropertyValue(style, 'point-radius', pointArray, lod);
 
-    var source, bufferSize, bufferSize2, totalPoints = 0;
+    var source, bufferSize, bufferSize2, totalPoints = 0, noOverlap;
     //zIndex = (zIndex !== null) ? zIndex : getLayerPropertyValue(style, "z-index", pointArray, lod);
 
     for (g = 0, gl = pointsGroups.length; g < gl; g++) {
@@ -162,8 +162,9 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
             }
         }
         if (text && text != '' && Math.abs(size) > 0.0001) {
-            bufferSize = getCharVerticesCount() * text.length * totalPoints;
-            bufferSize2 = getCharVerticesCount(true) * text.length * totalPoints;
+            noOverlap = getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod);
+            bufferSize = getCharVerticesCount() * text.length * (noOverlap ? 1 : totalPoints);
+            bufferSize2 = getCharVerticesCount(true) * text.length * (noOverlap ? 1 : totalPoints);
 
             var useSingleBuffer = (totalPoints == 1);
 
@@ -189,7 +190,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
                 text : text,
                 hysteresis : getLayerPropertyValue(style, 'hysteresis', pointArray, lod),
                 width : factor * getLayerPropertyValue(style, 'label-width', pointArray, lod),
-                noOverlap : getLayerPropertyValue(style, 'label-no-overlap', pointArray, lod),
+                noOverlap : noOverlap,
                 noOverlapMargin : getLayerPropertyValue(style, 'label-no-overlap-margin', pointArray, lod),
                 noOverlapFactor : getLayerPropertyValue(style, 'label-no-overlap-factor', pointArray, lod),
                 vertexBuffer : (useSingleBuffer) ? null : (new Float32Array(bufferSize)),
@@ -222,15 +223,15 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
     var tileX = globals.tileX;
     var tileY = globals.tileY;
     var forceScale = globals.forceScale;
-    var labelBBox, iconBBox, p, p1, p2, pp;
+    var labelBBox, iconBBox, p, p1, p2, pp, pp2;
 
-    var generatePoint = (function() {
+    var generatePoint = (function(pindex) {
 
-        if (icon) {
+        if (icon && (!iconData.noOverlap)) {
             iconBBox = processIcon(pp, iconData) ;//, pointArray, lod, style, zIndex);
         }
 
-        if (label) {
+        if (label && (!labelData.noOverlap)) {
             labelBBox = processLabel(pp, labelData); //, pointArray, lod, style, zIndex);
         }
 
@@ -477,9 +478,19 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         }
     }
 
+    if (!pointsBufferLength) {
+        return;
+    }
+
+    //if (pointsBufferLength > 1) {
+      //  globals.directPoints = pointsBuffer.slice(1,pointsBufferLength);
+    //}
+ 
+    globals.directPoints = pointsBuffer.slice(0,pointsBufferLength);
+
     for (i = 0; i < pointsBufferLength; i++) {
         pp = pointsBuffer[i];
-        generatePoint();
+        generatePoint(i);
     }
 
     if (totalPoints > 0) {
@@ -520,73 +531,106 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
         }
     }
 
-    if (icon) {
+    var sendIconMessage = (function(){
 
-        globals.signatureCounter++;
-        signature = (""+globals.signatureCounter);
+        if (icon) {
 
-        if (iconData.noOverlap) {
-            var margin = iconData.noOverlapMargin;
-            var factorType = null, factorValue = null;
+            globals.signatureCounter++;
+            signature = (""+globals.signatureCounter);
 
-            if (iconData.noOverlapFactor !== null) {
-                switch(iconData.noOverlapFactor[0]) {
-                    case 'direct':      factorType = VTS_NO_OVERLAP_DIRECT;      break;
-                    case 'div-by-dist': factorType = VTS_NO_OVERLAP_DIV_BY_DIST; break;
+            if (iconData.noOverlap) {
+                var margin = iconData.noOverlapMargin;
+                var factorType = null, factorValue = null;
+
+                if (iconData.noOverlapFactor !== null) {
+                    switch(iconData.noOverlapFactor[0]) {
+                        case 'direct':      factorType = VTS_NO_OVERLAP_DIRECT;      break;
+                        case 'div-by-dist': factorType = VTS_NO_OVERLAP_DIV_BY_DIST; break;
+                    }
+
+                    factorValue = iconData.noOverlapFactor[1];
                 }
 
-                factorValue = iconData.noOverlapFactor[1];
+                var noOverlap = [iconBBox[0]-margin[0], iconBBox[1]-margin[1], iconBBox[2]+margin[0], iconBBox[3]+margin[1], factorType, factorValue];
             }
 
-            var noOverlap = [iconBBox[0]-margin[0], iconBBox[1]-margin[1], iconBBox[2]+margin[0], iconBBox[3]+margin[1], factorType, factorValue];
+            if ((iconData.singleBuffer && iconData.singleBuffer.length > 0) || (iconData.vertexBuffer && iconData.vertexBuffer.length > 0)) {
+
+                postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_ICON : VTS_WORKER_TYPE_ICON2, {
+                    'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
+                    'visibility': visibility, 'culling': culling, 'center': pp2, 'stick': iconData.stick,
+                    'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
+                    'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'noOverlap' : (iconData.noOverlap ? noOverlap: null),
+                    'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
+                    'index': featureIndex, 'reduce': iconData.reduce, 'lod':(globals.autoLod ? null : globals.tileLod) },
+                    (iconData.singleBuffer) ? [iconData.singleBuffer] : [iconData.vertexBuffer, iconData.originBuffer, iconData.texcoordsBuffer],
+                    signature);
+            }
         }
 
-        if ((iconData.singleBuffer && iconData.singleBuffer.length > 0) || (iconData.vertexBuffer && iconData.vertexBuffer.length > 0)) {
+    });
 
-            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_ICON : VTS_WORKER_TYPE_ICON2, {
-                'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
-                'visibility': visibility, 'culling': culling, 'center': center, 'stick': iconData.stick,
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'noOverlap' : (iconData.noOverlap ? noOverlap: null),
-                'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
-                'index': featureIndex, 'reduce': iconData.reduce, 'lod':(globals.autoLod ? null : globals.tileLod) },
-                (iconData.singleBuffer) ? [iconData.singleBuffer] : [iconData.vertexBuffer, iconData.originBuffer, iconData.texcoordsBuffer],
-                signature);
+    var sendLabelMessage = (function(){
+
+        if (label) {
+            globals.signatureCounter++;
+            signature = (""+globals.signatureCounter);
+
+            if (labelData.noOverlap) {
+                var margin = labelData.noOverlapMargin;
+                var factorType = null, factorValue = null;
+
+                if (labelData.noOverlapFactor !== null) {
+                    switch(labelData.noOverlapFactor[0]) {
+                        case 'direct':      factorType = VTS_NO_OVERLAP_DIRECT;      break;
+                        case 'div-by-dist': factorType = VTS_NO_OVERLAP_DIV_BY_DIST; break;
+                    }
+
+                    factorValue = labelData.noOverlapFactor[1];
+                }
+
+                var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1], factorType, factorValue];
+            }
+
+            if ((labelData.singleBuffer && labelData.singleBuffer.length > 0) || (labelData.vertexBuffer && labelData.vertexBuffer.length > 0)) {
+
+                postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_LABEL : VTS_WORKER_TYPE_LABEL2, {
+                    'size':labelData.size, 'origin':labelData.pos, 'color':labelData.color,
+                    'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
+                    'culling': culling, 'center': pp2, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
+                    'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
+                    'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
+                    'hitable':hitable, 'state':globals.hitState, 'advancedHit': advancedHit, 'reduce': labelData.reduce, 'hysteresis': labelData.hysteresis, 
+                    'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 'lod':(globals.autoLod ? null : globals.tileLod) },
+                    (labelData.singleBuffer) ? [labelData.singleBuffer] : [labelData.vertexBuffer, labelData.originBuffer, labelData.texcoordsBuffer],
+                    signature);
+            }
         }
+
+    });
+
+    if (icon && (!iconData.noOverlap)) {
+        pp2 = center;
+        sendIconMessage();
     }
 
-    if (label) {
-        globals.signatureCounter++;
-        signature = (""+globals.signatureCounter);
+    if (label && (!labelData.noOverlap)) {
+        pp2 = center;
+        sendLabelMessage();
+    }
 
-        if (labelData.noOverlap) {
-            var margin = labelData.noOverlapMargin;
-            var factorType = null, factorValue = null;
+    for (i = 0, li = globals.insidePack ? 1 : globals.directPoints.length; i < li; i++) {
+        pp = globals.directPoints[i];
+        pp2 = [pp[0] + bboxMin[0], pp[1] + bboxMin[1], pp[2] + bboxMin[2]];
 
-            if (labelData.noOverlapFactor !== null) {
-                switch(labelData.noOverlapFactor[0]) {
-                    case 'direct':      factorType = VTS_NO_OVERLAP_DIRECT;      break;
-                    case 'div-by-dist': factorType = VTS_NO_OVERLAP_DIV_BY_DIST; break;
-                }
-
-                factorValue = labelData.noOverlapFactor[1];
-            }
-
-            var noOverlap = [labelBBox[0]-margin[0], labelBBox[1]-margin[1], labelBBox[2]+margin[0], labelBBox[3]+margin[1], factorType, factorValue];
+        if (icon && (iconData.noOverlap)) {
+            iconBBox = processIcon(pp, iconData, iconBBox) ;//, pointArray, lod, style, zIndex);
+            sendIconMessage();
         }
 
-        if ((labelData.singleBuffer && labelData.singleBuffer.length > 0) || (labelData.vertexBuffer && labelData.vertexBuffer.length > 0)) {
-
-            postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_LABEL : VTS_WORKER_TYPE_LABEL2, {
-                'size':labelData.size, 'origin':labelData.pos, 'color':labelData.color,
-                'color2':labelData.color2, 'outline':labelData.outline, 'z-index':zIndex, 'visibility': visibility,
-                'culling': culling, 'center': center, 'stick': labelData.stick, 'noOverlap' : (labelData.noOverlap ? noOverlap: null),
-                'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'files':labelData.files, 'index': featureIndex,
-                'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'fonts': labelData.fontsStorage,
-                'hitable':hitable, 'state':globals.hitState, 'advancedHit': advancedHit, 'reduce': labelData.reduce, 'hysteresis': labelData.hysteresis, 
-                'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 'lod':(globals.autoLod ? null : globals.tileLod) },
-                (labelData.singleBuffer) ? [labelData.singleBuffer] : [labelData.vertexBuffer, labelData.originBuffer, labelData.texcoordsBuffer],
-                signature);
+        if (label && (labelData.noOverlap)) {
+            labelBBox = processLabel(pp, labelData, labelBBox); //, pointArray, lod, style, zIndex);
+            sendLabelMessage();
         }
     }
 
@@ -692,7 +736,17 @@ var getOriginOffset = function(origin, width, height) {
     }
 };
 
-var processIcon = function(point, iconData) {
+
+var processIcon = function(point, iconData, cloneBuffers) {
+
+    if (cloneBuffers) {
+        iconData.index = 0;
+        iconData.index2 = 0;
+        iconData.vertexBuffer = iconData.vertexBuffer ?  (new Float32Array(iconData.vertexBuffer.length)) : null;
+        iconData.originBuffer = iconData.originBuffer ?  (new Float32Array(iconData.originBuffer.length)) : null;
+        iconData.singleBuffer = iconData.singleBuffer ?  (new Float32Array(iconData.singleBuffer.length)) : null;
+    }
+
     var icon = iconData.source;
     var index = iconData.index;
     var index2 = iconData.index2;
@@ -820,7 +874,16 @@ var processIcon = function(point, iconData) {
 };
 
 
-var processLabel = function(point, labelData) {
+var processLabel = function(point, labelData, cloneBuffers) {
+
+    if (cloneBuffers) {
+        labelData.index = 0;
+        labelData.index2 = 0;
+        labelData.vertexBuffer = labelData.vertexBuffer ?  (new Float32Array(labelData.vertexBuffer.length)) : null;
+        labelData.originBuffer = labelData.originBuffer ?  (new Float32Array(labelData.originBuffer.length)) : null;
+        labelData.singleBuffer = labelData.singleBuffer ?  (new Float32Array(labelData.singleBuffer.length)) : null;
+    }
+
     var vertexBuffer = labelData.vertexBuffer;
     var texcoordsBuffer = labelData.texcoordsBuffer;
     var originBuffer = labelData.originBuffer;

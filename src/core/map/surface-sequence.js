@@ -178,10 +178,10 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function() {
 
 MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
     var view = this.map.currentView;
-    var key, item, layer, alpha, i, li;
+    var key, item, layer, alpha, i, li, item2;
     
     //zero bound layer filters
-    var layers = this.boundLayers;
+    var layers = this.map.boundLayers;
     for (var key in layers) {
         layers[key].shaderFilters = null;
     }
@@ -212,7 +212,9 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
 
                         surface.boundLayerSequence.push([layer, alpha]);
 
-                        if (item['shaderVarFlatShade']) {
+                        item2 = item['options'] || item;
+
+                        if (item2['shaderVarFlatShade']) {
                             if (!layer.shaderFilters) {
                                 layer.shaderFilters = {};
                             }
@@ -221,10 +223,10 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
                                 layer.shaderFilters[surface.id] = {};
                             }
 
-                            layer.shaderFilters[surface.id].varFlatShade = item['shaderVarFlatShade'];
+                            layer.shaderFilters[surface.id].varFlatShade = item2['shaderVarFlatShade'];
                         }
 
-                        if (item['shaderFilter']) {
+                        if (item2['shaderFilter']) {
                             if (!layer.shaderFilters) {
                                 layer.shaderFilters = {};
                             }
@@ -233,7 +235,7 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
                                 layer.shaderFilters[surface.id] = {};
                             }
 
-                            layer.shaderFilters[surface.id].filter = item['shaderFilter'];
+                            layer.shaderFilters[surface.id].filter = item2['shaderFilter'];
                         }
                     }
                 }

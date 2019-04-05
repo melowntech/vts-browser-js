@@ -492,6 +492,42 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
 
                 break;
 
+            case 'map':
+
+                if (!Array.isArray(functionValue)) {
+                    functionError = true;
+                } else {
+
+                    finalValue = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
+
+                    var mapItems = functionValue[1];
+
+                    if (!Array.isArray(mapItems)) {
+                        functionError = true;
+                    } else {
+
+                        for (i = index, li = mapItems.length; i < li; i++) {
+                            var item = mapItems[i];
+
+                            if (!Array.isArray(item)) {
+                                functionError = true;
+                                break;
+                            } else {
+
+                                var itemValue = getLayerPropertyValueInner(layer, key, feature, lod, item[0], depth + 1);
+
+                                if (finalValue == itemValue) {
+                                    return getLayerPropertyValueInner(layer, key, feature, lod, item[1], depth + 1);
+                                }
+                            }
+                        }
+                    }
+
+                    return getLayerPropertyValueInner(layer, key, feature, lod, functionValue[2], depth + 1);
+                }
+
+                break;
+
             case 'linear':
             case 'linear2':
             case 'discrete':

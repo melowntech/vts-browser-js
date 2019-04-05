@@ -303,21 +303,22 @@ function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) 
                     processLayerFeature(type, feature, lod, slayer, featureIndex);
                 }
                 postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSWITCH_STORE, vswitch[i][0]);
-                //postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[i][0]});
             }
 
             postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSWITCH_END);
-            //postGroupMessage({'command':'addRenderJob', 'type':'vswitch-end'});
             return;
         }
     }
 
     if (!skipPack && layer['pack'] == true) {
+        globals.directPoints = [];
+
         postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PACK_BEGIN);
-        //postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
         processLayerFeature(type, feature, lod, layer, featureIndex, true);
         postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PACK_END);
-        //postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
+
+        if (globals.directPoints)
+
         return;
     }
 
@@ -405,7 +406,6 @@ function processGroup(group, lod) {
         bboxDelta[2] / bboxResolution];
 
     postGroupMessageFast(VTS_WORKERCOMMAND_GROUP_BEGIN, 0, {'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin}, [], "");
-    //postGroupMessage({'command':'beginGroup', 'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin});
 
     //process points
     var points = group['points'] || [];
@@ -423,13 +423,10 @@ function processGroup(group, lod) {
     processFeatures('polygon', polygons, lod, 'polygon', groupId);
 
     postGroupMessageLite(VTS_WORKERCOMMAND_GROUP_END, 0);
-    //postGroupMessage({'command':'endGroup'});
 
     if (globals.groupOptimize) {
         optimizeGroupMessages();
     }
-
-    //optimizeGroupMessagesFast();
 }
 
 

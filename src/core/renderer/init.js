@@ -118,6 +118,7 @@ RendererInit.prototype.initShaders = function() {
     renderer.progLabel48 = new GpuProgram(gpu, '#define DSIZE 48\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
     renderer.progLabel64 = new GpuProgram(gpu, '#define DSIZE 64\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
     renderer.progLabel96 = new GpuProgram(gpu, '#define DSIZE 96\n' + shaders.icon3VertexShader, shaders.text2FragmentShader); 
+    renderer.progLabel128 = new GpuProgram(gpu, '#define DSIZE 128\n' + shaders.icon3VertexShader, shaders.text2FragmentShader); 
 };
 
 RendererInit.prototype.initProceduralShaders = function() {
@@ -294,6 +295,7 @@ RendererInit.prototype.initImage = function() {
     renderer.textQuads48 = this.generateTextQuads(48);
     renderer.textQuads64 = this.generateTextQuads(64);
     renderer.textQuads96 = this.generateTextQuads(96);
+    renderer.textQuads128 = this.generateTextQuads(128);
 };
 
 

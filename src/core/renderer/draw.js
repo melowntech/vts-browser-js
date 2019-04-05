@@ -1867,6 +1867,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 var b = job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6, color2 = job.color2, j = 0;
 
+                if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLabel128; } else
                 if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLabel96; } else
                 if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLabel64; } else
                 if (bl > 128) { vbuff = renderer.textQuads48; prog = renderer.progLabel48; } else
@@ -2247,6 +2248,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
             var b = job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
 
+            if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLabel128; } else
             if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLabel96; } else
             if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLabel64; } else
             if (bl > 128) { vbuff = renderer.textQuads48; prog = renderer.progLabel48; } else
