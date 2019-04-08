@@ -538,7 +538,7 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 }
 
 
-function radixSortFeatures(renderer, input, inputSize, tmp) {
+function radixSortFeatures(renderer, input, inputSize, tmp, depthOnly) {
     var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
     var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, pp;
     var distanceFactor = renderer.config.mapFeaturesReduceFactor;
@@ -698,5 +698,84 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
 }
 
 
-export {processGMap, processGMap4, processGMap5, processGMap6};
+function radixDepthSortFeatures(renderer, input, inputSize, tmp) {
+    var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
+    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, pp;
+    var distanceFactor = renderer.config.mapFeaturesReduceFactor;
+    //var screenDistanceFactor = renderer.config.mapFeaturesReduceFactor2 * 0.5, e100 = 1.0/Math.exp(100);
+    //var centerOffset = renderer.config.mapFeaturesReduceFactor3;
+
+    var depthTest = true;
+
+    var sx = renderer.curSize[0], sy = renderer.curSize[1];
+    var cx = sx * 0.5, cy = sy * 0.5;
+    var invcx = 1.0 / (cx+0.0001), invcy = 1.0 / (cy+0.0001), dx, dy, yy;
+    var invsy = 1.0 / (sy+0.0001);
+
+    if (count.fill) {
+        count.fill(0);
+    } else { //IE fallback
+        for (i = 0; i < (256*4); i++) {
+            count[i] = 0;
+        }
+    }
+
+    // count all bytes in one pass
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        val = 1 - item.lastSubJob[5][2];
+        bfloat32[0] = val;
+        val = bunit32[0];
+        item.depth = val;
+        count[val & 0xFF]++;
+        count[((val >> 8) & 0xFF) + 256]++;
+        count[((val >> 16) & 0xFF) + 512]++;
+        count[((val >> 24) & 0xFF) + 768]++;
+    }
+
+    // create summed array
+    for (var j = 0; j < 4; j++) {
+        var t = 0, sum = 0, offset = j * 256;
+
+        for (i = 0; i < 256; i++) {
+            t = count[i + offset];
+            count[i + offset] = sum;
+            sum += t;
+        }
+    }
+
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        val = item.depth;
+        tmp[count[val & 0xFF]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = tmp[i];
+        val = item.depth;
+        input[count[((val >> 8) & 0xFF) + 256]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        val = item.depth;
+        tmp[count[((val >> 16) & 0xFF) + 512]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = tmp[i];
+        val = item.depth;
+        input[count[((val >> 24) & 0xFF) + 768]++] = item;
+    }
+
+    if (i == -123) { //debug
+        for (i = 0; i < inputSize; i++) {
+            item = input[i];
+            val = item.depth;
+            console.log('' + val +  ' ' + item.lastSubJob[0].id);
+        }
+    }
+
+    return input;
+}
+
+
+export {processGMap, processGMap4, processGMap5, processGMap6, radixDepthSortFeatures};
 

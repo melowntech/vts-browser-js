@@ -118,6 +118,8 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     
     this.jobHBuffer = {};
     this.jobHBufferSize = 0;
+    this.jobHSortBuffer = new Array(2048);
+
 
     for (var i = 0, li = this.jobZBuffer.length; i < li; i++) {
         this.jobZBuffer[i] = [];

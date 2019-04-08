@@ -11,6 +11,7 @@ MapView.prototype.parse = function(json) {
     //this.boundLayers = json["boundLayers"] || [];
     this.freeLayers = json['freeLayers'] || {};
     this.surfaces = {};    
+    this.options = json['options'] || {};    
 
     if (json['surfaces']) {
         var surfaces = json['surfaces']; 
@@ -30,6 +31,7 @@ MapView.prototype.parse = function(json) {
     }
     
     this.surfaces = JSON.parse(JSON.stringify(this.surfaces));
+    this.options = JSON.parse(JSON.stringify(this.options));
 };
 
 
@@ -38,6 +40,7 @@ MapView.prototype.getInfo = function() {
         //'description' : JSON.parse(JSON.stringify(this.description)),
         'surfaces' : JSON.parse(JSON.stringify(this.surfaces)),
         'freeLayers' : JSON.parse(JSON.stringify(this.freeLayers)),
+        'options' : JSON.parse(JSON.stringify(this.options)),
     };
 
     var renderer = this.map.renderer;

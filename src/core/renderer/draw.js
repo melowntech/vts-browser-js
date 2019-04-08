@@ -1,7 +1,8 @@
 
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
-import {processGMap as processGMap_, processGMap4 as processGMap4_, processGMap5 as processGMap5_, processGMap6 as processGMap6_ } from './gmap';
+import {processGMap as processGMap_, processGMap4 as processGMap4_, processGMap5 as processGMap5_,
+        processGMap6 as processGMap6_, radixDepthSortFeatures as radixDepthSortFeatures_ } from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
@@ -10,6 +11,7 @@ var processGMap = processGMap_;
 var processGMap4 = processGMap4_;
 var processGMap5 = processGMap5_;
 var processGMap6 = processGMap6_;
+var radixDepthSortFeatures = radixDepthSortFeatures_;
 
 
 var RendererDraw = function(renderer) {
@@ -583,6 +585,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
+    var sortHysteresis = renderer.config.mapSortHysteresis;
 
     renderer.geoRenderCounter++;
     renderer.totalJobs = 0;
@@ -612,6 +615,9 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var geoRenderCounter = renderer.geoRenderCounter;
     var job, key, hitmapRender = renderer.onlyHitLayers;
     //var logDebugInfo = false;
+
+    var hsortBuff = renderer.jobHSortBuffer;
+    var hsortBuffSize = 0;
 
     if (clearStencilPasses.length > 0) {
         clearPass = clearStencilPasses[0];
@@ -872,24 +878,35 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         job.mvp = mvp;
                     }                    
 
-                    if (job.type == VTS_JOB_VSPOINT) {
-                        var viewExtent = renderer.viewExtent;
-                        var slayers = job.vswitch[job.vswitchIndex];
+                    if (sortHysteresis) {
 
-                        if (slayers) {
-                            slayers = slayers[1];
+                        job.fade = fade;
 
-                            for (var k = 0, lk = slayers.length; k < lk; k++) {
-                                var sjob = slayers[k];
-                                sjob.updatePos = job.updatePos;
-                                sjob.mvp = job.mvp;
-                                sjob.mv = job.mv;
-                                this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, fade);
-                            }
-                        }
+                        hsortBuff[hsortBuffSize] = job;
+                        hsortBuffSize++;
 
                     } else {
-                        this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+
+                        if (job.type == VTS_JOB_VSPOINT) {
+                            var viewExtent = renderer.viewExtent;
+                            var slayers = job.vswitch[job.vswitchIndex];
+
+                            if (slayers) {
+                                slayers = slayers[1];
+
+                                for (var k = 0, lk = slayers.length; k < lk; k++) {
+                                    var sjob = slayers[k];
+                                    sjob.updatePos = job.updatePos;
+                                    sjob.mvp = job.mvp;
+                                    sjob.mv = job.mv;
+                                    this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, fade);
+                                }
+                            }
+
+                        } else {
+                            this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+                        }
+
                     }
 
                     job.updatePos = false;
@@ -898,6 +915,36 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 job.hysteresisBackup = null;
             }
         }
+    }
+
+    if (sortHysteresis && hsortBuffSize) {
+
+        radixDepthSortFeatures(renderer, hsortBuff, hsortBuffSize, renderer.gmap2);
+
+        for (i = 0; i < hsortBuffSize; i++) {
+            job = hsortBuff[i];
+
+            if (job.type == VTS_JOB_VSPOINT) {
+                var viewExtent = renderer.viewExtent;
+                var slayers = job.vswitch[job.vswitchIndex];
+
+                if (slayers) {
+                    slayers = slayers[1];
+
+                    for (var k = 0, lk = slayers.length; k < lk; k++) {
+                        var sjob = slayers[k];
+                        sjob.updatePos = job.updatePos;
+                        sjob.mvp = job.mvp;
+                        sjob.mv = job.mv;
+                        this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, job.fade);
+                    }
+                }
+
+            } else {
+                this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, job.fade);
+            }
+        }
+
     }
 
     if (forceUpdate) {
