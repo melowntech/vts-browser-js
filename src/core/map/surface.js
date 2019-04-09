@@ -150,6 +150,11 @@ MapSurface.prototype.parseJson = function(json) {
     //load stylesheet
     if (this.geodata) {
         var style = json['style'];
+
+        if (typeof this.credits === 'string') {
+            style = this.processUrl(style, '');
+        }
+
         this.originalStyle = style;
         
         if (style) {

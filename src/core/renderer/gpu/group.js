@@ -375,6 +375,10 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.ready = true;
     job.reduce = data['reduce'];
 
+    //if (job.id && job.id.indexOf('Longs Peak') != -1) {
+      //  console.log('tile: ' + JSON.stringify(tile.id));        
+    //}
+
     //console.log('id: ' + job.eventInfo['#id']);
 
     if (job.reduce) {

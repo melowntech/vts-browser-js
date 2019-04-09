@@ -451,6 +451,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 } else {
                     switch (functionName) {
                         case 'strlen':     return functionValue.length;
+                        case 'trim':       return functionValue.trim();
                         case 'str2num':    return parseFloat(functionValue);
                         case 'lowercase':  return functionValue.toLowerCase();
                         case 'uppercase':  return functionValue.toUpperCase();

@@ -67,7 +67,7 @@ InspectorLayers.prototype.init = function() {
         + '}'
 
         + '#vts-layers-boundlayers-items {'
-            + 'width: 250px;'
+            + 'width: 275px;'
             + 'overflow-y: scroll;'
             + 'overflow-x: hidden;'
             + 'height: 200px;'
@@ -220,6 +220,7 @@ InspectorLayers.prototype.initViews = function() {
     this.views[id] = {
         surfaces : {},
         freeLayers : {},
+        options : {},
         original : JSON.parse(JSON.stringify(map.getView()))
     };
 
@@ -228,6 +229,7 @@ InspectorLayers.prototype.initViews = function() {
         this.views[view] = {
             surfaces : {},
             freeLayers : {},
+            options : {},
             original : JSON.parse(JSON.stringify(map.getNamedView(view).getInfo()))
         };
     }
@@ -251,6 +253,7 @@ InspectorLayers.prototype.initViews = function() {
                 states.push({
                     id : layers[j],
                     alpha : 100,
+                    options : "{}",
                     enabled : false
                 });
             }
@@ -274,6 +277,7 @@ InspectorLayers.prototype.initViews = function() {
                 states.push({
                     id : layers[j],
                     alpha : 100,
+                    options : "{}",
                     enabled : false
                 });
             }
@@ -314,6 +318,7 @@ InspectorLayers.prototype.initViews = function() {
                         if (index != -1 && surface.layers[index]) {
                             surface.layers[index].enabled = true;
                             surface.layers[index].alpha = layers[i]['alpha'] ? (parseFloat(layers[i]['alpha'])*100) : 100;
+                            surface.layers[index].options = layers[i]['options'] ? JSON.stringify(layers[i]['options']) : "{}";
                             surface.layers.splice(i, 0, surface.layers.splice(index, 1)[0]);
                         }    
                     }
@@ -352,6 +357,7 @@ InspectorLayers.prototype.initViews = function() {
                         if (index != -1 && surface.layers[index]) {
                             freeLayer.layers[index].enabled = true;
                             freeLayer.layers[index].alpha = layers[i]['alpha'] ? (parseFloat(layers[i]['alpha'])*100) : 100;
+                            freeLayer.layers[index].options = layers[i]['options'] ? JSON.stringify(layers[i]['options']) : "{}";
                             freeLayer.layers.splice(i, 0, surface.layers.splice(index, 1)[0]);
                         }    
                     }
@@ -450,6 +456,7 @@ InspectorLayers.prototype.buildBoundLayers = function(id) {
             html += '<div class="vts-layers-item"><input id="vts-boundlayer-checkbox-' + layer.id + '" type="checkbox" ' + (layer.enabled ? 'checked' : '')   + '/>'
                      + '<div class="vts-layers-name">' + layer.id + '</div>'
                      + '<input id="vts-boundlayer-spinner-' + layer.id + '" type="number" title="Alpha" min="0" max="100" step="10" value="' + layer.alpha + '">'
+                     + '<button id="vts-boundlayer-obutton-' + layer.id + '" type="button" title="Options">O</button>' 
                      + '<button id="vts-boundlayer-ubutton-' + layer.id + '" type="button" title="Move Above">&uarr;</button>' 
                      + '<button id="vts-boundlayer-dbutton-' + layer.id + '" type="button" title="Move Bellow">&darr;</button>' 
                      + '</div>';
@@ -464,6 +471,8 @@ InspectorLayers.prototype.buildBoundLayers = function(id) {
             document.getElementById(htmlId).onchange = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'enable');
             htmlId = 'vts-boundlayer-spinner-' + layers[i].id;
             document.getElementById(htmlId).onchange = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'alpha');
+            htmlId = 'vts-boundlayer-obutton-' + layers[i].id;
+            document.getElementById(htmlId).onclick = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'options');
             htmlId = 'vts-boundlayer-ubutton-' + layers[i].id;
             document.getElementById(htmlId).onclick = this.switchBoundLayer.bind(this, layers[i].id, htmlId, 'up');
             htmlId = 'vts-boundlayer-dbutton-' + layers[i].id;
@@ -701,6 +710,9 @@ InspectorLayers.prototype.switchBoundLayer = function(id, htmlId, action) {
             case 'alpha':
                 layers[i].alpha = parseInt(element.value, 10);
                 break;
+            case 'options':
+                //display popup               
+                break;
             case 'up':
                 layers.splice(Math.max(0,i-1), 0, layers.splice(i, 1)[0]);
                 this.selectSurface(this.currentSurface);
@@ -794,11 +806,14 @@ InspectorLayers.prototype.switchFreeLayerProperty = function(htmlId, action) {
 InspectorLayers.prototype.applyMapView = function(jsonOnly) {
     var view = {
         'surfaces' : {},
-        'freeLayers' : {}
+        'freeLayers' : {},
+        'options' : {}
     };
 
     var sourceView = this.views[this.currentView];
     var surfaces = sourceView.surfaces, i, li, layers;
+
+    view['options'] = JSON.parse(JSON.stringify(sourceView.options));
     
     for (var key in surfaces) {
         if (surfaces[key].enabled) {
@@ -807,9 +822,16 @@ InspectorLayers.prototype.applyMapView = function(jsonOnly) {
             
             for (i = 0, li = layers.length; i < li; i++) {
                 if (layers[i].enabled) {
-                    
+
+                    var options = JSON.parse(JSON.stringify(layers[i].options));
+                    var options2 = JSON.stringify(options);
+
                     if (layers[i].alpha < 100) {
-                        surfaceBoundLayers.push({'id':layers[i].id, 'alpha':(layers[i].alpha*0.01).toFixed(2)});
+                        var item = {'id':layers[i].id, 'alpha':(layers[i].alpha*0.01).toFixed(2)};
+                        if (options2 != '{}') {
+                            item.options = options;
+                        }
+                        surfaceBoundLayers.push(item);
                     } else {
                         surfaceBoundLayers.push(layers[i].id);
                     }
@@ -831,7 +853,11 @@ InspectorLayers.prototype.applyMapView = function(jsonOnly) {
                 if (layers[i].enabled) {
                     
                     if (layers[i].alpha < 100) {
-                        freeLayerBoundLayers.push({'id':layers[i].id, 'alpha':parseFloat((layers[i].alpha*0.01).toFixed(2))});
+                        var item = {'id':layers[i].id, 'alpha':(layers[i].alpha*0.01).toFixed(2)};
+                        if (options2 != '{}') {
+                            item.options = options;
+                        }
+                        freeLayerBoundLayers.push(item);
                     } else {
                         freeLayerBoundLayers.push(layers[i].id);
                     }
