@@ -433,6 +433,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                 break;
 
             case 'strlen':
+            case 'trim':
             case 'str2num':
             case 'lowercase':
             case 'uppercase':

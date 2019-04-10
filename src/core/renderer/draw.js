@@ -907,9 +907,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
                             this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
                         }
 
+                        job.updatePos = false;
                     }
-
-                    job.updatePos = false;
                 }
 
                 job.hysteresisBackup = null;
@@ -943,6 +942,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
             } else {
                 this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, job.fade);
             }
+
+            job.updatePos = false;
         }
 
     }
