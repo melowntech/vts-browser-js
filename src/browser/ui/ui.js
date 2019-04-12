@@ -133,7 +133,19 @@ UI.prototype.setControlVisible = function(id, state, lockState) {
         if (typeof lockState !== 'undefined') {
             this.controls[id].setVisibleLock(lockState);
         }
-        
+
+        var renderer = this.browser.getRenderer();
+        var flags = renderer.getMarginFlags();
+
+        if (id == 'compass') flags |= 1;
+        if (id == 'search') flags |= 2;
+
+        if (this.config.bigScreenMargins) {
+            flags |= 4096;            
+        }
+
+        renderer.setMarginFlags(flags);
+       
         this.controls[id].setVisible(state);
     }
 };
@@ -163,7 +175,7 @@ UI.prototype.getMapElement = function() {
 
 UI.prototype.setParam = function(key) {
     switch (key) {
-    case 'controlCompass':     this.setControlVisible('comapss', this.config.controlCompass); break;
+    case 'controlCompass':     this.setControlVisible('compass', this.config.controlCompass); break;
     case 'controlZoom':        this.setControlVisible('zoom', this.config.controlZoom); break;
         //case "controlMeasure":     this.setControlVisible(this.config.controlCompass); break;
     case 'controlScale':       this.setControlVisible('scale', this.config.controlScale); break;

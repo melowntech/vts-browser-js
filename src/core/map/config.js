@@ -164,7 +164,7 @@ MapConfig.prototype.parseViews = function() {
 
     if (views) {
         for (var key in views) {
-            this.map.addNamedView(key, new MapView(this.map, views[key]));
+            this.map.addNamedView(key, new MapView(this.map, views[key], true));
         }
     }
 
@@ -178,7 +178,7 @@ MapConfig.prototype.parseViews = function() {
         return true;
     }
 
-    view = new MapView(this.map, view);
+    view = new MapView(this.map, view, true);
 
     this.map.initialView = view.getInfo();
     return true;

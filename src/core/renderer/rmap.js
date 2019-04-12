@@ -20,23 +20,31 @@ var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
 
 
 RendererRMap.prototype.clear = function() {
-    this.slx = this.renderer.curSize[0];
-    this.sly = this.renderer.curSize[1];
+    this.sx2 = this.renderer.curSize[0];
+    this.sy2 = this.renderer.curSize[1];
 
     //reduce by credits
-    this.sly = Math.max(1, this.sly - 55);
-    
+    this.sy2 = Math.max(1, this.sy2 - 55);
+    this.sy1 = 1;
+    this.sx1 = 1;
+
     //compass size
-    this.clx = 135;
-    this.cly = (150 - 35);
+    this.cx2 = 135;
+    this.cy1 = this.renderer.curSize[1] - 145;
 
     //search bar size
-    this.blx = 245;
-    this.bly = 45;
+    this.bx2 = 245;
+    this.by2 = 45;
 
+    this.lx = Math.floor(this.renderer.curSize[0] * this.blockSizeFactor) + 1;
+    this.ly = Math.floor(this.renderer.curSize[1] * this.blockSizeFactor) + 1;
 
-    this.lx = Math.floor(this.slx * this.blockSizeFactor) + 1;
-    this.ly = Math.floor(this.sly * this.blockSizeFactor) + 1;
+    if (this.renderer.marginFlags & 4096) {
+        this.sx1 = Math.min(34, this.sx2);
+        this.sx2 = Math.max(1, this.renderer.curSize[0] - 34);
+        this.sy1 = Math.min(50, this.sy2);
+        this.sy2 = Math.max(1, this.renderer.curSize[1] - 68);
+    }
 
     var totalNeeded = this.ly * this.lx;
     
@@ -69,16 +77,16 @@ RendererRMap.prototype.clear = function() {
 
 
 RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjob) {
-        var rectangles2 = this.rectangles2;
-        var rectangles2Count = this.rectangles2Count;
+    var rectangles2 = this.rectangles2;
+    var rectangles2Count = this.rectangles2Count;
 
-        rectangles2[rectangles2Count] = x1;
-        rectangles2[rectangles2Count+1] = y1;
-        rectangles2[rectangles2Count+2] = x2;
-        rectangles2[rectangles2Count+3] = y2;
-        rectangles2[rectangles2Count+4] = z;
-        rectangles2[rectangles2Count+5] = subjob;
-        this.rectangles2Count += 6;
+    rectangles2[rectangles2Count] = x1;
+    rectangles2[rectangles2Count+1] = y1;
+    rectangles2[rectangles2Count+2] = x2;
+    rectangles2[rectangles2Count+3] = y2;
+    rectangles2[rectangles2Count+4] = z;
+    rectangles2[rectangles2Count+5] = subjob;
+    this.rectangles2Count += 6;
 };
 
 RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
@@ -90,24 +98,24 @@ RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
     y3 += y2;
     
     //screen including credits
-    if (x1 < 0 || x2 > this.slx || y1 < 0 || y3 > this.sly) {
+    if (x1 < this.sx1 || x2 > this.sx2 || y1 < this.sy1 || y3 > this.sy2) {
         return false;
     }
 
     //compass
-    if (x1 < this.clx && x2 > 0 && y1 <= this.sly && y3 > (this.sly -this.cly)) {
+    if ((this.renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y3 > this.cy1) {
         return false;
     }
 
     //search bar
-    if (x1 < this.blx && x2 > 0 && y1 <= this.bly && y3 > 0) {
+    if ((this.renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y3 > 0) {
         return false;
     }
 
     return true;
 }
 
-RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
+RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, checkDepthMap) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
         rectangleIndex, t;
 
@@ -121,17 +129,17 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
     var y3 = y2 + subjob[1]; //add stick shift
     
     //screen including credits
-    if (x1 < 0 || x2 > this.slx || y1 < 0 || y3 > this.sly) {
+    if (x1 < this.sx1 || x2 > this.sx2 || y1 < this.sy1 || y3 > this.sy2) {
         return false;
     }
 
     //compass
-    if (x1 < this.clx && x2 > 0 && y1 <= this.sly && y3 > (this.sly -this.cly)) {
+    if ((this.renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y3 > this.cy1) {
         return false;
     }
 
     //search bar
-    if (x1 < this.blx && x2 > 0 && y1 <= this.bly && y3 > 0) {
+    if ((this.renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y3 > 0) {
         return false;
     }
 
@@ -198,6 +206,21 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any) {
     //remove rectangles
     for (var key in removeList) {
         this.removeRectangle(parseInt(key));
+    }
+
+    if (checkDepthMap) {
+
+        var reduce = checkDepthMap[2];
+        var depth = this.renderer.mapHack.getScreenDepth(checkDepthMap[0], checkDepthMap[1], (reduce[4] > 10000000));
+
+        if (depth[0]) {
+            var delta = depth[1] - reduce[4];
+            reduce[7] = delta;
+
+            if (!this.renderer.drawHiddenLabels && delta < checkDepthMap[3]) {
+                return false;
+            }
+        }
     }
 
     //there is no collision so we can store rectangle

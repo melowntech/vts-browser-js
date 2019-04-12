@@ -49,6 +49,7 @@ var MapDraw = function(map) {
         drawOrder : false,
         drawLabelBoxes : false,
         drawAllLabels : false,
+        drawHiddenLabels : false,
         drawEarth : true, 
         drawGridCells : false,
         drawTileCounter : 0,
@@ -174,6 +175,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.dirty = true;
     renderer.drawFog = this.debug.drawFog;
     renderer.debug = this.debug; 
+    renderer.mapHack = map;
 
     if (this.config.mapForceFrameTime) {
         if (this.config.mapForceFrameTime != -1) {
@@ -198,6 +200,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.drawLabelBoxes = this.debug.drawLabelBoxes;
     renderer.drawGridCells = this.debug.drawGridCells;
     renderer.drawAllLabels = this.debug.drawAllLabels;
+    renderer.drawHiddenLabels = this.debug.drawHiddenLabels;
     renderer.debug = this.debug;
     renderer.fmaxDist = Number.NEGATIVE_INFINITY;
     renderer.fminDist = Number.POSITIVE_INFINITY;
@@ -733,10 +736,10 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                         material = VTS_MATERIAL_FLAT;
                         break; 
                     }
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha, command.layer);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha, command.layer, command.surface);
                 } else {
                     //tile.renderHappen = true;
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha, command.layer);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha, command.layer, command.surface);
                 }
 
             }
@@ -875,7 +878,9 @@ MapDraw.prototype.setupDetailDegradation = function(degradeMore) {
         factor += degradeMore;        
     }
 
-    this.texelSizeFit = this.config.mapTexelSizeFit * Math.pow(2,factor);      
+    var dpiRatio = (window.devicePixelRatio || 1);
+
+    this.texelSizeFit = this.config.mapTexelSizeFit * Math.pow(2,factor) * dpiRatio;      
 };
 
 

@@ -178,8 +178,14 @@ MapSurfaceSequence.prototype.generateSurfaceSequence = function() {
 
 MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
     var view = this.map.currentView;
-    var key, item, layer, alpha, i, li;
+    var key, item, layer, alpha, i, li, item2;
     
+    //zero bound layer filters
+    var layers = this.map.boundLayers;
+    for (var key in layers) {
+        layers[key].shaderFilters = null;
+    }
+
     //surfaces
     for (key in view.surfaces) {
         var surfaceLayers = view.surfaces[key];
@@ -201,10 +207,36 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
 
                         alpha = 1;
                         if (typeof item['alpha'] !== 'undefined') {
-                            alpha = item['alpha'];
+                            alpha = parseFloat(item['alpha']);
                         }
 
                         surface.boundLayerSequence.push([layer, alpha]);
+
+                        item2 = item['options'] || item;
+
+                        if (item2['shaderVarFlatShade']) {
+                            if (!layer.shaderFilters) {
+                                layer.shaderFilters = {};
+                            }
+                            
+                            if (!layer.shaderFilters[surface.id]) {
+                                layer.shaderFilters[surface.id] = {};
+                            }
+
+                            layer.shaderFilters[surface.id].varFlatShade = item2['shaderVarFlatShade'];
+                        }
+
+                        if (item2['shaderFilter']) {
+                            if (!layer.shaderFilters) {
+                                layer.shaderFilters = {};
+                            }
+                            
+                            if (!layer.shaderFilters[surface.id]) {
+                                layer.shaderFilters[surface.id] = {};
+                            }
+
+                            layer.shaderFilters[surface.id].filter = item2['shaderFilter'];
+                        }
                     }
                 }
             }
@@ -236,10 +268,34 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
     
                             alpha = 1;
                             if (typeof item['alpha'] !== 'undefined') {
-                                alpha = item['alpha'];
+                                alpha = parseFloat(item['alpha']);
                             }
     
                             freeLayer.boundLayerSequence.push([layer, alpha]);
+
+                            if (item['shaderVarFlatShade']) {
+                                if (!layer.shaderFilters) {
+                                    layer.shaderFilters = {};
+                                }
+                                
+                                if (!layer.shaderFilters[surface.id]) {
+                                    layer.shaderFilters[surface.id] = {};
+                                }
+
+                                layer.shaderFilters[surface.id].varFlatShade = item['shaderVarFlatShade'];
+                            }
+
+                            if (item['shaderFilter']) {
+                                if (!layer.shaderFilters) {
+                                    layer.shaderFilters = {};
+                                }
+                                
+                                if (!layer.shaderFilters[surface.id]) {
+                                    layer.shaderFilters[surface.id] = {};
+                                }
+
+                                layer.shaderFilters[surface.id].filter = item['shaderFilter'];
+                            }
                         }
                     }
                 }

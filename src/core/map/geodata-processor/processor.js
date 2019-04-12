@@ -183,12 +183,14 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
         case 'scr-count6':
         case 'scr-count7':
             if (!params) {
-                params = [0.2,0,((rmode == 'scr-count6') ? 1 : 2)];
+                params = [0.2,0,((rmode == 'scr-count6') ? 1 : 2), 1, 1];
             } else {
                 params[0] = (isDef(params[0]) ? params[0] : 0.2);
                 params[1] = isDef(params[1]) ? params[1] : 0;
                 params[2] = isDef(params[2]) ? params[2] : ((rmode == 'scr-count6') ? 1 : 2);
-                params[3] = ppi;
+                params[3] = isDef(params[3]) ? params[3] : 1;
+                params[4] = isDef(params[4]) ? params[4] : 1;
+                params[5] = ppi;
                 config.mapFeaturesSortByTop = true;
             }
             break;
@@ -197,12 +199,16 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
     
     config.mapFeaturesReduceParams = params;
     config.mapFeaturesReduceFactor = params[2];
+    config.mapFeaturesReduceFactor2 = params[3];
+    config.mapFeaturesReduceFactor3 = params[4];
 
     //this.setFont('#default', this.renderer.font);
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data,
-                                        'geocent' : (!this.map.getNavigationSrs().isProjected()), 'metric': config.mapMetricUnits,
+                                        'geocent' : (!this.map.getNavigationSrs().isProjected()),
+                                        'metric': config.mapMetricUnits,
                                         'reduceMode': rmode,
                                         'reduceParams': config.mapFeaturesReduceParams,
+                                        'language': (navigator.language || navigator.userLanguage),
                                         'log': config.mapLogGeodataStyles } );
 
     var fonts = stylesheet.fonts;

@@ -298,6 +298,7 @@ Browser.prototype.initConfig = function() {
         jumpAllowed : false,
         sensitivity : [1, 0.06, 0.05],
         inertia : [0.81, 0.9, 0.7],
+        timeNormalizedInertia : false, // legacy inertia [0.8,0.8,0.8] sensitivity [0.5,0.4]
         legacyInertia : false, // legacy inertia [0.8,0.8,0.8] sensitivity [0.5,0.4]
         positionInUrl : false,
         positionUrlHistory : false,
@@ -323,6 +324,7 @@ Browser.prototype.initConfig = function() {
         searchValue : null,
         geojson : null,
         tiltConstrainThreshold : [0.5,1],
+        bigScreenMargins : false, //75,
         minViewExtent : 20, //75,
         maxViewExtent : Number.MAXINTEGER,
         autoRotate : 0,
@@ -406,6 +408,8 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'sensitivity':            this.config.sensitivity = utils.validateNumberArray(value, 3, [0,0,0], [10, 10, 10], [1, 0.12, 0.05]); break;
     case 'inertia':                this.config.inertia = utils.validateNumberArray(value, 3, [0,0,0], [0.99, 0.99, 0.99], [0.85, 0.9, 0.7]); break;
     case 'legacyInertia':          this.config.legacyInertia = utils.validateBool(value, false); break;
+    case 'timeNormalizedInertia':  this.config.timeNormalizedInertia = utils.validateBool(value, false); break;
+    case 'bigScreenMargins':       this.config.bigScreenMargins = utils.validateBool(value, false); break;
     case 'tiltConstrainThreshold': this.config.tiltConstrainThreshold = utils.validateNumberArray(value, 2, [0.5,1], [-Number.MAXINTEGER, -Number.MAXINTEGER], [Number.MAXINTEGER, Number.MAXINTEGER]); break;
     case 'geodata':                this.config.geodata = value; break;
     case 'geojson':                this.config.geojson = value; break;
@@ -470,41 +474,43 @@ Browser.prototype.getConfigParam = function(key) {
             return this.config.view;
         }
             
-    case 'panAllowed':           return this.config.panAllowed;
-    case 'rotationAllowed':      return this.config.rotationAllowed;
-    case 'zoomAllowed':          return this.config.zoomAllowed;
-    case 'jumpAllowed':          return this.config.jumpAllowed;
-    case 'sensitivity':          return this.config.sensitivity;
-    case 'inertia':              return this.config.inertia;
-    case 'legacyInertia':        return this.config.legacyInertia;
-    case 'navigationMode':       return this.config.navigationMode;
-    case 'constrainCamera':      return this.config.constrainCamera;
-    case 'positionInUrl':        return this.config.positionInUrl;
-    case 'positionUrlHistory':   return this.config.positionUrlHistory;
-    case 'controlCompass':       return this.config.controlCompass;
-    case 'controlZoom':          return this.config.controlZoom;
-    case 'controlMeasure':       return this.config.controlMeasure;
-    case 'controlScale':         return this.config.controlScale;
-    case 'controlLayers':        return this.config.controlLayers;
-    case 'controlSpace':         return this.config.controlSpace;
-    case 'controlSearch':        return this.config.controlSearch;
-    case 'controlLink':          return this.config.controlLink;
-    case 'controlGithub':        return this.config.controlGithub;
-    case 'controlMeasure':       return this.config.controlMeasure;
-    case 'controlMeasureLite':   return this.config.controlMeasureLite;
-    case 'controlLogo':          return this.config.controlLogo;
-    case 'controlFullscreen':    return this.config.controlFullscreen;
-    case 'controlCredits':       return this.config.controlCredits;
-    case 'controlLoading':       return this.config.controlLoading;
-    case 'controlSearchElement': return this.config.controlSearchElement;
-    case 'controlSearchValue':   return this.config.controlSearchValue;
-    case 'controlSearchUrl':     return this.config.controlSearchUrl;
-    case 'controlSearchSrs':     return this.config.controlSearchSrs;
-    case 'controlSearchFilter':  return this.config.controlSearchFilter;
-    case 'minViewExtent':        return this.config.minViewExtent;
-    case 'maxViewExtent':        return this.config.maxViewExtent;
-    case 'rotate':               return this.config.autoRotate;
-    case 'pan':                  return this.config.autoPan;
+    case 'panAllowed':             return this.config.panAllowed;
+    case 'rotationAllowed':        return this.config.rotationAllowed;
+    case 'zoomAllowed':            return this.config.zoomAllowed;
+    case 'jumpAllowed':            return this.config.jumpAllowed;
+    case 'sensitivity':            return this.config.sensitivity;
+    case 'inertia':                return this.config.inertia;
+    case 'legacyInertia':          return this.config.legacyInertia;
+    case 'timeNormalizedInertia':  return this.config.timeNormalizedInertia;
+    case 'bigScreenMargins':       return this.config.bigScreenMargins;
+    case 'navigationMode':         return this.config.navigationMode;
+    case 'constrainCamera':        return this.config.constrainCamera;
+    case 'positionInUrl':          return this.config.positionInUrl;
+    case 'positionUrlHistory':     return this.config.positionUrlHistory;
+    case 'controlCompass':         return this.config.controlCompass;
+    case 'controlZoom':            return this.config.controlZoom;
+    case 'controlMeasure':         return this.config.controlMeasure;
+    case 'controlScale':           return this.config.controlScale;
+    case 'controlLayers':          return this.config.controlLayers;
+    case 'controlSpace':           return this.config.controlSpace;
+    case 'controlSearch':          return this.config.controlSearch;
+    case 'controlLink':            return this.config.controlLink;
+    case 'controlGithub':          return this.config.controlGithub;
+    case 'controlMeasure':         return this.config.controlMeasure;
+    case 'controlMeasureLite':     return this.config.controlMeasureLite;
+    case 'controlLogo':            return this.config.controlLogo;
+    case 'controlFullscreen':      return this.config.controlFullscreen;
+    case 'controlCredits':         return this.config.controlCredits;
+    case 'controlLoading':         return this.config.controlLoading;
+    case 'controlSearchElement':   return this.config.controlSearchElement;
+    case 'controlSearchValue':     return this.config.controlSearchValue;
+    case 'controlSearchUrl':       return this.config.controlSearchUrl;
+    case 'controlSearchSrs':       return this.config.controlSearchSrs;
+    case 'controlSearchFilter':    return this.config.controlSearchFilter;
+    case 'minViewExtent':          return this.config.minViewExtent;
+    case 'maxViewExtent':          return this.config.maxViewExtent;
+    case 'rotate':                 return this.config.autoRotate;
+    case 'pan':                    return this.config.autoPan;
     }
 
     //if (ignoreCore) {

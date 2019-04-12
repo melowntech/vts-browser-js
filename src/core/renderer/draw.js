@@ -1,7 +1,8 @@
 
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
-import {processGMap as processGMap_, processGMap4 as processGMap4_, processGMap5 as processGMap5_ } from './gmap';
+import {processGMap as processGMap_, processGMap4 as processGMap4_, processGMap5 as processGMap5_,
+        processGMap6 as processGMap6_, radixDepthSortFeatures as radixDepthSortFeatures_ } from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
@@ -9,6 +10,8 @@ var math = math_;
 var processGMap = processGMap_;
 var processGMap4 = processGMap4_;
 var processGMap5 = processGMap5_;
+var processGMap6 = processGMap6_;
+var radixDepthSortFeatures = radixDepthSortFeatures_;
 
 
 var RendererDraw = function(renderer) {
@@ -582,6 +585,8 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var gpu = this.gpu;
     var gl = this.gl;
     var renderer = this.renderer;
+    var sortHysteresis = renderer.config.mapSortHysteresis;
+    var timerWait = renderer.config.mapHysteresisWait;
 
     renderer.geoRenderCounter++;
     renderer.totalJobs = 0;
@@ -610,6 +615,10 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var onlyAdvancedHitLayers = renderer.onlyAdvancedHitLayers;
     var geoRenderCounter = renderer.geoRenderCounter;
     var job, key, hitmapRender = renderer.onlyHitLayers;
+    //var logDebugInfo = false;
+
+    var hsortBuff = renderer.jobHSortBuffer;
+    var hsortBuffSize = 0;
 
     if (clearStencilPasses.length > 0) {
         clearPass = clearStencilPasses[0];
@@ -674,6 +683,13 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 job = buffer[j];
                 this.drawGpuJob(gpu, gl, renderer, job, screenPixelSize);
             }
+
+            /*if (logDebugInfo) {
+                for (j = 0; j < lj; j++) {
+                    job = buffer[j];
+                    console.log('' + j + ' ' + job.id);
+                }
+            }*/
         }
     
         renderer.jobsTimer3 = performance.now();
@@ -764,7 +780,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         if (!job.draw) {
                             job.timerShow += frameTime;
 
-                            if (job.timerShow > (job.hysteresis[0])) {
+                            if ((job.timerShow - timerWait) > (job.hysteresis[0])) {
                                 job.draw = true;
                                 job.timerShow = 0;
                             } else {
@@ -772,7 +788,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                             }
                         } else if (job.timerHide) {
                             job.draw = false;
-                            job.timerShow = (job.hysteresis[0]) * (1.0-(job.timerHide / (job.hysteresis[1])));
+                            job.timerShow = timerWait + (job.hysteresis[0]) * (1.0-(job.timerHide / (job.hysteresis[1])));
                         }
 
                         job.timerHide = 0;
@@ -793,7 +809,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                             }
                         } else if (job.timerShow) {
                             job.draw = true;
-                            job.timerHide = (job.hysteresis[1]) * (1.0-(job.timerShow / (job.hysteresis[0])));
+                            job.timerHide = (job.hysteresis[1]) * (1.0-((job.timerShow-timerWait) / (job.hysteresis[0])));
                         }
 
                         job.timerShow = 0;
@@ -808,19 +824,10 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         if (job.timerHide != 0) {
                             fade = job.timerHide / (job.hysteresis[1]+1);
                             fade = 1.0 - Math.min(1.0, fade);
-
-                            //for debug only
-                            /*
-                            var pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
-
-                            if (pp[1] > 1000) {  
-                                pp = pp;
-                            }*/
-
                         }
                     } else {
-                        if (job.timerShow != 0) {
-                            fade = job.timerShow / (job.hysteresis[0]+1);
+                        if (job.timerShow != 0 && (job.timerShow-timerWait) > 0) {
+                            fade = (job.timerShow -timerWait) / (job.hysteresis[0]+1);
                             fade = Math.min(1.0, fade);
                             draw = true;
                         }
@@ -863,32 +870,74 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         job.mvp = mvp;
                     }                    
 
-                    if (job.type == VTS_JOB_VSPOINT) {
-                        var viewExtent = renderer.viewExtent;
-                        var slayers = job.vswitch[job.vswitchIndex];
+                    if (sortHysteresis) {
 
-                        if (slayers) {
-                            slayers = slayers[1];
+                        job.fade = fade;
 
-                            for (var k = 0, lk = slayers.length; k < lk; k++) {
-                                var sjob = slayers[k];
-                                sjob.updatePos = job.updatePos;
-                                sjob.mvp = job.mvp;
-                                sjob.mv = job.mv;
-                                this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, fade);
-                            }
-                        }
+                        hsortBuff[hsortBuffSize] = job;
+                        hsortBuffSize++;
 
                     } else {
-                        this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
-                    }
 
-                    job.updatePos = false;
+                        if (job.type == VTS_JOB_VSPOINT) {
+                            var viewExtent = renderer.viewExtent;
+                            var slayers = job.vswitch[job.vswitchIndex];
+
+                            if (slayers) {
+                                slayers = slayers[1];
+
+                                for (var k = 0, lk = slayers.length; k < lk; k++) {
+                                    var sjob = slayers[k];
+                                    sjob.updatePos = job.updatePos;
+                                    sjob.mvp = job.mvp;
+                                    sjob.mv = job.mv;
+                                    this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, fade);
+                                }
+                            }
+
+                        } else {
+                            this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+                        }
+
+                        job.updatePos = false;
+                    }
                 }
 
                 job.hysteresisBackup = null;
             }
         }
+    }
+
+    if (sortHysteresis && hsortBuffSize) {
+
+        radixDepthSortFeatures(renderer, hsortBuff, hsortBuffSize, renderer.gmap2);
+
+        for (i = 0; i < hsortBuffSize; i++) {
+            job = hsortBuff[i];
+
+            if (job.type == VTS_JOB_VSPOINT) {
+                var viewExtent = renderer.viewExtent;
+                var slayers = job.vswitch[job.vswitchIndex];
+
+                if (slayers) {
+                    slayers = slayers[1];
+
+                    for (var k = 0, lk = slayers.length; k < lk; k++) {
+                        var sjob = slayers[k];
+                        sjob.updatePos = job.updatePos;
+                        sjob.mvp = job.mvp;
+                        sjob.mv = job.mv;
+                        this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, job.fade);
+                    }
+                }
+
+            } else {
+                this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, job.fade);
+            }
+
+            job.updatePos = false;
+        }
+
     }
 
     if (forceUpdate) {
@@ -1342,7 +1391,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_VSPOINT:
 
 
-        if (job.reduce && (job.reduce[0] != 7 && job.reduce[0] != 8 && job.reduce[0] != 9)) {
+        if (job.reduce && !(job.reduce[0] >= 7 && job.reduce[0] <= 10)) {
             var a, r = job.reduce;
 
             if (r[0] > 4) {
@@ -1499,9 +1548,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             vec3.normalize(job.center2, job.normal);
                 
             localTilt = -vec3.dot(camVec, job.normal);
+
             if (localTilt < Math.cos(math.radians(job.culling))) {
                 return;
             }
+            
+            /*
+            localTilt = math.degrees(Math.acos(localTilt));
+
+            if (localTilt > job.culling) {
+                return;
+            }*/
+
         } else if (job.visibility) {
 
             p2 = job.center2;
@@ -1632,7 +1690,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             //}
         }
 
-        var reduce78 = (job.reduce && (job.reduce[0] == 7 || job.reduce[0] == 8 || job.reduce[0] == 9));
+        var reduce78 = (job.reduce && (job.reduce[0] >= 7 && job.reduce[0] <= 10));
 
         if (!renderer.drawAllLabels && job.noOverlap) { 
             if (!pp) {
@@ -1660,7 +1718,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    if (!job.reduce || (job.reduce && (job.reduce[0] != 8 && job.reduce[0] != 9))) {  //not overlap code not used for reduce==8
+                    if (!job.reduce || (job.reduce && !(job.reduce[0] >= 8 && job.reduce[0] <= 10))) {  //not overlap code not used for reduce==8
                         depth = o[5] / l;
                     }
                 } 
@@ -1669,11 +1727,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
 
             if (reduce78) {
-                renderer.gmapUseVersion = (job.reduce[0] == 8 || job.reduce[0] == 9) ? (job.reduce[0] - 6) : 1;
+                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 10) ? (job.reduce[0] - 6) : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
 
-                if (renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
+                if (renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
                     if (l === null) {
                         p2 = job.center2;
                         p1 = renderer.cameraPosition;
@@ -1708,11 +1766,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
 
-                renderer.gmapUseVersion = (job.reduce[0] == 8 || job.reduce[0] == 9) ? (job.reduce[0] - 6) : 1;
+                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 10) ? (job.reduce[0] - 6) : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
 
-                if (renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
+                if (renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
                     if (l === null) {
                         p2 = job.center2;
                         p1 = renderer.cameraPosition;
@@ -1760,7 +1818,11 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                                      [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
                 if (job.reduce) {
-                    this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                    if (job.reduce[0] == 10) {
+                        this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
+                    } else {
+                        this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                    }
                 }
             }
         }
@@ -1784,61 +1846,120 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             this.drawText(Math.round(pp[0]-this.getTextSize(10,stmp)*0.5), Math.round(pp[1]), 10, stmp, [1,1,1,1], 0);
         }*/
 
+        prog = job.program; //renderer.progIcon;
+
         if (job.singleBuffer) {
             if (!pp) {
                 pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
             }
-            
-            var b = job.singleBuffer;
 
-            if (!job.singleBuffer2) {
-                job.singleBuffer2 = new Float32Array(b);
+            if (prog == renderer.progIcon) {
+                var b = job.singleBuffer;
+                prog = renderer.progImage;
 
-                var tx = 1 / texture.width, ty = 1 / texture.height;
-                b[2] *= tx; b[3] *= ty;
-                b[6] *= tx; b[7] *= ty;
-                b[10] *= tx; b[11] *= ty;
-                b[14] *= tx; b[15] *= ty;
+                if (!job.singleBuffer2) {
+                    job.singleBuffer2 = new Float32Array(b);
+
+                    var tx = 1 / texture.width, ty = 1 / texture.height;
+                    b[2] *= tx; b[3] *= ty;
+                    b[6] *= tx; b[7] *= ty;
+                    b[10] *= tx; b[11] *= ty;
+                    b[14] *= tx; b[15] *= ty;
+                }
+
+                if (job.updatePos) {
+                    pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+                    pp[1] -= stickShift;
+                }
+
+                var b2 = job.singleBuffer2;
+
+                b[0] = pp[0] + b2[0];
+                b[1] = pp[1] + b2[1];
+
+                b[4] = pp[0] + b2[4];
+                b[5] = pp[1] + b2[5];
+
+                b[8] = pp[0] + b2[8];
+                b[9] = pp[1] + b2[9];
+
+                b[12] = pp[0] + b2[12];
+                b[13] = pp[1] + b2[13];
+
+                gpu.useProgram(prog, ['aPosition']);
+                gpu.bindTexture(texture);
+
+                var vertices = renderer.rectVerticesBuffer;
+                gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
+                gl.vertexAttribPointer(prog.getAttribute('aPosition'), vertices.itemSize, gl.FLOAT, false, 0, 0);
+
+                var indices = renderer.rectIndicesBuffer;
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
+
+                prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
+                prog.setMat4('uData', job.singleBuffer );
+                prog.setVec4('uColor', color);
+                prog.setFloat('uDepth', pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2));
+
+                gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
+
+            } else {
+
+                var b = job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6, color2 = job.color2, j = 0;
+
+                if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLabel128; } else
+                if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLabel96; } else
+                if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLabel64; } else
+                if (bl > 128) { vbuff = renderer.textQuads48; prog = renderer.progLabel48; } else
+                if (bl > 64) { vbuff = renderer.textQuads32; prog = renderer.progLabel32; }
+                else { vbuff = renderer.textQuads16; prog = renderer.progLabel16; }
+
+                if (job.updatePos) {
+                    pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+                    pp[1] -= stickShift;
+                }
+
+                gpu.useProgram(prog, ['aPosition']);
+                prog.setSampler('uSampler', 0);
+                prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
+
+                prog.setVec4('uScale', [screenPixelSize[0], screenPixelSize[1], 1, stickShift*2]);
+                prog.setVec3('uOrigin', [pp[0],pp[1],pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2)]);
+                prog.setVec4('uColor', hitmapRender ? color : color2);
+                prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
+                lj = hitmapRender ? 1 : 2;
+
+                var vertexPositionAttribute = prog.getAttribute('aPosition');
+
+                prog.setVec4('uData', b);
+
+                //bind vetex positions
+                gl.bindBuffer(gl.ARRAY_BUFFER, vbuff);
+                gl.vertexAttribPointer(vertexPositionAttribute, vbuff.itemSize, gl.FLOAT, false, 0, 0);
+
+                //draw polygons
+                for(;j<lj;j++) {
+                    if (j == 1) {
+                        prog.setVec4('uColor', color);
+                        prog.setVec2('uParams', [job.outline[1], job.gamma[0]]);
+                    }
+
+                    for (var i = 0, li = files.length; i < li; i++) {
+                        var fontFiles = files[i];
+
+                        for (var k = 0, lk = fontFiles.length; k < lk; k++) {
+                            var file = fontFiles[k];
+                            prog.setFloat('uFile', Math.round(file+i*1000));
+                            gpu.bindTexture(job.fonts[i].getTexture(file));
+                            gl.drawArrays(gl.TRIANGLES, 0, vitems);
+                        }
+                    }
+                }
+
             }
-
-            prog = renderer.progImage;
-            var b2 = job.singleBuffer2;
-
-            b[0] = pp[0] + b2[0];
-            b[1] = pp[1] + b2[1];
-
-            b[4] = pp[0] + b2[4];
-            b[5] = pp[1] + b2[5];
-
-            b[8] = pp[0] + b2[8];
-            b[9] = pp[1] + b2[9];
-
-            b[12] = pp[0] + b2[12];
-            b[13] = pp[1] + b2[13];
-
-            gpu.useProgram(prog, ['aPosition']);
-            gpu.bindTexture(texture);
-
-            var vertices = renderer.rectVerticesBuffer;
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
-            gl.vertexAttribPointer(prog.getAttribute('aPosition'), vertices.itemSize, gl.FLOAT, false, 0, 0);
-
-            var indices = renderer.rectIndicesBuffer;
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
-
-            prog.setMat4('uProjectionMatrix', renderer.imageProjectionMatrix);
-
-            prog.setMat4('uData', b );
-
-            prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
-            prog.setFloat('uDepth', pp[2] * (1 + renderer.getZoffsetFactor(job.zbufferOffset) * 2));
-
-            gl.drawElements(gl.TRIANGLES, indices.numItems, gl.UNSIGNED_SHORT, 0);
             
             return;   
         }
-
-        prog = job.program; //renderer.progIcon;
 
         gpu.useProgram(prog, ['aPosition', 'aTexCoord', 'aOrigin']);
         prog.setSampler('uSampler', 0);
@@ -1909,7 +2030,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
     var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
         files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
-        o = job.noOverlap, localTilt;
+        o = job.noOverlap, localTilt, p2, p1, camVec;
 
     if (renderer.useSuperElevation) {
         if (job.seCounter != renderer.seCounter) {
@@ -1921,9 +2042,11 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     }
 
     if (job.hysteresis && job.id) {
+
+        /*
         if (job.culling != 180) {
-            var p2 = job.center2;
-            var p1 = renderer.cameraPosition;
+            p2 = job.center2;
+            p1 = renderer.cameraPosition;
             var camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
             vec3.normalize(camVec);
                 
@@ -2039,7 +2162,11 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                                  [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
             if (job.reduce) {
-                this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                if (job.reduce[0] == 10) {
+                    this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
+                } else {
+                    this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+                }
             }
         }
 
@@ -2081,7 +2208,12 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                              [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
         if (job.reduce) {
-            this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+            if (job.reduce[0] == 10) {
+                this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
+                //this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.fade, [1,0,0,1], 0.5);
+            } else {
+                this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
+            }
         }
     }
 
@@ -2159,6 +2291,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
 
             var b = job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
 
+            if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLabel128; } else
             if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLabel96; } else
             if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLabel64; } else
             if (bl > 128) { vbuff = renderer.textQuads48; prog = renderer.progLabel48; } else

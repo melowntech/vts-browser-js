@@ -378,7 +378,7 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
 };
 
 
-MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer) {
+MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer, surface) {
     if (this.gpuSubmeshes[index] == null && this.submeshes[index] != null && !this.submeshes[index].killed) {
         this.gpuSubmeshes[index] = this.submeshes[index].buildGpuMesh();
     }
@@ -399,7 +399,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var texcoords2Attr = null;
     var drawWireframe = draw.debug.drawWireframe;
     var useSuperElevation = renderer.useSuperElevation;
-    var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
+    //var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
+    var attributes = ['aPosition'];
 
     if (type == VTS_MATERIAL_DEPTH) {
         program = useSuperElevation ? renderer.progDepthTileSE : renderer.progDepthTile;
@@ -434,17 +435,59 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                     }
                 } 
                 
-                if (layer && layer.shaderFilter) {
-                    var id = (gpuMask) ? 'progTile3' : 'progTile2';
-                    var renderer = this.map.renderer;
-                    id += layer.shaderFilter;
+                if (layer && (layer.shaderFilters || layer.shaderFilter)) {
+                    var filter, id, flatShade;
 
-                    program = renderer.progMap[id];
+                    if (surface && layer.shaderFilters) {
+                        filter = layer.shaderFilters[surface.id];
 
-                    if (!program) {
-                        var gpu = renderer.gpu, pixelShader = gpuMask ? GpuShaders.tile3FragmentShader : GpuShaders.tile2FragmentShader;
-                        program = new GpuProgram(gpu, GpuShaders.tile2VertexShader, pixelShader.replace('__FILTER__', layer.shaderFilter));
-                        renderer.progMap[id] = program;
+                        if (filter) {
+                            if (filter.varFlatShade) {
+                                flatShade = true;
+                            }
+
+                            filter = filter.filter;
+                        }
+                    }
+
+                    if (!filter) {
+                        filter = layer.shaderFilter;
+                    }
+
+                    if (filter) {
+                        var id = (gpuMask) ? 'progTile3' : 'progTile2';
+                        var renderer = this.map.renderer;
+
+                        if (useSuperElevation) {
+                            id += 'se';
+                        }
+
+                        if (flatShade) {
+                            id += 'fs';
+                        }
+
+                        id += filter;
+
+                        program = renderer.progMap[id];
+
+                        if (!program) {
+                            var gpu = renderer.gpu, pixelShader;
+                            var vertexShader = '#define externalTex\n' + ((useSuperElevation) ? '#define applySE\n' : '') + GpuShaders.tileVertexShader;
+
+                            if (gpuMask) {
+                                pixelShader = '#define externalTex\n#define mask\n' + GpuShaders.tileFragmentShader;
+                            } else {
+                                pixelShader = '#define externalTex\n' + GpuShaders.tileFragmentShader;
+                            }
+
+                            if (flatShade) {
+                                pixelShader = '#define flatShadeVar\n' + pixelShader;
+                                vertexShader = '#define flatShadeVar\n' + vertexShader;
+                            }
+     
+                            program = new GpuProgram(gpu, vertexShader, pixelShader.replace('__FILTER__', filter));
+                            renderer.progMap[id] = program;
+                        }
                     }
                 }
                     

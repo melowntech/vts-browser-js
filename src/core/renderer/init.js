@@ -55,8 +55,8 @@ RendererInit.prototype.initShaders = function() {
     renderer.progTile2SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
     renderer.progTile3SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
 
-    renderer.progFlatShadeTile = new GpuProgram(gpu, '#define flatShade\n' + shaders.tileVertexShader, '#define flatShade\n' + shaders.tileFragmentShader);
-    renderer.progFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShade\n' + shaders.tileVertexShader, '#define flatShade\n' + shaders.tileFragmentShader);
+    renderer.progFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, '#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
+    renderer.progFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, '#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
 
     renderer.progDepthTile = new GpuProgram(gpu, '#define depth\n' + shaders.tileVertexShader, '#define depth\n' + shaders.tileFragmentShader);
     renderer.progDepthTileSE = new GpuProgram(gpu, '#define applySE\n#define depth\n' + shaders.tileVertexShader, '#define depth\n' + shaders.tileFragmentShader);
@@ -118,6 +118,7 @@ RendererInit.prototype.initShaders = function() {
     renderer.progLabel48 = new GpuProgram(gpu, '#define DSIZE 48\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
     renderer.progLabel64 = new GpuProgram(gpu, '#define DSIZE 64\n' + shaders.icon3VertexShader, shaders.text2FragmentShader);
     renderer.progLabel96 = new GpuProgram(gpu, '#define DSIZE 96\n' + shaders.icon3VertexShader, shaders.text2FragmentShader); 
+    renderer.progLabel128 = new GpuProgram(gpu, '#define DSIZE 128\n' + shaders.icon3VertexShader, shaders.text2FragmentShader); 
 };
 
 RendererInit.prototype.initProceduralShaders = function() {
@@ -294,6 +295,7 @@ RendererInit.prototype.initImage = function() {
     renderer.textQuads48 = this.generateTextQuads(48);
     renderer.textQuads64 = this.generateTextQuads(64);
     renderer.textQuads96 = this.generateTextQuads(96);
+    renderer.textQuads128 = this.generateTextQuads(128);
 };
 
 

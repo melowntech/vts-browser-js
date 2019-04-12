@@ -34,6 +34,8 @@ var featureCache = new Array(1024), featureCacheIndex = 0, finalFeatureCache = n
 
 function processLayerFeaturePass(type, feature, lod, layer, featureIndex, zIndex, eventInfo) {
 
+    globals.stylesheetLocals = {};
+
     switch(type) {
     case 'line-string':
         if (getLayerPropertyValue(layer, 'point', feature, lod) ||
@@ -85,9 +87,10 @@ function processFeatures(type, features, lod, featureType, group) {
                         break;
                     case 'scr-count6': 
                     case 'scr-count7': 
-                        layer['dynamic-reduce'] = [globals.reduceMode,importance];
-                        layer['label-no-overlap-margin'] = [reduceParams[0]*reduceParams[3], reduceParams[0]*reduceParams[3]];
-                        layer['icon-no-overlap-margin'] = [reduceParams[0]*reduceParams[3], reduceParams[0]*reduceParams[3]];
+                        layer['dynamic-reduce'] = [globals.reduceMode,importance, (typeof layer['importance-weight'] !== 'undefined') ? layer['importance-weight'] : 1 ];
+                        layer['label-no-overlap-margin'] = [reduceParams[0]*reduceParams[5], reduceParams[0]*reduceParams[5]];
+                        layer['icon-no-overlap-margin'] = [reduceParams[0]*reduceParams[5], reduceParams[0]*reduceParams[5]];
+                        layer['label-no-overlap-factor'] = ["div-by-dist",importance];
                         break;
                 }
             }
@@ -300,21 +303,22 @@ function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) 
                     processLayerFeature(type, feature, lod, slayer, featureIndex);
                 }
                 postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSWITCH_STORE, vswitch[i][0]);
-                //postGroupMessage({'command':'addRenderJob', 'type':'vswitch-store', 'viewExtent': vswitch[i][0]});
             }
 
             postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_VSWITCH_END);
-            //postGroupMessage({'command':'addRenderJob', 'type':'vswitch-end'});
             return;
         }
     }
 
     if (!skipPack && layer['pack'] == true) {
+        globals.directPoints = [];
+
         postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PACK_BEGIN);
-        //postGroupMessage({'command':'addRenderJob', 'type':'pack-begin'});
         processLayerFeature(type, feature, lod, layer, featureIndex, true);
         postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PACK_END);
-        //postGroupMessage({'command':'addRenderJob', 'type':'pack-end'});
+
+        if (globals.directPoints)
+
         return;
     }
 
@@ -402,7 +406,6 @@ function processGroup(group, lod) {
         bboxDelta[2] / bboxResolution];
 
     postGroupMessageFast(VTS_WORKERCOMMAND_GROUP_BEGIN, 0, {'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin}, [], "");
-    //postGroupMessage({'command':'beginGroup', 'id': group['id'], 'bbox': [bboxMin, bboxMax], 'origin': bboxMin});
 
     //process points
     var points = group['points'] || [];
@@ -420,13 +423,10 @@ function processGroup(group, lod) {
     processFeatures('polygon', polygons, lod, 'polygon', groupId);
 
     postGroupMessageLite(VTS_WORKERCOMMAND_GROUP_END, 0);
-    //postGroupMessage({'command':'endGroup'});
 
     if (globals.groupOptimize) {
         optimizeGroupMessages();
     }
-
-    //optimizeGroupMessagesFast();
 }
 
 
@@ -479,6 +479,7 @@ self.onmessage = function (e) {
             globals.reduceMode = data['reduceMode'];
             globals.reduceParams = data['reduceParams'];
             globals.log = data['log'];
+            globals.language = message['language'];
             processStylesheet(data['data']);
         }
         //postMessage({'command' : 'ready'});
@@ -505,6 +506,8 @@ self.onmessage = function (e) {
         globals.pixelSize = message['pixelSize'] || 1;
         globals.pixelFactor = message['dpr'] || 1;
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
+        globals.pixelsPerMM = (globals.pixelFactor / 96) / 2.54;
+        globals.invPixelsPerMM = 1.0 / globals.pixelsPerMM;
 
         data = JSON.parse(data);            
         exportedGeometries = [];

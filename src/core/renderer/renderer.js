@@ -21,6 +21,7 @@ var RenderRMap = RenderRMap_;
 var Renderer = function(core, div, onUpdate, onResize, config) {
     this.config = config || {};
     this.core = core;
+    this.marginFlags = 0;
     this.progTile = null;
     this.progHeightmap = null;
     this.progSkydome = null;
@@ -48,6 +49,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.drawGridCells = false;
     this.drawAllLabels = false;
     this.debug = {};
+    this.mapHack = null;
 
     this.geodataSelection = [];
     this.hoverFeatureCounter = 0;
@@ -116,6 +118,8 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     
     this.jobHBuffer = {};
     this.jobHBufferSize = 0;
+    this.jobHSortBuffer = new Array(2048);
+
 
     for (var i = 0, li = this.jobZBuffer.length; i < li; i++) {
         this.jobZBuffer[i] = [];
@@ -131,8 +135,11 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
     this.radixCountBuffer16 = new Uint16Array(256*4);
     this.radixCountBuffer32 = new Uint32Array(256*4);
-    this.radixOutputBufferUint32 = new Uint32Array(256*256);
-    this.radixOutputBufferFloat32 = new Uint32Array(256*256);
+    //this.radixOutputBufferUint32 = new Uint32Array(256*256);
+    //this.radixOutputBufferFloat32 = new Uint32Array(256*256);
+
+    this.buffFloat32 = new Float32Array(1);
+    this.buffUint32 = new Uint32Array(this.buffFloat32.buffer);
 
     this.layerGroupVisible = [];
     this.bitmaps = {};
@@ -523,6 +530,7 @@ Renderer.prototype.switchToFramebuffer = function(type, texture) {
     
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
     
+        gl.viewport(0, 0, width, height);
         this.gpu.setFramebuffer(null);
     
         this.camera.setAspect(width / height);
@@ -647,6 +655,22 @@ Renderer.prototype.hitTest = function(screenX, screenY) {
     this.lastHitPosition = [cameraPos[0] + screenRay[0]*depth, cameraPos[1] + screenRay[1]*depth, cameraPos[2] + screenRay[2]*depth];
 
     return [this.lastHitPosition[0], this.lastHitPosition[1], this.lastHitPosition[2], surfaceHit, screenRay, depth, cameraPos];
+};
+
+
+Renderer.prototype.getDepth = function(screenX, screenY) {
+    var x = Math.floor(screenX * (this.hitmapSize / this.curSize[0]));
+    var y = Math.floor(screenY * (this.hitmapSize / this.curSize[1]));
+
+    //get pixel value from framebuffer
+    var pixel = this.hitmapTexture.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1);
+
+    //convert rgb values into depth
+    var depth = (pixel[0] * (1.0/255)) + (pixel[1]) + (pixel[2]*255.0) + (pixel[3]*65025.0);// + (pixel[3]*16581375.0);
+
+    var surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
+
+    return [surfaceHit, depth];
 };
 
 

@@ -467,4 +467,14 @@ RendererInterface.prototype.setSuperElevation = function(h1, f1, h2, f2) {
 };
 
 
+RendererInterface.prototype.setMarginFlags = function(flags) {
+    return this.renderer.marginFlags = flags;
+};
+
+
+RendererInterface.prototype.getMarginFlags = function() {
+    return this.renderer.marginFlags;
+};
+
+
 export default RendererInterface;

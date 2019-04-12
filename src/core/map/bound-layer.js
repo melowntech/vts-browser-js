@@ -24,6 +24,7 @@ var MapBoundLayer = function(map, json, id) {
     this.baseUrlOrigin = this.map.url.baseUrlOrigin;
     this.ready = false;
     this.dataType = VTS_TEXTURETYPE_COLOR;
+    this.shaderFilters = null;
 
     //hack
     if (id == 'esri-world-imagery') {
@@ -71,9 +72,11 @@ MapBoundLayer.prototype.parseJson = function(json) {
     this.metaUrl = this.processUrl(json['metaUrl']);
     this.maskUrl = this.processUrl(json['maskUrl']);
     this.isTransparent = json['isTransparent'] || false;
-    this.shaderFilter = json['shaderFilter'] || null;
+    this.options = json['options'] || {};
     this.credits = json['credits'] || [];
     this.creditsUrl = null;
+
+    this.shaderFilter = this.options['shaderFilter'] || null;
 
     switch(json['dataType']) {
         default:

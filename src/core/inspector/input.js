@@ -200,7 +200,8 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 73:
                 case 105:
-                    debug.drawGridCells = !debug.drawGridCells; break; //key I pressed
+                    debug.drawHiddenLabels = !debug.drawHiddenLabels; break; //key I pressed
+                    //debug.drawGridCells = !debug.drawGridCells; break; //key I pressed
 
                 case 87:
                 case 119:
@@ -222,6 +223,12 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 case 117:
                     map.renderer.setSuperElevationState(!map.renderer.useSuperElevation);
                     break; //key U pressed
+
+                case 71:
+                case 103:
+                    //map.config.mapHysteresisWait = map.config.mapHysteresisWait ? 0 : 500;
+                    console.log('hyst wait' + map.config.mapHysteresisWait);
+                    break; //key G pressed
 
                 case 77:
                 case 109:

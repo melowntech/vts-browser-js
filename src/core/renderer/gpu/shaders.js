@@ -425,10 +425,11 @@ GpuShaders.icon3VertexShader =
         'if (corner==1) v = vec4(data.z, data.y, data2.z, data2.y);\n'+
         'if (corner==2) v = vec4(data.z, data.w, data2.z, data2.w);\n'+
         'if (corner==3) v = vec4(data.x, data.w, data2.x, data2.w);\n'+
-//        'vTexCoord = vec2(v.z, v.w) * uScale[2];\n'+
         'vTexCoord = vec2(v.z, v.w);\n'+
         'float file = floor(v.w/4.0);\n'+
-        'vTexCoord.y = mod(v.w,4.0);\n'+
+        //'vTexCoord.y = mod(v.w,4.0);\n'+
+        'vTexCoord.y = (v.w-file*4.0);\n'+
+
         'if (file != floor(uFile)) {\n'+
             'gl_Position = uProjectionMatrix * vec4(2.0, 0.0, 0.0, 2.0);\n'+
         '}else{\n'+
@@ -1098,8 +1099,8 @@ GpuShaders.tileVertexShader =
         'varying float vDepth;\n'+
     '#endif\n'+
 
-    '#ifdef flatShade\n'+
-        'attribute vec3 aBarycentric;\n'+
+    '#ifdef flatShadeVar\n'+
+        ///'attribute vec3 aBarycentric;\n'+
         'varying vec3 vBarycentric;\n'+
     '#endif\n'+
 
@@ -1138,7 +1139,7 @@ GpuShaders.tileVertexShader =
             'vDepth = camDist;\n'+
         '#endif\n'+
 
-        '#ifdef flatShade\n'+
+        '#ifdef flatShadeVar\n'+
             'vBarycentric = camSpacePos.xyz;\n'+
         '#endif\n'+
 
@@ -1178,7 +1179,7 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
         'varying float vDepth;\n'+
     '#endif\n'+
 
-    '#ifdef flatShade\n'+
+    '#ifdef flatShadeVar\n'+
         '#extension GL_OES_standard_derivatives : enable\n'+
         'varying vec3 vBarycentric;\n'+
     '#endif\n'+
@@ -1186,17 +1187,21 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
     'uniform vec4 uParams2;\n'+        
     'void main() {\n'+
 
-        '#ifdef flatShade\n'+
+        '#ifdef flatShadeVar\n'+
 
             '#ifdef GL_OES_standard_derivatives\n'+
                 'vec3 nx = dFdx(vBarycentric);\n'+
                 'vec3 ny = dFdy(vBarycentric);\n'+
                 'vec3 normal=normalize(cross(nx,ny));\n'+
-                'gl_FragColor = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
+                'vec4 flatShadeData = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
             '#else\n'+
-                'gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n'+
+                'vec4 flatShadeData = vec4(1.0);\n'+
             '#endif\n'+
 
+        '#endif\n'+
+
+        '#ifdef flatShade\n'+
+            'gl_FragColor = vec4(flatShadeData.xyz, 1.0);\n'+
         '#else\n'+
 
             'vec4 fogColor = vec4(uParams2.xyz, 1.0);\n'+
@@ -1214,9 +1219,9 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
                         'vec4 cc = mix(c, fogColor, vTexCoord.z);\n'+
                         '#ifdef mask\n'+
                             'vec4 c2 = texture2D(uSampler2, vTexCoord.xy);\n'+
-                            'cc.w = c.w * uParams2.z * c2.x;\n'+
+                            'cc.w = c.w * uParams2.w * c2.x;\n'+
                         '#else\n'+
-                            'cc.w = c.w * uParams2.z;\n'+
+                            'cc.w = c.w * uParams2.w;\n'+
                         '#endif\n'+
 
                         'gl_FragColor = cc;\n'+

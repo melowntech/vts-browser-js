@@ -310,7 +310,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     var hmin = 10000;
     var hmax = 0, h, r;
 
-    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
+    var divByDist = (renderer.config.mapFeaturesReduceFactor >= 1);
 
     if (divByDist) { // imp / dists
         if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
@@ -445,9 +445,6 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 
     var ppi = 96 * (window.devicePixelRatio || 1);
 
-    var maxRadius = renderer.config.mapFeaturesReduceParams[0] * ppi; //mapFeatureRadius
-    var maxHitcount = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //mapFeatureMaxOverlays
-
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
@@ -468,7 +465,7 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
     var hmin = 10000;
     var hmax = 0, h, r;
 
-    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
+    var divByDist = (renderer.config.mapFeaturesReduceFactor >= 1);
 
     if (divByDist) { // imp / dists
         if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
@@ -541,14 +538,46 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 }
 
 
-function radixSortUint32(renderer, input, inputSize) {
+function radixSortFeatures(renderer, input, inputSize, tmp, depthOnly) {
     var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
-    var output = renderer.radixOutputBufferUint32, val;
-    //renderer.radixOutputBufferFloat32;
+    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, pp;
+    var distanceFactor = renderer.config.mapFeaturesReduceFactor;
+    //var screenDistanceFactor = renderer.config.mapFeaturesReduceFactor2 * 0.5, e100 = 1.0/Math.exp(100);
+    //var centerOffset = renderer.config.mapFeaturesReduceFactor3;
+
+    var depthTest = true;
+
+    var sx = renderer.curSize[0], sy = renderer.curSize[1];
+    var cx = sx * 0.5, cy = sy * 0.5;
+    var invcx = 1.0 / (cx+0.0001), invcy = 1.0 / (cy+0.0001), dx, dy, yy;
+    var invsy = 1.0 / (sy+0.0001);
+
+    if (count.fill) {
+        count.fill(0);
+    } else { //IE fallback
+        for (i = 0; i < (256*4); i++) {
+            count[i] = 0;
+        }
+    }
 
     // count all bytes in one pass
-    for (var i = 0; i < inputSize; i++) {
-        val = input[i];
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        r = item[0].reduce;
+
+        // optical center
+        //pp = item[5]; 
+        //yy = Math.pow(pp[1] * invsy, centerOffset) * sy;
+        //dx = (cx - pp[0]) * invcx;
+        //dy = (cy - yy) * invcx;
+
+        val = r[3] - distanceFactor * Math.log(r[4]); // - screenDistanceFactor * Math.log(dx*dx + dy*dy + e100);
+        r[6] = val;
+        val += 10000;
+        if (val < 0) val = 0;
+        bfloat32[0] = val;
+        val = bunit32[0];
+        r[5] = val;
         count[val & 0xFF]++;
         count[((val >> 8) & 0xFF) + 256]++;
         count[((val >> 16) & 0xFF) + 512]++;
@@ -567,20 +596,31 @@ function radixSortUint32(renderer, input, inputSize) {
     }
 
     for (i = 0; i < inputSize; i++) {
-        val = input[i];
-        output[count[val & 0xFF]++] = val;
+        item = input[i];
+        val = item[0].reduce[5];
+        tmp[count[val & 0xFF]++] = item;
     }
     for (i = 0; i < inputSize; i++) {
-        val = output[i];
-        input[count[((val >> 8) & 0xFF) + 256]++] = val;
+        item = tmp[i];
+        val = item[0].reduce[5];
+        input[count[((val >> 8) & 0xFF) + 256]++] = item;
     }
     for (i = 0; i < inputSize; i++) {
-        val = input[i];
-        output[count[((val >> 16) & 0xFF) + 512]++] = val;
+        item = input[i];
+        val = item[0].reduce[5];
+        tmp[count[((val >> 16) & 0xFF) + 512]++] = item;
     }
     for (i = 0; i < inputSize; i++) {
-        val = output[i];
-        input[count[((val >> 24) & 0xFF) + 768]++] = val;
+        item = tmp[i];
+        val = item[0].reduce[5];
+        input[count[((val >> 24) & 0xFF) + 768]++] = item;
+    }
+
+    if (i == -123) { //debug
+        for (i = 0; i < inputSize; i++) {
+            val = input[i][0].reduce[5];
+            console.log('' + val +  ' ' + input[i][0].id);
+        }
     }
 
     return input;
@@ -592,103 +632,150 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
         return;
     }
 
+    var featuresPerSquareInch = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //labelsPerSquareInch
     var ppi = 96 * (window.devicePixelRatio || 1);
-
-    var maxRadius = renderer.config.mapFeaturesReduceParams[0] * ppi; //mapFeatureRadius
-    var maxHitcount = renderer.config.mapFeaturesReduceParams[1]; //0.6614; //mapFeatureMaxOverlays
-
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
+    var maxFeatures = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
-    var feature, feature2, pp, pp2, o;
+    var feature, feature2, pp, pp2, o, featureCount = 0;
     var drawAllLabels = renderer.drawAllLabels;
+
+    var depthTest = (renderer.config.mapFeaturesReduceFactor2 != 0);
+    var depthOffset = -renderer.config.mapFeaturesReduceFactor3;
+
+    //var depthTest = true;
+
+
+    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures;
 
     //get top features
     var featureCache = renderer.gmap;
     var featureCacheSize = renderer.gmapIndex;
+    var featureCache2 = renderer.gmap2;
 
-    var hcache = renderer.gmap2;
-    var hcacheSize = 1;
-    var hmap = renderer.gmap3;
-    var hmapSize = renderer.gmap3Size;
-    var hmap = renderer.gmap3;
-
-
-    var hmin = 10000;
-    var hmax = 0, h, r;
-
-    var divByDist = (renderer.config.mapFeaturesReduceFactor == 1);
-
-    if (divByDist) { // imp / dists
-        if (renderer.fmaxDist == Number.NEGATIVE_INFINITY || renderer.fminDist == Number.POSITIVE_INFINITY) {
-            return;
-        }
-
-        var ub = 1 - Math.log(renderer.fminDist) / Math.log(101);
-        var lb = -Math.log(renderer.fmaxDist) / Math.log(101); 
+    if (drawAllLabels) {
+        maxFeatures = featureCacheSize;
     }
 
     //filter features and sort them by importance
-    for (i = 0, li = featureCacheSize; i < li; i++) {
+    radixSortFeatures(renderer, featureCache, featureCacheSize, featureCache2);
+
+    for (i = featureCacheSize - 1; i >= 0; i--) {
         feature = featureCache[i];
-        if (!feature) {
-            continue;
-        }
 
-        pp = feature[5];
+        // check                
 
-        if (divByDist) {
-            r = feature[0].reduce;
-            h = Math.round(-5000 + ( ( Math.log(r[1]+1) - Math.log(r[4]) ) / Math.log(101) - lb ) / ( ub-lb ) * 10000) + 5000;
-            r[5] = h; //for debug
-        } else {
-            h = Math.round(feature[0].reduce[1]);            
-        }
-
-        if (h < 0) h = 0;
-        if (h >= 10000) h = 9999;
-        if (h < hmin) hmin = h;
-        if (h > hmax) hmax = h;
-
-        hmap[h][hmapSize[h]++] = feature;
-    }
-
-    var j, lj;
-
-    for (i = hmax, li = hmin; i >= 0; i--) {
-
-        if (hmapSize[i] > 0) {
-            var features = hmap[i];
-
-            for (j = 0, lj = hmapSize[i]; j < lj; j++) {
-                feature = features[j];
-
-                pp = feature[5];
-
-                // check                
-
-                //render job
-                if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
-                    pp = feature[5];
-                    o = feature[8];
-                    if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                        //hitCache[hitCacheSize] = feature;
-                    }
-                } else {
-                    if (feature[0].hysteresis) {
-                        renderer.jobHBuffer[feature[0].id] = feature[0];
-                    } else {
-                        renderer.drawnJobs++;
-                        draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
-                    }
+        //render job
+        if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
+            pp = feature[5];
+            o = feature[8];
+            
+            if (depthTest) {
+                if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true, [pp[0],pp[1]+feature[1],feature[0].reduce,depthOffset])) {
+                    featureCount++;
+                }
+            } else {
+                if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                    featureCount++;
                 }
             }
 
-            hmapSize[i] = 0;  //zero size
+            if (featureCount >= maxFeatures) {
+                return;
+            }
+
+        } else {
+            if (feature[0].hysteresis) {
+                renderer.jobHBuffer[feature[0].id] = feature[0];
+            } else {
+                renderer.drawnJobs++;
+                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+            }
         }
     }
+
 }
 
 
-export {processGMap, processGMap4, processGMap5, processGMap6};
+function radixDepthSortFeatures(renderer, input, inputSize, tmp) {
+    var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
+    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, pp;
+    var distanceFactor = renderer.config.mapFeaturesReduceFactor;
+    //var screenDistanceFactor = renderer.config.mapFeaturesReduceFactor2 * 0.5, e100 = 1.0/Math.exp(100);
+    //var centerOffset = renderer.config.mapFeaturesReduceFactor3;
+
+    var depthTest = true;
+
+    var sx = renderer.curSize[0], sy = renderer.curSize[1];
+    var cx = sx * 0.5, cy = sy * 0.5;
+    var invcx = 1.0 / (cx+0.0001), invcy = 1.0 / (cy+0.0001), dx, dy, yy;
+    var invsy = 1.0 / (sy+0.0001);
+
+    if (count.fill) {
+        count.fill(0);
+    } else { //IE fallback
+        for (i = 0; i < (256*4); i++) {
+            count[i] = 0;
+        }
+    }
+
+    // count all bytes in one pass
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        val = 1 - item.lastSubJob[5][2];
+        bfloat32[0] = val;
+        val = bunit32[0];
+        item.depth = val;
+        count[val & 0xFF]++;
+        count[((val >> 8) & 0xFF) + 256]++;
+        count[((val >> 16) & 0xFF) + 512]++;
+        count[((val >> 24) & 0xFF) + 768]++;
+    }
+
+    // create summed array
+    for (var j = 0; j < 4; j++) {
+        var t = 0, sum = 0, offset = j * 256;
+
+        for (i = 0; i < 256; i++) {
+            t = count[i + offset];
+            count[i + offset] = sum;
+            sum += t;
+        }
+    }
+
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        val = item.depth;
+        tmp[count[val & 0xFF]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = tmp[i];
+        val = item.depth;
+        input[count[((val >> 8) & 0xFF) + 256]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        val = item.depth;
+        tmp[count[((val >> 16) & 0xFF) + 512]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = tmp[i];
+        val = item.depth;
+        input[count[((val >> 24) & 0xFF) + 768]++] = item;
+    }
+
+    if (i == -123) { //debug
+        for (i = 0; i < inputSize; i++) {
+            item = input[i];
+            val = item.depth;
+            console.log('' + val +  ' ' + item.lastSubJob[0].id);
+        }
+    }
+
+    return input;
+}
+
+
+export {processGMap, processGMap4, processGMap5, processGMap6, radixDepthSortFeatures};
 

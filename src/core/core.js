@@ -66,7 +66,8 @@ var Core = function(element, config, coreInterface) {
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,
         mapSoftViewSwitch : true,
-
+        mapSortHysteresis : true,
+        mapHysteresisWait : 0,
         mapSeparateLoader : true,
         mapGeodataBinaryLoad : true,
         mapPackLoaderEvents : true,
@@ -87,6 +88,7 @@ var Core = function(element, config, coreInterface) {
         mapFeaturesReduceMode : 'scr-count1', //have to be 'scr-count1' because of legacy https://rigel.mlwn.se/store/map-config/high-terrain/
         mapFeaturesReduceParams : null,
         mapFeaturesReduceFactor : 1,
+        mapFeaturesReduceFactor2 : 1,
 
         mapDegradeHorizon : false,
         mapDegradeHorizonParams : [1, 1500, 97500, 3500], //[1, 3000, 15000, 7000],
@@ -559,7 +561,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.19.4';
+    return (full ? 'Core: ' : '') + '2.20.6';
 }
 
 

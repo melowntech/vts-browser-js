@@ -64,13 +64,12 @@ var Map = function(core, mapConfig, path, config, configStorage) {
     this.referenceFrame = {};
     this.credits = {};
     this.creditsByNumber = {};
-    this.surfaces = [];
+    this.surfaces = {};
     this.virtualSurfaces = {};
     this.glues = {};
-    this.freeLayers = [];
-    this.boundLayers = [];
-    this.dynamicLayers = [];
-    this.stylesheets = [];
+    this.freeLayers = {};
+    this.boundLayers = {};
+    this.stylesheets = {};
     this.processingTasks = [];
     this.processingTasks2 = [];
     this.geodataProcessors = [];
@@ -80,7 +79,7 @@ var Map = function(core, mapConfig, path, config, configStorage) {
     this.initialView = null;
     this.currentView = new MapView(this, {});
     this.currentViewString = '';
-    this.namedViews = [];
+    this.namedViews = {};
     this.viewCounter = 0;
     this.srsReady = false;
     this.surfaceCounter = 0;
@@ -900,6 +899,8 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapPackLoaderEvents':           this.config.mapPackLoaderEvents = utils.validateBool(value, true); break;
     case 'mapParseMeshInWorker':          this.config.mapParseMeshInWorker = utils.validateBool(value, true); break;
     case 'mapPackGeodataEvents':          this.config.mapPackGeodataEvents = utils.validateBool(value, true); break;
+    case 'mapSortHysteresis':             this.config.mapSortHysteresis = utils.validateBool(value, false); break;
+    case 'mapHysteresisWait':             this.config.mapHysteresisWait = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -981,6 +982,8 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapPackLoaderEvents':           return this.config.mapPackLoaderEvents;
     case 'mapParseMeshInWorker':          return this.config.mapParseMeshInWorker;
     case 'mapPackGeodataEvents':          return this.config.mapPackGeodataEvents;
+    case 'mapSortHysteresis':             return this.config.mapSortHysteresis;
+    case 'mapHysteresisWait':             return this.config.mapHysteresisWait;
     case 'mario':                         return this.config.mario;
     }
 };
@@ -1045,6 +1048,77 @@ Map.prototype.renderToImage = function(texture) {
     }
 
     return { 'width': w, 'height': h, 'data': data2};
+};
+
+
+Map.prototype.getScreenDepth = function(screenX, screenY, useFallback) {
+
+    if (useFallback) {
+
+        var cameraPos = this.camera.position;
+        var ray = this.renderer.getScreenRay(screenX, screenY), a, d;
+
+        if (this.getNavigationSrs().isProjected()) { //plane fallback
+            var planePos = [0,0,Math.min(-1000,this.referenceFrame.getGlobalHeightRange()[0])];
+            var planeNormal = [0,0,1];
+
+            d = vec3.dot(planeNormal, ray); //minification is wrong there
+            a = [planePos[0] - cameraPos[0], planePos[1] - cameraPos[1], planePos[2] - cameraPos[2]];
+            t = vec3.dot(a, planeNormal) / d;
+
+            if (t >= 0) {
+                return [true, t];
+            } else {
+                return [false, 1];
+            }
+
+        } else { //elipsoid fallback
+            var navigationSrsInfo = this.getNavigationSrs().getSrsInfo();
+            var planetRadius = navigationSrsInfo['b'] + this.referenceFrame.getGlobalHeightRange()[0];
+        
+            var offset = [cameraPos[0], cameraPos[1], cameraPos[2]];
+            a = vec3.dot(ray, ray); //minification is wrong there
+            var b = 2 * vec3.dot(ray, offset);
+            var c = vec3.dot(offset, offset) - planetRadius * planetRadius;
+            d = b * b - 4 * a * c;
+            
+            if (d > 0) {
+                d = Math.sqrt(d);
+                var t1 = (-b - d) / (2*a);
+                var t2 = (-b + d) / (2*a);
+                var t = (t1 < t2) ? t1 : t2;
+
+                return [true, t];
+            } else {
+                return [false, 1];
+            }
+        }
+
+    } else {
+
+        if (this.hitMapDirty) {
+            var tmp1 = this.draw.ndcToScreenPixel;
+
+            this.draw.drawHitmap();
+
+            this.draw.ndcToScreenPixel = tmp1;
+
+            var width = this.renderer.curSize[0], height = this.renderer.curSize[1];
+
+            var m = new Float32Array(16);
+            m[0] = 2.0/width; m[1] = 0; m[2] = 0; m[3] = 0;
+            m[4] = 0; m[5] = -2.0/height; m[6] = 0; m[7] = 0;
+            m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
+            m[12] = -width*0.5*m[0]; m[13] = -height*0.5*m[5]; m[14] = 0; m[15] = 1;
+
+            this.renderer.imageProjectionMatrix = m;
+            this.renderer.camera.update();
+        }
+
+        var res = this.renderer.getDepth(screenX, screenY);
+    }
+
+    return res;
 };
 
 

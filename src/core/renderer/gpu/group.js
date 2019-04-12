@@ -375,6 +375,10 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.ready = true;
     job.reduce = data['reduce'];
 
+    //if (job.id && job.id.indexOf('Longs Peak') != -1) {
+      //  console.log('tile: ' + JSON.stringify(tile.id));        
+    //}
+
     //console.log('id: ' + job.eventInfo['#id']);
 
     if (job.reduce) {
@@ -392,14 +396,20 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         }
 
         job.reduce[5] = 0; //zero debug value
+        job.reduce[6] = 0;
+        job.reduce[7] = 0;
 
-        if (job.reduce[0] == 7 || job.reduce[0] == 8 || job.reduce[0] == 9 || job.reduce[0] == 10) {
-            job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
+        if (job.reduce[0] >= 7 && job.reduce[0] <= 10) {
 
             if (job.reduce[0] == 10) {
-                job.reduce[1] = job.reduce[2];
+                job.reduce[1] = Math.abs(job.reduce[1]);
+                job.reduce[3] = job.reduce[1] * job.reduce[2];
+                job.reduce[2] = job.reduce[1];
+                job.reduce[4] = 0;
             } else {
-                if (this.renderer.config.mapFeaturesReduceFactor == 1) { // prom / dists
+                job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
+
+                if (this.renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
                     job.reduce[1] = job.reduce[2];
                 } else {
                     if (job.reduce[0] == 9) {
