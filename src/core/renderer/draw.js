@@ -586,6 +586,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
     var gl = this.gl;
     var renderer = this.renderer;
     var sortHysteresis = renderer.config.mapSortHysteresis;
+    var timerWait = renderer.config.mapHysteresisWait;
 
     renderer.geoRenderCounter++;
     renderer.totalJobs = 0;
@@ -779,7 +780,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         if (!job.draw) {
                             job.timerShow += frameTime;
 
-                            if (job.timerShow > (job.hysteresis[0])) {
+                            if ((job.timerShow - timerWait) > (job.hysteresis[0])) {
                                 job.draw = true;
                                 job.timerShow = 0;
                             } else {
@@ -787,7 +788,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                             }
                         } else if (job.timerHide) {
                             job.draw = false;
-                            job.timerShow = (job.hysteresis[0]) * (1.0-(job.timerHide / (job.hysteresis[1])));
+                            job.timerShow = timerWait + (job.hysteresis[0]) * (1.0-(job.timerHide / (job.hysteresis[1])));
                         }
 
                         job.timerHide = 0;
@@ -808,7 +809,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
                             }
                         } else if (job.timerShow) {
                             job.draw = true;
-                            job.timerHide = (job.hysteresis[1]) * (1.0-(job.timerShow / (job.hysteresis[0])));
+                            job.timerHide = (job.hysteresis[1]) * (1.0-((job.timerShow-timerWait) / (job.hysteresis[0])));
                         }
 
                         job.timerShow = 0;
@@ -823,19 +824,10 @@ RendererDraw.prototype.drawGpuJobs = function() {
                         if (job.timerHide != 0) {
                             fade = job.timerHide / (job.hysteresis[1]+1);
                             fade = 1.0 - Math.min(1.0, fade);
-
-                            //for debug only
-                            /*
-                            var pp = renderer.project2(job.center, renderer.camera.mvp, renderer.cameraPosition);
-
-                            if (pp[1] > 1000) {  
-                                pp = pp;
-                            }*/
-
                         }
                     } else {
-                        if (job.timerShow != 0) {
-                            fade = job.timerShow / (job.hysteresis[0]+1);
+                        if (job.timerShow != 0 && (job.timerShow-timerWait) > 0) {
+                            fade = (job.timerShow -timerWait) / (job.hysteresis[0]+1);
                             fade = Math.min(1.0, fade);
                             draw = true;
                         }
@@ -2218,6 +2210,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
         if (job.reduce) {
             if (job.reduce[0] == 10) {
                 this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
+                //this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.fade, [1,0,0,1], 0.5);
             } else {
                 this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
             }

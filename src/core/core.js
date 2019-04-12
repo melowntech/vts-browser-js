@@ -67,6 +67,7 @@ var Core = function(element, config, coreInterface) {
         mapRefreshCycles : 3,
         mapSoftViewSwitch : true,
         mapSortHysteresis : true,
+        mapHysteresisWait : 0,
         mapSeparateLoader : true,
         mapGeodataBinaryLoad : true,
         mapPackLoaderEvents : true,
@@ -560,7 +561,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.20.5';
+    return (full ? 'Core: ' : '') + '2.20.6';
 }
 
 

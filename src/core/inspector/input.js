@@ -224,6 +224,12 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                     map.renderer.setSuperElevationState(!map.renderer.useSuperElevation);
                     break; //key U pressed
 
+                case 71:
+                case 103:
+                    //map.config.mapHysteresisWait = map.config.mapHysteresisWait ? 0 : 500;
+                    console.log('hyst wait' + map.config.mapHysteresisWait);
+                    break; //key G pressed
+
                 case 77:
                 case 109:
                     map.loaderSuspended = !map.loaderSuspended;            

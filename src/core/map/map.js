@@ -900,6 +900,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapParseMeshInWorker':          this.config.mapParseMeshInWorker = utils.validateBool(value, true); break;
     case 'mapPackGeodataEvents':          this.config.mapPackGeodataEvents = utils.validateBool(value, true); break;
     case 'mapSortHysteresis':             this.config.mapSortHysteresis = utils.validateBool(value, false); break;
+    case 'mapHysteresisWait':             this.config.mapHysteresisWait = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -982,6 +983,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapParseMeshInWorker':          return this.config.mapParseMeshInWorker;
     case 'mapPackGeodataEvents':          return this.config.mapPackGeodataEvents;
     case 'mapSortHysteresis':             return this.config.mapSortHysteresis;
+    case 'mapHysteresisWait':             return this.config.mapHysteresisWait;
     case 'mario':                         return this.config.mario;
     }
 };
