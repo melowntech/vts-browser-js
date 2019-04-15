@@ -23,7 +23,7 @@ With VTS Browser JS you may combine and render diverse geospatial data in a sing
 - [Licence](#licence)
 - [How to Contribute](#how-to-contribute)
 
-<img width="888" alt="VTS Browser JS showcase" src="https://github.com/Melown/assets/blob/master/vts-browser-js/vts-browser-js-readme-2-880.jpg?raw=true">
+<img width="888" alt="VTS Browser JS showcase" src="https://github.com/melowntech/assets/blob/master/vts-browser-js/vts-browser-js-readme-2-880.jpg?raw=true">
 
 ## Features
 * [x] part of a comprehensive open-source 3D geospatial software Stack
