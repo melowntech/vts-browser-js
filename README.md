@@ -1,4 +1,4 @@
-# VTS Browser JS
+<img width="400" alt="VTS Browser JS" src="https://github.com/melowntech/assets/blob/master/vts-browser-js/vts-browser-js@2x.png?raw=true">
 
 **VTS Browser JS** is a powerful JavaScript 3D map rendering engine with a very small footprint (about 163 kB of gziped JS code). It provides almost all features for web-based 3D mapping you will ever want.
 
