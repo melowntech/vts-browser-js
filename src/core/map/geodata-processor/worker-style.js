@@ -838,8 +838,8 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
                     }
 
                     if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' ||
-                           value[0] == 'scr-count3' || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6' || value[0] == 'scr-count7') &&
-                        (typeof value[1] === 'number') && ((typeof value[2] === 'number') || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6' || value[0] == 'scr-count7'))) {
+                           value[0] == 'scr-count3' || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6' || value[0] == 'scr-count7' || value[0] == 'scr-count8') &&
+                        (typeof value[1] === 'number') && ((typeof value[2] === 'number') || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6' || value[0] == 'scr-count7' || value[0] == 'scr-count8'))) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
                     }

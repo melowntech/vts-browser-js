@@ -2,7 +2,7 @@
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
 import {processGMap as processGMap_, processGMap4 as processGMap4_, processGMap5 as processGMap5_,
-        processGMap6 as processGMap6_, radixDepthSortFeatures as radixDepthSortFeatures_ } from './gmap';
+        processGMap6 as processGMap6_, processGMap7 as processGMap7_, radixDepthSortFeatures as radixDepthSortFeatures_ } from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
@@ -11,6 +11,7 @@ var processGMap = processGMap_;
 var processGMap4 = processGMap4_;
 var processGMap5 = processGMap5_;
 var processGMap6 = processGMap6_;
+var processGMap7 = processGMap7_;
 var radixDepthSortFeatures = radixDepthSortFeatures_;
 
 
@@ -707,6 +708,9 @@ RendererDraw.prototype.drawGpuJobs = function() {
                     break;
                 case 4: //scr-count7
                     processGMap6(gpu, gl, renderer, screenPixelSize, this);
+                    break;
+                case 5: //scr-count8
+                    processGMap7(gpu, gl, renderer, screenPixelSize, this);
                     break;
             }
             renderer.gmapIndex = 0;
@@ -1727,7 +1731,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
 
             if (reduce78) {
-                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 10) ? (job.reduce[0] - 6) : 1;
+                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
 
@@ -1766,7 +1770,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
 
-                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 10) ? (job.reduce[0] - 6) : 1;
+                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
 

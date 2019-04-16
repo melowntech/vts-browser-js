@@ -777,5 +777,163 @@ function radixDepthSortFeatures(renderer, input, inputSize, tmp) {
 }
 
 
-export {processGMap, processGMap4, processGMap5, processGMap6, radixDepthSortFeatures};
+function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
+    if (!renderer.config.mapFeaturesReduceParams) {
+        return;
+    }
+
+    var tileCount = renderer.config.mapFeaturesReduceParams[5];
+    var featuresPerSquareInch = renderer.config.mapFeaturesReduceParams[1];
+    var ppi = 96 * (window.devicePixelRatio || 1);
+    var screenLX = renderer.curSize[0];
+    var screenLY = renderer.curSize[1];
+    var maxFeatures = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
+    var featuresPerTile = maxFeatures / (tileCount * tileCount); 
+
+    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
+    //var feature, feature2, pp, pp2, o, featureCount = 0;
+    //var drawAllLabels = renderer.drawAllLabels;
+
+    var depthTest = (renderer.config.mapFeaturesReduceFactor2 != 0);
+    var depthOffset = -renderer.config.mapFeaturesReduceFactor3;
+
+    //get top features
+    var featureCache = renderer.gmap;
+    var featureCacheSize = renderer.gmapIndex;
+    var topFeatures = renderer.gmapTop;
+    var featureCount2 = featureCount;
+
+    if (featureCount > featureCacheSize) {
+        featureCount2 = featureCacheSize;
+    }
+
+    //distribute top features
+    var hitMap = renderer.gmapHit, usedFeatures = 0;
+    var tileFeatures, count, feature;
+    var drawAllLabels = renderer.drawAllLabels;
+
+    var ix,iy,is,pp,tx,ty,mx,my,v,index,o,j;
+
+    ix = screenLX / tileSizeX;
+    iy = screenLY / tileSizeY;
+    mx = Math.round(ix);
+    my = Math.round(iy);
+    //ix = ix - mx;
+    //iy = iy - my;
+
+    var hitMap = renderer.gmapStore;
+    var hitMapCount = renderer.gmapHit;
+
+    if (renderer.drawGridCells) {
+        gpu.setState(renderer.lineLabelState);
+
+        var x = 0, y = 0, j, lj;
+
+        for (j = 0, lj = my; j < lj; j++) {
+            for (i = 0, li = mx; i < li; i++) {
+                x = tileSizeX * i;
+                y = tileSizeY * j;
+
+                v = a;
+
+                if (i >= mx) {
+                    if (j >= my) {
+                        v =d;
+                    } else {
+                        v = b;
+                    }
+
+                } else {
+                    if (j >= my) {
+                        v = b;
+                    }
+                }
+
+                draw.drawLineString([[x, y, 0.5], [x+tileSizeX, y, 0.5],
+                                     [x+tileSizeX, y+tileSizeY, 0.5], [x, y+tileSizeX, 0.5]], true, 1, colors[0,0,255,255], null, true, null, null, null);
+
+                draw.drawText(Math.round(x+5), Math.round(y + 5), 10, '' + v, colors[0,0,255,255], 0.5);
+            }
+        }
+
+    }
+
+
+    //clear hit-map
+    for (i = 0, li = mx * my; i < li; i++) {
+        hitMap[i] = null;
+    }
+
+    for (i = 0, li = featureCacheSize; i < li; i++) {
+        feature = featureCache[i];
+        if (!feature) {
+            continue;
+        }
+
+        pp = feature[5];
+
+        if (pp[0] < 30 || pp[0] >= (screenLX-30) || pp[1] < 30 || pp[1] >= (screenLY-30)) {
+            featureCache[i] = null;
+            continue;
+        }
+
+        tx = pp[0] / tileSize;
+        ty = pp[1] / tileSize;
+
+        index = Math.floor(tx) + Math.floor(ty) * (mx);
+
+        tileFeatures = hitMap[index];
+
+        if (tileFeatures) {
+            hitMap[index].push(i);
+        } else {
+            hitMap[index] = [i];
+            hitMapCount[index] = v;
+        }
+    }
+
+    for (i = 0, li = (mx) * (my); i < li; i++) {
+        tileFeatures = hitMap[i];
+
+        if (tileFeatures && tileFeatures.length) {
+            count = hitMapCount[i];
+
+            if (count > tileFeatures.length) {
+                count = tileFeatures.length;
+            }
+
+            //sortFeatures(tileFeatures, top, count, renderer);
+
+            for (j = 0; j < count; j++){
+                index = topFeatures[j]
+                feature = featureCache[index];
+                topFeatures[j] = null;
+                featureCache[index] = null;
+
+                //render job
+                if (!drawAllLabels && feature[6]) { //no-overlap 
+                    pp = feature[5];
+                    o = feature[8];
+                    if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob)) {
+                        renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
+                    }
+                } else {
+                    if (feature[0].hysteresis) {
+                        renderer.jobHBuffer[feature[0].id] = feature[0];
+                    } else {
+                        draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
+                    }
+                }
+            }
+
+        }
+    }
+
+
+
+
+}
+
+
+export {processGMap, processGMap4, processGMap5, processGMap6, processGMap7, radixDepthSortFeatures};
 

@@ -195,6 +195,21 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
             }
             break;
 
+        case 'scr-count8':
+            if (!params) {
+                params = [0.2, 0, 1, 1, 1, 5];
+            } else {
+                params[0] = (isDef(params[0]) ? params[0] : 0.2);
+                params[1] = isDef(params[1]) ? params[1] : 0;
+                params[2] = isDef(params[2]) ? params[2] : 1;
+                params[3] = isDef(params[3]) ? params[3] : 1;
+                params[4] = isDef(params[4]) ? params[4] : 1;
+                params[5] = isDef(params[5]) ? params[5] : 5;
+                params[6] = ppi;
+                config.mapFeaturesSortByTop = true;
+            }
+            break;
+
     }
     
     config.mapFeaturesReduceParams = params;
