@@ -51,13 +51,14 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', polygon, lod);
     
     var polygonColor = getLayerPropertyValue(style, 'polygon-color', polygon, lod);
+    var polygonStyle = getLayerPropertyValue(style, 'polygon-style', polygon, lod);
     
     var center = [0,0,0];
    
     // allocate vertex buffer
     var trisCount = surface.length / 3;
     var vertexCount = trisCount * 3;
-    var vertexBuffer = new Array (vertexCount * 3);
+    var vertexBuffer = new Float32Array(vertexCount * 3);
     
     var surfaceI = 0;
     var index = 0;
@@ -68,12 +69,14 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     var tileY = globals.tileY;
     var forceOrigin = globals.forceOrigin;
     var forceScale = globals.forceScale;    
+
+    debugger
     
     //console.log("vertexCount = " + vertexCount);
     //add tris
     for (var i = 0; i < vertexCount; i++) {
         offs = 3 * surface[surfaceI++];
-        p1 = [vertices[offs++], vertices[offs++], vertices[offs]];
+        p1 = [vertices[offs], vertices[offs+1], vertices[offs+2]];
         
         if (forceOrigin) {
             p1 = [p1[0] - tileX, p1[1] - tileY, p1[2]];
@@ -108,12 +111,22 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
 
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
     
+    var signature = JSON.stringify({
+        style: polygonStyle,
+        color : polygonColor,
+        zIndex : zIndex,
+        zOffset : zbufferOffset,
+        state : globals.hitState
+    });
+
+    debugger
+
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_FLAT_LINE, {
         'color':polygonColor, 'z-index':zIndex, 'center': center, 'advancedHit': advancedHit,
         'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
         'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
-        'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer, texcoordsBuffer], signature);
+        'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer], signature);
 };
 
 var createEmptyFeatureFromPolygon = function(polygon) {
