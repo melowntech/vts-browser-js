@@ -1091,12 +1091,26 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
     switch(job.type) {
     case VTS_JOB_FLAT_LINE:
+    case VTS_JOB_POLYGON:
         gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
 
         var debugWires = (gpu === 0); //just generate false value to avoid compiler warnings;
 
         if (useSuperElevation) {
+            prog = advancedHitPass ? job.program2 : renderer.progLineSE;
+        } else {            
+            prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
+        }
 
+        var flatShade = (!advancedHitPass && job.type == VTS_JOB_POLYGON && job.style == 1);
+
+        if (flatShade) { 
+            prog = useSuperElevation ? renderer.progCFlatShadeTileSE : renderer.progCFlatShadeTile;
+        }
+
+        gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
+
+        if (useSuperElevation) {
             var m = this.mBuffer;
             var se = renderer.superElevation;
 
@@ -1117,18 +1131,17 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             m[14] = renderer.earthRadius;
             m[15] = renderer.earthERatio;
 
-            prog = advancedHitPass ? job.program2 : renderer.progLineSE;
-            gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
             prog.setMat4('uParamsSE', m);
-
-        } else {            
-
-            prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
-            gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
         }
 
-        prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
-        prog.setVec4('uColor', color);
+        if (flatShade) { 
+            prog.setMat4('uMV', job.mv);
+            prog.setMat4('uProj', renderer.camera.getProjectionFMatrix(), renderer.getZoffsetFactor(job.zbufferOffset));
+            prog.setVec4('uColor', color);
+        } else {
+            prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+            prog.setVec4('uColor', color);
+        }
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
 

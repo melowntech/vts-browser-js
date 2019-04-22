@@ -72,6 +72,7 @@ plugins.push(
       'VTS_JOB_LABEL' :               8,
       'VTS_JOB_PACK' :                9,
       'VTS_JOB_VSPOINT' :             10,
+      'VTS_JOB_POLYGON' :             11,
 
       'VTS_TILE_COUNT_FACTOR' :       0.5,
 
@@ -98,15 +99,16 @@ plugins.push(
       'VTS_WORKER_TYPE_PIXEL_LINE' :       9,
       'VTS_WORKER_TYPE_PIXEL_TLINE' :      10,
       'VTS_WORKER_TYPE_LINE_LABEL' :       11,
-      'VTS_WORKER_TYPE_LINE_GEOMETRY' :    12,
+      'VTS_WORKER_TYPE_POLYGON' :          12,
+      'VTS_WORKER_TYPE_LINE_GEOMETRY' :    13,
 
-      'VTS_WORKER_TYPE_PACK_BEGIN' :      13,
-      'VTS_WORKER_TYPE_PACK_END' :        14,
+      'VTS_WORKER_TYPE_PACK_BEGIN' :      14,
+      'VTS_WORKER_TYPE_PACK_END' :        15,
 
-      'VTS_WORKER_TYPE_VSWITCH_BEGIN' :   15,
-      'VTS_WORKER_TYPE_VSWITCH_STORE' :   16,
-      'VTS_WORKER_TYPE_VSWITCH_END' :     17,
-      'VTS_WORKER_TYPE_VSPOINT' :         18,
+      'VTS_WORKER_TYPE_VSWITCH_BEGIN' :   16,
+      'VTS_WORKER_TYPE_VSWITCH_STORE' :   17,
+      'VTS_WORKER_TYPE_VSWITCH_END' :     18,
+      'VTS_WORKER_TYPE_VSPOINT' :         19,
 
       'VTS_IMPORATANCE_LOG_BASE' :    1.0017,
       'VTS_IMPORATANCE_INV_LOG' :     1355.6127860321758038669705901537 // 1/log(LOG_BASE)

@@ -53,6 +53,8 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     var polygonColor = getLayerPropertyValue(style, 'polygon-color', polygon, lod);
     var polygonStyle = getLayerPropertyValue(style, 'polygon-style', polygon, lod);
     
+    polygonStyle = (polygonStyle == 'flatshade') ? 1 : 0;
+
     var center = [0,0,0];
    
     // allocate vertex buffer
@@ -70,7 +72,7 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     var forceOrigin = globals.forceOrigin;
     var forceScale = globals.forceScale;    
 
-    debugger
+    //debugger
     
     //console.log("vertexCount = " + vertexCount);
     //add tris
@@ -119,11 +121,11 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
         state : globals.hitState
     });
 
-    debugger
+    //debugger
 
-    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_FLAT_LINE, {
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_POLYGON, {
         'color':polygonColor, 'z-index':zIndex, 'center': center, 'advancedHit': advancedHit,
-        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'style' : polygonStyle,
         'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer], signature);

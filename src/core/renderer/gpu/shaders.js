@@ -1182,6 +1182,11 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
     '#ifdef flatShadeVar\n'+
         '#extension GL_OES_standard_derivatives : enable\n'+
         'varying vec3 vBarycentric;\n'+
+
+        '#ifdef fogAndColor\n'+
+            'uniform vec4 uColor;\n'+
+        '#endif\n'+
+
     '#endif\n'+
 
     'uniform vec4 uParams2;\n'+        
@@ -1205,7 +1210,14 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
         '#endif\n'+
 
         '#ifdef flatShade\n'+
-            'gl_FragColor = vec4(flatShadeData.xyz, 1.0);\n'+
+
+            '#ifdef fogAndColor\n'+
+               // 'gl_FragColor = vec4(mix(uColor.xyz * flatShadeData.xyz, uParams2.xyz, vTexCoord.z), uColor.w);\n'+
+                'gl_FragColor = vec4(uColor.xyz * flatShadeData.xyz, uColor.w);\n'+
+            '#else\n'+
+                'gl_FragColor = vec4(flatShadeData.xyz, 1.0);\n'+
+            '#endif\n'+
+
         '#else\n'+
 
             'vec4 fogColor = vec4(uParams2.xyz, 1.0);\n'+

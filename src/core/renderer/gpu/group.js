@@ -40,6 +40,7 @@ GpuGroup.prototype.kill = function() {
 
         switch(job.type) {
         case VTS_JOB_FLAT_LINE:
+        case VTS_JOB_POLYGON:
             if (job.vertexPositionBuffer) this.gl.deleteBuffer(job.vertexPositionBuffer);
             if (job.vertexElementBuffer) this.gl.deleteBuffer(job.vertexElementBuffer);
             break;
@@ -117,7 +118,13 @@ GpuGroup.prototype.addLineJob = function(data) {
     var vertices = data.vertexBuffer;
 
     var job = {};
-    job.type = VTS_JOB_FLAT_LINE;
+
+    if (data.type == VTS_WORKER_TYPE_POLYGON) {
+        job.type = VTS_JOB_POLYGON;
+    } else {
+        job.type = VTS_JOB_FLAT_LINE;
+    }
+
     job.program = this.renderer.progLine;
     job.color = this.convertColor(data['color']);
     job.zIndex = data['z-index'] + 256;
@@ -128,6 +135,7 @@ GpuGroup.prototype.addLineJob = function(data) {
     job.advancedHit = data['advancedHit'];
     job.hitable = data['hitable'];
     job.eventInfo = data['eventInfo'];
+    job.style = data['style'] || 0;
     job.state = data['state'];
     job.center = data['center'];
     job.lod = data['lod'];
@@ -636,6 +644,7 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
     }
 
     switch(type) {
+        case VTS_WORKER_TYPE_POLYGON:
         case VTS_WORKER_TYPE_FLAT_LINE:
             data.type = type;
             length = view.getUint32(index); index += 4;
@@ -739,6 +748,7 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
 
 GpuGroup.prototype.addRenderJob = function(data, tile) {
     switch(data['type']) {
+    case 'polygon':
     case 'flat-line':     this.addLineJob(data); break;
     case 'flat-tline':
     case 'flat-rline':
