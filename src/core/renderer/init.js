@@ -380,6 +380,17 @@ RendererInit.prototype.initLines = function() {
     renderer.labelState = gpu.createState({blend:true, culling: false, zequal: true});
     renderer.stencilLineHitState = gpu.createState({blend:false, stencil:true, culling: false});
     renderer.lineLabelHitState = gpu.createState({blend:false, culling: false});
+
+    renderer.polygonB1S1C1tate = gpu.createState({blend:true, stencil:true, culling: true});
+    renderer.polygonB1S0C1tate = gpu.createState({blend:true, stencil:false, culling: true});
+    renderer.polygonB1S1C0tate = renderer.stencilLineState;
+    renderer.polygonB1S0C0tate = gpu.createState({blend:true, stencil:false, culling: false});
+
+    renderer.polygonB0S1C1tate = gpu.createState({blend:false, stencil:true, culling: true});
+    renderer.polygonB0S0C1tate = gpu.createState({blend:false, stencil:false, culling: true});
+    renderer.polygonB0S1C0tate = renderer.stencilLineHitState;
+    renderer.polygonB0S0C0tate = gpu.createState({blend:false, stencil:false, culling: false});
+
 };
 
 

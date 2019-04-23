@@ -52,8 +52,11 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     
     var polygonColor = getLayerPropertyValue(style, 'polygon-color', polygon, lod);
     var polygonStyle = getLayerPropertyValue(style, 'polygon-style', polygon, lod);
+    var polygonStencil = getLayerPropertyValue(style, 'polygon-use-stencil', polygon, lod);
+    var polygonCulling = getLayerPropertyValue(style, 'polygon-culling', polygon, lod);
     
     polygonStyle = (polygonStyle == 'flatshade') ? 1 : 0;
+    polygonCulling = (polygonCulling == 'back') ? 1 : 0;
 
     var center = [0,0,0];
    
@@ -115,6 +118,8 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     
     var signature = JSON.stringify({
         style: polygonStyle,
+        culling: polygonCulling, 
+        stencil: polygonStencil, 
         color : polygonColor,
         zIndex : zIndex,
         zOffset : zbufferOffset,
@@ -124,8 +129,8 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     //debugger
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_POLYGON, {
-        'color':polygonColor, 'z-index':zIndex, 'center': center, 'advancedHit': advancedHit,
-        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'style' : polygonStyle,
+        'color':polygonColor, 'z-index':zIndex, 'center': center, 'advancedHit': advancedHit, 'culling': polygonCulling, 
+        'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'style' : polygonStyle, 'stencil': polygonStencil, 
         'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset,
         'lod':(globals.autoLod ? null : globals.tileLod) }, [vertexBuffer], signature);

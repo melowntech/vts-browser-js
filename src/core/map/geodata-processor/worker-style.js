@@ -1113,9 +1113,11 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'label-no-overlap-factor': return validateValue(layerId, key, value, 'object');
     case 'label-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
 
-    case 'polygon':         return validateValue(layerId, key, value, 'boolean');
-    case 'polygon-style':   return validateValue(layerId, key, value, 'string');
-    case 'polygon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'polygon':             return validateValue(layerId, key, value, 'boolean');
+    case 'polygon-style':       return validateValue(layerId, key, value, 'string');
+    case 'polygon-use-stencil': return validateValue(layerId, key, value, 'boolean');
+    case 'polygon-culling':     return validateValue(layerId, key, value, 'string');
+    case 'polygon-color':       return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
     case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAX_VALUE);
@@ -1217,8 +1219,10 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'label-no-overlap-factor': return null;
     case 'label-no-overlap-margin': return [5,5];
        
-    case 'polygon':        return false;
-    case 'polygon-style':  return 'solid';
+    case 'polygon':             return false;
+    case 'polygon-style':       return 'solid';
+    case 'polygon-use-stencil': return true;
+    case 'polygon-culling':     return 'none';
     case 'polygon-color':  return [255,255,255,255];
 
     case 'z-index':        return 0;

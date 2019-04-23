@@ -136,6 +136,8 @@ GpuGroup.prototype.addLineJob = function(data) {
     job.hitable = data['hitable'];
     job.eventInfo = data['eventInfo'];
     job.style = data['style'] || 0;
+    job.stencil = (data['stencil'] === false) ? false : true;
+    job.culling = data['culling'] || 0;
     job.state = data['state'];
     job.center = data['center'];
     job.lod = data['lod'];

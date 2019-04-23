@@ -1092,7 +1092,24 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     switch(job.type) {
     case VTS_JOB_FLAT_LINE:
     case VTS_JOB_POLYGON:
-        gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
+
+        if (job.type == VTS_JOB_POLYGON) {
+            if (hitmapRender) {
+                if (job.stencil) {
+                    gpu.setState(job.culling ? renderer.polygonB0S1C1tate : renderer.polygonB0S1C0tate);
+                } else {
+                    gpu.setState(job.culling ? renderer.polygonB0S0C1tate : renderer.polygonB0S0C0tate);
+                }
+            } else {
+                if (job.stencil) {
+                    gpu.setState(job.culling ? renderer.polygonB1S1C1tate : renderer.polygonB1S1C0tate);
+                } else {
+                    gpu.setState(job.culling ? renderer.polygonB1S0C1tate : renderer.polygonB1S0C0tate);
+                }
+            }
+        } else {
+            gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
+        }
 
         var debugWires = (gpu === 0); //just generate false value to avoid compiler warnings;
 
