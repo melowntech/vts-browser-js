@@ -435,7 +435,7 @@ MapGeodataBuilder.prototype.getPolygonCenter = function(shape, projected, proj) 
     }
 };
 
-
+//same as addPolygon but works on poles
 MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightMode, properties, id, srs) {
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
@@ -613,7 +613,7 @@ MapGeodataBuilder.prototype.insidePolygon = function(point, vertices, verticesLe
     return inside;
 };    
 
-
+//same as addPolygon but works on poles and is subivided
 MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightMode, properties, id, srs) {
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
@@ -701,19 +701,55 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
         j+=3;
     }
 
+    //check curve orientation (have to be clockwise)
+    var angle = 0, x1, y1, x2, y2, index;
+    for (i = 0, li = shape.length * 3; i < li; i+=3) {
+        x1 = flatShape[i]; 
+        y1 = flatShape[i+1]; 
+
+        if (i < li - 3) {
+            x2 = flatShape[i+3]; 
+            y2 = flatShape[i+4]; 
+        } else {
+            x2 = flatShape[0]; 
+            y2 = flatShape[1]; 
+        }
+
+        //angle += (x2 - x1) * (y2 + y1);
+        angle += (x1 * y2);
+        angle -= (x2 * y1);
+    }    
+    
+    if (angle < 0) { //convert to clokwise
+        var vertices2 = vertices.slice();
+        var flatShape2 = flatShape.slice();
+
+        for (i = 0, li = shape.length * 3; i < li; i+=3) {
+            vertices[i] = vertices2[li - i - 3];
+            vertices[i+1] = vertices2[li - i - 2];
+            vertices[i+2] = vertices2[li - i - 1];
+
+            flatShape[i] = flatShape2[li - i - 3];
+            flatShape[i+1] = flatShape2[li - i - 2];
+            flatShape[i+2] = flatShape2[li - i - 1];
+        }
+    }
+
+
     flatHoles = new Array(holes.length);
     holesIndices = new Array(holes.length);
 
     for (i = 0, li = holes.length; i < li; i++) {
         hole = holes[i];
-        holesIndices[i] = Math.round(j/3);
+        index = Math.round(j/3);
+        holesIndices[i] = index;
 
         if (i < trueHolesCount) {
             border = new Array(hole.length);
             borders[i + 1] = border;
         }
 
-        l = Math.floor(j /3);
+        l = index;
 
         for (k = 0, lk = hole.length; k < lk; k++) {
             coords = hole[k];
@@ -736,9 +772,46 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
             j+=3;
 
             if (i < trueHolesCount) {
-                border[k] = l++;
+                border[k] = l;
+                l++;
             }
         }
+
+        //check curve orientation (have to be clockwise)
+        angle = 0;
+        index *= 3;
+        for (k = 0, lk = hole.length * 3; k < lk; k+=3) {
+            x1 = flatShape[index + k]; 
+            y1 = flatShape[index + k+1]; 
+
+            if (k < lk - 3) {
+                x2 = flatShape[index + k+3]; 
+                y2 = flatShape[index + k+4]; 
+            } else {
+                x2 = flatShape[index + 0]; 
+                y2 = flatShape[index + 1]; 
+            }
+
+            //angle += (x2 - x1) * (y2 + y1);
+            angle += (x1 * y2);
+            angle -= (x2 * y1);
+        }    
+        
+        if (angle > 0) { //convert to clokwise
+            var vertices2 = vertices.slice();
+            var flatShape2 = flatShape.slice();
+
+            for (k = 0, lk = hole.length * 3; k < lk; k+=3) {
+                vertices[index + k] = vertices2[index + lk - k - 3];
+                vertices[index + k+1] = vertices2[index + lk - k - 2];
+                vertices[index + k+2] = vertices2[index + lk - k - 1];
+
+                flatShape[index + k] = flatShape2[index + lk - k - 3];
+                flatShape[index + k+1] = flatShape2[index + lk - k - 2];
+                flatShape[index + k+2] = flatShape2[index + lk - k - 1];
+            }
+        }
+
     }
 
     var surface = vts.earcut(flatShape, holesIndices, 3);
@@ -1169,9 +1242,9 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     surface = new Array(sbufferIndex);
 
     for (i = 0, li = sbufferIndex3; i < li; i+=3) {
-        surface[i] = sbuffer3[i];
+        surface[i] = sbuffer3[i+2];
         surface[i+1] = sbuffer3[i+1];
-        surface[i+2] = sbuffer3[i+2];
+        surface[i+2] = sbuffer3[i];
     }
 
     vertices = new Array(m * 3);
@@ -1369,6 +1442,7 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
 
         case "node-by-lod":
             nodeOnly = true;
+            precision -= 8;
         case "heightmap-by-lod":
             heightsLod = precision;
             break;

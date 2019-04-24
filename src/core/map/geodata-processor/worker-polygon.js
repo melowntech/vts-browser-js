@@ -21,13 +21,13 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
     // borders as points
     if (getLayerPropertyValue(style, 'point', polygon, lod) ||
         getLayerPropertyValue(style, 'label', polygon, lod)) {
-        processPolygonLines(polygon, vertices, lod, style, zIndex, eventInfo, false);
+        processPolygonLines(polygon, vertices, lod, style, featureIndex, zIndex, eventInfo, false);
     }
     
     // borders as lines
     if (getLayerPropertyValue(style, 'line', polygon, lod) ||
         getLayerPropertyValue(style, 'line-label', polygon, lod)) {
-        processPolygonLines(polygon, vertices, lod, style, zIndex, eventInfo, true);
+        processPolygonLines(polygon, vertices, lod, style, featureIndex, zIndex, eventInfo, true);
     }
     
     var spolygon = getLayerPropertyValue(style, 'polygon', polygon, lod);
