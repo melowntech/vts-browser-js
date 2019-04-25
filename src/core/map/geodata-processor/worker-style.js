@@ -1118,6 +1118,7 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'polygon-use-stencil': return validateValue(layerId, key, value, 'boolean');
     case 'polygon-culling':     return validateValue(layerId, key, value, 'string');
     case 'polygon-color':       return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'polygon-extrude':     return validateValue(layerId, key, value, 'number', 0, -Number.MAX_VALUE, Number.MAX_VALUE);
 
     case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAX_VALUE);
