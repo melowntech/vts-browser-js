@@ -2,7 +2,7 @@
 
 **VTS Browser JS** is a powerful JavaScript 3D map rendering engine with a very small footprint (about 163 kB of gziped JS code). It provides almost all features for web-based 3D mapping you will ever want.
 
-VTS Browser JS is independently usable part of [VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html): a state-of-the-art, full-stack open source platform for 3D geospatial application development. 
+VTS Browser JS is independently usable part of [VTS 3D Geospatial Software Stack](https://vts-geospatial.org): a state-of-the-art, full-stack open source platform for 3D geospatial application development. 
 
 With VTS Browser JS you may combine and render diverse geospatial data in a single online map, style and display various types of geodata, render textured polygonal meshes or OBJ models, or even render topographic labels in almost any international writing system.
 
@@ -205,7 +205,7 @@ The question is, where you can get your own Map Configuration. Basically you hav
 
 ### VTS 3D Geospatial Software stack
 
-VTS Browser JS forms part of the [VTS 3D Geospatial Software Stack](http://vtsdocs.melown.com/en/latest/index.html). Running the full stack gives you complete control over your map resources, provides you with powerful data fusion capabilities and allows for closed networks or other types of off-grid deployment.
+VTS Browser JS forms part of the [VTS 3D Geospatial Software Stack](https://vts-geospatial.org). Running the full stack gives you complete control over your map resources, provides you with powerful data fusion capabilities and allows for closed networks or other types of off-grid deployment.
 
 ## Documentation
 
