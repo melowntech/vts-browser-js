@@ -52,10 +52,10 @@ The open-source [CesiumJS](https://cesiumjs.org) is an excellent JavaScript 3D m
 
 | Feature | VTS&nbsp;Browser&nbsp;JS | CesiumJS |
 | --- | --- | --- |
-| Different [coordinate systems](http://vtsdocs.melown.com/en/latest/reference/concepts.html#reference-frame) support | yes | limited |
-| Dynamic tiled [surfaces](http://vtsdocs.melown.com/en/latest/reference/concepts.html#surface) mixing (including [glues](http://vtsdocs.melown.com/en/latest/reference/concepts.html#glue)) | yes | no |
+| Different [coordinate systems](https://vts-geospatial.org/reference/concepts.html#reference-frame) support | yes | limited |
+| Dynamic tiled [surfaces](https://vts-geospatial.org/reference/concepts.html#surface) mixing (including [glues](https://vts-geospatial.org/reference/concepts.html#glue)) | yes | no |
 | Multiple surfaces and multiple bound layers support (including transparent layers) | yes | no |
-| Bound layers with optimized [masks](http://vtsdocs.melown.com/en/latest/reference/concepts.html#mask) | yes | no |
+| Bound layers with optimized [masks](https://vts-geospatial.org/reference/concepts.html#mask) | yes | no |
 | Out-of-the-box OSM data support with [custom styling](https://github.com/Melown/vts-browser-js/wiki/VTS-Geodata-Format) | yes | limited |
 | Open-source backend components | yes | no |
 | Backend data-fusion capabilities | yes | no |
