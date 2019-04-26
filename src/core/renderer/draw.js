@@ -1181,7 +1181,9 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
-        if (true) {
+        var drawDebugLines = true;
+
+        if (drawDebugLines) {
 
             var program = useSuperElevation ? renderer.progWireFrameBasicSE : renderer.progWireFrameBasic;
             renderer.gpu.useProgram(program, ['aPosition']);

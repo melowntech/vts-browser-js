@@ -1,4 +1,5 @@
 
+import Delaunator_ from './geodata-utils';
 import MapGeodataGeometry_ from './geodata-geometry';
 import MapGeodataImportGeoJSON_ from './geodata-import/geojson';
 import MapGeodataImportVTSGeodata_ from './geodata-import/vts-geodata';
@@ -6,6 +7,7 @@ import MapGeodataImportVTSGeodata_ from './geodata-import/vts-geodata';
 import {vec3 as vec3_, mat4 as mat4_,} from '../utils/matrix';
 
 //get rid of compiler mess
+var Delaunator = Delaunator_;
 var MapGeodataGeometry = MapGeodataGeometry_;
 var MapGeodataImportGeoJSON = MapGeodataImportGeoJSON_;
 var MapGeodataImportVTSGeodata = MapGeodataImportVTSGeodata_;
@@ -306,7 +308,7 @@ MapGeodataBuilder.prototype.addLineStringArray = function(lines, heightMode, pro
 
 MapGeodataBuilder.prototype.addPolygon = function(shape, holes, middle, heightMode, properties, id, srs) {
     //older versions are in github history 2.20.x
-    return this.addPolygon3(shape, holes, middle, heightMode, properties, id, srs);
+    return this.addPolygon4(shape, holes, middle, heightMode, properties, id, srs);
 };
 
 
@@ -329,11 +331,10 @@ MapGeodataBuilder.prototype.getPolygonCenter = function(shape, projected, proj) 
     } else {
         for (var i = 0, li = shape.length; i < li; i++) {
             var coords = shape[i];
-
-            coords = proj.forward(coords);
-            sumX += coords[0];
-            sumY += coords[1];
-            sumZ += coords[2];
+            var coords2 = proj.forward(coords);
+            sumX += coords2[0];
+            sumY += coords2[1];
+            sumZ += coords2[2];
         }
 
         var avgX = sumX / li;
@@ -351,12 +352,14 @@ MapGeodataBuilder.prototype.getPolygonCenter = function(shape, projected, proj) 
 
 MapGeodataBuilder.prototype.insidePolygon = function(point, vertices, verticesLength) {
     // ray-casting algorithm based on
-    // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+    // https://github.com/substack/point-in-polygon/blob/master/index.js
     
     var x = point[0], y = point[1];
-    
+
+    verticesLength = (verticesLength || Math.round(vertices.length/3));
+
     var inside = false;
-    for (var i = 0, j = vertices.length - 1, li = (verticesLength || vertices.length); i < li; j = i++) {
+    for (var i = 0, j = verticesLength - 1, li = verticesLength; i < li; j = i++) {
         var xi = vertices[i*3], yi = vertices[i*3+1];
         var xj = vertices[j*3], yj = vertices[j*3+1];
         
@@ -374,7 +377,7 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
 
-    var flatShape = shape, flatHoles = holes, i, li, j, k, lk, l, hole, coords, coords2, proj, holesIndices, vertices;
+    var flatShape = shape, flatHoles = holes, i, li, j, lj, k, lk, l, hole, coords, coords2, proj, holesIndices, vertices;
     var projected = true;
 
     //convert shape and holes to flat space
@@ -390,9 +393,23 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
     var sx = 300;
     var fx = 300 / 7500000;
 
+
+    for (i = 0, li = shape.length; i < li; i++) {
+        shape[i][2] = shape[i][2] || 0; //add third coord
+    }
+
+    for (i = 0, li = holes.length; i < li; i++) {
+        hole = holes[i];
+        totalPoints += hole.length*3;
+
+        for (j = 0, lj = hole.length; j < lj; j++) {
+            hole[j][2] = hole[j][2] || 0; //add third coord
+        }
+    }
+
     var center = this.getPolygonCenter(shape, projected, proj), north, east, dir;
 
-    this.addPoint(center, 'fix', {}, 'aaa');
+    this.addPoint(center.slice(), 'fix', {}, 'aaa');
 
 //    var ned = this.map.measure.getNewNED(center, true);
     var ned = this.map.measure.getNewNED(center);
@@ -402,7 +419,7 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
     east = ned.east;
 
     //var center2 = proj.forward(center);
-
+/*
     coords = proj.forward(center);
     var coords2 = [coords[0]+1000000*east[0], coords[1]+1000000*east[1], coords[2]+1000000*east[2]];
 
@@ -415,7 +432,8 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
 
     this.addLineString([coords, coords2], 'fix', {}, 'line', null, true);
     //ned = this.map.measure.getNewNED(center, true);
-
+*/
+/*
     if (!projected) {
         var pos = this.map.getPosition();
         pos.setCoords(center);
@@ -428,7 +446,7 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
         north = [ned[1], ned[5], ned[9]];
         east = [ned[0], ned[4], ned[8]];
     }
-
+*/
     var totalPoints = shape.length*3;
 
     for (i = 0, li = shape.length; i < li; i++) {
@@ -466,9 +484,8 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
             //coords[0] -= center2[0];
             //coords[1] -= center2[1];
             //coords[2] -= center2[2];
-            coords[0] = east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2];
-            coords[1] = dir[0] * coords2[0] + dir[1] * coords2[1] + dir[2] * coords2[2];
-            coords[2] = 0;
+            coords= [ east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
+                      dir[0] * coords2[0] + dir[1] * coords2[1] + dir[2] * coords2[2], 0];
         } else {
             coords = shape[i];
         }
@@ -505,9 +522,8 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
 
             if (proj) {
                 coords2 = proj.forward(hole[k]);
-                coords[0] = east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2];
-                coords[1] = dir[0] * coords2[0] + dir[1] * coords2[1] + dir[2] * coords2[2];
-                coords[2] = 0;
+                coords = [east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
+                          dir[0] * coords2[0] + dir[1] * coords2[1] + dir[2] * coords2[2], 0];
             } else {
                 coords = hole[k];
             }
@@ -555,61 +571,21 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
 };
 
 
-MapGeodataBuilder.prototype.insidePolygon = function(point, vertices, verticesLength) {
-    // ray-casting algorithm based on
-    // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-    
-    var x = point[0], y = point[1];
-    
-    var inside = false;
-    for (var i = 0, j = vertices.length - 1, li = (verticesLength || vertices.length); i < li; j = i++) {
-        var xi = vertices[i*3], yi = vertices[i*3+1];
-        var xj = vertices[j*3], yj = vertices[j*3+1];
-        
-        var intersect = ((yi > y) != (yj > y))
-            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-        if (intersect) inside = !inside;
-    }
-    
-    return inside;
-};    
-
-
 //same as addPolygon but works on poles and is subivided
-MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightMode, properties, id, srs) {
+MapGeodataBuilder.prototype.addPolygon4 = function(shape, holes, middle, heightMode, properties, id, srs) {
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
+    holes = [];
 
     var flatShape = shape, flatHoles = holes, i, li, j, lj, k, lk, l, hole, coords = [], coords2 = [], proj, holesIndices, vertices;
-    var projected = true, dx, dy, dd, maxDistance = 0, maxDistanceCoords, flatCenter, trueHolesCount = holes.length;
-    var density = 19;
+    var projected = true, dx, dy, dz, dd, maxDistance = 0, maxDistanceCoords, flatCenter, trueHolesCount = holes.length;
+    var density = 20;
 
     //convert shape and holes to flat space
     if (srs.indexOf('+proj=longlat') != -1) {
         projected = false;
         proj = this.map.proj4(srs, '+proj=geocent +datum=WGS84 +units=m +no_defs');
     }
-
-    var center = this.getPolygonCenter(shape, projected, proj), north, east, dir;
-
-    if (!projected) {
-        var pos = this.map.getPosition();
-        pos.setCoords(center);
-        pos.setOrientation([0,0,-90]);
-        var ret = this.map.measure.getPositionCameraInfo(pos, false, false);
-        var ned = ret.rotMatrix;
-
-        mat4.inverse(ned);
-        dir = [ned[2], ned[6], ned[10]];
-        north = [ned[1], ned[5], ned[9]];
-        east = [ned[0], ned[4], ned[8]];
-    }
-
-
-    var center2 = [], center3 = proj.forward(center);
-    center2[0] = east[0] * center3[0] + east[1] * center3[1] + east[2] * center3[2];
-    center2[1] = dir[0] * center3[0] + dir[1] * center3[1] + dir[2] * center3[2];
-    center2[2] = 0;
 
     var totalPoints = shape.length*3;
 
@@ -626,6 +602,32 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
         }
     }
 
+    var center = this.getPolygonCenter(shape, projected, proj), north, east, dir, geod;
+
+    var ned = this.map.measure.getNewNED(center);
+
+   // dir = ned.direction;
+    north = ned.direction;
+    east = ned.east;
+
+        geod = this.map.measure.getGeodesic(); 
+
+    /*
+    if (!projected) {
+        var pos = this.map.getPosition();
+        pos.setCoords(center);
+        pos.setOrientation([0,0,-90]);
+        var ret = this.map.measure.getPositionCameraInfo(pos, false, false);
+        var ned = ret.rotMatrix;
+
+        mat4.inverse(ned);
+        dir = [ned[2], ned[6], ned[10]];
+        north = [ned[1], ned[5], ned[9]];
+        east = [ned[0], ned[4], ned[8]];
+
+        geod = this.map.measure.getGeodesic(); 
+    }*/
+
     flatShape = new Array(totalPoints);
     vertices = new Array(totalPoints);
     j = 0;
@@ -634,12 +636,20 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
     var border = new Array(shape.length);
     borders[0] = border;
 
+    /*
     if (proj) {
         coords2 = proj.forward(center);
-        coords[0] = east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2];
-        coords[1] = north[0] * coords2[0] + north[1] * coords2[1] + north[2] * coords2[2];
-        coords[2] = 0;
+        coords = [east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
+                  north[0] * coords2[0] + north[1] * coords2[1] + north[2] * coords2[2], 0];
         flatCenter = coords;
+    }*/
+
+    var gcenter;
+
+    if (proj) {
+        gcenter = proj.forward(center);
+    } else {
+        gcenter = center;
     }
 
     for (i = 0, li = shape.length; i < li; i++) {
@@ -651,16 +661,307 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
         if (proj) {
             coords2 = proj.forward(shape[i]);
-            coords[0] = east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2];
-            coords[1] = dir[0] * coords2[0] + dir[1] * coords2[1] + dir[2] * coords2[2];
-            coords[2] = 0;
+            coords = [east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
+                      north[0] * coords2[0] + north[1] * coords2[1] + north[2] * coords2[2], 0];
         } else {
-            coords = shape[i];
+            coords2 = shape[i];
+            coords = coords2;
         }
 
-        dx = coords[0] - center2[0];
-        dy = coords[1] - center2[1];
-        dd = dx * dx + dy * dy;
+        dx = coords2[0] - gcenter[0];
+        dy = coords2[1] - gcenter[1];
+        dz = coords2[2] - gcenter[2];
+        dd = dx * dx + dy * dy + dz*dz;
+        if (dd > maxDistance) {
+            maxDistance = dd;
+            maxDistanceCoords = shape[i]
+        }
+
+        flatShape[j] = coords[0]; 
+        flatShape[j+1] = coords[1]; 
+        flatShape[j+2] = coords[2]; 
+        j+=3;
+    }
+
+    maxDistance = Math.sqrt(maxDistance);
+
+    var inPoints = new Array(density * density * 3);
+    var inPointsFlat = new Array(density * density * 3);
+    var inPointsIndex = 0;
+    var inPointsFlatIndex = 0;
+
+    if (proj) {
+
+        if (!projected) {
+            //maxDistanceCoords = proj.inverse(maxDistanceCoords); maxDistanceCoords[2] = 0;
+            maxDistance = this.map.measure.getDistance(center, maxDistanceCoords, false)[0];
+        }
+        
+        density = Math.round(density * 0.5);
+
+        var r, ncoords, ecoords, lastJ = j;
+        var geod = this.map.measure.getGeodesic();
+        
+        for (i = -density; i < density; i++) {
+            r = geod.Direct(center[1], center[0], 0, (maxDistance / (density)) * i);
+            ncoords = [r.lon2, r.lat2];
+
+            for (j = -density; j < density; j++) {
+                r = geod.Direct(ncoords[1], ncoords[0], 90, (maxDistance / (density)) * j);
+
+                ecoords = [r.lon2, r.lat2, 0];
+                coords2 = proj.forward(ecoords);
+                coords = [east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
+                          north[0] * coords2[0] + north[1] * coords2[1] + north[2] * coords2[2], 0];
+               
+                if (this.insidePolygon(coords, flatShape, shape.length)) {
+                    //this.addPoint(ecoords.slice(), 'fix', {}, 'bbb', srs);
+                    //holes.push([ecoords]);
+
+                    inPoints[inPointsIndex] = ecoords[0];
+                    inPoints[inPointsIndex+1] = ecoords[1];
+                    inPoints[inPointsIndex+2] = ecoords[2];
+                    inPointsIndex += 3;
+
+                    inPointsFlat[inPointsFlatIndex] = coords[0];
+                    inPointsFlat[inPointsFlatIndex+1] = coords[1];
+                    inPointsFlat[inPointsFlatIndex+2] = coords[2];
+                    inPointsFlatIndex += 3;
+
+                } else {
+                    //this.addPoint(ecoords.slice(), 'fix', {}, 'aaa', srs);
+                }
+            }
+        }
+
+        j = lastJ; 
+
+        inPoints = inPoints.slice(0, inPointsIndex);
+        inPointsFlat = inPointsFlat.slice(0, inPointsFlatIndex);
+
+        vertices = vertices.concat(inPoints);
+        flatShape = flatShape.concat(inPointsFlat);
+
+    }
+
+   /*
+    holes.push(
+       [[-89.0894990, 37.8703380, 0]],
+       [[-105.5548907, 36.6645637, 0]],
+       [[-112.4625003, 44.2888714, 0]] ); */
+
+    /*
+    flatHoles = new Array(holes.length);
+    holesIndices = new Array(holes.length);
+
+    for (i = 0, li = holes.length; i < li; i++) {
+        hole = holes[i];
+        holesIndices[i] = Math.round(j/3);
+
+        if (i < trueHolesCount) {
+            border = new Array(hole.length);
+            borders[i + 1] = border;
+        }
+
+        l = Math.floor(j /3);
+
+        for (k = 0, lk = hole.length; k < lk; k++) {
+            coords = hole[k];
+            vertices[j] = coords[0]; 
+            vertices[j+1] = coords[1]; 
+            vertices[j+2] = coords[2]; 
+
+            if (proj) {
+                coords2 = proj.forward(hole[k]);
+                coords = [east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
+                          north[0] * coords2[0] + north[1] * coords2[1] + north[2] * coords2[2], 0];
+            } else {
+                coords = hole[k];
+            }
+
+            flatShape[j] = coords[0]; 
+            flatShape[j+1] = coords[1]; 
+            flatShape[j+2] = coords[2]; 
+            j+=3;
+
+            if (i < trueHolesCount) {
+                border[k] = l++;
+            }
+        }
+    }*/
+
+    var flatShape2 = new Array((flatShape.length / 3) *2);
+
+    for (i = 0, j =0, li = flatShape.length; i < li; i+=3, j+=2) {
+        flatShape2[j] = flatShape[i];
+        flatShape2[j+1] = flatShape[i+1];
+    }
+
+    var delaunay = new Delaunator(flatShape2);
+
+//    for (i = 0, li = Math.round(faces.length / 3); i < li; i++) {
+
+    var surface2 = delaunay.triangles;
+    var smax = 30;//vertices.length / 3;
+
+    var surface = new Array(surface2.length);
+
+    j = 0;
+
+    for (i = 0, li = surface.length; i < li; i+=3) {
+        var v1 = surface2[i]*2;
+        var v2 = surface2[i+1]*2;
+        var v3 = surface2[i+2]*2;
+
+        var mid = [(flatShape2[v1]+flatShape2[v2]+flatShape2[v3])/3,
+                   (flatShape2[v1+1]+flatShape2[v2+1]+flatShape2[v3+1])/3,0];
+
+        if (this.insidePolygon(mid, flatShape, shape.length)) {
+            surface[j] = surface2[i];
+            surface[j+1] = surface2[i+1];
+            surface[j+2] = surface2[i+2];
+            j+=3;
+        }
+    }
+
+    surface = surface.slice(0,j);
+
+    /*
+    for (i = 0, li = surface.length; i < li; i++) {
+        surface[i] = surface2[i];
+    }*/
+
+    //var surface = vts.earcut(flatShape, holesIndices, 3);
+    //var surface = vts.earcut(flatShape2, holesIndices, 2);
+
+    var c = document.getElementById("dbg-canvas");
+    var ctx = c.getContext("2d");
+    var sx = 300;
+    var fx = 300 / 7500000;
+
+
+    ctx.beginPath();
+
+    for (i = 0, li = surface2.length; i < li; i+=3) {
+        var v1 = surface2[i]*2;
+        var v2 = surface2[i+1]*2;
+        var v3 = surface2[i+2]*2;
+
+        ctx.moveTo(flatShape2[v1]*fx+sx,flatShape2[v1+1]*fx+sx);
+        ctx.lineTo(flatShape2[v2]*fx+sx,flatShape2[v2+1]*fx+sx);
+        ctx.lineTo(flatShape2[v3]*fx+sx,flatShape2[v3+1]*fx+sx);
+        ctx.lineTo(flatShape2[v1]*fx+sx,flatShape2[v1+1]*fx+sx);
+    }
+
+    ctx.strokeStyle = "#0000ff";
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    for (i = 0, li = surface.length; i < li; i+=3) {
+        var v1 = surface[i]*2;
+        var v2 = surface[i+1]*2;
+        var v3 = surface[i+2]*2;
+
+        ctx.moveTo(flatShape2[v1]*fx+sx,flatShape2[v1+1]*fx+sx);
+        ctx.lineTo(flatShape2[v2]*fx+sx,flatShape2[v2+1]*fx+sx);
+        ctx.lineTo(flatShape2[v3]*fx+sx,flatShape2[v3+1]*fx+sx);
+        ctx.lineTo(flatShape2[v1]*fx+sx,flatShape2[v1+1]*fx+sx);
+    }
+
+    ctx.strokeStyle = "#ff00ff";
+    ctx.stroke();
+
+    this.addPolygonRAW(vertices, surface, borders, middle, heightMode, properties, id, srs);
+
+    return this;
+};
+
+//same as addPolygon but works on poles and is subivided
+MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightMode, properties, id, srs) {
+    srs = srs ? srs : this.navSrs.srsProj4;
+    holes = holes || [];
+
+    var flatShape = shape, flatHoles = holes, i, li, j, lj, k, lk, l, hole, coords = [], coords2 = [], proj, holesIndices, vertices;
+    var projected = true, dx, dy, dz, dd, maxDistance = 0, maxDistanceCoords, flatCenter, trueHolesCount = holes.length;
+    var density = 19;
+
+    //convert shape and holes to flat space
+    if (srs.indexOf('+proj=longlat') != -1) {
+        projected = false;
+        proj = this.map.proj4(srs, '+proj=geocent +datum=WGS84 +units=m +no_defs');
+        //proj = this.map.proj4(srs, '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs');
+    }
+
+    var totalPoints = shape.length*3;
+
+    for (i = 0, li = shape.length; i < li; i++) {
+        shape[i][2] = shape[i][2] || 0; //add third coord
+    }
+
+    for (i = 0, li = holes.length; i < li; i++) {
+        hole = holes[i];
+        totalPoints += hole.length*3;
+
+        for (j = 0, lj = hole.length; j < lj; j++) {
+            hole[j][2] = hole[j][2] || 0; //add third coord
+        }
+    }
+
+    var center = this.getPolygonCenter(shape, projected, proj), north, east, dir, geod;
+
+    if (!projected) {
+        var pos = this.map.getPosition();
+        pos.setCoords(center);
+        pos.setOrientation([0,0,-90]);
+        var ret = this.map.measure.getPositionCameraInfo(pos, false, false);
+        var ned = ret.rotMatrix;
+
+        mat4.inverse(ned);
+        dir = [ned[2], ned[6], ned[10]];
+        north = [ned[1], ned[5], ned[9]];
+        east = [ned[0], ned[4], ned[8]];
+
+        geod = this.map.measure.getGeodesic(); 
+    }
+
+    flatShape = new Array(totalPoints);
+    vertices = new Array(totalPoints);
+    j = 0;
+
+    var borders = new Array(holes.length + 1);
+    var border = new Array(shape.length);
+    borders[0] = border;
+
+    var gcenter;
+
+    if (proj) {
+        gcenter = proj.forward(center);
+    } else {
+        gcenter = center;
+    }
+
+    for (i = 0, li = shape.length; i < li; i++) {
+        border[i] = i;
+        coords = shape[i];
+        vertices[j] = coords[0]; 
+        vertices[j+1] = coords[1]; 
+        vertices[j+2] = coords[2];
+
+        if (proj) {
+            coords2 = proj.forward(shape[i]);
+            coords = [east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
+                      north[0] * coords2[0] + north[1] * coords2[1] + north[2] * coords2[2], 0];
+        } else {
+            coords2 = shape[i];
+            coords = coords2;
+        }
+
+        dx = coords2[0] - gcenter[0];
+        dy = coords2[1] - gcenter[1];
+        dz = coords2[2] - gcenter[2];
+        dd = dx * dx + dy * dy + dz*dz;
         if (dd > maxDistance) {
             maxDistance = dd;
             maxDistanceCoords = shape[i]
@@ -730,9 +1031,9 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
             if (proj) {
                 coords2 = proj.forward(hole[k]);
-                coords[0] = east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2];
-                coords[1] = dir[0] * coords2[0] + dir[1] * coords2[1] + dir[2] * coords2[2];
-                coords[2] = 0;
+                //cords = [coords2[0], coords2[1], 0];
+                coords = [east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
+                          dir[0] * coords2[0] + dir[1] * coords2[1] + dir[2] * coords2[2], 0];
             } else {
                 coords = hole[k];
             }
@@ -856,14 +1157,14 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
         sbuffer[1] = [v2, edge2];
         sbuffer[2] = [v3, edge3];
 
-        var depth = 0;
+        var depth = 0, r;
         //maxFaceLength = Number.POSITIVE_INFINITY;
 
         //loop until subdivision is finished
         do {
 
             for (j = 0, lj = sbufferIndex; j < lj; j+=3) {
-                //face indices
+                //face indices//
                 vv1 = sbuffer[j][0];
                 vv2 = sbuffer[j+1][0];
                 vv3 = sbuffer[j+2][0];
@@ -905,15 +1206,33 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                     sbufferIndex3 += 3;
                 } else {
 
-                    //crete new vertices in the midle of edges
-                    p4 = [(p1[0]+p2[0])*0.5, (p1[1]+p2[1])*0.5, (p1[2]+p2[2])*0.5];
-                    p5 = [(p2[0]+p3[0])*0.5, (p2[1]+p3[1])*0.5, (p2[2]+p3[2])*0.5];
-                    p6 = [(p3[0]+p1[0])*0.5, (p3[1]+p1[1])*0.5, (p3[2]+p1[2])*0.5];
+                    //crete new vertices in the midle of edges and convert coords back to long lat
+                    //if (l1 > 200000 && !projected) {
+                     //   r = geod.Inverse(vbuffer[vv1*3+1], vbuffer[vv1*3], vbuffer[vv2*3+1], vbuffer[vv2*3]);
+                     //   r = geod.Direct(vbuffer[vv1*3+1], vbuffer[vv1*3], r.azi1, r.s12 *0.5);
+                    //    p4 = [r.lon2, r.lat2, (vbuffer[vv1*3+2]+vbuffer[vv2*3+2])*0.5];
+                    //} else {
+                        p4 = [(p1[0]+p2[0])*0.5, (p1[1]+p2[1])*0.5, (p1[2]+p2[2])*0.5];
+                        p4 = proj.inverse(p4); p4[2] = (vbuffer[vv1*3+2]+vbuffer[vv2*3+2])*0.5;
+                    //}
 
-                    //convert coords back to long lat
-                    p4 = proj.inverse(p4); p4[2] = (vertices[v1*3+2]+vertices[v2*3+2])*0.5;
-                    p5 = proj.inverse(p5); p5[2] = (vertices[v2*3+2]+vertices[v3*3+2])*0.5;
-                    p6 = proj.inverse(p6); p6[2] = (vertices[v3*3+2]+vertices[v1*3+2])*0.5;
+                    //if (l2 > 200000 && !projected) {
+                     //   r = geod.Inverse(vbuffer[vv2*3+1], vbuffer[vv2*3], vbuffer[vv3*3+1], vbuffer[vv3*3]);
+                     //   r = geod.Direct(vbuffer[vv2*3+1], vbuffer[vv2*3], r.azi1, r.s12 *0.5);
+                     //   p5 = [r.lon2, r.lat2, (vbuffer[vv2*3+2]+vbuffer[vv3*3+2])*0.5];
+                    //} else {
+                        p5 = [(p2[0]+p3[0])*0.5, (p2[1]+p3[1])*0.5, (p2[2]+p3[2])*0.5];
+                        p5 = proj.inverse(p5); p5[2] = (vbuffer[vv2*3+2]+vbuffer[vv3*3+2])*0.5;
+                    //}
+
+                    //if (l3 > 200000 && !projected) {
+                     //   r = geod.Inverse(vbuffer[vv3*3+1], vbuffer[vv3*3], vbuffer[vv1*3+1], vbuffer[vv1*3]);
+                     //   r = geod.Direct(vbuffer[vv3*3+1], vbuffer[vv3*3], r.azi1, r.s12 *0.5);
+                     //   p6 = [r.lon2, r.lat2, (vbuffer[vv3*3+2]+vbuffer[vv1*3+2])*0.5];
+                    //} else {
+                        p6 = [(p3[0]+p1[0])*0.5, (p3[1]+p1[1])*0.5, (p3[2]+p1[2])*0.5];
+                        p6 = proj.inverse(p6); p6[2] = (vbuffer[vv3*3+2]+vbuffer[vv1*3+2])*0.5;
+                    //}
 
                     var mm = m * 3;
 
@@ -1036,8 +1355,8 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
             depth++;
 
-            //if (depth == 2) {
-                //maxFaceLength = Number.POSITIVE_INFINITY;
+            //if (depth == 1) {
+              //  maxFaceLength = Number.POSITIVE_INFINITY;
             //}
 
 
