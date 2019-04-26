@@ -1181,6 +1181,27 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
+        if (true) {
+
+            var program = useSuperElevation ? renderer.progWireFrameBasicSE : renderer.progWireFrameBasic;
+            renderer.gpu.useProgram(program, ['aPosition']);
+
+            if (useSuperElevation) {
+                program.setMat4('uParamsSE', m);
+            }
+
+            program.setMat4('uMV', job.mv);
+            program.setVec4('uColor', [0,0,0,1]);
+
+            program.setMat4('uProj', renderer.camera.getProjectionFMatrix(), renderer.getZoffsetFactor(job.zbufferOffset));
+
+            for (var i = 0, li = job.vertexPositionBuffer.numItems*2; i < li; i+=3) {
+                gl.drawArrays(gl.LINE_LOOP, i, 3);
+            }
+
+
+        }
+
         break;
 
     case VTS_JOB_FLAT_RLINE:

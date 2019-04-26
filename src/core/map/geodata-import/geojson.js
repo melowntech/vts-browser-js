@@ -32,6 +32,22 @@ MapGeodataImportGeoJSON.prototype.processGeometry = function(geometry, feature) 
             this.builder.addLineStringArray(coords, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs);
             break;
 
+        case 'Polygon':
+            if (coords.length > 0) {
+                this.builder.addPolygon(coords[0], (coords.length > 1) ? coords.slice(1) : [], this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs);
+            }
+            break;
+
+        case 'MultiPolygon':
+            debugger
+            for (var i = 0, li = coords.length; i < li; i++) {
+                var coords2 = coords[i];
+                if (coords2.length > 0) {
+                    this.builder.addPolygon(coords2[0], (coords2.length > 1) ? coords2.slice(1) : [], null, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs);
+                }
+            }
+            break;
+
         case 'GeometryCollection':
 
             var geometries = geometry['gemetries'];
