@@ -211,29 +211,29 @@ var processPolygonPass = function(polygon, lod, style, featureIndex, zIndex, eve
                     }
                 }
 
-                vertexBuffer[index] = p1[0];
-                vertexBuffer[index+1] = p1[1];
-                vertexBuffer[index+2] = p1[2];
+                vertexBuffer[index] = p4[0];
+                vertexBuffer[index+1] = p4[1];
+                vertexBuffer[index+2] = p4[2];
 
                 vertexBuffer[index+3] = p2[0];
                 vertexBuffer[index+4] = p2[1];
                 vertexBuffer[index+5] = p2[2];
 
-                vertexBuffer[index+6] = p4[0];
-                vertexBuffer[index+7] = p4[1];
-                vertexBuffer[index+8] = p4[2];
+                vertexBuffer[index+6] = p1[0];
+                vertexBuffer[index+7] = p1[1];
+                vertexBuffer[index+8] = p1[2];
 
-                vertexBuffer[index+9] = p4[0];
-                vertexBuffer[index+10] = p4[1];
-                vertexBuffer[index+11] = p4[2];
+                vertexBuffer[index+9] = p1[0];
+                vertexBuffer[index+10] = p1[1];
+                vertexBuffer[index+11] = p1[2];
 
                 vertexBuffer[index+12] = p3[0];
                 vertexBuffer[index+13] = p3[1];
                 vertexBuffer[index+14] = p3[2];
 
-                vertexBuffer[index+15] = p1[0];
-                vertexBuffer[index+16] = p1[1];
-                vertexBuffer[index+17] = p1[2];
+                vertexBuffer[index+15] = p4[0];
+                vertexBuffer[index+16] = p4[1];
+                vertexBuffer[index+17] = p4[2];
 
                 index += 18;
             }
