@@ -1181,7 +1181,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
 
-        var drawDebugLines = renderer.debug.drawBBoxes;// false;//true;
+        var drawDebugLines = renderer.debug.drawPolyWires;// false;//true;
 
         if (drawDebugLines) {
 

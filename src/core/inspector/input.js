@@ -389,6 +389,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 120:
                 map.config.mapPreciseBBoxTest = !map.config.mapPreciseBBoxTest; break; //key X pressed
 
+            case 87:
+            case 119:
+                debug.drawPolyWires = !debug.drawPolyWires; break; //key W pressed
+
             case 90:
             case 122:
                 map.config.mapPreciseDistanceTest = !map.config.mapPreciseDistanceTest; break; //key Z pressed

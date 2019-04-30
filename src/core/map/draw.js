@@ -53,6 +53,7 @@ var MapDraw = function(map) {
         drawEarth : true, 
         drawGridCells : false,
         drawTileCounter : 0,
+        drawPolyWires : false,
         drawFog : this.config.mapFog,
         drawGPixelSize : false,
         debugTextSize : 2.0,

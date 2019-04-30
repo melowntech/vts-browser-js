@@ -306,9 +306,9 @@ MapGeodataBuilder.prototype.addLineStringArray = function(lines, heightMode, pro
 };
 
 
-MapGeodataBuilder.prototype.addPolygon = function(shape, holes, middle, heightMode, properties, id, srs) {
+MapGeodataBuilder.prototype.addPolygon = function(shape, holes, middle, heightMode, properties, id, srs, tesselation) {
     //older versions are in github history 2.20.x
-    return this.addPolygon3(shape, holes, middle, heightMode, properties, id, srs);
+    return this.addPolygon3(shape, holes, middle, heightMode, properties, id, srs, tesselation);
 };
 
 
@@ -373,6 +373,7 @@ MapGeodataBuilder.prototype.insidePolygon = function(point, vertices, verticesLe
 
 
 //same as addPolygon but works on poles
+/*
 MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightMode, properties, id, srs) {
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
@@ -411,42 +412,12 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
 
     this.addPoint(center.slice(), 'fix', {}, 'aaa');
 
-//    var ned = this.map.measure.getNewNED(center, true);
     var ned = this.map.measure.getNewNED(center);
 
     dir = ned.direction;
     north = ned.north;
     east = ned.east;
 
-    //var center2 = proj.forward(center);
-/*
-    coords = proj.forward(center);
-    var coords2 = [coords[0]+1000000*east[0], coords[1]+1000000*east[1], coords[2]+1000000*east[2]];
-
-    this.addLineString([coords, coords2], 'fix', {}, 'line', null, true);
-    var coords2 = [coords[0]+1000000*dir[0], coords[1]+1000000*dir[1], coords[2]+1000000*dir[2]];
-
-    this.addLineString([coords, coords2], 'fix', {}, 'line', null, true);
-    var coords2 = [coords[0]+1000000*north[0], coords[1]+1000000*north[1], coords[2]+1000000*north[2]];
-
-
-    this.addLineString([coords, coords2], 'fix', {}, 'line', null, true);
-    //ned = this.map.measure.getNewNED(center, true);
-*/
-/*
-    if (!projected) {
-        var pos = this.map.getPosition();
-        pos.setCoords(center);
-        pos.setOrientation([0,0,-90]);
-        var ret = this.map.measure.getPositionCameraInfo(pos, false, false);
-        ned = ret.rotMatrix;
-
-        mat4.inverse(ned);
-        dir = [ned[2], ned[6], ned[10]];
-        north = [ned[1], ned[5], ned[9]];
-        east = [ned[0], ned[4], ned[8]];
-    }
-*/
     var totalPoints = shape.length*3;
 
     for (i = 0, li = shape.length; i < li; i++) {
@@ -481,9 +452,6 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
 
         if (proj) {
             coords2 = proj.forward(shape[i]);
-            //coords[0] -= center2[0];
-            //coords[1] -= center2[1];
-            //coords[2] -= center2[2];
             coords= [ east[0] * coords2[0] + east[1] * coords2[1] + east[2] * coords2[2],
                       dir[0] * coords2[0] + dir[1] * coords2[1] + dir[2] * coords2[2], 0];
         } else {
@@ -569,7 +537,7 @@ MapGeodataBuilder.prototype.addPolygon2 = function(shape, holes, middle, heightM
 
     return this;
 };
-
+*/
 
 //same as addPolygon3 but with Delaunator sudivision
 /*
@@ -845,12 +813,20 @@ MapGeodataBuilder.prototype.addPolygon4 = function(shape, holes, middle, heightM
 };*/
 
 //same as addPolygon but works on poles and is subivided
-MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightMode, properties, id, srs) {
+MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightMode, properties, id, srs, tesselation) {
     srs = srs ? srs : this.navSrs.srsProj4;
     holes = holes || [];
 
     var flatShape = shape, flatHoles = holes, i, li, j, lj, k, lk, l, hole, coords = [], coords2 = [], proj, holesIndices, vertices;
     var projected = true, dx, dy, dz, dd, maxDistance = 0, maxDistanceCoords, flatCenter, trueHolesCount = holes.length;
+
+    tesselation = tesselation || {};
+    tesselation.mode = tesselation['mode'] || 'auto';
+
+    if (tesselation.mode == 'by-length') {
+        tesselation.length = tesselation['length'] || 200000;
+    }
+
     var density = 19;
 
     //convert shape and holes to flat space
@@ -1045,7 +1021,13 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 
     var surface = vts.earcut(flatShape, holesIndices, 3);
 
-    var maxFaceLength = Math.sqrt(maxDistance) / density;
+    var maxFaceLength = Number.POSITIVE_INFINITY;
+
+    switch (tesselation.mode) {
+        case 'auto':      maxFaceLength = Math.sqrt(maxDistance) / density; break;
+        case 'by-length': maxFaceLength = tesselation.length; break;
+    }
+
     var v1, v2, v3, p1, p2, p3, p4, p5, p6;
 
     //copy bordes
@@ -1115,7 +1097,6 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
         sbuffer[2] = [v3, edge3];
 
         var depth = 0, r;
-        //maxFaceLength = Number.POSITIVE_INFINITY;
 
         //loop until subdivision is finished
         do {
@@ -1430,8 +1411,8 @@ MapGeodataBuilder.prototype.importVTSGeodata = function(json, groupIdPrefix, don
 };
 
 
-MapGeodataBuilder.prototype.importGeoJson = function(json, heightMode, srs, groupIdPrefix, dontCreateGroups) {
-    var importer = new MapGeodataImportGeoJSON(this, heightMode, srs, groupIdPrefix, dontCreateGroups);
+MapGeodataBuilder.prototype.importGeoJson = function(json, heightMode, srs, options) {
+    var importer = new MapGeodataImportGeoJSON(this, heightMode, srs, options);
     return importer.processJSON(json);
 };
 
