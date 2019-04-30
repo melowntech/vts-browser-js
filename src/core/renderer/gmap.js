@@ -778,10 +778,10 @@ function radixDepthSortFeatures(renderer, input, inputSize, tmp) {
 
 
 function fillVMapHoles(vmap, mx, my) {
-
     var holesCount = 0, v;
-
     var x0, y0, x1, y1, x2, y2;
+    var maxX = mx - 1;
+    var maxY = my - 1;
 
     for (var j = 0, lj = my; j < lj; j++) {
         for (var i = 0, li = mx; i < li; i++) {
@@ -803,16 +803,16 @@ function fillVMapHoles(vmap, mx, my) {
                 if (x0 < 0) x0 = 0;
                 if (y0 < 0) y0 = 0;
 
-                if (x2 < 0) x2 = 0;
-                if (y2 < 0) y2 = 0;
+                if (x2 > maxX) x2 = maxX;
+                if (y2 > maxY) y2 = maxY;
 
-                var vv = [vmap[y0*mx+x0]
-                          vmap[y0*mx+x1]
-                          vmap[y0*mx+x2]
-                          vmap[y1*mx+x0]
-                          vmap[y1*mx+x2]
-                          vmap[y2*mx+x0]
-                          vmap[y2*mx+x1]
+                var vv = [vmap[y0*mx+x0],
+                          vmap[y0*mx+x1],
+                          vmap[y0*mx+x2],
+                          vmap[y1*mx+x0],
+                          vmap[y1*mx+x2],
+                          vmap[y2*mx+x0],
+                          vmap[y2*mx+x1],
                           vmap[y2*mx+x2]];
 
                 var vcount = 0;
@@ -860,10 +860,10 @@ function getVMapValue(vmap, x, y, mx, my) {
     var index = iy * mx;
     var index2 = (iy == maxY) ? index : index + mx;
     var ix2 = (ix == maxX) ? ix : ix + 1; 
-    var v00 = vmap[(index + ix)*4];
-    var v01 = vmap[(index + ix2)*4];
-    var v10 = vmap[(index2 + ix)*4];
-    var v11 = vmap[(index2 + ix2)*4];
+    var v00 = vmap[index + ix];
+    var v01 = vmap[index + ix2];
+    var v10 = vmap[index2 + ix];
+    var v11 = vmap[index2 + ix2];
     var w0 = (v00 + (v01 - v00)*fx);
     var w1 = (v10 + (v11 - v10)*fx);
    
@@ -882,7 +882,11 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var maxFeatures = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
-    var featuresPerTile = maxFeatures / (tileCount * tileCount); 
+    var featuresPerTile = Math.ceil(maxFeatures / (tileCount * tileCount)); 
+    var tileSizeX = screenLX / tileCount;
+    var tileSizeY = screenLY / tileCount;
+
+    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures;
 
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
     //var feature, feature2, pp, pp2, o, featureCount = 0;
@@ -895,7 +899,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
     var featureCache = renderer.gmap;
     var featureCacheSize = renderer.gmapIndex;
     var featureCache2 = renderer.gmap2;
-    var vmap = renderer.gmap3;
+    var vmap = renderer.gmap4;
     var drawAllLabels = renderer.drawAllLabels;
 
     if (drawAllLabels) {
@@ -941,6 +945,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
             //clear hit-map
             for (i = 0, li = mx * my; i < li; i++) {
                 hitMap[i] = null;
+                vmap[i] = null;
             }
 
             for (i = 0, li = featureCacheSize; i < li; i++) {
@@ -956,8 +961,8 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                     continue;
                 }
 
-                tx = pp[0] / tileSize;
-                ty = pp[1] / tileSize;
+                tx = pp[0] / tileSizeX;
+                ty = pp[1] / tileSizeY;
 
                 index = Math.floor(tx) + Math.floor(ty) * (mx);
 
@@ -967,7 +972,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                     hitMap[index].push(i);
                 } else {
                     hitMap[index] = [i];
-                    hitMapCount[index] = v;
+                    //hitMapCount[index] = v;
                 }
             }
 
@@ -976,7 +981,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 tileFeatures = hitMap[i];
 
                 if (tileFeatures && tileFeatures.length) {
-                    count = hitMapCount[i];
+                    count = tileFeatures.length;
 
                     if (count > featuresPerTile) {
                         count = featuresPerTile;
@@ -985,10 +990,9 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                     if (count == 0) {
                         vmap[i] = null;
                     } else {
-                        index = hitMap[j]
+                        index = tileFeatures[count - 1]
                         feature = featureCache[index];
-
-                        vmap[i] = feature.depth;
+                        vmap[i] = feature[0].reduce[6];
                     }
                 }
             }
@@ -1000,21 +1004,19 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 tileFeatures = hitMap[i];
 
                 if (tileFeatures && tileFeatures.length) {
-                    count = hitMapCount[i];
-
-                    if (count > featuresPerTile) {
-                        count = featuresPerTile;
-                    }
+                    count = tileFeatures.length;
 
                     for (j = 0; j < count; j++){
-                        index = hitMap[j]
+                        index = tileFeatures[count - 1]
                         feature = featureCache[index];
+                        v = feature[0].reduce[6];
 
                         pp = feature[5];
 
-                        var v = getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
+                        //var vmax = Number.NEGATIVE_INFINITY;//getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
+                        var vmax = getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
 
-                        if (feature.depth >= v) {
+                        if (v >= vmax) {
 
                             //render job
                             if (feature[6]) { //no-overlap is always enabled
@@ -1022,16 +1024,12 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                                 
                                 if (depthTest) {
                                     if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true, [pp[0],pp[1]+feature[1],feature[0].reduce,depthOffset])) {
-                                        featureCount++;
+                                        //featureCount++;
                                     }
                                 } else {
                                     if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                                        featureCount++;
+                                        //featureCount++;
                                     }
-                                }
-
-                                if (featureCount >= maxFeatures) {
-                                    return;
                                 }
 
                             } else {
@@ -1065,9 +1063,9 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 var v = vmap[j*mx+i];
 
                 draw.drawLineString([[x, y, 0.5], [x+tileSizeX, y, 0.5],
-                                     [x+tileSizeX, y+tileSizeY, 0.5], [x, y+tileSizeX, 0.5]], true, 1, colors[0,0,255,255], null, true, null, null, null);
+                                     [x+tileSizeX, y+tileSizeY, 0.5], [x, y+tileSizeY, 0.5]], true, 1, [0,0,255,255], null, true, null, null, null);
 
-                draw.drawText(Math.round(x+5), Math.round(y + 5), 10, '' + v, colors[0,0,255,255], 0.5);
+                draw.drawText(Math.round(x+5), Math.round(y + 5), 10, '' + v.toFixed(2), [0,0,255,255], 0.5);
             }
         }
     }

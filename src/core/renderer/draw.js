@@ -1448,7 +1448,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_VSPOINT:
 
 
-        if (job.reduce && !(job.reduce[0] >= 7 && job.reduce[0] <= 10)) {
+        if (job.reduce && !(job.reduce[0] >= 7 && job.reduce[0] <= 11)) {
             var a, r = job.reduce;
 
             if (r[0] > 4) {
@@ -1747,7 +1747,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             //}
         }
 
-        var reduce78 = (job.reduce && (job.reduce[0] >= 7 && job.reduce[0] <= 10));
+        var reduce78 = (job.reduce && (job.reduce[0] >= 7 && job.reduce[0] <= 11));
 
         if (!renderer.drawAllLabels && job.noOverlap) { 
             if (!pp) {
@@ -1775,7 +1775,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    if (!job.reduce || (job.reduce && !(job.reduce[0] >= 8 && job.reduce[0] <= 10))) {  //not overlap code not used for reduce==8
+                    if (!job.reduce || (job.reduce && !(job.reduce[0] >= 8 && job.reduce[0] <= 11))) {  //not overlap code not used for reduce==8
                         depth = o[5] / l;
                     }
                 } 
@@ -1875,7 +1875,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                                      [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
                 if (job.reduce) {
-                    if (job.reduce[0] == 10) {
+                    if (job.reduce[0] >= 10) {
                         this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
                     } else {
                         this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
@@ -2219,7 +2219,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                                  [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
             if (job.reduce) {
-                if (job.reduce[0] == 10) {
+                if (job.reduce[0] >= 10) {
                     this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
                 } else {
                     this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
@@ -2265,7 +2265,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                              [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
         if (job.reduce) {
-            if (job.reduce[0] == 10) {
+            if (job.reduce[0] >= 10) {
                 this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
                 //this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.fade, [1,0,0,1], 0.5);
             } else {

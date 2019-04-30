@@ -410,9 +410,9 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
         job.reduce[6] = 0;
         job.reduce[7] = 0;
 
-        if (job.reduce[0] >= 7 && job.reduce[0] <= 10) {
+        if (job.reduce[0] >= 7 && job.reduce[0] <= 11) {
 
-            if (job.reduce[0] == 10) {
+            if (job.reduce[0] == 10 || job.reduce[0] == 11) {
                 job.reduce[1] = Math.abs(job.reduce[1]);
                 job.reduce[3] = job.reduce[1] * job.reduce[2];
                 job.reduce[2] = job.reduce[1];
