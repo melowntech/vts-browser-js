@@ -886,7 +886,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
     var tileSizeX = screenLX / tileCount;
     var tileSizeY = screenLY / tileCount;
 
-    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures;
+    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures + '<br>featuresPerTile: ' + featuresPerTile;
 
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
     //var feature, feature2, pp, pp2, o, featureCount = 0;
@@ -948,7 +948,8 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 vmap[i] = null;
             }
 
-            for (i = 0, li = featureCacheSize; i < li; i++) {
+            for (i = featureCacheSize - 1; i >= 0; i--) {
+
                 feature = featureCache[i];
                 if (!feature) {
                     continue;
@@ -990,7 +991,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                     if (count == 0) {
                         vmap[i] = null;
                     } else {
-                        index = tileFeatures[count - 1]
+                        index = tileFeatures[count - 1];
                         feature = featureCache[index];
                         vmap[i] = feature[0].reduce[6];
                     }
@@ -1007,7 +1008,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                     count = tileFeatures.length;
 
                     for (j = 0; j < count; j++){
-                        index = tileFeatures[count - 1]
+                        index = tileFeatures[j];
                         feature = featureCache[index];
                         v = feature[0].reduce[6];
 
