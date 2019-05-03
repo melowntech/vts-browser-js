@@ -110,15 +110,15 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                               [n[0], n[1], n[2]], 
                               [up[0], up[1], up[2]] ];
 
+                    //more robust code can be found there
+                    //http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+
                     singleBuffer[index+3] = Math.sqrt(1.0 + m[0][0] + m[1][1] + m[2][2]) / 2.0; // w
                     var  w4 = (4.0 * w);
                     singleBuffer[index+4] = (m[2][1] - m[1][2]) / w4 ;  //x
                     singleBuffer[index+5] = (m[0][2] - m[2][0]) / w4 ;  //y
                     singleBuffer[index+6] = (m[1][0] - m[0][1]) / w4 ;  //z
-
-                    
-
-
+                   
                     singleBuffer[index+7] = factorX;
                     singleBuffer[index+8] = factorY;
                     singleBuffer[index+9] = fc.u1;
