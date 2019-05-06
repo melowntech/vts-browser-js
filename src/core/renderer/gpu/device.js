@@ -60,7 +60,8 @@ GpuDevice.prototype.init = function() {
 
     this.gl = gl;
 
-    gl.getExtension('OES_standard_derivatives');
+    if (!gl.getExtension('OES_standard_derivatives')) {
+    }
 
     this.anisoExt = (
       gl.getExtension('EXT_texture_filter_anisotropic') ||

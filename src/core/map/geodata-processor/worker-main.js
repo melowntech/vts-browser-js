@@ -87,6 +87,7 @@ function processFeatures(type, features, lod, featureType, group) {
                         break;
                     case 'scr-count6': 
                     case 'scr-count7': 
+                    case 'scr-count8': 
                         layer['dynamic-reduce'] = [globals.reduceMode,importance, (typeof layer['importance-weight'] !== 'undefined') ? layer['importance-weight'] : 1 ];
                         layer['label-no-overlap-margin'] = [reduceParams[0]*reduceParams[5], reduceParams[0]*reduceParams[5]];
                         layer['icon-no-overlap-margin'] = [reduceParams[0]*reduceParams[5], reduceParams[0]*reduceParams[5]];

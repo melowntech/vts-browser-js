@@ -103,6 +103,7 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
     this.gmap2 = new Array(2048);
     this.gmap3 = new Array(10000);
     this.gmap3Size = new Array(10000);
+    this.gmap4 = new Array(10000);
     this.gmapIndex = 0;
     this.gmapTop = new Array(512);
     this.gmapHit = new Array(512);
@@ -561,7 +562,7 @@ Renderer.prototype.switchToFramebuffer = function(type, texture) {
     
         this.curSize = [size, size];
 
-        this.gpu.clear();
+        //this.gpu.clear();
         this.camera.update();
         this.onlyDepth = true;
         this.onlyHitLayers = false;
@@ -595,7 +596,7 @@ Renderer.prototype.switchToFramebuffer = function(type, texture) {
         this.advancedPassNeeded = false;
         this.onlyAdvancedHitLayers = (type == 'geo2');
             
-        this.gpu.clear();
+        //this.gpu.clear();
         this.camera.update();
         break;
 
@@ -614,7 +615,7 @@ Renderer.prototype.switchToFramebuffer = function(type, texture) {
     
         this.curSize = [this.gpu.canvas.width, this.gpu.canvas.height];
 
-        this.gpu.clear();
+        //this.gpu.clear();
         this.camera.update();
         this.onlyDepth = false;
         this.onlyHitLayers = false;

@@ -483,6 +483,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                             if (flatShade) {
                                 pixelShader = '#define flatShadeVar\n' + pixelShader;
                                 vertexShader = '#define flatShadeVar\n' + vertexShader;
+
+                                if (this.map.mobile) {
+                                    pixelShader = '#define flatShadeVarFallback\n' + pixelShader;
+                                }
                             }
      
                             program = new GpuProgram(gpu, vertexShader, pixelShader.replace('__FILTER__', filter));

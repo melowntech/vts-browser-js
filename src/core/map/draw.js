@@ -53,6 +53,7 @@ var MapDraw = function(map) {
         drawEarth : true, 
         drawGridCells : false,
         drawTileCounter : 0,
+        drawPolyWires : false,
         drawFog : this.config.mapFog,
         drawGPixelSize : false,
         debugTextSize : 2.0,
@@ -878,7 +879,7 @@ MapDraw.prototype.setupDetailDegradation = function(degradeMore) {
         factor += degradeMore;        
     }
 
-    var dpiRatio = (window.devicePixelRatio || 1);
+    var dpiRatio = 1; //(window.devicePixelRatio || 1);
 
     this.texelSizeFit = this.config.mapTexelSizeFit * Math.pow(2,factor) * dpiRatio;      
 };

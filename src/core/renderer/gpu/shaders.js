@@ -1182,6 +1182,11 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
     '#ifdef flatShadeVar\n'+
         '#extension GL_OES_standard_derivatives : enable\n'+
         'varying vec3 vBarycentric;\n'+
+
+        '#ifdef fogAndColor\n'+
+            'uniform vec4 uColor;\n'+
+        '#endif\n'+
+
     '#endif\n'+
 
     'uniform vec4 uParams2;\n'+        
@@ -1189,19 +1194,30 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
 
         '#ifdef flatShadeVar\n'+
 
-            '#ifdef GL_OES_standard_derivatives\n'+
-                'vec3 nx = dFdx(vBarycentric);\n'+
-                'vec3 ny = dFdy(vBarycentric);\n'+
-                'vec3 normal=normalize(cross(nx,ny));\n'+
-                'vec4 flatShadeData = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
-            '#else\n'+
+            '#ifdef flatShadeVarFallback\n'+
                 'vec4 flatShadeData = vec4(1.0);\n'+
+            '#else\n'+
+                '#ifdef GL_OES_standard_derivatives\n'+
+                    'vec3 nx = dFdx(vBarycentric);\n'+
+                    'vec3 ny = dFdy(vBarycentric);\n'+
+                    'vec3 normal=normalize(cross(nx,ny));\n'+
+                    'vec4 flatShadeData = vec4(vec3(max(0.0,normal.z*(204.0/255.0))+(32.0/255.0)),1.0);\n'+
+                '#else\n'+
+                    'vec4 flatShadeData = vec4(1.0);\n'+
+                '#endif\n'+
             '#endif\n'+
 
         '#endif\n'+
 
         '#ifdef flatShade\n'+
-            'gl_FragColor = vec4(flatShadeData.xyz, 1.0);\n'+
+
+            '#ifdef fogAndColor\n'+
+               // 'gl_FragColor = vec4(mix(uColor.xyz * flatShadeData.xyz, uParams2.xyz, vTexCoord.z), uColor.w);\n'+
+                'gl_FragColor = vec4(uColor.xyz * flatShadeData.xyz, uColor.w);\n'+
+            '#else\n'+
+                'gl_FragColor = vec4(flatShadeData.xyz, 1.0);\n'+
+            '#endif\n'+
+
         '#else\n'+
 
             'vec4 fogColor = vec4(uParams2.xyz, 1.0);\n'+

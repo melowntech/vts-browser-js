@@ -2,7 +2,7 @@
 import {vec3 as vec3_, mat3 as mat3_, mat4 as mat4_} from '../utils/matrix';
 import {math as math_} from '../utils/math';
 import {processGMap as processGMap_, processGMap4 as processGMap4_, processGMap5 as processGMap5_,
-        processGMap6 as processGMap6_, radixDepthSortFeatures as radixDepthSortFeatures_ } from './gmap';
+        processGMap6 as processGMap6_, processGMap7 as processGMap7_, radixDepthSortFeatures as radixDepthSortFeatures_ } from './gmap';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat3 = mat3_, mat4 = mat4_;
@@ -11,6 +11,7 @@ var processGMap = processGMap_;
 var processGMap4 = processGMap4_;
 var processGMap5 = processGMap5_;
 var processGMap6 = processGMap6_;
+var processGMap7 = processGMap7_;
 var radixDepthSortFeatures = radixDepthSortFeatures_;
 
 
@@ -708,6 +709,9 @@ RendererDraw.prototype.drawGpuJobs = function() {
                 case 4: //scr-count7
                     processGMap6(gpu, gl, renderer, screenPixelSize, this);
                     break;
+                case 5: //scr-count8
+                    processGMap7(gpu, gl, renderer, screenPixelSize, this);
+                    break;
             }
             renderer.gmapIndex = 0;
         }
@@ -1087,12 +1091,43 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
     switch(job.type) {
     case VTS_JOB_FLAT_LINE:
-        gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
+    case VTS_JOB_POLYGON:
+
+        if (job.type == VTS_JOB_POLYGON) {
+            if (hitmapRender) {
+                if (job.stencil) {
+                    gpu.setState(job.culling ? renderer.polygonB0S1C1tate : renderer.polygonB0S1C0tate);
+                } else {
+                    gpu.setState(job.culling ? renderer.polygonB0S0C1tate : renderer.polygonB0S0C0tate);
+                }
+            } else {
+                if (job.stencil) {
+                    gpu.setState(job.culling ? renderer.polygonB1S1C1tate : renderer.polygonB1S1C0tate);
+                } else {
+                    gpu.setState(job.culling ? renderer.polygonB1S0C1tate : renderer.polygonB1S0C0tate);
+                }
+            }
+        } else {
+            gpu.setState(hitmapRender ? renderer.stencilLineHitState : renderer.stencilLineState);
+        }
 
         var debugWires = (gpu === 0); //just generate false value to avoid compiler warnings;
 
         if (useSuperElevation) {
+            prog = advancedHitPass ? job.program2 : renderer.progLineSE;
+        } else {            
+            prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
+        }
 
+        var flatShade = (!advancedHitPass && job.type == VTS_JOB_POLYGON && job.style == 1);
+
+        if (flatShade) { 
+            prog = useSuperElevation ? renderer.progCFlatShadeTileSE : renderer.progCFlatShadeTile;
+        }
+
+        gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
+
+        if (useSuperElevation) {
             var m = this.mBuffer;
             var se = renderer.superElevation;
 
@@ -1113,18 +1148,17 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             m[14] = renderer.earthRadius;
             m[15] = renderer.earthERatio;
 
-            prog = advancedHitPass ? job.program2 : renderer.progLineSE;
-            gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
             prog.setMat4('uParamsSE', m);
-
-        } else {            
-
-            prog = advancedHitPass ? job.program2 : debugWires ? renderer.progLineWireframe : job.program;
-            gpu.useProgram(prog, advancedHitPass ? ['aPosition', 'aElement'] : debugWires ? ['aPosition', 'aBarycentric'] : ['aPosition']);
         }
 
-        prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
-        prog.setVec4('uColor', color);
+        if (flatShade) { 
+            prog.setMat4('uMV', job.mv);
+            prog.setMat4('uProj', renderer.camera.getProjectionFMatrix(), renderer.getZoffsetFactor(job.zbufferOffset));
+            prog.setVec4('uColor', color);
+        } else {
+            prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+            prog.setVec4('uColor', color);
+        }
 
         vertexPositionAttribute = prog.getAttribute('aPosition');
 
@@ -1146,6 +1180,29 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         
         //draw polygons
         gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
+
+        var drawDebugLines = renderer.debug.drawPolyWires;// false;//true;
+
+        if (drawDebugLines) {
+
+            var program = useSuperElevation ? renderer.progWireFrameBasicSE : renderer.progWireFrameBasic;
+            renderer.gpu.useProgram(program, ['aPosition']);
+
+            if (useSuperElevation) {
+                program.setMat4('uParamsSE', m);
+            }
+
+            program.setMat4('uMV', job.mv);
+            program.setVec4('uColor', [0,0,0,1]);
+
+            program.setMat4('uProj', renderer.camera.getProjectionFMatrix(), renderer.getZoffsetFactor(job.zbufferOffset));
+
+            for (var i = 0, li = job.vertexPositionBuffer.numItems*2; i < li; i+=3) {
+                gl.drawArrays(gl.LINE_LOOP, i, 3);
+            }
+
+
+        }
 
         break;
 
@@ -1391,7 +1448,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
     case VTS_JOB_VSPOINT:
 
 
-        if (job.reduce && !(job.reduce[0] >= 7 && job.reduce[0] <= 10)) {
+        if (job.reduce && !(job.reduce[0] >= 7 && job.reduce[0] <= 11)) {
             var a, r = job.reduce;
 
             if (r[0] > 4) {
@@ -1690,7 +1747,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             //}
         }
 
-        var reduce78 = (job.reduce && (job.reduce[0] >= 7 && job.reduce[0] <= 10));
+        var reduce78 = (job.reduce && (job.reduce[0] >= 7 && job.reduce[0] <= 11));
 
         if (!renderer.drawAllLabels && job.noOverlap) { 
             if (!pp) {
@@ -1718,7 +1775,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         l = vec3.length(camVec) + 0.0001;
                     }
 
-                    if (!job.reduce || (job.reduce && !(job.reduce[0] >= 8 && job.reduce[0] <= 10))) {  //not overlap code not used for reduce==8
+                    if (!job.reduce || (job.reduce && !(job.reduce[0] >= 8 && job.reduce[0] <= 11))) {  //not overlap code not used for reduce==8
                         depth = o[5] / l;
                     }
                 } 
@@ -1727,7 +1784,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
 
             if (reduce78) {
-                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 10) ? (job.reduce[0] - 6) : 1;
+                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
 
@@ -1766,7 +1823,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                 job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
 
-                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 10) ? (job.reduce[0] - 6) : 1;
+                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
                 renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
                 renderer.gmapIndex++;
 
@@ -1818,7 +1875,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                                      [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
                 if (job.reduce) {
-                    if (job.reduce[0] == 10) {
+                    if (job.reduce[0] >= 10) {
                         this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
                     } else {
                         this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
@@ -2162,7 +2219,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                                  [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
             if (job.reduce) {
-                if (job.reduce[0] == 10) {
+                if (job.reduce[0] >= 10) {
                     this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
                 } else {
                     this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
@@ -2208,7 +2265,7 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
                              [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
 
         if (job.reduce) {
-            if (job.reduce[0] == 10) {
+            if (job.reduce[0] >= 10) {
                 this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
                 //this.drawText(pp[0]+o[0], pp[1]+o[3]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.fade, [1,0,0,1], 0.5);
             } else {

@@ -57,6 +57,8 @@ RendererInit.prototype.initShaders = function() {
 
     renderer.progFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, '#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
     renderer.progFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, '#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
+    renderer.progCFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, '#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader);
+    renderer.progCFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, '#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader);
 
     renderer.progDepthTile = new GpuProgram(gpu, '#define depth\n' + shaders.tileVertexShader, '#define depth\n' + shaders.tileFragmentShader);
     renderer.progDepthTileSE = new GpuProgram(gpu, '#define applySE\n#define depth\n' + shaders.tileVertexShader, '#define depth\n' + shaders.tileFragmentShader);
@@ -378,6 +380,17 @@ RendererInit.prototype.initLines = function() {
     renderer.labelState = gpu.createState({blend:true, culling: false, zequal: true});
     renderer.stencilLineHitState = gpu.createState({blend:false, stencil:true, culling: false});
     renderer.lineLabelHitState = gpu.createState({blend:false, culling: false});
+
+    renderer.polygonB1S1C1tate = gpu.createState({blend:true, stencil:true, culling: true, zequal: true});
+    renderer.polygonB1S0C1tate = gpu.createState({blend:true, stencil:false, culling: true, zequal: true});
+    renderer.polygonB1S1C0tate = gpu.createState({blend:true, stencil:true, culling: false, zequal: true});
+    renderer.polygonB1S0C0tate = gpu.createState({blend:true, stencil:false, culling: false, zequal: true});
+
+    renderer.polygonB0S1C1tate = gpu.createState({blend:false, stencil:true, culling: true, zequal: true});
+    renderer.polygonB0S0C1tate = gpu.createState({blend:false, stencil:false, culling: true, zequal: true});
+    renderer.polygonB0S1C0tate = gpu.createState({blend:false, stencil:true, culling: false, zequal: true});
+    renderer.polygonB0S0C0tate = gpu.createState({blend:false, stencil:false, culling: false, zequal: true});
+
 };
 
 

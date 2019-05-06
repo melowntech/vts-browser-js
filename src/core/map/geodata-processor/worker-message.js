@@ -124,9 +124,10 @@ function optimizeGroupMessages() {
         //console.log('command: ' + message.command + ' type:' + message.type);
         
         if (!message.hitable && !message.reduced && 
-            (type >= VTS_WORKER_TYPE_FLAT_LINE && type <= VTS_WORKER_TYPE_LINE_LABEL)) {
+            (type >= VTS_WORKER_TYPE_FLAT_LINE && type <= VTS_WORKER_TYPE_POLYGON)) {
             
             switch(type) {
+            case VTS_WORKER_TYPE_POLYGON:
             case VTS_WORKER_TYPE_FLAT_LINE:
                 count = 0;
 

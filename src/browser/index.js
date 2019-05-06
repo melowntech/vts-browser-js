@@ -7,11 +7,13 @@ import {utils as utils_} from '../core/utils/utils';
 import {math as math_} from '../core/utils/math';
 import {platform as platform_} from '../core/utils/platform';
 import BrowserInterface_ from './interface';
+import Dom_ from './utility/dom';
 
 //get rid of compiler mess
 var getCoreVersion = getCoreVersion_, checkSupport = checkSupport_;
 var vec2 = vec2_, vec3 = vec3_, vec4 = vec4_, mat3 = mat3_, mat4 = mat4_;
 var utils = utils_;
+var dom = Dom_;
 var math = math_;
 var BrowserInterface = BrowserInterface_;
 var proj4 = Proj4;
@@ -27,4 +29,4 @@ function getBrowserVersion() {
     return '' + getCoreVersion();
 }
 
-export {vec2,vec3,vec4,mat3,mat4,math,utils,getCoreVersion,checkSupport,browser,getBrowserVersion,proj4,earcut,platform};
+export {vec2,vec3,vec4,mat3,mat4,math,utils,getCoreVersion,checkSupport,browser,getBrowserVersion,proj4,earcut,platform,dom};

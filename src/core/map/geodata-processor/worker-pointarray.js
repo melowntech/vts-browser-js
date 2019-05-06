@@ -556,7 +556,7 @@ var processPointArrayPass = function(pointArray, lod, style, featureIndex, zInde
 
             if ((iconData.singleBuffer && iconData.singleBuffer.length > 0) || (iconData.vertexBuffer && iconData.vertexBuffer.length > 0)) {
 
-                postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (labelData.singleBuffer) ? VTS_WORKER_TYPE_ICON : VTS_WORKER_TYPE_ICON2, {
+                postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, (iconData.singleBuffer) ? VTS_WORKER_TYPE_ICON : VTS_WORKER_TYPE_ICON2, {
                     'icon':globals.stylesheetBitmaps[iconData.source[0]], 'color':iconData.color, 'z-index':zIndex,
                     'visibility': visibility, 'culling': culling, 'center': pp2, 'stick': iconData.stick,
                     'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'advancedHit': advancedHit,

@@ -1,12 +1,15 @@
 
-var MapGeodataImportGeoJSON = function(builder, heightMode, srs, groupIdPrefix, dontCreateGroups) {
+var MapGeodataImportGeoJSON = function(builder, heightMode, srs, options) {
     this.builder = builder;
     this.map = builder.map;
     this.heightMode = heightMode || 'float';
     this.srs = srs;
-    this.groupIdPrefix = groupIdPrefix || '';
-    this.dontCreateGroups = dontCreateGroups;
-    //this.processJSON(json);
+
+    options = options || {};
+
+    this.groupIdPrefix = options['groupIdPrefix'] || '';
+    this.dontCreateGroups = options['dontCreateGroups'];
+    this.tesselation = options['tesselation'];
 };
 
 MapGeodataImportGeoJSON.prototype.processGeometry = function(geometry, feature) {
@@ -30,6 +33,21 @@ MapGeodataImportGeoJSON.prototype.processGeometry = function(geometry, feature) 
 
         case 'MultiLineString':
             this.builder.addLineStringArray(coords, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs);
+            break;
+
+        case 'Polygon':
+            if (coords.length > 0) {
+                this.builder.addPolygon(coords[0], (coords.length > 1) ? coords.slice(1) : [], null, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs, this.tesselation);
+            }
+            break;
+
+        case 'MultiPolygon':
+            for (var i = 0, li = coords.length; i < li; i++) {
+                var coords2 = coords[i];
+                if (coords2.length > 0) {
+                    this.builder.addPolygon(coords2[0], (coords2.length > 1) ? coords2.slice(1) : [], null, this.heightMode, feature['properties'], feature['properties'] ? feature['properties']['id'] : null, this.srs, this.tesselation);
+                }
+            }
             break;
 
         case 'GeometryCollection':

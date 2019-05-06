@@ -302,6 +302,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             case 'pow':
             case 'tofixed':
             case 'atan2':
+            case 'random':
 
                 if (!Array.isArray(functionValue) || functionValue.length != 2) {
                     functionError = true;
@@ -321,6 +322,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                             case 'pow':    return Math.pow(v1, v2);
                             case 'atan2':  return Math.atan2(v1, v2);
                             case 'tofixed': return v1.tofixed(v2);
+                            case 'random': return v1 + Math.random() * (v2-v1);
                         }
                     }
                 }
@@ -838,8 +840,8 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
                     }
 
                     if (!((value[0] == 'tilt' || value[0] == 'tilt-cos' || value[0] == 'tilt-cos2' || value[0] == 'scr-count' || value[0] == 'scr-count2' ||
-                           value[0] == 'scr-count3' || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6' || value[0] == 'scr-count7') &&
-                        (typeof value[1] === 'number') && ((typeof value[2] === 'number') || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6' || value[0] == 'scr-count7'))) {
+                           value[0] == 'scr-count3' || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6' || value[0] == 'scr-count7' || value[0] == 'scr-count8') &&
+                        (typeof value[1] === 'number') && ((typeof value[2] === 'number') || value[0] == 'scr-count4' || value[0] == 'scr-count5' || value[0] == 'scr-count6' || value[0] == 'scr-count7' || value[0] == 'scr-count8'))) {
                         logError('wrong-property-value', layerId, key, value);
                         return getDefaultLayerPropertyValue(key);
                     }
@@ -1113,8 +1115,12 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'label-no-overlap-factor': return validateValue(layerId, key, value, 'object');
     case 'label-no-overlap-margin': return validateValue(layerId, key, value, 'object', 2, -Number.MAX_VALUE, Number.MAX_VALUE);
 
-    case 'polygon':         return validateValue(layerId, key, value, 'boolean');
-    case 'polygon-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'polygon':             return validateValue(layerId, key, value, 'boolean');
+    case 'polygon-style':       return validateValue(layerId, key, value, 'string');
+    case 'polygon-use-stencil': return validateValue(layerId, key, value, 'boolean');
+    case 'polygon-culling':     return validateValue(layerId, key, value, 'string');
+    case 'polygon-color':       return validateValue(layerId, key, value, 'object', 4, 0, 255);
+    case 'polygon-extrude':     return validateValue(layerId, key, value, 'number', 0, -Number.MAX_VALUE, Number.MAX_VALUE);
 
     case 'z-index':        return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'zbuffer-offset': return validateValue(layerId, key, value, 'object', 3, 0, Number.MAX_VALUE);
@@ -1216,7 +1222,10 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'label-no-overlap-factor': return null;
     case 'label-no-overlap-margin': return [5,5];
        
-    case 'polygon':        return false;
+    case 'polygon':             return false;
+    case 'polygon-style':       return 'solid';
+    case 'polygon-use-stencil': return true;
+    case 'polygon-culling':     return 'none';
     case 'polygon-color':  return [255,255,255,255];
 
     case 'z-index':        return 0;
