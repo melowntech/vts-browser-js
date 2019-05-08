@@ -480,7 +480,7 @@ self.onmessage = function (e) {
             globals.reduceMode = data['reduceMode'];
             globals.reduceParams = data['reduceParams'];
             globals.log = data['log'];
-            globals.language = message['language'];
+            globals.language = data['language'];
             processStylesheet(data['data']);
         }
         //postMessage({'command' : 'ready'});

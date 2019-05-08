@@ -97,6 +97,7 @@ var Core = function(element, config, coreInterface) {
         mapFog : true,
         mapNoTextures: false,
         mapMetricUnits : !(lang == 'en' || lang.indexOf('en-') == 0),
+        mapLanguage : lang,
         mapForceFrameTime: 0,
         mapForcePipeline: 0,
         mapLogGeodataStyles: true,

@@ -878,8 +878,9 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapDegradeHorizon':             this.config.mapDegradeHorizon = utils.validateBool(value, true); break;
     case 'mapDegradeHorizonParams':       this.config.mapDegradeHorizonParams = utils.validateNumberArray(value, 4, [0,1,1,1], [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], [1, 3000, 15000, 7000]); break;
     case 'mapRefreshCycles':              this.config.mapRefreshCycles = utils.validateNumber(value, 0, Number.MAXINTEGER, 3); break;
-    case 'mapDefaultFont':                this.config.mapDefaultFont =  utils.validateString(value, ''); break;
+    case 'mapDefaultFont':                this.config.mapDefaultFont = utils.validateString(value, ''); break;
     case 'mapMetricUnits':                this.config.mapMetricUnits = utils.validateBool(value, true); break;
+    case 'mapLanguage':                   this.config.mapLanguage = utils.validateString(value, 'en'); break;
     case 'mapNoTextures':                 this.config.mapNoTextures = this.config.mapDisableCulling = utils.validateBool(value, false); break;
     case 'mapForceFrameTime':             this.config.mapForceFrameTime = utils.validateNumber(value, -1, Number.MAXINTEGER, 0); break;
     case 'mapForcePipeline':              this.config.mapForcePipeline = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
@@ -962,6 +963,7 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapRefreshCycles':              return this.config.mapRefreshCycles;
     case 'mapDefaultFont':                return this.config.mapDefaultFont;
     case 'mapMetricUnits':                return this.config.mapMetricUnits;
+    case 'mapLanguage':                   return this.config.mapLanguage;
     case 'mapNoTextures':                 return this.config.mapNoTextures;
     case 'mapForceFrameTime':             return this.config.mapForceFrameTime;
     case 'mapForcePipeline':              return this.config.mapForcePipeline;
