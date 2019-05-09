@@ -467,6 +467,48 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
 
                 break;
 
+            case 'find':
+            case 'replace':
+            case 'substr':
+
+                if (Array.isArray(functionValue) && functionValue.length >= 2) {
+
+                    v1 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[0], depth + 1);
+                    v2 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[1], depth + 1);
+
+                    if (functionName == 'find' && typeof v1 === 'string' && typeof v2 === 'string') {
+                        return v1.indexOf(v2);
+                    }
+
+                    if (functionName == 'replace' && functionValue.length == 3) {
+
+                        v3 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[2], depth + 1);
+
+                        if (typeof v1 === 'string' && typeof v2 === 'string' && typeof v3 === 'string') {
+                            return v1.replace(v2,v3);
+                        }
+                    }
+
+                    if (functionName == 'substr') {
+
+                        if (functionValue.length == 2) {
+                            if (typeof v1 === 'string' && typeof v2 === 'number') {
+                                return v1.substr(v2);
+                            }
+                        } else {
+                            v3 = getLayerPropertyValueInner(layer, key, feature, lod, functionValue[2], depth + 1);
+
+                            if (typeof v1 === 'string' && typeof v2 === 'number' && typeof v3 === 'number') {
+                                return v1.substr(v2,v3);
+                            }
+                        }
+                    }
+
+                }
+
+                functionError = true;
+                break;
+
             case 'min':
             case 'max':
 

@@ -221,9 +221,9 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
     this.sendCommand('setStylesheet', { 'data' : stylesheet.data,
                                         'geocent' : (!this.map.getNavigationSrs().isProjected()),
                                         'metric': config.mapMetricUnits,
+                                        'language': config.mapLanguage,
                                         'reduceMode': rmode,
                                         'reduceParams': config.mapFeaturesReduceParams,
-                                        'language': (navigator.language || navigator.userLanguage),
                                         'log': config.mapLogGeodataStyles } );
 
     var fonts = stylesheet.fonts;

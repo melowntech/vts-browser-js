@@ -25,6 +25,7 @@ var globals = {
     pixelFactor : 1,
     alwaysEventInfo : false,
     metricUnits : true,
+    language : 'en',
     groupOptimize : true,
     groupOrigin : [0,0,0],
     messageBuffer : new Array(65536),
