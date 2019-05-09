@@ -90,6 +90,9 @@ var Core = function(element, config, coreInterface) {
         mapFeaturesReduceFactor : 1,
         mapFeaturesReduceFactor2 : 1,
 
+        mapDMapSize : 1024,
+        mapDMapMode : 1,
+
         mapDegradeHorizon : false,
         mapDegradeHorizonParams : [1, 1500, 97500, 3500], //[1, 3000, 15000, 7000],
         mapDefaultFont : '//cdn.melown.com/libs/vtsjs/fonts/noto-basic/1.0.0/noto.fnt',
@@ -466,7 +469,11 @@ Core.prototype.setConfigParams = function(params, solveStorage) {
 
 
 Core.prototype.setConfigParam = function(key, value, solveStorage) {
-    if (key == 'pos' || key == 'position' || key == 'view') {
+    switch(key) {
+    case 'pos':
+    case 'position':
+    case 'view':
+
         if (this.getMap()) {
             if (key == 'view') {
                 this.getMap().setView(value);
@@ -479,19 +486,26 @@ Core.prototype.setConfigParam = function(key, value, solveStorage) {
         } else {
             this.configStorage[key] = value;
         }
-    } else if (key == 'map') {
-        this.config.map = utils.validateString(value, null);
-    } else if (key == 'mapVirtualSurfaces') {
-        this.config.mapVirtualSurfaces = utils.validateBool(value, true);
-    } else if (key == 'mapForcePipeline') {
-        this.config.mapForcePipeline = utils.validateNumber(value, -1, Number.MAXINTEGER, 0);
-    } else if (key == 'map16bitMeshes') {
-        this.config.map16bitMeshes = utils.validateBool(value, false);
-    } else if (key == 'inspector') {
-        this.config.inspector = utils.validateBool(value, true);
-    } else if (key == 'authorization') {
-        this.config.authorization = ((typeof value === 'string') || (typeof value === 'function')) ? value : null;   
-    } else {
+        break;
+
+    case 'map':
+        this.config.map = utils.validateString(value, null); break;
+    case 'mapVirtualSurfaces':
+        this.config.mapVirtualSurfaces = utils.validateBool(value, true); break;
+    case 'mapForcePipeline':
+        this.config.mapForcePipeline = utils.validateNumber(value, -1, Number.MAXINTEGER, 0); break;
+    case 'mapDMapSize':
+        this.config.mapDMapSize = utils.validateNumber(value, 16, Number.MAXINTEGER, 512); break; 
+    case 'mapDMapMode':
+        this.config.mapDMapMode = utils.validateNumber(value, 1, Number.MAXINTEGER, 1); break;
+    case 'map16bitMeshes':
+        this.config.map16bitMeshes = utils.validateBool(value, false); break;
+    case 'inspector':
+        this.config.inspector = utils.validateBool(value, true); break;
+    case 'authorization':
+        this.config.authorization = ((typeof value === 'string') || (typeof value === 'function')) ? value : null; 
+         break;
+    default:
         if (key.indexOf('map') == 0 || key == 'mario') {
            
             if (!solveStorage || (typeof this.configStorage[key] === 'undefined')) {
@@ -517,7 +531,10 @@ Core.prototype.setConfigParam = function(key, value, solveStorage) {
                 this.inspector.setParameter(key, value);
             }
         }
+
+        break;            
     }
+
 };
 
 

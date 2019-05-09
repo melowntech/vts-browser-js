@@ -85,7 +85,8 @@ var Renderer = function(core, div, onUpdate, onResize, config) {
 
     this.hitmapTexture = null;
     this.geoHitmapTexture = null;
-    this.hitmapSize = 1024;
+    this.hitmapSize = this.config.mapDMapSize;
+    this.hitmapMode = this.config.mapDMapMode;
     this.updateHitmap = true;
     this.updateGeoHitmap = true;
 
@@ -659,17 +660,31 @@ Renderer.prototype.hitTest = function(screenX, screenY) {
 };
 
 
+Renderer.prototype.copyHitmap = function() {
+    this.hitmapTexture.readFramebufferPixels(0,0,this.hitmapSize,this.hitmapSize, false, this.hitmapData);
+};
+
+
 Renderer.prototype.getDepth = function(screenX, screenY) {
     var x = Math.floor(screenX * (this.hitmapSize / this.curSize[0]));
     var y = Math.floor(screenY * (this.hitmapSize / this.curSize[1]));
 
-    //get pixel value from framebuffer
-    var pixel = this.hitmapTexture.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1);
+    if (this.hitmapMode <= 2) {
+        //get pixel value from framebuffer
+        var pixel = this.hitmapTexture.readFramebufferPixels(x, this.hitmapSize - y - 1, 1, 1, (this.hitmapMode == 2));
 
-    //convert rgb values into depth
-    var depth = (pixel[0] * (1.0/255)) + (pixel[1]) + (pixel[2]*255.0) + (pixel[3]*65025.0);// + (pixel[3]*16581375.0);
+        //convert rgb values into depth
+        var depth = (pixel[0] * (1.0/255)) + (pixel[1]) + (pixel[2]*255.0) + (pixel[3]*65025.0);// + (pixel[3]*16581375.0);
+        var surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
 
-    var surfaceHit = !(pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 && pixel[3] == 255);
+    } else {
+        var pixels = this.hitmapData;
+        var index = (x + (this.hitmapSize - y - 1) * this.hitmapSize) * 4;
+        var r = pixels[index], g = pixels[index+1], b = pixels[index+2], a = pixels[index+3];
+
+        var depth = (r * (1.0/255)) + (g) + (b*255.0) + (a*65025.0);// + (pixel[3]*16581375.0);
+        var surfaceHit = !(r == 255 && g == 255 && b == 255 && a == 255);
+    }
 
     return [surfaceHit, depth];
 };

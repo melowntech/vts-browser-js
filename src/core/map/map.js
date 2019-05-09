@@ -902,6 +902,8 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapPackGeodataEvents':          this.config.mapPackGeodataEvents = utils.validateBool(value, true); break;
     case 'mapSortHysteresis':             this.config.mapSortHysteresis = utils.validateBool(value, false); break;
     case 'mapHysteresisWait':             this.config.mapHysteresisWait = utils.validateNumber(value, 0, Number.MAXINTEGER, 0); break;
+    case 'mapDMapSize':                   this.config.mapDMapSize = utils.validateNumber(value, 16, Number.MAXINTEGER, 512); break; 
+    case 'mapDMapMode':                   this.config.mapDMapMode = utils.validateNumber(value, 1, Number.MAXINTEGER, 1); break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');
@@ -986,6 +988,8 @@ Map.prototype.getConfigParam = function(key) {
     case 'mapPackGeodataEvents':          return this.config.mapPackGeodataEvents;
     case 'mapSortHysteresis':             return this.config.mapSortHysteresis;
     case 'mapHysteresisWait':             return this.config.mapHysteresisWait;
+    case 'mapDMapSize':                   return this.config.mapDMapSize; 
+    case 'mapDMapMode':                   return this.config.mapDMapMode;
     case 'mario':                         return this.config.mario;
     }
 };

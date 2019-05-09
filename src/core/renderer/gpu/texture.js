@@ -271,21 +271,28 @@ GpuTexture.prototype.createFramebuffer = function(lx, ly) {
 };
 
 
-GpuTexture.prototype.readFramebufferPixels = function(x, y, lx, ly) {
+GpuTexture.prototype.readFramebufferPixels = function(x, y, lx, ly, fastMode, data) {
     if (this.texture == null) {
         return;
     }
 
     this.gpu.bindTexture(this);
-    this.gpu.setFramebuffer(this);
+
+    if (!fastMode) {
+        this.gpu.setFramebuffer(this);
+    }
 
     var gl = this.gl;
 
     // Read the contents of the framebuffer (data stores the pixel data)
-    var data = new Uint8Array(lx * ly * 4);
+    if (!data) {
+        data = new Uint8Array(lx * ly * 4);        
+    }
     gl.readPixels(x, y, lx, ly, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
-    this.gpu.setFramebuffer(null);
+    if (!fastMode) {
+        this.gpu.setFramebuffer(null);
+    }
 
     return data;
 };
