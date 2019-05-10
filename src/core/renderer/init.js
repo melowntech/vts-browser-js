@@ -60,9 +60,9 @@ RendererInit.prototype.initShaders = function() {
     renderer.progCFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, ('#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
     renderer.progCFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, ('#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
 
-    renderer.progDepthTile = new GpuProgram(gpu, '#define depth\n' + shaders.tileVertexShader, '#define depth\n' + shaders.tileFragmentShader);
-    renderer.progDepthTileSE = new GpuProgram(gpu, '#define applySE\n#define depth\n' + shaders.tileVertexShader, '#define depth\n' + shaders.tileFragmentShader);
-    renderer.progDepthHeightmap = new GpuProgram(gpu, shaders.heightmapDepthVertexShader, shaders.heightmapDepthFragmentShader);
+    renderer.progDepthTile = new GpuProgram(gpu, '#define depth\n' + shaders.tileVertexShader, ('#define depth\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
+    renderer.progDepthTileSE = new GpuProgram(gpu, '#define applySE\n#define depth\n' + shaders.tileVertexShader, ('#define depth\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
+    renderer.progDepthHeightmap = new GpuProgram(gpu, shaders.heightmapDepthVertexShader, (shaders.heightmapDepthFragmentShader).replace('mediump', 'highp'));
 
     renderer.progShadedTile = new GpuProgram(gpu, shaders.shadedMeshVertexShader, shaders.shadedMeshFragmentShader);
     renderer.progTShadedTile = new GpuProgram(gpu, shaders.shadedMeshVertexShader, '#define textured\n' + shaders.shadedMeshFragmentShader);
