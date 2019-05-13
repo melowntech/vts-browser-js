@@ -61,17 +61,22 @@ ControlModeMapObserver.prototype.drag = function(event) {
             this.orientationDeltas.push([delta[0] * sensitivity,  -delta[1] * sensitivity, 0]);
             this.browser.callListener('map-position-rotated', {});
 
-        } else if (config.zoomAllowed) {
+        } else if (event.getTouchParameter('touchMode') == 'zoom' && config.zoomAllowed) {
 
-            var factor = 1.0 + (event.getTouchParameter('touchDistanceDelta') > 1.0 ? -1 : 1)*0.01;
-            this.viewExtentDeltas.push(factor);
-            this.reduceFloatingHeight(0.8);
-            
-            if (config.legacyInertia) {
-                this.updateDeltas(false, false, true);
+            var delta = event.getTouchParameter('touchDistanceDelta');
+
+            if (Math.abs(delta) >= 1) {
+
+                var factor = 1.0 + (delta > 0 ? -1 : 1)*0.01;
+                this.viewExtentDeltas.push(factor);
+                this.reduceFloatingHeight(0.8);
+                
+                if (config.legacyInertia) {
+                    this.updateDeltas(false, false, true);
+                }
+
+                this.browser.callListener('map-position-zoomed', {});
             }
-
-            this.browser.callListener('map-position-zoomed', {});
         }
         
     } else if ((event.getDragButton('left') && !modifierKey) && config.panAllowed) { //pan
