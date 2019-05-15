@@ -110,6 +110,13 @@ RendererInit.prototype.initShaders = function() {
     renderer.progText2 = new GpuProgram(gpu, '#define lineLabel\n' + shaders.lineVertexShader, shaders.text2FragmentShader); //line label 
     renderer.progText2SE = new GpuProgram(gpu, '#define applySE\n#define lineLabel\n' + shaders.lineVertexShader, shaders.text2FragmentShader); //line label 
 
+    renderer.progLineLabel16 = new GpuProgram(gpu, '#define DSIZE 16\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel32 = new GpuProgram(gpu, '#define DSIZE 32\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel48 = new GpuProgram(gpu, '#define DSIZE 48\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel64 = new GpuProgram(gpu, '#define DSIZE 64\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel96 = new GpuProgram(gpu, '#define DSIZE 96\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel128 = new GpuProgram(gpu, '#define DSIZE 128\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+
     renderer.progPolygon = new GpuProgram(gpu, shaders.polygonVertexShader, shaders.polygonFragmentShader);
     renderer.progImage = new GpuProgram(gpu, shaders.imageVertexShader, shaders.imageFragmentShader);
     renderer.progIcon = new GpuProgram(gpu, shaders.iconVertexShader, shaders.textFragmentShader); //label or icon

@@ -1368,6 +1368,59 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             texture = renderer.whiteTexture;
         }
 
+        var gamma = job.outline[2] * 1.4142 / 20;
+        var gamma2 = job.outline[3] * 1.4142 / 20;
+
+        if (job.singleBuffer) {
+
+            var b = job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
+
+            if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
+            if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLineLabel96; } else
+            if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLineLabel64; } else
+            if (bl > 128) { vbuff = renderer.textQuads48; prog = renderer.progLineLabel48; } else
+            if (bl > 64) { vbuff = renderer.textQuads32; prog = renderer.progLineLabel32; }
+            else { vbuff = renderer.textQuads16; prog = renderer.progLineLabel16; }
+
+            gpu.useProgram(prog, ['aPosition']);
+            prog.setSampler('uSampler', 0);
+            prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+
+            prog.setVec4('uColor', hitmapRender ? color : color2);
+            prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
+            lj = hitmapRender ? 1 : 2;
+
+            var vertexPositionAttribute = prog.getAttribute('aPosition');
+
+            prog.setVec4('uData', b);
+
+            //bind vetex positions
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbuff);
+            gl.vertexAttribPointer(vertexPositionAttribute, vbuff.itemSize, gl.FLOAT, false, 0, 0);
+
+            //draw polygons
+            for(;j<lj;j++) {
+                if (j == 1) {
+                    prog.setVec4('uColor', color);
+                    prog.setVec2('uParams', [job.outline[1], job.gamma[0]]);
+                }
+
+                for (var i = 0, li = files.length; i < li; i++) {
+                    var fontFiles = files[i];
+
+                    for (var k = 0, lk = fontFiles.length; k < lk; k++) {
+                        var file = fontFiles[k];
+                        prog.setFloat('uFile', Math.round(file+i*1000));
+                        gpu.bindTexture(job.fonts[i].getTexture(file));
+                        gl.drawArrays(gl.TRIANGLES, 0, vitems);
+                    }
+                }
+            }
+
+
+            return;
+        }
+
         prog = renderer.useSuperElevation ? renderer.progText2SE : job.program;
         gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
 
@@ -1399,8 +1452,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uVec', renderer.labelVector);
 
-        var gamma = job.outline[2] * 1.4142 / 20;
-        var gamma2 = job.outline[3] * 1.4142 / 20;
         prog.setVec4('uColor', (hitmapRender ? color : job.color2));
         prog.setVec2('uParams', [job.outline[0], gamma2]);
 

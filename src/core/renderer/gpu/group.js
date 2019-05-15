@@ -291,8 +291,12 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 GpuGroup.prototype.addLineLabelJob = function(data) {
     var gl = this.gl;
 
-    var vertices = data.vertexBuffer;
-    var texcoords = data.texcoordsBuffer;
+    if (data.singleBuffer) {
+        var singleBuffer = data.singleBuffer;
+    } else {
+        var vertices = data.vertexBuffer;
+        var texcoords = data.texcoordsBuffer;
+    }
 
     var job = {};
     job.type = VTS_JOB_LINE_LABEL;
@@ -329,24 +333,32 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
         return;
     }
 
-    //create vertex buffer
-    job.vertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    job.vertexPositionBuffer.itemSize = 4;
-    job.vertexPositionBuffer.numItems = vertices.length / 4;
+    if (singleBuffer) {
+        job.singleBuffer = singleBuffer;
 
-    //create normal buffer
-    job.vertexTexcoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
-    job.vertexTexcoordBuffer.itemSize = 4;
-    job.vertexTexcoordBuffer.numItems = texcoords.length / 4;
+        //this.size += vertices.length * 4 + texcoords.length * 4;
+        this.polygons += (singleBuffer.length / 12) * 2;
+
+    } else {
+        //create vertex buffer
+        job.vertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexPositionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        job.vertexPositionBuffer.itemSize = 4;
+        job.vertexPositionBuffer.numItems = vertices.length / 4;
+
+        //create normal buffer
+        job.vertexTexcoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, job.vertexTexcoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
+        job.vertexTexcoordBuffer.itemSize = 4;
+        job.vertexTexcoordBuffer.numItems = texcoords.length / 4;
+
+        this.size += vertices.length * 4 + texcoords.length * 4;
+        this.polygons += vertices.length / (4 * 3);
+    }
 
     this.jobs.push(job);
-
-    this.size += vertices.length * 4 + texcoords.length * 4;
-    this.polygons += vertices.length / (4 * 3);
 };
 
 
@@ -684,6 +696,13 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
             data.vertexBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.vertexBuffer.byteLength;
             length = view.getUint32(index); index += 4;
             data.texcoordsBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.texcoordsBuffer.byteLength;
+            this.addLineLabelJob(data);
+            break;
+
+        case VTS_WORKER_TYPE_LINE_LABEL2:
+
+            length = view.getUint32(index); index += 4;
+            data.singleBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.singleBuffer.byteLength;
             this.addLineLabelJob(data);
             break;
 

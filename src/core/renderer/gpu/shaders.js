@@ -45,19 +45,29 @@ GpuShaders.lineVertexShader = //line
         '#endif\n'+
     '#else\n'+
 
-        '#ifdef lineLabel\n'+
-            'attribute vec4 aPosition;\n'+
-            'attribute vec4 aTexCoord;\n'+
-            'uniform vec4 uVec;\n'+
+        '#ifdef lineLabel2\n'+
+
+            'uniform vec4 uData[DSIZE];\n'+
             'uniform float uFile;\n'+
             'varying vec2 vTexCoord;\n'+
-        '#else\n'+
-            'attribute vec3 aPosition;\n'+
-        '#endif\n'+
 
-        '#ifdef dynamicWidth\n'+
-            'attribute vec4 aNormal;\n'+
-            'uniform vec4 uParams;\n'+
+        '#else\n'+
+
+            '#ifdef lineLabel\n'+
+                'attribute vec4 aPosition;\n'+
+                'attribute vec4 aTexCoord;\n'+
+                'uniform vec4 uVec;\n'+
+                'uniform float uFile;\n'+
+                'varying vec2 vTexCoord;\n'+
+            '#else\n'+
+                'attribute vec3 aPosition;\n'+
+            '#endif\n'+
+
+            '#ifdef dynamicWidth\n'+
+                'attribute vec4 aNormal;\n'+
+                'uniform vec4 uParams;\n'+
+            '#endif\n'+
+
         '#endif\n'+
 
     '#endif\n'+
@@ -191,27 +201,58 @@ GpuShaders.lineVertexShader = //line
 
             '#else\n'+
 
-                '#ifdef lineLabel\n'+
+                '#ifdef lineLabel2\n'+
 
-                    'vTexCoord = aTexCoord.xy;\n'+
-                    'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
+                    'vec3 pos = vec3(uData[0],uData[1],uData[2]);\n'+
+
+                    'int index = int(aPosition.x);\n'+
+                    'vec4 data = uData[index];\n'+
+                    'vec4 data2 = uData[index+1];\n'+
+                    'vec4 v;\n'+
+                    'int corner = int(aPosition.y);\n'+
+                    'if (corner==0) v = vec4(data.x, data.y, data2.x, data2.y);\n'+
+                    'if (corner==1) v = vec4(data.z, data.y, data2.z, data2.y);\n'+
+                    'if (corner==2) v = vec4(data.z, data.w, data2.z, data2.w);\n'+
+                    'if (corner==3) v = vec4(data.x, data.w, data2.x, data2.w);\n'+
+                    'vTexCoord = vec2(v.z, v.w);\n'+
+                    'float file = floor(v.w/4.0);\n'+
+                    //'vTexCoord.y = mod(v.w,4.0);\n'+
+                    'vTexCoord.y = (v.w-file*4.0);\n'+
+
+
+                    'float file = floor(aTexCoord.y/4.0);\n'+
+                    'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
+                    'if (file != floor(uFile)) {\n'+
                         'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
                     '}else{\n'+
-                        'float file = floor(aTexCoord.y/4.0);\n'+
-                        'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
-                        'if (file != floor(uFile)) {\n'+
-                            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
-                        '}else{\n'+
-                            'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
-                        '}\n'+
+                        'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
                     '}\n'+
 
                 '#else\n'+
 
-                    '#ifdef dynamicWidth\n'+
-                        'gl_Position = uMVP * vec4(aPosition.xyz + aNormal.xyz*(abs(aNormal.w)*uParams[3]), 1.0);\n'+
+                    '#ifdef lineLabel\n'+
+
+                        'vTexCoord = aTexCoord.xy;\n'+
+                        'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
+                            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                        '}else{\n'+
+                            'float file = floor(aTexCoord.y/4.0);\n'+
+                            'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
+                            'if (file != floor(uFile)) {\n'+
+                                'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                            '}else{\n'+
+                                'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
+                            '}\n'+
+                        '}\n'+
+
                     '#else\n'+
-                        'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+
+                        '#ifdef dynamicWidth\n'+
+                            'gl_Position = uMVP * vec4(aPosition.xyz + aNormal.xyz*(abs(aNormal.w)*uParams[3]), 1.0);\n'+
+                        '#else\n'+
+                            'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+                        '#endif\n'+
+
                     '#endif\n'+
 
                 '#endif\n'+

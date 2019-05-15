@@ -1001,6 +1001,47 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
             fillVMapHoles(vmap, mx, my);
 
 
+            for (i = featureCacheSize - 1; i >= 0; i--) {
+                feature = featureCache[i];
+                if (!feature) {
+                    continue;
+                }
+
+                v = feature[0].reduce[6];
+                pp = feature[5];
+
+                //var vmax = Number.NEGATIVE_INFINITY;//getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
+                var vmax = getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
+
+                if (v >= vmax) {
+
+                    //render job
+                    if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
+                        pp = feature[5];
+                        o = feature[8];
+                        
+                        if (depthTest) {
+                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true, [pp[0],pp[1]+feature[1],feature[0].reduce,depthOffset])) {
+                                //featureCount++;
+                            }
+                        } else {
+                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                                //featureCount++;
+                            }
+                        }
+
+                    } else {
+                        if (feature[0].hysteresis) {
+                            renderer.jobHBuffer[feature[0].id] = feature[0];
+                        } else {
+                            renderer.drawnJobs++;
+                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+                        }
+                    }
+                }
+            }
+
+            /*
             for (i = 0, li = (mx) * (my); i < li; i++) {
                 tileFeatures = hitMap[i];
 
@@ -1045,7 +1086,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                         }
                     }
                 }
-            }
+            } */
         }
 
     }
@@ -1066,7 +1107,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 draw.drawLineString([[x, y, 0.5], [x+tileSizeX, y, 0.5],
                                      [x+tileSizeX, y+tileSizeY, 0.5], [x, y+tileSizeY, 0.5]], true, 1, [0,0,255,255], null, true, null, null, null);
 
-                draw.drawText(Math.round(x+5), Math.round(y + 5), 10, '' + v.toFixed(2), [0,0,255,255], 0.5);
+                draw.drawText(Math.round(x+5), Math.round(y + 5), 11, '' + v.toFixed(2), [255,255,255,255], 0.5);
             }
         }
     }

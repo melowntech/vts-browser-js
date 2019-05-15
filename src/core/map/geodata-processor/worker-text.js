@@ -93,7 +93,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
 
             if (singleBuffer) {
 
-                if (globals.procesLineLabel) {
+                if (globals.processLineLabel) {
 
                     p1[0] = p1[0] + dir[0] * fc.sx * factor;
                     p1[1] = p1[1] + dir[1] * fc.sx * factor;
@@ -113,7 +113,8 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                     //more robust code can be found there
                     //http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
 
-                    singleBuffer[index+3] = Math.sqrt(1.0 + m[0][0] + m[1][1] + m[2][2]) / 2.0; // w
+                    var w = Math.sqrt(1.0 + m[0][0] + m[1][1] + m[2][2]) / 2.0; // w
+                    singleBuffer[index+3] = w;
                     var  w4 = (4.0 * w);
                     singleBuffer[index+4] = (m[2][1] - m[1][2]) / w4 ;  //x
                     singleBuffer[index+5] = (m[0][2] - m[2][0]) / w4 ;  //y
@@ -123,9 +124,13 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                     singleBuffer[index+8] = factorY;
                     singleBuffer[index+9] = fc.u1;
                     singleBuffer[index+10] = fc.v1 + planeShift;
-                    singleBuffer[index+11] = fc.u2;
-                    singleBuffer[index+12] = fc.v2 + planeShift;
 
+                    var dtx = (fc.u2 - fc.u1) * 1024;
+                    var dty = (fc.v2 - fc.v1);// * 1024;
+
+                    singleBuffer[index+11] = dtx + dty;  // u store in decimal part, v stored in fraction part
+
+                    index += 12;
                 } else {
                     singleBuffer[index] = p1[0] + fc.sx * factor;
                     singleBuffer[index+1] = p1[1] + (fc.sy - font.size) * factor;
@@ -266,7 +271,7 @@ var addText = function(pos, dir, text, size, spacing, fonts, vertexBuffer, texco
 };
 
 
-var addTextOnPath = function(points, distance, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes) {
+var addTextOnPath = function(points, distance, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes, singleBuffer) {
     if (textVector == null) {
         textVector = [0,1,0];
     }
@@ -320,7 +325,7 @@ var addTextOnPath = function(points, distance, text, size, spacing, textVector, 
 
             vec3Normalize(dir);
 
-            var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, glyph, factor, spacing, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes, gfonts[i]);
+            var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, glyph, factor, spacing, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes, gfonts[i], singleBuffer);
 
             p1 = shift[0];
             index = shift[1];
@@ -333,7 +338,7 @@ var addTextOnPath = function(points, distance, text, size, spacing, textVector, 
 };
 
 
-var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes) {
+var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes, singleBuffer) {
     var textLength = getTextLength(text, size, spacing, fonts, glyphsRes);
     var pathLength = getPathLength(points);
     var shift = (pathLength -  textLength)*0.5;
@@ -347,7 +352,7 @@ var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalO
 
     var textVector = getPathTextVector(points, shift, text, size, spacing, fonts, glyphsRes);
 
-    return addTextOnPath(points, shift, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes);
+    return addTextOnPath(points, shift, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes, singleBuffer);
 };
 
 
