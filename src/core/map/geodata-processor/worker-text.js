@@ -93,7 +93,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
 
             if (singleBuffer) {
 
-                if (globals.processLineLabel) {
+                if (globals.processLineLabel && globals.useLineLabel2) {
 
                     p1[0] = p1[0] + dir[0] * fc.sx * factor;
                     p1[1] = p1[1] + dir[1] * fc.sx * factor;
@@ -102,9 +102,12 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                     p1[1] = p1[1] + n[1] * (fc.sy - font.size) * factor;
                     p1[2] = p1[2] + n[2] * (fc.sy - font.size) * factor;
 
-                    singleBuffer[index] = p1[0];
-                    singleBuffer[index+1] = p1[1];
-                    singleBuffer[index+2] = p1[2];
+                    var n2 = [n[0] * verticalShift, n[1] * verticalShift, n[2] * verticalShift];
+                    var n3 = [n2[0] + n[0] * factorY, n2[1] + n[1] * factorY, n2[2] + n[2] * factorY];
+
+                    singleBuffer[index] = p1[0] - n2[0];
+                    singleBuffer[index+1] = p1[1] - n2[1];
+                    singleBuffer[index+2] = p1[2] - n2[2];
 
                     var m = [ [dir[0], dir[1], dir[2]], 
                               [n[0], n[1], n[2]], 
@@ -114,11 +117,11 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                     //http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
 
                     var w = Math.sqrt(1.0 + m[0][0] + m[1][1] + m[2][2]) / 2.0; // w
-                    singleBuffer[index+3] = w;
                     var  w4 = (4.0 * w);
-                    singleBuffer[index+4] = (m[2][1] - m[1][2]) / w4 ;  //x
-                    singleBuffer[index+5] = (m[0][2] - m[2][0]) / w4 ;  //y
-                    singleBuffer[index+6] = (m[1][0] - m[0][1]) / w4 ;  //z
+                    singleBuffer[index+3] = (m[2][1] - m[1][2]) / w4 ;  //x
+                    singleBuffer[index+4] = (m[0][2] - m[2][0]) / w4 ;  //y
+                    singleBuffer[index+5] = (m[1][0] - m[0][1]) / w4 ;  //z
+                    singleBuffer[index+6] = w;
                    
                     singleBuffer[index+7] = factorX;
                     singleBuffer[index+8] = factorY;
@@ -287,6 +290,8 @@ var addTextOnPath = function(points, distance, text, size, spacing, textVector, 
     var glyphs = res[0];
     var gfonts = res[1];
 
+    globals.processLineLabel = true;
+
     for (var i = 0, li = glyphs.length; i < li; i++) {
         /*  
         var char = text.charCodeAt(i);
@@ -333,6 +338,8 @@ var addTextOnPath = function(points, distance, text, size, spacing, textVector, 
             l += ll;
         }
     }
+
+    globals.processLineLabel = false;
 
     return index;
 };

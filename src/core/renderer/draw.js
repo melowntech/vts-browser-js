@@ -1386,8 +1386,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             prog.setSampler('uSampler', 0);
             prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
 
-            prog.setVec4('uColor', hitmapRender ? color : color2);
-            prog.setVec2('uParams', [job.outline[0], job.gamma[1]]);
+            prog.setVec4('uColor', hitmapRender ? color : job.color2);
+            prog.setVec2('uParams', [job.outline[0], gamma2]);
             lj = hitmapRender ? 1 : 2;
 
             var vertexPositionAttribute = prog.getAttribute('aPosition');
@@ -1399,10 +1399,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             gl.vertexAttribPointer(vertexPositionAttribute, vbuff.itemSize, gl.FLOAT, false, 0, 0);
 
             //draw polygons
-            for(;j<lj;j++) {
+            for(var j = 0; j < (hitmapRender ? 1 : 2); j++) {
                 if (j == 1) {
                     prog.setVec4('uColor', color);
-                    prog.setVec2('uParams', [job.outline[1], job.gamma[0]]);
+                    prog.setVec2('uParams', [job.outline[1], gamma]);
                 }
 
                 for (var i = 0, li = files.length; i < li; i++) {

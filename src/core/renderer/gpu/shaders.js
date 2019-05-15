@@ -47,6 +47,7 @@ GpuShaders.lineVertexShader = //line
 
         '#ifdef lineLabel2\n'+
 
+            'attribute vec2 aPosition;\n'+
             'uniform vec4 uData[DSIZE];\n'+
             'uniform float uFile;\n'+
             'varying vec2 vTexCoord;\n'+
@@ -89,8 +90,10 @@ GpuShaders.lineVertexShader = //line
 
         '#ifdef dataPoints\n'+
             'vec3 p1 = uPoints[int(aPosition.x)];\n'+
-        '#else\n'+
-            'vec3 p1 = aPosition.xyz;\n'+
+        '#else \n'+
+            '#ifndef lineLabel2\n'+
+                'vec3 p1 = aPosition.xyz;\n'+
+            '#endif\n'+
         '#endif\n'+
 
         '#ifdef pixelLine\n'+
@@ -203,29 +206,53 @@ GpuShaders.lineVertexShader = //line
 
                 '#ifdef lineLabel2\n'+
 
-                    'vec3 pos = vec3(uData[0],uData[1],uData[2]);\n'+
-
-                    'int index = int(aPosition.x);\n'+
+                    'int index = int(aPosition.x) * 3;\n'+
                     'vec4 data = uData[index];\n'+
                     'vec4 data2 = uData[index+1];\n'+
-                    'vec4 v;\n'+
+                    'vec4 data3 = uData[index+2];\n'+
+
+                    'vec3 pos = vec3(data[0],data[1],data[2]);\n'+
+                    'vec4 q = vec4(data[3],data2[0],data2[1],data2[2]);\n'+
+                    'vec2 factor = vec2(data2[3],data3[0]);\n'+
+                    'vec2 uv = vec2(data3[1],data3[2]);\n'+
+                    'float duv = data3[3];\n'+
+//                    'vec3 up = vec3(1.0,0.0,0.0);\n'+
+  //                  'vec3 right = vec3(0.0,1.0,0.0);\n'+
+
+                    //get up, right vectors from quaternion
+                    'float x=q[0], y=q[1], z=q[2], w=q[3];\n'+
+                    'float x2=x+x, y2=y+y, z2=z+z, xx=x*x2, yx=y*x2, yy=y*y2;\n'+
+                    'float zx=z*x2, zy=z*y2, zz=z*z2, wx=w*x2, wy=w*y2, wz=w*z2;\n'+
+
+                    'vec3 right = vec3(1.0-yy-zz, yx-wz, zx+wy) * factor.x;\n'+
+                    'vec3 up = vec3(yx+wz, 1.0-xx-zz, zy-wx) * (-factor.y);\n'+
+
+                    /*
+                      out[0] = 1 - yy - zz;
+                      out[3] = yx - wz;
+                      out[6] = zx + wy;
+                      out[1] = yx + wz;
+                      out[4] = 1 - xx - zz;
+                      out[7] = zy - wx;
+                      out[2] = zx - wy;
+                      out[5] = zy + wx;
+                      out[8] = 1 - xx - yy;
+                    */
+
+                    'float file = floor(uv.y/4.0);\n'+
+                    'uv.y = (uv.y-file*4.0);\n'+
+
                     'int corner = int(aPosition.y);\n'+
-                    'if (corner==0) v = vec4(data.x, data.y, data2.x, data2.y);\n'+
-                    'if (corner==1) v = vec4(data.z, data.y, data2.z, data2.y);\n'+
-                    'if (corner==2) v = vec4(data.z, data.w, data2.z, data2.w);\n'+
-                    'if (corner==3) v = vec4(data.x, data.w, data2.x, data2.w);\n'+
-                    'vTexCoord = vec2(v.z, v.w);\n'+
-                    'float file = floor(v.w/4.0);\n'+
-                    //'vTexCoord.y = mod(v.w,4.0);\n'+
-                    'vTexCoord.y = (v.w-file*4.0);\n'+
+                    'if (corner==1){ pos+=right; uv.x+=floor(duv)*(1.0/1024.0);  }\n'+
+                    'if (corner==2){ pos+=right; pos+=up; uv.x+=floor(duv)*(1.0/1024.0); uv.y+=fract(duv); }\n'+
+                    'if (corner==3){ pos+=up; uv.y+=fract(duv); }\n'+
 
+                    'vTexCoord = uv;\n'+
 
-                    'float file = floor(aTexCoord.y/4.0);\n'+
-                    'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
                     'if (file != floor(uFile)) {\n'+
                         'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
                     '}else{\n'+
-                        'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
+                        'gl_Position = uMVP * vec4(pos.xyz, 1.0);\n'+
                     '}\n'+
 
                 '#else\n'+
@@ -513,9 +540,10 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
         'float u_gamma = uParams[1];\n'+
         'float alpha = uColor.a * smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, r);\n'+
 
+        //'gl_FragColor = vec4(0.0,0.0,1.0,1.0);\n'+
+
         'if(alpha < 0.01){ discard; }\n'+
         'gl_FragColor = vec4(uColor.rgb, alpha);\n'+
-        //'gl_FragColor = vec4(1.0);\n'+
     '}';
 
 GpuShaders.skydomeVertexShader =
