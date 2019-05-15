@@ -1374,7 +1374,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         if (job.singleBuffer) {
            
 
-            var b = (vec3.dot(job.textVector, renderer.labelVector) < 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
+            var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
 
             if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
             if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLineLabel96; } else
@@ -1413,7 +1413,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         var file = fontFiles[k];
                         prog.setFloat('uFile', Math.round(file+i*1000));
                         gpu.bindTexture(job.fonts[i].getTexture(file));
-                        gl.drawArrays(gl.TRIANGLES, 0, vitems);
+                        gl.drawArrays(gl.TRIANGLES, 0, vitems / 3); //TODO: demystify vitems
                     }
                 }
             }
