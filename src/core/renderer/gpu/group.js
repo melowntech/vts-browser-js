@@ -293,6 +293,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
 
     if (data.singleBuffer) {
         var singleBuffer = data.singleBuffer;
+        var singleBuffer2 = data.singleBuffer2;
     } else {
         var vertices = data.vertexBuffer;
         var texcoords = data.texcoordsBuffer;
@@ -334,7 +335,10 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     }
 
     if (singleBuffer) {
+
         job.singleBuffer = singleBuffer;
+        job.singleBuffer2 = singleBuffer2;
+        job.textVector = data['textVector'];
 
         //this.size += vertices.length * 4 + texcoords.length * 4;
         this.polygons += (singleBuffer.length / 12) * 2;
@@ -703,6 +707,8 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
 
             length = view.getUint32(index); index += 4;
             data.singleBuffer = this.copyBuffer(new Float32Array(length), buffer, index); index += data.singleBuffer.byteLength;
+            length = view.getUint32(index); index += 4;
+            data.singleBuffer2 = this.copyBuffer(new Float32Array(length), buffer, index); index += data.singleBuffer2.byteLength;
             this.addLineLabelJob(data);
             break;
 

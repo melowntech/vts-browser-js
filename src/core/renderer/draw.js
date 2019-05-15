@@ -1372,8 +1372,9 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         var gamma2 = job.outline[3] * 1.4142 / 20;
 
         if (job.singleBuffer) {
+           
 
-            var b = job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
+            var b = (vec3.dot(job.textVector, renderer.labelVector) < 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
 
             if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
             if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLineLabel96; } else

@@ -941,11 +941,12 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     var zbufferOffset = getLayerPropertyValue(style, 'zbuffer-offset', lineString, lod);
 
-    var bufferSize, vertexBuffer, texcoordsBuffer, singleBuffer;
+    var bufferSize, vertexBuffer, texcoordsBuffer, singleBuffer, singleBuffer2;
 
     if (globals.useLineLabel2) {
-        bufferSize = 12 * labelText.length * 2;
+        bufferSize = 12 * labelText.length;
         singleBuffer = new Float32Array(bufferSize);
+        singleBuffer2 = new Float32Array(bufferSize);
     } else {
         bufferSize = getCharVerticesCount() * labelText.length * 2;
         vertexBuffer = new Float32Array(bufferSize);
@@ -956,10 +957,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
     var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes, singleBuffer);
-
-    if (!globals.useLineLabel2) {
-        index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, index, null, glyphsRes, singleBuffer);
-    }
+    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, null, glyphsRes, singleBuffer2);
 
     if (!index) {
         return;
@@ -1001,11 +999,11 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     });
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, globals.useLineLabel2 ? VTS_WORKER_TYPE_LINE_LABEL2 : VTS_WORKER_TYPE_LINE_LABEL, {
-        'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 
+        'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 'textVector':globals.textVector,
         'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
         'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit,
-        'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {}, 
-        'lod':(globals.autoLod ? null : globals.tileLod) }, globals.useLineLabel2 ? [singleBuffer] : [vertexBuffer, texcoordsBuffer], signature);
+        'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
+        'lod':(globals.autoLod ? null : globals.tileLod) }, globals.useLineLabel2 ? [singleBuffer, singleBuffer2] : [vertexBuffer, texcoordsBuffer], signature);
 };
 
 var processLineStringGeometry = function(lineString) {
