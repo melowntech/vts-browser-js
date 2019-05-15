@@ -882,11 +882,13 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var maxFeatures = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
-    var featuresPerTile = Math.ceil(maxFeatures / (tileCount * tileCount)); 
+    var featuresPerTile = maxFeatures / (tileCount * tileCount); 
+    var featuresPerTileInt = Math.floor(featuresPerTile); 
+    var featuresPerTileFract = featuresPerTile - featuresPerTileInt; 
     var tileSizeX = screenLX / tileCount;
     var tileSizeY = screenLY / tileCount;
 
-    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures + '<br>featuresPerTile: ' + featuresPerTile;
+    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures + '<br>featuresPerTile: ' + featuresPerTile.toFixed(2);
 
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
     //var feature, feature2, pp, pp2, o, featureCount = 0;
@@ -930,7 +932,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
             var hitMap = renderer.gmapHit, usedFeatures = 0;
             var tileFeatures, count, feature;
 
-            var ix,iy,is,pp,tx,ty,mx,my,v,index,o,j;
+            var ix,iy,is,pp,tx,ty,mx,my,v,v2,index,o,j;
 
             ix = screenLX / tileSizeX;
             iy = screenLY / tileSizeY;
@@ -984,8 +986,8 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 if (tileFeatures && tileFeatures.length) {
                     count = tileFeatures.length;
 
-                    if (count > featuresPerTile) {
-                        count = featuresPerTile;
+                    if (count > featuresPerTileInt) {
+                        count = featuresPerTileInt;
                     }
 
                     if (count == 0) {
@@ -993,7 +995,18 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                     } else {
                         index = tileFeatures[count - 1];
                         feature = featureCache[index];
-                        vmap[i] = feature[0].reduce[6];
+
+                        v = feature[0].reduce[6];
+
+                        if (tileFeatures.length > count) {
+                            index = tileFeatures[count];
+                            feature = featureCache[index];
+                            v2 = feature[0].reduce[6];
+                            
+                            v = v + (v2 - v) * featuresPerTileFract;
+                        }
+
+                        vmap[i] = v;
                     }
                 }
             }
