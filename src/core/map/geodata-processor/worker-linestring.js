@@ -957,7 +957,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
     var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes, singleBuffer);
-    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, null, glyphsRes, singleBuffer2);
+    index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, globals.useLineLabel2 ? 0 : index, null, glyphsRes, singleBuffer2);
 
     if (!index) {
         return;
