@@ -97,7 +97,7 @@ These are some of the applications built with VTS browser JS:
 </script>
  ```
 
-Wonder where to find `mapConfig.json` file? See [Map Configuration](#Map Configuration) section.
+Wonder where to find `mapConfig.json` file? See [Map Configuration](#map-configuration) section.
 
 ### Next steps
 

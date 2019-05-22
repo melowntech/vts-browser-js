@@ -248,19 +248,10 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
 
         for (i = 0; i < totalPoints; i++) {
             p = points[i];
-            p = mat4.multiplyVec4(mvp, [p[0] - cameraPos[0], p[1] - cameraPos[1], p[2] - cameraPos[2], 1 ]); 
 
-            //project point coords to screen
-            if (p[3] != 0) {
-                //x and y are in screen pixels
-                plineBuffer[index] = ((p[0]/p[3])+1.0)*0.5*curSize[0];
-                plineBuffer[index+1] = (-(p[1]/p[3])+1.0)*0.5*curSize[1]; 
-                plineBuffer[index+2] = p[2]/p[3]; //depth in meters
-            } else {
-                plineBuffer[index] = 0;
-                plineBuffer[index+1] = 0;
-                plineBuffer[index+2] = 0;
-            }
+            plineBuffer[index] = p[0] - cameraPos[0];
+            plineBuffer[index+1] = p[1] - cameraPos[1];
+            plineBuffer[index+2] = p[2] - cameraPos[2];
 
             index += 3;
         }
@@ -279,12 +270,19 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
         });
     }
 
-    var prog = renderer.progLine4;
+    var prog = (!screenSpace) ? renderer.progLine5 : renderer.progLine4;
 
     gpu.useProgram(prog, ['aPosition']);
-    prog.setMat4('uMVP', renderer.imageProjectionMatrix, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
+
+    if (screenSpace) { 
+        prog.setMat4('uMVP', renderer.imageProjectionMatrix, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
+    } else {
+        prog.setMat4('uMV', renderer.camera.getModelviewFMatrix(), null); //depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
+        prog.setMat4('uProj', renderer.camera.getProjectionFMatrix(), null);
+    }
+
     prog.setVec3('uScale', [(2 / renderer.curSize[0]), (2 / renderer.curSize[1]), size*0.5]);
-    prog.setVec4('uColor', (color != null ? color : [255,255,255,255]));
+    prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
     prog.setVec3('uPoints', plineBuffer);
 
     renderer.plines.draw(prog, 'aPosition', totalPoints);
@@ -395,7 +393,6 @@ RendererDraw.prototype.drawLineString2 = function(points, screenSpace, size, col
 
                 var denominator = -dir[2];
                 var t = (near + p[2]) / denominator;
-
 
                 if (t < 0 || t > l) {
                     culled = true;

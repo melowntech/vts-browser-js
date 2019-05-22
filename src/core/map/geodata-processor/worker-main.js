@@ -319,7 +319,7 @@ function processLayerFeature(type, feature, lod, layer, featureIndex, skipPack) 
         processLayerFeature(type, feature, lod, layer, featureIndex, true);
         postGroupMessageLite(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_PACK_END);
 
-        if (globals.directPoints)
+        if (globals.directPoints)  //????????????????? FIXME
 
         return;
     }
