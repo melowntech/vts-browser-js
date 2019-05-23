@@ -57,18 +57,14 @@ GpuShaders.lineVertexShader = //line
         'vec4 getClippedPixelLinePoint(vec3 p1, vec3 p2, vec3 params) {\n'+
             'vec2 pp1, pp2, n;\n'+
             'vec4 wp0 = (uMV * vec4(p1.xyz, 1.0)), pp0, pp3;\n'+
-            'float near = gl_DepthRange.near + 0.1 + 30000.0;\n'+
+            'float near = gl_DepthRange.near + 0.1;\n'+
+            //'float near = gl_DepthRange.near + 0.1 + 30000.0;\n'+
             'if (params.y < 0.0) {\n'+
-                'if (wp0.z > -near) {\n'+
-                    'return vec4(8.0, 0.0, 0.0, 8.0);\n'+
-                '} else {\n'+
-                    'pp0 = uProj * wp0;\n'+
-                    'if (params.y == -1.0) {\n'+
-                        'return pp0;\n'+
-                    '} else {\n'+
-                        'return pp0 + vec4((vec3(-sin(params.z)*uScale.x*uScale.z*pp0.w, cos(params.z)*uScale.y*uScale.z*pp0.w, 0.0)), 0.0);\n'+
-                    '}\n'+
-                '}\n'+
+                //'return vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                'if (wp0.z > -near) return vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                'pp0 = uProj * wp0;\n'+
+                'if (params.y == -1.0) return pp0;\n'+
+                'return pp0 + vec4((vec3(-sin(params.z)*uScale.x*uScale.z*pp0.w, cos(params.z)*uScale.y*uScale.z*pp0.w, 0.0)), 0.0);\n'+
             '} else {\n'+
                 'vec3 p2 = uPoints[int(params.y)];\n'+
                 'vec4 wp3 = (uMV * vec4(p2.xyz, 1.0));\n'+
@@ -77,26 +73,19 @@ GpuShaders.lineVertexShader = //line
                     'float l = length(dir);\n'+
                     'dir = normalize(dir);\n'+
                     'float denominator = -dir.z;\n'+
+                    'if (abs(denominator) < 0.0000001) return vec4(8.0, 0.0, 0.0, 1.0);\n'+
                     'float t = (near + wp0.z) / denominator;\n'+
-                    'if (t < 0.0 || t > l) { \n'+
-                        'return vec4(8.0, 0.0, 0.0, 8.0);\n'+
-                    '} else {\n'+
-                        'wp0.xyz = wp0.xyz + (dir * t);\n'+
-                        'pp0 = uProj * wp0;\n'+
-                        'pp3 = uProj * wp3;\n'+
-                        'pp1 = pp0.xy / pp0.w;\n'+
-                        'pp2 = pp3.xy / pp3.w;\n'+
-                        'n = normalize(pp2 - pp1);\n'+
-                        'return pp0 + vec4((vec3(-n.y*uScale.x*params.z*uScale.z*pp0.w, n.x*uScale.y*params.z*uScale.z*pp0.w, 0.0)), 0.0);\n'+
-                    '}\n'+
-                '} else {\n'+
-                    'pp0 = uProj * wp0;\n'+
-                    'pp3 = uProj * wp3;\n'+
-                    'pp1 = pp0.xy / pp0.w;\n'+
-                    'pp2 = pp3.xy / pp3.w;\n'+
-                    'n = normalize(pp2 - pp1);\n'+
-                    'return pp0 + vec4((vec3(-n.y*uScale.x*params.z*uScale.z*pp0.w, n.x*uScale.y*params.z*uScale.z*pp0.w, 0.0)), 0.0);\n'+
+                    'if (t < 0.0 || t > l) return vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                    'wp0.xyz = wp0.xyz + (dir * t);\n'+
                 '}\n'+
+                'pp0 = uProj * wp0;\n'+
+                'pp3 = uProj * wp3;\n'+
+                'pp1 = pp0.xy / pp0.w;\n'+
+                'pp2 = pp3.xy / pp3.w;\n'+
+                //'pp1 = pp0.xy;\n'+
+                //'pp2 = pp3.xy;\n'+
+                'n = normalize(pp2 - pp1);\n'+
+                'return pp0 + vec4((vec3(-n.y*uScale.x*params.z*uScale.z*pp0.w, n.x*uScale.y*params.z*uScale.z*pp0.w, 0.0)), 0.0);\n'+
             '}\n'+
         '}\n'+
 

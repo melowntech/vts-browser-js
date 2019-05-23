@@ -65,13 +65,16 @@ function onCustomRender() {
     if (demoTexture) { //check whether texture is loaded
 
         //we have line points in navigation coordinates
-        //so we need to convert them to canvas coordinates
-        //because funtions drawImage and drawLineString
-        //work in canvas space
+        //so we need to convert them to physical coordinates
+
+        //we have to use coords in physical space to deal
+        //with cases where we need to clip line poins to the
+        //camera near plane
+
         var points = new Array(linePoints.length);
         
         for (var i = 0; i < linePoints.length; i++) {
-            points[i] = map.convertCoordsFromNavToCanvas(linePoints[i], 'float');
+            points[i] = map.convertCoordsFromNavToPhys(linePoints[i], 'float', null, true);
         }
 
         //draw line
@@ -79,33 +82,40 @@ function onCustomRender() {
             points : points,
             size : 2.0,
             color : [255,0,255,255],
-            depthTest : true,
-            depthOffset : [-0.01,0,0],
+            depthTest : false,
+            //depthTest : true,
+            //depthOffset : [-0.01,0,0],
+            screenSpace : false, //switch to physical space
             blend : false
             });
 
         //draw point image at the first line point
-        var coords = points[0];
-        renderer.drawImage({
-            rect : [coords[0]-12, coords[1]-12, 24, 24],
-            texture : demoTexture,
-            color : [255,0,255,255],
-            depth : coords[2],
-            depthTest : true,
-            depthOffset : [-0.01,0,0],
-            blend : true
-            });
+        //we have to use canvas space
+        var coords = map.convertCoordsFromPhysToCanvas(points[0]);
+        if (coords[2] <= 1.0) { // check camera near plane collision
+            renderer.drawImage({
+                rect : [coords[0]-12, coords[1]-12, 24, 24],
+                texture : demoTexture,
+                color : [255,0,255,255],
+                depth : coords[2],
+                depthTest : true,
+                depthOffset : [-0.01,0,0],
+                blend : true
+                });
+        }
 
         //draw point image at the last line point
-        coords = points[points.length-1];
-        renderer.drawImage({
-            rect : [coords[0]-12, coords[1]-12, 24, 24],
-            texture : demoTexture,
-            color : [255,0,255,255],
-            depth : coords[2],
-            depthTest : true,
-            depthOffset : [-0.01,0,0],
-            blend : true
-            });
+        coords = map.convertCoordsFromPhysToCanvas(points[points.length-1]);
+        if (coords[2] <= 1.0) { // check camera near plane collision
+            renderer.drawImage({
+                rect : [coords[0]-12, coords[1]-12, 24, 24],
+                texture : demoTexture,
+                color : [255,0,255,255],
+                depth : coords[2],
+                depthTest : true,
+                depthOffset : [-0.01,0,0],
+                blend : true
+                });
+        }
     }    
 }

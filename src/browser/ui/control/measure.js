@@ -760,7 +760,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
         return;
     }
 
-    var i, li, coords, points;
+    var i, li, coords, points, wpoints;
 
     switch(this.tool) {
         case 0: //point
@@ -768,14 +768,16 @@ UIControlMeasure.prototype.onMapUpdate = function() {
             if (this.navCoords) {
                 coords = map.convertCoordsFromNavToCanvas(this.navCoords, "fix");
 
-                renderer.drawImage({
-                    rect : [coords[0]-12, coords[1]-12, 24, 24],
-                    texture : this.circleTexture,
-                    color : [255,0,0,255],  //white point is multiplied by red color so resulting point will be red
-                    depth : coords[2],
-                    depthTest : false,
-                    blend : true   //point texture has alpha channel so blend is needed
-                    });
+                if (coords[2] <= 1) {
+                    renderer.drawImage({
+                        rect : [coords[0]-12, coords[1]-12, 24, 24],
+                        texture : this.circleTexture,
+                        color : [255,0,0,255],  //white point is multiplied by red color so resulting point will be red
+                        depth : coords[2],
+                        depthTest : false,
+                        blend : true   //point texture has alpha channel so blend is needed
+                        });
+                }
             }
 
             break;
@@ -807,7 +809,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                     }
 
                     for (i = 0, li = points2.length; i < li; i++) {
-                        points3.push(map.convertCoordsFromNavToCanvas(points2[i], "fix"));
+                        points3.push(map.convertCoordsFromNavToPhys(points2[i], "fix", null, true));
                     }
 
                     renderer.drawLineString({
@@ -817,6 +819,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                         depthTest : false,
                         //depthTest : true,
                         //depthOffset : [-0.01,0,0],
+                        screenSpace : false,
                         blend : false
                         });
 
@@ -827,6 +830,7 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                         depthTest : false,
                         //depthTest : true,
                         //depthOffset : [-0.01,0,0],
+                        screenSpace : false,
                         blend : false
                         });
                 }
@@ -834,14 +838,16 @@ UIControlMeasure.prototype.onMapUpdate = function() {
                 for (i = 0, li = points.length; i < li; i++) {
                     coords = points[i];
 
-                    renderer.drawImage({
-                        rect : [coords[0]-12, coords[1]-12, 24, 24],
-                        texture : this.circleTexture,
-                        color : [255,0,0,255],  //white point is multiplied by red color so resulting point will be red
-                        depth : coords[2],
-                        depthTest : false,
-                        blend : true   //point texture has alpha channel so blend is needed
-                        });
+                    if (coords[2] <= 1) {
+                        renderer.drawImage({
+                            rect : [coords[0]-12, coords[1]-12, 24, 24],
+                            texture : this.circleTexture,
+                            color : [255,0,0,255],  //white point is multiplied by red color so resulting point will be red
+                            depth : coords[2],
+                            depthTest : false,
+                            blend : true   //point texture has alpha channel so blend is needed
+                            });
+                    }
                 }
             }
 
