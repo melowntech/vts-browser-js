@@ -31,11 +31,19 @@ GpuShaders.text2VertexShader =
 
 
 GpuShaders.lineVertexShader = //line
-    'uniform mat4 uMVP;\n'+
+    '#ifndef dataPoints2\n'+
+        'uniform mat4 uMVP;\n'+
+    '#else\n'+
+        'uniform mat4 uMV, uProj;\n'+
+    '#endif\n'+
 
     '#ifdef pixelLine\n'+
-        'attribute vec4 aPosition;\n'+
-        'attribute vec4 aNormal;\n'+
+        '#ifdef dataPoints2\n'+
+            'attribute vec3 aPosition;\n'+
+        '#else\n'+
+            'attribute vec4 aPosition;\n'+
+            'attribute vec4 aNormal;\n'+
+        '#endif\n'+
 
         '#ifdef dataPoints\n'+
             'uniform vec3 uScale;\n'+
@@ -43,21 +51,72 @@ GpuShaders.lineVertexShader = //line
         '#else\n'+
             'uniform vec2 uScale;\n'+
         '#endif\n'+
-    '#else\n'+
 
-        '#ifdef lineLabel\n'+
-            'attribute vec4 aPosition;\n'+
-            'attribute vec4 aTexCoord;\n'+
-            'uniform vec4 uVec;\n'+
-            'uniform float uFile;\n'+
-            'varying vec2 vTexCoord;\n'+
-        '#else\n'+
-            'attribute vec3 aPosition;\n'+
+        '#ifdef dataPoints2\n'+
+
+        'vec4 getClippedPixelLinePoint(vec3 p1, vec3 p2, vec3 params) {\n'+
+            'vec2 pp1, pp2, n;\n'+
+            'vec4 wp0 = (uMV * vec4(p1.xyz, 1.0)), pp0, pp3;\n'+
+            'float near = gl_DepthRange.near + 0.1;\n'+
+            //'float near = gl_DepthRange.near + 0.1 + 30000.0;\n'+
+            'if (params.y < 0.0) {\n'+
+                //'return vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                'if (wp0.z > -near) return vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                'pp0 = uProj * wp0;\n'+
+                'if (params.y == -1.0) return pp0;\n'+
+                'return pp0 + vec4((vec3(-sin(params.z)*uScale.x*uScale.z*pp0.w, cos(params.z)*uScale.y*uScale.z*pp0.w, 0.0)), 0.0);\n'+
+            '} else {\n'+
+                'vec3 p2 = uPoints[int(params.y)];\n'+
+                'vec4 wp3 = (uMV * vec4(p2.xyz, 1.0));\n'+
+                'if (wp0.z > -near) {\n'+
+                    'vec3 dir = (wp3.xyz - wp0.xyz);\n'+
+                    'float l = length(dir);\n'+
+                    'dir = normalize(dir);\n'+
+                    'float denominator = -dir.z;\n'+
+                    'if (abs(denominator) < 0.0000001) return vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                    'float t = (near + wp0.z) / denominator;\n'+
+                    'if (t < 0.0 || t > l) return vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                    'wp0.xyz = wp0.xyz + (dir * t);\n'+
+                '}\n'+
+                'pp0 = uProj * wp0;\n'+
+                'pp3 = uProj * wp3;\n'+
+                'pp1 = pp0.xy / pp0.w;\n'+
+                'pp2 = pp3.xy / pp3.w;\n'+
+                //'pp1 = pp0.xy;\n'+
+                //'pp2 = pp3.xy;\n'+
+                'n = normalize(pp2 - pp1);\n'+
+                'return pp0 + vec4((vec3(-n.y*uScale.x*params.z*uScale.z*pp0.w, n.x*uScale.y*params.z*uScale.z*pp0.w, 0.0)), 0.0);\n'+
+            '}\n'+
+        '}\n'+
+
         '#endif\n'+
 
-        '#ifdef dynamicWidth\n'+
-            'attribute vec4 aNormal;\n'+
-            'uniform vec4 uParams;\n'+
+    '#else\n'+
+
+        '#ifdef lineLabel2\n'+
+
+            'attribute vec2 aPosition;\n'+
+            'uniform vec4 uData[DSIZE];\n'+
+            'uniform float uFile;\n'+
+            'varying vec2 vTexCoord;\n'+
+
+        '#else\n'+
+
+            '#ifdef lineLabel\n'+
+                'attribute vec4 aPosition;\n'+
+                'attribute vec4 aTexCoord;\n'+
+                'uniform vec4 uVec;\n'+
+                'uniform float uFile;\n'+
+                'varying vec2 vTexCoord;\n'+
+            '#else\n'+
+                'attribute vec3 aPosition;\n'+
+            '#endif\n'+
+
+            '#ifdef dynamicWidth\n'+
+                'attribute vec4 aNormal;\n'+
+                'uniform vec4 uParams;\n'+
+            '#endif\n'+
+
         '#endif\n'+
 
     '#endif\n'+
@@ -71,6 +130,7 @@ GpuShaders.lineVertexShader = //line
         'varying float vElement;\n'+
     '#endif\n'+
 
+
     'void main() {\n'+
 
         '#ifdef withElements\n'+
@@ -79,14 +139,14 @@ GpuShaders.lineVertexShader = //line
 
         '#ifdef dataPoints\n'+
             'vec3 p1 = uPoints[int(aPosition.x)];\n'+
-        '#else\n'+
-            'vec3 p1 = aPosition.xyz;\n'+
+        '#else \n'+
+            '#ifndef lineLabel2\n'+
+                'vec3 p1 = aPosition.xyz;\n'+
+            '#endif\n'+
         '#endif\n'+
 
         '#ifdef pixelLine\n'+
-            '#ifdef dataPoints\n'+
-                'vec3 p2 = uPoints[int(aPosition.y)];\n'+
-            '#else\n'+
+            '#ifndef dataPoints\n'+
                 'vec3 p2 = aNormal.xyz;\n'+
             '#endif\n'+
         '#endif\n'+
@@ -157,61 +217,126 @@ GpuShaders.lineVertexShader = //line
 
             '#ifdef pixelLine\n'+
 
-                'vec4 pp0 = (uMVP * vec4(p1.xyz, 1.0));\n'+
+                '#ifdef dataPoints2\n'+
 
-                '#ifdef dataPoints\n'+
-
-                    'if (p1.y < 0.0) {\n'+
-                        'if (p1.y == -1.0) {\n'+
-                            'gl_Position = pp0;\n'+
-                        '} else {\n'+
-                            'gl_Position = pp0 + vec4((vec3(-sin(p1.z)*uScale.x*uScale.z, cos(p1.z)*uScale.y*uScale.z, 0.0)), 0.0);\n'+
-                        '}\n'+
-                    '} else {\n'+
-                        'vec4 pp3 = (uMVP * vec4(p2.xyz, 1.0));\n'+
-                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
-                        'vec2 pp2 = pp3.xy / pp3.w;\n'+
-                        'vec2 n = normalize(pp2 - pp1);\n'+
-                        'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n'+
-                    '}\n'+
+                    'vec3 p2 = uPoints[int(aPosition.y)];\n'+
+                    'gl_Position = getClippedPixelLinePoint(p1.xyz, p2.xyz, aPosition.xyz);\n'+
 
                 '#else\n'+
 
-                    'if (aNormal.w == 0.0) {\n'+
-                        'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
-                    '} else {\n'+
-                        'vec4 pp3 = (uMVP * vec4(p2.xyz, 1.0));\n'+
-                        'vec2 pp1 = pp0.xy / pp0.w;\n'+
-                        'vec2 pp2 = pp3.xy / pp3.w;\n'+
-                        'vec2 n = normalize(pp2 - pp1);\n'+
-                        'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
-                    '}\n'+
+                    'vec4 pp0 = (uMVP * vec4(p1.xyz, 1.0));\n'+
+
+                    '#ifdef dataPoints\n'+
+
+                        'if (aPosition.y < 0.0) {\n'+
+                            'if (aPosition.y == -1.0) {\n'+
+                                'gl_Position = pp0;\n'+
+                            '} else {\n'+
+                                'gl_Position = pp0 + vec4((vec3(-sin(aPosition.z)*uScale.x*uScale.z, cos(aPosition.z)*uScale.y*uScale.z, 0.0)), 0.0);\n'+
+                            '}\n'+
+                        '} else {\n'+
+                            'vec3 p2 = uPoints[int(aPosition.y)];\n'+
+                            'vec4 pp3 = (uMVP * vec4(p2.xyz, 1.0));\n'+
+                            'vec2 pp1 = pp0.xy / pp0.w;\n'+
+                            'vec2 pp2 = pp3.xy / pp3.w;\n'+
+                            'vec2 n = normalize(pp2 - pp1);\n'+
+                            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aPosition.z*uScale.z, n.x*uScale.y*aPosition.z*uScale.z, 0.0)), 0.0);\n'+
+                        '}\n'+
+
+                    '#else\n'+
+
+                        'if (aNormal.w == 0.0) {\n'+
+                            'gl_Position = pp0 + vec4((vec3(aNormal.x*uScale.x*pp0.w, aNormal.y*uScale.y*pp0.w, 0.0)), 0.0);\n'+
+                        '} else {\n'+
+                            'vec4 pp3 = (uMVP * vec4(p2.xyz, 1.0));\n'+
+                            'vec2 pp1 = pp0.xy / pp0.w;\n'+
+                            'vec2 pp2 = pp3.xy / pp3.w;\n'+
+                            'vec2 n = normalize(pp2 - pp1);\n'+
+                            'gl_Position = pp0 + vec4((vec3(-n.y*uScale.x*aNormal.w*pp0.w, n.x*uScale.y*aNormal.w*pp0.w, 0.0)), 0.0);\n'+
+                        '}\n'+
+
+                    '#endif\n'+
 
                 '#endif\n'+
 
             '#else\n'+
 
-                '#ifdef lineLabel\n'+
+                '#ifdef lineLabel2\n'+
 
-                    'vTexCoord = aTexCoord.xy;\n'+
-                    'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
+                    'int index = int(aPosition.x) * 3;\n'+
+                    'vec4 data = uData[index];\n'+
+                    'vec4 data2 = uData[index+1];\n'+
+                    'vec4 data3 = uData[index+2];\n'+
+
+                    'vec3 pos = vec3(data[0],data[1],data[2]);\n'+
+                    'vec4 q = vec4(data[3],data2[0],data2[1],data2[2]);\n'+
+                    'vec2 factor = vec2(data2[3],data3[0]);\n'+
+                    'vec2 uv = vec2(data3[1],data3[2]);\n'+
+                    'float duv = data3[3];\n'+
+//                    'vec3 up = vec3(1.0,0.0,0.0);\n'+
+  //                  'vec3 right = vec3(0.0,1.0,0.0);\n'+
+
+                    //get up, right vectors from quaternion
+                    'float x=q[0], y=q[1], z=q[2], w=q[3];\n'+
+                    'float x2=x+x, y2=y+y, z2=z+z, xx=x*x2, yx=y*x2, yy=y*y2;\n'+
+                    'float zx=z*x2, zy=z*y2, zz=z*z2, wx=w*x2, wy=w*y2, wz=w*z2;\n'+
+
+                    'vec3 right = vec3(1.0-yy-zz, yx-wz, zx+wy) * factor.x;\n'+
+                    'vec3 up = vec3(yx+wz, 1.0-xx-zz, zy-wx) * (-factor.y);\n'+
+
+                    /*
+                      out[0] = 1 - yy - zz;
+                      out[3] = yx - wz;
+                      out[6] = zx + wy;
+                      out[1] = yx + wz;
+                      out[4] = 1 - xx - zz;
+                      out[7] = zy - wx;
+                      out[2] = zx - wy;
+                      out[5] = zy + wx;
+                      out[8] = 1 - xx - yy;
+                    */
+
+                    'float file = floor(uv.y/4.0);\n'+
+                    'uv.y = (uv.y-file*4.0);\n'+
+
+                    'int corner = int(aPosition.y);\n'+
+                    'if (corner==1){ pos+=right; uv.x+=floor(duv)*(1.0/1024.0);  }\n'+
+                    'if (corner==2){ pos+=right; pos+=up; uv.x+=floor(duv)*(1.0/1024.0); uv.y+=fract(duv); }\n'+
+                    'if (corner==3){ pos+=up; uv.y+=fract(duv); }\n'+
+
+                    'vTexCoord = uv;\n'+
+
+                    'if (file != floor(uFile)) {\n'+
                         'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
                     '}else{\n'+
-                        'float file = floor(aTexCoord.y/4.0);\n'+
-                        'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
-                        'if (file != floor(uFile)) {\n'+
-                            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
-                        '}else{\n'+
-                            'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
-                        '}\n'+
+                        'gl_Position = uMVP * vec4(pos.xyz, 1.0);\n'+
                     '}\n'+
 
                 '#else\n'+
 
-                    '#ifdef dynamicWidth\n'+
-                        'gl_Position = uMVP * vec4(aPosition.xyz + aNormal.xyz*(abs(aNormal.w)*uParams[3]), 1.0);\n'+
+                    '#ifdef lineLabel\n'+
+
+                        'vTexCoord = aTexCoord.xy;\n'+
+                        'if (dot(uVec.xyz, vec3(aTexCoord.z, aTexCoord.w, aPosition.w)) < 0.0) {\n'+
+                            'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                        '}else{\n'+
+                            'float file = floor(aTexCoord.y/4.0);\n'+
+                            'vTexCoord.y = mod(aTexCoord.y,4.0);\n'+
+                            'if (file != floor(uFile)) {\n'+
+                                'gl_Position = uMVP * vec4(8.0, 0.0, 0.0, 1.0);\n'+
+                            '}else{\n'+
+                                'gl_Position = uMVP * vec4(aPosition.xyz, 1.0);\n'+
+                            '}\n'+
+                        '}\n'+
+
                     '#else\n'+
-                        'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+
+                        '#ifdef dynamicWidth\n'+
+                            'gl_Position = uMVP * vec4(aPosition.xyz + aNormal.xyz*(abs(aNormal.w)*uParams[3]), 1.0);\n'+
+                        '#else\n'+
+                            'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+                        '#endif\n'+
+
                     '#endif\n'+
 
                 '#endif\n'+
@@ -472,9 +597,10 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
         'float u_gamma = uParams[1];\n'+
         'float alpha = uColor.a * smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, r);\n'+
 
+        //'gl_FragColor = vec4(0.0,0.0,1.0,1.0);\n'+
+
         'if(alpha < 0.01){ discard; }\n'+
         'gl_FragColor = vec4(uColor.rgb, alpha);\n'+
-        //'gl_FragColor = vec4(1.0);\n'+
     '}';
 
 GpuShaders.skydomeVertexShader =

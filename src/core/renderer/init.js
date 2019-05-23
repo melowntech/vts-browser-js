@@ -93,7 +93,7 @@ RendererInit.prototype.initShaders = function() {
     renderer.progLine3SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //pixel line SE
     renderer.progELine3SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //pixel line SE elements
     renderer.progLine4 = new GpuProgram(gpu, '#define pixelLine\n#define dataPoints\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //direct linestring pixel line
-    renderer.progLine4SE = new GpuProgram(gpu, '#define applySE\n#define pixelLine\n#define dataPoints\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //direct linestring pixel line SE
+    renderer.progLine5 = new GpuProgram(gpu, '#define pixelLine\n#define dataPoints\n#define dataPoints2\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //clipped direct linestring pixel line, physical coords
     renderer.progRLine = new GpuProgram(gpu, '#define dynamicWidth\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //dynamic width line
     renderer.progRLineSE = new GpuProgram(gpu, '#define applySE\n#define dynamicWidth\n' + shaders.lineVertexShader, shaders.lineFragmentShader); //dynamic width line
     renderer.progERLine = new GpuProgram(gpu, '#define dynamicWidth\n#define withElements\n' + shaders.lineVertexShader, '#define withElements\n' + shaders.lineFragmentShader); //dynamic width line elements
@@ -109,6 +109,13 @@ RendererInit.prototype.initShaders = function() {
 
     renderer.progText2 = new GpuProgram(gpu, '#define lineLabel\n' + shaders.lineVertexShader, shaders.text2FragmentShader); //line label 
     renderer.progText2SE = new GpuProgram(gpu, '#define applySE\n#define lineLabel\n' + shaders.lineVertexShader, shaders.text2FragmentShader); //line label 
+
+    renderer.progLineLabel16 = new GpuProgram(gpu, '#define DSIZE 16\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel32 = new GpuProgram(gpu, '#define DSIZE 32\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel48 = new GpuProgram(gpu, '#define DSIZE 48\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel64 = new GpuProgram(gpu, '#define DSIZE 64\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel96 = new GpuProgram(gpu, '#define DSIZE 96\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
+    renderer.progLineLabel128 = new GpuProgram(gpu, '#define DSIZE 128\n#define lineLabel2\n' + shaders.lineVertexShader, shaders.text2FragmentShader); 
 
     renderer.progPolygon = new GpuProgram(gpu, shaders.polygonVertexShader, shaders.polygonFragmentShader);
     renderer.progImage = new GpuProgram(gpu, shaders.imageVertexShader, shaders.imageFragmentShader);

@@ -437,18 +437,35 @@ UIElement.prototype.onDragMove = function(touchUsed, event) {
                 t = this.dragTouches;
                 t2 = this.dragTouches2;
 
-                    //get distance between points at the beginig
+                //get distance between points at the beginig
                 var dx = (t2[0][0] - t[0][0]);
                 var dy = (t2[0][1] - t[0][1]);
                 d1 = Math.sqrt(dx * dx + dy * dy);
 
-                    //get distance between points at the end
+                /*
+                //get distance between points at the end
                 dx = (t2[5][0] - t[5][0]);
                 dy = (t2[5][1] - t[5][1]);
                 d2 = Math.sqrt(dx * dx + dy * dy);
-
-                    //get delta betwwen distances
+                
+                //get delta betwwen distances
                 distanceDelta = d2 - d1;   
+                */
+
+                distanceDelta = 0;   
+
+                for (var i = 1; i < 6; i++) {
+
+                    //get distance between points at the end
+                    dx = (t2[i][0] - t[i][0]);
+                    dy = (t2[i][1] - t[i][1]);
+                    d2 = Math.sqrt(dx * dx + dy * dy);
+                    
+                    //get delta between distances
+                    distanceDelta += d2 - d1;
+                    d1 = d2;
+                }
+
                 //}  
             }
         }

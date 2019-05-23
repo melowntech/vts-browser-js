@@ -248,19 +248,10 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
 
         for (i = 0; i < totalPoints; i++) {
             p = points[i];
-            p = mat4.multiplyVec4(mvp, [p[0] - cameraPos[0], p[1] - cameraPos[1], p[2] - cameraPos[2], 1 ]); 
 
-            //project point coords to screen
-            if (p[3] != 0) {
-                //x and y are in screen pixels
-                plineBuffer[index] = ((p[0]/p[3])+1.0)*0.5*curSize[0];
-                plineBuffer[index+1] = (-(p[1]/p[3])+1.0)*0.5*curSize[1]; 
-                plineBuffer[index+2] = p[2]/p[3]; //depth in meters
-            } else {
-                plineBuffer[index] = 0;
-                plineBuffer[index+1] = 0;
-                plineBuffer[index+2] = 0;
-            }
+            plineBuffer[index] = p[0] - cameraPos[0];
+            plineBuffer[index+1] = p[1] - cameraPos[1];
+            plineBuffer[index+2] = p[2] - cameraPos[2];
 
             index += 3;
         }
@@ -279,12 +270,19 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
         });
     }
 
-    var prog = renderer.progLine4;
+    var prog = (!screenSpace) ? renderer.progLine5 : renderer.progLine4;
 
     gpu.useProgram(prog, ['aPosition']);
-    prog.setMat4('uMVP', renderer.imageProjectionMatrix, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
+
+    if (screenSpace) { 
+        prog.setMat4('uMVP', renderer.imageProjectionMatrix, depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
+    } else {
+        prog.setMat4('uMV', renderer.camera.getModelviewFMatrix(), null); //depthOffset ? renderer.getZoffsetFactor(depthOffset) : null);
+        prog.setMat4('uProj', renderer.camera.getProjectionFMatrix(), null);
+    }
+
     prog.setVec3('uScale', [(2 / renderer.curSize[0]), (2 / renderer.curSize[1]), size*0.5]);
-    prog.setVec4('uColor', (color != null ? color : [255,255,255,255]));
+    prog.setVec4('uColor', (color != null ? color : [1,1,1,1]));
     prog.setVec3('uPoints', plineBuffer);
 
     renderer.plines.draw(prog, 'aPosition', totalPoints);
@@ -1368,6 +1366,60 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             texture = renderer.whiteTexture;
         }
 
+        var gamma = job.outline[2] * 1.4142 / 20;
+        var gamma2 = job.outline[3] * 1.4142 / 20;
+
+        if (job.singleBuffer) {
+           
+
+            var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
+
+            if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
+            if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLineLabel96; } else
+            if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLineLabel64; } else
+            if (bl > 128) { vbuff = renderer.textQuads48; prog = renderer.progLineLabel48; } else
+            if (bl > 64) { vbuff = renderer.textQuads32; prog = renderer.progLineLabel32; }
+            else { vbuff = renderer.textQuads16; prog = renderer.progLineLabel16; }
+
+            gpu.useProgram(prog, ['aPosition']);
+            prog.setSampler('uSampler', 0);
+            prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+
+            prog.setVec4('uColor', hitmapRender ? color : job.color2);
+            prog.setVec2('uParams', [job.outline[0], gamma2]);
+            lj = hitmapRender ? 1 : 2;
+
+            var vertexPositionAttribute = prog.getAttribute('aPosition');
+
+            prog.setVec4('uData', b);
+
+            //bind vetex positions
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbuff);
+            gl.vertexAttribPointer(vertexPositionAttribute, vbuff.itemSize, gl.FLOAT, false, 0, 0);
+
+            //draw polygons
+            for(var j = 0; j < (hitmapRender ? 1 : 2); j++) {
+                if (j == 1) {
+                    prog.setVec4('uColor', color);
+                    prog.setVec2('uParams', [job.outline[1], gamma]);
+                }
+
+                for (var i = 0, li = files.length; i < li; i++) {
+                    var fontFiles = files[i];
+
+                    for (var k = 0, lk = fontFiles.length; k < lk; k++) {
+                        var file = fontFiles[k];
+                        prog.setFloat('uFile', Math.round(file+i*1000));
+                        gpu.bindTexture(job.fonts[i].getTexture(file));
+                        gl.drawArrays(gl.TRIANGLES, 0, vitems / 3); //TODO: demystify vitems
+                    }
+                }
+            }
+
+
+            return;
+        }
+
         prog = renderer.useSuperElevation ? renderer.progText2SE : job.program;
         gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
 
@@ -1399,8 +1451,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         prog.setMat4('uMVP', mvp, renderer.getZoffsetFactor(job.zbufferOffset));
         prog.setVec4('uVec', renderer.labelVector);
 
-        var gamma = job.outline[2] * 1.4142 / 20;
-        var gamma2 = job.outline[3] * 1.4142 / 20;
         prog.setVec4('uColor', (hitmapRender ? color : job.color2));
         prog.setVec2('uParams', [job.outline[0], gamma2]);
 

@@ -882,11 +882,13 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var maxFeatures = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
-    var featuresPerTile = Math.ceil(maxFeatures / (tileCount * tileCount)); 
+    var featuresPerTile = maxFeatures / (tileCount * tileCount); 
+    var featuresPerTileInt = Math.floor(featuresPerTile); 
+    var featuresPerTileFract = featuresPerTile - featuresPerTileInt; 
     var tileSizeX = screenLX / tileCount;
     var tileSizeY = screenLY / tileCount;
 
-    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures + '<br>featuresPerTile: ' + featuresPerTile;
+    renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures + '<br>featuresPerTile: ' + featuresPerTile.toFixed(2);
 
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
     //var feature, feature2, pp, pp2, o, featureCount = 0;
@@ -930,7 +932,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
             var hitMap = renderer.gmapHit, usedFeatures = 0;
             var tileFeatures, count, feature;
 
-            var ix,iy,is,pp,tx,ty,mx,my,v,index,o,j;
+            var ix,iy,is,pp,tx,ty,mx,my,v,v2,index,o,j;
 
             ix = screenLX / tileSizeX;
             iy = screenLY / tileSizeY;
@@ -984,8 +986,8 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 if (tileFeatures && tileFeatures.length) {
                     count = tileFeatures.length;
 
-                    if (count > featuresPerTile) {
-                        count = featuresPerTile;
+                    if (count > featuresPerTileInt) {
+                        count = featuresPerTileInt;
                     }
 
                     if (count == 0) {
@@ -993,7 +995,18 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                     } else {
                         index = tileFeatures[count - 1];
                         feature = featureCache[index];
-                        vmap[i] = feature[0].reduce[6];
+
+                        v = feature[0].reduce[6];
+
+                        if (tileFeatures.length > count) {
+                            index = tileFeatures[count];
+                            feature = featureCache[index];
+                            v2 = feature[0].reduce[6];
+                            
+                            v = v + (v2 - v) * featuresPerTileFract;
+                        }
+
+                        vmap[i] = v;
                     }
                 }
             }
@@ -1001,6 +1014,47 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
             fillVMapHoles(vmap, mx, my);
 
 
+            for (i = featureCacheSize - 1; i >= 0; i--) {
+                feature = featureCache[i];
+                if (!feature) {
+                    continue;
+                }
+
+                v = feature[0].reduce[6];
+                pp = feature[5];
+
+                //var vmax = Number.NEGATIVE_INFINITY;//getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
+                var vmax = getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
+
+                if (v >= vmax) {
+
+                    //render job
+                    if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
+                        pp = feature[5];
+                        o = feature[8];
+                        
+                        if (depthTest) {
+                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true, [pp[0],pp[1]+feature[1],feature[0].reduce,depthOffset])) {
+                                //featureCount++;
+                            }
+                        } else {
+                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                                //featureCount++;
+                            }
+                        }
+
+                    } else {
+                        if (feature[0].hysteresis) {
+                            renderer.jobHBuffer[feature[0].id] = feature[0];
+                        } else {
+                            renderer.drawnJobs++;
+                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+                        }
+                    }
+                }
+            }
+
+            /*
             for (i = 0, li = (mx) * (my); i < li; i++) {
                 tileFeatures = hitMap[i];
 
@@ -1045,7 +1099,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                         }
                     }
                 }
-            }
+            } */
         }
 
     }
@@ -1066,7 +1120,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 draw.drawLineString([[x, y, 0.5], [x+tileSizeX, y, 0.5],
                                      [x+tileSizeX, y+tileSizeY, 0.5], [x, y+tileSizeY, 0.5]], true, 1, [0,0,255,255], null, true, null, null, null);
 
-                draw.drawText(Math.round(x+5), Math.round(y + 5), 10, '' + v.toFixed(2), [0,0,255,255], 0.5);
+                draw.drawText(Math.round(x+5), Math.round(y + 5), 11, '' + v.toFixed(2), [255,255,255,255], 0.5);
             }
         }
     }

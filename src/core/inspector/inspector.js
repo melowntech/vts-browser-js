@@ -125,16 +125,17 @@ Inspector.prototype.onMapUpdate = function() {
     if (this.replay.drawCamera) {
         lines = this.replay.cameraLines;
         slines = []; 
-        for (i = 0, li = lines.length; i < li; i++) {
-            slines.push(map.convertCoordsFromPhysToCanvas(lines[i]));
-        }
+        //for (i = 0, li = lines.length; i < li; i++) {
+          //  slines.push(map.convertCoordsFromPhysToCanvas(lines[i]));
+        //}
         
         renderer.drawLineString({
-            points : slines,
+            points : lines,
             size : 2.0,
             screenSpace : true,
             color : [0,128,255,255],
             depthTest : false,
+            screenSpace : false,
             blend : false
         });            
 
@@ -142,7 +143,8 @@ Inspector.prototype.onMapUpdate = function() {
         for (i = 0, li = lines.length; i < li; i++) {
             slines = []; 
             for (j = 0, lj = lines[i].length; j < lj; j++) {
-                slines.push(map.convertCoordsFromPhysToCanvas(lines[i][j]));
+                //slines.push(map.convertCoordsFromPhysToCanvas(lines[i][j]));
+                slines.push(lines[i][j]);
             }
 
             renderer.drawLineString({
@@ -151,6 +153,7 @@ Inspector.prototype.onMapUpdate = function() {
                 screenSpace : true,
                 color : [0,255,128,255],
                 depthTest : false,
+                screenSpace : false,
                 blend : false
             });   
         }
@@ -159,7 +162,8 @@ Inspector.prototype.onMapUpdate = function() {
         for (i = 0, li = lines.length; i < li; i++) {
             slines = []; 
             for (j = 0, lj = lines[i].length; j < lj; j++) {
-                slines.push(map.convertCoordsFromPhysToCanvas(lines[i][j]));
+                //slines.push(map.convertCoordsFromPhysToCanvas(lines[i][j]));
+                slines.push(lines[i][j]);
             }
 
             renderer.drawLineString({
@@ -168,6 +172,7 @@ Inspector.prototype.onMapUpdate = function() {
                 screenSpace : true,
                 color : [0,255,255,255],
                 depthTest : false,
+                screenSpace : false,
                 blend : false
             });   
         }

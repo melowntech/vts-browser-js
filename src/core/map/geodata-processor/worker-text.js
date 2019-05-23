@@ -32,6 +32,42 @@ var setFontMap = function(fontMap) {
 };
 
 
+//http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+
+var mat3toQuad2 = function(m) {  //TODO: use m as one dimensional vector
+
+    var tr = m[0][0] + m[1][1] + m[2][2], qx,qy,qz,qw,s;
+
+    if (tr > 0) { 
+      s = Math.sqrt(tr+1.0) * 2; // S=4*qw 
+      qw = 0.25 * s;
+      qx = (m[2][1] - m[1][2]) / s;
+      qy = (m[0][2] - m[2][0]) / s; 
+      qz = (m[1][0] - m[0][1]) / s; 
+    } else if ((m[0][0] > m[1][1])&(m[0][0] > m[2][2])) { 
+      s = Math.sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) * 2; // S=4*qx 
+      qw = (m[2][1] - m[1][2]) / s;
+      qx = 0.25 * s;
+      qy = (m[0][1] + m[1][0]) / s; 
+      qz = (m[0][2] + m[2][0]) / s; 
+    } else if (m[1][1] > m[2][2]) { 
+      s = Math.sqrt(1.0 + m[1][1] - m[0][0] - m[2][2]) * 2; // S=4*qy
+      qw = (m[0][2] - m[2][0]) / s;
+      qx = (m[0][1] + m[1][0]) / s; 
+      qy = 0.25 * s;
+      qz = (m[1][2] + m[2][1]) / s; 
+    } else { 
+      s = Math.sqrt(1.0 + m[2][2] - m[0][0] - m[1][1]) * 2; // S=4*qz
+      qw = (m[1][0] - m[0][1]) / s;
+      qx = (m[0][2] + m[2][0]) / s;
+      qy = (m[1][2] + m[2][1]) / s;
+      qz = 0.25 * s;
+    }
+
+    return [qx,qy,qz,qw];
+}
+
+
 var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, index2, textVector, fonts, vertexBuffer, texcoordsBuffer, flat, planes, fontIndex, singleBuffer) {
     var n, font = fonts[fontIndex];
     var up = [0,0,0];
@@ -93,7 +129,7 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
 
             if (singleBuffer) {
 
-                if (globals.procesLineLabel) {
+                if (globals.processLineLabel && globals.useLineLabel2) {
 
                     p1[0] = p1[0] + dir[0] * fc.sx * factor;
                     p1[1] = p1[1] + dir[1] * fc.sx * factor;
@@ -102,30 +138,40 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                     p1[1] = p1[1] + n[1] * (fc.sy - font.size) * factor;
                     p1[2] = p1[2] + n[2] * (fc.sy - font.size) * factor;
 
-                    singleBuffer[index] = p1[0];
-                    singleBuffer[index+1] = p1[1];
-                    singleBuffer[index+2] = p1[2];
+                    var n2 = [n[0] * verticalShift, n[1] * verticalShift, n[2] * verticalShift];
+                    var n3 = [n2[0] + n[0] * factorY, n2[1] + n[1] * factorY, n2[2] + n[2] * factorY];
 
+                    singleBuffer[index] = p1[0] - n2[0];
+                    singleBuffer[index+1] = p1[1] - n2[1];
+                    singleBuffer[index+2] = p1[2] - n2[2];
+
+                    
                     var m = [ [dir[0], dir[1], dir[2]], 
                               [n[0], n[1], n[2]], 
                               [up[0], up[1], up[2]] ];
 
-                    //more robust code can be found there
-                    //http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+                    /*
+                    var m = [ dir[0], dir[1], dir[2], 
+                              n[0], n[1], n[2], 
+                              up[0], up[1], up[2] ];*/
 
-                    singleBuffer[index+3] = Math.sqrt(1.0 + m[0][0] + m[1][1] + m[2][2]) / 2.0; // w
-                    var  w4 = (4.0 * w);
-                    singleBuffer[index+4] = (m[2][1] - m[1][2]) / w4 ;  //x
-                    singleBuffer[index+5] = (m[0][2] - m[2][0]) / w4 ;  //y
-                    singleBuffer[index+6] = (m[1][0] - m[0][1]) / w4 ;  //z
+                    var q = mat3toQuad2(m);
+                    singleBuffer[index+3] = q[0];  //x
+                    singleBuffer[index+4] = q[1];  //y
+                    singleBuffer[index+5] = q[2];  //z
+                    singleBuffer[index+6] = q[3];  //w
                    
                     singleBuffer[index+7] = factorX;
                     singleBuffer[index+8] = factorY;
                     singleBuffer[index+9] = fc.u1;
                     singleBuffer[index+10] = fc.v1 + planeShift;
-                    singleBuffer[index+11] = fc.u2;
-                    singleBuffer[index+12] = fc.v2 + planeShift;
 
+                    var dtx = (fc.u2 - fc.u1) * 1024;
+                    var dty = (fc.v2 - fc.v1);// * 1024;
+
+                    singleBuffer[index+11] = dtx + dty;  // u store in decimal part, v stored in fraction part
+
+                    index += 12;
                 } else {
                     singleBuffer[index] = p1[0] + fc.sx * factor;
                     singleBuffer[index+1] = p1[1] + (fc.sy - font.size) * factor;
@@ -266,7 +312,7 @@ var addText = function(pos, dir, text, size, spacing, fonts, vertexBuffer, texco
 };
 
 
-var addTextOnPath = function(points, distance, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes) {
+var addTextOnPath = function(points, distance, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes, singleBuffer) {
     if (textVector == null) {
         textVector = [0,1,0];
     }
@@ -281,6 +327,8 @@ var addTextOnPath = function(points, distance, text, size, spacing, textVector, 
     var res = glyphsRes ? glyphsRes : Typr.U.stringToGlyphs(fonts, text);
     var glyphs = res[0];
     var gfonts = res[1];
+
+    globals.processLineLabel = true;
 
     for (var i = 0, li = glyphs.length; i < li; i++) {
         /*  
@@ -320,7 +368,7 @@ var addTextOnPath = function(points, distance, text, size, spacing, textVector, 
 
             vec3Normalize(dir);
 
-            var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, glyph, factor, spacing, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes, gfonts[i]);
+            var shift = addChar(posAndDir[0], dir, -factor*font.size*0.7+verticalOffset, glyph, factor, spacing, index, index, textVector, fonts, vertexBuffer, texcoordsBuffer, null, planes, gfonts[i], singleBuffer);
 
             p1 = shift[0];
             index = shift[1];
@@ -329,11 +377,13 @@ var addTextOnPath = function(points, distance, text, size, spacing, textVector, 
         }
     }
 
+    globals.processLineLabel = false;
+
     return index;
 };
 
 
-var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes) {
+var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes, singleBuffer) {
     var textLength = getTextLength(text, size, spacing, fonts, glyphsRes);
     var pathLength = getPathLength(points);
     var shift = (pathLength -  textLength)*0.5;
@@ -346,8 +396,9 @@ var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalO
     }
 
     var textVector = getPathTextVector(points, shift, text, size, spacing, fonts, glyphsRes);
+    globals.textVector = textVector;
 
-    return addTextOnPath(points, shift, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes);
+    return addTextOnPath(points, shift, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes, singleBuffer);
 };
 
 

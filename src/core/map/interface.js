@@ -235,6 +235,11 @@ MapInterface.prototype.convertCoordsFromPhysToCameraSpace = function(pos) {
 };
 
 
+MapInterface.prototype.transformPhysCoordsBySE = function(pos) {
+    return this.map.convert.transformPhysCoordsBySE(pos);
+};
+
+
 MapInterface.prototype.getPositionCanvasCoords = function(position, lod) {
     return this.map.convert.getPositionCanvasCoords(new MapPosition(position), lod);
 };
