@@ -172,6 +172,13 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                     singleBuffer[index+11] = dtx + dty;  // u store in decimal part, v stored in fraction part
 
                     index += 12;
+
+                    var dx = dir[0]*0.5*factorX - n[0]*0.5*factorY - n2[0];
+                    var dy = dir[1]*0.5*factorX - n[1]*0.5*factorY - n2[1];
+                    var dz = dir[2]*0.5*factorX - n[2]*0.5*factorY - n2[2];
+
+                    globals.lineLabelPoints.push([p1[0] + dx, p1[1] + dy, p1[2] + dz, Math.sqrt(factorX*factorX + factorY*factorY)*0.5]);
+
                 } else {
                     singleBuffer[index] = p1[0] + fc.sx * factor;
                     singleBuffer[index+1] = p1[1] + (fc.sy - font.size) * factor;

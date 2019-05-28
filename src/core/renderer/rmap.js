@@ -92,7 +92,7 @@ RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjo
 
 //aabbox circle
 //http://www.firenibbler.com/2016/04/27/how-to-js-collision-detection-cheat-sheets-learn-aabb-box-circle-and-point-detection/
-RendererRMap.prototype.circleAABBoxCollide(x1, y1, x2, y2, cx, cy, cr){
+RendererRMap.prototype.circleAABBoxCollide = function(x1, y1, x2, y2, cx, cy, cr){
     // Get the distance between the two objects
     var hwidth = (x2 - x1) * 0.5;
     var hheight = (y2 - y1) * 0.5;
@@ -117,7 +117,7 @@ RendererRMap.prototype.circleAABBoxCollide(x1, y1, x2, y2, cx, cy, cr){
 
 //aabbox line
 //https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
-RendererRMap.prototype.lineAABBoxCollide(x1, y1, x2, y2, rx1, ry1, rx2, ry2) {
+RendererRMap.prototype.lineAABBoxCollide = function(x1, y1, x2, y2, rx1, ry1, rx2, ry2) {
     var dx = 1 / ( (rx2 != rx1) ? (rx2 - rx1) : 0.00001);
     var tx1 = (x1 - rx1)*dx;
     var tx2 = (x2 - rx1)*dx;
@@ -125,7 +125,7 @@ RendererRMap.prototype.lineAABBoxCollide(x1, y1, x2, y2, rx1, ry1, rx2, ry2) {
     var tmin = Math.min(tx1, tx2);
     var tmax = Math.max(tx1, tx2);
 
-    var dy = 1 / ( (ry2 != ry1) ? (ry2 - ry1 : 0.00001);
+    var dy = 1 / ( (ry2 != ry1) ? (ry2 - ry1) : 0.00001);
     var ty1 = (y1 - ry1)*dy;
     var ty2 = (y2 - ry1)*dy;
 

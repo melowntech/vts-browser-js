@@ -293,6 +293,23 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
 };
 
 
+//draw 2d circle - used for debuging
+RendererDraw.prototype.drawCircle = function(point, radius, lineWidth, color, depthOffset, depthTest, transparent, writeDepth, useState) {
+    var points = [];
+    var circleSides = 16;
+    var angle = 0, step = (2.0*Math.PI) / circleSides;
+
+    for (var i = 0; i < circleSides; i++) {
+        points[i] = [-Math.sin(angle)*radius+point[0], Math.cos(angle)*radius+point[1], point[2]];
+        angle += step;
+    }
+
+    points[circleSides] = [point[0], radius+point[1], point[2]];;
+
+    this.drawLineString(points, true, lineWidth, color, depthOffset, depthTest, transparent, writeDepth, useState);
+};
+
+
 //draw 2d image - used for debuging
 RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth, depthOffset, depthTest, transparent, writeDepth, useState) {
     var gpu = this.gpu;
@@ -1371,7 +1388,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (job.singleBuffer) {
            
-
             var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
 
             if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
@@ -1413,6 +1429,22 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                         gpu.bindTexture(job.fonts[i].getTexture(file));
                         gl.drawArrays(gl.TRIANGLES, 0, vitems / 3); //TODO: demystify vitems
                     }
+                }
+            }
+
+
+            if (job.labelPoints.length > 0) {
+
+                //this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
+                  //                   [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
+
+                var points = job.labelPoints[b == job.singleBuffer ? 0 : 1];
+                for(j = 0; j < points.length; j++) {
+                    //pp = renderer.project2(points[j], renderer.camera.mvp, renderer.cameraPosition);
+                    pp = renderer.project2(points[j], mvp, [0,0,0], true);
+
+                    this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
+                    //this.drawLineString([[pp[0]-10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]+10, pp[2]], [pp[0]-10, pp[1]+10, pp[2]]  ], true, 1, [255, 0, 255, 255], null, null, null, null, null);
                 }
             }
 

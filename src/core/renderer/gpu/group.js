@@ -315,6 +315,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.state = data['state'];
     job.center = data['center'];
     job.lod = data['lod'];
+    job.labelPoints = data['labelPoints'];
     job.zbufferOffset = data['zbuffer-offset'];
     job.reduced = false;
     job.ready = true;

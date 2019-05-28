@@ -261,7 +261,7 @@ Renderer.prototype.resizeGL = function(width, height, skipCanvas, skipPaint) {
 };
 
 
-Renderer.prototype.project2 = function(point, mvp, cameraPos) {
+Renderer.prototype.project2 = function(point, mvp, cameraPos, includeDistance) {
     var p = [0, 0, 0, 1];
 
     if (cameraPos) {
@@ -280,6 +280,10 @@ Renderer.prototype.project2 = function(point, mvp, cameraPos) {
 
         //depth in meters
         sp[2] = p[2]/p[3];
+
+        if (includeDistance) {
+            sp[3] = p[2];
+        }
 
         return sp;
     } else {

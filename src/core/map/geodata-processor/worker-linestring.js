@@ -956,8 +956,13 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var planes = {};
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
+    globals.lineLabelPoints = [];
     var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes, singleBuffer);
+    var labelPoints = globals.lineLabelPoints;
+
+    globals.lineLabelPoints = [];
     index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, globals.useLineLabel2 ? 0 : index, null, glyphsRes, singleBuffer2);
+    var labelPoints2 = globals.lineLabelPoints;
 
     if (!index) {
         return;
@@ -999,7 +1004,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     });
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, globals.useLineLabel2 ? VTS_WORKER_TYPE_LINE_LABEL2 : VTS_WORKER_TYPE_LINE_LABEL, {
-        'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 'textVector':globals.textVector,
+        'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 'textVector':globals.textVector, 'labelPoints': globals.useLineLabel2 ? [labelPoints, labelPoints2] : [],
         'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
         'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit,
         'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
