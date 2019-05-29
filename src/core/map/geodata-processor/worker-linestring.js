@@ -903,6 +903,10 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var labelSpacing = getLayerPropertyValue(style, 'line-label-spacing', lineString, lod);
     var labelLineHeight = getLayerPropertyValue(style, 'line-label-line-height', lineString, lod);
     var labelOffset = getLayerPropertyValue(style, 'line-label-offset', lineString, lod);
+    var labelReduce =  getLayerPropertyValue(style, 'dynamic-reduce', lineString, lod),
+    var labelOverlap = getLayerPropertyValue(style, 'line-label-no-overlap', lineString, lod);
+    var labelOverlapFactor = getLayerPropertyValue(style, 'line-label-no-overlap-factor', lineString, lod);
+    var labelOverlapMargin = getLayerPropertyValue(style, 'line-label-no-overlap-margin', lineString, lod);
 
     if (Math.abs(labelSize) < 0.0001) {
         return;
@@ -1003,9 +1007,25 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         zOffset : zbufferOffset
     });
 
+
+    if (labelOverlap) {
+        var factorType = null, factorValue = null;
+
+        if (labelOverlapFactor !== null) {
+            switch(labelOverlapFactor[0]) {
+                case 'direct':      factorType = VTS_NO_OVERLAP_DIRECT;      break;
+                case 'div-by-dist': factorType = VTS_NO_OVERLAP_DIV_BY_DIST; break;
+            }
+
+            factorValue = labelOverlapFactor[1];
+        }
+
+        var noOverlap = [labelOverlapMargin, factorType, factorValue];
+    }
+
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, globals.useLineLabel2 ? VTS_WORKER_TYPE_LINE_LABEL2 : VTS_WORKER_TYPE_LINE_LABEL, {
         'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 'textVector':globals.textVector, 'labelPoints': globals.useLineLabel2 ? [labelPoints, labelPoints2] : [],
-        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'reduce':labelReduce, 'noOverlap': (labelOverlap ? noOverlap : null),
         'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit,
         'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'lod':(globals.autoLod ? null : globals.tileLod) }, globals.useLineLabel2 ? [singleBuffer, singleBuffer2] : [vertexBuffer, texcoordsBuffer], signature);

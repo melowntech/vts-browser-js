@@ -1120,6 +1120,9 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'line-label-offset':  return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'line-label-spacing': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'line-label-line-height': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'line-label-no-overlap':  return validateValue(layerId, key, value, 'boolean');
+    case 'line-label-no-overlap-factor': return validateValue(layerId, key, value, 'object');
+    case 'line-label-no-overlap-margin': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
 
     case 'point':        return validateValue(layerId, key, value, 'boolean');
     case 'point-type':   return validateValue(layerId, key, value, 'string');
@@ -1226,6 +1229,9 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'line-label-offset':  return 0;
     case 'line-label-spacing': return 1;
     case 'line-label-line-height': return 1;
+    case 'line-label-no-overlap':  return true;
+    case 'line-label-no-overlap-factor': return null;
+    case 'line-label-no-overlap-margin': return 1.1;
 
     case 'point':        return false;
     case 'point-type':   return 'screen';
