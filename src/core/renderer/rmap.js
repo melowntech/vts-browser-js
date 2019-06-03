@@ -89,6 +89,53 @@ RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjo
     this.rectangles2Count += 6;
 };
 
+
+//aabbox circle
+//http://www.firenibbler.com/2016/04/27/how-to-js-collision-detection-cheat-sheets-learn-aabb-box-circle-and-point-detection/
+RendererRMap.prototype.circleAABBoxCollide = function(x1, y1, x2, y2, cx, cy, cr){
+    // Get the distance between the two objects
+    var hwidth = (x2 - x1) * 0.5;
+    var hheight = (y2 - y1) * 0.5;
+    var distX = Math.abs(cx - x1 - hwidth);
+    var distY = Math.abs(cy - y2 - hheight);
+
+    // Check to make sure it is definitely not overlapping
+    if (distX > (hwidth + cr) || distY > (hheight + cr)) {
+        return false;
+    }
+    // Check to see if it is definitely overlapping
+    if (distX <= hwidth || distY <= hheight) {
+        return true;
+    }
+
+    // Last Resort to see if they are overlapping
+    var dx = distX - hwidth;
+    var dy = distY - hheight;
+    return (dx * dx + dy * dy <= (cr * cr));
+};
+
+
+//aabbox line
+//https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
+RendererRMap.prototype.lineAABBoxCollide = function(x1, y1, x2, y2, rx1, ry1, rx2, ry2) {
+    var dx = 1 / ( (rx2 != rx1) ? (rx2 - rx1) : 0.00001);
+    var tx1 = (x1 - rx1)*dx;
+    var tx2 = (x2 - rx1)*dx;
+
+    var tmin = Math.min(tx1, tx2);
+    var tmax = Math.max(tx1, tx2);
+
+    var dy = 1 / ( (ry2 != ry1) ? (ry2 - ry1) : 0.00001);
+    var ty1 = (y1 - ry1)*dy;
+    var ty2 = (y2 - ry1)*dy;
+
+    tmin = Math.max(tmin, Math.min(ty1, ty2));
+    tmax = Math.min(tmax, Math.max(ty1, ty2));
+
+    return tmax >= tmin;
+};
+
+
 RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
     var t;
 
@@ -180,6 +227,12 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
                     y1 < rectangles[rectangleIndex + 3] && y2 > rectangles[rectangleIndex + 1]) {
 
                     if (any) {
+                        //var subjob2 = rectangles[rectangleIndex + 6];
+
+                        //if (subjob2[0].polygon) {
+                            //todo
+                        //}
+
                         return false;
                     }
 

@@ -293,6 +293,23 @@ RendererDraw.prototype.drawLineString = function(points, screenSpace, size, colo
 };
 
 
+//draw 2d circle - used for debuging
+RendererDraw.prototype.drawCircle = function(point, radius, lineWidth, color, depthOffset, depthTest, transparent, writeDepth, useState) {
+    var points = [];
+    var circleSides = 16;
+    var angle = 0, step = (2.0*Math.PI) / circleSides;
+
+    for (var i = 0; i < circleSides; i++) {
+        points[i] = [-Math.sin(angle)*radius+point[0], Math.cos(angle)*radius+point[1], point[2]];
+        angle += step;
+    }
+
+    points[circleSides] = [point[0], radius+point[1], point[2]];;
+
+    this.drawLineString(points, true, lineWidth, color, depthOffset, depthTest, transparent, writeDepth, useState);
+};
+
+
 //draw 2d image - used for debuging
 RendererDraw.prototype.drawImage = function(x, y, lx, ly, texture, color, depth, depthOffset, depthTest, transparent, writeDepth, useState) {
     var gpu = this.gpu;
@@ -995,6 +1012,124 @@ RendererDraw.prototype.paintGL = function() {   //remove this??
 };
 
 
+RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color) {
+    var res = { 
+        exit: true
+    };
+
+    var reduce78 = (job.reduce && (job.reduce[0] >= 7 && job.reduce[0] <= 11));
+
+    if (!renderer.drawAllLabels && job.noOverlap) { 
+        if (!pp) {
+            pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+        }
+
+        res.pp = pp;
+        var o = job.noOverlap, depth = pp[2];
+
+        if (depth < 0 || depth > 1.0) {
+            return res;
+        }
+
+        if (!renderer.rmap.checkRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], stickShift)) {
+            return res;
+        }
+
+        if (o[4] !== null) {
+            if (o[4] === VTS_NO_OVERLAP_DIRECT) {
+                depth = o[5];
+            } else {
+                if (l === null) {
+                    p2 = job.center2;
+                    p1 = renderer.cameraPosition;
+                    camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                    l = vec3.length(camVec) + 0.0001;
+                }
+
+                if (!job.reduce || (job.reduce && !(job.reduce[0] >= 8 && job.reduce[0] <= 11))) {  //not overlap code not used for reduce==8
+                    depth = o[5] / l;
+                }
+            } 
+        }
+
+        job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
+
+        if (reduce78) {
+            renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
+            renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
+            renderer.gmapIndex++;
+
+            if (renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
+                if (l === null) {
+                    p2 = job.center2;
+                    p1 = renderer.cameraPosition;
+                    camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                    l = vec3.length(camVec) + 0.0001;
+                }
+
+                if (l > renderer.fmaxDist) renderer.fmaxDist = l;
+                if (l < renderer.fminDist) renderer.fminDist = l;
+
+                job.reduce[1] = job.reduce[2];
+                job.reduce[4] = l;
+            }
+            return res;
+        }
+
+        if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], depth, job.lastSubJob)) {
+            renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], depth, job.lastSubJob);
+            return res;
+        }
+
+        return res; //draw all labe from same z-index together
+    } else {
+        if (reduce78) {
+            if (!pp) {
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+            }
+
+            job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
+
+            renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
+            renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
+            renderer.gmapIndex++;
+
+            if (renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
+                if (l === null) {
+                    p2 = job.center2;
+                    p1 = renderer.cameraPosition;
+                    camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                    l = vec3.length(camVec) + 0.0001;
+                }
+
+                if (l > renderer.fmaxDist) renderer.fmaxDist = l;
+                if (l < renderer.fminDist) renderer.fminDist = l;
+
+                job.reduce[1] = job.reduce[2];
+                job.reduce[4] = l;
+            }
+
+            res.pp = pp;
+            return res;
+        }
+    }
+
+    if (job.hysteresis && job.id) {
+        if (!pp) {
+            pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+        }
+
+        job.lastSubJob = [job, stickShift, texture, files, color, pp];
+        renderer.jobHBuffer[job.id] = job;
+        res.pp = pp;
+        return res;
+     }
+
+    res.exit = false;
+
+    return res;
+}
+
 RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixelSize, advancedHitPass, ignoreFilters) {
     if (!job.ready) {
         return;
@@ -1071,7 +1206,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         }        
     }
 
-    var mvp = job.mvp, prog, texture;
+    var mvp = job.mvp, prog, texture, res;
     var vertexPositionAttribute, vertexTexcoordAttribute,
         vertexNormalAttribute, vertexOriginAttribute, vertexElementAttribute;
 
@@ -1371,7 +1506,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
         if (job.singleBuffer) {
            
-
             var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
 
             if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
@@ -1417,7 +1551,35 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             }
 
 
+            if (job.labelPoints.length > 0) {
+
+                //this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
+                  //                   [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
+
+                var points = job.labelPoints[b == job.singleBuffer ? 0 : 1];
+                for(j = 0; j < points.length; j++) {
+                    //pp = renderer.project2(points[j], renderer.camera.mvp, renderer.cameraPosition);
+                    pp = renderer.project2(points[j], mvp, [0,0,0], true);
+
+                    this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
+                    //this.drawLineString([[pp[0]-10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]+10, pp[2]], [pp[0]-10, pp[1]+10, pp[2]]  ], true, 1, [255, 0, 255, 255], null, null, null, null, null);
+                }
+            }
+
+
             return;
+        }
+
+        res = this.processNoOverlap(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color);
+
+        if (res.exit) {
+            return;
+        } else {
+            pp = res.pp;
+            p1 = res.p1;
+            p2 = res.p2;
+            camVec = res.camVec;
+            l = res.l;
         }
 
         prog = renderer.useSuperElevation ? renderer.progText2SE : job.program;
@@ -1797,117 +1959,18 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             //}
         }
 
-        var reduce78 = (job.reduce && (job.reduce[0] >= 7 && job.reduce[0] <= 11));
+        res = this.processNoOverlap(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color);
 
-        if (!renderer.drawAllLabels && job.noOverlap) { 
-            if (!pp) {
-                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
-            }
-
-            o = job.noOverlap, depth = pp[2];
-
-            if (depth < 0 || depth > 1.0) {
-                return;
-            }
-
-            if (!renderer.rmap.checkRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], stickShift)) {
-                return;
-            }
-
-            if (o[4] !== null) {
-                if (o[4] === VTS_NO_OVERLAP_DIRECT) {
-                    depth = o[5];
-                } else {
-                    if (l === null) {
-                        p2 = job.center2;
-                        p1 = renderer.cameraPosition;
-                        camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
-                        l = vec3.length(camVec) + 0.0001;
-                    }
-
-                    if (!job.reduce || (job.reduce && !(job.reduce[0] >= 8 && job.reduce[0] <= 11))) {  //not overlap code not used for reduce==8
-                        depth = o[5] / l;
-                    }
-                } 
-            }
-
-            job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
-
-            if (reduce78) {
-                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
-                renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
-                renderer.gmapIndex++;
-
-                if (renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
-                    if (l === null) {
-                        p2 = job.center2;
-                        p1 = renderer.cameraPosition;
-                        camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
-                        l = vec3.length(camVec) + 0.0001;
-                    }
-
-                    if (l > renderer.fmaxDist) renderer.fmaxDist = l;
-                    if (l < renderer.fminDist) renderer.fminDist = l;
-
-                    //job.reduce[1] = Math.log(job.reduce[2] / l) * VTS_IMPORATANCE_INV_LOG;
-                    //job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
-                    
-                    //job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
-                    job.reduce[1] = job.reduce[2];
-                    job.reduce[4] = l;
-                }
-                return;
-            }
-
-            if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], depth, job.lastSubJob)) {
-                renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], depth, job.lastSubJob);
-                return;
-            }
-
-            return; //draw all labe from same z-index together
-        } else {
-            if (reduce78) {
-                if (!pp) {
-                    pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
-                }
-
-                job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
-
-                renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
-                renderer.gmap[renderer.gmapIndex] = job.lastSubJob;
-                renderer.gmapIndex++;
-
-                if (renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
-                    if (l === null) {
-                        p2 = job.center2;
-                        p1 = renderer.cameraPosition;
-                        camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
-                        l = vec3.length(camVec) + 0.0001;
-                    }
-
-                    if (l > renderer.fmaxDist) renderer.fmaxDist = l;
-                    if (l < renderer.fminDist) renderer.fminDist = l;
-
-                    //job.reduce[1] = Math.log(job.reduce[2] / l) * VTS_IMPORATANCE_INV_LOG;
-                    //job.reduce[1] = Math.log(job.reduce[2] / l) / Math.log(1.0017);
-                    job.reduce[1] = job.reduce[2];
-                    job.reduce[4] = l;
-                }
-
-                return;
-            }
-        }
-
-        if (job.hysteresis && job.id) {
-            if (!pp) {
-                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
-            }
-
-            job.lastSubJob = [job, stickShift, texture, files, color, pp];
-            renderer.jobHBuffer[job.id] = job;
+        if (res.exit) {
             return;
+        } else {
+            pp = res.pp;
+            p1 = res.p1;
+            p2 = res.p2;
+            camVec = res.camVec;
+            l = res.l;
         }
-
+        
         if (job.type == VTS_JOB_PACK) {
             return;
         }
