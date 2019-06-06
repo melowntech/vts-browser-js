@@ -7,7 +7,9 @@ var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.blockSize = blockSize;
     this.blockSizeFactor = 1/blockSize;
     this.blocks = [];
+    this.blocks2 = [];
     this.blocksRCount = [];
+    this.blocks2RCount = [];
     this.allocatedBlocks = 0;
     this.lx = 1;
     this.ly = 1;
@@ -16,6 +18,7 @@ var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.rectanglesCount = 0;
     this.rectangles2 = null;
     this.rectangles2Count = 0;
+    this.positionsBuffer = new Float64Array(256*4);
 };
 
 
@@ -64,7 +67,12 @@ RendererRMap.prototype.clear = function() {
                 this.blocks[i] = [];
             }
 
+            if (!this.blocks2[i]) {
+                this.blocks2[i] = [];
+            }
+
             this.blocksRCount[i] = 0;
+            this.blocks2RCount[i] = 0;
         }
 
     }
@@ -164,7 +172,7 @@ RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
 
 RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, checkDepthMap) {
     var x, y, i, index, blockRectangles, blockRectanglesCount,
-        rectangleIndex, t;
+        rectangleIndex, t, renderer = this.renderer;
 
     if (this.drawAllLabels) {
         return true;
@@ -181,12 +189,12 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
     }
 
     //compass
-    if ((this.renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y3 > this.cy1) {
+    if ((renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y3 > this.cy1) {
         return false;
     }
 
     //search bar
-    if ((this.renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y3 > 0) {
+    if ((renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y3 > 0) {
         return false;
     }
 
@@ -210,7 +218,8 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
     var removeList = {};
     var exit = false;
 
-    var top = this.renderer.config.mapFeaturesSortByTop, rectangles = this.rectangles;
+    var top = renderer.config.mapFeaturesSortByTop,
+        rectangles = this.rectangles, rectangles2 = this.rectangles2;
 
     //test collision
     for (y = 0; y < ly; y++) {
@@ -220,6 +229,7 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
             blockRectangles = this.blocks[index];
             blockRectanglesCount = this.blocksRCount[index];
 
+            //test rectangles
             for (i = 0; i < blockRectanglesCount; i++) {
                 rectangleIndex = blockRectangles[i];
 
@@ -227,12 +237,6 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
                     y1 < rectangles[rectangleIndex + 3] && y2 > rectangles[rectangleIndex + 1]) {
 
                     if (any) {
-                        //var subjob2 = rectangles[rectangleIndex + 6];
-
-                        //if (subjob2[0].polygon) {
-                            //todo
-                        //}
-
                         return false;
                     }
 
@@ -253,6 +257,23 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
             if ((blockRectanglesCount + 1) >= this.maxBlockRectangles) {
                 return false;
             }
+
+            blockRectangles = this.blocks2[index];
+            blockRectanglesCount = this.blocks2RCount[index];
+
+            //test circles
+            for (i = 0; i < blockRectanglesCount; i++) {
+                rectangleIndex = blockRectangles[i];
+
+                if (this.circleAABBoxCollide(rectangles2[rectangleIndex + 0], rectangles2[rectangleIndex + 1], rectangles[rectangleIndex + 2], rectangles[rectangleIndex + 3], x, y, r)) {
+
+                    if (any) {
+                        return false;
+                    }                    
+                }
+            }
+
+
         }
     }
 
@@ -264,13 +285,13 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
     if (checkDepthMap) {
 
         var reduce = checkDepthMap[2];
-        var depth = this.renderer.mapHack.getScreenDepth(checkDepthMap[0], checkDepthMap[1], (reduce[4] > 10000000));
+        var depth = renderer.mapHack.getScreenDepth(checkDepthMap[0], checkDepthMap[1], (reduce[4] > 10000000));
 
         if (depth[0]) {
             var delta = depth[1] - reduce[4];
             reduce[7] = delta;
 
-            if (!this.renderer.drawHiddenLabels && delta < checkDepthMap[3]) {
+            if (!renderer.drawHiddenLabels && delta < checkDepthMap[3]) {
                 return false;
             }
         }
@@ -296,6 +317,113 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
 
     return true;
 };
+
+
+RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
+    var job = subjob[0];
+    var x1 = Number.NEGATIVE_INFINITY, x2 = Number.POSITIVE_INFINITY,
+        y1 = Number.NEGATIVE_INFINITY, y2 = Number.POSITIVE_INFINITY;
+    var x, y, r, r2, pp, index = 0, renderer = this.renderer;
+    var points = job.labelPoints[subjob[9]];
+    var pbuff = this.positionsBuffer;
+
+    for (var i = 0, li = points.length; i < li; i++) {
+
+        pp = renderer.project2(points[i], job.mvp, [0,0,0], true);
+
+        if (pp[0] > x2) x2 = pp[0];
+        if (pp[1] > y2) y2 = pp[1];
+        if (pp[0] < x1) x1 = pp[0];
+        if (pp[1] < y1) y1 = pp[1];
+
+        //minX, maxX, minY, maxY;
+        pbuff[index] = pp[0];
+        pbuff[index+1] = pp[1];
+        pbuff[index+2] = pp[2];
+        pbuff[index+3] = points[i][3] * renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1];
+        index += 4;
+    }
+
+    //screen including credits
+    if (x1 < this.sx1 || x2 > this.sx2 || y1 < this.sy1 || y3 > this.sy2) {
+        return false;
+    }
+
+    //compass
+    if ((renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y3 > this.cy1) {
+        return false;
+    }
+
+    //search bar
+    if ((renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y3 > 0) {
+        return false;
+    }
+
+    var blockSizeFactor = this.blockSizeFactor, xx1, yy1, xx2, yy2, dx, dy;
+    var top = renderer.config.mapFeaturesSortByTop,
+        rectangles = this.rectangles, rectangles2 = this.rectangles2;
+
+    for (i = 0, li = points.length; i < li; i++) {
+
+        x = pbuff[index] = pp[0];
+        y = pbuff[index+1] = pp[1];
+        r = pp[2];
+        r2 = r *r;
+
+        xx1 = Math.floor((x-r) * blockSizeFactor);
+        yy1 = Math.floor((y-r) * blockSizeFactor);
+        xx2 = Math.floor((x+r) * blockSizeFactor);
+        yy2 = Math.floor((y+r) * blockSizeFactor);
+
+        var lx = (xx2 - xx1) + 1;
+        var ly = (yy2 - yy1) + 1;
+
+        //test collision
+        for (y = 0; y < ly; y++) {
+            for (x = 0; x < lx; x++) {
+                index = (yy1 + y)*this.lx + (xx1 + x);
+
+                blockRectangles = this.blocks[index];
+                blockRectanglesCount = this.blocksRCount[index];
+
+                //test rectangles
+                for (i = 0; i < blockRectanglesCount; i++) {
+                    rectangleIndex = blockRectangles[i];
+
+                    if (this.circleAABBoxCollide(x1, y1, x2, y2, rectangles[rectangleIndex + 0], rectangles[rectangleIndex + 1], rectangles[rectangleIndex + 2])) {
+
+                        if (any) {
+                            return false;
+                        }                    
+                    }
+                }
+
+                blockRectangles = this.blocks2[index];
+                blockRectanglesCount = this.blocks2RCount[index];
+
+                //test circles
+                for (i = 0; i < blockRectanglesCount; i++) {
+                    rectangleIndex = blockRectangles[i];
+
+                    dx = x - rectangles2[rectangleIndex + 0];
+                    dy = y - rectangles2[rectangleIndex + 1];
+                    rr = rectangles2[rectangleIndex + 1] + r;
+
+                    if ((dx*dx + dy*dy) < (rr * rr)) {
+
+                        if (any) {
+                            return false;
+                        }                    
+                    }
+                }
+            }
+        }
+
+        index += 4;
+    }
+
+};
+
 
 RendererRMap.prototype.removeRectangle = function(rectangleIndex) {
     var rectangles = this.rectangles, x1, y1, x2, y2, x, y, i, index,

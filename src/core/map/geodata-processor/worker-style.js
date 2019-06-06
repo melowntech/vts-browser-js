@@ -299,6 +299,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
             case 'sub':
             case 'mul':
             case 'div':
+            case 'mod':
             case 'pow':
             case 'tofixed':
             case 'atan2':
@@ -319,6 +320,7 @@ var getLayerPropertyValueInner = function(layer, key, feature, lod, value, depth
                             case 'sub':    return v1 - v2;
                             case 'mul':    return v1 * v2;
                             case 'div':    return v1 / v2;
+                            case 'mod':    return v1 % v2;
                             case 'pow':    return Math.pow(v1, v2);
                             case 'atan2':  return Math.atan2(v1, v2);
                             case 'tofixed': return v1.tofixed(v2);

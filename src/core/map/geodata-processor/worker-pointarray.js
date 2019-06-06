@@ -722,7 +722,7 @@ var processPointArrayVSwitchPass = function(pointArray, lod, style, featureIndex
 };
 
 
-var getOriginOffset = function(origin, width, height) {
+var getOriginOffset = function(origin, width, height) { //TODO: fix pixel units
     switch(origin) {
     case 'top-left':        return [0, 0];
     case 'top-right':       return [-width, 0];
