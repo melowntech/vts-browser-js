@@ -1306,7 +1306,6 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
     '#endif\n'+
 
     '#ifdef flatShadeVar\n'+
-        '#extension GL_OES_standard_derivatives : enable\n'+
         'varying vec3 vBarycentric;\n'+
 
         '#ifdef fogAndColor\n'+

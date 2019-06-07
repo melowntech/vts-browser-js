@@ -481,7 +481,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                             }
 
                             if (flatShade) {
-                                pixelShader = '#define flatShadeVar\n' + pixelShader;
+                                pixelShader =  '#extension GL_OES_standard_derivatives : enable\n#define flatShadeVar\n' + pixelShader;
                                 vertexShader = '#define flatShadeVar\n' + vertexShader;
 
                                 //if (this.map.mobile) {

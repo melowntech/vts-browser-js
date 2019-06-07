@@ -731,7 +731,7 @@ RendererDraw.prototype.drawGpuJobs = function() {
             renderer.gmapIndex = 0;
         }
 
-        if (rmap.rectanglesCount > 0) {
+        if (rmap.rectanglesCount > 0 || rmap.rectangles2Count > 0) {
             rmap.processRectangles(gpu, gl, renderer, screenPixelSize);
         }
 
@@ -2592,6 +2592,98 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
             gl.drawArrays(gl.TRIANGLES, 0, job.vertexPositionBuffer.numItems);
         }
     }
+};
+
+RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, screenPixelSize, subjob, fade) {
+    if (!subjob) {
+        return;
+    }
+
+    var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
+        files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
+        o = job.noOverlap, localTilt, p2, p1, camVec, prog;
+
+    if (renderer.useSuperElevation) {
+        if (job.seCounter != renderer.seCounter) {
+            job.seCounter = renderer.seCounter;
+            job.center2 = renderer.transformPointBySE(job.center);
+        }
+    } else {
+        job.center2 = job.center;
+    }
+
+    var hitmapRender = job.hitable && renderer.onlyHitLayers;
+
+    var gamma = job.outline[2] * 1.4142 / 20;
+    var gamma2 = job.outline[3] * 1.4142 / 20;
+
+    if (job.singleBuffer) {
+
+        var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
+        var pointsIndex = b == job.singleBuffer ? 0 : 1;
+
+        if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
+        if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLineLabel96; } else
+        if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLineLabel64; } else
+        if (bl > 128) { vbuff = renderer.textQuads48; prog = renderer.progLineLabel48; } else
+        if (bl > 64) { vbuff = renderer.textQuads32; prog = renderer.progLineLabel32; }
+        else { vbuff = renderer.textQuads16; prog = renderer.progLineLabel16; }
+
+        gpu.useProgram(prog, ['aPosition']);
+        prog.setSampler('uSampler', 0);
+        prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
+
+        prog.setVec4('uColor', hitmapRender ? color : job.color2);
+        prog.setVec2('uParams', [job.outline[0], gamma2]);
+        var lj = hitmapRender ? 1 : 2;
+
+        var vertexPositionAttribute = prog.getAttribute('aPosition');
+
+        prog.setVec4('uData', b);
+
+        //bind vetex positions
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbuff);
+        gl.vertexAttribPointer(vertexPositionAttribute, vbuff.itemSize, gl.FLOAT, false, 0, 0);
+
+        //draw polygons
+        for(var j = 0; j < (hitmapRender ? 1 : 2); j++) {
+            if (j == 1) {
+                prog.setVec4('uColor', color);
+                prog.setVec2('uParams', [job.outline[1], gamma]);
+            }
+
+            for (var i = 0, li = files.length; i < li; i++) {
+                var fontFiles = files[i];
+
+                for (var k = 0, lk = fontFiles.length; k < lk; k++) {
+                    var file = fontFiles[k];
+                    prog.setFloat('uFile', Math.round(file+i*1000));
+                    gpu.bindTexture(job.fonts[i].getTexture(file));
+                    gl.drawArrays(gl.TRIANGLES, 0, vitems / 3); //TODO: demystify vitems
+                }
+            }
+        }
+
+
+        if (job.labelPoints.length > 0) {
+
+            //this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
+              //                   [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
+
+            var points = job.labelPoints[pointsIndex];
+            for(j = 0; j < points.length; j++) {
+                //pp = renderer.project2(points[j], renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(points[j], job.mvp, [0,0,0], true);
+
+                this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
+                //this.drawLineString([[pp[0]-10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]+10, pp[2]], [pp[0]-10, pp[1]+10, pp[2]]  ], true, 1, [255, 0, 255, 255], null, null, null, null, null);
+            }
+        }
+
+
+        return;
+    }
+
 };
 
 export default RendererDraw;
