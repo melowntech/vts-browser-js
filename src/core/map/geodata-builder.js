@@ -1121,9 +1121,11 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                 p3 = [vbuffer[vv3*3], vbuffer[vv3*3+1], vbuffer[vv3*3+2]];
 
                 //covert coords to geocent
-                p1 = proj.forward(p1);
-                p2 = proj.forward(p2);
-                p3 = proj.forward(p3);
+                if (proj) {
+                    p1 = proj.forward(p1);
+                    p2 = proj.forward(p2);
+                    p3 = proj.forward(p3);
+                }
 
                 //get face edges lengths
                 l1 = vec3.length([p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2]]);
@@ -1151,7 +1153,9 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                     //    p4 = [r.lon2, r.lat2, (vbuffer[vv1*3+2]+vbuffer[vv2*3+2])*0.5];
                     //} else {
                         p4 = [(p1[0]+p2[0])*0.5, (p1[1]+p2[1])*0.5, (p1[2]+p2[2])*0.5];
-                        p4 = proj.inverse(p4); p4[2] = (vbuffer[vv1*3+2]+vbuffer[vv2*3+2])*0.5;
+                    if (proj) {
+                        p4 = proj.inverse(p4); p4[2] = (vbuffer[vv1 * 3 + 2] + vbuffer[vv2 * 3 + 2]) * 0.5;
+                    }
                     //}
 
                     //if (l2 > 200000 && !projected) {
@@ -1160,7 +1164,9 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                      //   p5 = [r.lon2, r.lat2, (vbuffer[vv2*3+2]+vbuffer[vv3*3+2])*0.5];
                     //} else {
                         p5 = [(p2[0]+p3[0])*0.5, (p2[1]+p3[1])*0.5, (p2[2]+p3[2])*0.5];
-                        p5 = proj.inverse(p5); p5[2] = (vbuffer[vv2*3+2]+vbuffer[vv3*3+2])*0.5;
+                    if (proj) {
+                        p5 = proj.inverse(p5); p5[2] = (vbuffer[vv2 * 3 + 2] + vbuffer[vv3 * 3 + 2]) * 0.5;
+                    }
                     //}
 
                     //if (l3 > 200000 && !projected) {
@@ -1169,7 +1175,9 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
                      //   p6 = [r.lon2, r.lat2, (vbuffer[vv3*3+2]+vbuffer[vv1*3+2])*0.5];
                     //} else {
                         p6 = [(p3[0]+p1[0])*0.5, (p3[1]+p1[1])*0.5, (p3[2]+p1[2])*0.5];
-                        p6 = proj.inverse(p6); p6[2] = (vbuffer[vv3*3+2]+vbuffer[vv1*3+2])*0.5;
+                    if (proj) {
+                        p6 = proj.inverse(p6); p6[2] = (vbuffer[vv3 * 3 + 2] + vbuffer[vv1 * 3 + 2]) * 0.5;
+                    }
                     //}
 
                     var mm = m * 3;
