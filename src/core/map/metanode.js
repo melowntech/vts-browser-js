@@ -192,7 +192,7 @@ struct Metanode {
 
     this.pixelSize = utils.decodeFloat16( streamData.getUint16(stream.index, true) ); stream.index += 2;
     this.displaySize = streamData.getUint16(stream.index, true); stream.index += 2;
-    this.displaySize = 1024;
+    this.displaySize = this.metatile.surface.displaySize; //1024;
     if ((this.flags & (1 << 2)) == 0) {
         this.pixelSize = Number.POSITIVE_INFINITY;
     }

@@ -66,12 +66,13 @@ function processFeatures(type, features, lod, featureType, group) {
 
         if (type == 'point-array') {
             var importance = layer['importance-source'];
+            //
 
-            if (!importance && features[0] && features[0]['importance']) {
+            if ((typeof importance === 'undefined' || importance === null) && features[0] && features[0]['importance']) {
                 importance = '$importance';
             }
 
-            if (importance) {
+            if (!(typeof importance === 'undefined' || importance === null)) {
                 //importance = '$importance';
                 switch (globals.reduceMode) {
                     case 'scr-count1': 

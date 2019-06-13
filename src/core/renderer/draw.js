@@ -1586,22 +1586,16 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 }
             }
 
+            if (renderer.drawLabelBoxes) {
+                if (job.labelPoints.length > 0) {
+                    var points = job.labelPoints[pointsIndex];
 
-            if (job.labelPoints.length > 0) {
-
-                //this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
-                  //                   [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
-
-                var points = job.labelPoints[pointsIndex];
-                for(j = 0; j < points.length; j++) {
-                    //pp = renderer.project2(points[j], renderer.camera.mvp, renderer.cameraPosition);
-                    pp = renderer.project2(points[j], mvp, [0,0,0], true);
-
-                    this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
-                    //this.drawLineString([[pp[0]-10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]+10, pp[2]], [pp[0]-10, pp[1]+10, pp[2]]  ], true, 1, [255, 0, 255, 255], null, null, null, null, null);
+                    for(j = 0; j < points.length; j++) {
+                        pp = renderer.project2(points[j], mvp, [0,0,0], true);
+                        this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
+                    }
                 }
             }
-
 
             return;
         }
@@ -2664,22 +2658,16 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
             }
         }
 
+        if (renderer.drawLabelBoxes) {
+            if (job.labelPoints.length > 0) {
+                var points = job.labelPoints[pointsIndex];
 
-        if (job.labelPoints.length > 0) {
-
-            //this.drawLineString([[pp[0]+o[0], pp[1]+o[1], 0.5], [pp[0]+o[2], pp[1]+o[1], 0.5],
-              //                   [pp[0]+o[2], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[3], 0.5], [pp[0]+o[0], pp[1]+o[1], 0.5]], true, 1, [255, 0, 0, 255], null, true, null, null, null);
-
-            var points = job.labelPoints[pointsIndex];
-            for(j = 0; j < points.length; j++) {
-                //pp = renderer.project2(points[j], renderer.camera.mvp, renderer.cameraPosition);
-                pp = renderer.project2(points[j], job.mvp, [0,0,0], true);
-
-                this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
-                //this.drawLineString([[pp[0]-10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]-10, pp[2]], [pp[0]+10, pp[1]+10, pp[2]], [pp[0]-10, pp[1]+10, pp[2]]  ], true, 1, [255, 0, 255, 255], null, null, null, null, null);
+                for(j = 0; j < points.length; j++) {
+                    pp = renderer.project2(points[j], job.mvp, [0,0,0], true);
+                    this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
+                }
             }
         }
-
 
         return;
     }

@@ -98,8 +98,8 @@ RendererRMap.prototype.clear = function() {
 
 
 RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjob) {
-    var rectangles2 = this.rectangles2;
-    var rectangles2Count = this.rectangles2Count;
+    var rectangles2 = this.rectanglesR;
+    var rectangles2Count = this.rectanglesRCount;
 
     rectangles2[rectangles2Count] = x1;
     rectangles2[rectangles2Count+1] = y1;
@@ -107,7 +107,7 @@ RendererRMap.prototype.storeRemovedRectangle = function(x1, y1, x2, y2, z, subjo
     rectangles2[rectangles2Count+3] = y2;
     rectangles2[rectangles2Count+4] = z;
     rectangles2[rectangles2Count+5] = subjob;
-    this.rectangles2Count += 6;
+    this.rectanglesRCount += 6;
 };
 
 
@@ -278,11 +278,12 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
             for (i = 0; i < blockRectanglesCount; i++) {
                 rectangleIndex = blockRectangles[i];
 
-                if (this.circleAABBoxCollide(rectangles2[rectangleIndex + 0], rectangles2[rectangleIndex + 1], rectangles[rectangleIndex + 2], rectangles[rectangleIndex + 3], x, y, r)) {
+//                if (this.circleAABBoxCollide(rectangles2[rectangleIndex + 0], rectangles2[rectangleIndex + 1], rectangles[rectangleIndex + 2], rectangles[rectangleIndex + 3], x, y, r)) {
+                if (this.circleAABBoxCollide(x1, y1, x2, y2, rectangles2[rectangleIndex + 0], rectangles2[rectangleIndex + 1], rectangles[rectangleIndex + 3])) {
 
-                    if (any) {
+                 //   if (any) {
                         return false;
-                    }                    
+                  //  }                    
                 }
             }
 
@@ -416,9 +417,9 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
 
                     if (this.circleAABBoxCollide(x1, y1, x2, y2, rectangles[rectangleIndex + 0], rectangles[rectangleIndex + 1], rectangles[rectangleIndex + 2])) {
 
-                        if (any) {
+                        //if (any) {
                             return false;
-                        }                    
+                        //}                    
                     }
                 }
 
@@ -590,11 +591,19 @@ RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPix
         var subjob = rectangles2[i+3];
 
         if (subjob) {
-            if (subjob[0].hysteresis) {
-                renderer.jobHBuffer[subjob[0].id] = subjob[0];
+            var job = subjob[0];
+
+            if (job.hysteresis) {
+                renderer.jobHBuffer[job.id] = job;
             } else {
                 renderer.drawnJobs++;
                 draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, subjob, null);
+            }
+
+            var l = job.labelPoints[0].length;
+
+            if (l > 0) {
+                i += (4 * (l - 1));
             }
         }
     }
