@@ -101,7 +101,7 @@ MapSurface.prototype.parseJson = function(json) {
     this.geodata = (this.type == 'geodata' || this.type == 'geodata-tiles');
     this.credits = json['credits'] || [];
     this.creditsUrl = null;
-    this.displaySize = json['displaySize'] || 256;
+    this.displaySize = json['displaySize'] || 1024;
 
     var i, li;
     

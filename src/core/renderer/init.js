@@ -55,10 +55,12 @@ RendererInit.prototype.initShaders = function() {
     renderer.progTile2SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
     renderer.progTile3SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
 
-    renderer.progFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, '#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
-    renderer.progFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, '#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
-    renderer.progCFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, ('#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
-    renderer.progCFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, ('#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
+    var sdExt = '#extension GL_OES_standard_derivatives : enable\n';
+
+    renderer.progFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, sdExt+'#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
+    renderer.progFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, sdExt+'#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
+    renderer.progCFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, (sdExt+'#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
+    renderer.progCFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, (sdExt+'#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
 
     renderer.progDepthTile = new GpuProgram(gpu, '#define depth\n' + shaders.tileVertexShader, ('#define depth\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
     renderer.progDepthTileSE = new GpuProgram(gpu, '#define applySE\n#define depth\n' + shaders.tileVertexShader, ('#define depth\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
@@ -71,9 +73,12 @@ RendererInit.prototype.initShaders = function() {
     renderer.progWireFrameBasicSE = new GpuProgram(gpu, '#define applySE\n' + shaders.tileVertexShader, shaders.tileWireFrameBasicShader);
 
     renderer.progHeightmap = new GpuProgram(gpu, shaders.heightmapVertexShader, shaders.heightmapFragmentShader);
-    renderer.progPlane = new GpuProgram(gpu, shaders.planeVertexShader, shaders.planeFragmentShader); //flat
-    renderer.progPlane2 = new GpuProgram(gpu, shaders.planeVertex2Shader, shaders.planeFragment2Shader); //poles
-    renderer.progPlane3 = new GpuProgram(gpu, shaders.planeVertex3Shader, shaders.planeFragmentShader); // grid         
+    renderer.progPlane = new GpuProgram(gpu, '#define flat\n' + shaders.planeVertexShader, shaders.planeFragmentShader); //flat
+    renderer.progPlane2 = new GpuProgram(gpu, '#define poles\n' + shaders.planeVertexShader, '#define poles\n' + shaders.planeFragmentShader); //poles
+    renderer.progPlane3 = new GpuProgram(gpu, shaders.planeVertexShader, shaders.planeFragmentShader); // grid
+    renderer.progPlaneD = new GpuProgram(gpu, '#define depth\n#define flat\n' + shaders.planeVertexShader, '#define depth\n' + shaders.planeFragmentShader); //flat
+    renderer.progPlane2D = new GpuProgram(gpu, '#define depth\n#define poles\n' + shaders.planeVertexShader, '#define depth\n#define poles\n' + shaders.planeFragmentShader); //poles
+    renderer.progPlane3D = new GpuProgram(gpu, '#define depth\n' + shaders.planeVertexShader, '#define depth\n' + shaders.planeFragmentShader); // grid
 
     renderer.progSkydome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.skydomeFragmentShader);
     renderer.progStardome = new GpuProgram(gpu, shaders.skydomeVertexShader, shaders.stardomeFragmentShader);

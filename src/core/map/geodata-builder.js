@@ -1919,4 +1919,3 @@ MapGeodataBuilder.prototype.makeFreeLayer = function(style, resolution) {
 
 export default MapGeodataBuilder;
 
-

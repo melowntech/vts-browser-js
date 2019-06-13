@@ -1387,15 +1387,17 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle, onlySetB
         }     
     }
 
+    var hitmapRender = renderer.onlyDepth;
+
     if (hasPoles && node.isPole) {
         factor = map.poleRadiusFactor; 
-        prog = renderer.progPlane2; 
+        prog = hitmapRender ? renderer.progPlane2D :renderer.progPlane2; 
         renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
         prog.setVec4('uParams4', [-sx, -sy, map.poleRadius, 0]);
     } else {
 
         if (!flatGrid) {
-            prog = renderer.progPlane3; 
+            prog = hitmapRender ? renderer.progPlane3D : renderer.progPlane3; 
             renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
 
             var border;
@@ -1410,7 +1412,7 @@ MapSurfaceTile.prototype.drawGrid = function(cameraPos, divNode, angle, onlySetB
             prog.setVec3('uVector', mnode.diskNormal);
 
         } else {
-            prog = renderer.progPlane; 
+            prog = hitmapRender ? renderer.progPlane : renderer.progPlane; 
             renderer.gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
         }
     }
