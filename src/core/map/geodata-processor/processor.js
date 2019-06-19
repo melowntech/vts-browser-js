@@ -243,6 +243,7 @@ MapGeodataProcessor.prototype.setStylesheet = function(stylesheet, fontsOnly) {
     this.sendCommand('setFontMap', { 'map' : fontMap });
 };
 
+
 MapGeodataProcessor.prototype.setFont = function(url, font) {
     if (!this.fonts[url]) {
         this.fonts[url] = font;

@@ -1136,6 +1136,8 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
         renderer.jobHBuffer[job.id] = job;
         res.pp = pp;
         return res;
+     } else {
+        res.pp = pp;
      }
 
     res.exit = false;

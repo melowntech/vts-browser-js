@@ -829,7 +829,7 @@ function fillVMapHoles(vmap, mx, my) {
         }
     }
 
-    if (holesCount != 0) {
+    if (holesCount != 0 && holesCount != (mx * my)) {
         fillVMapHoles(vmap, mx, my);
     }
 }
@@ -1050,24 +1050,26 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 if (tileFeatures && tileFeatures.length) {
                     count = tileFeatures.length;
 
-                    if (count > featuresPerTileInt) {
-                        count = featuresPerTileInt;
-                    }
-
                     if (count == 0) {
                         vmap[i] = null;
                     } else {
-                        index = tileFeatures[count - 1];
-                        feature = featureCache[index];
+                        if (count > featuresPerTileInt) {
+                            count = featuresPerTileInt;
 
-                        v = feature[0].reduce[6];
-
-                        if (tileFeatures.length > count) {
                             index = tileFeatures[count];
                             feature = featureCache[index];
-                            v2 = feature[0].reduce[6];
-                            
-                            v = v + (v2 - v) * featuresPerTileFract;
+                            v = feature[0].reduce[6];
+
+                            if (tileFeatures.length > count+1) {
+                                index = tileFeatures[count+1];
+                                feature = featureCache[index];
+                                v2 = feature[0].reduce[6];
+                                v = v + (v2 - v) * featuresPerTileFract;
+                            }
+                        } else {
+                            index = tileFeatures[count - 1];
+                            feature = featureCache[index];
+                            v = feature[0].reduce[6];
                         }
 
                         vmap[i] = v;
@@ -1076,7 +1078,6 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
             }
 
             fillVMapHoles(vmap, mx, my);
-
 
             for (i = featureCacheSize - 1; i >= 0; i--) {
                 feature = featureCache[i];
@@ -1177,7 +1178,9 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 draw.drawLineString([[x, y, 0.5], [x+tileSizeX, y, 0.5],
                                      [x+tileSizeX, y+tileSizeY, 0.5], [x, y+tileSizeY, 0.5]], true, 1, [0,0,255,255], null, true, null, null, null);
 
-                draw.drawText(Math.round(x+5), Math.round(y + 5), 11, '' + v.toFixed(2), [255,255,255,255], 0.5);
+                if (v) {
+                    draw.drawText(Math.round(x+5), Math.round(y + 5), 11, '' + v.toFixed(2), [255,255,255,255], 0.5);
+                }
             }
         }
     }
