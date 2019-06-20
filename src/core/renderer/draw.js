@@ -1021,7 +1021,11 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
 
     if (!renderer.drawAllLabels && job.noOverlap) { 
         if (!pp) {
-            pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+            if (job.type == VTS_JOB_LINE_LABEL) {
+                pp = renderer.project2(job.center2, job.mvp, [0,0,0]);
+            } else {
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+            }
         }
 
         res.pp = pp;
@@ -1035,6 +1039,7 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
             if (!renderer.rmap.checkRectangle(pp[0], pp[1], pp[0], pp[1], 0)) {
                 return res;
             }
+
         } else {
             if (!renderer.rmap.checkRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], stickShift)) {
                 return res;
@@ -1494,8 +1499,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         break;
 
     case VTS_JOB_LINE_LABEL:
-        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
-
         var files = job.files;
 
         if (files.length > 0) {
@@ -1529,6 +1532,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         var gamma2 = job.outline[3] * 1.4142 / 20;
 
         if (job.singleBuffer) {
+            gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
             var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
             var pointsIndex = b == job.singleBuffer ? 0 : 1;
@@ -2615,6 +2619,8 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
 
     if (job.singleBuffer) {
 
+        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+
         var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
         var pointsIndex = b == job.singleBuffer ? 0 : 1;
 
@@ -2661,12 +2667,27 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
         }
 
         if (renderer.drawLabelBoxes) {
+            //gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+
+            var margin = o ? o[0] : 1;
+
             if (job.labelPoints.length > 0) {
                 var points = job.labelPoints[pointsIndex];
 
                 for(j = 0; j < points.length; j++) {
                     pp = renderer.project2(points[j], job.mvp, [0,0,0], true);
-                    this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
+                    this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1]*margin, 1, [255, 0, 255, 255], null, null, null, null, null);
+                }
+            }
+
+            pp = subjob[5];
+            this.drawCircle(pp, 15, 1, [255, 255, 0, 255], null, null, null, null, null);
+
+            if (job.reduce) {
+                if (job.reduce[0] >= 10) {
+                    this.drawText(pp[0], pp[1]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[6].toFixed(3)+' '+job.reduce[1].toFixed(2)+' '+job.reduce[3].toFixed(2)+' '+job.reduce[7].toFixed(0), [1,0,0,1], 0.5);
+                } else {
+                    this.drawText(pp[0], pp[1]-4*renderer.debug.debugTextSize, 4*renderer.debug.debugTextSize, ''+job.reduce[1].toFixed(0)+' '+job.reduce[5].toFixed(0), [1,0,0,1], 0.5);
                 }
             }
         }

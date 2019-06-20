@@ -288,6 +288,51 @@ GpuGroup.prototype.addExtentedLineJob = function(data) {
 };
 
 
+GpuGroup.prototype.processReduce = function(job) {
+    if (job.reduce) {
+        switch(job.reduce[0]) {
+            case 'tilt':       job.reduce[0] = 1; break;
+            case 'tilt-cos':   job.reduce[0] = 2; break;
+            case 'tilt-cos2':  job.reduce[0] = 3; break;
+            case 'scr-count':  job.reduce[0] = 4; break;
+            case 'scr-count2': job.reduce[0] = 5; this.renderer.drawnGeodataTilesUsed = true; break;
+            case 'scr-count3': job.reduce[0] = 6; this.renderer.drawnGeodataTilesUsed = true; break;
+            case 'scr-count4': job.reduce[0] = 7; break;
+            case 'scr-count5': job.reduce[0] = 8; break;
+            case 'scr-count6': job.reduce[0] = 9; break;
+            case 'scr-count7': job.reduce[0] = 10; break;
+            case 'scr-count8': job.reduce[0] = 11; break;
+        }
+
+        job.reduce[5] = 0; //zero debug value
+        job.reduce[6] = 0;
+        job.reduce[7] = 0;
+
+        if (job.reduce[0] >= 7 && job.reduce[0] <= 11) {
+
+            if (job.reduce[0] == 10 || job.reduce[0] == 11) {
+                job.reduce[1] = Math.abs(job.reduce[1]);
+                job.reduce[3] = job.reduce[1] * job.reduce[2];
+                job.reduce[2] = job.reduce[1];
+                job.reduce[4] = 0;
+            } else {
+                job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
+
+                if (this.renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
+                    job.reduce[1] = job.reduce[2];
+                } else {
+                    if (job.reduce[0] == 9) {
+                        job.reduce[1] = job.reduce[2];
+                    } else {
+                        job.reduce[1] = Math.floor((Math.log(job.reduce[2] * 500) / Math.log(1.0017)) + 5000);
+                    }
+                }
+            }
+        }
+    }
+};
+
+
 GpuGroup.prototype.addLineLabelJob = function(data) {
     var gl = this.gl;
 
@@ -323,7 +368,10 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.reduced = false;
     job.ready = true;
     job.bbox = this.bbox;
+    job.reduce = data['reduce'];
 
+    this.processReduce(job);
+    
     job.files = data['files'] || [];
     var fonts = data['fonts'] || ['#default'];
     job.fonts = fonts;
@@ -405,53 +453,7 @@ GpuGroup.prototype.addIconJob = function(data, label, tile) {
     job.ready = true;
     job.reduce = data['reduce'];
 
-    //if (job.id && job.id.indexOf('Longs Peak') != -1) {
-      //  console.log('tile: ' + JSON.stringify(tile.id));        
-    //}
-
-    //console.log('id: ' + job.eventInfo['#id']);
-
-    if (job.reduce) {
-        switch(job.reduce[0]) {
-            case 'tilt':       job.reduce[0] = 1; break;
-            case 'tilt-cos':   job.reduce[0] = 2; break;
-            case 'tilt-cos2':  job.reduce[0] = 3; break;
-            case 'scr-count':  job.reduce[0] = 4; break;
-            case 'scr-count2': job.reduce[0] = 5; this.renderer.drawnGeodataTilesUsed = true; break;
-            case 'scr-count3': job.reduce[0] = 6; this.renderer.drawnGeodataTilesUsed = true; break;
-            case 'scr-count4': job.reduce[0] = 7; break;
-            case 'scr-count5': job.reduce[0] = 8; break;
-            case 'scr-count6': job.reduce[0] = 9; break;
-            case 'scr-count7': job.reduce[0] = 10; break;
-            case 'scr-count8': job.reduce[0] = 11; break;
-        }
-
-        job.reduce[5] = 0; //zero debug value
-        job.reduce[6] = 0;
-        job.reduce[7] = 0;
-
-        if (job.reduce[0] >= 7 && job.reduce[0] <= 11) {
-
-            if (job.reduce[0] == 10 || job.reduce[0] == 11) {
-                job.reduce[1] = Math.abs(job.reduce[1]);
-                job.reduce[3] = job.reduce[1] * job.reduce[2];
-                job.reduce[2] = job.reduce[1];
-                job.reduce[4] = 0;
-            } else {
-                job.reduce[2] = Math.abs(job.reduce[1]); //copy prominence for prom / dist support
-
-                if (this.renderer.config.mapFeaturesReduceFactor >= 1) { // prom / dists
-                    job.reduce[1] = job.reduce[2];
-                } else {
-                    if (job.reduce[0] == 9) {
-                        job.reduce[1] = job.reduce[2];
-                    } else {
-                        job.reduce[1] = Math.floor((Math.log(job.reduce[2] * 500) / Math.log(1.0017)) + 5000);
-                    }
-                }
-            }
-        }
-    }
+    this.processReduce(job);
 
     if (!job.program.isReady()) {
         return;

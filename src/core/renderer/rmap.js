@@ -341,6 +341,7 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
     var points = job.labelPoints[subjob[9]];
     var pbuff = this.positionsBuffer;
     var index = 0, pindex = 0;
+    var margin = job.noOverlap ? job.noOverlap[0] : 1;
 
     for (var i = 0, li = points.length; i < li; i++) {
 
@@ -356,7 +357,7 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
         pbuff[pindex+1] = pp[1];
         pbuff[pindex+2] = pp[2];
 
-        r = points[i][3] * renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1];
+        r = points[i][3] * renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1]*margin;
         pbuff[pindex+3] = r;
 
         if (r > rr) {

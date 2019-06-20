@@ -404,6 +404,7 @@ var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalO
 
     var textVector = getPathTextVector(points, shift, text, size, spacing, fonts, glyphsRes);
     globals.textVector = textVector;
+    globals.textCenter = getPathPositionAndDirection(points, pathLength * 0.5)[0];
 
     return addTextOnPath(points, shift, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes, singleBuffer);
 };
