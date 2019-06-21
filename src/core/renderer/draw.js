@@ -1021,11 +1021,11 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
 
     if (!renderer.drawAllLabels && job.noOverlap) { 
         if (!pp) {
-            if (job.type == VTS_JOB_LINE_LABEL) {
-                pp = renderer.project2(job.center2, job.mvp, [0,0,0]);
-            } else {
+            //if (job.type == VTS_JOB_LINE_LABEL) {
+              //  pp = renderer.project2(job.center2, job.mvp, [0,0,0]);
+            //} else {
                 pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
-            }
+            //}
         }
 
         res.pp = pp;
@@ -1535,7 +1535,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
             var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
-            var pointsIndex = b == job.singleBuffer ? 0 : 1;
+            var pointsIndex = (b == job.singleBuffer ? 0 : 1), l = null;
 
             res = this.processNoOverlap(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color, pointsIndex);
 
@@ -2675,13 +2675,14 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
                 var points = job.labelPoints[pointsIndex];
 
                 for(j = 0; j < points.length; j++) {
-                    pp = renderer.project2(points[j], job.mvp, [0,0,0], true);
+                    //pp = renderer.project2(points[j], job.mvp, [0,0,0], true);
+                    pp = renderer.project2(points[j], renderer.camera.mvp, renderer.cameraPosition, true);                    
                     this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1]*margin, 1, [255, 0, 255, 255], null, null, null, null, null);
                 }
             }
 
             pp = subjob[5];
-            this.drawCircle(pp, 15, 1, [255, 255, 0, 255], null, null, null, null, null);
+            this.drawCircle(pp, 8, 1, [255, 255, 0, 255], null, null, null, null, null);
 
             if (job.reduce) {
                 if (job.reduce[0] >= 10) {

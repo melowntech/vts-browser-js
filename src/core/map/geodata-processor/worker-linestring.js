@@ -972,10 +972,32 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         return;
     }
 
+
+    var bboxMin = globals.bboxMin, p, i, li;
+
+    if (globals.useLineLabel2) {
+        for (i = 0, li = labelPoints.length; i < li; i++) {
+            p = labelPoints[i];
+            p[0] += bboxMin[0];
+            p[1] += bboxMin[1];
+            p[2] += bboxMin[2];
+            p = labelPoints2[i];
+            p[0] += bboxMin[0];
+            p[1] += bboxMin[1];
+            p[2] += bboxMin[2];
+        }
+
+        center = globals.textCenter;
+        center[0] += bboxMin[0];
+        center[1] += bboxMin[1];
+        center[2] += bboxMin[2];
+    }
+    
+
     //var fonts = labelData.fonts;
     var labelFiles = new Array(fonts.length);
 
-    for (var i = 0, li= fonts.length; i < li; i++) {
+    for (i = 0, li= fonts.length; i < li; i++) {
         labelFiles[i] = [];
     }
 
@@ -1025,7 +1047,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, globals.useLineLabel2 ? VTS_WORKER_TYPE_LINE_LABEL2 : VTS_WORKER_TYPE_LINE_LABEL, {
         'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 'textVector':globals.textVector, 'labelPoints': globals.useLineLabel2 ? [labelPoints, labelPoints2] : [],
-        'z-index':zIndex, 'center': (globals.useLineLabel2 ? globals.textCenter : center), 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'reduce':labelReduce, 'noOverlap': (labelOverlap ? noOverlap : null),
+        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'reduce':labelReduce, 'noOverlap': (labelOverlap ? noOverlap : null),
         'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit,
         'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'lod':(globals.autoLod ? null : globals.tileLod) }, globals.useLineLabel2 ? [singleBuffer, singleBuffer2] : [vertexBuffer, texcoordsBuffer], signature);

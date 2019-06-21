@@ -1039,7 +1039,12 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                     renderer.jobHBuffer[feature[0].id] = job;
                 } else {
                     renderer.drawnJobs++;
-                    draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+                    job = feature[0];
+                    if (job.type == VTS_JOB_LINE_LABEL) {
+                        draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                    } else {
+                        draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                    }
                 }
             }
 

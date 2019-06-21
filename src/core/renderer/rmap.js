@@ -345,7 +345,8 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
 
     for (var i = 0, li = points.length; i < li; i++) {
 
-        pp = renderer.project2(points[i], job.mvp, [0,0,0], true);
+        //pp = renderer.project2(points[i], job.mvp, [0,0,0], true);
+        pp = renderer.project2(points[i], renderer.camera.mvp, renderer.cameraPosition, true);
 
         if (pp[0] > x2) x2 = pp[0];
         if (pp[1] > y2) y2 = pp[1];
