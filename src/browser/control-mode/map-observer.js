@@ -135,11 +135,14 @@ ControlModeMapObserver.prototype.wheel = function(event) {
     var pos = map.getPosition();
     var delta = event.getWheelDelta();
     var sensitivity = this.config.sensitivity[2];
+
+    if (this.browser.controlMode.shiftKey) sensitivity *= 0.1;
+
     var factor = 1.0 + (delta > 0 ? -1 : 1)*sensitivity;
 
     if (this.browser.controlMode.altKey &&
         this.browser.controlMode.shiftKey &&
-        this.browser.controlMode.ctrlKey) {
+        this.browser.controlMode.ctrltKey) {
         var fov = math.clamp(pos.getFov() * factor, 1, 179);
         pos.setFov(fov);
         map.setPosition(pos);
@@ -164,7 +167,8 @@ ControlModeMapObserver.prototype.wheel = function(event) {
             map.setPosition(pos);
             return;
         }
-       
+
+
         this.viewExtentDeltas.push(factor);
         this.reduceFloatingHeight(0.8);
         this.browser.callListener('map-position-zoomed', {});

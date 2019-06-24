@@ -40,7 +40,8 @@ var globals = {
     reduceMode : 'scr-count4',
     reduceParams : null,
     processLineLabel : false,
-    useLineLabel2 : true
+    useLineLabel2 : true,
+    lineLabelPass : 0
 };
 
 

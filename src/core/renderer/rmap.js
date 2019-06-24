@@ -1,4 +1,9 @@
 
+import {vec3 as vec3_} from '../utils/matrix';
+
+//get rid of compiler mess
+var vec3 = vec3_;
+
 
 var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.renderer = renderer;
@@ -337,16 +342,53 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
     var job = subjob[0], blockRectangles, blockRectanglesCount, rectangleIndex;
     var x1 = Number.POSITIVE_INFINITY, x2 = Number.NEGATIVE_INFINITY,
         y1 = Number.POSITIVE_INFINITY, y2 = Number.NEGATIVE_INFINITY;
-    var x, y, r, rr = 0, pp, xx, yy, renderer = this.renderer;
-    var points = job.labelPoints[subjob[9]];
+    var x, y, r, rr = 0, xx, yy, renderer = this.renderer, i, li, pp = [0,0,0,0];
     var pbuff = this.positionsBuffer;
     var index = 0, pindex = 0;
     var margin = job.noOverlap ? job.noOverlap[0] : 1;
 
-    for (var i = 0, li = points.length; i < li; i++) {
+    var targetSize = 10;
+    var sizeFactor = renderer.camera.scaleFactor2(subjob[5][3])*0.5*renderer.curSize[1];
+    var pointsIndex = subjob[9];
+    var labelPoints = job.labelPoints;
+    var labelIndex = job.labelIndex;
+    var labelMorph = 0;
 
-        //pp = renderer.project2(points[i], job.mvp, [0,0,0], true);
-        pp = renderer.project2(points[i], renderer.camera.mvp, renderer.cameraPosition, true);
+    li = labelPoints.length;
+
+    if (li <= 1 || labelPoints[li -1][0]*sizeFactor < targetSize) {
+        return;
+    }
+
+    li--;
+
+    for (i = 0; i < li; i++) {
+        var s2 = labelPoints[i+1][0] * sizeFactor;
+
+        if (s2 > targetSize) {
+            var s1 = labelPoints[i][0] * sizeFactor;
+
+            labelIndex = i;
+            labelMorph = (targetSize - s1) / (s2 - s1);
+            break;                
+        }
+    }
+
+    var pointsIndex = (vec3.dot(labelPoints[labelIndex][1], renderer.labelVector) >= 0) ? 3 : 2;
+    var points = labelPoints[labelIndex][pointsIndex];
+    var points2 = labelPoints[labelIndex+1][pointsIndex], p, p2;
+
+    for (i = 0, li = points.length; i < li; i++) {
+
+        p = points[i];
+        p2 = points2[i];
+
+        pp[0] = p[0] + (p2[0] - p[0]) * labelMorph;
+        pp[1] = p[1] + (p2[1] - p[1]) * labelMorph;
+        pp[2] = p[2] + (p2[2] - p[2]) * labelMorph;
+        r = (p[3] + (p2[3] - p[3]) * labelMorph)*sizeFactor*margin;
+
+        pp = renderer.project2(pp, renderer.camera.mvp, renderer.cameraPosition, true);
 
         if (pp[0] > x2) x2 = pp[0];
         if (pp[1] > y2) y2 = pp[1];
@@ -357,8 +399,6 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
         pbuff[pindex] = pp[0];
         pbuff[pindex+1] = pp[1];
         pbuff[pindex+2] = pp[2];
-
-        r = points[i][3] * renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1]*margin;
         pbuff[pindex+3] = r;
 
         if (r > rr) {
@@ -602,7 +642,7 @@ RendererRMap.prototype.processRectangles = function(gpu, gl, renderer, screenPix
                 draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, subjob, null);
             }
 
-            var l = job.labelPoints[0].length;
+            var l = job.labelPoints[0][2].length;
 
             if (l > 0) {
                 i += (4 * (l - 1));

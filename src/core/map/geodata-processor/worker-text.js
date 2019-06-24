@@ -161,8 +161,11 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
                     singleBuffer[index+5] = q[2];  //z
                     singleBuffer[index+6] = q[3];  //w
                    
-                    singleBuffer[index+7] = factorX;
-                    singleBuffer[index+8] = factorY;
+                    if (!globals.lineLabelPass) {
+                        singleBuffer[index+7] = factorX;
+                        singleBuffer[index+8] = factorY;
+                    }
+
                     singleBuffer[index+9] = fc.u1;
                     singleBuffer[index+10] = fc.v1 + planeShift;
 
@@ -171,13 +174,16 @@ var addChar = function(pos, dir, verticalShift, char, factor, spacing, index, in
 
                     singleBuffer[index+11] = dtx + dty;  // u store in decimal part, v stored in fraction part
 
-                    index += 12;
-
                     var dx = dir[0]*0.5*factorX - n[0]*0.5*factorY - n2[0];
                     var dy = dir[1]*0.5*factorX - n[1]*0.5*factorY - n2[1];
                     var dz = dir[2]*0.5*factorX - n[2]*0.5*factorY - n2[2];
 
-                    globals.lineLabelPoints.push([p1[0] + dx, p1[1] + dy, p1[2] + dz, Math.sqrt(factorX*factorX + factorY*factorY)*0.5]);
+                    //globals.lineLabelPoints.push([p1[0] + dx, p1[1] + dy, p1[2] + dz, Math.sqrt(factorX*factorX + factorY*factorY)*0.5]);
+                    globals.lineLabelPoints.push([p1[0] + dx, p1[1] + dy, p1[2] + dz, Math.sqrt(factorX*factorX + factorY*factorY)*0.5, 
+                                                  singleBuffer[index], singleBuffer[index+1], singleBuffer[index+2],
+                                                  singleBuffer[index+3], singleBuffer[index+4], singleBuffer[index+5], singleBuffer[index+6], factorX, factorY]);
+
+                    index += 12;
 
                 } else {
                     singleBuffer[index] = p1[0] + fc.sx * factor;
@@ -405,6 +411,7 @@ var addStreetTextOnPath = function(points, text, size, spacing, fonts, verticalO
     var textVector = getPathTextVector(points, shift, text, size, spacing, fonts, glyphsRes);
     globals.textVector = textVector;
     globals.textCenter = getPathPositionAndDirection(points, pathLength * 0.5)[0];
+    globals.textLength = textLength;
 
     return addTextOnPath(points, shift, text, size, spacing, textVector, fonts, verticalOffset, vertexBuffer, texcoordsBuffer, index, planes, glyphsRes, singleBuffer);
 };

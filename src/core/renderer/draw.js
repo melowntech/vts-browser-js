@@ -1012,7 +1012,7 @@ RendererDraw.prototype.paintGL = function() {   //remove this??
 };
 
 
-RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color, pointsIndex) {
+RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color) {
     var res = { 
         exit: true
     };
@@ -1024,7 +1024,7 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
             //if (job.type == VTS_JOB_LINE_LABEL) {
               //  pp = renderer.project2(job.center2, job.mvp, [0,0,0]);
             //} else {
-                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);
             //}
         }
 
@@ -1063,7 +1063,7 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
             } 
         }
 
-        job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o, pointsIndex];
+        job.lastSubJob = [job, stickShift, texture, files, color, pp, true, depth, o];
 
         if (reduce78) {
             renderer.gmapUseVersion = (job.reduce[0] >= 8 && job.reduce[0] <= 11) ? (job.reduce[0] - 6) : 1;
@@ -1103,7 +1103,7 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
     } else {
         if (reduce78) {
             if (!pp) {
-                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);
             }
 
             job.lastSubJob = [job, stickShift, texture, files, color, pp, false];
@@ -1134,7 +1134,7 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
 
     if (job.hysteresis && job.id) {
         if (!pp) {
-            pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition);
+            pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);
         }
 
         job.lastSubJob = [job, stickShift, texture, files, color, pp];
@@ -1532,12 +1532,10 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         var gamma2 = job.outline[3] * 1.4142 / 20;
 
         if (job.singleBuffer) {
-            gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+            //gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
-            var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
-            var pointsIndex = (b == job.singleBuffer ? 0 : 1), l = null;
-
-            res = this.processNoOverlap(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color, pointsIndex);
+            var l = null;
+            res = this.processNoOverlap(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color); //, pointsIndex);
 
             if (res.exit) {
                 return;
@@ -1549,7 +1547,9 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 //l = res.l;
             }
            
+            this.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, [job,0,texture,files,color,pp]);
 
+            /*
             if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
             if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLineLabel96; } else
             if (bl > 192) { vbuff = renderer.textQuads64; prog = renderer.progLineLabel64; } else
@@ -1594,14 +1594,14 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             if (renderer.drawLabelBoxes) {
                 if (job.labelPoints.length > 0) {
-                    var points = job.labelPoints[pointsIndex];
+                    var points = job.labelPoints[0][pointsIndex];
 
                     for(j = 0; j < points.length; j++) {
                         pp = renderer.project2(points[j], mvp, [0,0,0], true);
                         this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
                     }
                 }
-            }
+            }*/
 
             return;
         }
@@ -2594,13 +2594,54 @@ RendererDraw.prototype.drawGpuSubJob = function(gpu, gl, renderer, screenPixelSi
     }
 };
 
+
+function q4Slerp(a, b, t, out) {
+  // benchmarks:
+  //    http://jsperf.com/quaternion-slerp-implementations
+  var ax = a[0], ay = a[1], az = a[2], aw = a[3];
+  var bx = b[0], by = b[1], bz = b[2], bw = b[3];
+
+  var omega, cosom, sinom, scale0, scale1;
+
+  // calc cosine
+  cosom = ax * bx + ay * by + az * bz + aw * bw;
+  // adjust signs (if necessary)
+  if ( cosom < 0.0 ) {
+    cosom = -cosom;
+    bx = - bx;
+    by = - by;
+    bz = - bz;
+    bw = - bw;
+  }
+  // calculate coefficients
+  if ( (1.0 - cosom) > 0.000001) {
+    // standard case (slerp)
+    omega  = Math.acos(cosom);
+    sinom  = Math.sin(omega);
+    scale0 = Math.sin((1.0 - t) * omega) / sinom;
+    scale1 = Math.sin(t * omega) / sinom;
+  } else {
+    // "from" and "to" quaternions are very close
+    //  ... so we can do a linear interpolation
+    scale0 = 1.0 - t;
+    scale1 = t;
+  }
+  // calculate final values
+  out[0] = scale0 * ax + scale1 * bx;
+  out[1] = scale0 * ay + scale1 * by;
+  out[2] = scale0 * az + scale1 * bz;
+  out[3] = scale0 * aw + scale1 * bw;
+
+  return out;
+}
+
 RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, screenPixelSize, subjob, fade) {
     if (!subjob) {
         return;
     }
 
-    var job = subjob[0], stickShift = subjob[1], texture = subjob[2],
-        files = subjob[3], color = subjob[4], pp = subjob[5], s = job.stick,
+    var job = subjob[0], texture = subjob[2],
+        files = subjob[3], color = subjob[4], pp = subjob[5],
         o = job.noOverlap, localTilt, p2, p1, camVec, prog;
 
     if (renderer.useSuperElevation) {
@@ -2612,7 +2653,7 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
         job.center2 = job.center;
     }
 
-    var hitmapRender = job.hitable && renderer.onlyHitLayers;
+    var hitmapRender = job.hitable && renderer.onlyHitLayers, j, lj, p, p2;
 
     var gamma = job.outline[2] * 1.4142 / 20;
     var gamma2 = job.outline[3] * 1.4142 / 20;
@@ -2621,8 +2662,63 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
 
         gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
-        var b = (vec3.dot(job.textVector, renderer.labelVector) >= 0) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
-        var pointsIndex = b == job.singleBuffer ? 0 : 1;
+        //if (job.labelPoints.length < 1) return;
+
+        pp = subjob[5];
+
+        var targetSize = 10;
+        var sizeFactor = renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1];
+        var labelPoints = job.labelPoints;
+        var labelIndex = job.labelIndex;
+        var labelMorph = 0;
+
+        lj = labelPoints.length;
+
+        if (lj <= 1 || labelPoints[lj -1][0]*sizeFactor < targetSize) {
+            return;
+        }
+
+        lj--;
+
+        for (j = 0; j < lj; j++) {
+            var s2 = labelPoints[j+1][0] * sizeFactor;
+
+            if (s2 > targetSize) {
+                var s1 = labelPoints[j][0] * sizeFactor;
+
+                labelIndex = j;
+                labelMorph = (targetSize - s1) / (s2 - s1);
+                break;                
+            }
+        }
+
+        var pointsIndex = (vec3.dot(labelPoints[labelIndex][1], renderer.labelVector) >= 0) ? 3 : 2;
+
+        var b = (pointsIndex == 3) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
+
+        var points = labelPoints[labelIndex][pointsIndex], index = 0;
+        var points2 = labelPoints[labelIndex+1][pointsIndex], q = [0,0,0,0];
+
+        for(j = 0, lj = points.length; j < lj; j++) {
+            p = points[j];
+            p2 = points2[j];
+
+            b[index] = p[4] + (p2[4] - p[4]) * labelMorph;
+            b[index+1] = p[5] + (p2[5] - p[5]) * labelMorph;
+            b[index+2] = p[6] + (p2[6] - p[6]) * labelMorph;
+
+            q4Slerp([p[7],p[8],p[9],p[10]], [p2[7],p2[8],p2[9],p2[10]], labelMorph, q);
+
+            b[index+3] = q[0];
+            b[index+4] = q[1];
+            b[index+5] = q[2];
+            b[index+6] = q[3];
+
+            b[index+7] = p[11] + (p2[11] - p[11]) * labelMorph;
+            b[index+8] = p[12] + (p2[12] - p[12]) * labelMorph;
+
+            index += 12;
+        }
 
         if (bl > 384) { vbuff = renderer.textQuads128; prog = renderer.progLineLabel128; } else
         if (bl > 256) { vbuff = renderer.textQuads96; prog = renderer.progLineLabel96; } else
@@ -2648,7 +2744,7 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
         gl.vertexAttribPointer(vertexPositionAttribute, vbuff.itemSize, gl.FLOAT, false, 0, 0);
 
         //draw polygons
-        for(var j = 0; j < (hitmapRender ? 1 : 2); j++) {
+        for(j = 0, lj = (hitmapRender ? 1 : 2); j < lj; j++) {
             if (j == 1) {
                 prog.setVec4('uColor', color);
                 prog.setVec2('uParams', [job.outline[1], gamma]);
@@ -2667,18 +2763,19 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
         }
 
         if (renderer.drawLabelBoxes) {
-            //gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
+            var margin = o ? o[0] : 1, pp = [0,0,0], r;
 
-            var margin = o ? o[0] : 1;
+            for(j = 0, lj = points.length; j < lj; j++) {
+                p = points[j];
+                p2 = points2[j];
 
-            if (job.labelPoints.length > 0) {
-                var points = job.labelPoints[pointsIndex];
+                pp[0] = p[0] + (p2[0] - p[0]) * labelMorph;
+                pp[1] = p[1] + (p2[1] - p[1]) * labelMorph;
+                pp[2] = p[2] + (p2[2] - p[2]) * labelMorph;
+                r = p[3] + (p2[3] - p[3]) * labelMorph;
 
-                for(j = 0; j < points.length; j++) {
-                    //pp = renderer.project2(points[j], job.mvp, [0,0,0], true);
-                    pp = renderer.project2(points[j], renderer.camera.mvp, renderer.cameraPosition, true);                    
-                    this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1]*margin, 1, [255, 0, 255, 255], null, null, null, null, null);
-                }
+                pp = renderer.project2(pp, renderer.camera.mvp, renderer.cameraPosition, true);                    
+                this.drawCircle(pp, r*sizeFactor*margin, 1, [255, 0, 255, 255], null, null, null, null, null);
             }
 
             pp = subjob[5];
