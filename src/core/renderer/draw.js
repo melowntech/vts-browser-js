@@ -2666,6 +2666,10 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
 
         pp = subjob[5];
 
+        if (!pp) {
+            pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);                    
+        }
+
         var targetSize = 10;
         var sizeFactor = renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1];
         var labelPoints = job.labelPoints;
@@ -2779,6 +2783,11 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
             }
 
             pp = subjob[5];
+
+            if (!pp) {
+                pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);                    
+            }
+
             this.drawCircle(pp, 8, 1, [255, 255, 0, 255], null, null, null, null, null);
 
             if (job.reduce) {
