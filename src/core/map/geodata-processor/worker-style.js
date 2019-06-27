@@ -837,7 +837,7 @@ var getUnitsNormalizedValue = function(value, screen, fallbackUnits) {
 }
 
 
-var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
+var validateValue = function(layerId, key, value, type, arrayLength, min, max, hasUnits) {
     var i, li;
 
     //check for object
@@ -1015,6 +1015,16 @@ var validateValue = function(layerId, key, value, type, arrayLength, min, max) {
             }
         }
 
+        if (key == 'line-label-type') {
+            switch(value) {
+            case 'flat':
+            case 'screen-flat': return value;
+            default:
+                logError('wrong-property-value', layerId, key, value);
+                return getDefaultLayerPropertyValue(key);
+            }
+        }
+
         //validate line Layer enum
         if (key == 'line-style') {
             switch(value) {
@@ -1115,10 +1125,11 @@ var validateLayerPropertyValue = function(layerId, key, value) {
     case 'line-style-background': return validateValue(layerId, key, value, 'object', 4, 0, 255);
 
     case 'line-label':         return validateValue(layerId, key, value, 'boolean');
+    case 'line-label-type':    return validateValue(layerId, key, value, 'string');
     case 'line-label-source':  return validateValue(layerId, key, value, 'string');
     case 'line-label-color':   return validateValue(layerId, key, value, 'object', 4, 0, 255);
     case 'line-label-color2':  return validateValue(layerId, key, value, 'object', 4, 0, 255);
-    case 'line-label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
+    case 'line-label-size':    return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE, true);
     case 'line-label-offset':  return validateValue(layerId, key, value, 'number', null, -Number.MAX_VALUE, Number.MAX_VALUE);
     case 'line-label-spacing': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
     case 'line-label-line-height': return validateValue(layerId, key, value, 'number', null, 0.0001, Number.MAX_VALUE);
@@ -1222,6 +1233,7 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'line-style-background': return [0,0,0,0];
 
     case 'line-label':         return false;
+    case 'line-label-type':    return 'flat'; //'screen-flat';
     case 'line-label-font':    return ['#default'];
     case 'line-label-color':   return [255,255,255,255];
     case 'line-label-color2':  return [0,0,0,255];

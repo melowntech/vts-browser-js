@@ -1532,8 +1532,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         var gamma2 = job.outline[3] * 1.4142 / 20;
 
         if (job.singleBuffer) {
-            //gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
-
             var l = null;
             res = this.processNoOverlap(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color); //, pointsIndex);
 
@@ -1605,6 +1603,8 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
             return;
         }
+
+        gpu.setState(hitmapRender ? renderer.lineLabelHitState : renderer.lineLabelState);
 
         prog = renderer.useSuperElevation ? renderer.progText2SE : job.program;
         gpu.useProgram(prog, ['aPosition', 'aTexCoord']);
@@ -2670,7 +2670,7 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
             pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);                    
         }
 
-        var targetSize = 10;
+        var targetSize = job.labelSize * 0.5;
         var sizeFactor = renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1];
         var labelPoints = job.labelPoints;
         var labelIndex = job.labelIndex;
