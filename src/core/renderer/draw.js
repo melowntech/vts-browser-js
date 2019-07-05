@@ -1532,7 +1532,93 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         var gamma2 = job.outline[3] * 1.4142 / 20;
 
         if (job.singleBuffer) {
-            var l = null;
+
+            var p1, p2, camVec, ll, l = null, localTilt;
+
+            if (job.culling != 180) {
+                p2 = job.center2;
+                p1 = renderer.cameraPosition;
+                camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+
+                if (job.visibility) {
+                    l = vec3.length(camVec);
+
+                    switch(job.visibility.length) {
+                        case 1:
+                            if (l > job.visibility[0]) {
+                                return;
+                            }
+                            break;
+
+                        case 2:
+                            ll = l * renderer.localViewExtentFactor;
+                            if (ll < job.visibility[0] || ll > job.visibility[1]) {
+                                return;
+                            }
+
+                            break;
+
+                        case 4:
+                            ll = l * renderer.localViewExtentFactor;
+                            var diameter = job.visibility[0] * job.visibility[1];
+                            if (diameter < (job.visibility[2] * ll) || diameter > (job.visibility[3] * ll)) {
+                                return;
+                            }
+
+                            break;
+                    }
+
+                    l = 1/l;
+                    camVec[0] *= l;                       
+                    camVec[1] *= l;                       
+                    camVec[2] *= l;                       
+                } else {
+                    vec3.normalize(camVec);
+                }
+                    
+                job.normal = [0,0,0];
+                vec3.normalize(job.center2, job.normal);
+                    
+                localTilt = -vec3.dot(camVec, job.normal);
+
+                if (localTilt < Math.cos(math.radians(job.culling))) {
+                    return;
+                }
+                
+            } else if (job.visibility) {
+
+                p2 = job.center2;
+                p1 = renderer.cameraPosition;
+                camVec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+                l = vec3.length(camVec);
+
+                switch(job.visibility.length) {
+                    case 1:
+                        if (l > job.visibility[0]) {
+                            return;
+                        }
+                        break;
+
+                    case 2:
+                        l *= renderer.localViewExtentFactor;
+                        if (l < job.visibility[0] || l > job.visibility[1]) {
+                            return;
+                        }
+
+                        break;
+
+                    case 4:
+                        l *= renderer.localViewExtentFactor;
+
+                        var diameter = job.visibility[0] * job.visibility[1];
+                        if (diameter < (job.visibility[2] * l) || diameter > (job.visibility[3] * l)) {
+                            return;
+                        }
+
+                        break;
+                }
+            }
+
             res = this.processNoOverlap(renderer, job, pp, p1, p2, camVec, l, stickShift, texture, files, color); //, pointsIndex);
 
             if (res.exit) {
@@ -1791,7 +1877,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
             job.center2 = job.center;
         }
 
-
         if (job.culling != 180) {
             p2 = job.center2;
             p1 = renderer.cameraPosition;
@@ -1817,11 +1902,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                     case 4:
                         ll = l * renderer.localViewExtentFactor;
-
                         var diameter = job.visibility[0] * job.visibility[1];
-
-                        //dinfo = [l, ll, diameter, (job.visibility[2] * ll), (job.visibility[3] * ll)];
-
                         if (diameter < (job.visibility[2] * ll) || diameter > (job.visibility[3] * ll)) {
                             return;
                         }
@@ -1846,13 +1927,6 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
                 return;
             }
             
-            /*
-            localTilt = math.degrees(Math.acos(localTilt));
-
-            if (localTilt > job.culling) {
-                return;
-            }*/
-
         } else if (job.visibility) {
 
             p2 = job.center2;

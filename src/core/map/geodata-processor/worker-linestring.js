@@ -1125,6 +1125,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         'lod':(globals.autoLod ? null : globals.tileLod) }, globals.useLineLabel2 ? [singleBuffer, singleBuffer2] : [vertexBuffer, texcoordsBuffer], signature);
 };
 
+
 var processLineStringGeometry = function(lineString) {
 
     checkDPoints(lineString);
