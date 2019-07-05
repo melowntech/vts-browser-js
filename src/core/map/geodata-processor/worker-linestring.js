@@ -976,6 +976,13 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         return;
     }
 
+    var visibility = getLayerPropertyValue(style, 'visibility-rel', pointArray, lod) || 
+                     getLayerPropertyValue(style, 'visibility-abs', pointArray, lod) ||
+                     getLayerPropertyValue(style, 'visibility', pointArray, lod);
+    var culling = getLayerPropertyValue(style, 'culling', pointArray, lod);
+    var hysteresis = getLayerPropertyValue(style, 'hysteresis', pointArray, lod);
+
+
     var bboxMin = globals.bboxMin, p, i, li, labelsPack = [], labelIndex = 0;
     var originalLabelSize = labelSize, originalLabelOffset = labelOffset;
 
@@ -1119,8 +1126,10 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, globals.useLineLabel2 ? VTS_WORKER_TYPE_LINE_LABEL2 : VTS_WORKER_TYPE_LINE_LABEL, {
         'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 'textVector':globals.textVector, 'labelPoints': globals.useLineLabel2 ? labelsPack : [],
-        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'reduce':labelReduce, 'noOverlap': (labelOverlap ? noOverlap : null),
-        'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit, 'labelIndex': labelIndex, 'labelSize': originalLabelSize,
+        'visibility': visibility, 'culling': culling, 'hysteresis' : hysteresis, 'z-index':zIndex,
+        'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'reduce':labelReduce, 'noOverlap': (labelOverlap ? noOverlap : null), 'files': labelFiles, 'enter-event':enterEvent,
+        'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit, 'labelIndex': labelIndex, 'labelSize': originalLabelSize,
         'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'lod':(globals.autoLod ? null : globals.tileLod) }, globals.useLineLabel2 ? [singleBuffer, singleBuffer2] : [vertexBuffer, texcoordsBuffer], signature);
 };
