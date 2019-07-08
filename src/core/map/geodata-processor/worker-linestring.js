@@ -976,11 +976,11 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         return;
     }
 
-    var visibility = getLayerPropertyValue(style, 'visibility-rel', pointArray, lod) || 
-                     getLayerPropertyValue(style, 'visibility-abs', pointArray, lod) ||
-                     getLayerPropertyValue(style, 'visibility', pointArray, lod);
-    var culling = getLayerPropertyValue(style, 'culling', pointArray, lod);
-    var hysteresis = getLayerPropertyValue(style, 'hysteresis', pointArray, lod);
+    var visibility = getLayerPropertyValue(style, 'visibility-rel', lineString, lod) || 
+                     getLayerPropertyValue(style, 'visibility-abs', lineString, lod) ||
+                     getLayerPropertyValue(style, 'visibility', lineString, lod);
+    var culling = getLayerPropertyValue(style, 'culling', lineString, lod);
+    var hysteresis = getLayerPropertyValue(style, 'hysteresis', lineString, lod);
 
 
     var bboxMin = globals.bboxMin, p, i, li, labelsPack = [], labelIndex = 0;
