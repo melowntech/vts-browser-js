@@ -898,24 +898,32 @@ RendererDraw.prototype.drawGpuJobs = function() {
 
                     } else {
 
-                        if (job.type == VTS_JOB_VSPOINT) {
-                            var viewExtent = renderer.viewExtent;
-                            var slayers = job.vswitch[job.vswitchIndex];
+                        switch(job.type) {
+                            case VTS_JOB_VSPOINT:
+                                var viewExtent = renderer.viewExtent;
+                                var slayers = job.vswitch[job.vswitchIndex];
 
-                            if (slayers) {
-                                slayers = slayers[1];
+                                if (slayers) {
+                                    slayers = slayers[1];
 
-                                for (var k = 0, lk = slayers.length; k < lk; k++) {
-                                    var sjob = slayers[k];
-                                    sjob.updatePos = job.updatePos;
-                                    sjob.mvp = job.mvp;
-                                    sjob.mv = job.mv;
-                                    this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, fade);
+                                    for (var k = 0, lk = slayers.length; k < lk; k++) {
+                                        var sjob = slayers[k];
+                                        sjob.updatePos = job.updatePos;
+                                        sjob.mvp = job.mvp;
+                                        sjob.mv = job.mv;
+                                        this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, fade);
+                                    }
                                 }
-                            }
 
-                        } else {
-                            this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+                                break;
+
+                            case VTS_JOB_LINE_LABEL:
+                                this.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+                                break;
+
+                            default:
+                                this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, fade);
+                                break;
                         }
 
                         job.updatePos = false;
@@ -934,24 +942,32 @@ RendererDraw.prototype.drawGpuJobs = function() {
         for (i = 0; i < hsortBuffSize; i++) {
             job = hsortBuff[i];
 
-            if (job.type == VTS_JOB_VSPOINT) {
-                var viewExtent = renderer.viewExtent;
-                var slayers = job.vswitch[job.vswitchIndex];
+            switch(job.type) {
+                case VTS_JOB_VSPOINT:
+                    var viewExtent = renderer.viewExtent;
+                    var slayers = job.vswitch[job.vswitchIndex];
 
-                if (slayers) {
-                    slayers = slayers[1];
+                    if (slayers) {
+                        slayers = slayers[1];
 
-                    for (var k = 0, lk = slayers.length; k < lk; k++) {
-                        var sjob = slayers[k];
-                        sjob.updatePos = job.updatePos;
-                        sjob.mvp = job.mvp;
-                        sjob.mv = job.mv;
-                        this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, job.fade);
+                        for (var k = 0, lk = slayers.length; k < lk; k++) {
+                            var sjob = slayers[k];
+                            sjob.updatePos = job.updatePos;
+                            sjob.mvp = job.mvp;
+                            sjob.mv = job.mv;
+                            this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, sjob.lastSubJob, job.fade);
+                        }
                     }
-                }
 
-            } else {
-                this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, job.fade);
+                break;
+
+                case VTS_JOB_LINE_LABEL:
+                    this.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, job.fade);
+                    break;
+
+                default:
+                    this.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, job.fade);
+                    break;
             }
 
             job.updatePos = false;
