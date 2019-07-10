@@ -747,6 +747,11 @@ RendererDraw.prototype.drawGpuJobs = function() {
             break;
         }
 
+        for (key in buffer2) {
+            lj2 = true;
+            break;
+        }
+
         if (lj2) {
 
             if (!hitmapRender) {
@@ -2821,11 +2826,21 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
         if (bl > 64) { vbuff = renderer.textQuads32; prog = renderer.progLineLabel32; }
         else { vbuff = renderer.textQuads16; prog = renderer.progLineLabel16; }
 
+        var color2 = job.color2;
+
+        if (fade !== null) {
+            color = [color[0], color[1], color[2], color[3] * fade];
+
+            if (color2) {
+                color2 = [color2[0], color2[1], color2[2], color2[3] * fade];
+            }
+        }
+
         gpu.useProgram(prog, ['aPosition']);
         prog.setSampler('uSampler', 0);
         prog.setMat4('uMVP', job.mvp, renderer.getZoffsetFactor(job.zbufferOffset));
 
-        prog.setVec4('uColor', hitmapRender ? color : job.color2);
+        prog.setVec4('uColor', hitmapRender ? color : color2);
         prog.setVec2('uParams', [job.outline[0], gamma2]);
         var lj = hitmapRender ? 1 : 2;
 

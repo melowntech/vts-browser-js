@@ -35,7 +35,7 @@ var map = null;
     //you can style html elements as usual
     var panel = browser.ui.addControl('switch-panel',
         '<div class="switch-panel-div">' +
-           '<input id="switch" type="checkbox"> Bing maps' +
+           '<input id="switch" type="checkbox"> EOX maps' +
         '</div>');
     
     //get switch element
@@ -58,7 +58,7 @@ function onSwitchView() {
             browser.map.setView({
                 surfaces: {
                     'melown-viewfinder-world': [
-                        'bing-world'
+                        'sentinel2-cloudless-eox'
                     ]
                 },
                 freeLayers: {}
