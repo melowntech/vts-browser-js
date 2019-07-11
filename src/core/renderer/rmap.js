@@ -376,7 +376,35 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
 
     var pointsIndex = (vec3.dot(labelPoints[labelIndex][1], renderer.labelVector) >= 0) ? 3 : 2;
     var points = labelPoints[labelIndex][pointsIndex];
-    var points2 = labelPoints[labelIndex+1][pointsIndex], p, p2;
+    var points2 = (labelPoints[labelIndex+1]) ? labelPoints[labelIndex+1][pointsIndex] : points;
+    var p, p2, buffer;
+
+    if (renderer.useSuperElevation) {
+        buffer = job.labelPointsBuffer;
+
+        if (buffer.id != (labelIndex * 1024 + pointsIndex)) {
+            buffer.id = (labelIndex * 1024 + pointsIndex);
+            if (buffer.points.length != points.length) {
+                buffer.points = new Array(points.length);
+                buffer.points2 = new Array(points.length);
+            }
+
+            var sePoints = buffer.points;
+            var sePoints2 = buffer.points2;
+
+            for(i = 0, li = points.length; i < li; i++) {
+                sePoints[i] = renderer.transformPointBySE2(points[i]);
+                sePoints2[i] = renderer.transformPointBySE2(points2[i]);
+            }
+
+            points = sePoints;
+            points2 = sePoints2;
+
+        } else {
+            points = buffer.points;
+            points2 = buffer.points2;
+        }
+    }
 
     for (i = 0, li = points.length; i < li; i++) {
 

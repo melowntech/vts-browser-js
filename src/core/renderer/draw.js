@@ -1543,6 +1543,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
         if (renderer.useSuperElevation) {
             if (job.seCounter != renderer.seCounter) {
                 job.seCounter = renderer.seCounter;
+                job.labelPointsBuffer.id = -1;
                 job.center2 = renderer.transformPointBySE(job.center);
             }
         } else {
@@ -2742,6 +2743,7 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
     if (renderer.useSuperElevation) {
         if (job.seCounter != renderer.seCounter) {
             job.seCounter = renderer.seCounter;
+            job.labelPointsBuffer.id = -1;
             job.center2 = renderer.transformPointBySE(job.center);
         }
     } else {
@@ -2796,7 +2798,35 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
         var b = (pointsIndex == 3) ? job.singleBuffer2 : job.singleBuffer, bl = b.length, vbuff, vitems = (b.length / 4) * 6;
 
         var points = labelPoints[labelIndex][pointsIndex], index = 0;
-        var points2 = labelPoints[labelIndex+1][pointsIndex], q = [0,0,0,0];
+        var points2 = (labelPoints[labelIndex+1]) ? labelPoints[labelIndex+1][pointsIndex] : points;
+        var q = [0,0,0,0], buffer;
+
+        if (renderer.useSuperElevation) {
+            buffer = job.labelPointsBuffer;
+
+            if (buffer.id != (labelIndex * 1024 + pointsIndex)) {
+                buffer.id = (labelIndex * 1024 + pointsIndex);
+                if (buffer.points.length != points.length) {
+                    buffer.points = new Array(points.length);
+                    buffer.points2 = new Array(points.length);
+                }
+
+                var sePoints = buffer.points;
+                var sePoints2 = buffer.points2;
+
+                for(j = 0, lj = points.length; j < lj; j++) {
+                    sePoints[j] = renderer.transformPointBySE2(points[j]);
+                    sePoints2[j] = renderer.transformPointBySE2(points2[j]);
+                }
+
+                points = sePoints;
+                points2 = sePoints2;
+
+            } else {
+                points = buffer.points;
+                points2 = buffer.points2;
+            }
+        }
 
         for(j = 0, lj = points.length; j < lj; j++) {
             p = points[j];

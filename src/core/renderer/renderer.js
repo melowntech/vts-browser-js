@@ -414,6 +414,36 @@ Renderer.prototype.transformPointBySE = function(pos, shift) {
 };
 
 
+Renderer.prototype.transformPointBySE2 = function(pos, shift) {
+    var p = pos, p2;
+    this.seTmpVec3 = [0,0,0];
+
+    if (shift) {
+        p2 = [pos[0] + shift[0], pos[1] + shift[1], (pos[2] + shift[2]) * this.earthERatio];
+    } else {
+        p2 = [p[0], p[1], p[2] * this.earthERatio];
+    }
+
+    var l = Math.sqrt(p2[0] * p2[0] + p2[1] * p2[1] + p2[2] * p2[2]);
+    var v = this.seTmpVec2;
+
+    var m = (1.0/(l+0.0001));
+    v[0] = p2[0] * m;
+    v[1] = p2[1] * m;
+    v[2] = p2[2] * m;
+
+    var h = l - this.earthRadius;
+    var h2 = this.getSuperElevatedHeight(h);
+    m = (h2 - h);
+
+    pos[0] = p[0] + v[0] * m;
+    pos[1] = p[1] + v[1] * m;
+    pos[2] = p[2] + v[2] * m;
+
+    return pos;
+};
+
+
 Renderer.prototype.project = function(point) {
     //get mode-view-projection matrix
     var mvp = this.camera.getMvpMatrix();

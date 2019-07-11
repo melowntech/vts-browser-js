@@ -368,6 +368,7 @@ GpuGroup.prototype.addLineLabelJob = function(data) {
     job.zbufferOffset = data['zbuffer-offset'];
     job.hysteresis = data['hysteresis'];
     job.noOverlap = data['noOverlap'];
+    job.labelPointsBuffer = { id: -1, points: [], points2: [] },
     job.id = job.hysteresis ? job.hysteresis[2] : null;
     job.reduced = false;
     job.ready = true;
