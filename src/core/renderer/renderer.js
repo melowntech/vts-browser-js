@@ -434,11 +434,17 @@ Renderer.prototype.transformPointBySE2 = function(pos, shift) {
 
     var h = l - this.earthRadius;
     var h2 = this.getSuperElevatedHeight(h);
-    m = (h2 - h);
+    m = (h2 - h);// * 10;
+
+    pos = pos.slice();
 
     pos[0] = p[0] + v[0] * m;
     pos[1] = p[1] + v[1] * m;
     pos[2] = p[2] + v[2] * m;
+
+    pos[13] = v[0] * m;
+    pos[14] = v[1] * m;
+    pos[15] = v[2] * m;
 
     return pos;
 };

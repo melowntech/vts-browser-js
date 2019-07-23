@@ -2738,9 +2738,10 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
 
     var job = subjob[0], texture = subjob[2],
         files = subjob[3], color = subjob[4], pp = subjob[5],
-        o = job.noOverlap, localTilt, p2, p1, camVec, prog;
+        o = job.noOverlap, localTilt, p2, p1, camVec, prog,
+        useSE = renderer.useSuperElevation;
 
-    if (renderer.useSuperElevation) {
+    if (useSE) {
         if (job.seCounter != renderer.seCounter) {
             job.seCounter = renderer.seCounter;
             job.labelPointsBuffer.id = -1;
@@ -2801,7 +2802,7 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
         var points2 = (labelPoints[labelIndex+1]) ? labelPoints[labelIndex+1][pointsIndex] : points;
         var q = [0,0,0,0], buffer;
 
-        if (renderer.useSuperElevation) {
+        if (useSE) {
             buffer = job.labelPointsBuffer;
 
             if (buffer.id != (labelIndex * 1024 + pointsIndex)) {
@@ -2832,9 +2833,15 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
             p = points[j];
             p2 = points2[j];
 
-            b[index] = p[4] + (p2[4] - p[4]) * labelMorph;
-            b[index+1] = p[5] + (p2[5] - p[5]) * labelMorph;
-            b[index+2] = p[6] + (p2[6] - p[6]) * labelMorph;
+            if (useSE) {
+                b[index] = (p[4]+p[13]) + ((p2[4]+p2[13]) - (p[4]+p[13])) * labelMorph;
+                b[index+1] = (p[5]+p[14]) + ((p2[5]+p2[14]) - (p[5]+p[14])) * labelMorph;
+                b[index+2] = (p[6]+p[15]) + ((p2[6]+p2[15]) - (p[6]+p[15])) * labelMorph;
+            } else {
+                b[index] = p[4] + (p2[4] - p[4]) * labelMorph;
+                b[index+1] = p[5] + (p2[5] - p[5]) * labelMorph;
+                b[index+2] = p[6] + (p2[6] - p[6]) * labelMorph;
+            }
 
             q4Slerp([p[7],p[8],p[9],p[10]], [p2[7],p2[8],p2[9],p2[10]], labelMorph, q);
 
