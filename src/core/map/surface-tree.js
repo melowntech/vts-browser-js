@@ -967,33 +967,41 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
         return;
     }
 
-    var drawBufferIndex = this.drawSurfaceFitOnly(shift, true, true);
-    if (drawBufferIndex > 0) {
+    var drawBufferIndex2 = this.drawSurfaceFitOnly(shift, true, true);
+    if (drawBufferIndex2 == 0) {
         return;
     }
 
+    var draw = map.draw;
     var drawBuffer = draw.drawBuffer;
     var drawBuffer2 = draw.drawBuffer2;
-    var drawBufferIndex2 = 0;
+    var drawBufferIndex = 0;
     var grids = false; 
 
     //draw surface
-    for (i = drawBufferIndex - 1; i >= 0; i--) {
+    for (var i = drawBufferIndex2 - 1; i >= 0; i--) {
         var item = drawBuffer2[i];
         //tile = (noGrid) ? item : item[0];
 
         if (item[1]) {
             tile = item[0];
-            drawBuffer[drawBufferIndex2] = [tile, true];
+            drawBuffer[drawBufferIndex] = [tile, true];
             grids = true; 
+
+            //TODO: search parents
+                // if parent exist render parent (limit parent level), load children, 
+                // remove parent children from draw buffer
+
         } else {
             tile = item;
             node = tile.metanode;
-            drawBuffer[drawBufferIndex2] = [tile, false];
+            drawBuffer[drawBufferIndex] = [tile, false];
         }
 
-        drawBufferIndex2++;
+        drawBufferIndex++;
     }
+
+    //TODO: if everything loaded then load parents
   
     //if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit) {
 
@@ -1001,10 +1009,6 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
     var draw = map.draw;
     var drawTiles = draw.drawTiles;
     var replay = draw.replay;
-    var drawBuffer = draw.drawBuffer;
-    var processBuffer = draw.processBuffer;
-    var newProcessBuffer = draw.processBuffer2;
-    var drawBufferIndex = 0;
 
     var geodata = tile.surface ? tile.surface.geodata : null;
     var free = tile.surface ? tile.surface.free : null;
