@@ -961,6 +961,9 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
         return;
     }
 
+    tile.updateTexelSize();
+
+    var root = tile;
     var node = tile.metanode;
 
     if (!tile.bboxVisible(tile.id, node.bbox, cameraPos, node)) {
@@ -973,10 +976,13 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
     }
 
     var draw = map.draw;
+    var drawTiles = draw.drawTiles;
     var drawBuffer = draw.drawBuffer;
     var drawBuffer2 = draw.drawBuffer2;
     var drawBufferIndex = 0;
     var grids = false; 
+    var texelSizeFit = draw.texelSizeFit;    
+    var tilesToLoad = 0, priority, parent, child;
 
     //draw surface
     for (var i = drawBufferIndex2 - 1; i >= 0; i--) {
@@ -985,23 +991,70 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
 
         if (item[1]) {
             tile = item[0];
+
+            if (!tile.isMetanodeReady(this, tile.id[0])) { //lod is used as priority
+                continue;
+            }
+
             drawBuffer[drawBufferIndex] = [tile, true];
             grids = true; 
+            priority = 20;
 
             //TODO: search parents
-                // if parent exist render parent (limit parent level), load children, 
-                // remove parent children from draw buffer
+                // if parent exist render parent (limit parent level?), load children, 
+                // remove parent children from draw buffer?
+
+            //if (!node.hasChildren() || ) {
+
+            if (tile.texelSize != 1 && tile.texelSize <= texelSizeF+it && tile != root) {
+                parent = tile.parent;
+
+                while (parent != root) {
+                    if (drawTiles.drawSurfaceTile(parent, parent.metanode, cameraPos, parent.texelSize, priority, true, false, false)) {
+                        //render parent
+                        drawBuffer[drawBufferIndex] = [parent, false];
+
+                        //load children
+
+                        for (var j = 0; j < 4; j++) {
+                            child = parent.children[j];
+                            if (child) {
+                                if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
+                                    if (!drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false, false)) {
+                                        tilesToLoad++;
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
+                    parent = parent.parent;
+                }
+            }
 
         } else {
             tile = item;
             node = tile.metanode;
             drawBuffer[drawBufferIndex] = [tile, false];
+            priority = 10;
+
+            //are draw buffers ready? preventRender=true, preventLoad=false, checkGpu = false
+            if (!drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, false, false)) {
+                tilesToLoad++;
+            }
         }
 
         drawBufferIndex++;
     }
 
     //TODO: if everything loaded then load parents
+
+    if (tilesToLoad == 0) {
+
+    }
+
   
     //if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit) {
 
