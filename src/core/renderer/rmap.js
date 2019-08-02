@@ -347,7 +347,7 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
     var index = 0, pindex = 0;
     var margin = job.noOverlap ? job.noOverlap[0] : 1;
 
-    var targetSize = job.labelSize * 0.5;
+    var targetSize = job.labelSize * 0.5 * 0.5;
     var sizeFactor = renderer.camera.scaleFactor2(subjob[5][3])*0.5*renderer.curSize[1];
     var pointsIndex = subjob[9];
     var labelPoints = job.labelPoints;

@@ -2768,7 +2768,7 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
             pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);                    
         }
 
-        var targetSize = job.labelSize * 0.5;
+        var targetSize = job.labelSize * 0.5 * 0.5; //last 0.5 part is to make it compatible to 2D text
         var sizeFactor = renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1];
         var labelPoints = job.labelPoints;
         var labelIndex = job.labelIndex;
