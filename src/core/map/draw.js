@@ -94,10 +94,12 @@ var MapDraw = function(map) {
     this.processBuffer = new Array(60000);
     this.processBuffer2 = new Array(60000);
     this.drawBuffer = new Array(60000);
+    this.drawBuffer2 = new Array(60000);
     this.tmpVec3 = new Array(3);
     this.tmpVec5 = new Array(5);
     this.bboxBuffer = new Float32Array(8*3);
     this.planeBuffer = new Float32Array(9*3);
+    //this.drawBufferIndex = 0;
 
     var gpu = this.renderer.gpu;
     this.drawTileState = gpu.createState({});

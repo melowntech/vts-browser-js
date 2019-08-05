@@ -597,7 +597,8 @@ Map.prototype.setView = function(view, forceRefresh, posToFixed) {
     if (string != this.currentViewString || forceRefresh) {
         this.currentView.parse(view);
         this.currentViewString = string;
-        this.viewCounter++;
+        this.viewCounter++;  //this also cause rest of geodata
+        renderer.draw.clearJobHBuffer(); //hotfix - reset hysteresis buffer
     }
 
     this.surfaceSequence.generateSurfaceSequence();

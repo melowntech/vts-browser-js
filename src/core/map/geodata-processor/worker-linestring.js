@@ -895,6 +895,7 @@ var processLineStringPass = function(lineString, lod, style, featureIndex, zInde
 };
 
 var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, center, lod, style, featureIndex, zIndex, eventInfo) {
+    var labelType = getLayerPropertyValue(style, 'line-label-type', lineString, lod);
     var labelColor = getLayerPropertyValue(style, 'line-label-color', lineString, lod);
     var labelColor2 = getLayerPropertyValue(style, 'line-label-color2', lineString, lod);
     var labelOutline = getLayerPropertyValue(style, 'line-label-outline', lineString, lod);
@@ -947,6 +948,8 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     var bufferSize, vertexBuffer, texcoordsBuffer, singleBuffer, singleBuffer2;
 
+    globals.useLineLabel2 = (labelType != 'flat');
+
     if (globals.useLineLabel2) {
         bufferSize = 12 * labelText.length;
         singleBuffer = new Float32Array(bufferSize);
@@ -960,6 +963,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var planes = {};
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
 
+    globals.lineLabelPass = 0;
     globals.lineLabelPoints = [];
     var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes, singleBuffer);
     var labelPoints = globals.lineLabelPoints;
@@ -972,10 +976,107 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
         return;
     }
 
+    var visibility = getLayerPropertyValue(style, 'visibility-rel', lineString, lod) || 
+                     getLayerPropertyValue(style, 'visibility-abs', lineString, lod) ||
+                     getLayerPropertyValue(style, 'visibility', lineString, lod);
+    var culling = getLayerPropertyValue(style, 'culling', lineString, lod);
+    var hysteresis = getLayerPropertyValue(style, 'hysteresis', lineString, lod);
+
+
+    var bboxMin = globals.bboxMin, p, i, li, labelsPack = [], labelIndex = 0;
+    var originalLabelSize = labelSize, originalLabelOffset = labelOffset;
+
+    if (globals.useLineLabel2) {
+        for (i = 0, li = labelPoints.length; i < li; i++) {
+            p = labelPoints[i];
+            p[0] += bboxMin[0];
+            p[1] += bboxMin[1];
+            p[2] += bboxMin[2];
+            p = labelPoints2[i];
+            p[0] += bboxMin[0];
+            p[1] += bboxMin[1];
+            p[2] += bboxMin[2];
+        }
+
+        labelsPack.push([labelSize, globals.textVector, labelPoints, labelPoints2]);
+        globals.lineLabelPass = 1;
+
+        //bigger labels
+        while(true) {
+
+            labelSize *= 2;
+
+            globals.lineLabelPoints = [];
+            index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes, singleBuffer);
+            labelPoints = globals.lineLabelPoints;
+
+            if (!index) {
+                break;
+            }
+
+            globals.lineLabelPoints = [];
+            index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, globals.useLineLabel2 ? 0 : index, null, glyphsRes, singleBuffer2);
+            labelPoints2 = globals.lineLabelPoints;
+
+            for (i = 0, li = labelPoints.length; i < li; i++) {
+                p = labelPoints[i];
+                p[0] += bboxMin[0];
+                p[1] += bboxMin[1];
+                p[2] += bboxMin[2];
+                p = labelPoints2[i];
+                p[0] += bboxMin[0];
+                p[1] += bboxMin[1];
+                p[2] += bboxMin[2];
+            }
+
+            labelsPack.push([labelSize, globals.textVector, labelPoints, labelPoints2]);
+        }
+
+        labelSize = originalLabelSize;
+
+        //smaller labels
+        while(true) {
+
+            labelSize *= 0.5;
+
+            globals.lineLabelPoints = [];
+            index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes, singleBuffer);
+            labelPoints = globals.lineLabelPoints;
+
+            if (globals.textLength < 2) {
+                break;
+            }
+
+            globals.lineLabelPoints = [];
+            index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, null, glyphsRes, singleBuffer2);
+            labelPoints2 = globals.lineLabelPoints;
+
+            for (i = 0, li = labelPoints.length; i < li; i++) {
+                p = labelPoints[i];
+                p[0] += bboxMin[0];
+                p[1] += bboxMin[1];
+                p[2] += bboxMin[2];
+                p = labelPoints2[i];
+                p[0] += bboxMin[0];
+                p[1] += bboxMin[1];
+                p[2] += bboxMin[2];
+            }
+
+            labelsPack.unshift([labelSize, globals.textVector, labelPoints, labelPoints2]);
+            labelIndex++;
+        }
+
+        center = globals.textCenter;
+        center[0] += bboxMin[0];
+        center[1] += bboxMin[1];
+        center[2] += bboxMin[2];
+    }
+    
+
     //var fonts = labelData.fonts;
     var labelFiles = new Array(fonts.length);
 
-    for (var i = 0, li= fonts.length; i < li; i++) {
+    for (i = 0, li= fonts.length; i < li; i++) {
         labelFiles[i] = [];
     }
 
@@ -1024,12 +1125,15 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     }
 
     postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, globals.useLineLabel2 ? VTS_WORKER_TYPE_LINE_LABEL2 : VTS_WORKER_TYPE_LINE_LABEL, {
-        'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 'textVector':globals.textVector, 'labelPoints': globals.useLineLabel2 ? [labelPoints, labelPoints2] : [],
-        'z-index':zIndex, 'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent, 'reduce':labelReduce, 'noOverlap': (labelOverlap ? noOverlap : null),
-        'files': labelFiles, 'enter-event':enterEvent, 'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit,
+        'color':labelColor, 'color2':labelColor2, 'outline':labelOutline, 'textVector':globals.textVector, 'labelPoints': globals.useLineLabel2 ? labelsPack : [],
+        'visibility': visibility, 'culling': culling, 'hysteresis' : hysteresis, 'z-index':zIndex,
+        'center': center, 'hover-event':hoverEvent, 'click-event':clickEvent, 'draw-event':drawEvent,
+        'reduce':labelReduce, 'noOverlap': (labelOverlap ? noOverlap : null), 'files': labelFiles, 'enter-event':enterEvent,
+        'leave-event':leaveEvent, 'zbuffer-offset':zbufferOffset, 'advancedHit': advancedHit, 'labelIndex': labelIndex, 'labelSize': originalLabelSize,
         'fonts': fontsStorage, 'hitable':hitable, 'state':globals.hitState, 'eventInfo': (globals.alwaysEventInfo || hitable || drawEvent) ? eventInfo : {},
         'lod':(globals.autoLod ? null : globals.tileLod) }, globals.useLineLabel2 ? [singleBuffer, singleBuffer2] : [vertexBuffer, texcoordsBuffer], signature);
 };
+
 
 var processLineStringGeometry = function(lineString) {
 

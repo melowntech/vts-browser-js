@@ -55,13 +55,13 @@ var Core = function(element, config, coreInterface) {
         mapSmartNodeParsing : true,
         mapLoadErrorRetryTime : 3000,
         mapLoadErrorMaxRetryCount : 3,
-        mapLoadMode : 'topdown', // "topdown", "downtop", "fit", "fitonly"
-        mapGeodataLoadMode : 'fit', //"fitonly"
-        mapGridMode : 'linear', //"flat"
+        mapLoadMode : 'topdown', // 'topdown', 'downtop', 'fit', 'fitonly'
+        mapGeodataLoadMode : 'fit', // 'fitonly'
+        mapGridMode : 'linear', // 'flat'
         mapGridSurrogatez : false, 
         mapGridUnderSurface: 0,
         mapGridTextureLevel: -1,
-        mapGridTextureLayer: null, //"bing",
+        mapGridTextureLayer: null, // 'bing",
         mapXhrImageLoad : true,
         mapStoreLoadStats : false,
         mapRefreshCycles : 3,
@@ -579,7 +579,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.21.8';
+    return (full ? 'Core: ' : '') + '2.22.0';
 }
 
 

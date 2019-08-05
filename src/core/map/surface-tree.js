@@ -167,6 +167,7 @@ MapSurfaceTree.prototype.draw = function(storeTilesOnly) {
 
         switch(mode) {
         case 'topdown': this.drawSurface([0,0,0], storeTilesOnly); break;
+        case 'downtop': this.drawSurfaceDownTop([0,0,0], storeTilesOnly); break;
         case 'fit':     this.drawSurfaceFit([0,0,0], storeTilesOnly); break;
         case 'fitonly': this.drawSurfaceFitOnly([0,0,0], storeTilesOnly); break;
         }
@@ -433,7 +434,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift, storeTilesOnly) {
 
 
 //loadmode = fitonly
-MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift, storeTilesOnly) {
+MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift, storeTilesOnly, useDrawBufferOnly) {
     this.counter++;
 //    this.surfaceTracer.trace(this.surfaceTree);//this.rootId);
 
@@ -501,7 +502,7 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift, storeTilesOnly) {
 
                 usedNodes++;
 
-                if (storeNodes) { //used only for inspaector
+                if (storeNodes) { //used only for inspector
                     storeNodesBuffer.push(tile);
                 }
 
@@ -533,6 +534,9 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift, storeTilesOnly) {
                                 child.updateTexelSize();
 
                                 childrenBuffer.push(child);
+                            } else if (useDrawBufferOnly) { //used in downtop
+                                drawBuffer[drawBufferIndex] = [child, true];
+                                drawBufferIndex++;
                             }
                         }
                     }
@@ -578,8 +582,15 @@ MapSurfaceTree.prototype.drawSurfaceFitOnly = function(shift, storeTilesOnly) {
     } while(processBufferIndex > 0);
 
     if (storeTilesOnly) {
-        this.storeDrawBufferGeometry(drawBufferIndex);
-        return;
+        if (useDrawBufferOnly) {
+            var tmp = draw.drawBuffer2;
+            draw.drawBuffer2 = draw.drawBuffer;
+            draw.drawBuffer = tmp;
+            //draw.drawBufferIndex = drawBufferIndex;            
+        } else {
+            this.storeDrawBufferGeometry(drawBufferIndex);
+        }
+        return drawBufferIndex;
     }
 
     var stats = map.stats;
@@ -938,6 +949,132 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
 };
 
 
+//loadmode = downtop
+MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
+    this.counter++;
+
+    var map = this.map;
+    var cameraPos = map.camera.position;
+    var tile = this.surfaceTree;
+
+    if (!tile.isMetanodeReady(this, 0)) {
+        return;
+    }
+
+    tile.updateTexelSize();
+
+    var root = tile;
+    var node = tile.metanode;
+
+    if (!tile.bboxVisible(tile.id, node.bbox, cameraPos, node)) {
+        return;
+    }
+
+    var drawBufferIndex2 = this.drawSurfaceFitOnly(shift, true, true);
+    if (drawBufferIndex2 == 0) {
+        return;
+    }
+
+    var draw = map.draw;
+    var drawTiles = draw.drawTiles;
+    var drawBuffer = draw.drawBuffer;
+    var drawBuffer2 = draw.drawBuffer2;
+    var drawBufferIndex = 0;
+    var grids = false; 
+    var texelSizeFit = draw.texelSizeFit;    
+    var tilesToLoad = 0, priority, parent, child;
+
+    //draw surface
+    for (var i = drawBufferIndex2 - 1; i >= 0; i--) {
+        var item = drawBuffer2[i];
+        //tile = (noGrid) ? item : item[0];
+
+        if (item[1]) {
+            tile = item[0];
+
+            if (!tile.isMetanodeReady(this, tile.id[0])) { //lod is used as priority
+                continue;
+            }
+
+            drawBuffer[drawBufferIndex] = [tile, true];
+            grids = true; 
+            priority = 20;
+
+            //TODO: search parents
+                // if parent exist render parent (limit parent level?), load children, 
+                // remove parent children from draw buffer?
+
+            //if (!node.hasChildren() || ) {
+
+            if (tile.texelSize != 1 && tile.texelSize <= texelSizeF+it && tile != root) {
+                parent = tile.parent;
+
+                while (parent != root) {
+                    if (drawTiles.drawSurfaceTile(parent, parent.metanode, cameraPos, parent.texelSize, priority, true, false, false)) {
+                        //render parent
+                        drawBuffer[drawBufferIndex] = [parent, false];
+
+                        //load children
+
+                        for (var j = 0; j < 4; j++) {
+                            child = parent.children[j];
+                            if (child) {
+                                if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
+                                    if (!drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false, false)) {
+                                        tilesToLoad++;
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
+                    parent = parent.parent;
+                }
+            }
+
+        } else {
+            tile = item;
+            node = tile.metanode;
+            drawBuffer[drawBufferIndex] = [tile, false];
+            priority = 10;
+
+            //are draw buffers ready? preventRender=true, preventLoad=false, checkGpu = false
+            if (!drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, false, false)) {
+                tilesToLoad++;
+            }
+        }
+
+        drawBufferIndex++;
+    }
+
+    //TODO: if everything loaded then load parents
+
+    if (tilesToLoad == 0) {
+
+    }
+
+  
+    //if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit) {
+
+    var stats = map.stats;
+    var draw = map.draw;
+    var drawTiles = draw.drawTiles;
+    var replay = draw.replay;
+
+    var geodata = tile.surface ? tile.surface.geodata : null;
+    var free = tile.surface ? tile.surface.free : null;
+    var drawGrid = (!geodata && !free && map.config.mapHeightfiledWhenUnloaded);
+
+    //stats.usedNodes = usedNodes;    
+    //stats.processedNodes = pocessedNodes;    
+    //stats.processedMetatiles = pocessedMetatiles;    
+
+    this.processDrawBuffer(draw, drawTiles, cameraPos, map, stats, drawGrid, grids, replay, drawBuffer, drawBufferIndex);
+};
+
+
 MapSurfaceTree.prototype.processDrawBuffer = function(draw, drawTiles, cameraPos, map, stats, drawGrid, grids, replay, drawBuffer, drawBufferIndex, noGrid) {
 
     if (replay.storeTiles || replay.storeFreeTiles) { //used only in inspectors
@@ -1052,6 +1189,7 @@ MapSurfaceTree.prototype.processDrawBuffer = function(draw, drawTiles, cameraPos
     map.gpuCache.checkCost();
 
 };
+
 
 
 MapSurfaceTree.prototype.storeDrawBufferGeometry = function(drawBufferIndex) {

@@ -34,7 +34,7 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
     //distribute top features
     var tileSize = Math.floor(Math.sqrt((screenLX*screenLY) / tileCount));
     var hitMap = renderer.gmapHit, usedFeatures = 0;
-    var tileFeatures, count, feature;
+    var tileFeatures, count, feature, job;
     var drawAllLabels = renderer.drawAllLabels;
 
     var colors = [
@@ -172,19 +172,37 @@ function processGMap(gpu, gl, renderer, screenPixelSize, draw) {
                     feature = featureCache[index];
                     topFeatures[j] = null;
                     featureCache[index] = null;
+                    job = feature[0];
 
                     //render job
                     if (!drawAllLabels && feature[6]) { //no-overlap 
                         pp = feature[5];
                         o = feature[8];
+
                         if (!renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob)) {
-                            renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
                         }
-                    } else {
-                        if (feature[0].hysteresis) {
-                            renderer.jobHBuffer[feature[0].id] = feature[0];
+
+                        if (job.type == VTS_JOB_LINE_LABEL) {
+                            if (renderer.rmap.addLineLabel(job.lastSubJob, depthParams)) {
+                                //renderer.rmap.storeRemovedLineLabel(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
+                            }
                         } else {
-                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, subjob, null);
+                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], job.lastSubJob, true, depthParams)) {
+                                renderer.rmap.storeRemovedRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob);
+                            }
+                        }
+
+                    } else {
+                        if (job.hysteresis) {
+                            renderer.jobHBuffer[job.id] = job;
+                        } else {
+                            renderer.drawnJobs++;
+
+                            if (job.type == VTS_JOB_LINE_LABEL) {
+                                draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                            } else {
+                                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                            }
                         }
                     }
                 }
@@ -293,7 +311,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
-    var feature, feature2, pp, pp2, o;
+    var feature, feature2, pp, pp2, o, job;
     var drawAllLabels = renderer.drawAllLabels;
 
     //get top features
@@ -370,6 +388,7 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
 
             for (j = 0, lj = hmapSize[i]; j < lj; j++) {
                 feature = features[j];
+                job = feature[0];
 
                 hitCount = 0;
                 pp = feature[5];
@@ -409,16 +428,28 @@ function processGMap4(gpu, gl, renderer, screenPixelSize, draw) {
                     if (!drawAllLabels && feature[6]) { //no-overlap 
                         pp = feature[5];
                         o = feature[8];
-                        if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                            //hitCache[hitCacheSize] = feature;
-                            hitCacheSize++;
+
+                        if (job.type == VTS_JOB_LINE_LABEL) {
+                            if (renderer.rmap.addLineLabel(job.lastSubJob, null)) {
+                                hitCacheSize++;
+                            }
+                        } else {
+                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], job.lastSubJob, true, null)) {
+                                hitCacheSize++;
+                            }
                         }
+
                     } else {
-                        if (feature[0].hysteresis) {
-                            renderer.jobHBuffer[feature[0].id] = feature[0];
+                        if (job.hysteresis) {
+                            renderer.jobHBuffer[job.id] = job;
                         } else {
                             renderer.drawnJobs++;
-                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+
+                            if (job.type == VTS_JOB_LINE_LABEL) {
+                                draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                            } else {
+                                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                            }
                         }
 
                         //hitCache[hitCacheSize] = feature;
@@ -448,7 +479,7 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
-    var feature, feature2, pp, pp2, o;
+    var feature, feature2, pp, pp2, o, job;
     var drawAllLabels = renderer.drawAllLabels;
 
     //get top features
@@ -510,7 +541,7 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
 
             for (j = 0, lj = hmapSize[i]; j < lj; j++) {
                 feature = features[j];
-
+                job = feature[0];
                 pp = feature[5];
 
                 // check                
@@ -519,15 +550,28 @@ function processGMap5(gpu, gl, renderer, screenPixelSize, draw) {
                 if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
                     pp = feature[5];
                     o = feature[8];
-                    if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                        //hitCache[hitCacheSize] = feature;
+
+                    if (job.type == VTS_JOB_LINE_LABEL) {
+                        if (renderer.rmap.addLineLabel(job.lastSubJob, null)) {
+                            //hitCache[hitCacheSize] = feature;
+                        }
+                    } else {
+                        if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], job.lastSubJob, true, null)) {
+                            //hitCache[hitCacheSize] = feature;
+                        }
                     }
+
                 } else {
-                    if (feature[0].hysteresis) {
-                        renderer.jobHBuffer[feature[0].id] = feature[0];
+                    if (job.hysteresis) {
+                        renderer.jobHBuffer[job.id] = job;
                     } else {
                         renderer.drawnJobs++;
-                        draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+
+                        if (job.type == VTS_JOB_LINE_LABEL) {
+                            draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                        } else {
+                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                        }
                     }
                 }
             }
@@ -626,7 +670,7 @@ function radixSortFeatures(renderer, input, inputSize, tmp, depthOnly) {
     return input;
 }
 
-
+//used for scr-count7
 function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
     if (!renderer.config.mapFeaturesReduceParams) {
         return;
@@ -637,15 +681,13 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
     var screenLX = renderer.curSize[0];
     var screenLY = renderer.curSize[1];
     var maxFeatures = Math.ceil((screenLX/ppi)*(screenLY/ppi)*featuresPerSquareInch); 
-    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
+    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp, job;
     var feature, feature2, pp, pp2, o, featureCount = 0;
     var drawAllLabels = renderer.drawAllLabels;
 
     var depthTest = (renderer.config.mapFeaturesReduceFactor2 != 0);
     var depthOffset = -renderer.config.mapFeaturesReduceFactor3;
-
-    //var depthTest = true;
-
+    var depthParams = null;
 
     renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures;
 
@@ -663,6 +705,7 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
 
     for (i = featureCacheSize - 1; i >= 0; i--) {
         feature = featureCache[i];
+        job = feature[0];
 
         // check                
 
@@ -671,12 +714,14 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
             pp = feature[5];
             o = feature[8];
             
-            if (depthTest) {
-                if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true, [pp[0],pp[1]+feature[1],feature[0].reduce,depthOffset])) {
+            depthParams = depthTest ? [pp[0],pp[1]+feature[1],job.reduce,depthOffset] : null;
+
+            if (job.type == VTS_JOB_LINE_LABEL) {
+                if (renderer.rmap.addLineLabel(job.lastSubJob, depthParams)) {
                     featureCount++;
                 }
             } else {
-                if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
+                if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], job.lastSubJob, true, depthParams)) {
                     featureCount++;
                 }
             }
@@ -686,11 +731,16 @@ function processGMap6(gpu, gl, renderer, screenPixelSize, draw) {
             }
 
         } else {
-            if (feature[0].hysteresis) {
-                renderer.jobHBuffer[feature[0].id] = feature[0];
+            if (job.hysteresis) {
+                renderer.jobHBuffer[job.id] = job;
             } else {
                 renderer.drawnJobs++;
-                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+
+                if (job.type == VTS_JOB_LINE_LABEL) {
+                    draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                } else {
+                    draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                }
             }
         }
     }
@@ -706,11 +756,6 @@ function radixDepthSortFeatures(renderer, input, inputSize, tmp) {
     //var centerOffset = renderer.config.mapFeaturesReduceFactor3;
 
     var depthTest = true;
-
-    var sx = renderer.curSize[0], sy = renderer.curSize[1];
-    var cx = sx * 0.5, cy = sy * 0.5;
-    var invcx = 1.0 / (cx+0.0001), invcy = 1.0 / (cy+0.0001), dx, dy, yy;
-    var invsy = 1.0 / (sy+0.0001);
 
     if (count.fill) {
         count.fill(0);
@@ -765,13 +810,13 @@ function radixDepthSortFeatures(renderer, input, inputSize, tmp) {
         input[count[((val >> 24) & 0xFF) + 768]++] = item;
     }
 
-    if (i == -123) { //debug
+    /*if (i == -123) { //debug
         for (i = 0; i < inputSize; i++) {
             item = input[i];
             val = item.depth;
             console.log('' + val +  ' ' + item.lastSubJob[0].id);
         }
-    }
+    }*/
 
     return input;
 }
@@ -834,7 +879,7 @@ function fillVMapHoles(vmap, mx, my) {
         }
     }
 
-    if (holesCount != 0) {
+    if (holesCount != 0 && holesCount != (mx * my)) {
         fillVMapHoles(vmap, mx, my);
     }
 }
@@ -871,6 +916,76 @@ function getVMapValue(vmap, x, y, mx, my) {
 }
 
 
+function radixDeltaSortFeatures(renderer, input, inputSize, tmp) {
+    var count = inputSize < (1 << 16) ? renderer.radixCountBuffer16 : renderer.radixCountBuffer32; 
+    var item, val, bunit32 = renderer.buffUint32, bfloat32 = renderer.buffFloat32, i, r, pp;
+
+    if (count.fill) {
+        count.fill(0);
+    } else { //IE fallback
+        for (i = 0; i < (256*4); i++) {
+            count[i] = 0;
+        }
+    }
+
+    // count all bytes in one pass
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        //val = 1 - item.lastSubJob[5][2];
+        bfloat32[0] = item[0].delta;
+        val = bunit32[0];
+        item[0].delta = val;
+        count[val & 0xFF]++;
+        count[((val >> 8) & 0xFF) + 256]++;
+        count[((val >> 16) & 0xFF) + 512]++;
+        count[((val >> 24) & 0xFF) + 768]++;
+    }
+
+    // create summed array
+    for (var j = 0; j < 4; j++) {
+        var t = 0, sum = 0, offset = j * 256;
+
+        for (i = 0; i < 256; i++) {
+            t = count[i + offset];
+            count[i + offset] = sum;
+            sum += t;
+        }
+    }
+
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        val = item[0].delta;
+        tmp[count[val & 0xFF]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = tmp[i];
+        val = item[0].delta;
+        input[count[((val >> 8) & 0xFF) + 256]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = input[i];
+        val = item[0].delta;
+        tmp[count[((val >> 16) & 0xFF) + 512]++] = item;
+    }
+    for (i = 0; i < inputSize; i++) {
+        item = tmp[i];
+        val = item[0].delta;
+        input[count[((val >> 24) & 0xFF) + 768]++] = item;
+    }
+
+    /*if (i == -123) { //debug
+        for (i = 0; i < inputSize; i++) {
+            item = input[i];
+            val = item.depth;
+            console.log('' + val +  ' ' + item.lastSubJob[0].id);
+        }
+    }*/
+
+    return input;
+}
+
+
+//used for scr-count8
 function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
     if (!renderer.config.mapFeaturesReduceParams) {
         return;
@@ -890,17 +1005,19 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
 
     renderer.debugStr = '<br>featuresPerScr: ' + maxFeatures + '<br>featuresPerTile: ' + featuresPerTile.toFixed(2);
 
-    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp;
+    var i, li, top = renderer.config.mapFeaturesSortByTop, tmp, job, featureCount = 0;
     //var feature, feature2, pp, pp2, o, featureCount = 0;
     //var drawAllLabels = renderer.drawAllLabels;
 
     var depthTest = (renderer.config.mapFeaturesReduceFactor2 != 0);
     var depthOffset = -renderer.config.mapFeaturesReduceFactor3;
+    var depthParams = null;
 
     //get top features
     var featureCache = renderer.gmap;
     var featureCacheSize = renderer.gmapIndex;
     var featureCache2 = renderer.gmap2;
+    var featureCacheSize2 = 0;
     var vmap = renderer.gmap4;
     var drawAllLabels = renderer.drawAllLabels;
 
@@ -919,10 +1036,15 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 feature = featureCache[i];
 
                 if (feature[0].hysteresis) {
-                    renderer.jobHBuffer[feature[0].id] = feature[0];
+                    renderer.jobHBuffer[feature[0].id] = job;
                 } else {
                     renderer.drawnJobs++;
-                    draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+                    job = feature[0];
+                    if (job.type == VTS_JOB_LINE_LABEL) {
+                        draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                    } else {
+                        draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                    }
                 }
             }
 
@@ -986,24 +1108,26 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 if (tileFeatures && tileFeatures.length) {
                     count = tileFeatures.length;
 
-                    if (count > featuresPerTileInt) {
-                        count = featuresPerTileInt;
-                    }
-
                     if (count == 0) {
                         vmap[i] = null;
                     } else {
-                        index = tileFeatures[count - 1];
-                        feature = featureCache[index];
+                        if (count > featuresPerTileInt) {
+                            count = featuresPerTileInt;
 
-                        v = feature[0].reduce[6];
-
-                        if (tileFeatures.length > count) {
                             index = tileFeatures[count];
                             feature = featureCache[index];
-                            v2 = feature[0].reduce[6];
-                            
-                            v = v + (v2 - v) * featuresPerTileFract;
+                            v = feature[0].reduce[6];
+
+                            if (tileFeatures.length > count+1) {
+                                index = tileFeatures[count+1];
+                                feature = featureCache[index];
+                                v2 = feature[0].reduce[6];
+                                v = v + (v2 - v) * featuresPerTileFract;
+                            }
+                        } else {
+                            index = tileFeatures[count - 1];
+                            feature = featureCache[index];
+                            v = feature[0].reduce[6];
                         }
 
                         vmap[i] = v;
@@ -1013,95 +1137,104 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
 
             fillVMapHoles(vmap, mx, my);
 
-
             for (i = featureCacheSize - 1; i >= 0; i--) {
                 feature = featureCache[i];
                 if (!feature) {
                     continue;
                 }
 
-                v = feature[0].reduce[6];
+                job = feature[0];
+                v = job.reduce[6];
                 pp = feature[5];
 
-                //var vmax = Number.NEGATIVE_INFINITY;//getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
                 var vmax = getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
 
                 if (v >= vmax) {
 
                     //render job
-                    if (!drawAllLabels && feature[6]) { //no-overlap is always enabled
+                    if (/*!drawAllLabels &&*/ feature[6]) { //no-overlap is always enabled
                         pp = feature[5];
                         o = feature[8];
+
+                        depthParams = depthTest ? [pp[0],pp[1]+feature[1],job.reduce,depthOffset] : null;
                         
-                        if (depthTest) {
-                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true, [pp[0],pp[1]+feature[1],feature[0].reduce,depthOffset])) {
-                                //featureCount++;
+                        if (job.type == VTS_JOB_LINE_LABEL) {
+                            if (renderer.rmap.addLineLabel(job.lastSubJob, depthParams)) {
+                                featureCount++;
                             }
                         } else {
-                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                                //featureCount++;
+                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], job.lastSubJob, true, depthParams)) {
+                                featureCount++;
+                            }
+                        }
+
+
+                    } else {
+                        if (job.hysteresis) {
+                            renderer.jobHBuffer[job.id] = job;
+                        } else {
+                            renderer.drawnJobs++;
+
+                            if (job.type == VTS_JOB_LINE_LABEL) {
+                                draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                            } else {
+                                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                            }
+                        }
+                    }
+                } else {
+                    //store v delta
+                    feature[0].delta = Math.abs(vmax - v);
+                    featureCache2[featureCacheSize2] = feature; 
+                    featureCacheSize2++;
+                }
+            }
+
+            if (featureCount < maxFeatures && featureCacheSize2 > 0) {
+                //sort deltas
+                radixDeltaSortFeatures(renderer, featureCache2, featureCacheSize2, featureCache);
+
+                for (i = featureCacheSize2 - 1; i >= 0; i--) {
+                    feature = featureCache2[i];
+                    job = feature[0];
+
+                    //render job
+                    if (/*!drawAllLabels &&*/ feature[6]) { //no-overlap is always enabled
+                        pp = feature[5];
+                        o = feature[8];
+
+                        depthParams = depthTest ? [pp[0],pp[1]+feature[1],job.reduce,depthOffset] : null;
+                        
+                        if (job.type == VTS_JOB_LINE_LABEL) {
+                            if (renderer.rmap.addLineLabel(job.lastSubJob, depthParams)) {
+                                featureCount++;
+                            }
+                        } else {
+                            if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], job.lastSubJob, true, depthParams)) {
+                                featureCount++;
                             }
                         }
 
                     } else {
-                        if (feature[0].hysteresis) {
-                            renderer.jobHBuffer[feature[0].id] = feature[0];
+                        if (job.hysteresis) {
+                            renderer.jobHBuffer[job.id] = job;
                         } else {
                             renderer.drawnJobs++;
-                            draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
+
+                            if (job.type == VTS_JOB_LINE_LABEL) {
+                                draw.drawGpuSubJobLineLabel(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                            } else {
+                                draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, job.lastSubJob, null);
+                            }
                         }
+                    }
+
+                    if (featureCount >= maxFeatures) {
+                        break;
                     }
                 }
             }
-
-            /*
-            for (i = 0, li = (mx) * (my); i < li; i++) {
-                tileFeatures = hitMap[i];
-
-                if (tileFeatures && tileFeatures.length) {
-                    count = tileFeatures.length;
-
-                    for (j = 0; j < count; j++){
-                        index = tileFeatures[j];
-                        feature = featureCache[index];
-                        v = feature[0].reduce[6];
-
-                        pp = feature[5];
-
-                        //var vmax = Number.NEGATIVE_INFINITY;//getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
-                        var vmax = getVMapValue(vmap, pp[0] / tileSizeX, pp[1] / tileSizeY, mx, my);
-
-                        if (v >= vmax) {
-
-                            //render job
-                            if (feature[6]) { //no-overlap is always enabled
-                                o = feature[8];
-                                
-                                if (depthTest) {
-                                    if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true, [pp[0],pp[1]+feature[1],feature[0].reduce,depthOffset])) {
-                                        //featureCount++;
-                                    }
-                                } else {
-                                    if (renderer.rmap.addRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], feature[7], feature[0].lastSubJob, true)) {
-                                        //featureCount++;
-                                    }
-                                }
-
-                            } else {
-                                if (feature[0].hysteresis) {
-                                    renderer.jobHBuffer[feature[0].id] = feature[0];
-                                } else {
-                                    renderer.drawnJobs++;
-                                    draw.drawGpuSubJob(gpu, gl, renderer, screenPixelSize, feature[0].lastSubJob, null);
-                                }
-                            }                 
-
-                        }
-                    }
-                }
-            } */
         }
-
     }
 
 
@@ -1120,7 +1253,9 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
                 draw.drawLineString([[x, y, 0.5], [x+tileSizeX, y, 0.5],
                                      [x+tileSizeX, y+tileSizeY, 0.5], [x, y+tileSizeY, 0.5]], true, 1, [0,0,255,255], null, true, null, null, null);
 
-                draw.drawText(Math.round(x+5), Math.round(y + 5), 11, '' + v.toFixed(2), [255,255,255,255], 0.5);
+                if (v) {
+                    draw.drawText(Math.round(x+5), Math.round(y + 5), 11, '' + v.toFixed(2), [255,255,255,255], 0.5);
+                }
             }
         }
     }
