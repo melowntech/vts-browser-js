@@ -1096,7 +1096,7 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
                         }
                     } else {
                         tile.drawCounter = drawCounter;
-                        drawBuffer[drawBufferIndex] = tile;
+                        drawBuffer[drawBufferIndex] = [tile,true];
                         drawBufferIndex++;
                     }
                     
@@ -1134,38 +1134,10 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
                // if exist load from parent down (there can be configurable limit e.g. max 3 lods up)
                // if not exist (root) load only fit lod
 
-        /*
-        if (tile.texelSize != 1 && tile.texelSize <= texelSizeFit && tile != root) {
-            parent = tile.parent;
-
-            while (parent != root) {
-                if (drawTiles.drawSurfaceTile(parent, parent.metanode, cameraPos, parent.texelSize, priority, true, false, false)) {
-                    //render parent
-                    drawBuffer[drawBufferIndex] = [parent, false];
-
-                    //load children
-
-                    for (var j = 0; j < 4; j++) {
-                        child = parent.children[j];
-                        if (child) {
-                            if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
-                                if (!drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false, false)) {
-                                    tilesToLoad++;
-                                }
-                            }
-                        }
-                    }
-
-                    break;
-                }
-
-                parent = parent.parent;
-            }
-        }*/
 
         var hasLoadedParent = false;
 
-        if (tile.texelSize != 1 && tile.texelSize <= texelSizeFit && tile != root) {
+        if (/*tile.texelSize != 1 && tile.texelSize <= texelSizeFit &&*/ tile != root) {
             parent = tile.parent;
 
             while (parent != root) {
