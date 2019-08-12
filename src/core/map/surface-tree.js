@@ -1127,6 +1127,14 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
     //draw.drawCounter++;
     //drawCounter++;
 
+    var lodShift = 4;
+    var typeFactor = 2000;
+
+    if (this.freeLayerSurface) {
+        lodShift = 0;
+        typeFactor = 0.1;
+    }    
+
     var findLoadedParent = (function(){
 
         //TODO: NEW RULES
@@ -1141,6 +1149,8 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
             parent = tile.parent;
 
             while (parent != root) {
+                priority = ((parent.id[0] + lodShift) * typeFactor);
+
                 // preventRender=true, preventLoad=true, checkGpu = false
                 if (drawTiles.drawSurfaceTile(parent, parent.metanode, cameraPos, parent.texelSize, priority, true, true, false)) {
                     //render parent
@@ -1169,6 +1179,8 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
 
 
             if (!hasLoadedParent) {
+                priority = ((tile.id[0] + lodShift) * typeFactor);
+
                 // preventRender=true, preventLoad=false, checkGpu = false
                 if (!drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, false, false)) {
                     drawBuffer[drawBufferIndex] = [tile, true];
@@ -1213,11 +1225,8 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
             tile = item;
             node = tile.metanode;
             drawBuffer[drawBufferIndex] = [tile, false];
-            priority = 10;
-            
-            //findLoadedParent();
-
-            
+            priority = ((tile.id[0] + lodShift) * typeFactor);
+           
             //are draw buffers ready? preventRender=true, preventLoad=false, checkGpu = false
             if (!drawTiles.drawSurfaceTile(tile, tile.metanode, cameraPos, tile.texelSize, priority, true, false, false)) {
 
@@ -1232,14 +1241,8 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
         drawBufferIndex++;
     }
 
-    //TODO: if everything loaded then load parents
-
-    if (tilesToLoad == 0) {
-
-    }
 
     //filter out children
-
     var tmp = drawBuffer2;
     drawBuffer2 = drawBuffer;
     drawBuffer = tmp;
@@ -1273,6 +1276,39 @@ MapSurfaceTree.prototype.drawSurfaceDownTop = function(shift, storeTilesOnly) {
         }
     }
   
+
+    //TODO: if everything loaded then load parents
+        // use drawCounter as optimization 
+
+    if (tilesToLoad == 0) {
+
+        for (i = 0; i < drawBufferIndex; i++) {
+            item = drawBuffer[i];
+
+            tile = item[0];
+            hit = false;
+
+            if (tile != root) {
+                parent = tile.parent;
+
+                while (parent != root) {
+
+                    priority = (((100-tile.id[0]) + lodShift) * typeFactor);
+
+                    //are draw buffers ready? preventRender=true, preventLoad=false, checkGpu = false
+                    if (!drawTiles.drawSurfaceTile(parent, parent.metanode, cameraPos, parent.texelSize, priority, true, false, false)) {
+                        break;
+                    }
+
+                    parent = parent.parent;
+                }
+            }
+
+        }
+
+    }
+
+
     //if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit) {
 
     var stats = map.stats;
