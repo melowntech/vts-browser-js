@@ -1057,10 +1057,15 @@ RendererDraw.prototype.processNoOverlap = function(renderer, job, pp, p1, p2, ca
         }
 
         if (job.type == VTS_JOB_LINE_LABEL) {
-            if (!renderer.rmap.checkRectangle(pp[0], pp[1], pp[0], pp[1], 0)) {
-                return res;
+            if (renderer.benevolentMargins) {
+                if (!renderer.rmap.checkRectangle(pp[0]-200, pp[1]-200, pp[0]+200, pp[1]+200, 0)) {
+                    return res;
+                }
+            } else{ 
+                if (!renderer.rmap.checkRectangle(pp[0], pp[1], pp[0], pp[1], 0)) {
+                    return res;
+                }
             }
-
         } else {
             if (!renderer.rmap.checkRectangle(pp[0]+o[0], pp[1]+o[1], pp[0]+o[2], pp[1]+o[3], stickShift)) {
                 return res;

@@ -179,6 +179,7 @@ MapDraw.prototype.drawMap = function(skipFreeLayers) {
     renderer.drawFog = this.debug.drawFog;
     renderer.debug = this.debug; 
     renderer.mapHack = map;
+    renderer.benevolentMargins = this.config.mapBenevolentMargins;
 
     if (this.config.mapForceFrameTime) {
         if (this.config.mapForceFrameTime != -1) {
