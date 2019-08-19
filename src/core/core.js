@@ -104,7 +104,7 @@ var Core = function(element, config, coreInterface) {
         mapForceFrameTime: 0,
         mapForcePipeline: 0,
         mapLogGeodataStyles: true,
-        mapBenevolentMargins: true,
+        mapBenevolentMargins: false,
 
         rendererAnisotropic : 0,
         rendererAntialiasing : true,

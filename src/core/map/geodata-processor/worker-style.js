@@ -134,6 +134,8 @@ var getLayerPropertyValueInnerString = function(layer, key, feature, lod, value,
                 case '#type':      return globals.featureType;
                 case '#group':     return globals.groupId;
                 case '#lod':       return globals.tileLod;
+                case '#ix':        return globals.tileIX;
+                case '#iy':        return globals.tileIY;
                 case '#tileSize':  return globals.tileSize;
                 case '#pixelSize': return globals.pixelSize;
                 case '#metric':    return globals.metricUnits;
