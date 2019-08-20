@@ -20,6 +20,8 @@ var globals = {
     tileX : 0,
     tileY : 0,
     tileLod : 0,
+    tileIX : 0,
+    tileIY : 0,
     tileSize : 1,
     hitState : 0,
     pixelFactor : 1,

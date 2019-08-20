@@ -1034,6 +1034,7 @@ function processGMap7(gpu, gl, renderer, screenPixelSize, draw) {
 
             for (i = featureCacheSize - 1; i >= 0; i--) {
                 feature = featureCache[i];
+                job = feature[0];
 
                 if (feature[0].hysteresis) {
                     renderer.jobHBuffer[feature[0].id] = job;

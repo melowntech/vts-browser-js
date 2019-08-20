@@ -114,6 +114,8 @@ MapGeodataProcessor.prototype.sendCommand = function(command, data, tile, dpr) {
     
     if (tile && tile.id) { 
         message['lod'] = tile.id[0];
+        message['ix'] = tile.id[1];
+        message['iy'] = tile.id[2];
 
         if (tile.metanode) {
             message['tileSize'] = Math.tan(tile.metanode.diskAngle2A) * tile.metanode.diskDistance;

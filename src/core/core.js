@@ -104,6 +104,7 @@ var Core = function(element, config, coreInterface) {
         mapForceFrameTime: 0,
         mapForcePipeline: 0,
         mapLogGeodataStyles: true,
+        mapBenevolentMargins: false,
 
         rendererAnisotropic : 0,
         rendererAntialiasing : true,
@@ -579,7 +580,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.22.0';
+    return (full ? 'Core: ' : '') + '2.22.2';
 }
 
 

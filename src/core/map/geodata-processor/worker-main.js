@@ -505,6 +505,8 @@ self.onmessage = function (e) {
 
     case 'processGeodata':
         globals.tileLod = message['lod'] || 0;
+        globals.tileIX = message['ix'] || 0;
+        globals.tileIY = message['iy'] || 0;
         globals.tileSize = message['tileSize'] || 1;
         globals.pixelSize = message['pixelSize'] || 1;
         globals.pixelFactor = message['dpr'] || 1;

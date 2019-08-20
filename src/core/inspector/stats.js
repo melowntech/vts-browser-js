@@ -138,12 +138,20 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
     }
 
     var text3 =  'PixelRatio: ' + (window.devicePixelRatio || 1).toFixed(3) +'<br/>'+
-                 'BFRate: ' + Math.round(1000 / (stats.frameTime+0.00001)) +'<br/><br/>'+
-                 'Metatiles: ' + (stats.processedMetatiles) +'<br/>'+
-                 'Metanodes: ' + (stats.processedNodes) + ' / ' + (stats.usedNodes) + '<br/>'+
-                 'GeodataTiles: ' + (stats.drawnGeodataTiles) + '<br/><br/>' +
-                 //'GVGeodataTiles: ' + (stats.drawnGeodataTilesPerLayer) +'<br/><br/>' +
-                 'Tiles: ' + (stats.drawnTiles) +'<br/>';
+                 'BFRate: ' + Math.round(1000 / (stats.frameTime+0.00001)) +'<br/><br/>';
+
+    var map = this.core.getMap();
+
+    if (map) {
+        text3 += 'ReduceMode: ' +'<br/>'+ map.config.mapFeaturesReduceMode +'<br/>'+
+                 'ReduceParams: ' +'<br/>'+ JSON.stringify(map.config.mapFeaturesReduceParams) +'<br/><br/>';
+    }
+
+    text3 += 'Metatiles: ' + (stats.processedMetatiles) +'<br/>'+
+             'Metanodes: ' + (stats.processedNodes) + ' / ' + (stats.usedNodes) + '<br/>'+
+             'GeodataTiles: ' + (stats.drawnGeodataTiles) + '<br/><br/>' +
+             //'GVGeodataTiles: ' + (stats.drawnGeodataTilesPerLayer) +'<br/><br/>' +
+             'Tiles: ' + (stats.drawnTiles) +'<br/>';
 
     for (var i =0, li = stats.renderedLods.length; i < li; i++) {
         if (stats.renderedLods[i]) {
@@ -156,9 +164,7 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
 
     this.infoElement.innerHTML = text;
 
-    var map = this.core.getMap();
-
-    if (map != null) {
+    if (map) {
         var p = map.getPosition();
         var s = '';
         s += p.getViewMode() + ',';

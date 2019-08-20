@@ -25,13 +25,16 @@ var RendererRMap = function(renderer, blockSize, maxBlockRectangles) {
     this.rectangles2Count = 0;
     this.rectanglesR = null;
     this.rectanglesRCount = 0;
+    this.benevolentMargins = false;
     this.positionsBuffer = new Float64Array(256*4);
 };
 
 
 RendererRMap.prototype.clear = function() {
-    this.sx2 = this.renderer.curSize[0];
-    this.sy2 = this.renderer.curSize[1];
+    var renderer = this.renderer;
+
+    this.sx2 = renderer.curSize[0];
+    this.sy2 = renderer.curSize[1];
 
     //reduce by credits
     this.sy2 = Math.max(1, this.sy2 - 55);
@@ -40,20 +43,20 @@ RendererRMap.prototype.clear = function() {
 
     //compass size
     this.cx2 = 135;
-    this.cy1 = this.renderer.curSize[1] - 145;
+    this.cy1 = renderer.curSize[1] - 145;
 
     //search bar size
     this.bx2 = 245;
     this.by2 = 45;
 
-    this.lx = Math.floor(this.renderer.curSize[0] * this.blockSizeFactor) + 1;
-    this.ly = Math.floor(this.renderer.curSize[1] * this.blockSizeFactor) + 1;
+    this.lx = Math.floor(renderer.curSize[0] * this.blockSizeFactor) + 1;
+    this.ly = Math.floor(renderer.curSize[1] * this.blockSizeFactor) + 1;
 
-    if (this.renderer.marginFlags & 4096) {
+    if (renderer.marginFlags & 4096) {
         this.sx1 = Math.min(34, this.sx2);
-        this.sx2 = Math.max(1, this.renderer.curSize[0] - 34);
+        this.sx2 = Math.max(1, renderer.curSize[0] - 34);
         this.sy1 = Math.min(50, this.sy2);
-        this.sy2 = Math.max(1, this.renderer.curSize[1] - 68);
+        this.sy2 = Math.max(1, renderer.curSize[1] - 68);
     }
 
     var totalNeeded = this.ly * this.lx;
@@ -93,12 +96,13 @@ RendererRMap.prototype.clear = function() {
     }
 
     this.allocatedBlocks = totalNeeded;
-    this.drawAllLabels = this.renderer.debug.drawAllLabels;
+    this.drawAllLabels = renderer.debug.drawAllLabels;
+    this.benevolentMargins = renderer.benevolentMargins;
 
     this.rectanglesCount = 0;
     this.rectangles2Count = 0;
     this.rectanglesRCount = 0;
-    this.counter = this.renderer.geoRenderCounter;
+    this.counter = renderer.geoRenderCounter;
 };
 
 
@@ -169,6 +173,11 @@ RendererRMap.prototype.checkRectangle = function(x1, y1, x2, y2, y3) {
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
 
     y3 += y2;
+
+    if (this.benevolentMargins) {
+        //screen including credits
+        return !(x2 < this.sx1 || x1 > this.sx2 || y3 < this.sy1 || y1 > this.sy2);
+    }
     
     //screen including credits
     if (x1 < this.sx1 || x2 > this.sx2 || y1 < this.sy1 || y3 > this.sy2) {
@@ -200,20 +209,27 @@ RendererRMap.prototype.addRectangle = function(x1, y1, x2, y2, z, subjob, any, c
     if (y1 > y2) { t = y1; y1 = y2; y2 = t; }
 
     var y3 = y2 + subjob[1]; //add stick shift
-    
-    //screen including credits
-    if (x1 < this.sx1 || x2 > this.sx2 || y1 < this.sy1 || y3 > this.sy2) {
-        return false;
-    }
 
-    //compass
-    if ((renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y3 > this.cy1) {
-        return false;
-    }
+    if (this.benevolentMargins) {
+        //screen including credits
+        if (x2 < this.sx1 || x1 > this.sx2 || y3 < this.sy1 || y1 > this.sy2) {
+            return false;
+        }
+    } else {
+        //screen including credits
+        if (x1 < this.sx1 || x2 > this.sx2 || y1 < this.sy1 || y3 > this.sy2) {
+            return false;
+        }
 
-    //search bar
-    if ((renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y3 > 0) {
-        return false;
+        //compass
+        if ((renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y3 > this.cy1) {
+            return false;
+        }
+
+        //search bar
+        if ((renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y3 > 0) {
+            return false;
+        }
     }
 
     var xx1 = Math.floor(x1 * this.blockSizeFactor);
@@ -377,7 +393,7 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
     var pointsIndex = (vec3.dot(labelPoints[labelIndex][1], renderer.labelVector) >= 0) ? 3 : 2;
     var points = labelPoints[labelIndex][pointsIndex];
     var points2 = (labelPoints[labelIndex+1]) ? labelPoints[labelIndex+1][pointsIndex] : points;
-    var p, p2, buffer;
+    var p, p2, buffer, benevolentMargins = this.benevolentMargins;
 
     if (renderer.useSuperElevation) {
         buffer = job.labelPointsBuffer;
@@ -438,22 +454,29 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
 
     x1 -= rr, x2 += rr, y1 -= rr, y2 += rr;
 
-    //screen including credits
-    if (x1 < this.sx1 || x2 > this.sx2 || y1 < this.sy1 || y2 > this.sy2) {
-        return false;
+    if (benevolentMargins) {
+        //screen including credits
+        if (x2 < this.sx1 || x1 > this.sx2 || y2 < this.sy1 || y1 > this.sy2) {
+            return false;
+        }
+    } else {
+        //screen including credits
+        if (x1 < this.sx1 || x2 > this.sx2 || y1 < this.sy1 || y2 > this.sy2) {
+            return false;
+        }
+
+        //compass
+        if ((renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y2 > this.cy1) {
+            return false;
+        }
+
+        //search bar
+        if ((renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y2 > 0) {
+            return false;
+        }
     }
 
-    //compass
-    if ((renderer.marginFlags & 1) && x1 < this.cx2 && x2 > 0 && y1 <= this.sx2 && y2 > this.cy1) {
-        return false;
-    }
-
-    //search bar
-    if ((renderer.marginFlags & 2) && x1 < this.bx2 && x2 > 0 && y1 <= this.by2 && y2 > 0) {
-        return false;
-    }
-
-    var blockSizeFactor = this.blockSizeFactor, xx1, yy1, xx2, yy2, dx, dy;
+    var blockSizeFactor = this.blockSizeFactor, xx1, yy1, xx2, yy2, dx, dy, llx = this.lx, lly = this.ly;
     var top = renderer.config.mapFeaturesSortByTop, j,
         rectangles = this.rectangles, rectangles2 = this.rectangles2;
 
@@ -470,13 +493,24 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
         xx2 = Math.floor((xx+r) * blockSizeFactor);
         yy2 = Math.floor((yy+r) * blockSizeFactor);
 
+        if (benevolentMargins) {
+            if (xx2 < 0 || xx1 >= llx || yy2 < 0 || yy1 >= lly) {
+              pindex += 4;
+              continue;  
+            } 
+            if (xx1 < 0) xx1 = 0;
+            if (yy1 < 0) yy1 = 0;
+            if (xx2 >= llx) xx2 = llx - 1;
+            if (yy2 >= lly) yy2 = lly - 1;
+        }
+
         var lx = (xx2 - xx1) + 1;
         var ly = (yy2 - yy1) + 1;
 
         //test collision
         for (y = 0; y < ly; y++) {
             for (x = 0; x < lx; x++) {
-                index = (yy1 + y)*this.lx + (xx1 + x);
+                index = (yy1 + y)*llx + (xx1 + x);
 
                 blockRectangles = this.blocks[index];
                 blockRectanglesCount = this.blocksRCount[index];
@@ -530,6 +564,17 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
         yy1 = Math.floor((yy-r) * blockSizeFactor);
         xx2 = Math.floor((xx+r) * blockSizeFactor);
         yy2 = Math.floor((yy+r) * blockSizeFactor);
+
+        if (benevolentMargins) {
+            if (xx2 < 0 || xx1 >= llx || yy2 < 0 || yy1 >= lly) {
+              pindex += 4;
+              continue;  
+            } 
+            if (xx1 < 0) xx1 = 0;
+            if (yy1 < 0) yy1 = 0;
+            if (xx2 >= llx) xx2 = llx - 1;
+            if (yy2 >= lly) yy2 = lly - 1;
+        }
 
         var lx = (xx2 - xx1) + 1;
         var ly = (yy2 - yy1) + 1;
