@@ -2769,7 +2769,7 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
 
         pp = subjob[5];
 
-        if (!pp) {
+        if (!pp || job.updatePos) {
             pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);                    
         }
 
