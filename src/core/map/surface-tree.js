@@ -627,6 +627,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
     tile.updateTexelSize();
 
     var geodata = tile.surface ? tile.surface.geodata : null;
+    var maxLod = tile.surface.maxLod || tile.surface.lodRange[1];
     var free = tile.surface ? tile.surface.free : null;
     var drawGrid = (!geodata && !free && map.config.mapHeightfiledWhenUnloaded);
     var checkGpu = true;
@@ -744,7 +745,7 @@ MapSurfaceTree.prototype.drawSurfaceFit = function(shift, storeTilesOnly) {
                 var lastProcessBufferIndex = newProcessBufferIndex;
                 var lastDrawBufferIndex = drawBufferIndex;
 
-                if (!node.hasChildren() || tile.texelSize <= texelSizeFit) {
+                if (!node.hasChildren() || tile.texelSize <= texelSizeFit || (geodata && tile.id[0] >= maxLod)) {
 
                     priority = ((tile.id[0] + lodShift) * typeFactor) * tile.distance; 
             
