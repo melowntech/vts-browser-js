@@ -690,6 +690,7 @@ Map.prototype.refreshFreelayesInView = function() {
         if (freeLayer) {
             
             freeLayer.zFactor = freeLayers[key]['depthOffset'];
+            freeLayer.maxLod = freeLayers[key]['maxLod'];
             
             this.freeLayerSequence.push(freeLayer);
             

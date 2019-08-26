@@ -962,6 +962,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
     var planes = {};
     var hitable = hoverEvent || clickEvent || enterEvent || leaveEvent;
+    var originalLabelSize = labelSize;
 
     globals.lineLabelPass = 0;
     globals.lineLabelPoints = [];
@@ -973,7 +974,33 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
     var labelPoints2 = globals.lineLabelPoints;
 
     if (!index) {
-        return;
+
+        //label is bigger than path
+        if (globals.useLineLabel2) {
+
+            while(true) {
+
+                //reduce size until is label smaler than path
+                labelSize *= 0.5;
+
+                globals.lineLabelPass = 0;
+                globals.lineLabelPoints = [];
+                var index = addStreetTextOnPath(lineLabelPoints, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, 0, planes, glyphsRes, singleBuffer);
+                var labelPoints = globals.lineLabelPoints;
+
+                globals.lineLabelPoints = [];
+                index = addStreetTextOnPath(lineLabelPoints2, labelText, labelSize, labelSpacing, fonts, labelOffset, vertexBuffer, texcoordsBuffer, globals.useLineLabel2 ? 0 : index, null, glyphsRes, singleBuffer2);
+                var labelPoints2 = globals.lineLabelPoints;
+
+                if (index || labelSize < 0.05) {
+                    break;
+                }
+            }
+        }
+
+        if (!index) {
+            return;
+        }
     }
 
     var visibility = getLayerPropertyValue(style, 'visibility-rel', lineString, lod) || 
@@ -984,7 +1011,7 @@ var processLineLabel = function(lineLabelPoints, lineLabelPoints2, lineString, c
 
 
     var bboxMin = globals.bboxMin, p, i, li, labelsPack = [], labelIndex = 0;
-    var originalLabelSize = labelSize, originalLabelOffset = labelOffset;
+    var originalLabelOffset = labelOffset;
 
     if (globals.useLineLabel2) {
         for (i = 0, li = labelPoints.length; i < li; i++) {
