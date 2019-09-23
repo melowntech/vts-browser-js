@@ -26,8 +26,10 @@ var MapSubmesh = function(mesh, stream) {
     this.use16bit = mesh.use16bit;
 
     this.bbox = new BBox();
-    this.size = 0;
+    this.size = 0;    
     this.faces = 0;
+    this.uvArea = 0;
+    this.uvAreaComputed = false;
 
     this.flagsInternalTexcoords =  1;
     this.flagsExternalTexcoords =  2;
@@ -792,6 +794,44 @@ MapSubmesh.prototype.buildGpuMesh = function () {
         uvs2: this.externalUVs,
         indices: this.indices
     }, 1, this.map.core, true, this.use16bit);
+};
+
+
+MapSubmesh.prototype.computeUVArea = function (texture) {
+    var uvs = this.internalUVs || this.externalUVs;
+    var area = 0;
+    var fx = texture.width / 65535;
+    var fy = texture.height / 65535;
+
+    var faceArea = function(i1, i2, i3) {
+        var dx = (uvs[i2] - uvs[i1])*fx, dy = (uvs[i2+1] - uvs[i1+1])*fy;
+        var l1 = Math.sqrt(dx*dx+dy*dy);
+        dx = (uvs[i3] - uvs[i2])*fx, dy = (uvs[i3+1] - uvs[i2+1])*fy;
+        var l2 = Math.sqrt(dx*dx+dy*dy);
+        dx = (uvs[i1] - uvs[i3])*fy, dy = (uvs[i1+1] - uvs[i3+1])*fy;
+        var l3 = Math.sqrt(dx*dx+dy*dy);
+
+        var sp = (l1+l2+l3)*0.5; //semi perimeter
+
+        return Math.sqrt(Math.max(0.0,sp*(sp-l1)*(sp-l2)*(sp-l3)));
+    }
+
+    if (uvs) {
+        var indices = this.indices;
+
+        if (indices) {
+            for (var i = 0, ii = 0, li = this.faces; i < li; i++, ii+=3) {
+                area += faceArea(indices[i*3]*2, indices[i*3+1]*2, indices[i*3+2]*2);
+            }
+        } else {
+            for (var i = 0, ii = 0, li = this.faces; i < li; i++, ii+=3) {
+                area += faceArea(i*3*2, i*3*2 + 1, i*3*2 +2);
+            }
+        }
+    }
+
+    this.uvAreaComputed = true;
+    this.uvArea = area;
 };
 
 

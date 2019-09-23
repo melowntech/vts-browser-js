@@ -226,8 +226,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 71:
                 case 103:
-                    //map.config.mapHysteresisWait = map.config.mapHysteresisWait ? 0 : 500;
-                    console.log('hyst wait' + map.config.mapHysteresisWait);
+                    debug.meshStats = !debug.meshStats; hit = true;
                     break; //key G pressed
 
                 case 77:

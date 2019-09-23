@@ -145,6 +145,10 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
     if (map) {
         text3 += 'ReduceMode: ' +'<br/>'+ map.config.mapFeaturesReduceMode +'<br/>'+
                  'ReduceParams: ' +'<br/>'+ JSON.stringify(map.config.mapFeaturesReduceParams) +'<br/><br/>';
+
+        if (map.draw.debug.meshStats) {
+            text3 += 'TexelsPerPoly: ' + (stats.meshesUVArea / Math.max(1,stats.meshesFaces)).toFixed(2) +'<br/><br/>';
+        }
     }
 
     text3 += 'Metatiles: ' + (stats.processedMetatiles) +'<br/>'+

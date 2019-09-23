@@ -54,6 +54,8 @@ var MapStats = function(map) {
     this.graphsCreateMeshTime = 0;
     this.resetGraphs();
 
+    this.meshesFaces = 0;
+    this.meshesUVArea = 0;
     this.gpuMeshes = 0;
     this.gpuTextures = 0;
     this.gpuGeodata = 0;
@@ -122,6 +124,8 @@ MapStats.prototype.begin = function(dirty) {
         this.usedNodes = 0;    
         this.processedNodes = 0;    
         this.processedMetatiles = 0;    
+        this.meshesFaces = 0;
+        this.meshesUVArea = 0;
 
         for (var i = 0, li = this.renderedLods.length; i < li; i++) {
             this.renderedLods[i] = 0;
