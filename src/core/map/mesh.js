@@ -402,6 +402,15 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     //var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
     var attributes = ['aPosition'];
 
+    if (texture && draw.debug.meshStats) {
+        if (!submesh.uvAreaComputed) {
+            submesh.computeUVArea(texture.getGpuTexture());
+        }
+
+        this.stats.meshesUVArea += submesh.uvArea;
+        this.stats.meshesFaces += submesh.faces;
+    }
+
     if (type == VTS_MATERIAL_DEPTH) {
         program = useSuperElevation ? renderer.progDepthTileSE : renderer.progDepthTile;
         //texcoordsAttr = "aTexCoord";
