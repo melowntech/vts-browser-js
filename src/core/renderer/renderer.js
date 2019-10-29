@@ -492,7 +492,7 @@ Renderer.prototype.getScreenRay = function(screenX, screenY) {
 
     this.camera.dirty = true; //???? why is projection matrix distored so I have to refresh
 
-    //conver screen coords
+    //convert screen coords
     var x = (2.0 * screenX) / this.curSize[0] - 1.0;
     var y = 1.0 - (2.0 * screenY) / this.curSize[1];
     
@@ -527,16 +527,17 @@ Renderer.prototype.getScreenRay = function(screenX, screenY) {
 Renderer.prototype.hitTestGeoLayers = function(screenX, screenY, secondTexture) {
     var gl = this.gpu.gl;
 
-    //conver screen coords to texture coords
-    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
-        return [false, 0,0,0,0];
-    }
+    //probably not needed
+    //if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
+      //  return [false, 0,0,0,0];
+    //}
 
     var surfaceHit = false, pixel;
 
     if (screenX >= 0 && screenX < this.curSize[0] &&
         screenY >= 0 && screenY < this.curSize[1]) {
 
+        //convert screen coords to texture coords
         var x = 0, y = 0;
 
         //get screen coords
@@ -674,11 +675,12 @@ Renderer.prototype.hitTest = function(screenX, screenY) {
     var screenRay = this.getScreenRay(screenX, screenY);
     var cameraPos = this.camera.getPosition();
 
-    //conver screen coords to texture coords
-    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
-        return [0, 0, 0, null, screenRay, Number.MAX_VALUE, cameraPos];
-    }
+    //probably not needed
+    //if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {  
+      //  return [0, 0, 0, null, screenRay, Number.MAX_VALUE, cameraPos];
+    //}
 
+    //convert screen coords to texture coords
     var x = 0, y = 0;
 
     //get screen coords
