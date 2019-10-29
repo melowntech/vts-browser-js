@@ -1709,7 +1709,7 @@ RendererDraw.prototype.drawGpuJob = function(gpu, gl, renderer, job, screenPixel
 
                     for(j = 0; j < points.length; j++) {
                         pp = renderer.project2(points[j], mvp, [0,0,0], true);
-                        this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1], 1, [255, 0, 255, 255], null, null, null, null, null);
+                        this.drawCircle(pp, points[j][3] *renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1]*(renderer.curSize[0]/renderer.curSize[1]), 1, [255, 0, 255, 255], null, null, null, null, null);
                     }
                 }
             }*/
@@ -2773,8 +2773,8 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
             pp = renderer.project2(job.center2, renderer.camera.mvp, renderer.cameraPosition, true);                    
         }
 
-        var targetSize = job.labelSize * 0.5 * 0.5; //last 0.5 part is to make it compatible to 2D text
-        var sizeFactor = renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1];
+        var targetSize = job.labelSize * 0.5; 
+        var sizeFactor = renderer.camera.scaleFactor2(pp[3])*0.5*renderer.curSize[1]*(renderer.curSize[0]/renderer.curSize[1]);
         var labelPoints = job.labelPoints;
         var labelIndex = job.labelIndex;
         var labelMorph = 0;
