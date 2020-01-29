@@ -51,7 +51,9 @@ var UIControlSearch = function(ui, visible, visibleLock) {
 
     this.ignoreDrag = false; 
 
-    this.urlTemplate = '//cdn.melown.com/vtsapi/geocode?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
+    //old template '//cdn.melown.com/vtsapi/geocode?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
+    //this.urlTemplate = '//cdn.melown.com/vtsapi/geocode/v3.0/{lat}/{long}/{value}';
+    this.urlTemplate = '//node.windy.com/search/v3.0/{lat}/{long}/{value}';
     this.urlTemplate2 = this.urlTemplate;
     this.data = [];
     this.lastSearch = '';
@@ -336,10 +338,15 @@ UIControlSearch.prototype.onListLoaded = function(counter, data) {
 
         var coords = proj4(navigationSrs['srsDef'], srs, pos.getCoords());
 
+        //check data format
+        if (!(data['data'] && Array.isArray(data['data']) && data['header'] && data['header']['type'] == 'search')) {
+            return;
+        }
+
         if (this.browser.config.controlSearchFilter) {
-            data = filterSearch(data, coords[0], coords[1]);
+            data = filterSearch(data['data'], coords[0], coords[1]);
         } else {
-            data = nofilterSearch(data, coords[0], coords[1]);
+            data = nofilterSearch(data['data'], coords[0], coords[1]);
         }
 
         if (this.coords) {
@@ -568,9 +575,26 @@ UIControlSearch.prototype.onChange = function() {
         this.hideList();        
     }
 
+    var map = this.browser.getMap();
+    if (!map) {
+        return;
+    }
+    
+    //sort list with polygons
+    var pos = map.getPosition();
+    var refFrame = map.getReferenceFrame();
+    var navigationSrsId = refFrame['navigationSrs'];
+    var navigationSrs = map.getSrsInfo(navigationSrsId);
+    var proj4 = this.browser.getProj4();
+    var srs = this.browser.config.controlSearchSrs || this.coordsSrs;
+    srs = this.solveSRS(srs);
+
+    var coords = proj4(navigationSrs['srsDef'], srs, pos.getCoords());
+
+
     this.coords = this.parseLatLon(value);
    
-    var url = this.processTemplate(this.browser.config.controlSearchUrl || this.urlTemplate, { 'value' : value });
+    var url = this.processTemplate(this.browser.config.controlSearchUrl || this.urlTemplate, { 'value':value, 'lat':coords[1], 'long':coords[0] });
     //console.log(url);
     this.searchCounter++;
     this.itemIndex = -1;
