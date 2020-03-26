@@ -310,7 +310,7 @@ Browser.prototype.initConfig = function() {
         controlSearch : true,
         controlSearchSrs : null,
         controlSearchUrl : null,
-        controlSearchFilter : true,
+        controlSearchFilter : false,
         controlMeasure : false,
         controlMeasureLite : false,
         controlLink : false,
