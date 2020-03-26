@@ -1446,95 +1446,98 @@ MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, 
     //var item = this.heightsProcessBuffer, lastItem;
     var p, res, nodeOnly, heightsLod, nodeOnly, coords, noSource;
 
-    switch (heightsSource) {
-        case "node-by-precision":
-            nodeOnly = true;
-        case "heightmap-by-precision":
+    if (item) {
 
+        switch (heightsSource) {
+            case "node-by-precision":
+                nodeOnly = true;
+            case "heightmap-by-precision":
+
+                coords = item.coords;
+
+                if (coords[3].srs) {
+                    p = this.navSrs.convertCoordsFrom(coords, coords[3].srs);
+                } else {
+                    p = coords;
+                }
+
+                heightsLod = this.map.measure.getOptimalHeightLodBySampleSize(p, precision);
+                break;
+
+            case "node-by-lod":
+                nodeOnly = true;
+                precision -= 8;
+            case "heightmap-by-lod":
+                heightsLod = precision;
+                break;
+            case "none":
+                noSource = true;
+                break;
+        }
+
+        do {
             coords = item.coords;
 
-            if (coords[3].srs) {
-                p = this.navSrs.convertCoordsFrom(coords, coords[3].srs);
-            } else {
-                p = coords;
+            if (!noSource && coords[4] == null) {
+                if (coords[3].srs) {
+                    p = this.navSrs.convertCoordsFrom(coords, coords[3].srs);
+                } else {
+                    p = coords;
+                }
+
+                res = this.map.measure.getSpatialDivisionNode(p);
+
+                coords[4] = res[0];
+                coords[5] = res[1];
+
+                //coords[4] = p;
             }
 
-            heightsLod = this.map.measure.getOptimalHeightLodBySampleSize(p, precision);
-            break;
 
-        case "node-by-lod":
-            nodeOnly = true;
-            precision -= 8;
-        case "heightmap-by-lod":
-            heightsLod = precision;
-            break;
-        case "none":
-            noSource = true;
-            break;
-    }
-
-    do {
-        coords = item.coords;
-
-        if (!noSource && coords[4] == null) {
-            if (coords[3].srs) {
-                p = this.navSrs.convertCoordsFrom(coords, coords[3].srs);
+            if (noSource) {
+                res = [0,true,true];
             } else {
-                p = coords;
+                res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
             }
 
-            res = this.map.measure.getSpatialDivisionNode(p);
-
-            coords[4] = res[0];
-            coords[5] = res[1];
-
-            //coords[4] = p;
-        }
-
-
-        if (noSource) {
-            res = [0,true,true];
-        } else {
-            res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
-        }
-
-        //res = this.map.measure.getSurfaceHeight(coords[4], heightsLod, null, null, null, null, nodeOnly);
-
-        //console.log(JSON.stringify(res));
-
-        //if (res[1] || res[2]) { //precisin reached or not aviable
             //res = this.map.measure.getSurfaceHeight(coords[4], heightsLod, null, null, null, null, nodeOnly);
-            //res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
-        //}
-
-        if (res[1] || res[2]) { //precision reached or not aviable
 
             //console.log(JSON.stringify(res));
 
-            coords[2] += res[0]; //convet float height to fixed
-            this.removeFromHeightsBuffer(item, lastItem);
-            coords[3].heightsToProcess--;
-            this.heightsToProcess--;
+            //if (res[1] || res[2]) { //precisin reached or not aviable
+                //res = this.map.measure.getSurfaceHeight(coords[4], heightsLod, null, null, null, null, nodeOnly);
+                //res = this.map.measure.getSurfaceHeight(coords, heightsLod, null, coords[4], coords[5], null, nodeOnly);
+            //}
 
-            if (coords[3].heightsToProcess <= 0) { //this prevents multiple conversions
-                coords[3].floatHeights = false;
+            if (res[1] || res[2]) { //precision reached or not aviable
+
+                //console.log(JSON.stringify(res));
+
+                coords[2] += res[0]; //convet float height to fixed
+                this.removeFromHeightsBuffer(item, lastItem);
+                coords[3].heightsToProcess--;
+                this.heightsToProcess--;
+
+                if (coords[3].heightsToProcess <= 0) { //this prevents multiple conversions
+                    coords[3].floatHeights = false;
+                }
+
+                p = [coords[0], coords[1], coords[2]];
+
+                //console.log(JSON.stringify(p) + "  srs  " + coords[3].srs);
+
+                p = this.physSrs.convertCoordsFrom(p, coords[3].srs);
+
+                coords[0] = p[0];
+                coords[1] = p[1];
+                coords[2] = p[2];
             }
 
-            p = [coords[0], coords[1], coords[2]];
+            lastItem = item;
+            item = item.next;
 
-            //console.log(JSON.stringify(p) + "  srs  " + coords[3].srs);
-
-            p = this.physSrs.convertCoordsFrom(p, coords[3].srs);
-
-            coords[0] = p[0];
-            coords[1] = p[1];
-            coords[2] = p[2];
-        }
-
-        lastItem = item;
-        item = item.next;
-
-    } while(item);
+        } while(item);
+    }
 
     if (this.heightsToProcess <= 0) {
         if (this.updateCallback) {

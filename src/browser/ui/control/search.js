@@ -53,7 +53,8 @@ var UIControlSearch = function(ui, visible, visibleLock) {
 
     //old template '//cdn.melown.com/vtsapi/geocode?q={value}&format=json&lang=en-US&addressdetails=1&limit=20';
     //this.urlTemplate = '//cdn.melown.com/vtsapi/geocode/v3.0/{lat}/{long}/{value}';
-    this.urlTemplate = '//node.windy.com/search/v3.0/{lat}/{long}/{value}';
+    //this.urlTemplate = '//node.windy.com/search/v3.0/{lat}/{long}/{value}';
+    this.urlTemplate = '//cdn.melown.com/vtsapi/geocode/v3.0/{lat}/{long}/{value}';
     this.urlTemplate2 = this.urlTemplate;
     this.data = [];
     this.lastSearch = '';
