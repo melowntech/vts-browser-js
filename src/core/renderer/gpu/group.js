@@ -803,6 +803,9 @@ GpuGroup.prototype.addRenderJob = function(data, tile) {
     case 'vswitch-begin':  this.vsjobs = []; this.vsjob = null; break;
     case 'vswitch-store':  this.storeVSJobs(data); break;
     case 'vswitch-end':    this.addVSwitch(); break;
+    case 'node-begin':     this.nodeBegin(); break;
+    case 'node-end':       this.nodeEnd(); break;
+    case 'mesh':           this.addMesh(); break;
     }
 };
 
