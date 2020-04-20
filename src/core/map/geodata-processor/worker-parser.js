@@ -108,7 +108,7 @@ function vec3Length(a) {
 }
 
 //==================================
-// parse body
+// parse header and body
 //==================================
 
 function processGeodata2(data, lod) {
@@ -128,7 +128,19 @@ function processGeodata2(data, lod) {
         root : null
     };
 
-    var stream = { data : data, index : 2};
+    var stream = { data : data, index : 0};
+
+    //---------------------------
+    // read header
+    //---------------------------
+
+    var magic = '';
+    magic += String.fromCharCode(readUint8(stream));
+    magic += String.fromCharCode(readUint8(stream));
+
+    if (magic != 'GE') { //check magic
+        return;
+    }
 
     var version = readUint16(stream);
 
@@ -137,45 +149,57 @@ function processGeodata2(data, lod) {
     }
 
     //---------------------------
+    // read body flags
+    //---------------------------
+
+    var bodyFlags = readUint8(stream);
+
+    //---------------------------
     // read extesion names
     //---------------------------
 
-    var numExtersionNames = readVarint(stream);
+    if (bodyFlags & (1 << 0)) // has extensions
+    {
+        var numExtersionNames = readVarint(stream);
 
-    for (i = 0; i < numExtersionNames; i++) {
-        gf.extensionNames.push(readString(stream));
+        for (i = 0; i < numExtersionNames; i++) {
+            gf.extensionNames.push(readString(stream));
+        }
     }
 
     //---------------------------
     // read resources
     //---------------------------
 
-    var numResources = readVarint(stream);
+    if (bodyFlags & (1 << 1)) // has resources
+    {
+        var numResources = readVarint(stream);
 
-    for (i = 0; i < numResources; i++) {
-        var resource = {};
-        var flags = readUint8(stream);
-        resource.type = (flags >> 1) & 15;
-        resource.source = (flags >> 5) & 7;
+        for (i = 0; i < numResources; i++) {
+            var resource = {};
+            var flags = readUint8(stream);
+            resource.type = (flags >> 1) & 15;
+            resource.source = (flags >> 5) & 7;
 
-        if (flags & (1 << 0)) {  //has id?
-            resource.id = readString(stream);
+            if (flags & (1 << 0)) {  //has id?
+                resource.id = readString(stream);
+            }
+
+            if (resource.source == 0) {  //internal resource?
+                resource.offset = readUint32(stream);
+                resource.size = readUint32(stream);
+            }
+
+            if (resource.source == 1) {  //external resource?
+                resource.path = readString(stream);
+            }
+
+            if (resource.type == 0) {  //extension?
+                resource.extensionIndex = readVarint(stream);
+            }
+
+            gf.extensionNames.push(resource);
         }
-
-        if (resource.source == 0) {  //internal resource?
-            resource.offset = readUint32(stream);
-            resource.size = readUint32(stream);
-        }
-
-        if (resource.source == 1) {  //external resource?
-            resource.path = readString(stream);
-        }
-
-        if (resource.type == 0) {  //extension?
-            resource.extensionIndex = readVarint(stream);
-        }
-
-        gf.extensionNames.push(resource);
     }
 
     //---------------------------
@@ -272,77 +296,82 @@ function processGeodata2(data, lod) {
     // read base atribute data
     //---------------------------
 
-    //key values
-    var numKeys = readVarint(stream);
-
-    for (i = 0; i < numLoadableNames; i++) {
-        
-        gf.keys.push({ key: readString(stream), type: readUint8(stream) });
-    }
-
-    //key packs 
-    var numKeyPacks = readVarint(stream);
-
-    for (i = 0; i < numKeyPacks; i++) {
-
-        var keys = [];
+    if (bodyFlags & (1 << 2)) // has attributes
+    {
+        //key values
         var numKeys = readVarint(stream);
 
-        for (j = 0; j < numKeys; j++) {
+        for (i = 0; i < numLoadableNames; i++) {
             
-            keys.push(readVarint(stream));
+            gf.keys.push({ key: readString(stream), type: readUint8(stream) });
         }
-        
-        gf.keyPacks.push(keys);
+
+        //key packs 
+        var numKeyPacks = readVarint(stream);
+
+        for (i = 0; i < numKeyPacks; i++) {
+
+            var keys = [];
+            var numKeys = readVarint(stream);
+
+            for (j = 0; j < numKeys; j++) {
+                
+                keys.push(readVarint(stream));
+            }
+            
+            gf.keyPacks.push(keys);
+        }
+
+        //values
+        var numStringValues = readVarint(stream);
+
+        for (i = 0; i < numStringValues; i++) {
+            gf.valuesString.push(readString(stream));
+        }
+
+        var numVarintValues = readVarint(stream);
+
+        for (i = 0; i < numVarintValues; i++) {
+            gf.valuesVarint.push(readVarint(stream));
+        }
+
+        var num8BitValues = readVarint(stream);
+        gf.values8Bit = new DataView(stream.data, stream.index, num8BitValues);
+        stream.index += num8BitValues;
+
+        var num16BitValues = readVarint(stream);
+        gf.values16Bit = new DataView(stream.data, stream.index, num16BitValues * 2);
+        stream.index += num16BitValues * 2;
+
+        var num32BitValues = readVarint(stream);
+        gf.values32Bit = new DataView(stream.data, stream.index, num32BitValues * 4);
+        stream.index += num32BitValues * 4;
+
+        var num64BitValues = readVarint(stream);
+        gf.values64Bit = new DataView(stream.data, stream.index, num64BitValues * 8);
+        stream.index += num64BitValues * 8;
     }
-
-    //values
-    var numStringValues = readVarint(stream);
-
-    for (i = 0; i < numStringValues; i++) {
-        gf.valuesString.push(readString(stream));
-    }
-
-    var numVarintValues = readVarint(stream);
-
-    for (i = 0; i < numVarintValues; i++) {
-        gf.valuesVarint.push(readVarint(stream));
-    }
-
-    var num8BitValues = readVarint(stream);
-    gf.values8Bit = new DataView(stream.data, stream.index, num8BitValues);
-    stream.index += num8BitValues;
-
-    var num16BitValues = readVarint(stream);
-    gf.values16Bit = new DataView(stream.data, stream.index, num16BitValues * 2);
-    stream.index += num16BitValues * 2;
-
-    var num32BitValues = readVarint(stream);
-    gf.values32Bit = new DataView(stream.data, stream.index, num32BitValues * 4);
-    stream.index += num32BitValues * 4;
-
-    var num64BitValues = readVarint(stream);
-    gf.values64Bit = new DataView(stream.data, stream.index, num64BitValues * 8);
-    stream.index += num64BitValues * 8;
-
 
     //---------------------------
     // read base extensions
     //---------------------------
 
-    var numBaseExtensions = readVarint(stream);
+    if (bodyFlags & (1 << 3)) // has base extensions
+    {
+        var numBaseExtensions = readVarint(stream);
 
-    for (i = 0; i < numBaseExtensions; i++) {
-        
-        var index = readVarint(stream);
-        var size = readVarint(stream);
+        for (i = 0; i < numBaseExtensions; i++) {
+            
+            var index = readVarint(stream);
+            var size = readVarint(stream);
 
-        switch(gf.extensionNames[index])
-        {
-            //case "someExtensionName":
-            defalt:
-                //unsuported extension
-                stream.index += size;
+            switch(gf.extensionNames[index])
+            {
+                //case "someExtensionName":
+                defalt:
+                    //unsuported extension
+                    stream.index += size;
+            }
         }
     }
 
@@ -533,9 +562,12 @@ function parseNode(stream, parent, gf) {
                 generator.existenceFlags = readUint8(stream);
 
                 switch(generator.precision) {
-                    case 0: generator.minHeight = readUint8(stream); generator.maxHeight = readUint8(stream); break; 
-                    case 1: generator.minHeight = readUint16(stream); generator.maxHeight = readUint16(stream); break; 
-                    case 2: generator.minHeight = readUint32(stream); generator.maxHeight = readUint32(stream); break; 
+                    case 0: generator.minHeight = ((1 << 8) - 1) / readUint8(stream);
+                            generator.maxHeight = ((1 << 8) - 1) / readUint8(stream); break; 
+                    case 1: generator.minHeight = ((1 << 16) - 1) / readUint16(stream);
+                            generator.maxHeight = ((1 << 16) - 1) / readUint16(stream); break; 
+                    case 2: generator.minHeight = ((1 << 32) - 1) / readUint32(stream);
+                            generator.maxHeight = ((1 << 32) - 1) / readUint32(stream); break; 
                 }
 
                 break;
@@ -544,16 +576,15 @@ function parseNode(stream, parent, gf) {
                 generator.existenceFlags = readUint8(stream);
 
                 switch(generator.precision) {
-                    case 0: generator.vsHeight = readUint8(stream); break; 
-                    case 1: generator.vsHeight = readUint16(stream); break; 
-                    case 2: generator.vsHeight = readUint32(stream); break; 
+                    case 0: generator.vsHeight = ((1 << 8) - 1) / readUint8(stream); break; 
+                    case 1: generator.vsHeight = ((1 << 16) - 1) / readUint16(stream); break; 
+                    case 2: generator.vsHeight = ((1 << 32) - 1) / readUint32(stream); break; 
                 }
 
                 break;
         }
 
         node.generator = generator;
-
     }
 
     //---------------------------
@@ -605,7 +636,7 @@ function parseNode(stream, parent, gf) {
         var numNodes = readVarint(stream);
 
         for (i = 0; i < numNodes; i++) {
-            parseNode(stream, node, gf);
+            node.nodes.push(parseNode(stream, node, gf));
         }
     }
 
@@ -613,12 +644,77 @@ function parseNode(stream, parent, gf) {
     // generate child nodes
     //---------------------------
 
-    if (node.flags & (1 << 5)) { //has generator
-        var numNodes = readVarint(stream);
+    if (node.generator) { 
 
-        for (i = 0; i < numNodes; i++) {
-            parseNode(stream, node, gf);
+        var addVolume = function(shiftX, shiftY, shiftZ, scaleX, scaleY, scaleZ) {
+            var v = node.volume;
+            return { center: [v.center[0] + (v.halfAxisX[0] + v.halfAxisY[0] + v.halfAxisZ[0]) * shiftX,
+                              v.center[0] + (v.halfAxisX[0] + v.halfAxisY[0] + v.halfAxisZ[0]) * shiftY,
+                              v.center[0] + (v.halfAxisX[0] + v.halfAxisY[0] + v.halfAxisZ[0]) * shiftZ],
+                     halfAxisX : [v.halfAxisX[0] * scaleX, v.halfAxisX[1] * scaleX, v.halfAxisX[2] * scaleX],
+                     halfAxisY : [v.halfAxisY[0] * scaleY, v.halfAxisY[1] * scaleY, v.halfAxisY[2] * scaleY],
+                     halfAxisZ : [v.halfAxisZ[0] * scaleZ, v.halfAxisZ[1] * scaleX, v.halfAxisZ[2] * scaleZ] };
         }
+
+        var flags = node.generator.existenceFlags;
+        var index = 0;
+
+        switch(node.generator.type) {
+
+            case 0: //quadtree
+            case 1: //quadtreeH2
+
+                var sz = 1, pz = 0;
+
+                if (node.generator.type == 1) { //quadtreeH2
+                    sz = (node.generator.maxHeight - node.generator.minHeight);
+                    pz = ((node.generator.maxHeight + node.generator.minHeight) * 0.5) - 0.5;
+                }
+
+                if (flags & (1 << 0) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(-0.5,0.5,pz,0.5,0.5,sz), index++;
+                if (flags & (1 << 1) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(0.5,0.5,pz,0.5,0.5,sz), index++;
+                if (flags & (1 << 2) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(0.5,-0.5,pz,0.5,0.5,sz), index++;
+                if (flags & (1 << 3) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(-0.5,-0.5,pz,0.5,0.5,sz), index++;
+
+                break;
+
+            case 2: //octree
+            case 3: //octreeDVS
+
+                var sz = 0.5, pz = 0.5, sz2 = 0.5, pz2 = -0.5;
+
+                if (node.generator.type == 3) { //octreeDVS
+                    sz = node.generator.vsHeight;
+                    sz2 = 1 - sz;
+                    pz = (sz * 0.5) - 0.5;
+                    pz2 = ((1 + sz2) * 0.5) - 0.5;
+                }
+
+                if (flags & (1 << 0) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(-0.5,0.5,pz,0.5,0.5,sz), index++;
+                if (flags & (1 << 1) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(0.5,0.5,pz,0.5,0.5,sz), index++;
+                if (flags & (1 << 2) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(0.5,-0.5,pz,0.5,0.5,sz), index++;
+                if (flags & (1 << 3) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(-0.5,-0.5,pz,0.5,0.5,sz), index++;
+                if (flags & (1 << 4) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(-0.5,0.5,pz2,0.5,0.5,sz2), index++;
+                if (flags & (1 << 5) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(0.5,0.5,pz2,0.5,0.5,sz2), index++;
+                if (flags & (1 << 6) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(0.5,-0.5,pz2,0.5,0.5,sz2), index++;
+                if (flags & (1 << 7) && node.nodes[index])
+                    node.nodes[index].volume = addVolume(-0.5,-0.5,pz2,0.5,0.5,sz2), index++;
+
+                break;
+
+        }
+
     }
 
 }
@@ -629,7 +725,10 @@ function parseNode(stream, parent, gf) {
 
 function parseElement(stream, node, gf) {
 
+    var type = readUint16(stream);
+    var numFeatures = readVarint(stream);
 
+    
 }
 
 //==================================
