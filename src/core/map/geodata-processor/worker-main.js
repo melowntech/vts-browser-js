@@ -438,39 +438,25 @@ function processNode(node, lod) {
 
     //TODO: get volume
 
-    postGroupMessageFast(VTS_WORKERCOMMAND_NODE_BEGIN, 0, {'volue': volume, 'origin': bboxMin}, [], "");
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_NODE_BEGIN, {'volume': node.volume, 'precision': node.precision}, [], "");
 
-    var element = node.elements;
+    var meshes = node['meshes'] || [];
 
     //loop elements
-    for (i = 0, li = elements.length; i < li; i++) {
-        var element = elements[i]
+    for (i = 0, li = meshes.length; i < li; i++) {
 
-        switch(element.type) {
+        var signature = meshes[i];
 
-            case 'point':
-                globals.featureType = 'point';
-                processFeatures('point-array', element, lod, 'point', groupId);
-                break;
-
-            case 'line':
-                globals.featureType = 'line';
-                processFeatures('line-string', element, lod, 'line', groupId);
-                break;
-
-            case 'ext-vts-surface-mesh':
-                globals.featureType = 'point';
-                processFeatures('vts-mesh', element, lod, 'vts-mesh', groupId);
-                break;
-        }
-
+        postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_MESH, { 'path':meshes[i] }, [], signature);
     }
 
-    postGroupMessageLite(VTS_WORKERCOMMAND_NODE_END, 0);
+    var nodes = node['nodes'] || [];
 
-    if (globals.groupOptimize) {
-        optimizeGroupMessages();
+    for (i = 0, li = nodes.length; i < li; i++) {
+        processNode(nodes[i], lod);
     }
+
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_NODE_END, {}, [], "");
 }
 
 function processGeodata(data, lod) {
@@ -494,6 +480,14 @@ function processGeodata(data, lod) {
         //process layers
         for (var i = 0, li = groups.length; i < li; i++) {
             processGroup(groups[i], lod);
+        }
+
+        var nodes = geodata['nodes'] || [];
+
+        for (var i = 0, li = nodes.length; i < li; i++) {
+            postGroupMessageFast(VTS_WORKERCOMMAND_GROUP_BEGIN, 0, {}, [], "");
+            processNode(nodes[i], lod);
+            postGroupMessageLite(VTS_WORKERCOMMAND_GROUP_END, 0);
         }
     }
 

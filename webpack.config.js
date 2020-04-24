@@ -73,8 +73,7 @@ plugins.push(
       'VTS_JOB_PACK' :                9,
       'VTS_JOB_VSPOINT' :             10,
       'VTS_JOB_POLYGON' :             11,
-      'VTS_NODE' :                    12,
-      'VTS_MESH' :                    13,
+      'VTS_JOB_MESH' :                12,
 
       'VTS_TILE_COUNT_FACTOR' :       0.5,
 
@@ -89,8 +88,6 @@ plugins.push(
       'VTS_WORKERCOMMAND_GROUP_END':       10,
       'VTS_WORKERCOMMAND_LOAD_FONTS':      11,
       'VTS_WORKERCOMMAND_LOAD_BITMPAS':    12,
-      'VTS_WORKERCOMMAND_NODE_BEGIN':      13,
-      'VTS_WORKERCOMMAND_NODE_END':        14,
 
       'VTS_WORKER_TYPE_LABEL' :            1,
       'VTS_WORKER_TYPE_LABEL2' :           2,
@@ -117,7 +114,7 @@ plugins.push(
 
       'VTS_WORKER_TYPE_NODE_BEGIN' :      21,
       'VTS_WORKER_TYPE_NODE_END' :        22,
-      'VTS_WORKER_TYPE_NODE_MESH' :       23,
+      'VTS_WORKER_TYPE_MESH' :            23,
 
       'VTS_IMPORATANCE_LOG_BASE' :    1.0017,
       'VTS_IMPORATANCE_INV_LOG' :     1355.6127860321758038669705901537 // 1/log(LOG_BASE)

@@ -121,7 +121,6 @@ function processGeodata2(data, lod) {
         volumes : []
         valuesString : [],
         valuesVarint : [],
-        values8Bit : null,
         values16Bit : null,
         values32Bit : null,
         values64Bit : null,
@@ -334,10 +333,6 @@ function processGeodata2(data, lod) {
         for (i = 0; i < numVarintValues; i++) {
             gf.valuesVarint.push(readVarint(stream));
         }
-
-        var num8BitValues = readVarint(stream);
-        gf.values8Bit = new DataView(stream.data, stream.index, num8BitValues);
-        stream.index += num8BitValues;
 
         var num16BitValues = readVarint(stream);
         gf.values16Bit = new DataView(stream.data, stream.index, num16BitValues * 2);
@@ -724,11 +719,129 @@ function parseNode(stream, parent, gf) {
 //==================================
 
 function parseElement(stream, node, gf) {
+    var element = {}, i;
+    element.type = readUint16(stream);
 
-    var type = readUint16(stream);
     var numFeatures = readVarint(stream);
 
-    
+    //---------------------------
+    // sequential attributes
+    //---------------------------
+
+    if (element.type & (1 << (10+2))) {
+        parseSequentialAttributes(stream, element, numFeatures, gf);
+    }
+
+    //---------------------------
+    // element specific block
+    //---------------------------
+
+    switch(element.type & 15)
+    {
+        case 0: //extension
+
+            var extensionName = gf.extensionNames[readVarint(stream)];
+
+            switch(extensionName)
+            {
+                case 'vts-suraface-mesh':
+
+                    element.block = {
+                        meshResourceIndex : readVarint(stream),
+                        textureResourceIndex : readVarint(stream)
+                    };
+
+                    break;
+
+                defalt:
+                    //unsuported extension
+                    stream.index += size;
+            }
+
+            break;
+
+        case 7: //mesh
+        case 8: //point-cloud
+        case 9: //instanced-mesh
+        case 10: //instanced-node
+
+            var flags = readUint8(stream);
+            element.block = { resourceIndex : readVarint(stream) };
+
+            if (flags & (1 << 0)) {
+                var m = [];
+
+                for (i = 0; i < 16; i++) {
+                    m.push(readFloat32(stream));
+                }
+
+                element.block.trasform = m;
+            }
+
+            break;
+    }
+
+    //---------------------------
+    // features
+    //---------------------------
+
+    for (i = 0; i < numFeatures; i++) {
+        
+        switch(element.type & 15)
+        {
+            case 0: //extension
+
+                var extensionName = gf.extensionNames[readVarint(stream)];
+
+                switch(extensionName)
+                {
+                    case 'vts-suraface-mesh':
+
+                        element.block = {
+                            meshResourceIndex : readVarint(stream),
+                            textureResourceIndex : readVarint(stream)
+                        };                                  
+
+                        break;
+
+                    defalt:
+                        //unsuported extension
+                        stream.index += size;
+                }
+
+                break;
+
+            case 1: //point
+
+                for (i = 0; i < coords; i++) {
+                    m.push(readFloat32(stream));
+                }
+
+                break;
+
+
+            case 7: //mesh
+            case 8: //point-cloud
+            case 9: //instanced-mesh
+            case 10: //instanced-node
+
+                var flags = readUint8(stream);
+                element.block = { resourceIndex : readVarint(stream) };
+
+                if (flags & (1 << 0)) {
+                    var m = [];
+
+                    for (i = 0; i < 16; i++) {
+                        m.push(readFloat32(stream));
+                    }
+
+                    element.block.trasform = m;
+                }
+
+                break;
+        }
+
+    }
 }
 
 //==================================
@@ -839,7 +952,10 @@ function parseAttributes(stream, attributes, packed, gf) {
 // parse sequential attributes
 //==================================
 
+function parseSequentialAttributes(stream, element, numFeatures, gf) {
 
+
+}
 
 
 

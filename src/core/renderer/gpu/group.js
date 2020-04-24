@@ -3,12 +3,14 @@ import {vec3 as vec3_, mat4 as mat4_} from '../../utils/matrix';
 import BBox_ from '../bbox';
 import {math as math_} from '../../utils/math';
 import {utils as utils_} from '../../utils/utils';
+import MapResourceNode_ from '../../map/resource-node';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat4 = mat4_;
 var BBox = BBox_;
 var math = math_;
 var utils = utils_;
+var MapResourceNode = MapResourceNode_;
 
 
 var GpuGroup = function(id, bbox, origin, gpu, renderer) {
@@ -651,6 +653,29 @@ GpuGroup.prototype.addVSwitch = function(){
     this.vsjobs = null;
 };
 
+GpuGroup.prototype.addMeshJob = function(data, lod) {
+    var job = {};
+
+    job.type = VTS_JOB_MESH;
+    job.path = data['path'];
+    
+    job.textures = [];
+
+    job.resources = new MapResourceNode(this.renderer.core.map, null, null);
+
+    if (job.path) {
+        var stmp = job.path.split(".");
+        if (stmp.length > 1) {
+            stmp.pop();
+            job.texturePath = stmp.join('.');
+        }
+
+        job.mesh = job.resources.getMesh(job.path, null);
+    }
+
+    this.jobs.push(job);
+};
+
 
 GpuGroup.prototype.copyBuffer = function(buffer, source, index) {
     var tmp = new Uint8Array(buffer.buffer);
@@ -778,6 +803,43 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
             data = { viewExtent: view.getUint32(index) }; index += 4;
             this.storeVSJobs(data);
             break;
+
+        case VTS_WORKER_TYPE_NODE_BEGIN:
+
+            var node = data;
+            node.nodes = [];
+            node.jobs = [];
+            node.parent = this.currentNode;
+
+            if (this.rootNode) {
+                this.currentNode.nodes.push(node);
+                this.currentNode = node;
+            } else {
+                this.rootNode = node;
+                this.currentNode = node;
+
+                this.oldJobs = this.jobs;
+            }
+
+            this.jobs = node.jobs;
+
+            break;
+
+        case VTS_WORKER_TYPE_NODE_END:
+
+            if (this.currentNode.parent) {
+                this.currentNode = this.currentNode.parent;
+                this.jobs = this.currentNode.jobs;
+            } else {
+                this.currentNode = this.currentNode.parent;
+                this.jobs = this.oldJobs;
+            }
+
+            break;
+
+        case VTS_WORKER_TYPE_MESH:
+            this.addMeshJob(data, tile);
+            break;
     }
 
     return index;
@@ -810,6 +872,345 @@ GpuGroup.prototype.addRenderJob = function(data, tile) {
 };
 
 
+function drawLineString(options, renderer) {
+    if (options == null || typeof options !== 'object') {
+        return this;    
+    }
+
+    if (options['points'] == null) {
+        return this;    
+    }
+
+    var points = options['points'];
+    var color = options['color'] || [255,255,255,255];
+    var depthOffset = (options['depthOffset'] != null) ? options['depthOffset'] : null;
+    var size = options['size'] || 2;
+    var screenSpace = (options['screenSpace'] != null) ? options['screenSpace'] : true;
+    var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
+    var blend = (options['blend'] != null) ? options['blend'] : false;
+    var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
+    var useState = (options['useState'] != null) ? options['useState'] : false;
+    color[0] *= 1.0/255;
+    color[1] *= 1.0/255;
+    color[2] *= 1.0/255;
+    color[3] *= 1.0/255;
+
+    renderer.draw.drawLineString(points, screenSpace, size, color, depthOffset, depthTest, blend, writeDepth, useState);
+    return this;    
+};
+
+
+GpuGroup.prototype.getNodeLOD = function(node) {
+    var lod = 0;
+
+    while(node.parent) {
+        lod++;
+        node = node.parent;
+    }
+
+    return lod;
+};
+
+/*
+GpuGroup.prototype.getNodeTexelSize3 = function(node, screenPixelSize) {
+    var camera = this.map.camera;
+    var cameraDistance = camera.geocentDistance;// * factor;
+
+    var a = vec3.dot(camera.geocentNormal, node.diskNormal); //get angle between tile normal and cameraGeocentNormal
+    var d = cameraDistance - (node.diskDistance + (node.maxZ - node.minZ)), d2; //vertical distance from top bbox level
+
+    if (a < node.diskAngle2) { //is camera inside tile conus?
+        
+        //get horizontal distance
+        var a2 = Math.acos(a); 
+        var a3 = node.diskAngle2A;
+        a2 = a2 - a3; 
+        var l1 = Math.tan(a2) * node.diskDistance;// * factor;
+
+        if (d < 0) { //is camera is belown top bbox level?
+            d2 = cameraDistance - node.diskDistance;
+            if (d2 < 0) { //is camera is belown bottom bbox level?
+                d = -d2;
+                d = Math.sqrt(l1*l1 + d*d);
+            } else { //is camera inside bbox
+                d = l1;
+            }
+        } else {
+            d = Math.sqrt(l1*l1 + d*d);
+        }
+
+    } else {
+        if (d < 0) { //is camera is belown top bbox level?
+            d2 = cameraDistance - node.diskDistance;
+            if (d2 < 0) { //is camera is belown bottom bbox level?
+                d = -d2;
+            } else { //is camera inside bbox
+                return [Number.POSITIVE_INFINITY, 0.1];
+            }
+        } 
+    }
+
+    return [camera.camera.scaleFactor2(d) * screenPixelSize, d];
+};
+
+
+GpuGroup.prototype.getNodeTexelSize2 = function(volume, cameraPos, screenPixelSize, returnDistance) {
+    //TODO: 
+    //      make camera pos relative to volume center
+    //      convert camera pos to volume space
+    //      min = [-sizeX*0.5, -sizeY*0.5, -sizeZ*0.5]
+    //      max = [sizeX*0.5, sizeY*0.5, sizeZ*0.5]
+
+    var pos = volume.center;
+    cameraPos = [cameraPos[0] - pos[0], cameraPos[1] - pos[1], cameraPos[2] - pos[2]];
+
+    var min = cameraPos * volume.m;
+
+    var min = volume.min;
+    var min = volume.max;
+
+    var tilePos1x = min[0] - cameraPos[0];
+    var tilePos1y = min[1] - cameraPos[1];
+    var tilePos2x = max[0] - cameraPos[0];
+    var tilePos2y = min[1] - cameraPos[1];
+    var tilePos3x = max[0] - cameraPos[0];
+    var tilePos3y = max[1] - cameraPos[1];
+    var tilePos4x = min[0] - cameraPos[0];
+    var tilePos4y = max[1] - cameraPos[1];
+    var h1 = min[2] - cameraPos[2];
+    var h2 = max[2] - cameraPos[2];
+    
+    //camera inside bbox
+    if (cameraPos[0] > min[0] && cameraPos[0] < max[0] &&
+        cameraPos[1] > min[1] && cameraPos[1] < max[1] &&
+        cameraPos[2] > min[2] && cameraPos[2] < max[2]) {
+
+        if (returnDistance) {
+            return [Number.POSITIVE_INFINITY, 0.1];
+        }
+    
+        return Number.POSITIVE_INFINITY;
+    }
+
+    var factor = 0;
+    var camera = this.map.camera.camera;
+
+    //find bbox sector
+    if (0 < tilePos1y) { //top row - zero means camera position in y
+        if (0 < tilePos1x) { // left top corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, (h1 + h2)*0.5], returnDistance);
+            }
+        } else if (0 > tilePos2x) { // right top corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, (h1 + h2)*0.5], returnDistance);
+            }
+        } else { //top side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, (h1 + h2)*0.5], returnDistance);
+            }
+        }
+    } else if (0 > tilePos4y) { //bottom row
+        if (0 < tilePos4x) { // left bottom corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, (h1 + h2)*0.5], returnDistance);
+            }
+        } else if (0 > tilePos3x) { // right bottom corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, (h1 + h2)*0.5], returnDistance);
+            }
+        } else { //bottom side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, (h1 + h2)*0.5], returnDistance);
+            }
+        }
+    } else { //middle row
+        if (0 < tilePos4x) { // left side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
+            }
+        } else if (0 > tilePos3x) { // right side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
+            }
+        } else { //center
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
+            }
+        }
+    }
+
+    //console.log("new: " + (factor * screenPixelSize) + " old:" + this.tilePixelSize2(node) );
+
+    if (returnDistance) {
+        return [(factor[0] * screenPixelSize), factor[1]];
+    }
+
+    return (factor * screenPixelSize);
+};
+*/
+
+
+GpuGroup.prototype.getNodeTexelSize = function(node, screenPixelSize) {
+    var pos = node.volume.center;
+    var cameraPos = this.renderer.cameraPosition;
+    var d = vec3.length(
+        [pos[0] - cameraPos[0],
+         pos[1] - cameraPos[1],
+         pos[2] - cameraPos[2]]);
+
+    d -= node.volume.radius;
+
+    if (d <= 0) {
+        return [Number.POSITIVE_INFINITY, 0.1];
+    }
+
+    return [this.renderer.camera.scaleFactor2(d) * screenPixelSize, d];
+};
+
+
+GpuGroup.prototype.drawNodeVolume = function(node) {
+
+    var renderer = this.renderer;
+    var points = node.volume.points;
+
+
+
+    drawLineString({
+        points : [points[0], points[1], points[2], points[3], points[0],
+                  points[4], points[5], points[6], points[7], points[4]
+        ],
+        size : 1.0,
+        color : [255,0,255,255],
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[1], points[5]],
+        size : 1.0,
+        color : [255,0,255,255],
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[2], points[6]],
+        size : 1.0,
+        color : [255,0,255,255],
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[3], points[7]],
+        size : 1.0,
+        color : [255,0,255,255],
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    var pos = node.volume.center;
+    var cameraPos =this.renderer.cameraPosition;
+    var pos = this.renderer.core.getRendererInterface().getCanvasCoords(
+        [pos[0] - cameraPos[0],
+         pos[1] - cameraPos[1],
+         pos[2] - cameraPos[2]],
+         this.renderer.camera.getMvpMatrix());
+
+    var factor = 2;
+
+    var res = this.getNodeTexelSize(node, 1.0);
+
+    var text = '' + node.precision.toFixed(2) + ' ' + (node.precision * res[0]).toFixed(2) + ' ' + res[1].toFixed(2);
+//    this.renderer.draw.drawText(Math.round(pos[0]-this.renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-4*factor), 4*factor, text, [1,0,0,1], pos[2]);
+
+    
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+        this.drawNodeVolume(node.nodes[i]);
+    }
+};
+
+
+GpuGroup.prototype.isMeshReady = function(job) {
+    var mesh = job.mesh;
+    var submeshes = mesh.submeshes;
+    var hit = false;
+
+    for (var i = 0, li = submeshes.length; i < li; i++) {
+        var submesh = submeshes[i];
+        
+        if (submesh.internalUVs && job.texturePath) {
+
+            if (job.textures[i] == null) {
+                path = job.texturePath + i + '.jpg';
+                job.textures[i] = job.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, tile, true);
+            } 
+        }
+    }
+}
+
+GpuGroup.prototype.drawMesh = function(job) {
+    var mesh = job.mesh;
+    var submeshes = mesh.submeshes;
+
+    for (var i = 0, li = submeshes.length; i < li; i++) {
+        var submesh = submeshes[i];
+        
+        if (job.textures[i]) {
+            mesh.drawSubmesh(cameraPos, i, job.textures[i], type, alpha, layer, surface);
+        }
+    }
+}
+
 GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     if (this.id != null) {
         if (this.renderer.layerGroupVisible[this.id] === false) {
@@ -819,6 +1220,13 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
     var renderer = this.renderer;
     var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
+
+    if (this.rootNode) {
+        this.drawNodeVolume(this.rootNode, map);
+
+        return;
+    }
+
 
     if (applyOrigin) {
         var mvp2 = mat4.create();
