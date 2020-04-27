@@ -28,7 +28,8 @@ var MapDraw = function(map) {
     this.debug = {
         heightmapOnly : false,
         blendHeightmap : true,
-        drawBBoxes :  false,
+        drawBBoxes : false,
+        drawNBBoxes : false,
         drawMeshBBox : false,
         drawLods : false,
         drawPositions : false,
@@ -745,10 +746,10 @@ MapDraw.prototype.processDrawCommands = function(cameraPos, commands, priority, 
                         material = VTS_MATERIAL_FLAT;
                         break; 
                     }
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha, command.layer, command.surface);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, material, command.alpha, command.layer, command.surface, tile.splitMask);
                 } else {
                     //tile.renderHappen = true;
-                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha, command.layer, command.surface);
+                    mesh.drawSubmesh(cameraPos, command.submesh, texture, command.material, command.alpha, command.layer, command.surface, tile.splitMask);
                 }
 
             }

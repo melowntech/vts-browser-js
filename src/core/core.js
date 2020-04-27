@@ -57,6 +57,7 @@ var Core = function(element, config, coreInterface) {
         mapLoadErrorMaxRetryCount : 3,
         mapLoadMode : 'topdown', // 'topdown', 'downtop', 'fit', 'fitonly'
         mapGeodataLoadMode : 'fit', // 'fitonly'
+        mapSplitMeshes : true, // used for topdown load mode
         mapGridMode : 'linear', // 'flat'
         mapGridSurrogatez : false, 
         mapGridUnderSurface: 0,
@@ -77,7 +78,8 @@ var Core = function(element, config, coreInterface) {
         mapFeatureStickMode : [1,1],
 
         map16bitMeshes : true,
-        mapOnlyOneUVs : true,
+        //mapOnlyOneUVs : true,
+        mapOnlyOneUVs : false,
         mapIndexBuffers : true,
         mapAsyncImageDecode : true,
 

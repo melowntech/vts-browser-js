@@ -166,11 +166,21 @@ MapSurfaceTree.prototype.draw = function(storeTilesOnly) {
         }
 
         switch(mode) {
-        case 'topdown': this.drawSurface([0,0,0], storeTilesOnly); break;
+        case 'topdown':
+
+            if (map.config.mapSplitMeshes) {
+                this.drawSurfaceWithSpliting([0,0,0], storeTilesOnly);
+            } else {
+                this.drawSurface([0,0,0], storeTilesOnly);
+            }
+
+            break;
+
         case 'downtop': this.drawSurfaceDownTop([0,0,0], storeTilesOnly); break;
         case 'fit':     this.drawSurfaceFit([0,0,0], storeTilesOnly); break;
         case 'fitonly': this.drawSurfaceFitOnly([0,0,0], storeTilesOnly); break;
         }
+
     }
 };
 
@@ -327,8 +337,6 @@ MapSurfaceTree.prototype.drawSurface = function(shift, storeTilesOnly) {
                     var readyCount = 0;
                     var childrenBuffer = [];
                     
-                    var more3 = 0;
-        
                     for (j = 0; j < 4; j++) {
                         var child = tile.children[j];
                         if (child) {
@@ -363,7 +371,7 @@ MapSurfaceTree.prototype.drawSurface = function(shift, storeTilesOnly) {
                         }
                     }
         
-                    if (/*!(gpuNeeded > gpuMax) &&*/ childrenCount > 0 && childrenCount == readyCount && childrenCount != more3) {
+                    if (/*!(gpuNeeded > gpuMax) &&*/ childrenCount > 0 && childrenCount == readyCount) {
                         //sort children by distance
     
                         do {
@@ -398,6 +406,238 @@ MapSurfaceTree.prototype.drawSurface = function(shift, storeTilesOnly) {
                         drawBuffer[drawBufferIndex] = tile;
                         drawBufferIndex++;
                     }
+                    
+                }
+            }
+        }
+
+        var tmp = processBuffer;
+        processBuffer = newProcessBuffer;
+        newProcessBuffer = tmp;
+        processBufferIndex = newProcessBufferIndex;
+
+    } while(processBufferIndex > 0);
+
+    if (storeTilesOnly) {
+        this.storeDrawBufferGeometry(drawBufferIndex);
+        return;
+    }
+    
+    if (best2 > draw.bestMeshTexelSize) {
+        draw.bestMeshTexelSize = best2;
+    }
+
+    var stats = map.stats;
+
+    stats.usedNodes = usedNodes;    
+    stats.processedNodes = pocessedNodes;    
+    stats.processedMetatiles = pocessedMetatiles;    
+    stats.gpuNeeded = gpuNeeded;    
+    
+    //console.log("texel: "+ this.map.bestMeshTexelSize);
+    //console.log("more: "+ more + "more2: " + more2);
+
+    this.processDrawBuffer(draw, drawTiles, cameraPos, map, stats, false, false, replay, drawBuffer, drawBufferIndex, true);
+};
+
+
+//loadmode = topdown + split
+MapSurfaceTree.prototype.drawSurfaceWithSpliting = function(shift, storeTilesOnly) {
+    this.counter++;
+
+    var tile = this.surfaceTree;
+    
+    if (!tile.isMetanodeReady(this, 0)) {
+        return;
+    }
+    
+    var map = this.map;
+    var node = tile.metanode;
+    var cameraPos = map.camera.position;
+
+    if (!tile.bboxVisible(tile.id, node.bbox, cameraPos, node)) {
+        return;
+    }
+
+    tile.updateTexelSize();
+    
+    var typeFactor = this.freeLayerSurface ? 1 : 1;
+
+    var draw = map.draw;
+    var drawTiles = draw.drawTiles;
+    var drawBuffer = draw.drawBuffer;
+    var processBuffer = draw.processBuffer;
+    var newProcessBuffer = draw.processBuffer2;
+    var drawBufferIndex = 0;
+    var processBufferIndex = 0;
+    var newProcessBufferIndex = 0;
+    var gpuNeeded = 0;
+    var gpuNeededForRender = 0;
+    var size = 0;
+    
+    processBuffer[0] = tile;
+    processBufferIndex = 1;
+   
+    var texelSizeFit = draw.texelSizeFit;
+
+    var best2 = 0;
+    var replay = draw.replay;
+    var storeNodes = replay.storeNodes || replay.storeFreeNodes;
+    var storeNodesBuffer = replay.nodeBuffer; 
+   
+    draw.drawCounter++;
+    
+    var pocessedNodes = 1;
+    var pocessedMetatiles = 1;  
+    var usedNodes = 1;
+    var drawCounter = draw.drawCounter, i, j, lj;
+
+
+    do {
+        var best = 0;
+        newProcessBufferIndex = 0;
+        
+        for (i = processBufferIndex - 1; i >= 0; i--) {
+            tile = processBuffer[i];
+            node = tile.metanode;
+
+            if (node) {
+                pocessedNodes++;
+                if (node.metatile.drawCounter != drawCounter) {
+                    node.metatile.drawCounter = drawCounter;
+                    pocessedMetatiles++;
+                }
+            }
+            
+            //if (this.map.drawIndices) {
+              //  this.logTileInfo(tile, node, cameraPos);
+            //}
+
+            tile.splitMask = null;
+            //tile.splitMask = [0,0,0,1];
+
+            if (tile.visibleCounter == drawCounter || tile.bboxVisible(tile.id, node.bbox, cameraPos, node)) {
+
+                usedNodes++;
+
+                if (tile.texelSize != Number.POSITIVE_INFINITY){
+                    if (tile.texelSize > best) {
+                        best = tile.texelSize;
+                    }
+                }
+                
+                if (storeNodes) { //used only for inspector
+                    storeNodesBuffer.push(tile);
+                }
+              
+                if (/*node.hasGeometry() && */tile.texelSize <= texelSizeFit /*|| gpuNeeded > gpuMax*/) {
+
+                    if (tile.skipRenderCounter != drawCounter) {
+
+                        size = draw.getDrawCommandsGpuSize(tile.drawCommands[draw.drawChannel] || tile.lastRenderState.drawCommands[draw.drawChannel]);
+
+                        gpuNeeded += size;
+                        gpuNeededForRender += size;
+
+                        //if (tile.parent && tile.parent.children[3] == tile) {
+                            tile.drawCounter = drawCounter;
+                            drawBuffer[drawBufferIndex] = tile;
+                            drawBufferIndex++;
+                        //}
+                    }
+                    
+                } else { //go deeper
+                    size = draw.getDrawCommandsGpuSize(tile.drawCommands[draw.drawChannel] || tile.lastRenderState.drawCommands[draw.drawChannel]);
+                    gpuNeeded += size;
+
+                    var childrenCount = 0;
+                    var childrenBuffer = [];
+                    var mask = [1,1,1,1];
+                    var useMask = false;
+                    
+                    for (j = 0; j < 4; j++) {
+                        var child = tile.children[j];
+                        if (child) {
+                            childrenCount++;
+                            child.skipRenderCounter = tile.skipRenderCounter;
+       
+                            if (child.isMetanodeReady(this, child.id[0])) { //lod is used as priority
+                                var factor = 1;
+
+                                this.updateNodeHeightExtents(child, child.metanode);
+                                child.updateTexelSize(factor);
+
+                                if (child.bboxVisible(child.id, child.metanode.bbox, cameraPos, child.metanode)) {
+                                    child.visibleCounter = draw.drawCounter;
+                                } else {
+                                    continue;
+                                }
+                                
+                                var priority = child.id[0] * typeFactor * child.distance;
+                                
+                                if (!tile.surface || !child.metanode.hasGeometry()) {
+                                    readyCount++;
+                                    childrenBuffer.push(child);
+                                } else {
+                                    //are draw buffers ready? preventRender=true, preventLoad=false, doNotCheckGpu=true
+                                    if (drawTiles.drawSurfaceTile(child, child.metanode, cameraPos, child.texelSize, priority, true, false, true)) {
+                                        childrenBuffer.push(child);
+                                        mask[j] = 0;
+                                    } else {
+                                        childrenBuffer.push(child);
+                                        child.skipRenderCounter = drawCounter;
+                                        useMask = true;
+                                    }
+                                }
+
+                            } else {
+                                //mask[j] = 0;
+                                useMask = true;
+                            }
+                        }
+                    }
+        
+                    if (childrenBuffer.length > 0) {
+                        //sort children by distance
+    
+                        do {
+                            var sorted = true;
+                            
+                            for (j = 0, lj = childrenBuffer.length - 1; j < lj; j++) {
+                                if (childrenBuffer[j].distance > childrenBuffer[j+1].distance) {
+                                    var t = childrenBuffer[j];
+                                    childrenBuffer[j] = childrenBuffer[j+1];
+                                    childrenBuffer[j+1] = t;
+                                    sorted = false;
+                                } 
+                            }
+                            
+                        } while(!sorted);
+    
+    
+                        //add children to new process buffer 
+                        for (j = 0, lj = childrenBuffer.length; j < lj; j++) {
+                            newProcessBuffer[newProcessBufferIndex] = childrenBuffer[j];
+                            newProcessBufferIndex++;
+                        }
+                    }
+
+                    if (childrenCount == 0 || useMask) {
+
+                        //if (tile.parent && tile.parent.children[3] == tile) {
+
+                        if (tile.skipRenderCounter != drawCounter) {
+                            gpuNeededForRender += size;
+                            tile.splitMask = useMask ? mask : null;
+                            tile.drawCounter = drawCounter;
+
+                            drawBuffer[drawBufferIndex] = tile;
+                            drawBufferIndex++;
+                        }
+
+                        //}
+                    }
+
                     
                 }
             }

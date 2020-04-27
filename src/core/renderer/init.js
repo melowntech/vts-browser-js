@@ -47,8 +47,14 @@ RendererInit.prototype.initShaders = function() {
     var gpu = this.gpu;
 
     renderer.progTile = new GpuProgram(gpu, shaders.tileVertexShader, shaders.tileFragmentShader);
+    renderer.progTileC4 = new GpuProgram(gpu, '#define clip4\n' + shaders.tileVertexShader, '#define clip4\n' + shaders.tileFragmentShader);
+
     renderer.progTile2 = new GpuProgram(gpu, '#define externalTex\n' + shaders.tileVertexShader, '#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+    renderer.progTile2C4 = new GpuProgram(gpu, '#define clip4\n#define externalTex\n' + shaders.tileVertexShader, '#define clip4\n#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+
     renderer.progTile3 = new GpuProgram(gpu, '#define externalTex\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+    renderer.progTile3C4 = new GpuProgram(gpu, '#define clip4\n#define externalTex\n' + shaders.tileVertexShader, '#define clip4\n#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+
     renderer.progFogTile = new GpuProgram(gpu, '#define onlyFog\n' + shaders.tileVertexShader, '#define onlyFog\n' + shaders.tileFragmentShader);
 
     renderer.progTileSE = new GpuProgram(gpu, '#define applySE\n' + shaders.tileVertexShader, shaders.tileFragmentShader);

@@ -153,9 +153,13 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
 
     text3 += 'Metatiles: ' + (stats.processedMetatiles) +'<br/>'+
              'Metanodes: ' + (stats.processedNodes) + ' / ' + (stats.usedNodes) + '<br/>'+
-             'GeodataTiles: ' + (stats.drawnGeodataTiles) + '<br/><br/>' +
-             //'GVGeodataTiles: ' + (stats.drawnGeodataTilesPerLayer) +'<br/><br/>' +
-             'Tiles: ' + (stats.drawnTiles) +'<br/>';
+             'GeodataTiles: ' + (stats.drawnGeodataTiles) + '<br/><br/>';
+
+    if (renderer) {
+        text3 += 'Nodes: ' + (renderer.drawnNodes) +'<br/><br/>';
+    }
+
+    text3 += 'Tiles: ' + (stats.drawnTiles) +'<br/>';
 
     for (var i =0, li = stats.renderedLods.length; i < li; i++) {
         if (stats.renderedLods[i]) {

@@ -378,7 +378,7 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
 };
 
 
-MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer, surface) {
+MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer, surface, splitMask) {
     if (this.gpuSubmeshes[index] == null && this.submeshes[index] != null && !this.submeshes[index].killed) {
         this.gpuSubmeshes[index] = this.submeshes[index].buildGpuMesh();
     }
@@ -427,22 +427,42 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             switch(type) {
             case VTS_MATERIAL_INTERNAL:
             case VTS_MATERIAL_INTERNAL_NOFOG:
-                program = useSuperElevation ? renderer.progTileSE : renderer.progTile;
+
                 texcoordsAttr = 'aTexCoord';
                 attributes.push('aTexCoord');
+
+                if (splitMask) {
+                    program = useSuperElevation ? renderer.progTileSEC4 : renderer.progTileC4;
+                    texcoords2Attr = 'aTexCoord2';  
+                    attributes.push('aTexCoord2');
+                } else {
+                    program = useSuperElevation ? renderer.progTileSE : renderer.progTile;
+                }
+
                 break;
     
             case VTS_MATERIAL_EXTERNAL:
             case VTS_MATERIAL_EXTERNAL_NOFOG:
 
-                program = useSuperElevation ? renderer.progTile2SE : renderer.progTile2;
-                    
-                if (texture) {
-                    gpuMask = texture.getGpuMaskTexture();
-                    if (gpuMask) {
-                        program = useSuperElevation ? renderer.progTile3SE : renderer.progTile3;
+                if (splitMask) {
+                    program = useSuperElevation ? renderer.progTile2SEC4 : renderer.progTile2C4;
+
+                    if (texture) {
+                        gpuMask = texture.getGpuMaskTexture();
+                        if (gpuMask) {
+                            program = useSuperElevation ? renderer.progTile3SEC4 : renderer.progTile3C4;
+                        }
                     }
-                } 
+                } else {
+                    program = useSuperElevation ? renderer.progTile2SE : renderer.progTile2;
+                        
+                    if (texture) {
+                        gpuMask = texture.getGpuMaskTexture();
+                        if (gpuMask) {
+                            program = useSuperElevation ? renderer.progTile3SE : renderer.progTile3;
+                        }
+                    }
+                }
                 
                 if (layer && (layer.shaderFilters || layer.shaderFilter)) {
                     var filter, id, flatShade;
@@ -609,6 +629,11 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
             v[0] = c[0], v[1] = c[1], v[2] = c[2];
             program.setVec4('uParams2', v);
+
+            if (splitMask) {
+                program.setFloatArray('uClip', splitMask);
+            }
+
             break;
 
         case VTS_MATERIAL_EXTERNAL:
@@ -626,6 +651,11 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
             v[0] = c[0], v[1] = c[1], v[2] = c[2]; v[3] = (type == VTS_MATERIAL_EXTERNAL) ? 1 : alpha;
             program.setVec4('uParams2', v);
+
+            if (splitMask) {
+                program.setFloatArray('uClip', splitMask);
+            }
+
             break;
         }
     }

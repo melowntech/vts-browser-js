@@ -26,6 +26,7 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.subjob = null;
     this.mv = new Float32Array(16);
     this.mvp = new Float32Array(16);
+    this.loadMode = 0;
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
@@ -811,6 +812,22 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
             node.jobs = [];
             node.parent = this.currentNode;
 
+            if (node.volume) {
+                var p = node.volume.points;
+                var points = [
+                    p[0][0],p[0][1],p[0][2],
+                    p[1][0],p[1][1],p[1][2],
+                    p[2][0],p[2][1],p[2][2],
+                    p[3][0],p[3][1],p[3][2],
+                    p[4][0],p[4][1],p[4][2],
+                    p[5][0],p[5][1],p[5][2],
+                    p[6][0],p[6][1],p[6][2],
+                    p[7][0],p[7][1],p[7][2]
+                ];
+
+                node.volume.points2 = points;
+            }
+
             if (this.rootNode) {
                 this.currentNode.nodes.push(node);
                 this.currentNode = node;
@@ -1105,108 +1122,323 @@ GpuGroup.prototype.getNodeTexelSize = function(node, screenPixelSize) {
 };
 
 
-GpuGroup.prototype.drawNodeVolume = function(node) {
+GpuGroup.prototype.traverseNode = function(node, visible, isready) {
 
     var renderer = this.renderer;
-    var points = node.volume.points;
+    var points = node.volume.points2;
+    var cameraPos = this.renderer.cameraPosition;
 
-
-
-    drawLineString({
-        points : [points[0], points[1], points[2], points[3], points[0],
-                  points[4], points[5], points[6], points[7], points[4]
-        ],
-        size : 1.0,
-        color : [255,0,255,255],
-        depthTest : false,
-        //depthTest : true,
-        //depthOffset : [-0.01,0,0],
-        screenSpace : false, //switch to physical space
-        blend : false
-        }, renderer);
-
-    drawLineString({
-        points : [points[1], points[5]],
-        size : 1.0,
-        color : [255,0,255,255],
-        depthTest : false,
-        //depthTest : true,
-        //depthOffset : [-0.01,0,0],
-        screenSpace : false, //switch to physical space
-        blend : false
-        }, renderer);
-
-    drawLineString({
-        points : [points[2], points[6]],
-        size : 1.0,
-        color : [255,0,255,255],
-        depthTest : false,
-        //depthTest : true,
-        //depthOffset : [-0.01,0,0],
-        screenSpace : false, //switch to physical space
-        blend : false
-        }, renderer);
-
-    drawLineString({
-        points : [points[3], points[7]],
-        size : 1.0,
-        color : [255,0,255,255],
-        depthTest : false,
-        //depthTest : true,
-        //depthOffset : [-0.01,0,0],
-        screenSpace : false, //switch to physical space
-        blend : false
-        }, renderer);
-
-    var pos = node.volume.center;
-    var cameraPos =this.renderer.cameraPosition;
-    var pos = this.renderer.core.getRendererInterface().getCanvasCoords(
-        [pos[0] - cameraPos[0],
-         pos[1] - cameraPos[1],
-         pos[2] - cameraPos[2]],
-         this.renderer.camera.getMvpMatrix());
-
-    var factor = 2;
-
-    var res = this.getNodeTexelSize(node, 1.0);
-
-    var text = '' + node.precision.toFixed(2) + ' ' + (node.precision * res[0]).toFixed(2) + ' ' + res[1].toFixed(2);
-//    this.renderer.draw.drawText(Math.round(pos[0]-this.renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-4*factor), 4*factor, text, [1,0,0,1], pos[2]);
-
-    
-    for (var i = 0, li = node.nodes.length; i < li; i++) {
-        this.drawNodeVolume(node.nodes[i]);
+    if (!visible && !renderer.camera.pointsVisible(points, cameraPos)) {
+        return;        
     }
+
+    var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * (1/18) /*node.precision * 100*/);
+
+    if (this.loadMode == 0) { // topdown
+
+        if (!node.nodes.length || res[0] <= 1.1) {
+
+            if (node.parent || this.isNodeReady(node)) { 
+                this.drawNode(node);
+            }
+
+        } else {
+
+            //are nodes ready
+            var ready = true;
+            var nodes = node.nodes;
+            var visible = [];
+
+            for (var i = 0, li = nodes.length; i < li; i++) {
+                //visible[i] = renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos);
+
+                //if (visible[i]) {
+                    if (!this.isNodeReady(nodes[i])) {
+                        ready = false;
+                    }
+                //}
+            }
+
+
+            if (ready) {
+                for (var i = 0, li = nodes.length; i < li; i++) {
+                    //if (visible[i]) {
+                        //this.traverseNode(nodes[i], true, true);
+                        this.traverseNode(nodes[i]);
+                    //}
+                }
+            } else { // children are not ready, draw parent as fallback
+
+                //if (this.isNodeReady(node)) {
+                    this.drawNode(node);
+                //}
+
+            }
+
+        }
+
+    } else if (this.loadMode == 1) { // fit
+
+        if (!node.nodes.length || res[0] <= 1.1) {
+
+            if (isready || this.isNodeReady(node)) {
+                this.drawNode(node);
+            } else { //node is not ready, try childen
+
+                var nodes = node.nodes;
+
+                for (var i = 0, li = nodes.length; i < li; i++) {
+                    if (renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos)) {
+                        if (this.isNodeReady(nodes[i], true)) {
+                            this.drawNode(node);
+                        }
+                    }
+                }
+
+            }
+
+        } 
+
+        else if (res[0] <= 2.2) {
+
+            //are nodes ready
+            var ready = true;
+            var nodes = node.nodes;
+            var visible = [];
+
+            for (var i = 0, li = nodes.length; i < li; i++) {
+                visible[i] = renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos);
+
+                if (visible[i]) {
+                    if (!this.isNodeReady(nodes[i])) {
+                        ready = false;
+                    }
+                }
+            }
+
+            if (ready) {
+                for (var i = 0, li = nodes.length; i < li; i++) {
+                    if (visible[i]) {
+                        this.traverseNode(nodes[i], true, true);
+                    }
+                }
+            } else { // children are not ready, draw parent as fallback
+
+                //if (this.isNodeReady(node)) {
+                    this.drawNode(node);
+                //}
+
+            }
+
+        } else {
+
+            for (var i = 0, li = node.nodes.length; i < li; i++) {
+                this.traverseNode(node.nodes[i]);
+            }
+        }
+
+    } else if (this.loadMode == 2) { // fitonly
+
+        if (!node.nodes.length || res[0] <= 1.1) {
+
+            if (this.isNodeReady(node)) {
+                this.drawNode(node);
+            }
+
+        } else {
+            for (var i = 0, li = node.nodes.length; i < li; i++) {
+                this.traverseNode(node.nodes[i]);
+            }
+        }
+    }
+
 };
 
 
-GpuGroup.prototype.isMeshReady = function(job) {
-    var mesh = job.mesh;
-    var submeshes = mesh.submeshes;
-    var hit = false;
+GpuGroup.prototype.isNodeReady = function(node, doNotLoad) {
+    var jobs = node.jobs;
+    var ready = true;
 
-    for (var i = 0, li = submeshes.length; i < li; i++) {
-        var submesh = submeshes[i];
+    for (var i = 0, li = jobs.length; i < li; i++) {
+        var job = jobs[i];
         
-        if (submesh.internalUVs && job.texturePath) {
-
-            if (job.textures[i] == null) {
-                path = job.texturePath + i + '.jpg';
-                job.textures[i] = job.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, tile, true);
-            } 
+        if (job.type == VTS_JOB_MESH) {
+            if (!this.isMeshReady(job, doNotLoad)) {
+                ready = false;
+            }
         }
     }
+
+    return ready;
+};
+
+
+GpuGroup.prototype.drawNode = function(node) {
+    var renderer = this.renderer;
+    var debug = renderer.core.map.draw.debug;
+    var jobs = node.jobs;
+
+    renderer.drawnNodes++;
+
+    if (debug.drawNBBoxes) {
+        var points = node.volume.points;
+
+        drawLineString({
+            points : [points[0], points[1], points[2], points[3], points[0],
+                      points[4], points[5], points[6], points[7], points[4]
+            ],
+            size : 1.0,
+            color : [255,0,255,255],
+            depthTest : false,
+            //depthTest : true,
+            //depthOffset : [-0.01,0,0],
+            screenSpace : false, //switch to physical space
+            blend : false
+            }, renderer);
+
+        drawLineString({
+            points : [points[1], points[5]],
+            size : 1.0,
+            color : [255,0,255,255],
+            depthTest : false,
+            //depthTest : true,
+            //depthOffset : [-0.01,0,0],
+            screenSpace : false, //switch to physical space
+            blend : false
+            }, renderer);
+
+        drawLineString({
+            points : [points[2], points[6]],
+            size : 1.0,
+            color : [255,0,255,255],
+            depthTest : false,
+            //depthTest : true,
+            //depthOffset : [-0.01,0,0],
+            screenSpace : false, //switch to physical space
+            blend : false
+            }, renderer);
+
+        drawLineString({
+            points : [points[3], points[7]],
+            size : 1.0,
+            color : [255,0,255,255],
+            depthTest : false,
+            //depthTest : true,
+            //depthOffset : [-0.01,0,0],
+            screenSpace : false, //switch to physical space
+            blend : false
+            }, renderer);
+
+        var cameraPos = this.renderer.cameraPosition;
+        var pos = node.volume.center;
+        var pos = this.renderer.core.getRendererInterface().getCanvasCoords(
+            [pos[0] - cameraPos[0],
+             pos[1] - cameraPos[1],
+             pos[2] - cameraPos[2]],
+             this.renderer.camera.getMvpMatrix());
+
+        var factor = 2, text;
+
+        if (debug.drawLods) {
+            text = '' + this.getNodeLOD(node);
+            renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-4*factor), 4*factor, text, [1,0,0,1], pos[2]);
+        }
+        
+        if (debug.drawDistance) {
+            var res = this.getNodeTexelSize(node, /*renderer.curSize[0] * 0.5 */ node.precision * 100);
+            text = '' + res[1].toFixed(2) + ' ' + res[0].toFixed(2) + ' ' + node.precision.toFixed(2);
+            renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+17*factor), 4*factor, text, [0.5,0.5,1,1], pos[2]);
+        }
+
+        if (debug.drawFaceCount) {
+            var mesh = (jobs[0] && jobs[0].type == VTS_JOB_MESH) ? jobs[0].mesh : null;
+            if (mesh) {
+                text = '' + mesh.faces + ' - ' + mesh.submeshes.length;
+                renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
+            }
+        }
+
+        if (debug.drawTextureSize) {
+            var mesh = (jobs[0] && jobs[0].type == VTS_JOB_MESH) ? jobs[0].mesh : null;
+            if (mesh) {
+                var submeshes = mesh.submeshes;
+                for (i = 0, li = submeshes.length; i < li; i++) {
+
+                    if (submeshes[i].internalUVs) {
+                        var texture = jobs[0].textures[i];
+                        if (texture) {
+                            var gpuTexture = texture.getGpuTexture();
+                            if (gpuTexture) {
+                                text = '[' + i + ']: ' + gpuTexture.width + ' x ' + gpuTexture.height;
+                                renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*4*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
+                            }
+                        }
+                    } else {
+                        text = '[' + i + ']: 256 x 256';
+                        renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*4*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
+                    }
+                }
+            }
+        }
+    }
+
+    for (var i = 0, li = jobs.length; i < li; i++) {
+        var job = jobs[i];
+        
+        if (job.type == VTS_JOB_MESH) {
+
+            //if (this.isMeshReady(job)) {
+                this.drawMesh(job);
+            //}
+        }
+    }
+
+};
+
+
+GpuGroup.prototype.isMeshReady = function(job, doNotLoad) {
+    var mesh = job.mesh;
+    var submeshes = mesh.submeshes;
+    var ready = true;
+    var stats = this.renderer.core.map.stats;
+
+    if (mesh.isReady(doNotLoad)) {
+        stats.gpuNeeded += mesh.gpuSize;
+
+        for (var i = 0, li = submeshes.length; i < li; i++) {
+            var submesh = submeshes[i];
+            
+            if (submesh.internalUVs && job.texturePath) {
+                if (job.textures[i] == null) {
+                    var path = job.texturePath + '-' + i + '.jpg';
+                    job.textures[i] = job.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, null /*tile*/, true);
+                } 
+
+                if (!job.textures[i].isReady(doNotLoad)) {
+                    ready = false;
+                }
+
+                stats.gpuNeeded += job.textures[i].getGpuSize();
+            }
+        }
+
+    } else {
+        ready = false;
+    }
+
+    return ready;
 }
 
 GpuGroup.prototype.drawMesh = function(job) {
     var mesh = job.mesh;
     var submeshes = mesh.submeshes;
+    var cameraPos = this.renderer.cameraPosition;
 
     for (var i = 0, li = submeshes.length; i < li; i++) {
         var submesh = submeshes[i];
         
         if (job.textures[i]) {
-            mesh.drawSubmesh(cameraPos, i, job.textures[i], type, alpha, layer, surface);
+            mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/);
         }
     }
 }
@@ -1221,9 +1453,19 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     var renderer = this.renderer;
     var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
 
-    if (this.rootNode) {
-        this.drawNodeVolume(this.rootNode, map);
 
+    if (this.rootNode) {
+        renderer.drawnNodes = 0;
+
+        var mode = renderer.core.map.config.mapLoadMode; 
+
+        switch(mode) {
+        case 'topdown': this.loadMode = 0; break;
+        case 'fit':     this.loadMode = 1; break; 
+        case 'fitonly': this.loadMode = 2; break;
+        }
+
+        this.traverseNode(this.rootNode, map);
         return;
     }
 

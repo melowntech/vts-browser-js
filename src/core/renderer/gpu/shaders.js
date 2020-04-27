@@ -1172,9 +1172,17 @@ GpuShaders.tileVertexShader =
 
     '#endif\n'+
 
+    '#ifdef clip4\n'+
+        '#ifndef externalTex\n'+
+            'attribute vec2 aTexCoord2;\n'+
+        '#endif\n'+
+
+        'varying vec2 vClipCoord;\n'+  
+    '#endif\n'+
+
     '#ifdef depth\n'+
         'varying float vDepth;\n'+
-    '#endif\n'+
+    '#endif\n'+    
 
     '#ifdef flatShadeVar\n'+
         ///'attribute vec3 aBarycentric;\n'+
@@ -1235,9 +1243,18 @@ GpuShaders.tileVertexShader =
             '#endif\n'+
 
         '#endif\n'+
+
+        '#ifdef clip4\n'+
+            'vClipCoord.xy = aTexCoord2.xy;\n'+  
+        '#endif\n'+
     '}';
 
 GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
+
+    '#ifdef clip4\n'+
+        'uniform float uClip[4];\n'+
+        'varying vec2 vClipCoord;\n'+
+    '#endif\n'+
 
     '#ifdef onlyFog\n'+
         'varying float vFogFactor;\n'+
@@ -1267,6 +1284,22 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
 
     'uniform vec4 uParams2;\n'+        
     'void main() {\n'+
+
+        '#ifdef clip4\n'+
+            'if (vClipCoord.y > 0.5){\n'+
+                'if (vClipCoord.x > 0.5){\n'+
+                    'if (uClip[3] == 0.0) discard;\n'+
+                '} else {\n'+
+                    'if (uClip[2] == 0.0) discard;\n'+
+                '}\n'+
+            '} else {\n'+
+                'if (vClipCoord.x > 0.5){\n'+
+                    'if (uClip[1] == 0.0) discard;\n'+
+                '} else {\n'+
+                    'if (uClip[0] == 0.0) discard;\n'+
+                '}\n'+
+            '}\n'+
+        '#endif\n'+
 
         '#ifdef flatShadeVar\n'+
 

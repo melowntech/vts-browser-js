@@ -108,8 +108,9 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 67:
                 case 99:
-                    map.config.mapDegradeHorizon = !map.config.mapDegradeHorizon;
+                        inspector.shakeCamera = !inspector.shakeCamera;
 
+                        //map.config.mapDegradeHorizon = !map.config.mapDegradeHorizon;
                         //this.measureMode = !this.measureMode;
                         //this.measurePoints = [];
                         //var pos = this.core.hitTest(this.mouseX, this.mouseY, "all");
@@ -263,7 +264,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 78:
                 case 110:
-                    inspector.shakeCamera = !inspector.shakeCamera; break; //key N pressed
+                    debug.drawNBBoxes = !debug.drawNBBoxes; break; //key N pressed
 
                 default:
                     blockHit = false;
@@ -320,7 +321,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             }
         }
 
-        if (this.diagnosticMode && debug.drawBBoxes && !this.shiftDown && !press) {
+        if (this.diagnosticMode && (debug.drawBBoxes || debug.drawNBBoxes) && !this.shiftDown && !press) {
             blockHit = true;
 
             switch(keyCode) {
@@ -435,6 +436,8 @@ InspectorInput.prototype.setParameter = function(key, value) {
     switch(key) {
         case 'debugBBox':
             debug.drawBBoxes = true;
+        case 'debugNBBox':
+            if (key == 'debugNBBox') debug.drawNBBoxes = true;
             var has = (function(a){ return (value.indexOf(a)!=-1); });
             if (has('L')) debug.drawLods = true;
             if (has('P')) debug.drawPositions = true;
