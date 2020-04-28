@@ -378,6 +378,16 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
 };
 
 
+MapMesh.prototype.generateTileShader = function (progs, v, useSuperElevation, splitMask) {
+    var str = '';
+    if (splitMask) str += '#define clip4\n';
+    if (useSuperElevation) str += '#define applySE\n';
+    var prog = (new GpuProgram(this.map.renderer.gpu, progs[0].vertex.replace('#define variants\n', str), progs[0].fragment.replace('#define variants\n', str)));
+    progs[v] = prog;
+    return prog;
+};
+
+
 MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer, surface, splitMask) {
     if (this.gpuSubmeshes[index] == null && this.submeshes[index] != null && !this.submeshes[index].killed) {
         this.gpuSubmeshes[index] = this.submeshes[index].buildGpuMesh();
@@ -401,6 +411,16 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var useSuperElevation = renderer.useSuperElevation;
     //var attributes = (drawWireframe != 0) ?  ['aPosition', 'aBarycentric'] : ['aPosition'];
     var attributes = ['aPosition'];
+    var v = (useSuperElevation) ? VTS_TILE_SHADER_SE : 0;
+
+    if (splitMask) {
+        v |= VTS_TILE_SHADER_CLIP4;
+
+        if (type != VTS_MATERIAL_EXTERNAL && type != VTS_MATERIAL_INTERNAL_NOFOG) {
+            texcoords2Attr = 'aTexCoord2';  
+            attributes.push('aTexCoord2');
+        }
+    }
 
     if (texture && draw.debug.meshStats) {
         if (!submesh.uvAreaComputed) {
@@ -412,8 +432,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     }
 
     if (type == VTS_MATERIAL_DEPTH) {
-        program = useSuperElevation ? renderer.progDepthTileSE : renderer.progDepthTile;
-        //texcoordsAttr = "aTexCoord";
+        program = renderer.progDepthTile[v];
+
+        if (!program) {
+            program = this.generateTileShader(renderer.progDepthTile, v, useSuperElevation, splitMask);
+        }
+
     } else if (type == VTS_MATERIAL_FLAT) {
         program = renderer.progFlatShadeTile;
     } else {
@@ -422,7 +446,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         }
 
         if (drawWireframe == 1 || drawWireframe == 3) {
-            program = useSuperElevation ? renderer.progFlatShadeTileSE : renderer.progFlatShadeTile;
+            program = renderer.progFlatShadeTile[v];
+
+            if (!program) {
+                program = this.generateTileShader(renderer.progFlatShadeTile, v, useSuperElevation, splitMask);
+            }
+
         } else {
             switch(type) {
             case VTS_MATERIAL_INTERNAL:
@@ -431,12 +460,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                 texcoordsAttr = 'aTexCoord';
                 attributes.push('aTexCoord');
 
-                if (splitMask) {
-                    program = useSuperElevation ? renderer.progTileSEC4 : renderer.progTileC4;
-                    texcoords2Attr = 'aTexCoord2';  
-                    attributes.push('aTexCoord2');
-                } else {
-                    program = useSuperElevation ? renderer.progTileSE : renderer.progTile;
+                program = renderer.progTile[v];
+
+                if (!program) {
+                    program = this.generateTileShader(renderer.progTile, v, useSuperElevation, splitMask);
                 }
 
                 break;
@@ -444,25 +471,21 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             case VTS_MATERIAL_EXTERNAL:
             case VTS_MATERIAL_EXTERNAL_NOFOG:
 
-                if (splitMask) {
-                    program = useSuperElevation ? renderer.progTile2SEC4 : renderer.progTile2C4;
-
-                    if (texture) {
-                        gpuMask = texture.getGpuMaskTexture();
-                        if (gpuMask) {
-                            program = useSuperElevation ? renderer.progTile3SEC4 : renderer.progTile3C4;
-                        }
-                    }
-                } else {
-                    program = useSuperElevation ? renderer.progTile2SE : renderer.progTile2;
-                        
-                    if (texture) {
-                        gpuMask = texture.getGpuMaskTexture();
-                        if (gpuMask) {
-                            program = useSuperElevation ? renderer.progTile3SE : renderer.progTile3;
-                        }
+                var prog = renderer.progTile2;
+                    
+                if (texture) {
+                    gpuMask = texture.getGpuMaskTexture();
+                    if (gpuMask) {
+                        prog = renderer.progTile3;
                     }
                 }
+
+                program = prog[v];
+
+                if (!program) {
+                    program = this.generateTileShader(prog, v, useSuperElevation, splitMask);
+                }
+
                 
                 if (layer && (layer.shaderFilters || layer.shaderFilter)) {
                     var filter, id, flatShade;
@@ -500,18 +523,18 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                         program = renderer.progMap[id];
 
                         if (!program) {
-                            var gpu = renderer.gpu, pixelShader;
-                            var vertexShader = '#define externalTex\n' + ((useSuperElevation) ? '#define applySE\n' : '') + GpuShaders.tileVertexShader;
+                            var gpu = renderer.gpu, pixelShader, variations = ((splipMask) ? '#define clip4\n' : '');
+                            var vertexShader = '#define externalTex\n' + variations + ((useSuperElevation) ? '#define applySE\n' : '') + GpuShaders.tileVertexShader;
 
                             if (gpuMask) {
-                                pixelShader = '#define externalTex\n#define mask\n' + GpuShaders.tileFragmentShader;
+                                pixelShader = '#define externalTex\n#define mask\n' + variations + GpuShaders.tileFragmentShader;
                             } else {
-                                pixelShader = '#define externalTex\n' + GpuShaders.tileFragmentShader;
+                                pixelShader = '#define externalTex\n' + variations + GpuShaders.tileFragmentShader;
                             }
 
                             if (flatShade) {
-                                pixelShader =  '#extension GL_OES_standard_derivatives : enable\n#define flatShadeVar\n' + pixelShader;
-                                vertexShader = '#define flatShadeVar\n' + vertexShader;
+                                pixelShader =  '#extension GL_OES_standard_derivatives : enable\n#define flatShadeVar\n' + variations + pixelShader;
+                                vertexShader = '#define flatShadeVar\n' + variations + vertexShader;
 
                                 //if (this.map.mobile) {
                                     //pixelShader = '#define flatShadeVarFallback\n' + pixelShader;
@@ -530,7 +553,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                 break;
     
             case VTS_MATERIAL_FOG:
-                program = renderer.progFogTile;
+                program = renderer.progFogTile[v];
+
+                if (!program) {
+                    program = this.generateTileShader(renderer.progFogTile, v, useSuperElevation, splitMask);
+                }
+
                 break;
             }
         }
@@ -612,6 +640,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         program.setMat4('uProj', proj);
     }
 
+    if (splitMask /*&& type != VTS_MATERIAL_FLAT*/) {
+        program.setFloatArray('uClip', splitMask);
+    }
+
     if (drawWireframe == 0) {
         var cv = this.map.camera.vector2, c = draw.atmoColor, t, bmin = submesh.bbox.min, bmax = submesh.bbox.max;
 
@@ -629,10 +661,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
             v[0] = c[0], v[1] = c[1], v[2] = c[2];
             program.setVec4('uParams2', v);
-
-            if (splitMask) {
-                program.setFloatArray('uClip', splitMask);
-            }
 
             break;
 
@@ -652,10 +680,6 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
             v[0] = c[0], v[1] = c[1], v[2] = c[2]; v[3] = (type == VTS_MATERIAL_EXTERNAL) ? 1 : alpha;
             program.setVec4('uParams2', v);
 
-            if (splitMask) {
-                program.setFloatArray('uClip', splitMask);
-            }
-
             break;
         }
     }
@@ -669,8 +693,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
 
     if (drawWireframe == 1 || drawWireframe == 2) { //very slow debug only
+        program = renderer.progWireFrameBasic[v];
 
-        program = useSuperElevation ? renderer.progWireFrameBasicSE : renderer.progWireFrameBasic;
+        if (!program) {
+            program = this.generateTileShader(renderer.progWireFrameBasic, v, useSuperElevation, splitMask);
+        }
+
         renderer.gpu.useProgram(program, attributes, gpuMask);
 
         if (useSuperElevation) {
@@ -681,6 +709,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         program.setVec4('uColor', [0,0,0,1]);
 
         program.setMat4('uProj', proj, renderer.getZoffsetFactor([-0.001,0,0]));
+
+        if (splitMask) {
+            program.setFloatArray('uClip', splitMask);
+        }
 
         var gl = gpuSubmesh.gl;
 

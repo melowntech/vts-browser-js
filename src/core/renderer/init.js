@@ -46,37 +46,26 @@ RendererInit.prototype.initShaders = function() {
     var renderer = this.renderer;
     var gpu = this.gpu;
 
-    renderer.progTile = new GpuProgram(gpu, shaders.tileVertexShader, shaders.tileFragmentShader);
-    renderer.progTileC4 = new GpuProgram(gpu, '#define clip4\n' + shaders.tileVertexShader, '#define clip4\n' + shaders.tileFragmentShader);
+    renderer.progTile = [new GpuProgram(gpu, '#define variants\n' +shaders.tileVertexShader, '#define variants\n' + shaders.tileFragmentShader)];
+    renderer.progTile2 = [new GpuProgram(gpu, '#define variants\n#define externalTex\n' + shaders.tileVertexShader, '#define variants\n#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''))];
+    renderer.progTile3 = [new GpuProgram(gpu, '#define variants\n#define externalTex\n' + shaders.tileVertexShader, '#define variants\n#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''))];
 
-    renderer.progTile2 = new GpuProgram(gpu, '#define externalTex\n' + shaders.tileVertexShader, '#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
-    renderer.progTile2C4 = new GpuProgram(gpu, '#define clip4\n#define externalTex\n' + shaders.tileVertexShader, '#define clip4\n#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
-
-    renderer.progTile3 = new GpuProgram(gpu, '#define externalTex\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
-    renderer.progTile3C4 = new GpuProgram(gpu, '#define clip4\n#define externalTex\n' + shaders.tileVertexShader, '#define clip4\n#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
-
-    renderer.progFogTile = new GpuProgram(gpu, '#define onlyFog\n' + shaders.tileVertexShader, '#define onlyFog\n' + shaders.tileFragmentShader);
-
-    renderer.progTileSE = new GpuProgram(gpu, '#define applySE\n' + shaders.tileVertexShader, shaders.tileFragmentShader);
-    renderer.progTile2SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
-    renderer.progTile3SE = new GpuProgram(gpu, '#define externalTex\n#define applySE\n' + shaders.tileVertexShader, '#define externalTex\n#define mask\n' + shaders.tileFragmentShader.replace('__FILTER__', ''));
+    renderer.progFogTile = [new GpuProgram(gpu, '#define variants\n#define onlyFog\n' + shaders.tileVertexShader, '#define variants\n#define onlyFog\n' + shaders.tileFragmentShader)];
 
     var sdExt = '#extension GL_OES_standard_derivatives : enable\n';
 
-    renderer.progFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, sdExt+'#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
-    renderer.progFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, sdExt+'#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader);
+    renderer.progFlatShadeTile = [new GpuProgram(gpu, '#define variants\n#define flatShadeVar\n' + shaders.tileVertexShader, sdExt+'#define variants\n#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader)];
+    renderer.progFlatShadeTileSE = [new GpuProgram(gpu, '#define variants\n#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, sdExt+'#define variants\n#define flatShadeVar\n#define flatShade\n' + shaders.tileFragmentShader)];
     renderer.progCFlatShadeTile = new GpuProgram(gpu, '#define flatShadeVar\n' + shaders.tileVertexShader, (sdExt+'#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
     renderer.progCFlatShadeTileSE = new GpuProgram(gpu, '#define applySE\n#define flatShadeVar\n' + shaders.tileVertexShader, (sdExt+'#define flatShadeVar\n#define flatShade\n#define fogAndColor\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
 
-    renderer.progDepthTile = new GpuProgram(gpu, '#define depth\n' + shaders.tileVertexShader, ('#define depth\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
-    renderer.progDepthTileSE = new GpuProgram(gpu, '#define applySE\n#define depth\n' + shaders.tileVertexShader, ('#define depth\n' + shaders.tileFragmentShader).replace('mediump', 'highp'));
+    renderer.progDepthTile = [new GpuProgram(gpu, '#define variants\n#define depth\n' + shaders.tileVertexShader, ('#define variants\n#define depth\n' + shaders.tileFragmentShader).replace('mediump', 'highp'))];
     renderer.progDepthHeightmap = new GpuProgram(gpu, shaders.heightmapDepthVertexShader, (shaders.heightmapDepthFragmentShader).replace('mediump', 'highp'));
+
+    renderer.progWireFrameBasic = [new GpuProgram(gpu, '#define variants\n' + shaders.tileVertexShader, '#define variants\n' + shaders.tileWireFrameBasicShader)];
 
     renderer.progShadedTile = new GpuProgram(gpu, shaders.shadedMeshVertexShader, shaders.shadedMeshFragmentShader);
     renderer.progTShadedTile = new GpuProgram(gpu, shaders.shadedMeshVertexShader, '#define textured\n' + shaders.shadedMeshFragmentShader);
-
-    renderer.progWireFrameBasic = new GpuProgram(gpu, shaders.tileVertexShader, shaders.tileWireFrameBasicShader);
-    renderer.progWireFrameBasicSE = new GpuProgram(gpu, '#define applySE\n' + shaders.tileVertexShader, shaders.tileWireFrameBasicShader);
 
     renderer.progHeightmap = new GpuProgram(gpu, shaders.heightmapVertexShader, shaders.heightmapFragmentShader);
     renderer.progPlane = new GpuProgram(gpu, '#define flat\n' + shaders.planeVertexShader, shaders.planeFragmentShader); //flat
