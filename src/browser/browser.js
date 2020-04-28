@@ -322,6 +322,8 @@ Browser.prototype.initConfig = function() {
         controlLoading : true,
         searchElement : null,
         searchValue : null,
+        walkMode : false,
+        fixedHeight : 0,
         geojson : null,
         tiltConstrainThreshold : [0.5,1],
         bigScreenMargins : false, //75,
@@ -411,6 +413,8 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'timeNormalizedInertia':  this.config.timeNormalizedInertia = utils.validateBool(value, false); break;
     case 'bigScreenMargins':       this.config.bigScreenMargins = utils.validateBool(value, false); break;
     case 'tiltConstrainThreshold': this.config.tiltConstrainThreshold = utils.validateNumberArray(value, 2, [0.5,1], [-Number.MAXINTEGER, -Number.MAXINTEGER], [Number.MAXINTEGER, Number.MAXINTEGER]); break;
+    case 'walkMode':               this.config.walkMode = utils.validateBool(value, false); break;
+    case 'fixedHeight':            this.config.fixedHeight = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, 0); break;
     case 'geodata':                this.config.geodata = value; break;
     case 'geojson':                this.config.geojson = value; break;
     case 'geojsonStyle':           this.config.geojsonStyle =  JSON.parse(value); break;

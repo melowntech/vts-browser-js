@@ -365,6 +365,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 98:
                 debug.drawBoundLayers = !debug.drawBoundLayers; break; //key B pressed
 
+            case 82:
+            case 114:
+                debug.drawResources = !debug.drawResources; break; //key R pressed
+
             case 83:
             case 115:
                 debug.drawSurfaces = !debug.drawSurfaces; break; //key S pressed

@@ -227,7 +227,15 @@ ControlModeMapObserver.prototype.keypress = function() {
 
 
 ControlModeMapObserver.prototype.setPosition = function(pos) {
-    pos = constrainMapPosition(this.browser, pos);
+
+    if (!this.config.walkMode) {
+        pos = constrainMapPosition(this.browser, pos);
+    }
+
+    if (this.config.fixedHeight) {
+        pos.setHeight(this.config.fixedHeight);
+    }
+
     var map = this.browser.getMap();
     map.setPosition(pos);
     //console.log(JSON.stringify(pos));
@@ -268,6 +276,10 @@ ControlModeMapObserver.prototype.getAzimuthAndDistance = function(dx, dy) {
     var pos = map.getPosition();
     var viewExtent = pos.getViewExtent();
     var fov = pos.getFov()*0.5;
+
+    if (this.config.walkMode) {
+        viewExtent += 5;
+    }    
 
     //var sensitivity = 0.5;
     var zoomFactor = (((viewExtent*0.5) * Math.tan(math.radians(fov))) / 800);

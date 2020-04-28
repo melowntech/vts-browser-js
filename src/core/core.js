@@ -74,6 +74,7 @@ var Core = function(element, config, coreInterface) {
         mapPackLoaderEvents : true,
         mapParseMeshInWorker : true,
         mapPackGeodataEvents : true,
+        mapCheckTextureSize : false,
 
         mapFeatureStickMode : [1,1],
 
@@ -582,7 +583,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.22.7';
+    return (full ? 'Core: ' : '') + '2.23.0';
 }
 
 

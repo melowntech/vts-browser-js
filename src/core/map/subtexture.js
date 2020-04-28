@@ -477,6 +477,13 @@ MapSubtexture.prototype.onHeadLoaded = function(downloadAll, data, status) {
 
 
 MapSubtexture.prototype.buildGpuTexture = function () {
+    if (this.map.config.mapCheckTextureSize && (this.image.naturalWidth > 1024 || this.image.naturalHeight > 1024)) {
+        console.log('very large texture: ' + this.image.naturalWidth + 'x' + this.image.naturalHeight + ' ' + this.mapLoaderUrl);
+        this.gpuTexture = this.map.renderer.blackTexture; 
+        this.gpuSize = 0;
+        return;
+    }
+
     this.gpuTexture = new GpuTexture(this.map.renderer.gpu, null, this.map.core);
     this.gpuTexture.createFromImage(this.image, (this.type == VTS_TEXTURETYPE_CLASS) ? 'nearest' : 'linear', false);
     this.gpuSize = this.gpuTexture.getSize();
