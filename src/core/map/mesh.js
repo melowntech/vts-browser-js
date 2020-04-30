@@ -439,7 +439,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         }
 
     } else if (type == VTS_MATERIAL_FLAT) {
-        program = renderer.progFlatShadeTile;
+        program = renderer.progFlatShadeTile[v];
+
+        if (!program) {
+            program = this.generateTileShader(renderer.progFlatShadeTile, v, useSuperElevation, splitMask);
+        }
+
     } else {
         if (drawWireframe > 0 && type == VTS_MATERIAL_FOG) {
             return;

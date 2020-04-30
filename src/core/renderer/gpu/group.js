@@ -1529,6 +1529,20 @@ GpuGroup.prototype.drawMesh = function(job) {
     }
 }
 
+
+GpuGroup.prototype.testNodes = function(node) {
+    var p = node.volume.points;
+
+    
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+
+
+    }
+
+};
+
+
 GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     if (this.id != null) {
         if (this.renderer.layerGroupVisible[this.id] === false) {
@@ -1556,6 +1570,7 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
             this.geNormalized = true;
         }
 
+        this.testNodes(this.rootNode);
 
         //console.clear();
 

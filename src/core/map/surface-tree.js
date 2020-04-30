@@ -576,7 +576,6 @@ MapSurfaceTree.prototype.drawSurfaceWithSpliting = function(shift, storeTilesOnl
                                 var priority = child.id[0] * typeFactor * child.distance;
                                 
                                 if (!tile.surface || !child.metanode.hasGeometry()) {
-                                    readyCount++;
                                     childrenBuffer.push(child);
                                 } else {
                                     //are draw buffers ready? preventRender=true, preventLoad=false, doNotCheckGpu=true

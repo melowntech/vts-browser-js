@@ -1387,7 +1387,7 @@ MapGeodataBuilder.prototype.addPolygon3 = function(shape, holes, middle, heightM
 };
 
 
-MapGeodataBuilder.prototype.addPolygonRAW = function(vertices, surface, borders, middle, heightMode, properties, id, srs, directCopy) {
+MapGeodataBuilder.prototype.addPolygonRAW = function(vertices, surface, borders, middle, heightMode, properties, id, srs, directCopy, transform) {
     if (!this.currentGroup) {
         this.addGroup('some-group');
     }
@@ -1417,10 +1417,13 @@ MapGeodataBuilder.prototype.addPolygonRAW = function(vertices, surface, borders,
     } else {
 
         for (i = 0, li = vertices.length; i < li; i+=3) {
-            coords = [vertices[i], vertices[i+1], vertices[i+2]];
 
             if (directCopy) {
-                featureVertices[j++] = coords;
+                if (transform) {
+                    featureVertices[j++] = [vertices[i]*transform.sx+transform.px, vertices[i+1]*transform.sy+transform.py, vertices[i+2]*transform.sz+transform.pz];
+                } else {
+                    featureVertices[j++] = [vertices[i], vertices[i+1], vertices[i+2]];
+                }
             } else {
                 featureVertices[j++] = this.physSrs.convertCoordsFrom(coords, srs);
             }
@@ -1928,8 +1931,10 @@ MapGeodataBuilder.prototype.makeGeodata = function(resolution) {
 };
 
 
-MapGeodataBuilder.prototype.makeFreeLayer = function(style, resolution) {
-    var geodata = this.makeGeodata(resolution);
+MapGeodataBuilder.prototype.makeFreeLayer = function(style, resolution, geodata) {
+    if (!geodata) {
+        geodata = this.makeGeodata(resolution);
+    }
 
     if (!style) {
         style = {

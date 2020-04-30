@@ -88,6 +88,18 @@ MapGeodataImportVTSGeodata.prototype.processJSON = function(json) {
                 builder.addLineStringArray(newSublines, 'fix', line['properties'], line['id'], null, true);
             }
         }
+
+        var polygonsFeatures = group['polygons'];
+        if (polygonsFeatures) {
+            var transform = { sx: fx, sy:fy, sz:fz, px:bboxMin[0], py:bboxMin[1], pz:bboxMin[2] };
+
+            for (j = 0, lj = polygonsFeatures.length; j < lj; j++) {
+                var polygon = polygonsFeatures[j];
+
+                builder.addPolygonRAW(polygon['vertices'], polygon['surface'], polygon['borders'], polygon['middle'], 'fix', polygon['properties'], polygon['id'], null, true, transform);
+            }
+        }
+
     }
 
 };
