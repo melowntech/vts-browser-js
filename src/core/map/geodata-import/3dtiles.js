@@ -46,7 +46,11 @@ MapGeodataImport3DTiles.prototype.processNode = function(builderNode, node, only
             p[6] = this.physSrs.convertCoordsFrom([max[0], min[1], min[2]], this.srs);
             p[7] = this.physSrs.convertCoordsFrom([min[0], min[1], min[2]], this.srs);
 
-            var center = this.physSrs.convertCoordsFrom([(max[0] + min[0]) * 0.5, (max[1] + min[1]) * 0.5, (max[2] + min[2]) * 0.5], this.srs);
+            //var center = this.physSrs.convertCoordsFrom([(max[0] + min[0]) * 0.5, (max[1] + min[1]) * 0.5, (max[2] + min[2]) * 0.5], this.srs);
+
+            var center = [ (p[0][0]+p[1][0]+p[2][0]+p[3][0]+p[4][0]+p[5][0]+p[6][0]+p[7][0])/8,
+                           (p[0][1]+p[1][1]+p[2][1]+p[3][1]+p[4][1]+p[5][1]+p[6][1]+p[7][1])/8,
+                           (p[0][2]+p[1][2]+p[2][2]+p[3][2]+p[4][2]+p[5][2]+p[6][2]+p[7][2])/8 ];
 
             //var axisX = [p[1][0] - p[0][0], p[1][1] - p[0][1], p[1][2] - p[0][2]];
             //var axisY = [p[2][0] - p[1][0], p[2][1] - p[1][1], p[2][2] - p[1][2]];
@@ -71,7 +75,7 @@ MapGeodataImport3DTiles.prototype.processNode = function(builderNode, node, only
     var precision = node['geometricError'];
 
     if (!onlyChildren) {
-        builderNode = this.builder.addNode(builderNode, volume, precision);
+        builderNode = this.builder.addNode(builderNode, volume, precision, onlyChildren);
     }
 
     var content = node['content'];

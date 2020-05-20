@@ -909,10 +909,8 @@ function drawLineString(options, renderer) {
     var blend = (options['blend'] != null) ? options['blend'] : false;
     var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
     var useState = (options['useState'] != null) ? options['useState'] : false;
-    color[0] *= 1.0/255;
-    color[1] *= 1.0/255;
-    color[2] *= 1.0/255;
-    color[3] *= 1.0/255;
+
+    color = [ color[0] * (1.0/255), color[1] * (1.0/255), color[2] * (1.0/255), color[3] * (1.0/255) ];
 
     renderer.draw.drawLineString(points, screenSpace, size, color, depthOffset, depthTest, blend, writeDepth, useState);
     return this;    
@@ -1130,7 +1128,141 @@ GpuGroup.prototype.normalizeGE = function(node, ge) {
     for (var i = 0, li = node.nodes.length; i < li; i++) {
         this.normalizeGE(node.nodes[i], ge * 0.5);
     }
-}
+};
+
+
+GpuGroup.prototype.getLinePointParametricDist = function(p0, p1, p) {
+
+     var v = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
+     var w = [p[0] - p0[0], p[1] - p0[1], p[2] - p0[2]];
+
+     var c1 = vec3.dot(w,v);
+
+     if (c1 <= 0)
+          return 0;
+
+     var c2 = vec3.dot(v,v);
+     if (c2 <= c1)
+          return 1;
+
+     var b = c1 / c2;
+
+     return b;
+};
+
+
+GpuGroup.prototype.getOctant = function(point, points) {
+    var fx = this.getLinePointParametricDist(points[0], points[1], point);
+    var fy = this.getLinePointParametricDist(points[1], points[2], point);
+    var fz = this.getLinePointParametricDist(points[4], points[0], point);
+
+    if (fz > 0.5) {
+        if (fy > 0.5) {
+            if (fx > 0.5) {
+                return 5;
+            } else {
+                return 4;
+            }
+        } else {
+            if (fx > 0.5) {
+                return 7;
+            } else {
+                return 6;
+            }
+        }
+    } else {
+        if (fy > 0.5) {
+            if (fx > 0.5) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            if (fx > 0.5) {
+                return 3;
+            } else {
+                return 2;
+            }
+        }
+    }
+
+};
+
+GpuGroup.prototype.setDivisionSpace = function(node, points) {
+    node.volume2 = { points: points };
+
+    var center = [0,0,0];
+    
+    for (var i = 0, li = points.length; i < li; i++) {
+        center[0] += points[i][0];
+        center[1] += points[i][1];
+        center[2] += points[i][2];
+    }
+
+    center[0] /= li;
+    center[1] /= li;
+    center[2] /= li;
+
+    var xv = [(points[1][0] - points[0][0])*0.5, (points[1][1] - points[0][1])*0.5, (points[1][2] - points[0][2])*0.5];
+    var yv = [(points[1][0] - points[2][0])*0.5, (points[1][1] - points[2][1])*0.5, (points[1][2] - points[2][2])*0.5];
+    var zv = [(points[0][0] - points[4][0])*0.5, (points[0][1] - points[4][1])*0.5, (points[0][2] - points[4][2])*0.5];
+    var xf, yf, zf;
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+
+        switch(this.getOctant(node.nodes[i].volume.center, points)) {
+            case 0: xf = -1, yf = -1, zf = -1; break;
+            case 1: xf = 0, yf = -1, zf = -1; break;
+            case 2: xf = -1, yf = 0, zf = -1; break;
+            case 3: xf = 0, yf = 0, zf = -1; break;
+            case 4: xf = -1, yf = -1, zf = 0; break;
+            case 5: xf = 0, yf = -1, zf = 0; break;
+            case 6: xf = -1, yf = 0, zf = 0; break;
+            case 7: xf = 0, yf = 0, zf = 0; break;
+        }
+        
+        var p = [center[0] + xv[0] * xf + yv[0] * yf + zv[0] * zf,
+                 center[1] + xv[1] * xf + yv[1] * yf + zv[1] * zf,
+                 center[2] + xv[2] * xf + yv[2] * yf + zv[2] * zf];
+
+        this.setDivisionSpace(node.nodes[i], [
+
+            [p[0],
+             p[1],
+             p[2]],
+
+            [p[0] + xv[0],
+             p[1] + xv[1],
+             p[2] + xv[2]],
+
+            [p[0] + xv[0] + yv[0],
+             p[1] + xv[1] + yv[1],
+             p[2] + xv[2] + yv[2]],
+
+            [p[0] + yv[0],
+             p[1] + yv[1],
+             p[2] + yv[2]],
+
+            [p[0] + zv[0],
+             p[1] + zv[1],
+             p[2] + zv[2]],
+
+            [p[0] + xv[0] + zv[0],
+             p[1] + xv[1] + zv[1],
+             p[2] + xv[2] + zv[2]],
+
+            [p[0] + xv[0] + yv[0] + zv[0],
+             p[1] + xv[1] + yv[1] + zv[1],
+             p[2] + xv[2] + yv[2] + zv[2]],
+
+            [p[0] + yv[0] + zv[0],
+             p[1] + yv[1] + zv[1],
+             p[2] + yv[2] + zv[2]]
+
+        ]);
+
+    }
+};
 
 
 GpuGroup.prototype.traverseNode = function(node, visible, isready) {
@@ -1286,8 +1418,57 @@ GpuGroup.prototype.isNodeReady = function(node, doNotLoad) {
     return ready;
 };
 
+GpuGroup.prototype.drawNodeVolume = function(points, color) {
+    var renderer = this.renderer;
 
-GpuGroup.prototype.drawNode = function(node) {
+    drawLineString({
+        points : [points[0], points[1], points[2], points[3], points[0],
+                  points[4], points[5], points[6], points[7], points[4]
+        ],
+        size : 1.0,
+        color : color,
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[1], points[5]],
+        size : 1.0,
+        color : color,
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[2], points[6]],
+        size : 1.0,
+        color : color,
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[3], points[7]],
+        size : 1.0,
+        color : color,
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+}
+
+GpuGroup.prototype.drawNode = function(node, noSkip) {
     var renderer = this.renderer;
     var debug = renderer.core.map.draw.debug;
     var jobs = node.jobs;
@@ -1296,52 +1477,18 @@ GpuGroup.prototype.drawNode = function(node) {
 
     if (debug.drawNBBoxes) {
         var points = node.volume.points;
+        var color = [255,0,255,255];
 
-        drawLineString({
-            points : [points[0], points[1], points[2], points[3], points[0],
-                      points[4], points[5], points[6], points[7], points[4]
-            ],
-            size : 1.0,
-            color : [255,0,255,255],
-            depthTest : false,
-            //depthTest : true,
-            //depthOffset : [-0.01,0,0],
-            screenSpace : false, //switch to physical space
-            blend : false
-            }, renderer);
+        if (node.tileset) {
+        color = [0,255,0,255];           
+        }
 
-        drawLineString({
-            points : [points[1], points[5]],
-            size : 1.0,
-            color : [255,0,255,255],
-            depthTest : false,
-            //depthTest : true,
-            //depthOffset : [-0.01,0,0],
-            screenSpace : false, //switch to physical space
-            blend : false
-            }, renderer);
+        if (noSkip) {
+            color = [255,255,0,255];
+        }
 
-        drawLineString({
-            points : [points[2], points[6]],
-            size : 1.0,
-            color : [255,0,255,255],
-            depthTest : false,
-            //depthTest : true,
-            //depthOffset : [-0.01,0,0],
-            screenSpace : false, //switch to physical space
-            blend : false
-            }, renderer);
-
-        drawLineString({
-            points : [points[3], points[7]],
-            size : 1.0,
-            color : [255,0,255,255],
-            depthTest : false,
-            //depthTest : true,
-            //depthOffset : [-0.01,0,0],
-            screenSpace : false, //switch to physical space
-            blend : false
-            }, renderer);
+        this.drawNodeVolume(points, color);
+        this.drawNodeVolume(node.volume2.points, [255,0,0,255]);
 
         var cameraPos = this.renderer.cameraPosition;
         var pos = node.volume.center;
@@ -1434,16 +1581,20 @@ GpuGroup.prototype.drawNode = function(node) {
         }
     }
 
-    //return true;
+    //debug.drawNBBoxes = true;
+
+    if (!noSkip) {
+        //return true;
+    }
 
     for (var i = 0, li = jobs.length; i < li; i++) {
         var job = jobs[i];
         
         if (job.type == VTS_JOB_MESH) {
 
-            //if (this.isMeshReady(job)) {
-                this.drawMesh(job);
-            //}
+            if (this.isMeshReady(job)) {
+                this.drawMesh(job, node);
+            }
         }
     }
 
@@ -1515,7 +1666,7 @@ GpuGroup.prototype.getGpuSize = function(job) {
 }
 
 
-GpuGroup.prototype.drawMesh = function(job) {
+GpuGroup.prototype.drawMesh = function(job ,node) {
     var mesh = job.mesh;
     var submeshes = mesh.submeshes;
     var cameraPos = this.renderer.cameraPosition;
@@ -1524,7 +1675,8 @@ GpuGroup.prototype.drawMesh = function(job) {
         var submesh = submeshes[i];
         
         if (job.textures[i]) {
-            mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  null /*splitMask*/);
+            //mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  null /*splitMask*/);
+            mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  [0,1,2,3,0,5,6,7], node.volume2.points);
         }
     }
 }
@@ -1533,13 +1685,73 @@ GpuGroup.prototype.drawMesh = function(job) {
 GpuGroup.prototype.testNodes = function(node) {
     var p = node.volume.points;
 
-    
+    var xa1 = p[7], xa2 = p[6];
+    var ya1 = p[7], ya2 = p[0];
+    var za1 = p[7], za2 = p[4];
+
+    p = p[7];
+
+    var getAxisPos = (function(pp, a1, a2){
+        var v = [a2[0] - a1[0], a2[1] - a1[1], a2[2] - a1[2] ];
+        var w = [pp[0] - a1[0], pp[1] - a1[1], pp[2] - a1[2] ];
+
+        var c1 = vec3.dot(w,v);
+        if (c1 <= 0) return 0;
+
+        var c2 = vec3.dot(v,v);
+        if (c2 <= c1) return 1;
+
+        return c1 / c2;
+    });
+
+    var getPos = (function(pp){
+        console.log('axis-x ' + getAxisPos(pp, xa1, xa2));
+        console.log('axis-y ' + getAxisPos(pp, ya1, ya2));
+        console.log('axis-z ' + getAxisPos(pp, za1, za2));
+    });
 
     for (var i = 0, li = node.nodes.length; i < li; i++) {
+        console.log('node' + i);
 
+        var volume = node.nodes[i].volume;
 
+        getPos(volume.center);
     }
 
+};
+
+
+GpuGroup.prototype.testNodes3 = function(node) {
+    this.drawNode(node);
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+        var node2 = node.nodes[i];
+
+        this.drawNode(node2);
+
+        for (var j = 0, lj = node2.nodes.length; j < lj; j++) {
+            var node3 = node2.nodes[j];
+
+            this.drawNode(node3);
+
+            for (var k = 0, lk = node3.nodes.length; k < lk; k++) {
+                this.drawNode(node3.nodes[k], k == 0);
+            }
+
+        }
+    }
+};
+
+
+GpuGroup.prototype.testNodes2 = function(node, depth) {
+    
+    if (depth == 0)
+        this.drawNode(node);
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+        var node2 = node.nodes[i];
+        this.testNodes2(node2, depth + 1)
+    }
 };
 
 
@@ -1567,10 +1779,27 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
         if (!this.geNormalized) {
             this.normalizeGE(this.rootNode, this.rootNode.precision);
+
+            this.setDivisionSpace(this.rootNode, [
+
+                [3916942.895357,295576.434754,5008527.852128],
+                [3916913.428049,295966.639412,5008527.852128],
+                [3917221.246882,295989.885143,5008287.362628],
+                [3917250.714190,295599.680484,5008287.362628],
+
+                [3916703.088682,295558.325137,5008219.156812],
+                [3916673.621374,295948.529795,5008219.156812],
+                [3916981.440208,295971.775525,5007978.667312],
+                [3917010.907515,295581.570867,5007978.667312],
+
+                ]);
+
+
             this.geNormalized = true;
         }
 
-        this.testNodes(this.rootNode);
+        //this.testNodes(this.rootNode);
+        //this.testNodes2(this.rootNode, 0);
 
         //console.clear();
 

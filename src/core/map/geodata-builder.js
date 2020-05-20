@@ -112,11 +112,12 @@ MapGeodataBuilder.prototype.addGroup = function(id) {
 };
 
 
-MapGeodataBuilder.prototype.addNode = function(parentNode, volume, precision) {
+MapGeodataBuilder.prototype.addNode = function(parentNode, volume, precision, tileset) {
     var node = {
         meshes: [],
         precision : precision,
         volume : volume,
+        tileset: tileset ? true : false,
         nodes : []
     };
 

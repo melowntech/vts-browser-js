@@ -1180,6 +1180,26 @@ GpuShaders.tileVertexShader =
         'varying vec2 vClipCoord;\n'+  
     '#endif\n'+
 
+    '#ifdef clip8\n'+
+        '#ifndef externalTex\n'+
+            'attribute vec2 aTexCoord2;\n'+
+        '#endif\n'+
+
+        'varying vec3 vClipCoord;\n'+  
+
+        'uniform mat4 uParamsC8;\n'+  //c,x,y,z
+
+        'float getLinePointParametricDist(vec3 c, vec3 v, vec3 p) {\n'+
+            'vec3 w = p - c;\n'+
+            'float c1 = dot(w,v);\n'+
+            'if (c1 <= 0.0) return 0.0;\n'+
+            'float c2 = dot(v,v);\n'+
+            'if (c2 <= c1) return 1.0;\n'+
+            'return c1 / c2;\n'+
+        '}\n'+    
+
+    '#endif\n'+
+
     '#ifdef depth\n'+
         'varying float vDepth;\n'+
     '#endif\n'+    
@@ -1247,6 +1267,19 @@ GpuShaders.tileVertexShader =
         '#ifdef clip4\n'+
             'vClipCoord.xy = aTexCoord2.xy;\n'+  
         '#endif\n'+
+
+        '#ifdef clip8\n'+
+            //'vClipCoord.x = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[1][0],uParamsC8[1][1],uParamsC8[1][2]), camSpacePos.xyz);\n'+  
+            //'vClipCoord.y = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[2][0],uParamsC8[2][1],uParamsC8[2][2]), camSpacePos.xyz);\n'+  
+            //'vClipCoord.z = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[3][0],uParamsC8[3][1],uParamsC8[3][2]), camSpacePos.xyz);\n'+  
+
+            'vec3 worldPos2 = vec3(aPosition.x * uParams[0][2] + uParamsC8[0][3], aPosition.y * uParams[0][3] + uParamsC8[1][3], aPosition.z * uParams[3][0] + uParamsC8[2][3]);\n'+
+
+            'vClipCoord.x = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[1][0],uParamsC8[1][1],uParamsC8[1][2]), worldPos2.xyz);\n'+  
+            'vClipCoord.y = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[2][0],uParamsC8[2][1],uParamsC8[2][2]), worldPos2.xyz);\n'+  
+            'vClipCoord.z = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[3][0],uParamsC8[3][1],uParamsC8[3][2]), worldPos2.xyz);\n'+  
+            //'vClipCoord.xyz = vec3(0.0, 0.0, 1.0);\n'+  
+        '#endif\n'+
     '}';
 
 GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
@@ -1255,6 +1288,12 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
         'uniform float uClip[4];\n'+
         'varying vec2 vClipCoord;\n'+
     '#endif\n'+
+
+    '#ifdef clip8\n'+
+        'uniform float uClip[8];\n'+
+        'varying vec3 vClipCoord;\n'+
+    '#endif\n'+
+
 
     '#ifdef onlyFog\n'+
         'varying float vFogFactor;\n'+
@@ -1297,6 +1336,38 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
                     'if (uClip[1] == 0.0) discard;\n'+
                 '} else {\n'+
                     'if (uClip[0] == 0.0) discard;\n'+
+                '}\n'+
+            '}\n'+
+        '#endif\n'+
+
+        '#ifdef clip8\n'+
+            'if (vClipCoord.z > 0.5){\n'+
+                'if (vClipCoord.y > 0.5){\n'+
+                    'if (vClipCoord.x > 0.5){\n'+
+                        'if (uClip[5] == 0.0) discard;\n'+
+                    '} else {\n'+
+                        'if (uClip[4] == 0.0) discard;\n'+
+                    '}\n'+
+                '} else {\n'+
+                    'if (vClipCoord.x > 0.5){\n'+
+                        'if (uClip[7] == 0.0) discard;\n'+
+                    '} else {\n'+
+                        'if (uClip[6] == 0.0) discard;\n'+
+                    '}\n'+
+                '}\n'+
+            '} else {\n'+
+                'if (vClipCoord.y > 0.5){\n'+
+                    'if (vClipCoord.x > 0.5){\n'+
+                        'if (uClip[1] == 0.0) discard;\n'+
+                    '} else {\n'+
+                        'if (uClip[0] == 0.0) discard;\n'+
+                    '}\n'+
+                '} else {\n'+
+                    'if (vClipCoord.x > 0.5){\n'+
+                        'if (uClip[3] == 0.0) discard;\n'+
+                    '} else {\n'+
+                        'if (uClip[2] == 0.0) discard;\n'+
+                    '}\n'+
                 '}\n'+
             '}\n'+
         '#endif\n'+
@@ -1358,6 +1429,10 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
 
             '#endif\n'+
 
+        '#endif\n'+
+
+        '#ifdef clip8\n'+
+            'gl_FragColor = vec4(vClipCoord.x, vClipCoord.y, vClipCoord.z, 1.0);\n'+
         '#endif\n'+
     '}';
 

@@ -380,7 +380,7 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
 
 MapMesh.prototype.generateTileShader = function (progs, v, useSuperElevation, splitMask) {
     var str = '';
-    if (splitMask) str += '#define clip4\n';
+    if (splitMask) { if (splitMask.length == 4) str += '#define clip4\n'; else str += '#define clip8\n'; } 
     if (useSuperElevation) str += '#define applySE\n';
     var prog = (new GpuProgram(this.map.renderer.gpu, progs[0].vertex.replace('#define variants\n', str), progs[0].fragment.replace('#define variants\n', str)));
     progs[v] = prog;
@@ -388,7 +388,7 @@ MapMesh.prototype.generateTileShader = function (progs, v, useSuperElevation, sp
 };
 
 
-MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer, surface, splitMask) {
+MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha, layer, surface, splitMask, splitSpace) {
     if (this.gpuSubmeshes[index] == null && this.submeshes[index] != null && !this.submeshes[index].killed) {
         this.gpuSubmeshes[index] = this.submeshes[index].buildGpuMesh();
     }
@@ -647,6 +647,33 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
     if (splitMask /*&& type != VTS_MATERIAL_FLAT*/) {
         program.setFloatArray('uClip', splitMask);
+
+        //var fx = this.getLinePointParametricDist(points[0], points[1], point);
+        //var fy = this.getLinePointParametricDist(points[1], points[2], point);
+        //var fz = this.getLinePointParametricDist(points[4], points[0], point);
+
+        var p = this.map.camera.position;
+        var s = splitSpace;
+        //var c = [s[0][0] - p[0], s[0][1] - p[1], s[0][2] - p[2]];
+        //var px = [s[1][0] - p[0], s[1][1] - p[1], s[1][2] - p[2]];
+        //var py = [s[2][0] - p[0], s[2][1] - p[1], s[2][2] - p[2]];
+        //var pz = [s[4][0] - p[0], s[4][1] - p[1], s[4][2] - p[2]];
+
+        if (splitSpace) {
+            m[0] = s[0][0] - p[0]; m[1] = s[0][1] - p[1]; m[2] = s[0][2] - p[2];
+            m[4] = s[1][0] - s[0][0]; m[5] = s[1][1] - s[0][1]; m[6] = s[1][2] - s[0][2];
+            m[8] = s[2][0] - s[1][0]; m[9] = s[2][1] - s[1][1]; m[10] = s[2][2] - s[1][2];
+            //m[12] = s[0][0] - s[4][0]; m[13] = s[0][1] - s[4][1]; m[14] = s[0][2] - s[4][2];
+            m[12] = s[4][0] - s[0][0]; m[13] = s[4][1] - s[0][1]; m[14] = s[4][2] - s[0][2];
+
+            var bmin = submesh.bbox.min, bmax = submesh.bbox.max;
+
+            m[3] = bmin[0] - p[0];
+            m[7] = bmin[1] - p[1];
+            m[11] = bmin[2] - p[2];
+
+            program.setMat4('uParamsC8', m);
+        }
     }
 
     if (drawWireframe == 0) {

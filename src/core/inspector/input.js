@@ -438,6 +438,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
     var getBool = (function(a){ return (value === true || value == 'true' || value == '1') });
 
     switch(key) {
+        case 'debugMode': this.diagnosticMode = true; break;
         case 'debugBBox':
             debug.drawBBoxes = true;
         case 'debugNBBox':
