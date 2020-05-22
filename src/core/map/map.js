@@ -908,6 +908,7 @@ Map.prototype.setConfigParam = function(key, value) {
     case 'mapCheckTextureSize':           this.config.mapCheckTextureSize = utils.validateBool(value, false); break;
     case 'mapDMapSize':                   this.config.mapDMapSize = utils.validateNumber(value, 16, Number.MAXINTEGER, 512); break; 
     case 'mapDMapMode':                   this.config.mapDMapMode = utils.validateNumber(value, 1, Number.MAXINTEGER, 1); break;
+    case 'mapSplitSpace':                 this.config.mapSplitSpace = value; break;
     case 'mario':                         this.config.mario = utils.validateBool(value, true); break;
     case 'mapFeaturesReduceMode':         
         value = utils.validateString(value, 'scr-count4');

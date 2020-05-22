@@ -30,6 +30,7 @@ var MapDraw = function(map) {
         blendHeightmap : true,
         drawBBoxes : false,
         drawNBBoxes : false,
+        drawSpaceBBox : false,        
         drawMeshBBox : false,
         drawLods : false,
         drawPositions : false,

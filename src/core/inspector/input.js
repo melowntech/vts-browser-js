@@ -349,6 +349,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 100:
                 debug.drawDistance = !debug.drawDistance; break; //key D pressed
 
+            case 86:
+            case 118:
+                debug.drawSpaceBBox = !debug.drawSpaceBBox; break; //key V pressed
+
             case 78:
             case 110:
                 debug.drawNodeInfo = !debug.drawNodeInfo; break; //key N pressed
@@ -451,6 +455,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
             if (has('G')) debug.drawGeodataOnly = true;
             if (has('D')) debug.drawDistance = true;
             if (has('N')) debug.drawNodeInfo = true;
+            if (has('V')) debug.drawSpaceBBox = true;
             if (has('M')) debug.drawMeshBBox = true;
             if (has('I')) debug.drawIndices = true;
             if (has('B')) debug.drawBoundLayers = true;

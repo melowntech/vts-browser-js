@@ -27,7 +27,8 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.mv = new Float32Array(16);
     this.mvp = new Float32Array(16);
     this.loadMode = 0;
-    this.geFactor = 1/38;
+    //this.geFactor = 1/38;
+    this.geFactor = 1/16;
     this.geNormalized = false;
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
@@ -1122,11 +1123,12 @@ GpuGroup.prototype.getNodeTexelSize = function(node, screenPixelSize) {
 };
 
 
-GpuGroup.prototype.normalizeGE = function(node, ge) {
+GpuGroup.prototype.normalizeGE = function(node, ge, lod) {
     node.precision = ge;
+    node.lod = lod;
 
     for (var i = 0, li = node.nodes.length; i < li; i++) {
-        this.normalizeGE(node.nodes[i], ge * 0.5);
+        this.normalizeGE(node.nodes[i], ge * 0.5, lod+1);
     }
 };
 
@@ -1188,8 +1190,8 @@ GpuGroup.prototype.getOctant = function(point, points) {
 
 };
 
-GpuGroup.prototype.setDivisionSpace = function(node, points) {
-    node.volume2 = { points: points };
+GpuGroup.prototype.setDivisionSpace = function(node, points, octant) {
+    node.volume2 = { points: points, octant: octant };
 
     var center = [0,0,0];
     
@@ -1210,7 +1212,9 @@ GpuGroup.prototype.setDivisionSpace = function(node, points) {
 
     for (var i = 0, li = node.nodes.length; i < li; i++) {
 
-        switch(this.getOctant(node.nodes[i].volume.center, points)) {
+        var octant = this.getOctant(node.nodes[i].volume.center, points);
+
+        switch(octant) {
             case 0: xf = -1, yf = -1, zf = -1; break;
             case 1: xf = 0, yf = -1, zf = -1; break;
             case 2: xf = -1, yf = 0, zf = -1; break;
@@ -1259,13 +1263,13 @@ GpuGroup.prototype.setDivisionSpace = function(node, points) {
              p[1] + yv[1] + zv[1],
              p[2] + yv[2] + zv[2]]
 
-        ]);
+        ], octant);
 
     }
 };
 
 
-GpuGroup.prototype.traverseNode = function(node, visible, isready) {
+GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
     var renderer = this.renderer;
     var points = node.volume.points2;
@@ -1278,9 +1282,11 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready) {
 //    var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * (1/18) /*node.precision * 100*/);
     var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * this.geFactor /*node.precision * 100*/);
 
+    //this.loadMode = 0;
+
     if (this.loadMode == 0) { // topdown
 
-        if (!node.nodes.length || res[0] <= 1.1) {
+        if (!node.nodes.length || res[0] <= this.map.draw.texelSizeFit) {
 
             if (node.parent || this.isNodeReady(node)) { 
                 this.drawNode(node);
@@ -1321,7 +1327,65 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready) {
 
         }
 
-    } else if (this.loadMode == 1) { // fit
+    } else if (this.loadMode == 1) { // topdown with splitting
+
+        var priority = node.lod * res[1];
+
+        if (!node.nodes.length || res[0] <= this.map.draw.texelSizeFit) {
+
+            if (!skipRender && (/*node.parent ||*/ this.isNodeReady(node, null, priority))) { 
+                this.drawNode(node);
+            }
+
+        } else {
+
+            //are nodes ready
+            var ready = true;
+            var nodes = node.nodes;
+            var mask = [0,0,0,0,0,0,0,0];
+            var useMask = false;
+            var readyCount = 0;
+
+            var priority2 = (node.lod+1) * res[1];
+
+            for (var i = 0, li = nodes.length; i < li; i++) {
+                if (renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos)) {
+                    nodes[i].visible = true;
+                } else {
+                    nodes[i].visible = false;
+                    continue;
+                }
+
+                if (!this.isNodeReady(nodes[i], null, priority2, true)) {
+                    //ready = false;
+                    useMask = true;
+                    mask[nodes[i].volume2.octant] = 1;
+                } else {
+                    readyCount++;
+                }
+            }
+
+            for (var i = 0, li = nodes.length; i < li; i++) {
+                if (nodes[i].visible) {
+                    //this.traverseNode(nodes[i], true, true);
+                    var skipChildRender = (skipRender || (mask[nodes[i].volume2.octant] == 1));
+                    this.traverseNode(nodes[i], true, null, skipChildRender, skipChildRender);
+                }
+            }
+
+            if (useMask) { // some children are not ready, draw parent as fallback
+                if (!skipRender && this.isNodeReady(node, null, priority)) {
+                    if (readyCount > 0) {
+                        this.drawNode(node, null, mask, node.volume2.points);
+                    } else {
+                        this.drawNode(node);
+                    }
+                }
+            }
+
+        }
+
+    } else if (this.loadMode == 2) { // fit
 
         if (!node.nodes.length || res[0] <= 1.1) {
 
@@ -1381,7 +1445,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready) {
             }
         }
 
-    } else if (this.loadMode == 2) { // fitonly
+    } else if (this.loadMode == 3) { // fitonly
 
         if (!node.nodes.length || res[0] <= 1.1) {
 
@@ -1399,7 +1463,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready) {
 };
 
 
-GpuGroup.prototype.isNodeReady = function(node, doNotLoad) {
+GpuGroup.prototype.isNodeReady = function(node, doNotLoad, priority, skipGpu) {
     var jobs = node.jobs;
     var ready = true;
 
@@ -1409,7 +1473,7 @@ GpuGroup.prototype.isNodeReady = function(node, doNotLoad) {
         var job = jobs[i];
         
         if (job.type == VTS_JOB_MESH) {
-            if (!this.isMeshReady(job, doNotLoad)) {
+            if (!this.isMeshReady(job, doNotLoad, priority, skipGpu)) {
                 ready = false;
             }
         }
@@ -1468,9 +1532,9 @@ GpuGroup.prototype.drawNodeVolume = function(points, color) {
         }, renderer);
 }
 
-GpuGroup.prototype.drawNode = function(node, noSkip) {
+GpuGroup.prototype.drawNode = function(node, noSkip, splitMask, splitSpace) {
     var renderer = this.renderer;
-    var debug = renderer.core.map.draw.debug;
+    var debug = this.map.draw.debug;
     var jobs = node.jobs;
 
     renderer.drawnNodes++;
@@ -1486,9 +1550,21 @@ GpuGroup.prototype.drawNode = function(node, noSkip) {
         if (noSkip) {
             color = [255,255,0,255];
         }
+                 
+        if (debug.drawSpaceBBox && node.volume2) {
+            this.drawNodeVolume(node.volume2.points, [255,0,0,255]);
+        } else {
+            this.drawNodeVolume(points, color);
+        }
 
-        this.drawNodeVolume(points, color);
-        this.drawNodeVolume(node.volume2.points, [255,0,0,255]);
+        /*
+        for (var i = 0, li = node.nodes.length; i < li; i++) {
+            var node2 = node.nodes[i];
+
+            if (node2.volume2.octant == 7) {
+                this.drawNodeVolume(node2.volume2.points, [255,0,0,255]);
+            }
+        }*/
 
         var cameraPos = this.renderer.cameraPosition;
         var pos = node.volume.center;
@@ -1518,7 +1594,7 @@ GpuGroup.prototype.drawNode = function(node, noSkip) {
         var factor = 2, text;
 
         if (debug.drawLods) {
-            text = '' + this.getNodeLOD(node);
+            text = '' + node.lod;//this.getNodeLOD(node);
             renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-4*factor), 4*factor, text, [1,0,0,1], pos[2]);
         }
         
@@ -1593,7 +1669,7 @@ GpuGroup.prototype.drawNode = function(node, noSkip) {
         if (job.type == VTS_JOB_MESH) {
 
             if (this.isMeshReady(job)) {
-                this.drawMesh(job, node);
+                this.drawMesh(job, node, splitMask, splitSpace);
             }
         }
     }
@@ -1601,15 +1677,15 @@ GpuGroup.prototype.drawNode = function(node, noSkip) {
 };
 
 
-GpuGroup.prototype.isMeshReady = function(job, doNotLoad) {
+GpuGroup.prototype.isMeshReady = function(job, doNotLoad, priority, skipGpu) {
     var mesh = job.mesh;
     var submeshes = mesh.submeshes;
     var ready = true;
-    var stats = this.renderer.core.map.stats;
+    var stats = this.map.stats;
 
     //console.log('' + stats.gpuNeeded + '  ' + job.texturePath);
 
-    if (mesh.isReady(doNotLoad)) {
+    if (mesh.isReady(doNotLoad, priority, skipGpu)) {
         stats.gpuNeeded += mesh.gpuSize;
 
         for (var i = 0, li = submeshes.length; i < li; i++) {
@@ -1621,7 +1697,7 @@ GpuGroup.prototype.isMeshReady = function(job, doNotLoad) {
                     job.textures[i] = job.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, null /*tile*/, true);
                 } 
 
-                if (!job.textures[i].isReady(doNotLoad)) {
+                if (!job.textures[i].isReady(doNotLoad, priority, skipGpu)) {
                     ready = false;
                 }
 
@@ -1666,7 +1742,7 @@ GpuGroup.prototype.getGpuSize = function(job) {
 }
 
 
-GpuGroup.prototype.drawMesh = function(job ,node) {
+GpuGroup.prototype.drawMesh = function(job ,node, splitMask, splitSpace) {
     var mesh = job.mesh;
     var submeshes = mesh.submeshes;
     var cameraPos = this.renderer.cameraPosition;
@@ -1676,13 +1752,14 @@ GpuGroup.prototype.drawMesh = function(job ,node) {
         
         if (job.textures[i]) {
             //mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  null /*splitMask*/);
-            mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  [0,1,2,3,0,5,6,7], node.volume2.points);
+            //mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  [0.1,1,2,3,4,5,6,0], node.volume2.points);
+            mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  splitMask, splitSpace);
         }
     }
 }
 
 
-GpuGroup.prototype.testNodes = function(node) {
+/*GpuGroup.prototype.testNodes = function(node) {
     var p = node.volume.points;
 
     var xa1 = p[7], xa2 = p[6];
@@ -1752,7 +1829,7 @@ GpuGroup.prototype.testNodes2 = function(node, depth) {
         var node2 = node.nodes[i];
         this.testNodes2(node2, depth + 1)
     }
-};
+};*/
 
 
 GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
@@ -1764,36 +1841,101 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
     var renderer = this.renderer;
     var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
-
+    this.map = renderer.core.map;
 
     if (this.rootNode) {
         renderer.drawnNodes = 0;
 
-        var mode = renderer.core.map.config.mapLoadMode; 
+        var mode = this.map.config.mapLoadMode; 
 
         switch(mode) {
-        case 'topdown': this.loadMode = 0; break;
-        case 'fit':     this.loadMode = 1; break; 
-        case 'fitonly': this.loadMode = 2; break;
+        case 'topdown': this.loadMode = ((this.map.config.mapSplitMeshes && this.map.config.mapSplitSpace) ? 1 : 0); break;
+        case 'fit':     this.loadMode = 2; break; 
+        case 'fitonly': this.loadMode = 3; break;
         }
 
         if (!this.geNormalized) {
-            this.normalizeGE(this.rootNode, this.rootNode.precision);
+            this.normalizeGE(this.rootNode, this.rootNode.precision, 0);
 
-            this.setDivisionSpace(this.rootNode, [
+            if (this.loadMode == 1) {
+                var s = this.map.config.mapSplitSpace;
 
-                [3916942.895357,295576.434754,5008527.852128],
-                [3916913.428049,295966.639412,5008527.852128],
-                [3917221.246882,295989.885143,5008287.362628],
-                [3917250.714190,295599.680484,5008287.362628],
+                //haag
+                //[0](3917010.907515,295581.570867,5007978.667312)
+                //[1](3916703.088682,295558.325137,5008219.156812)
+                //[2](3916673.621374,295948.529795,5008219.156812) 
+                //[4](3917250.714190,295599.680484,5008287.362628) 
 
-                [3916703.088682,295558.325137,5008219.156812],
-                [3916673.621374,295948.529795,5008219.156812],
-                [3916981.440208,295971.775525,5007978.667312],
-                [3917010.907515,295581.570867,5007978.667312],
+                // p0.x,p0.y,p0.z,p1.x,p1.y,p1.z,p2.x,p2.y,p2.z,p4.x,p4.y,p4.z
+                // mapSplitSpace=3917010.907515,295581.570867,5007978.667312,3916703.088682,295558.325137,5008219.156812,3916673.621374,295948.529795,5008219.156812,3917250.714190,295599.680484,5008287.362628
 
-                ]);
+                /*
+                var s = [
+                    [3917010.907515,295581.570867,5007978.667312],
+                    [3916703.088682,295558.325137,5008219.156812],
+                    [3916673.621374,295948.529795,5008219.156812],
+                    [3917250.714190,295599.680484,5008287.362628]
+                ];
+                */
 
+                /*
+                var s = [
+                    [3916942.895357,295576.434754,5008527.852128],
+                    [3916913.428049,295966.639412,5008527.852128],
+                    [3917221.246882,295989.885143,5008287.362628],
+                    [3917250.714190,295599.680484,5008287.362628],
+
+                    [3916703.088682,295558.325137,5008219.156812],
+                    [3916673.621374,295948.529795,5008219.156812],
+                    [3916981.440208,295971.775525,5007978.667312],
+                    [3917010.907515,295581.570867,5007978.667312],
+
+                    ];
+                */
+
+                var p = [s[0][0], s[0][1], s[0][2]];
+                var xv = [s[2][0] - s[1][0], s[2][1] - s[1][1], s[2][2] - s[1][2]];
+                var yv = [s[1][0] - p[0], s[1][1] - p[1], s[1][2] - p[2]];
+                var zv = [s[3][0] - p[0], s[3][1] - p[1], s[3][2] - p[2]];
+
+                s = [
+
+                    [p[0] + yv[0] + zv[0],
+                     p[1] + yv[1] + zv[1],
+                     p[2] + yv[2] + zv[2]],
+
+                    [p[0] + xv[0] + yv[0] + zv[0],
+                     p[1] + xv[1] + yv[1] + zv[1],
+                     p[2] + xv[2] + yv[2] + zv[2]],
+
+                    [p[0] + xv[0] + zv[0],
+                     p[1] + xv[1] + zv[1],
+                     p[2] + xv[2] + zv[2]],
+
+                    [p[0] + zv[0],
+                     p[1] + zv[1],
+                     p[2] + zv[2]],
+
+                    [p[0] + yv[0],
+                     p[1] + yv[1],
+                     p[2] + yv[2]],
+
+                    [p[0] + xv[0] + yv[0],
+                     p[1] + xv[1] + yv[1],
+                     p[2] + xv[2] + yv[2]],
+
+                    [p[0] + xv[0],
+                     p[1] + xv[1],
+                     p[2] + xv[2]],
+
+                    [p[0],
+                     p[1],
+                     p[2]],
+
+                ];
+
+                this.setDivisionSpace(this.rootNode, s);
+            }
 
             this.geNormalized = true;
         }

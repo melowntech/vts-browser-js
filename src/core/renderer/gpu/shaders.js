@@ -1277,7 +1277,7 @@ GpuShaders.tileVertexShader =
 
             'vClipCoord.x = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[1][0],uParamsC8[1][1],uParamsC8[1][2]), worldPos2.xyz);\n'+  
             'vClipCoord.y = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[2][0],uParamsC8[2][1],uParamsC8[2][2]), worldPos2.xyz);\n'+  
-            'vClipCoord.z = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[3][0],uParamsC8[3][1],uParamsC8[3][2]), worldPos2.xyz);\n'+  
+            'vClipCoord.z = 1.0-getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[3][0],uParamsC8[3][1],uParamsC8[3][2]), worldPos2.xyz);\n'+  
             //'vClipCoord.xyz = vec3(0.0, 0.0, 1.0);\n'+  
         '#endif\n'+
     '}';
@@ -1431,9 +1431,9 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
 
         '#endif\n'+
 
-        '#ifdef clip8\n'+
-            'gl_FragColor = vec4(vClipCoord.x, vClipCoord.y, vClipCoord.z, 1.0);\n'+
-        '#endif\n'+
+        // '#ifdef clip8\n'+
+          //  'gl_FragColor = vec4(vClipCoord.x, vClipCoord.y, vClipCoord.z, 1.0);\n'+
+        // '#endif\n'+
     '}';
 
 
