@@ -47,7 +47,7 @@ function onSwitchView() {
                 surfaces: {
                     'melown-viewfinder-world': [
                         'bmng08-world',
-                        'bing-world'
+                         "sentinel2-cloudless-eox"
                     ]
                 },
                 freeLayers: {}
@@ -58,7 +58,7 @@ function onSwitchView() {
                 surfaces: {
                     'melown-viewfinder-world': [
                         'bmng08-world',
-                        'bing-world'
+                         "sentinel2-cloudless-eox"
                     ]
                 },
                 freeLayers: {
