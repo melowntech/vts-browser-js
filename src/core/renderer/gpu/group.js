@@ -1280,7 +1280,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
     }
 
 //    var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * (1/18) /*node.precision * 100*/);
-    var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * this.geFactor /*node.precision * 100*/);
+    var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * this.geFactor);
 
     //this.loadMode = 0;
 
@@ -1345,10 +1345,18 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
             var mask = [0,0,0,0,0,0,0,0];
             var useMask = false;
             var readyCount = 0;
+            var splitLods = this.map.config.mapSplitLods;
 
             var priority2 = (node.lod+1) * res[1];
 
             for (var i = 0, li = nodes.length; i < li; i++) {
+
+                if (splitLods) {
+                    var node2 = nodes[i];
+                    var res2 = this.getNodeTexelSize(node2, node.precision * renderer.curSize[0] * this.geFactor);
+                    node2.goodLod = (res2[0] <= this.map.draw.texelSizeFit);
+                }
+
                 if (renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos)) {
                     nodes[i].visible = true;
                 } else {
@@ -1356,7 +1364,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
                     continue;
                 }
 
-                if (!this.isNodeReady(nodes[i], null, priority2, true)) {
+                if (!this.isNodeReady(nodes[i], null, priority2, true) || (splitLods && node2.goodLod)) {
                     //ready = false;
                     useMask = true;
                     mask[nodes[i].volume2.octant] = 1;
@@ -1366,7 +1374,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
             }
 
             for (var i = 0, li = nodes.length; i < li; i++) {
-                if (nodes[i].visible) {
+                if (nodes[i].visible && !(splitLods && nodes[i].goodLod)) {
                     //this.traverseNode(nodes[i], true, true);
                     var skipChildRender = (skipRender || (mask[nodes[i].volume2.octant] == 1));
                     this.traverseNode(nodes[i], true, null, skipChildRender, skipChildRender);

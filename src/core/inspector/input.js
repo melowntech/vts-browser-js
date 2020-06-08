@@ -246,6 +246,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 case 120:
                     debug.drawFog = !debug.drawFog; hit = true; break; //key X pressed
 
+                case 89:
+                case 120:
+                    map.config.mapSplitLods = !map.config.mapSplitLods; hit = true; break; //key Y pressed
+
                 case 82:
                 case 114:
                     inspector.graphs.switchPanel(); break; //key R pressed
