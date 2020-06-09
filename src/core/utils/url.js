@@ -83,6 +83,12 @@ utilsUrl.getBase = function(url) {
 };
 
 
+utilsUrl.makeAbsolute = function(href) {
+    var link = document.createElement("a");
+    link.href = href;
+    return link.href;
+};
+
 utilsUrl.getProcessUrl = function(url, originUrl) {
     if (!url || !originUrl) {
         return url;

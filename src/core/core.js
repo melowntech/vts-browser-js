@@ -57,6 +57,9 @@ var Core = function(element, config, coreInterface) {
         mapLoadErrorMaxRetryCount : 3,
         mapLoadMode : 'topdown', // 'topdown', 'downtop', 'fit', 'fitonly'
         mapGeodataLoadMode : 'fit', // 'fitonly'
+        mapSplitMeshes : true, // used for topdown load mode
+        mapSplitSpace : null, // used octant spliting demo
+        mapSplitLods : false, // used octant spliting demo
         mapGridMode : 'linear', // 'flat'
         mapGridSurrogatez : false, 
         mapGridUnderSurface: 0,
@@ -73,11 +76,13 @@ var Core = function(element, config, coreInterface) {
         mapPackLoaderEvents : true,
         mapParseMeshInWorker : true,
         mapPackGeodataEvents : true,
+        mapCheckTextureSize : false,
 
         mapFeatureStickMode : [1,1],
 
         map16bitMeshes : true,
-        mapOnlyOneUVs : true,
+        //mapOnlyOneUVs : true,
+        mapOnlyOneUVs : false,
         mapIndexBuffers : true,
         mapAsyncImageDecode : true,
 
@@ -580,7 +585,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.22.7';
+    return (full ? 'Core: ' : '') + '2.23.2';
 }
 
 

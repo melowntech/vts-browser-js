@@ -200,7 +200,7 @@ RendererInterface.prototype.drawMesh = function(options) {
             uvAttr = null;
             uv2Attr = null;
             texture = null;
-            shader = renderer.progDepthTile;
+            shader = renderer.progDepthTile[0];
             break;
 
         case 'shaded':
@@ -223,7 +223,7 @@ RendererInterface.prototype.drawMesh = function(options) {
             } 
             
             uv2Attr = (shader == 'textured') ? null : 'aNormal';
-            shader = (shader == 'textured') ? renderer.progTile : ((shader == 'shaded') ? renderer.progShadedTile : renderer.progTShadedTile);
+            shader = (shader == 'textured') ? renderer.progTile[0] : ((shader == 'shaded') ? renderer.progShadedTile : renderer.progTShadedTile);
             break;
         }
     }
@@ -306,10 +306,7 @@ RendererInterface.prototype.drawImage = function(options) {
     var blend = (options['blend'] != null) ? options['blend'] : false;
     var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
     var useState = (options['useState'] != null) ? options['useState'] : false;
-    color[0] *= 1.0/255;
-    color[1] *= 1.0/255;
-    color[2] *= 1.0/255;
-    color[3] *= 1.0/255;
+    color = [ color[0] * (1.0/255), color[1] * (1.0/255), color[2] * (1.0/255), color[3] * (1.0/255) ];
 
     this.renderer.draw.drawImage(rect[0], rect[1], rect[2], rect[3], options['texture'], color, depth, depthOffset, depthTest, blend, writeDepth, useState);
     return this;    

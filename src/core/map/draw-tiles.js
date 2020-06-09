@@ -937,12 +937,18 @@ MapDrawTiles.prototype.drawTileInfo = function(tile, node, cameraPos, mesh) {
 
         b = node.border;
         if (b) {
-            text = '' + Math.floor(b[0]) + ' ' + Math.floor(b[1]) + ' ' + Math.floor(b[2]) + ' ' + Math.floor(b[3]) + ' ' + Math.floor(b[4]) + ' ' + Math.floor(b[5]) + ' ' + Math.floor(b[6]) + ' ' + Math.floor(b[7]) + ' ' + Math.floor(b[8]);
+            draw.getDrawCommandsGpuSize(tile.drawCommands[draw.drawChannel] || tile.lastRenderState.drawCommands[draw.drawChannel]); Math.floor(b[0]) + ' ' + Math.floor(b[1]) + ' ' + Math.floor(b[2]) + ' ' + Math.floor(b[3]) + ' ' + Math.floor(b[4]) + ' ' + Math.floor(b[5]) + ' ' + Math.floor(b[6]) + ' ' + Math.floor(b[7]) + ' ' + Math.floor(b[8]);
             this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,1,1], pos[2]);
         }
 
         //text = 'llx:' + Math.floor(node.llx) + ' lly:' + Math.floor(node.lly) + ' urx:' + Math.floor(node.urx) + ' ury:' + Math.floor(node.ury);
         //this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+3*factor), 4*factor, text, [0,1,1,1], pos[2]);
+    }
+
+    //draw resources
+    if (debug.drawResources && mesh) {
+        text = '' + (this.draw.getDrawCommandsGpuSize(tile.drawCommands[0] || tile.lastRenderState.drawCommands[0])/(1024*1024)).toFixed(2) + 'MB';
+        this.drawText(Math.round(pos[0]-this.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
     }
 
     //draw face count

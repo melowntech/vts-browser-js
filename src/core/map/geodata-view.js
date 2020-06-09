@@ -268,7 +268,12 @@ MapGeodataView.prototype.draw = function(cameraPos) {
         for (var i = 0, li = this.gpuGroups.length; i < li; i++) {
             var group = this.gpuGroups[i]; 
 
-            if (!group.jobs.length) {
+            if (group.rootNode) {
+                group.draw(mv, mvp, null, tiltAngle, (this.tile ? this.tile.texelSize : 1));
+                continue;
+            }
+
+            if (!(group.jobs.length || group.rootNode)) {
                 continue; //TODO: remove empty groups
             }
 

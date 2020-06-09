@@ -433,6 +433,32 @@ function processGroup(group, lod) {
 }
 
 
+function processNode(node, lod) {
+    var i, li;
+
+    //TODO: get volume
+
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_NODE_BEGIN, {'volume': node.volume, 'precision': node.precision, 'tileset': node.tileset }, [], "");
+
+    var meshes = node['meshes'] || [];
+
+    //loop elements
+    for (i = 0, li = meshes.length; i < li; i++) {
+
+        var signature = meshes[i];
+
+        postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_MESH, { 'path':meshes[i] }, [], signature);
+    }
+
+    var nodes = node['nodes'] || [];
+
+    for (i = 0, li = nodes.length; i < li; i++) {
+        processNode(nodes[i], lod);
+    }
+
+    postGroupMessageFast(VTS_WORKERCOMMAND_ADD_RENDER_JOB, VTS_WORKER_TYPE_NODE_END, {}, [], "");
+}
+
 function processGeodata(data, lod) {
     //console.log("processGeodata");
 
@@ -455,17 +481,25 @@ function processGeodata(data, lod) {
         for (var i = 0, li = groups.length; i < li; i++) {
             processGroup(groups[i], lod);
         }
+
+        var nodes = geodata['nodes'] || [];
+
+        for (var i = 0, li = nodes.length; i < li; i++) {
+            postGroupMessageFast(VTS_WORKERCOMMAND_GROUP_BEGIN, 0, {}, [], "");
+            processNode(nodes[i], lod);
+            postGroupMessageLite(VTS_WORKERCOMMAND_GROUP_END, 0);
+        }
     }
 
     //console.log("processGeodata-ready");
 }
-
 
 self.onmessage = function (e) {
     var message = e.data;
     var command = message['command'];
     var data = message['data'];
     var dataRaw = null;
+    var geodata2 = false;
 
     //console.log("workeronmessage: " + command);
 
@@ -501,6 +535,20 @@ self.onmessage = function (e) {
 
     case 'processGeodataRaw':
         dataRaw = data;
+
+        //test geodata2
+        if (data.length > 2) {
+            var dataView = new DataView(data);
+
+            var magic = '';
+            magic += String.fromCharCode(dataView.getUint8(0, true));
+            magic += String.fromCharCode(dataView.getUint8(1, true));
+
+            if (magic != 'GE') {
+                geodata2 = true;
+            }
+        }
+
         data = Utf8ArrayToStr(data);
 
     case 'processGeodata':
@@ -513,10 +561,14 @@ self.onmessage = function (e) {
         globals.invPixelFactor = 1.0 / globals.pixelFactor;
         globals.pixelsPerMM = (globals.pixelFactor / 96) / 2.54;
         globals.invPixelsPerMM = 1.0 / globals.pixelsPerMM;
-
-        data = JSON.parse(data);            
         exportedGeometries = [];
-        processGeodata(data, globals.tileLod);
+
+        if (geodata2) {
+            processGeodata2(dataView, globals.tileLod);
+        } else {
+            data = JSON.parse(data);            
+            processGeodata(data, globals.tileLod);
+        }
 
         postGroupMessageLite(VTS_WORKERCOMMAND_ALL_PROCESSED, 0);
             

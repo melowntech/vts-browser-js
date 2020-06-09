@@ -108,8 +108,9 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 67:
                 case 99:
-                    map.config.mapDegradeHorizon = !map.config.mapDegradeHorizon;
+                        inspector.shakeCamera = !inspector.shakeCamera;
 
+                        //map.config.mapDegradeHorizon = !map.config.mapDegradeHorizon;
                         //this.measureMode = !this.measureMode;
                         //this.measurePoints = [];
                         //var pos = this.core.hitTest(this.mouseX, this.mouseY, "all");
@@ -245,6 +246,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
                 case 120:
                     debug.drawFog = !debug.drawFog; hit = true; break; //key X pressed
 
+                case 89:
+                case 120:
+                    map.config.mapSplitLods = !map.config.mapSplitLods; hit = true; break; //key Y pressed
+
                 case 82:
                 case 114:
                     inspector.graphs.switchPanel(); break; //key R pressed
@@ -263,7 +268,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
 
                 case 78:
                 case 110:
-                    inspector.shakeCamera = !inspector.shakeCamera; break; //key N pressed
+                    debug.drawNBBoxes = !debug.drawNBBoxes; break; //key N pressed
 
                 default:
                     blockHit = false;
@@ -320,7 +325,7 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             }
         }
 
-        if (this.diagnosticMode && debug.drawBBoxes && !this.shiftDown && !press) {
+        if (this.diagnosticMode && (debug.drawBBoxes || debug.drawNBBoxes) && !this.shiftDown && !press) {
             blockHit = true;
 
             switch(keyCode) {
@@ -348,6 +353,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 100:
                 debug.drawDistance = !debug.drawDistance; break; //key D pressed
 
+            case 86:
+            case 118:
+                debug.drawSpaceBBox = !debug.drawSpaceBBox; break; //key V pressed
+
             case 78:
             case 110:
                 debug.drawNodeInfo = !debug.drawNodeInfo; break; //key N pressed
@@ -363,6 +372,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 66:
             case 98:
                 debug.drawBoundLayers = !debug.drawBoundLayers; break; //key B pressed
+
+            case 82:
+            case 114:
+                debug.drawResources = !debug.drawResources; break; //key R pressed
 
             case 83:
             case 115:
@@ -433,8 +446,11 @@ InspectorInput.prototype.setParameter = function(key, value) {
     var getBool = (function(a){ return (value === true || value == 'true' || value == '1') });
 
     switch(key) {
+        case 'debugMode': this.diagnosticMode = true; break;
         case 'debugBBox':
             debug.drawBBoxes = true;
+        case 'debugNBBox':
+            if (key == 'debugNBBox') debug.drawNBBoxes = true;
             var has = (function(a){ return (value.indexOf(a)!=-1); });
             if (has('L')) debug.drawLods = true;
             if (has('P')) debug.drawPositions = true;
@@ -443,6 +459,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
             if (has('G')) debug.drawGeodataOnly = true;
             if (has('D')) debug.drawDistance = true;
             if (has('N')) debug.drawNodeInfo = true;
+            if (has('V')) debug.drawSpaceBBox = true;
             if (has('M')) debug.drawMeshBBox = true;
             if (has('I')) debug.drawIndices = true;
             if (has('B')) debug.drawBoundLayers = true;

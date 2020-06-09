@@ -1290,7 +1290,8 @@ var getDefaultLayerPropertyValue = function(key) {
     case 'polygon-style':       return 'solid';
     case 'polygon-use-stencil': return true;
     case 'polygon-culling':     return 'none';
-    case 'polygon-color':  return [255,255,255,255];
+    case 'polygon-color':       return [255,255,255,255];
+    case 'polygon-extrude':     return 0;
 
     case 'z-index':        return 0;
     case 'zbuffer-offset': return [0,0,0];

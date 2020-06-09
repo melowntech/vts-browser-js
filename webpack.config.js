@@ -73,6 +73,7 @@ plugins.push(
       'VTS_JOB_PACK' :                9,
       'VTS_JOB_VSPOINT' :             10,
       'VTS_JOB_POLYGON' :             11,
+      'VTS_JOB_MESH' :                12,
 
       'VTS_TILE_COUNT_FACTOR' :       0.5,
 
@@ -110,6 +111,14 @@ plugins.push(
       'VTS_WORKER_TYPE_VSWITCH_STORE' :   18,
       'VTS_WORKER_TYPE_VSWITCH_END' :     19,
       'VTS_WORKER_TYPE_VSPOINT' :         20,
+
+      'VTS_WORKER_TYPE_NODE_BEGIN' :      21,
+      'VTS_WORKER_TYPE_NODE_END' :        22,
+      'VTS_WORKER_TYPE_MESH' :            23,
+
+      'VTS_TILE_SHADER_CLIP4' :           (1<<0),
+      'VTS_TILE_SHADER_CLIP8' :           (1<<1),
+      'VTS_TILE_SHADER_SE' :              (1<<2),
 
       'VTS_IMPORATANCE_LOG_BASE' :    1.0017,
       'VTS_IMPORATANCE_INV_LOG' :     1355.6127860321758038669705901537 // 1/log(LOG_BASE)

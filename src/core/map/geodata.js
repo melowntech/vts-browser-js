@@ -1,10 +1,12 @@
 
 import BBox_ from '../renderer/bbox';
 import {utils as utils_} from '../utils/utils';
+import MapGeodataBuilder_ from './geodata-builder';
 
 //get rid of compiler mess
 var BBox = BBox_;
 var utils = utils_;
+var MapGeodataBuilder = MapGeodataBuilder_;
 
 
 var MapGeodata = function(map, url, extraInfo) {
@@ -17,6 +19,7 @@ var MapGeodata = function(map, url, extraInfo) {
     this.size = 0;
     this.fileSize = 0;
     this.geodata = null;
+    this.type = 'geodata';
 
     this.cacheItem = null;
 
@@ -71,7 +74,16 @@ MapGeodata.prototype.isReady = function(doNotLoad, priority) {
                 //not loaded
                 //add to loading queue or top position in queue
 
-                if (typeof this.mapLoaderUrl === 'object') { //use geodata directly
+                /*if (typeof this.mapLoaderUrl !== 'object' || this..mapLoaderUrl.indexOf('tileset.json')) { 
+
+                    var geodata = new MapGeodataBuilder(this.map);
+                    geodata.load3DTiles(this..mapLoaderUrl, {}, (function(){ 
+
+                        //TODO:
+                    }));
+
+                }
+                else*/ if (typeof this.mapLoaderUrl === 'object') { //use geodata directly
                     this.geodata = JSON.stringify(this.mapLoaderUrl);
                     this.loadState = 2;
                     this.size = this.geodata.length;

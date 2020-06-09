@@ -3,12 +3,14 @@ import {vec3 as vec3_, mat4 as mat4_} from '../../utils/matrix';
 import BBox_ from '../bbox';
 import {math as math_} from '../../utils/math';
 import {utils as utils_} from '../../utils/utils';
+import MapResourceNode_ from '../../map/resource-node';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat4 = mat4_;
 var BBox = BBox_;
 var math = math_;
 var utils = utils_;
+var MapResourceNode = MapResourceNode_;
 
 
 var GpuGroup = function(id, bbox, origin, gpu, renderer) {
@@ -24,6 +26,10 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.subjob = null;
     this.mv = new Float32Array(16);
     this.mvp = new Float32Array(16);
+    this.loadMode = 0;
+    //this.geFactor = 1/38;
+    this.geFactor = 1/16;
+    this.geNormalized = false;
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
@@ -651,6 +657,29 @@ GpuGroup.prototype.addVSwitch = function(){
     this.vsjobs = null;
 };
 
+GpuGroup.prototype.addMeshJob = function(data, lod) {
+    var job = {};
+
+    job.type = VTS_JOB_MESH;
+    job.path = data['path'];
+    
+    job.textures = [];
+
+    job.resources = new MapResourceNode(this.renderer.core.map, null, null);
+
+    if (job.path) {
+        var stmp = job.path.split(".");
+        if (stmp.length > 1) {
+            stmp.pop();
+            job.texturePath = stmp.join('.');
+        }
+
+        job.mesh = job.resources.getMesh(job.path, null);
+    }
+
+    this.jobs.push(job);
+};
+
 
 GpuGroup.prototype.copyBuffer = function(buffer, source, index) {
     var tmp = new Uint8Array(buffer.buffer);
@@ -778,6 +807,59 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
             data = { viewExtent: view.getUint32(index) }; index += 4;
             this.storeVSJobs(data);
             break;
+
+        case VTS_WORKER_TYPE_NODE_BEGIN:
+
+            var node = data;
+            node.nodes = [];
+            node.jobs = [];
+            node.parent = this.currentNode;
+
+            if (node.volume) {
+                var p = node.volume.points;
+                var points = [
+                    p[0][0],p[0][1],p[0][2],
+                    p[1][0],p[1][1],p[1][2],
+                    p[2][0],p[2][1],p[2][2],
+                    p[3][0],p[3][1],p[3][2],
+                    p[4][0],p[4][1],p[4][2],
+                    p[5][0],p[5][1],p[5][2],
+                    p[6][0],p[6][1],p[6][2],
+                    p[7][0],p[7][1],p[7][2]
+                ];
+
+                node.volume.points2 = points;
+            }
+
+            if (this.rootNode) {
+                this.currentNode.nodes.push(node);
+                this.currentNode = node;
+            } else {
+                this.rootNode = node;
+                this.currentNode = node;
+
+                this.oldJobs = this.jobs;
+            }
+
+            this.jobs = node.jobs;
+
+            break;
+
+        case VTS_WORKER_TYPE_NODE_END:
+
+            if (this.currentNode.parent) {
+                this.currentNode = this.currentNode.parent;
+                this.jobs = this.currentNode.jobs;
+            } else {
+                this.currentNode = this.currentNode.parent;
+                this.jobs = this.oldJobs;
+            }
+
+            break;
+
+        case VTS_WORKER_TYPE_MESH:
+            this.addMeshJob(data, tile);
+            break;
     }
 
     return index;
@@ -803,8 +885,959 @@ GpuGroup.prototype.addRenderJob = function(data, tile) {
     case 'vswitch-begin':  this.vsjobs = []; this.vsjob = null; break;
     case 'vswitch-store':  this.storeVSJobs(data); break;
     case 'vswitch-end':    this.addVSwitch(); break;
+    case 'node-begin':     this.nodeBegin(); break;
+    case 'node-end':       this.nodeEnd(); break;
+    case 'mesh':           this.addMesh(); break;
     }
 };
+
+
+function drawLineString(options, renderer) {
+    if (options == null || typeof options !== 'object') {
+        return this;    
+    }
+
+    if (options['points'] == null) {
+        return this;    
+    }
+
+    var points = options['points'];
+    var color = options['color'] || [255,255,255,255];
+    var depthOffset = (options['depthOffset'] != null) ? options['depthOffset'] : null;
+    var size = options['size'] || 2;
+    var screenSpace = (options['screenSpace'] != null) ? options['screenSpace'] : true;
+    var depthTest = (options['depthTest'] != null) ? options['depthTest'] : false;
+    var blend = (options['blend'] != null) ? options['blend'] : false;
+    var writeDepth = (options['writeDepth'] != null) ? options['writeDepth'] : false;
+    var useState = (options['useState'] != null) ? options['useState'] : false;
+
+    color = [ color[0] * (1.0/255), color[1] * (1.0/255), color[2] * (1.0/255), color[3] * (1.0/255) ];
+
+    renderer.draw.drawLineString(points, screenSpace, size, color, depthOffset, depthTest, blend, writeDepth, useState);
+    return this;    
+};
+
+
+GpuGroup.prototype.getNodeLOD = function(node) {
+    var lod = 0;
+
+    while(node.parent) {
+        lod++;
+        node = node.parent;
+    }
+
+    return lod;
+};
+
+/*
+GpuGroup.prototype.getNodeTexelSize3 = function(node, screenPixelSize) {
+    var camera = this.map.camera;
+    var cameraDistance = camera.geocentDistance;// * factor;
+
+    var a = vec3.dot(camera.geocentNormal, node.diskNormal); //get angle between tile normal and cameraGeocentNormal
+    var d = cameraDistance - (node.diskDistance + (node.maxZ - node.minZ)), d2; //vertical distance from top bbox level
+
+    if (a < node.diskAngle2) { //is camera inside tile conus?
+        
+        //get horizontal distance
+        var a2 = Math.acos(a); 
+        var a3 = node.diskAngle2A;
+        a2 = a2 - a3; 
+        var l1 = Math.tan(a2) * node.diskDistance;// * factor;
+
+        if (d < 0) { //is camera is belown top bbox level?
+            d2 = cameraDistance - node.diskDistance;
+            if (d2 < 0) { //is camera is belown bottom bbox level?
+                d = -d2;
+                d = Math.sqrt(l1*l1 + d*d);
+            } else { //is camera inside bbox
+                d = l1;
+            }
+        } else {
+            d = Math.sqrt(l1*l1 + d*d);
+        }
+
+    } else {
+        if (d < 0) { //is camera is belown top bbox level?
+            d2 = cameraDistance - node.diskDistance;
+            if (d2 < 0) { //is camera is belown bottom bbox level?
+                d = -d2;
+            } else { //is camera inside bbox
+                return [Number.POSITIVE_INFINITY, 0.1];
+            }
+        } 
+    }
+
+    return [camera.camera.scaleFactor2(d) * screenPixelSize, d];
+};
+
+
+GpuGroup.prototype.getNodeTexelSize2 = function(volume, cameraPos, screenPixelSize, returnDistance) {
+    //TODO: 
+    //      make camera pos relative to volume center
+    //      convert camera pos to volume space
+    //      min = [-sizeX*0.5, -sizeY*0.5, -sizeZ*0.5]
+    //      max = [sizeX*0.5, sizeY*0.5, sizeZ*0.5]
+
+    var pos = volume.center;
+    cameraPos = [cameraPos[0] - pos[0], cameraPos[1] - pos[1], cameraPos[2] - pos[2]];
+
+    var min = cameraPos * volume.m;
+
+    var min = volume.min;
+    var min = volume.max;
+
+    var tilePos1x = min[0] - cameraPos[0];
+    var tilePos1y = min[1] - cameraPos[1];
+    var tilePos2x = max[0] - cameraPos[0];
+    var tilePos2y = min[1] - cameraPos[1];
+    var tilePos3x = max[0] - cameraPos[0];
+    var tilePos3y = max[1] - cameraPos[1];
+    var tilePos4x = min[0] - cameraPos[0];
+    var tilePos4y = max[1] - cameraPos[1];
+    var h1 = min[2] - cameraPos[2];
+    var h2 = max[2] - cameraPos[2];
+    
+    //camera inside bbox
+    if (cameraPos[0] > min[0] && cameraPos[0] < max[0] &&
+        cameraPos[1] > min[1] && cameraPos[1] < max[1] &&
+        cameraPos[2] > min[2] && cameraPos[2] < max[2]) {
+
+        if (returnDistance) {
+            return [Number.POSITIVE_INFINITY, 0.1];
+        }
+    
+        return Number.POSITIVE_INFINITY;
+    }
+
+    var factor = 0;
+    var camera = this.map.camera.camera;
+
+    //find bbox sector
+    if (0 < tilePos1y) { //top row - zero means camera position in y
+        if (0 < tilePos1x) { // left top corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos1x, tilePos1y, (h1 + h2)*0.5], returnDistance);
+            }
+        } else if (0 > tilePos2x) { // right top corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos2x, tilePos2y, (h1 + h2)*0.5], returnDistance);
+            }
+        } else { //top side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, tilePos2y, (h1 + h2)*0.5], returnDistance);
+            }
+        }
+    } else if (0 > tilePos4y) { //bottom row
+        if (0 < tilePos4x) { // left bottom corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos4x, tilePos4y, (h1 + h2)*0.5], returnDistance);
+            }
+        } else if (0 > tilePos3x) { // right bottom corner
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos3x, tilePos3y, (h1 + h2)*0.5], returnDistance);
+            }
+        } else { //bottom side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([(tilePos4x + tilePos3x)*0.5, tilePos3y, (h1 + h2)*0.5], returnDistance);
+            }
+        }
+    } else { //middle row
+        if (0 < tilePos4x) { // left side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos1x, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
+            }
+        } else if (0 > tilePos3x) { // right side
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([tilePos2x, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
+            }
+        } else { //center
+            if (0 > h2) { // hi
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, h2], returnDistance);
+            } else if (0 < h1) { // low
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, h1], returnDistance);
+            } else { // middle
+                factor = camera.scaleFactor([(tilePos1x + tilePos2x)*0.5, (tilePos2y + tilePos3y)*0.5, (h1 + h2)*0.5], returnDistance);
+            }
+        }
+    }
+
+    //console.log("new: " + (factor * screenPixelSize) + " old:" + this.tilePixelSize2(node) );
+
+    if (returnDistance) {
+        return [(factor[0] * screenPixelSize), factor[1]];
+    }
+
+    return (factor * screenPixelSize);
+};
+*/
+
+
+GpuGroup.prototype.getNodeTexelSize = function(node, screenPixelSize) {
+    var pos = node.volume.center;
+    var cameraPos = this.renderer.cameraPosition;
+    var d = vec3.length(
+        [pos[0] - cameraPos[0],
+         pos[1] - cameraPos[1],
+         pos[2] - cameraPos[2]]);
+
+    d -= node.volume.radius;
+
+    if (d <= 0) {
+        return [Number.POSITIVE_INFINITY, 0.1];
+    }
+
+    return [this.renderer.camera.scaleFactor2(d) * screenPixelSize, d];
+};
+
+
+GpuGroup.prototype.normalizeGE = function(node, ge, lod) {
+    node.precision = ge;
+    node.lod = lod;
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+        this.normalizeGE(node.nodes[i], ge * 0.5, lod+1);
+    }
+};
+
+
+GpuGroup.prototype.getLinePointParametricDist = function(p0, p1, p) {
+
+     var v = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
+     var w = [p[0] - p0[0], p[1] - p0[1], p[2] - p0[2]];
+
+     var c1 = vec3.dot(w,v);
+
+     if (c1 <= 0)
+          return 0;
+
+     var c2 = vec3.dot(v,v);
+     if (c2 <= c1)
+          return 1;
+
+     var b = c1 / c2;
+
+     return b;
+};
+
+
+GpuGroup.prototype.getOctant = function(point, points) {
+    var fx = this.getLinePointParametricDist(points[0], points[1], point);
+    var fy = this.getLinePointParametricDist(points[1], points[2], point);
+    var fz = this.getLinePointParametricDist(points[4], points[0], point);
+
+    if (fz > 0.5) {
+        if (fy > 0.5) {
+            if (fx > 0.5) {
+                return 5;
+            } else {
+                return 4;
+            }
+        } else {
+            if (fx > 0.5) {
+                return 7;
+            } else {
+                return 6;
+            }
+        }
+    } else {
+        if (fy > 0.5) {
+            if (fx > 0.5) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            if (fx > 0.5) {
+                return 3;
+            } else {
+                return 2;
+            }
+        }
+    }
+
+};
+
+GpuGroup.prototype.setDivisionSpace = function(node, points, octant) {
+    node.volume2 = { points: points, octant: octant };
+
+    var center = [0,0,0];
+    
+    for (var i = 0, li = points.length; i < li; i++) {
+        center[0] += points[i][0];
+        center[1] += points[i][1];
+        center[2] += points[i][2];
+    }
+
+    center[0] /= li;
+    center[1] /= li;
+    center[2] /= li;
+
+    var xv = [(points[1][0] - points[0][0])*0.5, (points[1][1] - points[0][1])*0.5, (points[1][2] - points[0][2])*0.5];
+    var yv = [(points[1][0] - points[2][0])*0.5, (points[1][1] - points[2][1])*0.5, (points[1][2] - points[2][2])*0.5];
+    var zv = [(points[0][0] - points[4][0])*0.5, (points[0][1] - points[4][1])*0.5, (points[0][2] - points[4][2])*0.5];
+    var xf, yf, zf;
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+
+        var octant = this.getOctant(node.nodes[i].volume.center, points);
+
+        switch(octant) {
+            case 0: xf = -1, yf = -1, zf = -1; break;
+            case 1: xf = 0, yf = -1, zf = -1; break;
+            case 2: xf = -1, yf = 0, zf = -1; break;
+            case 3: xf = 0, yf = 0, zf = -1; break;
+            case 4: xf = -1, yf = -1, zf = 0; break;
+            case 5: xf = 0, yf = -1, zf = 0; break;
+            case 6: xf = -1, yf = 0, zf = 0; break;
+            case 7: xf = 0, yf = 0, zf = 0; break;
+        }
+        
+        var p = [center[0] + xv[0] * xf + yv[0] * yf + zv[0] * zf,
+                 center[1] + xv[1] * xf + yv[1] * yf + zv[1] * zf,
+                 center[2] + xv[2] * xf + yv[2] * yf + zv[2] * zf];
+
+        this.setDivisionSpace(node.nodes[i], [
+
+            [p[0],
+             p[1],
+             p[2]],
+
+            [p[0] + xv[0],
+             p[1] + xv[1],
+             p[2] + xv[2]],
+
+            [p[0] + xv[0] + yv[0],
+             p[1] + xv[1] + yv[1],
+             p[2] + xv[2] + yv[2]],
+
+            [p[0] + yv[0],
+             p[1] + yv[1],
+             p[2] + yv[2]],
+
+            [p[0] + zv[0],
+             p[1] + zv[1],
+             p[2] + zv[2]],
+
+            [p[0] + xv[0] + zv[0],
+             p[1] + xv[1] + zv[1],
+             p[2] + xv[2] + zv[2]],
+
+            [p[0] + xv[0] + yv[0] + zv[0],
+             p[1] + xv[1] + yv[1] + zv[1],
+             p[2] + xv[2] + yv[2] + zv[2]],
+
+            [p[0] + yv[0] + zv[0],
+             p[1] + yv[1] + zv[1],
+             p[2] + yv[2] + zv[2]]
+
+        ], octant);
+
+    }
+};
+
+
+GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
+
+    var renderer = this.renderer;
+    var points = node.volume.points2;
+    var cameraPos = this.renderer.cameraPosition;
+
+    if (!visible && !renderer.camera.pointsVisible(points, cameraPos)) {
+        return;        
+    }
+
+//    var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * (1/18) /*node.precision * 100*/);
+    var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * this.geFactor);
+
+    //this.loadMode = 0;
+
+    if (this.loadMode == 0) { // topdown
+
+        if (!node.nodes.length || res[0] <= this.map.draw.texelSizeFit) {
+
+            if (node.parent || this.isNodeReady(node)) { 
+                this.drawNode(node);
+            }
+
+        } else {
+
+            //are nodes ready
+            var ready = true;
+            var nodes = node.nodes;
+            var visible = [];
+
+            for (var i = 0, li = nodes.length; i < li; i++) {
+                //visible[i] = renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos);
+
+                //if (visible[i]) {
+                    if (!this.isNodeReady(nodes[i])) {
+                        ready = false;
+                    }
+                //}
+            }
+
+
+            if (ready) {
+                for (var i = 0, li = nodes.length; i < li; i++) {
+                    //if (visible[i]) {
+                        //this.traverseNode(nodes[i], true, true);
+                        this.traverseNode(nodes[i]);
+                    //}
+                }
+            } else { // children are not ready, draw parent as fallback
+
+                //if (this.isNodeReady(node)) {
+                    this.drawNode(node);
+                //}
+
+            }
+
+        }
+
+    } else if (this.loadMode == 1) { // topdown with splitting
+
+        var priority = node.lod * res[1];
+
+        if (!node.nodes.length || res[0] <= this.map.draw.texelSizeFit) {
+
+            if (!skipRender && (/*node.parent ||*/ this.isNodeReady(node, null, priority))) { 
+                this.drawNode(node);
+            }
+
+        } else {
+
+            //are nodes ready
+            var ready = true;
+            var nodes = node.nodes;
+            var mask = [0,0,0,0,0,0,0,0];
+            var useMask = false;
+            var readyCount = 0;
+            var splitLods = this.map.config.mapSplitLods;
+
+            var priority2 = (node.lod+1) * res[1];
+
+            for (var i = 0, li = nodes.length; i < li; i++) {
+
+                if (splitLods) {
+                    var node2 = nodes[i];
+                    var res2 = this.getNodeTexelSize(node2, node.precision * renderer.curSize[0] * this.geFactor);
+                    node2.goodLod = (res2[0] <= this.map.draw.texelSizeFit);
+                }
+
+                if (renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos)) {
+                    nodes[i].visible = true;
+                } else {
+                    nodes[i].visible = false;
+                    continue;
+                }
+
+                if (!this.isNodeReady(nodes[i], null, priority2, true) || (splitLods && node2.goodLod)) {
+                    //ready = false;
+                    useMask = true;
+                    mask[nodes[i].volume2.octant] = 1;
+                } else {
+                    readyCount++;
+                }
+            }
+
+            for (var i = 0, li = nodes.length; i < li; i++) {
+                if (nodes[i].visible && !(splitLods && nodes[i].goodLod)) {
+                    //this.traverseNode(nodes[i], true, true);
+                    var skipChildRender = (skipRender || (mask[nodes[i].volume2.octant] == 1));
+                    this.traverseNode(nodes[i], true, null, skipChildRender, skipChildRender);
+                }
+            }
+
+            if (useMask) { // some children are not ready, draw parent as fallback
+                if (!skipRender && this.isNodeReady(node, null, priority)) {
+                    if (readyCount > 0) {
+                        this.drawNode(node, null, mask, node.volume2.points);
+                    } else {
+                        this.drawNode(node);
+                    }
+                }
+            }
+
+        }
+
+    } else if (this.loadMode == 2) { // fit
+
+        if (!node.nodes.length || res[0] <= 1.1) {
+
+            if (isready || this.isNodeReady(node)) {
+                this.drawNode(node);
+            } else { //node is not ready, try childen
+
+                var nodes = node.nodes;
+
+                for (var i = 0, li = nodes.length; i < li; i++) {
+                    if (renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos)) {
+                        if (this.isNodeReady(nodes[i], true)) {
+                            this.drawNode(node);
+                        }
+                    }
+                }
+
+            }
+
+        } 
+
+        else if (res[0] <= 2.2) {
+
+            //are nodes ready
+            var ready = true;
+            var nodes = node.nodes;
+            var visible = [];
+
+            for (var i = 0, li = nodes.length; i < li; i++) {
+                visible[i] = renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos);
+
+                if (visible[i]) {
+                    if (!this.isNodeReady(nodes[i])) {
+                        ready = false;
+                    }
+                }
+            }
+
+            if (ready) {
+                for (var i = 0, li = nodes.length; i < li; i++) {
+                    if (visible[i]) {
+                        this.traverseNode(nodes[i], true, true);
+                    }
+                }
+            } else { // children are not ready, draw parent as fallback
+
+                //if (this.isNodeReady(node)) {
+                    this.drawNode(node);
+                //}
+
+            }
+
+        } else {
+
+            for (var i = 0, li = node.nodes.length; i < li; i++) {
+                this.traverseNode(node.nodes[i]);
+            }
+        }
+
+    } else if (this.loadMode == 3) { // fitonly
+
+        if (!node.nodes.length || res[0] <= 1.1) {
+
+            if (this.isNodeReady(node)) {
+                this.drawNode(node);
+            }
+
+        } else {
+            for (var i = 0, li = node.nodes.length; i < li; i++) {
+                this.traverseNode(node.nodes[i]);
+            }
+        }
+    }
+
+};
+
+
+GpuGroup.prototype.isNodeReady = function(node, doNotLoad, priority, skipGpu) {
+    var jobs = node.jobs;
+    var ready = true;
+
+    //return true;
+
+    for (var i = 0, li = jobs.length; i < li; i++) {
+        var job = jobs[i];
+        
+        if (job.type == VTS_JOB_MESH) {
+            if (!this.isMeshReady(job, doNotLoad, priority, skipGpu)) {
+                ready = false;
+            }
+        }
+    }
+
+    return ready;
+};
+
+GpuGroup.prototype.drawNodeVolume = function(points, color) {
+    var renderer = this.renderer;
+
+    drawLineString({
+        points : [points[0], points[1], points[2], points[3], points[0],
+                  points[4], points[5], points[6], points[7], points[4]
+        ],
+        size : 1.0,
+        color : color,
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[1], points[5]],
+        size : 1.0,
+        color : color,
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[2], points[6]],
+        size : 1.0,
+        color : color,
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+
+    drawLineString({
+        points : [points[3], points[7]],
+        size : 1.0,
+        color : color,
+        depthTest : false,
+        //depthTest : true,
+        //depthOffset : [-0.01,0,0],
+        screenSpace : false, //switch to physical space
+        blend : false
+        }, renderer);
+}
+
+GpuGroup.prototype.drawNode = function(node, noSkip, splitMask, splitSpace) {
+    var renderer = this.renderer;
+    var debug = this.map.draw.debug;
+    var jobs = node.jobs;
+
+    renderer.drawnNodes++;
+
+    if (debug.drawNBBoxes) {
+        var points = node.volume.points;
+        var color = [255,0,255,255];
+
+        if (node.tileset) {
+        color = [0,255,0,255];           
+        }
+
+        if (noSkip) {
+            color = [255,255,0,255];
+        }
+                 
+        if (debug.drawSpaceBBox && node.volume2) {
+            this.drawNodeVolume(node.volume2.points, [255,0,0,255]);
+        } else {
+            this.drawNodeVolume(points, color);
+        }
+
+        /*
+        for (var i = 0, li = node.nodes.length; i < li; i++) {
+            var node2 = node.nodes[i];
+
+            if (node2.volume2.octant == 7) {
+                this.drawNodeVolume(node2.volume2.points, [255,0,0,255]);
+            }
+        }*/
+
+        var cameraPos = this.renderer.cameraPosition;
+        var pos = node.volume.center;
+
+        var shift = [cameraPos[0] - pos[0],
+               cameraPos[1] - pos[1],
+               cameraPos[2] - pos[2]];
+
+        vec3.normalize(shift);
+        vec3.scale(shift, node.volume.radius);
+
+        pos = [pos[0]+shift[0]-cameraPos[0],  
+               pos[1]+shift[1]-cameraPos[1],
+               pos[2]+shift[2]-cameraPos[2]];
+
+        /*pos = [pos[0]-cameraPos[0],  
+               pos[1]-cameraPos[1],
+               pos[2]-cameraPos[2]];*/
+
+        pos = this.renderer.core.getRendererInterface().getCanvasCoords(
+            pos,
+            /*[pos[0] - cameraPos[0],
+             pos[1] - cameraPos[1],
+             pos[2] - cameraPos[2]],*/
+             this.renderer.camera.getMvpMatrix());
+
+        var factor = 2, text;
+
+        if (debug.drawLods) {
+            text = '' + node.lod;//this.getNodeLOD(node);
+            renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]-4*factor), 4*factor, text, [1,0,0,1], pos[2]);
+        }
+        
+        if (debug.drawDistance) {
+            var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * this.geFactor);
+            text = '' + res[1].toFixed(2) + ' ' + res[0].toFixed(2) + ' ' + node.precision.toFixed(2);
+            renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+17*factor), 4*factor, text, [0.5,0.5,1,1], pos[2]);
+        }
+
+        if (debug.drawFaceCount) {
+            var mesh = (jobs[0] && jobs[0].type == VTS_JOB_MESH) ? jobs[0].mesh : null;
+            if (mesh) {
+                text = '' + mesh.faces + ' - ' + mesh.submeshes.length;
+                renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
+            }
+        }
+
+        if (debug.drawResources && jobs[0]) {
+            text = '' + (this.getGpuSize(jobs[0])/(1024*1024)).toFixed(2) + 'MB';
+            renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+3*factor), 4*factor, text, [0,1,0,1], pos[2]);
+        }
+
+        if (debug.drawSurfaces && jobs[0]) {
+            var text = '';
+
+            if (jobs[0].texturePath) {
+                var parts = jobs[0].texturePath.split('/');
+
+                if (parts.length > 1) {
+                    text = parts[parts.length-2] + '/' + parts[parts.length-1];
+                } else {
+                    text = parts[0];
+                }
+            }
+
+            renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+10*factor), 4*factor, text, [0,1,0,1], pos[2]);
+        }
+
+        if (debug.drawTextureSize) {
+            var mesh = (jobs[0] && jobs[0].type == VTS_JOB_MESH) ? jobs[0].mesh : null;
+            if (mesh) {
+                var submeshes = mesh.submeshes;
+                for (i = 0, li = submeshes.length; i < li; i++) {
+
+                    if (submeshes[i].internalUVs) {
+                        var texture = jobs[0].textures[i];
+                        if (texture) {
+                            var gpuTexture = texture.getGpuTexture();
+                            if (gpuTexture) {
+                                text = '[' + i + ']: ' + gpuTexture.width + ' x ' + gpuTexture.height;
+                                renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*4*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
+                            }
+                        }
+                    } else {
+                        text = '[' + i + ']: 256 x 256';
+                        renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+(17+i*4*2)*factor), 4*factor, text, [1,1,1,1], pos[2]);
+                    }
+                }
+            }
+        }
+    }
+
+    //debug.drawNBBoxes = true;
+
+    if (!noSkip) {
+        //return true;
+    }
+
+    for (var i = 0, li = jobs.length; i < li; i++) {
+        var job = jobs[i];
+        
+        if (job.type == VTS_JOB_MESH) {
+
+            if (this.isMeshReady(job)) {
+                this.drawMesh(job, node, splitMask, splitSpace);
+            }
+        }
+    }
+
+};
+
+
+GpuGroup.prototype.isMeshReady = function(job, doNotLoad, priority, skipGpu) {
+    var mesh = job.mesh;
+    var submeshes = mesh.submeshes;
+    var ready = true;
+    var stats = this.map.stats;
+
+    //console.log('' + stats.gpuNeeded + '  ' + job.texturePath);
+
+    if (mesh.isReady(doNotLoad, priority, skipGpu)) {
+        stats.gpuNeeded += mesh.gpuSize;
+
+        for (var i = 0, li = submeshes.length; i < li; i++) {
+            var submesh = submeshes[i];
+            
+            if (submesh.internalUVs && job.texturePath) {
+                if (job.textures[i] == null) {
+                    var path = job.texturePath + '-' + i + '.jpg';
+                    job.textures[i] = job.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, null /*tile*/, true);
+                } 
+
+                if (!job.textures[i].isReady(doNotLoad, priority, skipGpu)) {
+                    ready = false;
+                }
+
+                stats.gpuNeeded += job.textures[i].getGpuSize();
+            }
+        }
+
+    } else {
+        ready = false;
+    }
+
+    //console.log('' + stats.gpuNeeded + '  finish');
+
+    return ready;
+}
+
+
+GpuGroup.prototype.getGpuSize = function(job) {
+    var mesh = job.mesh;
+
+    if (!mesh) return 0;
+
+    var submeshes = mesh.submeshes;
+    var size = 0;
+    var doNotLoad = true;
+
+    if (mesh.isReady(doNotLoad)) {
+        size += mesh.gpuSize;
+
+        for (var i = 0, li = submeshes.length; i < li; i++) {
+            var submesh = submeshes[i];
+            
+            if (submesh.internalUVs && job.texturePath) {
+                if (job.textures[i]) {
+                    size += job.textures[i].getGpuSize();
+                }
+            }
+        }
+    }
+
+    return size;
+}
+
+
+GpuGroup.prototype.drawMesh = function(job ,node, splitMask, splitSpace) {
+    var mesh = job.mesh;
+    var submeshes = mesh.submeshes;
+    var cameraPos = this.renderer.cameraPosition;
+
+    for (var i = 0, li = submeshes.length; i < li; i++) {
+        var submesh = submeshes[i];
+        
+        if (job.textures[i]) {
+            //mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  null /*splitMask*/);
+            //mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  [0.1,1,2,3,4,5,6,0], node.volume2.points);
+            mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  splitMask, splitSpace);
+        }
+    }
+}
+
+
+/*GpuGroup.prototype.testNodes = function(node) {
+    var p = node.volume.points;
+
+    var xa1 = p[7], xa2 = p[6];
+    var ya1 = p[7], ya2 = p[0];
+    var za1 = p[7], za2 = p[4];
+
+    p = p[7];
+
+    var getAxisPos = (function(pp, a1, a2){
+        var v = [a2[0] - a1[0], a2[1] - a1[1], a2[2] - a1[2] ];
+        var w = [pp[0] - a1[0], pp[1] - a1[1], pp[2] - a1[2] ];
+
+        var c1 = vec3.dot(w,v);
+        if (c1 <= 0) return 0;
+
+        var c2 = vec3.dot(v,v);
+        if (c2 <= c1) return 1;
+
+        return c1 / c2;
+    });
+
+    var getPos = (function(pp){
+        console.log('axis-x ' + getAxisPos(pp, xa1, xa2));
+        console.log('axis-y ' + getAxisPos(pp, ya1, ya2));
+        console.log('axis-z ' + getAxisPos(pp, za1, za2));
+    });
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+        console.log('node' + i);
+
+        var volume = node.nodes[i].volume;
+
+        getPos(volume.center);
+    }
+
+};
+
+
+GpuGroup.prototype.testNodes3 = function(node) {
+    this.drawNode(node);
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+        var node2 = node.nodes[i];
+
+        this.drawNode(node2);
+
+        for (var j = 0, lj = node2.nodes.length; j < lj; j++) {
+            var node3 = node2.nodes[j];
+
+            this.drawNode(node3);
+
+            for (var k = 0, lk = node3.nodes.length; k < lk; k++) {
+                this.drawNode(node3.nodes[k], k == 0);
+            }
+
+        }
+    }
+};
+
+
+GpuGroup.prototype.testNodes2 = function(node, depth) {
+    
+    if (depth == 0)
+        this.drawNode(node);
+
+    for (var i = 0, li = node.nodes.length; i < li; i++) {
+        var node2 = node.nodes[i];
+        this.testNodes2(node2, depth + 1)
+    }
+};*/
 
 
 GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
@@ -816,6 +1849,114 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
     var renderer = this.renderer;
     var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
+    this.map = renderer.core.map;
+
+    if (this.rootNode) {
+        renderer.drawnNodes = 0;
+
+        var mode = this.map.config.mapLoadMode; 
+
+        switch(mode) {
+        case 'topdown': this.loadMode = ((this.map.config.mapSplitMeshes && this.map.config.mapSplitSpace) ? 1 : 0); break;
+        case 'fit':     this.loadMode = 2; break; 
+        case 'fitonly': this.loadMode = 3; break;
+        }
+
+        if (!this.geNormalized) {
+            this.normalizeGE(this.rootNode, this.rootNode.precision, 0);
+
+            if (this.loadMode == 1) {
+                var s = this.map.config.mapSplitSpace;
+
+                //haag
+                //[0](3917010.907515,295581.570867,5007978.667312)
+                //[1](3916703.088682,295558.325137,5008219.156812)
+                //[2](3916673.621374,295948.529795,5008219.156812) 
+                //[4](3917250.714190,295599.680484,5008287.362628) 
+
+                // p0.x,p0.y,p0.z,p1.x,p1.y,p1.z,p2.x,p2.y,p2.z,p4.x,p4.y,p4.z
+                // mapSplitSpace=3917010.907515,295581.570867,5007978.667312,3916703.088682,295558.325137,5008219.156812,3916673.621374,295948.529795,5008219.156812,3917250.714190,295599.680484,5008287.362628
+
+                /*
+                var s = [
+                    [3917010.907515,295581.570867,5007978.667312],
+                    [3916703.088682,295558.325137,5008219.156812],
+                    [3916673.621374,295948.529795,5008219.156812],
+                    [3917250.714190,295599.680484,5008287.362628]
+                ];
+                */
+
+                /*
+                var s = [
+                    [3916942.895357,295576.434754,5008527.852128],
+                    [3916913.428049,295966.639412,5008527.852128],
+                    [3917221.246882,295989.885143,5008287.362628],
+                    [3917250.714190,295599.680484,5008287.362628],
+
+                    [3916703.088682,295558.325137,5008219.156812],
+                    [3916673.621374,295948.529795,5008219.156812],
+                    [3916981.440208,295971.775525,5007978.667312],
+                    [3917010.907515,295581.570867,5007978.667312],
+
+                    ];
+                */
+
+                var p = [s[0][0], s[0][1], s[0][2]];
+                var xv = [s[2][0] - s[1][0], s[2][1] - s[1][1], s[2][2] - s[1][2]];
+                var yv = [s[1][0] - p[0], s[1][1] - p[1], s[1][2] - p[2]];
+                var zv = [s[3][0] - p[0], s[3][1] - p[1], s[3][2] - p[2]];
+
+                s = [
+
+                    [p[0] + yv[0] + zv[0],
+                     p[1] + yv[1] + zv[1],
+                     p[2] + yv[2] + zv[2]],
+
+                    [p[0] + xv[0] + yv[0] + zv[0],
+                     p[1] + xv[1] + yv[1] + zv[1],
+                     p[2] + xv[2] + yv[2] + zv[2]],
+
+                    [p[0] + xv[0] + zv[0],
+                     p[1] + xv[1] + zv[1],
+                     p[2] + xv[2] + zv[2]],
+
+                    [p[0] + zv[0],
+                     p[1] + zv[1],
+                     p[2] + zv[2]],
+
+                    [p[0] + yv[0],
+                     p[1] + yv[1],
+                     p[2] + yv[2]],
+
+                    [p[0] + xv[0] + yv[0],
+                     p[1] + xv[1] + yv[1],
+                     p[2] + xv[2] + yv[2]],
+
+                    [p[0] + xv[0],
+                     p[1] + xv[1],
+                     p[2] + xv[2]],
+
+                    [p[0],
+                     p[1],
+                     p[2]],
+
+                ];
+
+                this.setDivisionSpace(this.rootNode, s);
+            }
+
+            this.geNormalized = true;
+        }
+
+        //this.testNodes(this.rootNode);
+        //this.testNodes2(this.rootNode, 0);
+
+        //console.clear();
+
+        this.traverseNode(this.rootNode, map);
+        return;
+    }
+
 
     if (applyOrigin) {
         var mvp2 = mat4.create();

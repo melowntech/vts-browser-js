@@ -1,5 +1,5 @@
 
-var GpuProgram = function(gpu, vertex, fragment) {
+var GpuProgram = function(gpu, vertex, fragment, variants) {
     this.gpu = gpu;
     this.gl = gpu.gl;
     this.vertex = vertex;
@@ -10,6 +10,8 @@ var GpuProgram = function(gpu, vertex, fragment) {
     this.m = new Float32Array(16);
     this.ready = false;
     this.createProgram(vertex, fragment);
+    this.variants = variants || [];
+    this.programs = {};
 };
 
 
