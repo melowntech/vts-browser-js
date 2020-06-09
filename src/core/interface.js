@@ -1,5 +1,5 @@
 
-import Proj4 from 'proj4';
+import Proj4 from 'melowntech-proj4';
 import earcut from 'earcut';
 import {Core as Core_} from './core';
 //import {CoreInterface as CoreInterface_} from './interface';

@@ -1,41 +1,31 @@
-var path = require('path');
-var webpack = require('webpack');
-var CopyWebpackPlugin = require('copy-webpack-plugin');
-var CommonChunks = require('copy-webpack-plugin');
-var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-var LicenseWebpackPlugin = require('license-webpack-plugin');
-var fs = require("fs");
-
 
 var PROD = (process.env.NODE_ENV === 'production')
 var TARGET_DIR = PROD ? __dirname + "/dist/" : __dirname + "/build/";
 
+var fs = require("fs");
+var webpack = require('webpack');
+var LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
+var MiniCssExtractPlugin = require('mini-css-extract-plugin');
+var CopyPlugin = require('copy-webpack-plugin');
+
+var path = require('path');
 
 var plugins = [
-    new webpack.BannerPlugin(fs.readFileSync('./LICENSE', 'utf8')),
-    new LicenseWebpackPlugin({pattern: /^(MIT|ISC|BSD.*)$/})
-];
-
-if (PROD) {
-    plugins.push(new UglifyJsPlugin({
-      //comments: true,
-      compress: true,
-      mangle: true,
-      extractComments: {
+    new LicenseWebpackPlugin({ outputFilename: '3rdpartylicenses.txt' }),
+    new MiniCssExtractPlugin({ filename: '[name]' + (PROD ? '.min' : '') + '.css' }),
+    new webpack.BannerPlugin({
         "banner": function(filename) {
-          return "Copyright (c) 2017 Melown Technologies SE\n" +
-                 " *  For terms of use, see accompanying " + filename +" file.\n" +
+          return "Copyright (c) 2020 Melown Technologies SE\n" +
+                 " *  For terms of use, see accompanying [name] file.\n" +
                  " *  For 3rd party libraries licenses, see 3rdpartylicenses.txt.\n"
         }
-      },
-    }));
-}
-
-plugins.push(
-    new ExtractTextPlugin({
-      filename: 'vts-browser' + (PROD ? '.min' : '') + '.css'
     }),
+    new CopyPlugin({
+      patterns: [
+        { from: './LICENSE', to: 'vts-browser.js' + (PROD ? '.min' : '') + '.LICENSE' },
+        { from: './LICENSE', to: 'vts-core.js' + (PROD ? '.min' : '') + '.LICENSE' }
+      ],
+    }),    
     new webpack.DefinePlugin({
       'VTS_MATERIAL_DEPTH':           1,
       'VTS_MATERIAL_FLAT':            2,
@@ -124,42 +114,46 @@ plugins.push(
       'VTS_IMPORATANCE_INV_LOG' :     1355.6127860321758038669705901537 // 1/log(LOG_BASE)
 
     })
-);
+];
 
-
-var config = {
+module.exports = {
   entry: {
     'vts-core': __dirname + '/src/core/index.js',
     'vts-browser': __dirname + '/src/browser/index.js'
   },
-  devtool: PROD ? undefined : 'source-map',
+
+  module: {
+    rules: [
+      {
+        test: /\.css$/i,
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              esModule: true,
+            },
+          },
+
+        'css-loader']
+      },
+    ],
+  },
+
   output: {
     path: TARGET_DIR,
     filename: '[name]' + (PROD ? '.min' : '') + '.js',
     libraryTarget: "var",
     library: "vts"
   },
-  module: {
-    loaders: [
-    {
-        include: [path.resolve(__dirname, "src/")]
-    },
-    {
-      test: /\.css$/, loader: ExtractTextPlugin.extract({fallback: "style-loader", use: "css-loader"})
-    },
-    ]
-  },
-  resolve: {
-    modules : ['./node_modules/', './src/'],
-    alias: {
-      core: path.resolve(__dirname, 'src/core/'),
-      browser: path.resolve(__dirname, 'src/browser/')
-    }
-  },
+
+  devtool: 'source-map',
+
   devServer: {
     inline: true
   },
-  plugins: plugins
+
+  mode: (PROD) ? 'production' : 'development',
+
+  plugins: plugins  
 };
 
-module.exports = config;
