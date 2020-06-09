@@ -1,5 +1,5 @@
 
-import Proj4 from 'proj4';
+import Proj4 from 'melowntech-proj4';
 import earcut from 'earcut';
 import {getCoreVersion as getCoreVersion_, checkSupport as checkSupport_} from '../core/core';
 import {vec2 as vec2_, vec3 as vec3_, vec4 as vec4_, mat3 as mat3_, mat4 as mat4_} from '../core/utils/matrix';

@@ -1,9 +1,9 @@
 
 //css stuff
-import 'browser/browser.css';
-import 'browser/presenter/css/main.css';
-import 'browser/presenter/css/panel.css';
-import 'browser/presenter/css/subtitles.css';
+import './browser.css';
+import './presenter/css/main.css';
+import './presenter/css/panel.css';
+import './presenter/css/subtitles.css';
 
 import Browser_ from './browser';
 

@@ -1,4 +1,4 @@
-import Proj4 from 'proj4';
+import Proj4 from 'melowntech-proj4';
 import Map_ from './map/map';
 import Inspector_ from './inspector/inspector';
 import Renderer_ from './renderer/renderer';
@@ -585,7 +585,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.23.2';
+    return (full ? 'Core: ' : '') + '2.23.3';
 }
 
 
