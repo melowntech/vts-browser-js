@@ -120,7 +120,7 @@ function createCube() {
 
 function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shininess, shader) {
     //get camera transformations matrices
-    var cameInfo = map.getCameraInfo();
+    var cameraInfo = map.getCameraInfo();
 
     //get local space matrix
     //this matrix makes mesh
@@ -159,7 +159,7 @@ function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shin
     vts.mat4.multiply(translateMatrix, mv, mv);
 
     //multiply cube matrix with camera view matrix
-    vts.mat4.multiply(cameInfo.viewMatrix, mv, mv);
+    vts.mat4.multiply(cameraInfo.viewMatrix, mv, mv);
 
     var norm = [
         0,0,0,

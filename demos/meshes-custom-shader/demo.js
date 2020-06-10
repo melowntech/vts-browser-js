@@ -3,6 +3,10 @@ var map = null;
 var renderer = null;
 var woodTexture = null;
 var cubeMesh = null;
+var cubeShader = null;
+var cubeState = null;
+var animationTime = 0;
+var timeStart = 0;
 
 (function startDemo() {
     // create map in the html div with id 'map-div'
@@ -27,6 +31,7 @@ var cubeMesh = null;
 
     //callback once is map config loaded
     browser.on('map-loaded', onMapLoaded);
+    browser.on('tick', onTick);
 
     //load texture used for cubes    
     loadTexture();
@@ -38,7 +43,7 @@ var cubeMesh = null;
 
 function loadTexture() {
     //load texture used for cubes    
-    var woodImage = vts.utils.loadImage('./wood.png',
+    var woodImage = vts.utils.loadImage('https://i.imgur.com/vVtw6pA.png',
         (function(){
             woodTexture = renderer.createTexture({ source: woodImage });
         }).bind(this)
@@ -47,6 +52,7 @@ function loadTexture() {
 
 
 function createCube() {
+
     var vertices = [ 1,1,1, -1,1,1, -1,-1,1, //top 
                      -1,-1,1, 1,-1,1, 1,1,1,
 
@@ -102,10 +108,84 @@ function createCube() {
                     1,0,0, 1,0,0, 1,0,0 ];
 
     cubeMesh = renderer.createMesh({ vertices: vertices, uvs: uvs, normals: normals });
+
+    cubeState = renderer.createState({
+                    blend : false,
+                    stencil : false,
+                    zoffset : 0,
+                    zwrite : true,
+                    ztest : true,  //  z buffer test - less
+                    zequal : true, //  switch z buffer test from less to less or equal
+                    culling : true });
+
+    cubeShader = renderer.createShader({
+    
+        'vertexShader' : 'attribute vec3 aPosition;\n'+
+                         'attribute vec2 aTexCoord;\n'+
+                         'attribute vec3 aNormal;\n'+
+                         'uniform mat4 uMV, uProj;\n'+
+                         'uniform mat3 uNorm;\n'+
+                         'uniform float uFogDensity;\n'+
+                         'varying vec2 vTexCoord;\n'+
+                         'varying vec4 vPosition;\n'+
+                         'varying vec3 vNormal;\n'+
+                         'varying float vFogFactor;\n'+
+                         'void main() {\n'+
+                             //compute camera space position and prejected position
+                             'vec4 camSpacePos = uMV * vec4(aPosition, 1.0);\n'+
+                             'gl_Position = uProj * camSpacePos;\n'+
+
+                             //compute fog density
+                             'float camDist = length(camSpacePos.xyz);\n'+
+                             'vFogFactor = exp(uFogDensity * camDist);\n'+
+
+                             //pass UVs, Positions and Normals to fragment shader
+                             'vTexCoord = aTexCoord;\n'+
+                             'vPosition = camSpacePos;\n'+
+                             'vNormal = aNormal * uNorm;\n'+
+                         '}',
+
+        'fragmentShader' : 
+
+                         'precision mediump float;\n'+
+
+                         'varying vec2 vTexCoord;\n'+
+                         'varying vec4 vPosition;\n'+
+                         'varying vec3 vNormal;\n'+
+                         'varying float vFogFactor;\n'+
+
+                         'uniform sampler2D uSampler;\n'+
+                         'uniform mat4 uMaterial;\n'+
+                         'uniform float uTime;\n'+
+                         'uniform vec4 uFogColor;\n'+
+
+                         'void main() {\n'+
+                             //compute light color
+                             'vec3 ldir = normalize(-vPosition.xyz);\n'+
+                             'vec3 normal = normalize(vNormal);\n'+
+                             'vec3 eyeDir = ldir;\n'+
+                             'vec3 refDir = reflect(-ldir, normal);\n'+
+                             'float specW = min(1.0, pow(max(dot(refDir, eyeDir), 0.0), uMaterial[3][0]));\n'+
+                             'float diffW = min(1.0, max(dot(normal, ldir), 0.0));\n'+
+                             'vec4 lcolor = uMaterial[0]+(uMaterial[1]*diffW)+(uMaterial[2]*specW);\n'+
+                             
+                             //texture color
+                             'vec4 tcolor = texture2D(uSampler, vTexCoord);\n'+
+
+                             //sine animation
+                             'tcolor.rgb = mix(vec3(1.0,1.0,1.0), tcolor.rgb, abs(vTexCoord.y-0.5+sin(vTexCoord.x*3.14*2.0-uTime)*0.25)*2.0);\n'+
+
+                             //apply fog
+                             'gl_FragColor = mix(uFogColor, vec4(lcolor.xyz*(1.0/255.0), 1.0) * tcolor, vFogFactor); gl_FragColor.z *= uMaterial[3][1];\n'+
+                          '}'
+    
+    });
+
 }
 
 
 function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shininess, textured) {
+
     //get camera transformations matrices
     var cameraInfo = map.getCameraInfo();
 
@@ -159,23 +239,26 @@ function drawCube(coords, scale, ambientColor, diffuseColor, specularColor, shin
     vts.mat4.toInverseMat3(mv, norm);
 
     //setup material 
-    var opacity = 1;
     var material = [
         ambientColor[0], ambientColor[1], ambientColor[2], 0,
         diffuseColor[0], diffuseColor[1], diffuseColor[2], 0,
         specularColor[0], specularColor[1], specularColor[2], 0,
-        shininess, opacity, 0, 0   
+        shininess, 1, 0, 0
     ];
+
+    renderer.setState(cubeState);
 
     //draw cube
     renderer.drawMesh({
             mesh : cubeMesh,
             texture : woodTexture,
-            shader : textured ? 'textured-and-shaded' : 'shaded',
+            shader : cubeShader,
             shaderVariables : {
+                'uProj' : ['mat4', cameraInfo.projectionMatrix],
                 'uMV' : ['mat4', mv],
                 'uNorm' : ['mat3', norm],
-                'uMaterial' : ['mat4', material]
+                'uMaterial' : ['mat4', material],
+                'uTime' : ['float', animationTime]
             }
         });
 }
@@ -187,6 +270,7 @@ function onMapLoaded() {
     map = browser.map;    
     map.addRenderSlot('custom-meshes', onDrawMeshes, true);
     map.moveRenderSlotAfter('after-map-render', 'custom-meshes');
+    timeStart = Date.now();
 };
 
 
@@ -196,15 +280,17 @@ function onDrawMeshes(renderChannel) {
     }
 
     if (woodTexture) { //check whether texture is loded
-        //draw textured cubes        
-        drawCube([15.401619754298016, 50.66116076086283, 0], 10, [255,128,128], [0,0,0], [0,0,0], 0, true);
-        drawCube([15.401273646044713, 50.66085886059055, 0], 10, [0,0,0], [255,128,128], [0,0,0], 0, true);
-        drawCube([15.400964365373339, 50.66056777477979, 0], 10, [0,0,0], [255,128,128], [255,255,255], 90, true);
-
-        //draw cubes without textures
-        drawCube([15.401240821143277, 50.66137227148973, 0], 10, [255,128,128], [0,0,0], [0,0,0], 0, false);
-        drawCube([15.400944108141767, 50.66112054925841, 0], 10, [0,0,0], [255,128,128], [0,0,0], 0, false);
-        drawCube([15.400597205224727, 50.66084127611251, 0], 10, [0,0,0], [255,128,128], [255,255,255], 90, false);
+        //draw textured cube        
+        drawCube([15.401273646044713, 50.66085886059055, 3], 10, [0,0,0], [255,255,255], [255,255,255], 90, true);
     }    
 } 
+
+function onTick() {
+    if (map && woodTexture) { //check whether texture is loded
+
+        animationTime = (Date.now() - timeStart) * 0.002;
+
+        map.redraw();
+    }
+}
 
