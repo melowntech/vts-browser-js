@@ -344,7 +344,7 @@ GpuShaders.lineVertexShader = //line
             '#endif\n'+
 
         '#endif\n'+
-        
+
     '}';
 
 
@@ -592,7 +592,7 @@ GpuShaders.text2FragmentShader = 'precision mediump float;\n'+
         'if (i == 1) r=c.y;else\n'+
         'if (i == 2) r=c.z;else\n'+
         'if (i == 3) r=c.w;\n'+
-        
+
         'float u_buffer = uParams[0];\n'+
         'float u_gamma = uParams[1];\n'+
         'float alpha = uColor.a * smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, r);\n'+
@@ -702,39 +702,39 @@ GpuShaders.atmoVertexShader3 =
 
         'vec3 position = (aPosition.xyz - vec3(0.5)) * vec3(uParams.w * 2.0);\n'+
         'vec4 camPos = uParams2;\n'+
-        'float SurfaceRadius = uParams.x;\n'+ 
-        'float AtmosphereRadius = uParams.y;\n'+ 
-        'float StretchAmt = uParams.z;\n'+ 
-     
+        'float SurfaceRadius = uParams.x;\n'+
+        'float AtmosphereRadius = uParams.y;\n'+
+        'float StretchAmt = uParams.z;\n'+
+
         'float camHeight = length(camPos.xyz);\n'+
         'vec3 camToPos = position - camPos.xyz;\n'+
         'float farDist = length(camToPos);\n'+
-    
+
         // get distance to surface horizon
         'float altitude = max(0.0,camHeight - SurfaceRadius);\n'+
         'float horizonDist = sqrt((altitude*altitude) + (2.0 * SurfaceRadius * altitude));\n'+
         'float maxDot = horizonDist / camHeight;\n'+
-     
+
         // get distance to atmosphere horizon - use max(0,...) because we can go into the atmosphere
         'altitude = max(0.0,camHeight - AtmosphereRadius);\n'+
         'horizonDist = sqrt((altitude*altitude) + (2.0 * AtmosphereRadius * altitude));\n'+
-     
+
         // without this, the shift between inside and outside atmosphere is  jarring
         'float tweakAmount = 0.1;\n'+
         'float minDot = max(tweakAmount,horizonDist / camHeight);\n'+
-     
+
         // scale minDot from 0 to -1 as we enter the atmosphere
         'float minDot2 = ((camHeight - SurfaceRadius) * (1.0 / (AtmosphereRadius  - SurfaceRadius))) - (1.0 - tweakAmount);\n'+
         'minDot = min(minDot, minDot2);\n'+
-      
+
         // get dot product of the vertex we're looking out
         'float posDot = dot(camToPos / farDist,-camPos.xyz / camHeight) - minDot;\n'+
-     
+
         // calculate the height from surface in range 0..1
         'float height = posDot * (1.0 / (maxDot - minDot));\n'+
-    
-        'vTexcoords.y = height;\n'+ 
-     
+
+        'vTexcoords.y = height;\n'+
+
         'height -= min(0.0,minDot2 + ((1.0 + StretchAmt) * minDot2));\n'+
         'vTexcoords.x = height;\n'+
     '}';
@@ -753,7 +753,7 @@ GpuShaders.atmoFragmentShader3 = 'precision mediump float;\n'+
             'float l2 = clamp((l*l)*0.9+0.1, 0.0, 1.5);\n'+
             'vec4 c = mix(uFogColor2, uFogColor, l2);\n'+
             'gl_FragColor = vec4(c.xyz, c.w*l);\n'+
-        
+
             'if (l > uParams3.x){ gl_FragColor.xyz = mix(gl_FragColor.xyz, fogColor3.xyz, (l-uParams3.x)*uParams3.y); }\n'+
         '}'+
 
@@ -841,7 +841,7 @@ GpuShaders.heightmapDepthFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = fract(vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0) * vDepth) + (-0.5/255.0);\n'+
     '}';
 
-GpuShaders.quadPoint = 
+GpuShaders.quadPoint =
     'vec3 quadPoint(int i1, int i2, int i3, float t, float t2) {\n'+
         'float p1x = uPoints[i1], p1y = uPoints[i1+1], p1z = uPoints[i1+2];\n'+
         'float p3x = uPoints[i3], p3y = uPoints[i3+1], p3z = uPoints[i3+2];\n'+
@@ -849,7 +849,7 @@ GpuShaders.quadPoint =
         'float p2y = 2.0*uPoints[i2+1]-p1y*0.5-p3y*0.5;\n'+
         'float p2z = 2.0*uPoints[i2+2]-p1z*0.5-p3z*0.5;\n'+
         'return vec3(t2*t2*p1x+2.0*t2*t*p2x+t*t*p3x, t2*t2*p1y+2.0*t2*t*p2y+t*t*p3y, t2*t2*p1z+2.0*t2*t*p2z+t*t*p3z); }\n';
- 
+
 GpuShaders.planeVertexShader =
     'attribute vec3 aPosition;\n'+
     'attribute vec2 aTexCoord;\n'+
@@ -859,13 +859,13 @@ GpuShaders.planeVertexShader =
     'uniform float uPoints[9*3];\n'+
 
     '#ifndef poles\n'+
-        'uniform vec3 uVector;\n'+  
+        'uniform vec3 uVector;\n'+
         'uniform float uHeights[9];\n'+
     '#endif\n'+
 
     'varying vec2 vTexCoord;\n'+
     'varying vec2 vTexCoord2;\n'+
-    'varying float vFogFactor;\n'+ GpuShaders.quadPoint + 
+    'varying float vFogFactor;\n'+ GpuShaders.quadPoint +
 
     '#ifndef poles\n'+
         'float linearHeight(float x, float y) {\n'+
@@ -934,7 +934,7 @@ GpuShaders.planeFragmentShader = 'precision mediump float;\n'+
     'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         '#ifdef poles\n'+
-            'if (length(uParams4.xy - vTexCoord2.xy) > uParams4.z){ discard; }\n'+ 
+            'if (length(uParams4.xy - vTexCoord2.xy) > uParams4.z){ discard; }\n'+
         '#endif\n'+
 
         '#ifdef depth\n'+
@@ -973,7 +973,7 @@ GpuShaders.planeVertex4Shader =
     'uniform vec4 uParams;\n'+    //[uGridStep1, fogDensity, indexFactor, uGridStep2]
     'uniform vec4 uParams3;\n'+    //[px, py, sx, sy]
     'uniform float uPoints[9*3];\n'+
-    'uniform vec3 uVector;\n'+  
+    'uniform vec3 uVector;\n'+
     'uniform vec3 uHeights;\n'+   //[hmin, hmax]
     'uniform vec4 uTransform;\n'+
     //'uniform vec4 uTransform2;\n'+
@@ -1031,14 +1031,14 @@ GpuShaders.planeVertex4Shader =
             'vNormal = normalize(n);\n'+
         '#endif\n'+
 
-    '}';    
+    '}';
 
 GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
     '#extension GL_OES_standard_derivatives : enable\n'+
     '#define newspace\n'+
     'uniform sampler2D uSampler;\n'+
     'uniform vec4 uParams2;\n'+    //[uGridStep1, uGridStep2, uGridBlend, 0]
-    'uniform mat3 uSpace;\n'+  
+    'uniform mat3 uSpace;\n'+
     'varying vec2 vTexCoord;\n'+
     'varying float vFogFactor;\n'+
     'varying vec3 vBarycentric;\n'+
@@ -1052,7 +1052,7 @@ GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
     'uniform vec4 uFogColor;\n'+ // = vec4(216.0/255.0, 232.0/255.0, 243.0/255.0, 1.0);\n'+
     'void main() {\n'+
         'vec3 ldir = normalize(-vBarycentric);\n'+
-        
+
         '#ifdef flat\n'+
             'vec3 nx = dFdx(vBarycentric);\n'+
             'vec3 ny = dFdy(vBarycentric);\n'+
@@ -1084,9 +1084,9 @@ GpuShaders.planeFragmentShader2 = 'precision mediump float;\n'+
             //'float lcolor = 0.25+(0.75*diffW);\n'+
 
             '#ifdef normals\n'+
-                'vec4 c2 = vec4(normal*0.5+0.5,1.0);\n'+        
+                'vec4 c2 = vec4(normal*0.5+0.5,1.0);\n'+
             '#else\n'+
-                'vec4 c2 = vec4(vec3(dot(vec3(0.0,0.0,1.0), normal)),1.0);\n'+        
+                'vec4 c2 = vec4(vec3(dot(vec3(0.0,0.0,1.0), normal)),1.0);\n'+
             '#endif\n'+
             //'vec4 c2 = vec4(normalize(ldir)*0.5+0.5,1.0);\n'+
             //'vec4 c2 = vec4(vec3(lcolor),1.0);\n'+
@@ -1167,7 +1167,7 @@ GpuShaders.tileVertexShader =
         '#else\n'+
             'attribute vec2 aTexCoord;\n'+
         '#endif\n'+
-    
+
         'varying vec3 vTexCoord;\n'+  //u,v,fogFactor
 
     '#endif\n'+
@@ -1177,7 +1177,7 @@ GpuShaders.tileVertexShader =
             'attribute vec2 aTexCoord2;\n'+
         '#endif\n'+
 
-        'varying vec2 vClipCoord;\n'+  
+        'varying vec2 vClipCoord;\n'+
     '#endif\n'+
 
     '#ifdef clip8\n'+
@@ -1185,7 +1185,7 @@ GpuShaders.tileVertexShader =
             'attribute vec2 aTexCoord2;\n'+
         '#endif\n'+
 
-        'varying vec3 vClipCoord;\n'+  
+        'varying vec3 vClipCoord;\n'+
 
         'uniform mat4 uParamsC8;\n'+  //c,x,y,z
 
@@ -1196,20 +1196,20 @@ GpuShaders.tileVertexShader =
             'float c2 = dot(v,v);\n'+
             'if (c2 <= c1) return 1.0;\n'+
             'return c1 / c2;\n'+
-        '}\n'+    
+        '}\n'+
 
     '#endif\n'+
 
     '#ifdef depth\n'+
         'varying float vDepth;\n'+
-    '#endif\n'+    
+    '#endif\n'+
 
     '#ifdef flatShadeVar\n'+
         ///'attribute vec3 aBarycentric;\n'+
         'varying vec3 vBarycentric;\n'+
     '#endif\n'+
 
-                                             //0-3                            4-7          8-11            12-15 
+                                             //0-3                            4-7          8-11            12-15
     'uniform mat4 uMV, uProj, uParams;\n'+  //[zfactor, fogDensity, scale.xy][camVec.xyzw][transform.xyzw][scale.z, trans.xyz]
 
     '#ifdef applySE\n'+
@@ -1265,20 +1265,20 @@ GpuShaders.tileVertexShader =
         '#endif\n'+
 
         '#ifdef clip4\n'+
-            'vClipCoord.xy = aTexCoord2.xy;\n'+  
+            'vClipCoord.xy = aTexCoord2.xy;\n'+
         '#endif\n'+
 
         '#ifdef clip8\n'+
-            //'vClipCoord.x = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[1][0],uParamsC8[1][1],uParamsC8[1][2]), camSpacePos.xyz);\n'+  
-            //'vClipCoord.y = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[2][0],uParamsC8[2][1],uParamsC8[2][2]), camSpacePos.xyz);\n'+  
-            //'vClipCoord.z = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[3][0],uParamsC8[3][1],uParamsC8[3][2]), camSpacePos.xyz);\n'+  
+            //'vClipCoord.x = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[1][0],uParamsC8[1][1],uParamsC8[1][2]), camSpacePos.xyz);\n'+
+            //'vClipCoord.y = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[2][0],uParamsC8[2][1],uParamsC8[2][2]), camSpacePos.xyz);\n'+
+            //'vClipCoord.z = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[3][0],uParamsC8[3][1],uParamsC8[3][2]), camSpacePos.xyz);\n'+
 
             'vec3 worldPos2 = vec3(aPosition.x * uParams[0][2] + uParamsC8[0][3], aPosition.y * uParams[0][3] + uParamsC8[1][3], aPosition.z * uParams[3][0] + uParamsC8[2][3]);\n'+
 
-            'vClipCoord.x = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[1][0],uParamsC8[1][1],uParamsC8[1][2]), worldPos2.xyz);\n'+  
-            'vClipCoord.y = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[2][0],uParamsC8[2][1],uParamsC8[2][2]), worldPos2.xyz);\n'+  
-            'vClipCoord.z = 1.0-getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[3][0],uParamsC8[3][1],uParamsC8[3][2]), worldPos2.xyz);\n'+  
-            //'vClipCoord.xyz = vec3(0.0, 0.0, 1.0);\n'+  
+            'vClipCoord.x = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[1][0],uParamsC8[1][1],uParamsC8[1][2]), worldPos2.xyz);\n'+
+            'vClipCoord.y = getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[2][0],uParamsC8[2][1],uParamsC8[2][2]), worldPos2.xyz);\n'+
+            'vClipCoord.z = 1.0-getLinePointParametricDist(vec3(uParamsC8[0][0],uParamsC8[0][1],uParamsC8[0][2]), vec3(uParamsC8[3][0],uParamsC8[3][1],uParamsC8[3][2]), worldPos2.xyz);\n'+
+            //'vClipCoord.xyz = vec3(0.0, 0.0, 1.0);\n'+
         '#endif\n'+
     '}';
 
@@ -1321,10 +1321,10 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
 
     '#endif\n'+
 
-    'uniform vec4 uParams2;\n'+        
+    'uniform vec4 uParams2;\n'+
     'void main() {\n'+
 
-        '#ifdef clip4\n'+
+        '#ifdef clip4_nomargin\n'+
             'if (vClipCoord.y > 0.5){\n'+
                 'if (vClipCoord.x > 0.5){\n'+
                     'if (uClip[3] == 0.0) discard;\n'+
@@ -1336,6 +1336,22 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
                     'if (uClip[1] == 0.0) discard;\n'+
                 '} else {\n'+
                     'if (uClip[0] == 0.0) discard;\n'+
+                '}\n'+
+            '}\n'+
+        '#endif\n'+
+
+        '#ifdef clip4\n'+
+            'if (vClipCoord.y > 0.5){\n'+
+                'if (vClipCoord.x > 0.5){\n'+
+                    'if (uClip[3] == 0.0 && !(vClipCoord.x < 0.51 && uClip[2] != 0.0) && !(vClipCoord.y < 0.51 && uClip[1] != 0.0)) discard;\n'+
+                '} else {\n'+
+                    'if (uClip[2] == 0.0 && !(vClipCoord.x > 0.49 && uClip[3] != 0.0) && !(vClipCoord.y < 0.51 && uClip[0] != 0.0)) discard;\n'+
+                '}\n'+
+            '} else {\n'+
+                'if (vClipCoord.x > 0.5){\n'+
+                    'if (uClip[1] == 0.0 && !(vClipCoord.x < 0.51 && uClip[0] != 0.0) && !(vClipCoord.y > 0.49 && uClip[3] != 0.0)) discard;\n'+
+                '} else {\n'+
+                    'if (uClip[0] == 0.0 && !(vClipCoord.x > 0.49 && uClip[1] != 0.0) && !(vClipCoord.y > 0.49 && uClip[2] != 0.0)) discard;\n'+
                 '}\n'+
             '}\n'+
         '#endif\n'+
@@ -1531,11 +1547,6 @@ GpuShaders.imageFragmentShader = 'precision mediump float;\n'+
         'if(c.w < 0.01){ discard; }\n'+
         'gl_FragColor = c;\n'+
     '}';
-    
+
 
 export default GpuShaders;
-
-
-
-
-
