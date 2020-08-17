@@ -1343,15 +1343,15 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
         '#ifdef clip4\n'+
             'if (vClipCoord.y > 0.5){\n'+
                 'if (vClipCoord.x > 0.5){\n'+
-                    'if (uClip[3] == 0.0 && !(vClipCoord.x < 0.51 && uClip[2] != 0.0) && !(vClipCoord.y < 0.51 && uClip[1] != 0.0)) discard;\n'+
+                    'if (uClip[3] == 0.0 && !(vClipCoord.x < TMAX && uClip[2] != 0.0) && !(vClipCoord.y < TMAX && uClip[1] != 0.0)) discard;\n'+
                 '} else {\n'+
-                    'if (uClip[2] == 0.0 && !(vClipCoord.x > 0.49 && uClip[3] != 0.0) && !(vClipCoord.y < 0.51 && uClip[0] != 0.0)) discard;\n'+
+                    'if (uClip[2] == 0.0 && !(vClipCoord.x > TMIN && uClip[3] != 0.0) && !(vClipCoord.y < TMAX && uClip[0] != 0.0)) discard;\n'+
                 '}\n'+
             '} else {\n'+
                 'if (vClipCoord.x > 0.5){\n'+
-                    'if (uClip[1] == 0.0 && !(vClipCoord.x < 0.51 && uClip[0] != 0.0) && !(vClipCoord.y > 0.49 && uClip[3] != 0.0)) discard;\n'+
+                    'if (uClip[1] == 0.0 && !(vClipCoord.x < TMAX && uClip[0] != 0.0) && !(vClipCoord.y > TMIN && uClip[3] != 0.0)) discard;\n'+
                 '} else {\n'+
-                    'if (uClip[0] == 0.0 && !(vClipCoord.x > 0.49 && uClip[1] != 0.0) && !(vClipCoord.y > 0.49 && uClip[2] != 0.0)) discard;\n'+
+                    'if (uClip[0] == 0.0 && !(vClipCoord.x > TMIN && uClip[1] != 0.0) && !(vClipCoord.y > TMIN && uClip[2] != 0.0)) discard;\n'+
                 '}\n'+
             '}\n'+
         '#endif\n'+

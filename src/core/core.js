@@ -58,6 +58,7 @@ var Core = function(element, config, coreInterface) {
         mapLoadMode : 'topdown', // 'topdown', 'downtop', 'fit', 'fitonly'
         mapGeodataLoadMode : 'fit', // 'fitonly'
         mapSplitMeshes : true, // used for topdown load mode
+        mapSplitMargin : 0.003, // used for topdown load mode
         mapSplitSpace : null, // used octant spliting demo
         mapSplitLods : false, // used octant spliting demo
         mapGridMode : 'linear', // 'flat'
