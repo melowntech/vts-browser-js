@@ -58,11 +58,11 @@ var Core = function(element, config, coreInterface) {
         mapLoadMode : 'topdown', // 'topdown', 'downtop', 'fit', 'fitonly'
         mapGeodataLoadMode : 'fit', // 'fitonly'
         mapSplitMeshes : true, // used for topdown load mode
-        mapSplitMargin : 0.003, // used for topdown load mode
+        mapSplitMargin : 0.0025, // used for topdown load mode
         mapSplitSpace : null, // used octant spliting demo
         mapSplitLods : false, // used octant spliting demo
         mapGridMode : 'linear', // 'flat'
-        mapGridSurrogatez : false, 
+        mapGridSurrogatez : false,
         mapGridUnderSurface: 0,
         mapGridTextureLevel: -1,
         mapGridTextureLayer: null, // 'bing",
@@ -115,12 +115,12 @@ var Core = function(element, config, coreInterface) {
         rendererAnisotropic : 0,
         rendererAntialiasing : true,
         rendererAllowScreenshots : false,
-        inspector : true, 
-        authorization : null, 
+        inspector : true,
+        authorization : null,
         mario : false
     };
 
-    this.configStorage = {}; 
+    this.configStorage = {};
     this.element = element;
     this.coreInterface = coreInterface;
     //this.options = options;
@@ -183,7 +183,7 @@ Core.prototype.loadMap = function(path) {
     if (path == null) {
         return;
     }
-    
+
     path = utilsUrl.getProcessUrl(path, window.location.href);
 
     this.tokenCookieLoaded = true;
@@ -193,15 +193,15 @@ Core.prototype.loadMap = function(path) {
     this.tokenExpirationLoop = false;
     this.tokenCanBeSkiped = true;
     this.mapRunnig = false;
-    
+
     var onLoaded = (function() {
         if (!(this.tokenCookieLoaded || this.tokenCanBeSkiped) || !this.mapConfigData || this.mapRunnig) {
             return;
         }
 
         this.mapRunnig = true;
-        var data = this.mapConfigData; 
-    
+        var data = this.mapConfigData;
+
         this.callListener('map-mapconfig-loaded', data);
 
         this.map = new Map(this, data, path, this.config, this.configStorage);
@@ -213,16 +213,16 @@ Core.prototype.loadMap = function(path) {
             this.map.setPosition(this.config.position);
             this.config.position = null;
         }
-    
+
         if (this.config.view) {
             this.map.setView(this.config.view);
             this.config.view = null;
         }
-    
+
     }).bind(this);
 
     var onMapConfigLoaded = (function(data) {
-        this.mapConfigData = data; 
+        this.mapConfigData = data;
         onLoaded();
     }).bind(this);
 
@@ -254,11 +254,11 @@ Core.prototype.loadMap = function(path) {
                 this.config.authorization(onAutorizationLoaded);
             }
         }).bind(this);
-        
+
         if (!this.tokenExpirationLoop) {
             onLoadMapconfig(path);
         }
-        
+
         if (typeof this.config.authorization === 'string') {
             onLoadImageCookie(data['cookieInjector'], this.config.authorization);
         } else {
@@ -270,7 +270,7 @@ Core.prototype.loadMap = function(path) {
     var onAutorizationError = (function() {
         // eslint-disable-next-line
         console.log('auth token not loaded');
-        
+
         if (this.tokenCanBeSkiped) {
             onLoadMapconfig(path);
         }
@@ -278,7 +278,7 @@ Core.prototype.loadMap = function(path) {
 
     var onImageCookieLoaded = (function() {
         document.body.removeChild(this.tokenIFrame);
-        this.tokenIFrame = null;   
+        this.tokenIFrame = null;
         this.tokenCookieLoaded = true;
         onLoaded();
     }).bind(this);
@@ -303,7 +303,7 @@ Core.prototype.loadMap = function(path) {
         iframe.onload = onImageCookieLoaded;
         iframe.src = url;
         iframe.style.display = 'none';
-        document.body.appendChild(iframe);   
+        document.body.appendChild(iframe);
     }).bind(this);
 
     //if (false && this.config.authorization) {
@@ -416,7 +416,7 @@ Core.prototype.callListener = function(name, event, log) {
             }
         }
     }
-    
+
     if (log) {
         // eslint-disable-next-line
         console.log('event ' + name + ': ' + JSON.stringify(event));
@@ -502,7 +502,7 @@ Core.prototype.setConfigParam = function(key, value, solveStorage) {
     case 'mapForcePipeline':
         this.config.mapForcePipeline = utils.validateNumber(value, -1, Number.MAXINTEGER, 0); break;
     case 'mapDMapSize':
-        this.config.mapDMapSize = utils.validateNumber(value, 16, Number.MAXINTEGER, 512); break; 
+        this.config.mapDMapSize = utils.validateNumber(value, 16, Number.MAXINTEGER, 512); break;
     case 'mapDMapMode':
         this.config.mapDMapMode = utils.validateNumber(value, 1, Number.MAXINTEGER, 1); break;
     case 'map16bitMeshes':
@@ -510,11 +510,11 @@ Core.prototype.setConfigParam = function(key, value, solveStorage) {
     case 'inspector':
         this.config.inspector = utils.validateBool(value, true); break;
     case 'authorization':
-        this.config.authorization = ((typeof value === 'string') || (typeof value === 'function')) ? value : null; 
+        this.config.authorization = ((typeof value === 'string') || (typeof value === 'function')) ? value : null;
          break;
     default:
         if (key.indexOf('map') == 0 || key == 'mario') {
-           
+
             if (!solveStorage || (typeof this.configStorage[key] === 'undefined')) {
                 this.configStorage[key] = value;
             }
@@ -539,7 +539,7 @@ Core.prototype.setConfigParam = function(key, value, solveStorage) {
             }
         }
 
-        break;            
+        break;
     }
 
 };
@@ -586,7 +586,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.23.3';
+    return (full ? 'Core: ' : '') + '2.23.4';
 }
 
 
