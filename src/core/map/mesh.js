@@ -530,6 +530,10 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                             id += 'fs';
                         }
 
+                        if (splitMask) {
+                            id += 'c4';
+                        }
+
                         id += filter;
 
                         program = renderer.progMap[id];
@@ -537,7 +541,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                         if (!program) {
                             var gpu = renderer.gpu, pixelShader, variations = '';
 
-                            if (splipMask) {
+                            if (splitMask) {
                                 if (!this.map.config.mapSplitMargin) {
                                     variations += '#define clip4_nomargin\n';
                                 } else {
@@ -555,8 +559,8 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                             }
 
                             if (flatShade) {
-                                pixelShader =  '#extension GL_OES_standard_derivatives : enable\n#define flatShadeVar\n' + variations + pixelShader;
-                                vertexShader = '#define flatShadeVar\n' + variations + vertexShader;
+                                pixelShader =  '#extension GL_OES_standard_derivatives : enable\n#define flatShadeVar\n' + pixelShader;
+                                vertexShader = '#define flatShadeVar\n' + vertexShader;
 
                                 //if (this.map.mobile) {
                                     //pixelShader = '#define flatShadeVarFallback\n' + pixelShader;
