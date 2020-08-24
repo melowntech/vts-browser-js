@@ -106,20 +106,20 @@ MapMesh.prototype.killGpuSubmeshes = function(killedByCache) {
 MapMesh.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
     var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.draw.maxGpuUsed);
     doNotLoad = doNotLoad || doNotUseGpu;
-    
+
     //if (doNotUseGpu) {
       //  doNotUseGpu = doNotUseGpu;
     //}
-    
+
     //if (this.mapLoaderUrl == "https://cdn.vts.com/mario/proxy/melown2015/surface/vts/cz10/12-1107-688.bin?0") {
       //  this.mapLoaderUrl = this.mapLoaderUrl;
-    //}    
+    //}
 
     if (this.loadState == 2) { //loaded
         if (this.cacheItem) {
             this.map.resourcesCache.updateItem(this.cacheItem);
         }
-        
+
         if (doNotCheckGpu) {
             return true;
         }
@@ -140,7 +140,7 @@ MapMesh.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
 
             var t = performance.now();
             this.buildGpuSubmeshes();
-            this.stats.renderBuild += performance.now() - t; 
+            this.stats.renderBuild += performance.now() - t;
         }
 
         if (!doNotLoad && this.gpuCacheItem) {
@@ -148,7 +148,7 @@ MapMesh.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
         }
         return true;
     } else {
-        if (this.loadState == 0) { 
+        if (this.loadState == 0) {
             if (doNotLoad) {
                 //remove from queue
                 //if (this.mapLoaderUrl) {
@@ -162,8 +162,8 @@ MapMesh.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) {
         } else if (this.loadState == 3) { //loadError
             if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount &&
                 performance.now() > this.loadErrorTime + this.map.config.mapLoadErrorRetryTime) {
-    
-                this.scheduleLoad(priority);                    
+
+                this.scheduleLoad(priority);
             }
         } //else load in progress
     }
@@ -198,12 +198,12 @@ MapMesh.prototype.onLoadError = function() {
     this.loadState = 3;
     this.loadErrorTime = performance.now();
     this.loadErrorCounter ++;
-    
+
     //make sure we try to load it again
-    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount) { 
+    if (this.loadErrorCounter <= this.map.config.mapLoadErrorMaxRetryCount) {
         setTimeout((function(){ if (!this.map.killed) { this.map.markDirty(); } }).bind(this), this.map.config.mapLoadErrorRetryTime);
-    }    
-    
+    }
+
     this.mapLoaderCallError();
 };
 
@@ -230,8 +230,8 @@ MapMesh.prototype.onLoaded = function(data, task, direct) {
         this.parseMapMesh(stream);
     }
 
-    this.map.stats.renderBuild += performance.now() - t; 
-    
+    this.map.stats.renderBuild += performance.now() - t;
+
     this.submeshesKilled = false;
 
     this.cacheItem = this.map.resourcesCache.insert(this.killSubmeshes.bind(this, true), this.size);
@@ -283,7 +283,7 @@ MapMesh.prototype.parseWorkerData = function (data) {
         submesh.textureLayer2 = submeshData['textureLayer2'];
         submesh.vertices = submeshData['vertices'];
 
-        this.submeshes.push(submesh); 
+        this.submeshes.push(submesh);
     }
 
     this.bbox.updateMaxSize();
@@ -323,7 +323,7 @@ MapMesh.prototype.parseMapMesh = function (stream) {
     if (this.version > 3) {
         return false;
     }
-    
+
     //if (this.version >= 3) {
     stream.uint8Data = new Uint8Array(stream.buffer);
     //}
@@ -332,13 +332,13 @@ MapMesh.prototype.parseMapMesh = function (stream) {
     this.numSubmeshes = streamData.getUint16(stream.index, true); stream.index += 2;
 
     this.submeshes = [];
-    this.gpuSize = 0; 
+    this.gpuSize = 0;
     this.faces = 0;
 
     for (var i = 0, li = this.numSubmeshes; i < li; i++) {
         var submesh = new MapSubmesh(this, stream);
         if (submesh.valid) {
-            this.submeshes.push(submesh); 
+            this.submeshes.push(submesh);
             this.size += submesh.getSize();
             this.faces += submesh.faces;
 
@@ -346,7 +346,7 @@ MapMesh.prototype.parseMapMesh = function (stream) {
             this.gpuSize += submesh.getSize();
         }
     }
-    
+
     this.numSubmeshes = this.submeshes.length;
 };
 
@@ -380,7 +380,14 @@ MapMesh.prototype.buildGpuSubmeshes = function() {
 
 MapMesh.prototype.generateTileShader = function (progs, v, useSuperElevation, splitMask) {
     var str = '';
-    if (splitMask) { if (splitMask.length == 4) str += '#define clip4\n'; else str += '#define clip8\n'; } 
+    if (splitMask) {
+        if (!this.map.config.mapSplitMargin) {
+            if (splitMask.length == 4){ str += '#define clip4_nomargin\n' } else { str += '#define clip8\n' };
+        } else {
+            if (splitMask.length == 4){ str += '#define clip4\n' } else { str += '#define clip8\n' };
+            str += '#define TMIN ' + (0.5-this.map.config.mapSplitMargin) + '\n' + '#define TMAX ' + (0.5+this.map.config.mapSplitMargin) + '\n';
+        }
+    }
     if (useSuperElevation) str += '#define applySE\n';
     var prog = (new GpuProgram(this.map.renderer.gpu, progs[0].vertex.replace('#define variants\n', str), progs[0].fragment.replace('#define variants\n', str)));
     progs[v] = prog;
@@ -403,7 +410,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     var renderer = this.map.renderer;
     var draw = this.map.draw;
     var program = null;
-    var gpuMask = null; 
+    var gpuMask = null;
 
     var texcoordsAttr = null;
     var texcoords2Attr = null;
@@ -417,7 +424,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
         v |= VTS_TILE_SHADER_CLIP4;
 
         if (type != VTS_MATERIAL_EXTERNAL && type != VTS_MATERIAL_INTERNAL_NOFOG) {
-            texcoords2Attr = 'aTexCoord2';  
+            texcoords2Attr = 'aTexCoord2';
             attributes.push('aTexCoord2');
         }
     }
@@ -472,12 +479,12 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                 }
 
                 break;
-    
+
             case VTS_MATERIAL_EXTERNAL:
             case VTS_MATERIAL_EXTERNAL_NOFOG:
 
                 var prog = renderer.progTile2;
-                    
+
                 if (texture) {
                     gpuMask = texture.getGpuMaskTexture();
                     if (gpuMask) {
@@ -491,7 +498,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                     program = this.generateTileShader(prog, v, useSuperElevation, splitMask);
                 }
 
-                
+
                 if (layer && (layer.shaderFilters || layer.shaderFilter)) {
                     var filter, id, flatShade;
 
@@ -523,12 +530,26 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                             id += 'fs';
                         }
 
+                        if (splitMask) {
+                            id += 'c4';
+                        }
+
                         id += filter;
 
                         program = renderer.progMap[id];
 
                         if (!program) {
-                            var gpu = renderer.gpu, pixelShader, variations = ((splipMask) ? '#define clip4\n' : '');
+                            var gpu = renderer.gpu, pixelShader, variations = '';
+
+                            if (splitMask) {
+                                if (!this.map.config.mapSplitMargin) {
+                                    variations += '#define clip4_nomargin\n';
+                                } else {
+                                    variations += '#define clip4\n';
+                                    variations += '#define TMIN ' + (0.5-this.map.config.mapSplitMargin) + '\n' + '#define TMAX ' + (0.5+this.map.config.mapSplitMargin) + '\n';
+                                }
+                            }
+
                             var vertexShader = '#define externalTex\n' + variations + ((useSuperElevation) ? '#define applySE\n' : '') + GpuShaders.tileVertexShader;
 
                             if (gpuMask) {
@@ -538,25 +559,25 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
                             }
 
                             if (flatShade) {
-                                pixelShader =  '#extension GL_OES_standard_derivatives : enable\n#define flatShadeVar\n' + variations + pixelShader;
-                                vertexShader = '#define flatShadeVar\n' + variations + vertexShader;
+                                pixelShader =  '#extension GL_OES_standard_derivatives : enable\n#define flatShadeVar\n' + pixelShader;
+                                vertexShader = '#define flatShadeVar\n' + vertexShader;
 
                                 //if (this.map.mobile) {
                                     //pixelShader = '#define flatShadeVarFallback\n' + pixelShader;
                                     pixelShader = pixelShader.replace('mediump', 'highp');
                                 //}
                             }
-     
+
                             program = new GpuProgram(gpu, vertexShader, pixelShader.replace('__FILTER__', filter));
                             renderer.progMap[id] = program;
                         }
                     }
                 }
-                    
-                texcoords2Attr = 'aTexCoord2';  
+
+                texcoords2Attr = 'aTexCoord2';
                 attributes.push('aTexCoord2');
                 break;
-    
+
             case VTS_MATERIAL_FOG:
                 program = renderer.progFogTile[v];
 
@@ -574,22 +595,22 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     }
 
     renderer.gpu.useProgram(program, attributes, gpuMask);
- 
+
     if (texture) {
         var gpuTexture = texture.getGpuTexture();
-        
+
         if (gpuTexture) {
             if (texture.statsCoutner != this.stats.counter) {
                 texture.statsCoutner = this.stats.counter;
                 this.stats.gpuRenderUsed += gpuTexture.getSize();
             }
-            
+
             renderer.gpu.bindTexture(gpuTexture);
 
             if (gpuMask) {
                 renderer.gpu.bindTexture(gpuMask, 1);
             }
-            
+
         } else {
             return;
         }
@@ -627,7 +648,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
         program.setMat4('uParamsSE', m);
 
-        //mv = renderer.camera.getModelviewFMatrix(); 
+        //mv = renderer.camera.getModelviewFMatrix();
         mat4.multiply(renderer.camera.getModelviewFMatrix(), submesh.getWorldMatrixSE(cameraPos, m), mv);
 
     } else {
@@ -719,7 +740,7 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
     if (submesh.statsCoutner != this.stats.counter) {
         submesh.statsCoutner = this.stats.counter;
         this.stats.gpuRenderUsed += gpuSubmesh.getSize();
-    } 
+    }
 
     gpuSubmesh.draw(program, 'aPosition', texcoordsAttr, texcoords2Attr, drawWireframe != 0 ? 'aBarycentric' : null, (drawWireframe == 2));
 
@@ -765,4 +786,3 @@ MapMesh.prototype.drawSubmesh = function (cameraPos, index, texture, type, alpha
 
 
 export default MapMesh;
-

@@ -1,6 +1,6 @@
 {
   "name": "vts-browser-js",
-  "version": "2.23.3",
+  "version": "2.23.6",
   "description": "JavaScript WebGL 3D maps rendering engine",
   "main": "src/browser/index.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "install": "",
     "clean": "node_modules/.bin/rimraf build",
     "dev": "WEBPACK_ENV=dev node_modules/.bin/webpack --progress --colors --watch --hide-modules",
+    "dev2": "WEBPACK_ENV=dev node_modules/.bin/webpack --progress --colors --hide-modules",
     "dist": "NODE_ENV=production node_modules/.bin/webpack --progress --colors --hide-modules",
     "start": "node_modules/.bin/webpack-dev-server --content-base ./ --inline"
   },
@@ -36,12 +37,12 @@
     "chai": "^4.2.0",
     "copy-webpack-plugin": "^6.0.2",
     "css-loader": "^3.5.3",
-    "eslint": "^7.2.0",
+    "eslint": "^7.7.0",
     "eslint-config-airbnb": "^18.1.0",
     "eslint-loader": "^4.0.2",
     "eslint-plugin-import": "^2.21.1",
     "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-react": "^7.20.0",
+    "eslint-plugin-react": "^7.20.6",
     "html-webpack-plugin": "^4.3.0",
     "install": "^0.13.0",
     "license-webpack-plugin": "^2.2.0",
