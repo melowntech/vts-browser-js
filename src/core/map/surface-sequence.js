@@ -248,6 +248,9 @@ MapSurfaceSequence.prototype.generateBoundLayerSequence = function() {
         var freeLayersProperties = view.freeLayers[key];
         var freeLayer = this.map.getFreeLayer(key);
         if (freeLayer != null && freeLayer.ready) {
+
+            freeLayer.options = freeLayersProperties['options'] || {};
+
             freeLayer.boundLayerSequence = [];
             
             var boundLayers = freeLayersProperties['boundLayers'];

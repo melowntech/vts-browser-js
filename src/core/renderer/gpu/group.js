@@ -688,17 +688,23 @@ GpuGroup.prototype.copyBuffer = function(buffer, source, index) {
 };
 
 
-GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile) {
-    var data, str, length, tmp;
-    var view = new DataView(buffer.buffer);
-    var type = buffer[index]; index += 1;
+GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile, direct) {
+    var data, str, length, tmp, type;
 
-    if (type != VTS_WORKER_TYPE_PACK_BEGIN && type != VTS_WORKER_TYPE_PACK_END && 
-        type != VTS_WORKER_TYPE_VSWITCH_BEGIN && type != VTS_WORKER_TYPE_VSWITCH_END && type != VTS_WORKER_TYPE_VSWITCH_STORE) {
+    if (direct) {
+        type = direct.type;
+        data = direct.data;
+    } else {
+        var view = new DataView(buffer.buffer);
+        type = buffer[index]; index += 1;
 
-        length = view.getUint32(index); index += 4;
-        str = utils.unint8ArrayToString(new Uint8Array(buffer.buffer, index, length)); index+= length;
-        data = JSON.parse(str);
+        if (type != VTS_WORKER_TYPE_PACK_BEGIN && type != VTS_WORKER_TYPE_PACK_END && 
+            type != VTS_WORKER_TYPE_VSWITCH_BEGIN && type != VTS_WORKER_TYPE_VSWITCH_END && type != VTS_WORKER_TYPE_VSWITCH_STORE) {
+
+            length = view.getUint32(index); index += 4;
+            str = utils.unint8ArrayToString(new Uint8Array(buffer.buffer, index, length)); index+= length;
+            data = JSON.parse(str);
+        }
     }
 
     switch(type) {
@@ -1849,7 +1855,8 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
     var renderer = this.renderer;
     var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
-    this.map = renderer.core.map;
+    var map = renderer.core.map
+    this.map = map;
 
     if (this.rootNode) {
         renderer.drawnNodes = 0;
