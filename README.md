@@ -22,7 +22,7 @@ With VTS Browser JS you may combine and render diverse geospatial data in a sing
 - [Documentation](#documentation)
 - [Roadmap](https://github.com/Melown/vts-browser-js/wiki/Roadmap)
 - [Map Configuration](#map-configuration)
-- [Licence](#licence)
+- [License](#license)
 - [How to Contribute](#how-to-contribute)
 
 <img width="888" alt="VTS Browser JS showcase" src="https://github.com/melowntech/assets/blob/master/vts-browser-js/vts-browser-js-readme-2-880.jpg?raw=true">
@@ -197,17 +197,17 @@ to specific make targets. The Makefile is just wrapper around `npm run` commands
 
 ## Map Configuration
 
-Map configuration contains a all information The VTS Browser JS library needs to display given map/model. Library is usually initialize with URL to mapConfig.json file which is JSON representation of Map configuration data.
+Map configuration contains all information The VTS Browser JS library needs to display given map/model. Library is usually initialized with a URL pointing to a mapConfig.json file which is a JSON representation of map configuration data.
 
-The question is, where you can get your own Map Configuration. Basically you have two options:
+The question is, how do you customize the map configuration to fit your needs? Basically you have two options:
 
-### Melown Cloud
-
-[Melown Cloud](https://www.melown.com/cloud) is point-and-click interface to a subset of VTS technology, operated by Melown Tecchnologies. Conveniently, Melown Cloud may be also used as a source of custom map configurations for VTS browser JS application development.
-
-### VTS 3D Geospatial Software stack
+### VTS 3D Geospatial Software Stack
 
 VTS Browser JS forms part of the [VTS 3D Geospatial Software Stack](https://vts-geospatial.org). Running the full stack gives you complete control over your map resources, provides you with powerful data fusion capabilities and allows for closed networks or other types of off-grid deployment.
+
+### 3rd Party Stack
+
+VTS Browser JS can be used with resources from direct tiles suppliers as well as your own map proxy.
 
 ## Documentation
 
