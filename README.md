@@ -1,5 +1,7 @@
 <img width="390" alt="VTS Browser JS" src="https://github.com/melowntech/assets/blob/master/vts-browser-js/vts-browser-js-no-left-padding.png?raw=true">
 
+![CodeQL](https://github.com/ExploreWilder/vts-browser-js/workflows/CodeQL/badge.svg)
+
 **VTS Browser JS** is a powerful JavaScript 3D map rendering engine with a very small footprint (about 163 kB of gziped JS code). It provides almost all features for web-based 3D mapping you will ever want.
 
 VTS Browser JS is independently usable part of [VTS 3D Geospatial Software Stack](https://vts-geospatial.org): a state-of-the-art, full-stack open source platform for 3D geospatial application development. 
