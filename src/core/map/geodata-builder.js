@@ -138,6 +138,17 @@ MapGeodataBuilder.prototype.addMesh = function(node, path) {
 };
 
 
+MapGeodataBuilder.prototype.addLoadNode = function(node, path) {
+    if (node) {
+        if (!node.loadNodes) {
+            node.loadNodes = [];
+        }
+        
+        node.loadNodes.push(path);
+    }
+};
+
+
 MapGeodataBuilder.prototype.addPoint = function(point, heightMode, properties, id, srs, directCopy) {
     if (!this.currentGroup) {
         this.addGroup('some-group');

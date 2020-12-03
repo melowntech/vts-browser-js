@@ -2834,6 +2834,10 @@ RendererDraw.prototype.drawGpuSubJobLineLabel = function(gpu, gl, renderer, scre
             }
         }
 
+        if (!points.length || !points2.length) {
+            return;
+        }
+
         for(j = 0, lj = points.length; j < lj; j++) {
             p = points[j];
             p2 = points2[j];

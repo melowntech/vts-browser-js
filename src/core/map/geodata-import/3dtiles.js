@@ -21,7 +21,7 @@ var MapGeodataImport3DTiles = function(builder, options) {
     this.srs = this.navSrs;
     this.rootPath = '';
     this.filesToLoad = 0;
-    options = options || {};
+    //this.options = options || {};
 };
 
 MapGeodataImport3DTiles.prototype.processNode = function(builderNode, node, onlyChildren) {
@@ -86,7 +86,11 @@ MapGeodataImport3DTiles.prototype.processNode = function(builderNode, node, only
         path = utilsUrl.getProcessUrl(path, this.rootPath);
 
         if (path.indexOf('.json') != -1) {
-            this.loadJSON(path, { internal: true, node: builderNode } );
+            if (this.baseOptions.gradualJSONLoader) {
+                this.builder.addLoadNode(builderNode, path);
+            } else {
+                this.loadJSON(path, { internal: true, node: builderNode } );
+            }
         }
 
         else if (path.indexOf('.mesh') != -1) {

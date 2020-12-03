@@ -105,6 +105,7 @@ var plugins = [
       'VTS_WORKER_TYPE_NODE_BEGIN' :      21,
       'VTS_WORKER_TYPE_NODE_END' :        22,
       'VTS_WORKER_TYPE_MESH' :            23,
+      'VTS_WORKER_TYPE_LOAD_NODE' :       24,
 
       'VTS_TILE_SHADER_CLIP4' :           (1<<0),
       'VTS_TILE_SHADER_CLIP8' :           (1<<1),

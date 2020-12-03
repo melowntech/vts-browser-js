@@ -10,7 +10,6 @@ var mat4 = mat4_, math = math_, utils = utils_;
 var GpuGroup = GpuGroup_;
 var MapGeodataProcessor = MapGeodataProcessor_;
 
-
 var MapGeodataView = function(map, geodata, extraInfo) {
     this.map = map;
     this.stats = map.stats;
@@ -217,9 +216,15 @@ MapGeodataView.prototype.directParseNode = function(node, lod) {
         this.directParseNode(nodes[i], lod+1);
     }
 
+    var loadNodes = node['loadNodes'] || [];
+
+    for (i = 0, li = loadNodes.length; i < li; i++) {
+        this.currentGpuGroup.addRenderJob2(null, null, this.tile, { type: VTS_WORKER_TYPE_LOAD_NODE, data: { 'path':loadNodes[i] } });
+    }
+
     this.currentGpuGroup.addRenderJob2(null, null, this.tile, { type: VTS_WORKER_TYPE_NODE_END, data: {} });
 
-}
+};
 
 
 MapGeodataView.prototype.directParse = function(data) {

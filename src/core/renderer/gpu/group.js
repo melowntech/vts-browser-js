@@ -4,6 +4,8 @@ import BBox_ from '../bbox';
 import {math as math_} from '../../utils/math';
 import {utils as utils_} from '../../utils/utils';
 import MapResourceNode_ from '../../map/resource-node';
+import MapGeodataImport3DTiles_ from '../../map/geodata-import/3dtiles';
+import MapGeodataBuilder_ from '../../map/geodata-builder';
 
 //get rid of compiler mess
 var vec3 = vec3_, mat4 = mat4_;
@@ -11,6 +13,8 @@ var BBox = BBox_;
 var math = math_;
 var utils = utils_;
 var MapResourceNode = MapResourceNode_;
+var MapGeodataImport3DTiles = MapGeodataImport3DTiles_;
+var MapGeodataBuilder = MapGeodataBuilder_;
 
 
 var GpuGroup = function(id, bbox, origin, gpu, renderer) {
@@ -29,6 +33,7 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.loadMode = 0;
     //this.geFactor = 1/38;
     this.geFactor = 1/16;
+    this.geFactor2 = 0.5;
     this.geNormalized = false;
 
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
@@ -866,6 +871,13 @@ GpuGroup.prototype.addRenderJob2 = function(buffer, index, tile, direct) {
         case VTS_WORKER_TYPE_MESH:
             this.addMeshJob(data, tile);
             break;
+
+        case VTS_WORKER_TYPE_LOAD_NODE:
+            if(this.currentNode) {
+                this.currentNode.path = data['path'];
+            }
+            break;
+
     }
 
     return index;
@@ -1130,7 +1142,28 @@ GpuGroup.prototype.getNodeTexelSize = function(node, screenPixelSize) {
 
 
 GpuGroup.prototype.normalizeGE = function(node, ge, lod) {
-    node.precision = ge;
+    if (this.renderer.config.mapNormalizeOctantTexelSize) {
+
+        if (node.volume2) {
+            
+            //var points = node.volume.points2;
+            //rootSize = vec3.length([points[0] - points[3],points[1] - points[4],points[2] - points[5]]);
+
+            node.precision = ge;
+            
+        } else {
+
+            var points = node.volume.points;
+
+            var rootSize = Math.max(vec3.distance(points[0], points[1]),
+                                    vec3.distance(points[0], points[3]),
+                                    vec3.distance(points[0], points[4]));
+
+            node.precision = ((rootSize / 256) / this.geFactor) * this.geFactor2;
+        }
+
+    }
+    
     node.lod = lod;
 
     for (var i = 0, li = node.nodes.length; i < li; i++) {
@@ -1210,6 +1243,8 @@ GpuGroup.prototype.setDivisionSpace = function(node, points, octant) {
     center[0] /= li;
     center[1] /= li;
     center[2] /= li;
+    
+    //node.volume2.center = center;
 
     var xv = [(points[1][0] - points[0][0])*0.5, (points[1][1] - points[0][1])*0.5, (points[1][2] - points[0][2])*0.5];
     var yv = [(points[1][0] - points[2][0])*0.5, (points[1][1] - points[2][1])*0.5, (points[1][2] - points[2][2])*0.5];
@@ -1274,6 +1309,48 @@ GpuGroup.prototype.setDivisionSpace = function(node, points, octant) {
     }
 };
 
+GpuGroup.prototype.drawMeshNodes = function(node, visible, isready, skipRender) {
+
+    var renderer = this.renderer;
+    var points = node.volume.points2;
+    var cameraPos = this.renderer.cameraPosition;
+
+    if (!visible && !renderer.camera.pointsVisible(points, cameraPos)) {
+        return;        
+    }
+
+    var ready = true;
+    var nodes = node.nodes;
+    var visible = [];
+
+    for (var i = 0, li = nodes.length; i < li; i++) {
+        //visible[i] = renderer.camera.pointsVisible(nodes[i].volume.points2, cameraPos);
+
+        //if (visible[i]) {
+            if (!this.isNodeReady(nodes[i])) {
+                ready = false;
+            }
+        //}
+    }
+
+
+    if (ready) {
+        for (var i = 0, li = nodes.length; i < li; i++) {
+            //if (visible[i]) {
+                //this.traverseNode(nodes[i], true, true);
+                this.traverseNode(nodes[i]);
+            //}
+        }
+    } else { // children are not ready, draw parent as fallback
+
+        //if (this.isNodeReady(node)) {
+            this.drawNode(node);
+        //}
+
+    }
+
+
+};
 
 GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
@@ -1285,14 +1362,13 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
         return;        
     }
 
-//    var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * (1/18) /*node.precision * 100*/);
     var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * this.geFactor);
 
     //this.loadMode = 0;
 
     if (this.loadMode == 0) { // topdown
 
-        if (!node.nodes.length || res[0] <= this.map.draw.texelSizeFit) {
+        if (!node.nodes.length || (res[0] <= this.map.draw.texelSizeFit && (node.jobs.length || !this.map.config.mapTraverseToMeshNode))) {
 
             if (node.parent || this.isNodeReady(node)) { 
                 this.drawNode(node);
@@ -1337,7 +1413,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
         var priority = node.lod * res[1];
 
-        if (!node.nodes.length || res[0] <= this.map.draw.texelSizeFit) {
+        if (!node.nodes.length || (res[0] <= this.map.draw.texelSizeFit && (node.jobs.length || !this.map.config.mapTraverseToMeshNode))) {
 
             if (!skipRender && (/*node.parent ||*/ this.isNodeReady(node, null, priority))) { 
                 this.drawNode(node);
@@ -1401,7 +1477,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
     } else if (this.loadMode == 2) { // fit
 
-        if (!node.nodes.length || res[0] <= 1.1) {
+        if (!node.nodes.length || res[0] <= this.map.draw.texelSizeFit) {
 
             if (isready || this.isNodeReady(node)) {
                 this.drawNode(node);
@@ -1421,7 +1497,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
         } 
 
-        else if (res[0] <= 2.2) {
+        else if (res[0] <= this.map.draw.texelSizeFit*2) {
 
             //are nodes ready
             var ready = true;
@@ -1461,7 +1537,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
     } else if (this.loadMode == 3) { // fitonly
 
-        if (!node.nodes.length || res[0] <= 1.1) {
+        if (!node.nodes.length || res[0] <= this.map.draw.texelSizeFit) {
 
             if (this.isNodeReady(node)) {
                 this.drawNode(node);
@@ -1481,6 +1557,21 @@ GpuGroup.prototype.isNodeReady = function(node, doNotLoad, priority, skipGpu) {
     var jobs = node.jobs;
     var ready = true;
 
+    if (node.loading) {
+        return false;
+    } else {    
+        if (node.path) {
+            node.loading = true;
+
+            var builder = new MapGeodataBuilder(this.map);
+            var importer = new MapGeodataImport3DTiles(builder);
+            importer.loadJSON(node.path, { gradualJSONLoader:true }, this.onLoadNodeLoaded.bind(this, node, builder, null, true));
+
+            node.path = null;
+            return false;
+        }
+    }
+
     //return true;
 
     for (var i = 0, li = jobs.length; i < li; i++) {
@@ -1495,6 +1586,75 @@ GpuGroup.prototype.isNodeReady = function(node, doNotLoad, priority, skipGpu) {
 
     return ready;
 };
+
+GpuGroup.prototype.directParseNode = function(node, lod, first) {
+    if (!first) {
+        this.addRenderJob2(null, null, this.tile, { type: VTS_WORKER_TYPE_NODE_BEGIN, data: {'volume': node.volume, 'precision': node.precision, 'tileset': node.tileset }});
+        this.currentNode.lod = lod;
+    }
+
+    var meshes = node['meshes'] || [];
+    var i, li;
+
+    //loop elements
+    for (i = 0, li = meshes.length; i < li; i++) {
+        this.addRenderJob2(null, null, this.tile, { type: VTS_WORKER_TYPE_MESH, data: { 'path':meshes[i] } });
+    }
+
+    var nodes = node['nodes'] || [];
+
+    for (i = 0, li = nodes.length; i < li; i++) {
+        this.directParseNode(nodes[i], lod+1);
+        
+        /*if (first && this.rootNode) { //renormalize root precision
+            var rootPrecision = nodes[i].precision * Math.pow(2.0, lod+1);
+            
+            if(rootPrecision > this.rootNode.precision) {
+                this.rootNode.precision = rootPrecision;
+            }
+        }*/
+    }
+
+    var loadNodes = node['loadNodes'] || [];
+
+    for (i = 0, li = loadNodes.length; i < li; i++) {
+        this.addRenderJob2(null, null, this.tile, { type: VTS_WORKER_TYPE_LOAD_NODE, data: { 'path':loadNodes[i] } });
+    }
+
+    if (!first) {
+        this.addRenderJob2(null, null, this.tile, { type: VTS_WORKER_TYPE_NODE_END, data: {} });
+    }
+};
+
+
+GpuGroup.prototype.onLoadNodeLoaded = function(node, builder, data) {
+    var nodes = builder.nodes;
+    var oldCurrentNode = this.currentNode;
+    this.currentNode = node;
+    this.jobs = node.jobs;
+    
+    for (var i = 0, li = nodes.length; i < li; i++) {
+        this.directParseNode(nodes[i], node.lod, true);
+    }
+
+    this.currentNode = oldCurrentNode;
+    this.jobs = oldCurrentNode ? oldCurrentNode.jobs : [];
+
+    if (node.volume2) {
+        this.setDivisionSpace(node, node.volume2.points, node.volume2.octant);
+    }
+
+    if (this.rootNode) {
+        this.normalizeGE(this.rootNode, this.rootPrecision, this.rootNode.lod);
+    } else {
+        this.normalizeGE(node, node.precision, node.lod);
+    }
+    
+    this.renderer.core.map.dirty = true;
+    
+    node.loading = false;
+};
+
 
 GpuGroup.prototype.drawNodeVolume = function(points, color) {
     var renderer = this.renderer;
@@ -1855,7 +2015,7 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
 
     var renderer = this.renderer;
     var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
-    var map = renderer.core.map
+    var map = renderer.core.map;
     this.map = map;
 
     if (this.rootNode) {
@@ -1870,43 +2030,9 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
         }
 
         if (!this.geNormalized) {
-            this.normalizeGE(this.rootNode, this.rootNode.precision, 0);
 
             if (this.loadMode == 1) {
                 var s = this.map.config.mapSplitSpace;
-
-                //haag
-                //[0](3917010.907515,295581.570867,5007978.667312)
-                //[1](3916703.088682,295558.325137,5008219.156812)
-                //[2](3916673.621374,295948.529795,5008219.156812) 
-                //[4](3917250.714190,295599.680484,5008287.362628) 
-
-                // p0.x,p0.y,p0.z,p1.x,p1.y,p1.z,p2.x,p2.y,p2.z,p4.x,p4.y,p4.z
-                // mapSplitSpace=3917010.907515,295581.570867,5007978.667312,3916703.088682,295558.325137,5008219.156812,3916673.621374,295948.529795,5008219.156812,3917250.714190,295599.680484,5008287.362628
-
-                /*
-                var s = [
-                    [3917010.907515,295581.570867,5007978.667312],
-                    [3916703.088682,295558.325137,5008219.156812],
-                    [3916673.621374,295948.529795,5008219.156812],
-                    [3917250.714190,295599.680484,5008287.362628]
-                ];
-                */
-
-                /*
-                var s = [
-                    [3916942.895357,295576.434754,5008527.852128],
-                    [3916913.428049,295966.639412,5008527.852128],
-                    [3917221.246882,295989.885143,5008287.362628],
-                    [3917250.714190,295599.680484,5008287.362628],
-
-                    [3916703.088682,295558.325137,5008219.156812],
-                    [3916673.621374,295948.529795,5008219.156812],
-                    [3916981.440208,295971.775525,5007978.667312],
-                    [3917010.907515,295581.570867,5007978.667312],
-
-                    ];
-                */
 
                 var p = [s[0][0], s[0][1], s[0][2]];
                 var xv = [s[2][0] - s[1][0], s[2][1] - s[1][1], s[2][2] - s[1][2]];
@@ -1952,6 +2078,31 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
                 this.setDivisionSpace(this.rootNode, s);
             }
 
+            var rootSize = 10;
+
+            if (this.rootNode.volume2) {
+                
+                var points = this.rootNode.volume2.points;
+                
+                rootSize = vec3.distance(points[0], points[1]);
+                
+            } else {
+
+                var points = this.rootNode.volume.points;
+
+                rootSize = Math.max(vec3.distance(points[0], points[1]),
+                                    vec3.distance(points[0], points[3]),
+                                    vec3.distance(points[0], points[4]));
+            }
+
+            
+            if (this.renderer.config.mapNormalizeOctantTexelSize) {
+                this.rootPrecision = ((rootSize / 256) / this.geFactor) * this.geFactor2;
+            } else {
+                this.rootPrecision = this.rootNode.precision;
+            }
+            
+            this.normalizeGE(this.rootNode, this.rootPrecision, 0);
             this.geNormalized = true;
         }
 
