@@ -1774,7 +1774,7 @@ GpuGroup.prototype.drawNode = function(node, noSkip, splitMask, splitSpace) {
         
         if (debug.drawDistance) {
             var res = this.getNodeTexelSize(node, node.precision * renderer.curSize[0] * this.geFactor);
-            text = '' + res[1].toFixed(2) + ' ' + res[0].toFixed(2) + ' ' + node.precision.toFixed(2);
+            text = '' + res[1].toFixed(2) + ' ' + res[0].toFixed(2) + ' ' + node.precision.toFixed(3);
             renderer.draw.drawText(Math.round(pos[0]-renderer.draw.getTextSize(4*factor, text)*0.5), Math.round(pos[1]+17*factor), 4*factor, text, [0.5,0.5,1,1], pos[2]);
         }
 
