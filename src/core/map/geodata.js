@@ -86,7 +86,7 @@ MapGeodata.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, fast
                 else*/ if (typeof this.mapLoaderUrl === 'object') { //use geodata directly
                     this.geodata = fastParse ? this.mapLoaderUrl : JSON.stringify(this.mapLoaderUrl);
                     this.loadState = 2;
-                    this.size = this.geodata.length;
+                    this.size = this.geodata.length ? this.geodata.length : 0;
                     this.cacheItem = this.map.resourcesCache.insert(this.killGeodata.bind(this, true), this.size);
                     this.map.resourcesCache.updateItem(this.cacheItem);
                     return true;

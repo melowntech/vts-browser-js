@@ -228,7 +228,6 @@ MapGeodataView.prototype.directParseNode = function(node, lod) {
 
 
 MapGeodataView.prototype.directParse = function(data) {
-    
     if (!data) {
         return;
     }
@@ -246,7 +245,13 @@ MapGeodataView.prototype.directParse = function(data) {
         //VTS_WORKERCOMMAND_GROUP_END:
         this.size += this.currentGpuGroup.size;
     }
-    
+};
+
+
+MapGeodataView.prototype.directBinParse = function(path) {
+    this.currentGpuGroup = new GpuGroup(null /*data['id']*/, null /*data['bbox']*/, null /*data['origin']*/, this.gpu, this.renderer);
+    this.gpuGroups.push(this.currentGpuGroup);
+    this.currentGpuGroup.binPath = path;
 };
 
 
@@ -264,7 +269,11 @@ MapGeodataView.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu) 
             if (this.surface.options.fastParse) {
 
                 if (typeof this.geodata.geodata === 'object') { //use geodata directly
-                    this.directParse(this.geodata.geodata);
+                    if (this.geodata.geodata['binPath']) {
+                        this.directBinParse(this.geodata.geodata['binPath']);
+                    } else {
+                        this.directParse(this.geodata.geodata);
+                    }
                 } else {
                     this.directParse(JSON.parse(this.geodata.geodata));
                 }
@@ -327,7 +336,7 @@ MapGeodataView.prototype.draw = function(cameraPos) {
         for (var i = 0, li = this.gpuGroups.length; i < li; i++) {
             var group = this.gpuGroups[i]; 
 
-            if (group.rootNode) {
+            if (group.rootNode || group.binPath) {
                 group.draw(mv, mvp, null, tiltAngle, (this.tile ? this.tile.texelSize : 1));
                 continue;
             }

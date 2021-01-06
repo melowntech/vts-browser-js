@@ -24,6 +24,7 @@ var MapSubmesh = function(mesh, stream) {
     this.valid = true;
     this.killed = false;
     this.use16bit = mesh.use16bit;
+    this.texture = null;
 
     this.bbox = new BBox();
     this.size = 0;    
@@ -48,6 +49,11 @@ MapSubmesh.prototype.kill = function () {
     this.internalUVs = null;
     this.externalUVs = null;
     this.indices = null;
+    
+    if (this.texture) {
+        this.texture.kill();
+        this.texture = null;
+    }
 };
 
 

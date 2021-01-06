@@ -3,8 +3,10 @@ import {vec3 as vec3_, mat4 as mat4_} from '../../utils/matrix';
 import BBox_ from '../bbox';
 import {math as math_} from '../../utils/math';
 import {utils as utils_} from '../../utils/utils';
+import {utilsUrl as utilsUrl_} from '../../utils/url';
 import MapResourceNode_ from '../../map/resource-node';
 import MapGeodataImport3DTiles_ from '../../map/geodata-import/3dtiles';
+import MapGeodataImport3DTiles2_ from '../../map/geodata-import/3dtiles2';
 import MapGeodataBuilder_ from '../../map/geodata-builder';
 
 //get rid of compiler mess
@@ -14,8 +16,11 @@ var math = math_;
 var utils = utils_;
 var MapResourceNode = MapResourceNode_;
 var MapGeodataImport3DTiles = MapGeodataImport3DTiles_;
+var MapGeodataImport3DTiles2 = MapGeodataImport3DTiles2_;
 var MapGeodataBuilder = MapGeodataBuilder_;
+var utilsUrl = utilsUrl_;
 
+var localTest = true;
 
 var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.id = id;
@@ -35,10 +40,12 @@ var GpuGroup = function(id, bbox, origin, gpu, renderer) {
     this.geFactor = 1/16;
     this.geFactor2 = 0.5;
     this.geNormalized = false;
-
+    
     if (bbox != null && bbox[0] != null && bbox[1] != null) {
         this.bbox = new BBox(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
     }
+
+    this.binFiles = [];
 
     this.size = 0;
     this.polygons = 0;
@@ -1197,6 +1204,8 @@ GpuGroup.prototype.getOctant = function(point, points) {
     var fy = this.getLinePointParametricDist(points[1], points[2], point);
     var fz = this.getLinePointParametricDist(points[4], points[0], point);
 
+    console.log('' + fx + ' ' + fy + ' ' + fz);
+
     if (fz > 0.5) {
         if (fy > 0.5) {
             if (fx > 0.5) {
@@ -1352,6 +1361,7 @@ GpuGroup.prototype.drawMeshNodes = function(node, visible, isready, skipRender) 
 
 };
 
+
 GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
     var renderer = this.renderer;
@@ -1370,7 +1380,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
         if (!node.nodes.length || (res[0] <= this.map.draw.texelSizeFit && (node.jobs.length || !this.map.config.mapTraverseToMeshNode))) {
 
-            if (node.parent || this.isNodeReady(node)) { 
+            if (node.parent || this.isNodeReady(node, null, null, null, true)) { 
                 this.drawNode(node);
             }
 
@@ -1415,7 +1425,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 
         if (!node.nodes.length || (res[0] <= this.map.draw.texelSizeFit && (node.jobs.length || !this.map.config.mapTraverseToMeshNode))) {
 
-            if (!skipRender && (/*node.parent ||*/ this.isNodeReady(node, null, priority))) { 
+            if (!skipRender && (/*node.parent ||*/ this.isNodeReady(node, null, priority, null, true))) { 
                 this.drawNode(node);
             }
 
@@ -1446,7 +1456,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
                     continue;
                 }
 
-                if (!this.isNodeReady(nodes[i], null, priority2, true) || (splitLods && node2.goodLod)) {
+                if (!this.isNodeReady(nodes[i], null, priority2, true, skipRender) || (splitLods && node2.goodLod)) {
                     //ready = false;
                     useMask = true;
                     mask[nodes[i].volume2.octant] = 1;
@@ -1459,12 +1469,12 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
                 if (nodes[i].visible && !(splitLods && nodes[i].goodLod)) {
                     //this.traverseNode(nodes[i], true, true);
                     var skipChildRender = (skipRender || (mask[nodes[i].volume2.octant] == 1));
-                    this.traverseNode(nodes[i], true, null, skipChildRender, skipChildRender);
+                    this.traverseNode(nodes[i], true, null, skipChildRender);
                 }
             }
 
             if (useMask) { // some children are not ready, draw parent as fallback
-                if (!skipRender && this.isNodeReady(node, null, priority)) {
+                if (!skipRender && this.isNodeReady(node, null, priority, null, true)) {
                     if (readyCount > 0) {
                         this.drawNode(node, null, mask, node.volume2.points);
                     } else {
@@ -1553,7 +1563,7 @@ GpuGroup.prototype.traverseNode = function(node, visible, isready, skipRender) {
 };
 
 
-GpuGroup.prototype.isNodeReady = function(node, doNotLoad, priority, skipGpu) {
+GpuGroup.prototype.isNodeReady = function(node, doNotLoad, priority, skipGpu, skipStats) {
     var jobs = node.jobs;
     var ready = true;
 
@@ -1578,7 +1588,7 @@ GpuGroup.prototype.isNodeReady = function(node, doNotLoad, priority, skipGpu) {
         var job = jobs[i];
         
         if (job.type == VTS_JOB_MESH) {
-            if (!this.isMeshReady(job, doNotLoad, priority, skipGpu)) {
+            if (!this.isMeshReady(job, doNotLoad, priority, skipGpu, skipStats, node)) {
                 ready = false;
             }
         }
@@ -1586,6 +1596,7 @@ GpuGroup.prototype.isNodeReady = function(node, doNotLoad, priority, skipGpu) {
 
     return ready;
 };
+
 
 GpuGroup.prototype.directParseNode = function(node, lod, first) {
     if (!first) {
@@ -1623,6 +1634,9 @@ GpuGroup.prototype.directParseNode = function(node, lod, first) {
 
     if (!first) {
         this.addRenderJob2(null, null, this.tile, { type: VTS_WORKER_TYPE_NODE_END, data: {} });
+
+        this.map.stats.octoNodes++;
+        this.map.stats.octoNodesMemSize += 3264 - (meshes.length ? 0 : 1740);
     }
 };
 
@@ -1718,7 +1732,7 @@ GpuGroup.prototype.drawNode = function(node, noSkip, splitMask, splitSpace) {
         var color = [255,0,255,255];
 
         if (node.tileset) {
-        color = [0,255,0,255];           
+            color = [0,255,0,255];           
         }
 
         if (noSkip) {
@@ -1794,8 +1808,11 @@ GpuGroup.prototype.drawNode = function(node, noSkip, splitMask, splitSpace) {
         if (debug.drawSurfaces && jobs[0]) {
             var text = '';
 
-            if (jobs[0].texturePath) {
-                var parts = jobs[0].texturePath.split('/');
+            var mesh = (jobs[0] && jobs[0].type == VTS_JOB_MESH) ? jobs[0].mesh : null;
+            if (mesh) {
+                var path = mesh.mapLoaderUrl;
+                path = path.replace('.mesh', '');
+                var parts = path.split('/');
 
                 if (parts.length > 1) {
                     text = parts[parts.length-2] + '/' + parts[parts.length-1];
@@ -1814,7 +1831,13 @@ GpuGroup.prototype.drawNode = function(node, noSkip, splitMask, splitSpace) {
                 for (i = 0, li = submeshes.length; i < li; i++) {
 
                     if (submeshes[i].internalUVs) {
-                        var texture = jobs[0].textures[i];
+                        var texture;
+                        if (jobs[0].direct) {
+                            texture = submeshes[i].texture;
+                        } else {
+                            texture = jobs[0].textures[i];
+                        }
+                        
                         if (texture) {
                             var gpuTexture = texture.getGpuTexture();
                             if (gpuTexture) {
@@ -1842,7 +1865,7 @@ GpuGroup.prototype.drawNode = function(node, noSkip, splitMask, splitSpace) {
         
         if (job.type == VTS_JOB_MESH) {
 
-            if (this.isMeshReady(job)) {
+            if (this.isMeshReady(job, null, null, null, true, node)) {
                 this.drawMesh(job, node, splitMask, splitSpace);
             }
         }
@@ -1851,7 +1874,7 @@ GpuGroup.prototype.drawNode = function(node, noSkip, splitMask, splitSpace) {
 };
 
 
-GpuGroup.prototype.isMeshReady = function(job, doNotLoad, priority, skipGpu) {
+GpuGroup.prototype.isMeshReady = function(job, doNotLoad, priority, skipGpu, skipStats, node) {
     var mesh = job.mesh;
     var submeshes = mesh.submeshes;
     var ready = true;
@@ -1860,22 +1883,51 @@ GpuGroup.prototype.isMeshReady = function(job, doNotLoad, priority, skipGpu) {
     //console.log('' + stats.gpuNeeded + '  ' + job.texturePath);
 
     if (mesh.isReady(doNotLoad, priority, skipGpu)) {
-        stats.gpuNeeded += mesh.gpuSize;
+        if (!skipStats) {
+            stats.gpuNeeded += mesh.gpuSize;
+            
+            //if (job.texturePath) {
+                //console.log('--' + node.lod + '--' + job.texturePath + '    ' + stats.gpuNeeded);
+            //}
+        }
 
         for (var i = 0, li = submeshes.length; i < li; i++) {
             var submesh = submeshes[i];
             
-            if (submesh.internalUVs && job.texturePath) {
-                if (job.textures[i] == null) {
-                    var path = job.texturePath + '-' + i + '.jpg';
-                    job.textures[i] = job.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, null /*tile*/, true);
-                } 
+            if (submesh.internalUVs) {
+                
+                var texture;
 
-                if (!job.textures[i].isReady(doNotLoad, priority, skipGpu)) {
+                if (job.direct) {
+                    if (!submesh.texture) {
+                        var path = mesh.mapLoaderUrl;
+                        path = path.replace('.mesh', '-' + i + '.jpg');
+                        var resource = new MapResourceNode(this.renderer.core.map, null, null);
+                        submesh.texture = resource.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, null /*tile*/, true);
+                    }
+                    
+                    texture = submesh.texture;
+                } else {
+                    if (!job.texturePath) {
+                        continue;
+                    }
+
+                    if (!job.textures[i]) {
+                        var path = job.texturePath + '-' + i + '.jpg';
+                        job.textures[i] = job.resources.getTexture(path, VTS_TEXTURETYPE_COLOR, null, null, null /*tile*/, true);
+                    } 
+                    
+                    texture = job.textures[i];
+                }
+
+
+                if (!texture.isReady(doNotLoad, priority, skipGpu)) {
                     ready = false;
                 }
 
-                stats.gpuNeeded += job.textures[i].getGpuSize();
+                if (!skipStats) {
+                    stats.gpuNeeded += texture.getGpuSize();
+                }
             }
         }
 
@@ -1924,10 +1976,14 @@ GpuGroup.prototype.drawMesh = function(job ,node, splitMask, splitSpace) {
     for (var i = 0, li = submeshes.length; i < li; i++) {
         var submesh = submeshes[i];
         
-        if (job.textures[i]) {
-            //mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  null /*splitMask*/);
-            //mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  [0.1,1,2,3,4,5,6,0], node.volume2.points);
-            mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  splitMask, splitSpace);
+        if (job.direct) {
+            if (submesh.texture) {
+                mesh.drawSubmesh(cameraPos, i, submesh.texture, VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  splitMask, splitSpace);
+            }
+        } else {
+            if (job.textures[i]) {
+                mesh.drawSubmesh(cameraPos, i, job.textures[i], VTS_MATERIAL_INTERNAL /*type*/, null /*alpha*/, null /*layer*/, null /*surface*/,  splitMask, splitSpace);
+            }
         }
     }
 }
@@ -2006,6 +2062,361 @@ GpuGroup.prototype.testNodes2 = function(node, depth) {
 };*/
 
 
+GpuGroup.prototype.traverseBinNode = function(points, center, radius, texelSize, lod, index, file, visible, isready, skipRender) {
+    
+    var renderer = this.renderer;
+    var cameraPos = this.renderer.cameraPosition;
+
+    if (!visible && !renderer.camera.pointsVisible2(points, cameraPos)) {
+        return;        
+    }
+
+    var index2 = index * 9;
+    var tree = file.tree;
+
+    var res = this.getBinNodeTexelSize(center, radius, texelSize * renderer.curSize[0] * this.geFactor);
+
+    var pathFlags = tree[index2];
+    var pathIndex = (pathFlags & 0xfffffff);
+    
+    if (pathFlags & (1 << 31)) {  // has json, jump to another tree (bin file) 
+        var tab = file.pathTable;
+        
+        if (tab[pathIndex] == 2) { //loaded
+            var fileIndex = tab[pathIndex+1] | tab[pathIndex+2] << 8 | tab[pathIndex+3] << 16; // | | tab[pathIndex+3] << 24;
+            file = this.binFiles[fileIndex];
+            tree = file.tree;
+            index = 0;
+            index2 = 0;
+            pathFlags = tree[index2];
+            pathIndex = (pathFlags & 0xfffffff);
+        } else {
+            return;
+        }
+    }
+        
+    var hasMesh = (pathIndex != 0); 
+
+    if (this.loadMode == 1) { // topdown with splitting
+
+        var priority = lod * res[1];
+        
+        var noChildren = (!tree[index2+1] && !tree[index2+2] && !tree[index2+3] && !tree[index2+4] &&
+                          !tree[index2+5] && !tree[index2+6] && !tree[index2+7] && !tree[index2+8]);
+
+        if (noChildren || (res[0] <= this.map.draw.texelSizeFit && (hasMesh || !this.map.config.mapTraverseToMeshNode))) {
+
+            if (!skipRender && (/*node.parent ||*/ this.isBinNodeReady(points, center, index, file, null, priority, null, true))) { 
+
+                var node = {
+                    lod : lod,
+                    precision: texelSize,
+                    volume: {
+                        points: points,
+                        center: center,
+                        radius: radius,
+                    },
+                    jobs: hasMesh ? [
+                        {
+                            type: VTS_JOB_MESH,
+                            mesh: file.meshes[index],
+                            direct: true
+                        }
+                    ] : []
+                };
+
+                this.drawNode(node);
+            }
+
+        } else {
+
+            //are nodes ready
+            var ready = true;
+            var mask = [0,0,0,0,0,0,0,0];
+            var childPointsCache = [];
+            var childCenterCache = [];
+            var useMask = false;
+            var readyCount = 0;
+            var splitLods = this.map.config.mapSplitLods;
+
+            var childPriority = (lod+1) * res[1];
+
+            var xv = [(points[1][0] - points[0][0])*0.5, (points[1][1] - points[0][1])*0.5, (points[1][2] - points[0][2])*0.5];
+            var yv = [(points[1][0] - points[2][0])*0.5, (points[1][1] - points[2][1])*0.5, (points[1][2] - points[2][2])*0.5];
+            var zv = [(points[0][0] - points[4][0])*0.5, (points[0][1] - points[4][1])*0.5, (points[0][2] - points[4][2])*0.5];
+            var xf, yf, zf;
+
+            for (var i = 0, li = 8; i < li; i++) {
+
+                var childIndex = tree[index2 + 1 + i];
+                
+                if (childIndex) {
+                    var childIndex2 = childIndex * 9;
+
+                    switch(i) {
+                        case 0: xf = -1, yf = -1, zf = -1; break;
+                        case 1: xf = 0, yf = -1, zf = -1; break;
+                        case 2: xf = -1, yf = 0, zf = -1; break;
+                        case 3: xf = 0, yf = 0, zf = -1; break;
+                        case 4: xf = -1, yf = -1, zf = 0; break;
+                        case 5: xf = 0, yf = -1, zf = 0; break;
+                        case 6: xf = -1, yf = 0, zf = 0; break;
+                        case 7: xf = 0, yf = 0, zf = 0; break;
+                    }
+
+                    var p = [center[0] + xv[0] * xf + yv[0] * yf + zv[0] * zf,
+                             center[1] + xv[1] * xf + yv[1] * yf + zv[1] * zf,
+                             center[2] + xv[2] * xf + yv[2] * yf + zv[2] * zf];
+
+                    var childPoints = [
+
+                        [p[0],
+                         p[1],
+                         p[2]],
+
+                        [p[0] + xv[0],
+                         p[1] + xv[1],
+                         p[2] + xv[2]],
+
+                        [p[0] + xv[0] + yv[0],
+                         p[1] + xv[1] + yv[1],
+                         p[2] + xv[2] + yv[2]],
+
+                        [p[0] + yv[0],
+                         p[1] + yv[1],
+                         p[2] + yv[2]],
+
+                        [p[0] + zv[0],
+                         p[1] + zv[1],
+                         p[2] + zv[2]],
+
+                        [p[0] + xv[0] + zv[0],
+                         p[1] + xv[1] + zv[1],
+                         p[2] + xv[2] + zv[2]],
+
+                        [p[0] + xv[0] + yv[0] + zv[0],
+                         p[1] + xv[1] + yv[1] + zv[1],
+                         p[2] + xv[2] + yv[2] + zv[2]],
+
+                        [p[0] + yv[0] + zv[0],
+                         p[1] + yv[1] + zv[1],
+                         p[2] + yv[2] + zv[2]]
+
+                    ];
+
+                    var childCenter = [ (childPoints[0][0]+childPoints[1][0]+childPoints[2][0]+childPoints[3][0]+childPoints[4][0]+childPoints[5][0]+childPoints[6][0]+childPoints[7][0])/8,
+                                   (childPoints[0][1]+childPoints[1][1]+childPoints[2][1]+childPoints[3][1]+childPoints[4][1]+childPoints[5][1]+childPoints[6][1]+childPoints[7][1])/8,
+                                   (childPoints[0][2]+childPoints[1][2]+childPoints[2][2]+childPoints[3][2]+childPoints[4][2]+childPoints[5][2]+childPoints[6][2]+childPoints[7][2])/8 ];
+
+/*
+                    var childCenter = [p[0] + xv[0]*0.5 + yv[0]*0.5 + zv[0]*0.5,
+                                       p[1] + xv[1]*0.5 + yv[1]*0.5 + zv[1]*0.5,
+                                       p[2] + xv[2]*0.5 + yv[2]*0.5 + zv[2]*0.5];
+*/                                       
+                    childPointsCache[i] = childPoints;
+                    childCenterCache[i] = childCenter;
+
+                    if (splitLods) {
+                        var res2 = this.getBinNodeTexelSize(childCenter, radius*0.5, texelSize*0.5 * renderer.curSize[0] * this.geFactor);
+                        if (res2[0] <= this.map.draw.texelSizeFit) {
+                            tree[childIndex2] |= (1 << 29);  // set good lod flag true
+                        } else {
+                            tree[childIndex2] &= ~(1 << 29);  // set good lod flag false
+                        }
+                    }
+
+                    if (renderer.camera.pointsVisible2(childPoints, cameraPos)) {
+                        tree[childIndex2] |= (1 << 30);  // set visible flag true
+                    } else {
+                        tree[childIndex2] &= ~(1 << 30);  // set visible flag false
+                        continue;
+                    }
+
+                    if (!this.isBinNodeReady(childPoints, childCenter, childIndex, file, null, childPriority, true, skipRender) || (splitLods && (tree[index2] & (1 << 29) /* good lod flag*/ ))) {
+                        //ready = false;
+                        useMask = true;
+                        mask[i] = 1;
+                    } else {
+                        readyCount++;
+                    }
+                }
+            }
+
+            for (var i = 0, li = 8; i < li; i++) {
+                var childIndex = tree[index2 + 1 + i];
+                
+                if (childIndex) {
+                    var childIndex2 = childIndex * 9;
+
+                    if ((tree[childIndex2] & (1 << 30) /* visibility flag*/ ) && !(splitLods && (tree[childIndex2] & (1 << 29) /* good lod flag*/ ))) {
+                        var skipChildRender = (skipRender || (mask[i] == 1));
+
+                        this.traverseBinNode(childPointsCache[i], childCenterCache[i], radius * 0.5, texelSize * 0.5, lod+1, childIndex, file, true, null, skipChildRender);
+                    }
+                }
+            }
+
+            if (useMask) { // some children are not ready, draw parent as fallback
+                if (!skipRender && this.isBinNodeReady(points, center, index, file, null, priority, null, true)) {
+                    
+                    var node = {
+                        lod : lod,
+                        precision: texelSize,
+                        volume: {
+                            points: points,
+                            center: center,
+                            radius: radius,
+                        },
+                        jobs: hasMesh ? [
+                            {
+                                type: VTS_JOB_MESH,
+                                mesh: file.meshes[index],
+                                direct: true
+                            }
+                        ] : []
+                    };
+                    
+                    if (readyCount > 0) {
+                        this.drawNode(node, null, mask, points);
+                    } else {
+                        this.drawNode(node);
+                    }
+                }
+            }
+
+        }
+    }
+    
+};
+
+
+GpuGroup.prototype.getPath = function(tab, index) {
+    var stmp = '';
+    while(tab[index] != 0) {
+        stmp += String.fromCharCode(tab[index++]);
+        if (stmp.length > 700) {
+            debugger
+        }
+    }
+    
+    return stmp;
+};
+
+
+GpuGroup.prototype.isBinNodeReady = function(points, center, index, file, doNotLoad, priority, skipGpu, skipStats) {
+    var ready = true;
+
+    var tree = file.tree;
+    var index2 = index * 9;
+    var pathFlags = tree[index2];
+    var pathIndex = (pathFlags & 0xfffffff);
+
+    if (pathFlags & (1 << 31)) {  // has json, jump to another tree (bin file) 
+        var tab = file.pathTable;
+        
+        if (tab[pathIndex] == 2) { //loaded
+            var fileIndex = tab[pathIndex+1] | tab[pathIndex+2] << 8 | tab[pathIndex+3] << 16;// | tab[pathIndex+4] << 24;
+            file = this.binFiles[fileIndex];
+            tree = file.tree;
+            index = 0;
+            index2 = 0;
+            pathFlags = tree[index2];
+            pathIndex = (pathFlags & 0xfffffff);
+        } else {
+
+            if (tab[pathIndex] == 0) { 
+                tab[pathIndex] = 1;
+
+                this.binFiles.push({});
+
+                var path = this.getPath(tab, pathIndex+4);
+                path = utilsUrl.getProcessUrl(path, this.rootPath);
+
+                if (localTest) {
+                    var importer = new MapGeodataImport3DTiles2();
+                    importer.navSrs = this.map.getNavigationSrs();
+                    importer.physSrs = this.map.getPhysicalSrs();
+                    importer.srs = importer.navSrs;
+
+                    importer.loadJSON(path + '.json', {index: this.binFiles.length-1, nodeFile:file.index, nodeOffset:pathIndex, points: points, center: center, skipRoot: false}, this.onBinFileLoaded.bind(this));
+                } else {
+                    this.map.loader.processLoadBinary(path + '.json', this.onBinFileLoaded.bind(this,{index: this.binFiles.length-1, nodeFile:file.index, nodeOffset:pathIndex }), null, "text", 'direct-3dtiles', {points: points, center: center, skipRoot: false});
+                }
+            }
+
+            return false;
+        }
+    }
+
+    var hasMesh = (pathIndex != 0); 
+
+    if (hasMesh) {
+        if (!file.meshes[index]) {
+            var path = this.getPath(file.pathTable, pathIndex);
+            path = utilsUrl.getProcessUrl(path, this.rootPath);
+            var resource = new MapResourceNode(this.renderer.core.map, null, null);
+            file.meshes[index] = resource.getMesh(path + '.mesh', null);
+            //file.textures[index] = resource.getTexture(path + '-0.jpg', VTS_TEXTURETYPE_COLOR, null, null, null /*tile*/, true);
+        }
+        
+        var job = {
+            mesh: file.meshes[index],
+            //textures: [file.textures[index]],
+            direct: true
+        };
+        
+        if (!this.isMeshReady(job, doNotLoad, priority, skipGpu, skipStats /*, node*/)) {
+            ready = false;
+        }
+    }
+
+    return ready;
+};
+
+
+GpuGroup.prototype.getBinNodeTexelSize = function(pos, radius, screenPixelSize) {
+    var cameraPos = this.renderer.cameraPosition;
+    var d = vec3.length(
+        [pos[0] - cameraPos[0],
+         pos[1] - cameraPos[1],
+         pos[2] - cameraPos[2]]);
+
+    d -= radius;
+
+    if (d <= 0) {
+        return [Number.POSITIVE_INFINITY, 0.1];
+    }
+
+    return [this.renderer.camera.scaleFactor2(d) * screenPixelSize, d];
+};
+
+
+GpuGroup.prototype.onBinFileLoaded = function(info, data) {
+    var binFile = this.binFiles[info.index];
+    binFile.loadState = 2;
+    binFile.tree = data.bintree;
+    binFile.pathTable = data.pathTable;
+    binFile.rootSize = data.rootSize;
+    binFile.meshes = new Array(data.totalNodes);
+    binFile.index = info.index;
+
+    this.map.stats.octoNodes += data.totalNodes;
+    this.map.stats.octoNodesMemSize += binFile.tree.byteLength + binFile.pathTable.byteLength + 
+                                       binFile.meshes.length*4 + 8*2 + 16*2 + 24;
+
+    if (info.nodeOffset) {
+        var tab = this.binFiles[info.nodeFile].pathTable;
+        tab[info.nodeOffset] = 2; //load state
+        tab[info.nodeOffset+1] = (info.index & 0xff);
+        tab[info.nodeOffset+2] = (info.index >> 8) & 0xff;
+        tab[info.nodeOffset+3] = (info.index >> 16) & 0xff;
+        //table[info.nodeOffset+3] = (info.index >> 24) & 0xff;
+    }
+    
+    this.renderer.core.map.dirty = true;
+};
+
+
 GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     if (this.id != null) {
         if (this.renderer.layerGroupVisible[this.id] === false) {
@@ -2017,6 +2428,163 @@ GpuGroup.prototype.draw = function(mv, mvp, applyOrigin, tiltAngle, texelSize) {
     var renderCounter = [[renderer.geoRenderCounter, mv, mvp, this]];
     var map = renderer.core.map;
     this.map = map;
+    
+    if (this.binPath) {
+    /*
+        var nodes = [
+        [[3916399.622983258,296498.45267756557,5008661.6035544835],[3916359.3008185006,297030.5813144891,5008661.6035544835],[3916764.4774022354,297061.31134382443,5008345.073238633],[3916804.8037386215,296529.12765422394,5008345.073238633],[3916346.684455852,296494.4448660617,5008593.444491656],[3916306.362836135,297026.5663101272,5008593.444491656],[3916711.533929101,297057.29592302314,5008276.918465281],[3916751.8597203903,296525.1194270267,5008276.918465281]],
+        [[3916348.651572339,297020.3636826928,5008657.693492477],[3916311.554078277,297509.1065961933,5008657.693492477],[3916715.9192402307,297539.8248667931,5008341.794862375],[3916753.020564665,297051.0314898388,5008341.794862375],[3916319.067469838,297018.11999050254,5008619.603097996],[3916281.970256011,297506.85921203846,5008619.603097996],[3916686.3323556143,297537.5772500017,5008303.706860266],[3916723.4333997853,297048.7875653942,5008303.706860266]],
+        [[3916345.931206975,297137.0563547497,5008613.793283725],[3916320.7540045995,297468.7124614017,5008613.793283725],[3916610.640233603,297490.73110816703,5008387.331202118],[3916635.8192995964,297159.05045231583,5008387.331202118],[3916340.8985733567,297136.6745238376,5008607.313673299],[3916315.7214033343,297468.3302043006,5008607.313673299],[3916605.607258877,297490.34882269916,5008380.851883443],[3916630.7862925143,297158.66859306867,5008380.851883443]],
+        [[3916475.707086995,296564.4511931732,5008557.090757431],[3916447.002982107,296943.27866876114,5008557.090757431],[3916733.3982390543,296964.9930304079,5008333.350884662],[3916762.1044429666,296586.1378525704,5008333.350884662],[3916465.6544637764,296563.6899856716,5008544.148391499],[3916436.9504325646,296942.51648890326,5008544.148391499],[3916723.344952535,296964.2307946728,5008320.409094477],[3916752.0510827657,296585.37658926286,5008320.409094477]],
+        [[3916160.6738465,296488.78606499993,5007518.368867],[3916069.5149575,297533.2527989999,5007527.7566685],[3915245.995186,297455.58774799993,5008172.030689999],[3915337.154075,296411.1210139999,5008162.642888499],[3916803.39083,296537.27430849994,5008345.4627869995],[3916712.2319410006,297581.7410424999,5008354.8505885],[3915888.7121695,297504.07599149994,5008999.124609999],[3915979.8710585004,296459.6092574999,5008989.736808499]]
+        ];
+        
+        var color = [255,0,255,255];
+        
+        for (var i = 0; i < nodes.length -1 ; i++) {
+            this.drawNodeVolume(nodes[i], color);
+        }
+        var points = nodes[nodes.length -1];
+
+        this.drawNodeVolume(points, [255,0,0,255]);
+
+        drawLineString({
+            points : [points[0], points[1]],
+            size : 1.0,
+            color : [0,0,255,255],
+            depthTest : false,
+            screenSpace : false,
+            blend : false
+            }, renderer);
+
+        drawLineString({
+            points : [points[1], points[2]],
+            size : 1.0,
+            color : [0,0,255,255],
+            depthTest : false,
+            screenSpace : false,
+            blend : false
+            }, renderer);
+
+        drawLineString({
+            points : [points[4], points[0]],
+            size : 1.0,
+            color : [0,0,255,255],
+            depthTest : false,
+            screenSpace : false,
+            blend : false
+            }, renderer);
+
+            
+            for (var i; i < nodes.length -1 ; i++) {
+                var p = nodes[i];
+                var c = [ (p[0][0]+p[1][0]+p[2][0]+p[3][0]+p[4][0]+p[5][0]+p[6][0]+p[7][0])/8,
+                               (p[0][1]+p[1][1]+p[2][1]+p[3][1]+p[4][1]+p[5][1]+p[6][1]+p[7][1])/8,
+                               (p[0][2]+p[1][2]+p[2][2]+p[3][2]+p[4][2]+p[5][2]+p[6][2]+p[7][2])/8 ];
+               console.log('o: ' + this.getOctant(c, points));
+            }
+
+
+       console.log('o: ---');
+
+        return;
+        */
+        
+        
+        var s = this.map.config.mapSplitSpace;
+
+        var p = [s[0][0], s[0][1], s[0][2]];
+        var xv = [s[2][0] - s[1][0], s[2][1] - s[1][1], s[2][2] - s[1][2]];
+        var yv = [s[1][0] - p[0], s[1][1] - p[1], s[1][2] - p[2]];
+        var zv = [s[3][0] - p[0], s[3][1] - p[1], s[3][2] - p[2]];
+
+        var points = [
+
+            [p[0] + yv[0] + zv[0],
+             p[1] + yv[1] + zv[1],
+             p[2] + yv[2] + zv[2]],
+
+            [p[0] + xv[0] + yv[0] + zv[0],
+             p[1] + xv[1] + yv[1] + zv[1],
+             p[2] + xv[2] + yv[2] + zv[2]],
+
+            [p[0] + xv[0] + zv[0],
+             p[1] + xv[1] + zv[1],
+             p[2] + xv[2] + zv[2]],
+
+            [p[0] + zv[0],
+             p[1] + zv[1],
+             p[2] + zv[2]],
+
+            [p[0] + yv[0],
+             p[1] + yv[1],
+             p[2] + yv[2]],
+
+            [p[0] + xv[0] + yv[0],
+             p[1] + xv[1] + yv[1],
+             p[2] + xv[2] + yv[2]],
+
+            [p[0] + xv[0],
+             p[1] + xv[1],
+             p[2] + xv[2]],
+
+            [p[0],
+             p[1],
+             p[2]],
+
+        ];
+
+        var center = [ (points[0][0]+points[1][0]+points[2][0]+points[3][0]+points[4][0]+points[5][0]+points[6][0]+points[7][0])/8,
+                       (points[0][1]+points[1][1]+points[2][1]+points[3][1]+points[4][1]+points[5][1]+points[6][1]+points[7][1])/8,
+                       (points[0][2]+points[1][2]+points[2][2]+points[3][2]+points[4][2]+points[5][2]+points[6][2]+points[7][2])/8 ];
+
+        if (this.binFiles.length == 0) {
+            this.binFiles.push(
+                {
+                    loadState : 1
+                } 
+            );
+
+            this.rootPath = utilsUrl.makeAbsolute(this.binPath);
+            this.rootPath = utilsUrl.getBase(this.rootPath);
+            
+
+            if (localTest) {
+                var importer = new MapGeodataImport3DTiles2();
+                importer.navSrs = this.map.getNavigationSrs();
+                importer.physSrs = this.map.getPhysicalSrs();
+                importer.srs = importer.navSrs;
+
+                importer.loadJSON(this.binPath, {index: this.binFiles.length-1, points: points, center: center, skipRoot: true}, this.onBinFileLoaded.bind(this));
+            } else {
+                map.loader.processLoadBinary(this.binPath, this.onBinFileLoaded.bind(this,{index:0, points: points}), null, "text", 'direct-3dtiles', {points: points, center: center, skipRoot: true});
+            }
+            
+            return;
+        } else if (this.binFiles[0].loadState == 1) {
+            return;
+        }
+
+        renderer.drawnNodes = 0;
+
+        var mode = this.map.config.mapLoadMode; 
+
+        switch(mode) {
+        case 'topdown': this.loadMode = ((this.map.config.mapSplitMeshes && this.map.config.mapSplitSpace) ? 1 : 0); break;
+        case 'fit':     this.loadMode = 2; break; 
+        case 'fitonly': this.loadMode = 3; break;
+        }
+
+        var file = this.binFiles[0];
+
+        var rootSize = vec3.distance(points[0], points[1]);
+        var radius = vec3.distance(points[0], center);
+
+        this.rootPrecision = ((rootSize / 256) / this.geFactor) * this.geFactor2;
+
+        this.traverseBinNode(points, center, radius, this.rootPrecision, 0, 0, file, null, null, null);
+    }
+
 
     if (this.rootNode) {
         renderer.drawnNodes = 0;

@@ -24,6 +24,7 @@ var MapGeodataImport3DTiles = function(builder, options) {
     //this.options = options || {};
 };
 
+
 MapGeodataImport3DTiles.prototype.processNode = function(builderNode, node, onlyChildren) {
     var boundingVolume = node['boundingVolume'], volume;
 

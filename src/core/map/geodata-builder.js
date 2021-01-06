@@ -1475,10 +1475,20 @@ MapGeodataBuilder.prototype.import3DTiles = function(json, options) {
     return importer.processJSON(json);
 };
 
+
 MapGeodataBuilder.prototype.load3DTiles = function(path, options, onLoaded) {
     var importer = new MapGeodataImport3DTiles(this, options);
     importer.loadJSON(path, options, onLoaded);
 };
+
+
+MapGeodataBuilder.prototype.load3DTiles2 = function(path, options, onLoaded) {
+    this.binPath = path;
+    if (onMapLoaded) {
+        onMapLoaded();
+    }
+};
+
 
 MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, onProcessed) {
     if (this.heightsToProcess <= 0) {
@@ -1926,6 +1936,10 @@ MapGeodataBuilder.prototype.makeGeodata = function(resolution) {
     var geodata = {
         "version" : 1,
         "groups" : [],
+    }
+    
+    if (this.binPath) {
+        geodata["binPath"] = this.binPath;
     }
 
     for (var i = 0, li = this.groups.length; i < li; i++) {

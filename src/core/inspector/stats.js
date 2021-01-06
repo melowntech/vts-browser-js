@@ -109,7 +109,7 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
             ' - meshes: ' + Math.round(stats.gpuMeshes/(1024*1024)) + 'MB<br/>' +
             ' - geodata: ' + Math.round(stats.gpuGeodata/(1024*1024)) + 'MB<br/>' +
             'CPU Cache: ' + Math.round(stats.resourcesUsed/(1024*1024)) + 'MB<br/>' +
-            'Metaile Cache: ' + Math.round(stats.metaUsed/(1024*1024)) + 'MB<br/>' +
+            'Metatile Cache: ' + Math.round(stats.metaUsed/(1024*1024)) + 'MB<br/>' +
 //            "FOV: " + Math.round(this.core.getOption("fov")) + " deg<br/>" +
 //            "viewHeight: " + Math.round(this.core.getOption("viewHeight")) + " m<br/>" +
 //            "distance: " + Math.round(this.core.renderer.cameraDistance) + " m<br/>" +
@@ -153,7 +153,14 @@ InspectorStats.prototype.updateStatsPanel = function(stats) {
 
     text3 += 'Metatiles: ' + (stats.processedMetatiles) +'<br/>'+
              'Metanodes: ' + (stats.processedNodes) + ' / ' + (stats.usedNodes) + '<br/>'+
-             'GeodataTiles: ' + (stats.drawnGeodataTiles) + '<br/><br/>';
+             'GeodataTiles: ' + (stats.drawnGeodataTiles) + '<br/>';
+
+    if (stats.octoNodes) {
+        text3 += 'OctoNodes: ' + (stats.octoNodes) +'<br/>'+
+                 'OctoNodesMem: ' + Math.round(stats.octoNodesMemSize/(1024*1024)) + 'MB<br/>';
+    }
+
+    text3 += '<br/>';
 
     if (renderer) {
         text3 += 'Nodes: ' + (renderer.drawnNodes) +'<br/><br/>';

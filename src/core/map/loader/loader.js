@@ -143,7 +143,7 @@ MapLoader.prototype.onWorkerMessage = function(message, direct) {
 };
 
 
-MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, responseType, kind) {
+MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, responseType, kind, options) {
     var withCredentials = (utils.useCredentials ? (this.mapLoaderUrl.indexOf(this.map.url.baseUrl) != -1) : false);
 
     if (this.processWorker) {
@@ -170,11 +170,12 @@ MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, respon
             case 'direct-mesh':
             case 'metadata':
             case 'geodata':
+            case 'direct-3dtiles':
 
                 //console.log("kind: " + kind + " " + "path: " + path);
 
                 this.workerTask[path] = { onLoaded: onLoaded, onError: onError, kind: kind };
-                this.processWorker.postMessage({'command':'load-binary', 'path': path, 'withCredentials':withCredentials, 'xhrParams':this.map.core.xhrParams, 'responseType':responseType, 'kind': kind});
+                this.processWorker.postMessage({'command':'load-binary', 'path': path, 'withCredentials':withCredentials, 'xhrParams':this.map.core.xhrParams, 'responseType':responseType, 'kind': kind, 'options': options});
                 break;
 
             default:
