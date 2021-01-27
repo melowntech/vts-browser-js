@@ -49,6 +49,7 @@ var MapDraw = function(map) {
         drawSurfaces : false,
         drawCredits : false,
         drawOrder : false,
+        drawOctants : false,
         drawLabelBoxes : false,
         drawAllLabels : false,
         drawHiddenLabels : false,

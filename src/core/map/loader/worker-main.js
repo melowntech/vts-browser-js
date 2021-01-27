@@ -118,10 +118,14 @@ function parse3DTile(json, options) {
     geodata.processJSON(json, options);
 
     return { geodata:{
-               'bintree': geodata.bintree,
-               'pathTable': geodata.pathTable,
-               'totalNodes': geodata.totalNodes,
-               'rootSize': geodata.rootSize
+                'bintree': geodata.bintree,
+                'pathTable': geodata.pathTable,
+                'totalNodes': geodata.totalNodes,
+                'rootSize': geodata.rootSize,
+                'points': geodata.rootPoints,
+                'center': geodata.rootCenter,
+                'radius': geodata.rootRadius,
+                'texelSize': geodata.rootTexelSize
              },
              transferables:[geodata.bintree.buffer, geodata.pathTable.buffer]
            };

@@ -1357,8 +1357,8 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
         '#endif\n'+
 
         '#ifdef clip8\n'+
-            'if (vClipCoord.z > 0.5){\n'+
-                'if (vClipCoord.y > 0.5){\n'+
+            'if (vClipCoord.z <= 0.5){\n'+
+                'if (vClipCoord.y <= 0.5){\n'+
                     'if (vClipCoord.x > 0.5){\n'+
                         'if (uClip[5] == 0.0) discard;\n'+
                     '} else {\n'+
@@ -1372,7 +1372,7 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
                     '}\n'+
                 '}\n'+
             '} else {\n'+
-                'if (vClipCoord.y > 0.5){\n'+
+                'if (vClipCoord.y <= 0.5){\n'+
                     'if (vClipCoord.x > 0.5){\n'+
                         'if (uClip[1] == 0.0) discard;\n'+
                     '} else {\n'+

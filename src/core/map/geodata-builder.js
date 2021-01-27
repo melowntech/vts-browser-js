@@ -3,7 +3,7 @@
 import MapGeodataGeometry_ from './geodata-geometry';
 import MapGeodataImportGeoJSON_ from './geodata-import/geojson';
 import MapGeodataImportVTSGeodata_ from './geodata-import/vts-geodata';
-import MapGeodataImport3DTiles_ from './geodata-import/3dtiles';
+//import MapGeodataImport3DTiles_ from './geodata-import/3dtiles';
 //import GeographicLib_ from 'geographiclib';
 import {vec3 as vec3_, mat4 as mat4_,} from '../utils/matrix';
 
@@ -12,7 +12,7 @@ import {vec3 as vec3_, mat4 as mat4_,} from '../utils/matrix';
 var MapGeodataGeometry = MapGeodataGeometry_;
 var MapGeodataImportGeoJSON = MapGeodataImportGeoJSON_;
 var MapGeodataImportVTSGeodata = MapGeodataImportVTSGeodata_;
-var MapGeodataImport3DTiles = MapGeodataImport3DTiles_;
+//var MapGeodataImport3DTiles = MapGeodataImport3DTiles_;
 
 //var GeographicLib = GeographicLib_;
 var vec3 = vec3_;

@@ -337,6 +337,10 @@ InspectorInput.prototype.onKeyUp = function(event, press) {
             case 112:
                 debug.drawPositions = !debug.drawPositions; break; //key P pressed
 
+            case 85:
+            case 117:
+                debug.drawOctants = !debug.drawOctants; break;  //key U pressed
+
             case 84:
             case 116:
                 debug.drawTextureSize = !debug.drawTextureSize; break; //key T pressed
@@ -462,6 +466,7 @@ InspectorInput.prototype.setParameter = function(key, value) {
             if (has('V')) debug.drawSpaceBBox = true;
             if (has('M')) debug.drawMeshBBox = true;
             if (has('I')) debug.drawIndices = true;
+            if (has('U')) debug.drawOctants = true;
             if (has('B')) debug.drawBoundLayers = true;
             if (has('S')) debug.drawSurfaces = true;
             if (has('Z')) debug.drawSurfaces2 = true;
