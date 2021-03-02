@@ -167,6 +167,7 @@ MapLoader.prototype.processLoadBinary = function(path, onLoaded, onError, respon
             case 'texture':
             case 'direct-texture':
             case 'mesh':
+            case 'pointcloud':
             case 'direct-mesh':
             case 'metadata':
             case 'geodata':

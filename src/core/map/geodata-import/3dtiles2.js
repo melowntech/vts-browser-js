@@ -24,7 +24,6 @@ var MapGeodataImport3DTiles2 = function() {
 MapGeodataImport3DTiles2.prototype.countNode = function(node, onlyChildren) {
     this.totalNodes++;
 
-
     var content = node['content'];
 
     if (content && content['uri']) {

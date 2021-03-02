@@ -4,6 +4,7 @@ import MapSubtexture_ from './subtexture';
 import MapMetatile_ from './metatile';
 import MapMesh_ from './mesh';
 import MapGeodata_ from './geodata';
+import MapPointCloud_ from './pointcloud';
 
 //get rid of compiler mess
 var MapTexture = MapTexture_;
@@ -11,6 +12,7 @@ var MapSubtexture = MapSubtexture_;
 var MapMetatile = MapMetatile_;
 var MapMesh = MapMesh_;
 var MapGeodata = MapGeodata_;
+var MapPointCloud = MapPointCloud_;
 
 
 var MapResourceNode = function(map, parent, id) {
@@ -97,6 +99,23 @@ MapResourceNode.prototype.getMesh = function(path, tile) {
     }
     
     return mesh;
+};
+
+
+// Point Clouds ---------------------------------
+
+MapResourceNode.prototype.getPointCloud = function(path, tile, offset, size) {
+    if (!this.pointclouds) this.pointclouds = {};
+
+    var path2 = offset ? path+'@'+offset : path;
+    var pointcloud = this.pointclouds[path2];
+    
+    if (!pointcloud) {
+        pointcloud = new MapPointCloud(this.map, path, tile, offset, size);
+        this.pointclouds[path2] = pointcloud;
+    }
+    
+    return pointcloud;
 };
 
 

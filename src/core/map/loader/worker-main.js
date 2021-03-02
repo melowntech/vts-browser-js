@@ -104,6 +104,10 @@ function loadBinary(path, onLoaded, onError, withCredentials, xhrParams, respons
     xhr.responseType = responseType ? responseType : 'arraybuffer';
     xhr.withCredentials = withCredentials;
 
+    if (options && options.size) {
+        xhr.setRequestHeader('Range', 'bytes=' + options.offset + '-' + (options.offset + options.size));
+    }
+
     if (xhrParams && xhrParams['token'] /*&& xhrParams["tokenHeader"]*/) {
         //xhr.setRequestHeader(xhrParams["tokenHeader"], xhrParams["token"]); //old way
         xhr.setRequestHeader('Accept', 'token/' + xhrParams['token'] + ', */*');
