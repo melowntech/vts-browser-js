@@ -1437,7 +1437,7 @@ MapGeodataBuilder.prototype.addPolygonRAW = function(vertices, surface, borders,
                     featureVertices[j++] = [vertices[i], vertices[i+1], vertices[i+2]];
                 }
             } else {
-                featureVertices[j++] = this.physSrs.convertCoordsFrom(coords, srs);
+                featureVertices[j++] = this.physSrs.convertCoordsFrom([vertices[i], vertices[i+1], vertices[i+2]], srs);
             }
         }
     }

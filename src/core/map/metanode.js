@@ -186,7 +186,13 @@ struct Metanode {
         //}
     }
 
-
+    if (version >= 5) {
+        // values are probably not needed for frontend
+        /*this.llx = */streamData.getFloat32(stream.index, true); stream.index += 4;
+        /*this.lly = */streamData.getFloat32(stream.index, true); stream.index += 4;
+        /*this.urx = */streamData.getFloat32(stream.index, true); stream.index += 4;
+        /*this.ury = */streamData.getFloat32(stream.index, true); stream.index += 4;
+    }
 
     this.internalTextureCount = streamData.getUint8(stream.index, true); stream.index += 1;
 

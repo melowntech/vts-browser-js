@@ -270,11 +270,15 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
 
         if (metanode != null) { // && metanode.id[0] == lod){
 
-            if (metanode.bbox.maxSize < 8000) { // use bbox only when bbox is reasonable small
-                center = metanode.bbox.center();
-                center = this.convert.convertCoords(center, 'physical', 'navigation');
+            if (metanode.metatile.version >= 5) {
+                center = this.convert.convertCoords(metanode.diskPos, 'physical', 'navigation');
             } else {
-                center = [0,0,nodeCoords[2]];
+                if (metanode.bbox.maxSize < 8000) { // use bbox only when bbox is reasonable small
+                    center = metanode.bbox.center();
+                    center = this.convert.convertCoords(center, 'physical', 'navigation');
+                } else {
+                    center = [0,0,nodeCoords[2]];
+                }
             }
 
             //console.log("lod2: " + lod + " nodelod: " + metanode.id[0] + " h: " + center[2]/1.55);  
@@ -288,10 +292,14 @@ MapMeasure.prototype.getSurfaceHeightNodeOnly = function(coords, lod, storeStats
             if (this.config.mapHeightLodBlend && metanode.id[0] > 0 &&
                 params.parent && params.parent.metanode) {
 
-                if (params.parent.metanode.bbox.maxSize < 8000) { // use bbox only when bbox is reasonable small
-                    center2 = this.convert.convertCoords(params.parent.metanode.bbox.center(), 'physical', 'navigation');
+                if (params.parent.metanode.metatile.version >= 5) {
+                    center2 = this.convert.convertCoords(params.parent.metanode.diskPos, 'physical', 'navigation');
                 } else {
-                    center2 = [0,0,nodeCoords[2]];
+                    if (params.parent.metanode.bbox.maxSize < 8000) { // use bbox only when bbox is reasonable small
+                        center2 = this.convert.convertCoords(params.parent.metanode.bbox.center(), 'physical', 'navigation');
+                    } else {
+                        center2 = [0,0,nodeCoords[2]];
+                    }
                 }
 
                 var factor = lod - Math.floor(lod);
