@@ -265,6 +265,14 @@ vec3.distance = function (a, b) {
     return Math.sqrt(dx*dx + dy*dy + dz*dz);
 };
 
+vec3.distance2 = function (a, i, b, j) {
+    var dx = b[j] - a[i];
+    var dy = b[j+1] - a[i+1];
+    var dz = b[j+2] - a[i+2];
+    return Math.sqrt(dx*dx + dy*dy + dz*dz);
+};
+
+
 vec3.squareDistance = function (a, b) {
     var dx = b[0] - a[0];
     var dy = b[1] - a[1];
