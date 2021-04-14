@@ -918,7 +918,7 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
         if (node.usedTexelSize()) {
             screenPixelSize = draw.ndcToScreenPixel * node.pixelSize;
         } else if (node.usedDisplaySize()) {
-            screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / node.displaySize);
+            screenPixelSize = draw.ndcToScreenPixel * ((node.bbox ? node.bbox.maxSize : node.bboxMaxSize) / node.displaySize);
         }
 
         if (camera.camera.ortho) {
@@ -929,10 +929,9 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
             if (node.usedDisplaySize()) { 
                
                 if (!preciseDistance) {
-                    screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / 256);
+                    screenPixelSize = draw.ndcToScreenPixel * ((node.bbox ? node.bbox.maxSize : node.bboxMaxSize) / 256);
 
                     factor = (node.displaySize / 256) * camera.distance;
-                    //var factor = (256 / 256) * this.map.cameraDistance;
                     
                     v = camera.vector; //move camera away hack
                     p = [cameraPos[0] - v[0] * factor, cameraPos[1] - v[1] * factor, cameraPos[2] - v[2] * factor];
@@ -940,11 +939,9 @@ MapSurfaceTile.prototype.updateTexelSize = function() {
                     pixelSize = this.getPixelSize(node.bbox, screenPixelSize, p, p, true);
                 } else {
                     if (draw.isGeocent) {
-                        //screenPixelSize = draw.ndcToScreenPixel * ((node.diskAngle2A * draw.planetRadius * 2 * 0.70710678118) / 256) * (256 / node.displaySize);
                         screenPixelSize = draw.ndcToScreenPixel * ((node.diskAngle2A * draw.planetRadius * 1.41421356236) / node.displaySize);
                     } else {
-                        //screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / 256) * (256 / node.displaySize);
-                        screenPixelSize = draw.ndcToScreenPixel * (node.bbox.maxSize / node.displaySize);
+                        screenPixelSize = draw.ndcToScreenPixel * ((node.bbox ? node.bbox.maxSize : node.bboxMaxSize) / node.displaySize);
                     }
 
                     pixelSize = this.getPixelSize3(node, screenPixelSize);

@@ -422,6 +422,10 @@ RendererRMap.prototype.addLineLabel = function(subjob, checkDepthMap) {
         }
     }
 
+    if (!points.length || !points2.length) {
+        return false;
+    }
+
     for (i = 0, li = points.length; i < li; i++) {
 
         p = points[i];

@@ -49,6 +49,7 @@ var MapDraw = function(map) {
         drawSurfaces : false,
         drawCredits : false,
         drawOrder : false,
+        drawOctants : false,
         drawLabelBoxes : false,
         drawAllLabels : false,
         drawHiddenLabels : false,
@@ -798,7 +799,7 @@ MapDraw.prototype.drawMonoliticGeodata = function(surface) {
         surface.monoGeodataCounter = surface.geodataCounter;
     }
 
-    if (surface.monoGeodata.isReady()) {
+    if (surface.monoGeodata.isReady(null, null, null, surface.options.fastParse)) {
 
         if (!surface.monoGeodataView) {
             surface.monoGeodataView = new MapGeodataView(this.map, surface.monoGeodata, {tile:null, surface:surface});

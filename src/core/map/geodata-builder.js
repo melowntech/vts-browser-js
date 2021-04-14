@@ -3,7 +3,7 @@
 import MapGeodataGeometry_ from './geodata-geometry';
 import MapGeodataImportGeoJSON_ from './geodata-import/geojson';
 import MapGeodataImportVTSGeodata_ from './geodata-import/vts-geodata';
-import MapGeodataImport3DTiles_ from './geodata-import/3dtiles';
+//import MapGeodataImport3DTiles_ from './geodata-import/3dtiles';
 //import GeographicLib_ from 'geographiclib';
 import {vec3 as vec3_, mat4 as mat4_,} from '../utils/matrix';
 
@@ -12,7 +12,7 @@ import {vec3 as vec3_, mat4 as mat4_,} from '../utils/matrix';
 var MapGeodataGeometry = MapGeodataGeometry_;
 var MapGeodataImportGeoJSON = MapGeodataImportGeoJSON_;
 var MapGeodataImportVTSGeodata = MapGeodataImportVTSGeodata_;
-var MapGeodataImport3DTiles = MapGeodataImport3DTiles_;
+//var MapGeodataImport3DTiles = MapGeodataImport3DTiles_;
 
 //var GeographicLib = GeographicLib_;
 var vec3 = vec3_;
@@ -134,6 +134,17 @@ MapGeodataBuilder.prototype.addNode = function(parentNode, volume, precision, ti
 MapGeodataBuilder.prototype.addMesh = function(node, path) {
     if (node) {
         node.meshes.push(path);
+    }
+};
+
+
+MapGeodataBuilder.prototype.addLoadNode = function(node, path) {
+    if (node) {
+        if (!node.loadNodes) {
+            node.loadNodes = [];
+        }
+        
+        node.loadNodes.push(path);
     }
 };
 
@@ -1426,7 +1437,7 @@ MapGeodataBuilder.prototype.addPolygonRAW = function(vertices, surface, borders,
                     featureVertices[j++] = [vertices[i], vertices[i+1], vertices[i+2]];
                 }
             } else {
-                featureVertices[j++] = this.physSrs.convertCoordsFrom(coords, srs);
+                featureVertices[j++] = this.physSrs.convertCoordsFrom([vertices[i], vertices[i+1], vertices[i+2]], srs);
             }
         }
     }
@@ -1464,10 +1475,20 @@ MapGeodataBuilder.prototype.import3DTiles = function(json, options) {
     return importer.processJSON(json);
 };
 
+
 MapGeodataBuilder.prototype.load3DTiles = function(path, options, onLoaded) {
     var importer = new MapGeodataImport3DTiles(this, options);
     importer.loadJSON(path, options, onLoaded);
 };
+
+
+MapGeodataBuilder.prototype.load3DTiles2 = function(path, options, onLoaded) {
+    this.binPath = path;
+    if (onMapLoaded) {
+        onMapLoaded();
+    }
+};
+
 
 MapGeodataBuilder.prototype.processHeights = function(heightsSource, precision, onProcessed) {
     if (this.heightsToProcess <= 0) {
@@ -1915,6 +1936,10 @@ MapGeodataBuilder.prototype.makeGeodata = function(resolution) {
     var geodata = {
         "version" : 1,
         "groups" : [],
+    }
+    
+    if (this.binPath) {
+        geodata["binPath"] = this.binPath;
     }
 
     for (var i = 0, li = this.groups.length; i < li; i++) {

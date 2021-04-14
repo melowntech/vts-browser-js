@@ -69,6 +69,8 @@ var MapStats = function(map) {
     this.loadLast = 0;
     this.gpuNeeded = 0;
     this.gpuNeeded2 = 0;
+    this.octoNodes = 0;
+    this.octoNodesMemSize = 0;
 
     this.heightClass = 0;
     this.heightLod = 0;

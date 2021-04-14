@@ -81,6 +81,8 @@ RendererInit.prototype.initShaders = function() {
     renderer.progAtmo2 = new GpuProgram(gpu, shaders.atmoVertexShader, shaders.atmoFragmentShader);
     renderer.progAtmo = new GpuProgram(gpu, shaders.atmoVertexShader3, shaders.atmoFragmentShader3);
 
+    renderer.progPCloud = new GpuProgram(gpu, shaders.pointsVertexShader, shaders.pointsFragmentShader);
+
     renderer.progBBox = new GpuProgram(gpu, shaders.bboxVertexShader, shaders.bboxFragmentShader);
     renderer.progBBox2 = new GpuProgram(gpu, shaders.bbox2VertexShader, shaders.bboxFragmentShader);
 

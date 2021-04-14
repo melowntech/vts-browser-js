@@ -24,9 +24,28 @@ GpuShaders.bboxFragmentShader = 'precision mediump float;\n'+
         'gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n'+
     '}';
 
+
 GpuShaders.text2VertexShader =
     'attribute vec4 aPosition;\n'+
     'void main(){ \n'+
+    '}';
+
+
+GpuShaders.pointsVertexShader =
+    'attribute vec3 aPosition;\n'+
+    'attribute vec3 aColor;\n'+
+    'varying vec3 vColor;\n'+
+    'uniform mat4 uMVP;\n'+
+    'void main(){ \n'+
+        'vColor= aColor;\n'+
+        'gl_Position = uMVP * vec4(aPosition, 1.0);\n'+
+    '}';
+
+
+GpuShaders.pointsFragmentShader = 'precision mediump float;\n'+
+    'varying vec3 vColor;\n'+
+    'void main() {\n'+
+        'gl_FragColor = vec4(vColor.x, vColor.y, vColor.z, 1.0);\n'+
     '}';
 
 
@@ -1357,8 +1376,8 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
         '#endif\n'+
 
         '#ifdef clip8\n'+
-            'if (vClipCoord.z > 0.5){\n'+
-                'if (vClipCoord.y > 0.5){\n'+
+            'if (vClipCoord.z <= 0.5){\n'+
+                'if (vClipCoord.y <= 0.5){\n'+
                     'if (vClipCoord.x > 0.5){\n'+
                         'if (uClip[5] == 0.0) discard;\n'+
                     '} else {\n'+
@@ -1372,7 +1391,7 @@ GpuShaders.tileFragmentShader = 'precision mediump float;\n'+
                     '}\n'+
                 '}\n'+
             '} else {\n'+
-                'if (vClipCoord.y > 0.5){\n'+
+                'if (vClipCoord.y <= 0.5){\n'+
                     'if (vClipCoord.x > 0.5){\n'+
                         'if (uClip[1] == 0.0) discard;\n'+
                     '} else {\n'+

@@ -78,6 +78,8 @@ var Core = function(element, config, coreInterface) {
         mapParseMeshInWorker : true,
         mapPackGeodataEvents : true,
         mapCheckTextureSize : false,
+        mapTraverseToMeshNode : true,
+        mapNormalizeOctantTexelSize : true,
 
         mapFeatureStickMode : [1,1],
 
@@ -586,7 +588,7 @@ string getCoreVersion()
 */
 
 function getCoreVersion(full) {
-    return (full ? 'Core: ' : '') + '2.23.6';
+    return (full ? 'Core: ' : '') + '2.23.11';
 }
 
 

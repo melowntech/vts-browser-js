@@ -148,6 +148,13 @@ Browser.prototype.onMapLoaded = function(event) {
         }
     }
 
+    var map = this.getMap();
+
+    if (this.config.tiles3d && map) {
+        this.tiles3d = map.createGeodata();
+        this.tiles3d.load3DTiles(this.config.tiles3d, {}, this.on3DTilesLoaded.bind(this));
+    }
+
     if (this.autopilot) {
         this.autopilot.setAutorotate(this.config.autoRotate);
         this.autopilot.setAutopan(this.config.autoPan[0], this.config.autoPan[1]);
@@ -266,6 +273,16 @@ Browser.prototype.onGeoJsonLoaded = function(data) {
         geodata.processHeights('node-by-precision', 62, addFreeLayer);
     }
 };
+
+
+Browser.prototype.on3DTilesLoaded = function() {
+    var map = this.getMap();
+    var freeLayer = this.tiles3d.makeFreeLayer({});
+    map.addFreeLayer('tiles3d', freeLayer);
+    var view = map.getView();
+    view.freeLayers.tiles3d = { options: { fastParse: true }};
+    map.setView(view);
+}
 
 
 Browser.prototype.onTick = function() {
@@ -416,6 +433,7 @@ Browser.prototype.setConfigParam = function(key, value, ignoreCore) {
     case 'walkMode':               this.config.walkMode = utils.validateBool(value, false); break;
     case 'fixedHeight':            this.config.fixedHeight = utils.validateNumber(value, -Number.MAXINTEGER, Number.MAXINTEGER, 0); break;
     case 'geodata':                this.config.geodata = value; break;
+    case 'tiles3d':                this.config.tiles3d = value; break;
     case 'geojson':                this.config.geojson = value; break;
     case 'geojsonStyle':           this.config.geojsonStyle =  JSON.parse(value); break;
     case 'rotate':             

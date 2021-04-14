@@ -272,6 +272,43 @@ Camera.prototype.pointsVisible = function(points, shift) {
 };
 
 
+Camera.prototype.pointsVisible2 = function(points, shift) {
+    if (this.dirty) this.update();
+   
+    var planes = this.frustumPlanes;
+    var lj = points.length, sx, sy, sz;
+
+    if (shift) {
+        sx = shift[0];
+        sy = shift[1];
+        sz = shift[2];
+    } else {
+        sx = 0;
+        sy = 0;
+        sz = 0;
+    }
+        
+    var dot = vec4.dot3;
+
+    // test all frustum planes quickly
+    for (var i = 0; i < 6; i++) {
+        // check if all points lie on the negative side of the frustum plane
+        var negative = true;
+        var plane = planes[i];
+        for (var j = 0; j < lj; j++) {
+            if (dot(plane, points[j], 0, sx, sy, sz) >= 0) {
+                //return false;
+                negative = false;
+                break;
+            }
+        }
+        if (negative) return false;
+    }
+
+    return true;
+};
+
+
 // Returns true if the box intersects the camera frustum.
 Camera.prototype.bboxVisible = function(bbox, shift) {
     if (this.dirty) this.update();

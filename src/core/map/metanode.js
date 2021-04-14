@@ -186,7 +186,13 @@ struct Metanode {
         //}
     }
 
-
+    if (version >= 5) {
+        // values are probably not needed for frontend
+        /*this.llx = */streamData.getFloat32(stream.index, true); stream.index += 4;
+        /*this.lly = */streamData.getFloat32(stream.index, true); stream.index += 4;
+        /*this.urx = */streamData.getFloat32(stream.index, true); stream.index += 4;
+        /*this.ury = */streamData.getFloat32(stream.index, true); stream.index += 4;
+    }
 
     this.internalTextureCount = streamData.getUint8(stream.index, true); stream.index += 1;
 
@@ -588,6 +594,14 @@ MapMetanode.prototype.generateCullingHelpers = function(virtual) {
             d4 = dot(normal, pos);
 
             maxDelta = Math.min(d1, d2, d3, d4);
+        }
+
+        if (version >= 5 && this.usedDisplaySize()) {
+            this.bboxMaxSize = Math.max(
+                vec3.distance2(bbox, 0, bbox, 3),
+                vec3.distance2(bbox, 3, bbox, 6),
+                vec3.distance2(bbox, 0, bbox, 12)
+            );
         }
 
         //get cos angle based at 90deg

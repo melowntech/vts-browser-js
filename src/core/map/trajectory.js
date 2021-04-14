@@ -321,13 +321,21 @@ MapTrajectory.prototype.getInterpolatedOrinetation = function(o1, o2, factor) {
     var od2 = o2[1] - o1[1];
     var od3 = o2[2] - o1[2];
 
-    if (this.yawInterpolation == 'shortest') {
+    if (this.yawInterpolation == 'shortest' || this.yawInterpolation == 'longest') {
         if (Math.abs(od1) > 180) {
             if (od1 > 0) {
                 od1 = -(360 - od1);
             } else {
                 od1 = 360 - Math.abs(od1);
             }
+        }
+    }
+
+    if (this.yawInterpolation == 'longest') {
+        if (od1 < 0) {
+            od1 = 360 + od1;
+        } else {
+            od1 = (-360) + od1;
         }
     }
 

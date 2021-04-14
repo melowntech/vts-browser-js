@@ -56,7 +56,7 @@ MapGeodata.prototype.killGeodata = function(killedByCache) {
 };
 
 
-MapGeodata.prototype.isReady = function(doNotLoad, priority) {
+MapGeodata.prototype.isReady = function(doNotLoad, priority, doNotCheckGpu, fastParse) {
     var doNotUseGpu = (this.map.stats.gpuRenderUsed >= this.map.maxGpuUsed);
     doNotLoad = doNotLoad || doNotUseGpu;
 
@@ -84,9 +84,9 @@ MapGeodata.prototype.isReady = function(doNotLoad, priority) {
 
                 }
                 else*/ if (typeof this.mapLoaderUrl === 'object') { //use geodata directly
-                    this.geodata = JSON.stringify(this.mapLoaderUrl);
+                    this.geodata = fastParse ? this.mapLoaderUrl : JSON.stringify(this.mapLoaderUrl);
                     this.loadState = 2;
-                    this.size = this.geodata.length;
+                    this.size = this.geodata.length ? this.geodata.length : 0;
                     this.cacheItem = this.map.resourcesCache.insert(this.killGeodata.bind(this, true), this.size);
                     this.map.resourcesCache.updateItem(this.cacheItem);
                     return true;

@@ -430,7 +430,7 @@ MapMetatile.prototype.parseMetatatileNodes = function(stream) {
     this.metanodeSize = 1 + 1 + 2 + 2 + 2 + 2;
     
     if (this.version >= 5) {
-        this.metanodeSize += 3 * 4;
+        this.metanodeSize += (3 + 4) * 4;
     } else {
         this.metanodeSize += Math.floor((6 * (this.id[0] + 2) + 7) / 8);
 
