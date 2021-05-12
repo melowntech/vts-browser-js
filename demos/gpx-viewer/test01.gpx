@@ -15,6 +15,9 @@
     <link href="https://www.endomondo.com/routes/629714463">
       <text>Circular corta Annapurnas, Nepal</text>
     </link>
+    <wpt lat="28.308325" lon="83.832023">
+      <name>Coffee Break</name>
+    </wpt>
     <type>WALKING</type>
     <trkseg>
       <trkpt lat="28.292863" lon="83.870784"/>

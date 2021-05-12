@@ -2,7 +2,7 @@ var browser, renderer, map, lastMessage = "";
 var geodata, lineGeometry = null;
 var demoTexture = null;
 var usedMouseCoords = [0,0];
-var linePoint, lineSegment = 0;
+var linePoint, lineSegment = 0, lastLineSegment = -1;
 var distancePointer, heightPointer, heightPointer2;
 var trackHeights = [], trackLengths = [];
 var trackMinHeight, trackMaxHeight;
@@ -11,8 +11,7 @@ var pathLength = 0, pathDistance = 0;
 
 (function startDemo() {
     // create map in the html div with id 'map-div'
-    // parameter 'map' sets path to the map which will be displayed
-    // you can create your own map on melown.com
+    // parameter 'map' sets path to the map which will be displayed.
     // position parameter is described in documentation 
     // https://github.com/Melown/vts-browser-js/wiki/VTS-Browser-Map-API#position
     // view parameter is described in documentation 
@@ -185,7 +184,7 @@ function loadGPX(data) {
 
     var coords, heightMode, i, li, j, lj, points, name, properties;
 
-    //crete geodaata
+    //crete geodata
     geodata = map.createGeodata();
 
     //process way points
@@ -278,14 +277,14 @@ function loadGPX(data) {
 
     if (tracks.length) {
         //create new group
-        //all waypoints will be stored in this group
+        //all tracks will be stored in this group
         geodata.addGroup('tracks');
 
         for (i = 0, li = tracks.length; i < li; i++) {
             var track = tracks[i];
             var trackSegments = track.getElementsByTagName('trkseg');
 
-            // get total trak points
+            // get total track points
             var totalPoints = 0, trackPoints, index = 0;
 
             for (j = 0, lj = trackSegments.length; j < lj; j++) {
@@ -346,12 +345,12 @@ function loadGPX(data) {
 };
 
 //when are heights converted then we can create free layer
-// and dispaly that layer on the map
+// and display that layer on the map
 function onHeightProcessed() {
-    //extrack gemteru with id == 'some-path'
+    //extract geometry with id == 'some-path'
     lineGeometry = geodata.extractGeometry('some-path');
     
-    //center map postion to track gemetery
+    //center map postion to track geometry
     centerPositonToGeometry(lineGeometry);
 
     //draw track profile
@@ -373,7 +372,7 @@ function onHeightProcessed() {
                 "line": true,
                 "line-width" : 4,
                 "line-color": [255,0,255,255],
-                "zbuffer-offset" : [-5,0,0],
+                "zbuffer-offset" : [-0.1,0,0],
                 "z-index" : -1
             },
 
@@ -382,7 +381,7 @@ function onHeightProcessed() {
                 "line": true,
                 "line-width" : 20,
                 "line-color": [0,0,0,120],
-                "zbuffer-offset" : [-5,0,0],
+                "zbuffer-offset" : [-0.1,0,0],
                 "hover-event" : true,
                 "advanced-hit" : true
 
@@ -393,7 +392,11 @@ function onHeightProcessed() {
                 "point": true,
                 "point-radius" : 20,
                 "point-color": [0,255,255,255],              
-                "zbuffer-offset" : [-5,0,0]
+                "zbuffer-offset" : [-0.1,0,0],
+                "label": true,
+                "label-size": 18,
+                "label-source": "$title",
+                "label-offset": [0,-20]
             },
 
         }
@@ -412,7 +415,7 @@ function onHeightProcessed() {
     map.setView(view);
 }
 
-// move map position to the center of gemetru and adjust
+// move map position to the center of geometry and adjust
 // view extent to size of geometry
 function centerPositonToGeometry(geometry) {
     if (!geometry.getElements()) {
@@ -428,7 +431,7 @@ function centerPositonToGeometry(geometry) {
 
     var i, li, midPoint = [0,0,0], line, vec3 = vts.vec3;
 
-    //find center of gemetry
+    //find center of geometry
     for (i = 0, li = geometry.getElements() + 1; i < li; i++) {
         if (i == (li - 1)) { //last line point
             line = geometry.getElement(i-1);
@@ -492,7 +495,7 @@ function centerPositonToGeometry(geometry) {
     var navCoords = vts.proj4(physicalSrs.srsDef, navigationSrs.srsDef, midPoint);
     navCoords[2] = 0;
 
-    //set new map positon
+    //set new map position
     var pos = map.getPosition();
     pos.setCoords(navCoords);
     pos.setOrientation([0, -70, 0]);
@@ -500,7 +503,7 @@ function centerPositonToGeometry(geometry) {
     map.setPosition(pos);
 }
 
-//set heigth profile pointer accoring to current track position
+//set height profile pointer according to current track position
 function setProfilePointer(p) {
     var rect = canvas.getRect();
     var x = (pathDistance / pathLength) * rect.width;
@@ -508,11 +511,24 @@ function setProfilePointer(p) {
     var rect2 = heightPointer.getRect();
     p = map.convertCoordsFromPhysToPublic(p); 
 
+    //keep the tooltip inside the canvas
+    var minLeft = rect.left, maxLeft = rect.width + rect.left - rect2.width;
+    var tooltipLeft = rect.left + x - rect2.width * 0.5;
+
+    if(tooltipLeft < minLeft) {
+        tooltipLeft = minLeft;
+    }
+    else if(tooltipLeft > maxLeft) {
+        tooltipLeft = maxLeft;
+    }
+
+    //move the tooltip
     heightPointer.setStyle('display', 'block');
-    heightPointer.setStyle('left', (rect.left + x -(rect2.width*0.5)) + 'px');
+    heightPointer.setStyle('left', tooltipLeft + 'px');
     heightPointer.setStyle('top', (rect.top) + 'px');
     heightPointer.setHtml((p[2]).toFixed(2) + " m");
 
+    //move the vertical line
     heightPointer2.setStyle('display', 'block');
     heightPointer2.setStyle('left', (rect.left + x - 1) + 'px');
     heightPointer2.setStyle('top', (rect.top) + 'px');
@@ -529,7 +545,7 @@ function onResize() {
     }
 }
 
-//sets canvas size accoding to HTML element size
+//sets canvas size according to HTML element size
 function refereshCanvasDimensions() {
     var rect = canvas.getRect();
     var canvasElement = canvas.getElement();
@@ -633,7 +649,7 @@ function onMouseMove(event) {
     if (map) {
         var coords = event.getMouseCoords();
         usedMouseCoords = coords;
-        //set map to hover cusor over provided coordinates permanently
+        //set map to hover cursor over provided coordinates permanently
         map.hover(coords[0], coords[1], true);
     }
 }
@@ -651,7 +667,7 @@ function onMouseLeave(event) {
 function onFeatureHover(event) {
     lineSegment = event.element;
 
-    if (lineGeometry) { 
+    if (lineGeometry && (lastLineSegment != lineSegment) && lineSegment <= lineGeometry.getElements()) { 
         //get distance of cursor on the line segment
         var res = lineGeometry.getRelationToCanvasPoint(lineSegment, usedMouseCoords[0], usedMouseCoords[1]);
 
@@ -669,6 +685,9 @@ function onFeatureHover(event) {
 
         //force redraw map (we have to redraw track point)
         map.redraw();
+    
+        //remember the current segment ID to skip the next event if it is the same one
+        lastLineSegment = lineSegment;
     }
 }
 
@@ -679,9 +698,9 @@ function onCanvasHover(event) {
 
         //compute new path distance from cursor position in canvas
         var rect = canvas.getRect();
-        pathDistance = ((coords[0] - rect.left) / canvas.getElement().width) * pathLength;
+        pathDistance = (coords[0] / canvas.getElement().width) * pathLength; // m
 
-        //get point coodinates
+        //get point coordinates
         linePoint = lineGeometry.getPathPoint(pathDistance);
 
         //refresh pointer in height profile
@@ -695,10 +714,10 @@ function onCanvasHover(event) {
 function onCustomRender() {
     if (demoTexture && lineGeometry && linePoint) { //check whether texture is loaded
 
-        //get canvas postion of the track point
+        //get canvas position of the track point
         var p = map.convertCoordsFromPhysToCanvas(linePoint);
 
-        //display distance pointer in the track point coordiantes
+        //display distance pointer in the track point coordinates
         var rect = distancePointer.getRect();
         distancePointer.setStyle("display", "block");
         distancePointer.setStyle("left", (p[0]-(rect.width*0.5)) + "px");
